@@ -12,7 +12,12 @@ except Exception as e:
     print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e))
     server_ip = "ERROR"
 
-
+try:
+    import ConfigHandler
+    print("MICROPYTHON MODULE LOAD: ConfigHandler")
+except Exception as e:
+    print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e))
+    ConfigHandler = None
 #########################################################
 #                                                       #
 #               CONFIGURATION PARAMTERS                 #
@@ -133,7 +138,8 @@ class interpreter_shell():
                 "help": "interpreter_shell.help",
                 "echo": "interpreter_shell.echo",
                 "version": "interpreter_shell.version",
-                "config": "interpreter_shell.config"}
+                "config": "interpreter_shell.config",
+                "exec": "interpreter_shell.execute"}
     serv_console_tabber=0
 
     @staticmethod
@@ -198,40 +204,70 @@ class interpreter_shell():
 
     @staticmethod
     def config(server, param=""):
+        config_dict_ext = {}
         config_dict =   {"timeout_user": 'server.timeout_user',
                          "uid": 'server.uid',
                          "id": 'server.id',
-                         "man": "config timeout_user\t- user conection timeout\nconfig uid\t\t- unique id\nconfig id\t\t- human readable id\nto set value: value name = value"}
+                         "man": "TODO"}
+        # load config handler dict
+        config_dict_ext = Plugins.ConfigHandlerPlugin_load()
+        # merge dicts
+        config_dict = {**config_dict, **config_dict_ext}
+        print(config_dict)
+
         param_list = param.split(" ")
         is_found = True
         # run without parameters - default
         if param == "":
-            msg = "timeout_user\t: " + str(server.timeout_user) + "\nuid\t\t: " + str(server.uid) + "\nid\t\t: " + str(server.id)
+            msg = Plugins.config_manual_generator(config_dict)
             return msg + "\n...for more info Try: config man"
         # is paramters added
         for cmd, function in config_dict.items():
             # if parameter is valid
             if param_list[0] == cmd and len(param_list) == 1:
+                # if parameter value request was lounched
                 try:
+                    # if parameter is string with execution
                     return str(eval(config_dict[cmd]))
                 except:
+                    # if parameter is executable - simple value
                     return config_dict[cmd]
+            # if parameter is valid and value set request was lounched
             elif param_list[0] == cmd and len(param_list) == 3:
                 if param_list[1] == "=":
                     try:
                         # if input number OK
                         value = int(param_list[2])
                     except:
-                        # if input string... convert fot exec
+                        # if input string... convert for exec
                         value = '"' + str(param_list[2]) + '"'
                     set_cmd = config_dict[cmd] + " = " + str(value)
-                    #server.repy_message(set_cmd)
-                    exec(set_cmd)
+                    try:
+                        # set value is simple variable
+                        exec(set_cmd)
+                    except:
+                        # set with plugin, ConfigHandler
+                        Plugins.ConfigHandler_var(cmd, param_list[2])
+                    # return value from variable
                     return str(eval(config_dict[cmd]))
             else:
                 is_found = False
         if not is_found:
             return str(param_list) + " unknown argument"
+
+    @staticmethod
+    def execute(server, string=""):
+        args_list = string.split(' ')
+        if len(args_list) == 2:
+            module_for_import = args_list[0]
+            run_function_from_module = args_list[1]
+            try:
+                exec("import " + str(module_for_import))
+                return str(eval(run_function_from_module))
+            except Exception as e:
+                return str(e)
+        else:
+            return "Not enough parameter <2> required!\nmodule_for_import and run_function_from_module"
 
     # server side submethod
     @staticmethod
@@ -239,6 +275,50 @@ class interpreter_shell():
         print("  "*interpreter_shell.serv_console_tabber + msg)
         interpreter_shell.serv_console_tabber+=1
 
+
+class Plugins():
+    """ EXTERNAL micrOs MODULES HANDLING """
+
+    @staticmethod
+    def ConfigHandlerPlugin_load():
+        if ConfigHandler is not None:
+            conf_dict = ConfigHandler.cfg.get_all()
+            for key, value in conf_dict.items():
+                conf_dict[key] = 'Plugins.ConfigHandler_get("' + str(key) + '")'
+            return conf_dict
+        else:
+            return {}
+
+    @staticmethod
+    def ConfigHandler_set(key, value):
+        ConfigHandler.cfg.put(key, value)
+        return key, 'Plugins.ConfigHandler_get("' + str(key) + '")'
+
+    @staticmethod
+    def ConfigHandler_get(key):
+        return ConfigHandler.cfg.get(key)
+
+    @staticmethod
+    def ConfigHandler_var(key="", value=""):
+        if key != "" and value == "":
+            output = Plugins.ConfigHandler_get(key)
+        if key != "" and value != "":
+            output = Plugins.ConfigHandler_set(key, value)
+        return output
+
+    @staticmethod
+    def config_manual_generator(conf_dict):
+        manual = ""
+        for key, value in conf_dict.items():
+            try:
+                value = str(eval(value))
+            except Exception as e1:
+                try:
+                    value = str(exec(value))
+                except Exception as e2:
+                    print(str(value) + " is not a variable or function!\n" + str(e1) + "\n" + str(e2))
+            manual += "config " + str(key) + "\t" + str(value) + "\n"
+        return manual
 
 #########################################################
 #                                                       #

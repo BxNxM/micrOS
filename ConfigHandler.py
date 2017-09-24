@@ -10,6 +10,7 @@
 import json
 try:
     import LogHandler
+    print("MICROPYTHON MODULE LOAD: LOGHANDLER")
 except Exception as e:
     print("MICROPYTHON IMPORT ERROR - " + str(e))
     LogHandler = None

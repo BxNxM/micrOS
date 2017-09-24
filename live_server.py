@@ -65,10 +65,14 @@ class live_server():
         self.bind()
 
     def bind(self):
-        try:
-            self.s.bind((self.host, self.port))
-        except Exception as msg:
-            interpreter_shell.server_console('[ socket server ] Bind failed. Error Code : ' + str(msg))
+        retry = 3
+        for i in range(retry):
+            try:
+                self.s.bind((self.host, self.port))
+                break
+            except Exception as msg:
+                interpreter_shell.server_console('[ socket server ] Bind failed. Error Code : ' + str(msg))
+                self.port +=1
         interpreter_shell.server_console('[ socket server ] Socket bind complete')
         self.s.listen(10)
         interpreter_shell.server_console('[ socket server ] Socket now listening')
@@ -352,6 +356,6 @@ try:
         server.run()
     if "live_server" in __name__:
         server = live_server(HOST, PORT, USER_TIMEOUT, UID, ID)
-        server.run()
+        #server.run()
 except KeyboardInterrupt:
         server.__del__()

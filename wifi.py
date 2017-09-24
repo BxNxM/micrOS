@@ -1,5 +1,9 @@
 import network
-import LogHandler
+try:
+    import LogHandler
+except Exception as e:
+    print("[ MICROPYTHON IMPORT ERROR ] " + str(e))
+    LogHandler = None
 import time
 
 #########################################################
@@ -59,7 +63,8 @@ def wifi_info():
 #########################################################
 def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=False):
     """ WIFI SETTER - EXTAR PARAMETERS: ACCESS POINT AUTO DISABLE WHEN STATION MODE IS ON, ESSID DISCONNECT BEFORE CONNECT SELECTED SSID """
-    LogHandler.logger.debug("[SET_WIFI METHOD] SET WIFI NETWORK:\nparameters: essid,\t\t\tpwd,\t\ttimeout,\tap_auto_disable,\tessid_force_connect\n            " + \
+    if LogHandler is not None:
+        LogHandler.logger.debug("[SET_WIFI METHOD] SET WIFI NETWORK:\nparameters: essid,\t\t\tpwd,\t\ttimeout,\tap_auto_disable,\tessid_force_connect\n            " + \
                              str(essid) +",\t"+  str(pwd) +",\t"+ str(timeout) +",\t\t"+ str(ap_auto_disable) +",\t\t\t"+ str(essid_force_connect))
     if ap_auto_disable:
         ap_if = network.WLAN(network.AP_IF)
@@ -71,11 +76,13 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
     is_essid_exists = False
     # disconnect before connect to selected essid *** normally micropython framework connected to last known wlan network automaticly
     if essid_force_connect and sta_if.isconnected():
-        LogHandler.logger.debug("\t| disconnect from wifi (sta)")
+        if LogHandler is not None:
+            LogHandler.logger.debug("\t| disconnect from wifi (sta)")
         sta_if.disconnect()
     # connet if we are not connected yet
-    if not sta_if.isconnected():
-        LogHandler.logger.debug('\t| connecting to network... ')
+    if not sta_if.isconnected(): 
+        if LogHandler is not None:
+            LogHandler.logger.debug('\t| connecting to network... ')
         sta_if.active(True)
         for wifi_spot in sta_if.scan():
             if essid in str(wifi_spot):
@@ -84,13 +91,16 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
                 sta_if.connect(essid, pwd)
                 # wait for connection, with timeout set
                 while not sta_if.isconnected() and timeout > 0:
-                    LogHandler.logger.info("Waiting for connection... " + str(timeout) + "/50" )
+                    if LogHandler is not None:
+                        LogHandler.logger.info("Waiting for connection... " + str(timeout) + "/50" )
                     timeout -= 1
                     time.sleep(0.2)
-        LogHandler.logger.debug("\t|\t| network config: " + str(sta_if.ifconfig()))
-        LogHandler.logger.debug("\t|\t| WIFI SETUP STA: " + str(sta_if.isconnected()))
+        if LogHandler is not None:
+            LogHandler.logger.debug("\t|\t| network config: " + str(sta_if.ifconfig()))
+            LogHandler.logger.debug("\t|\t| WIFI SETUP STA: " + str(sta_if.isconnected()))
     else:
-        LogHandler.logger.debug("\t| already conneted (sta)")
+        if LogHandler is not None:
+            LogHandler.logger.debug("\t| already conneted (sta)")
         # we are connected already
         for wifi_spot in sta_if.scan():
             if essid in str(wifi_spot):
@@ -105,7 +115,8 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
 #########################################################
 def wifi_rssi(essid):
     """ GET SSID AND CHANNEL FOR THE SELECTED ESSID"""
-    LogHandler.logger.debug("[WIFI RSSI METHOD] GET RSSI AND CHANNEL FOR GIVEN ESSID")
+    if LogHandler is not None:
+        LogHandler.logger.debug("[WIFI RSSI METHOD] GET RSSI AND CHANNEL FOR GIVEN ESSID")
     rssi = None
     channel = None
     sta_if = network.WLAN(network.STA_IF)
@@ -136,7 +147,8 @@ def wifi_rssi(essid):
     elif rssi >= -90:
         hr_rssi_tupple = "Unusable", 0
 
-    LogHandler.logger.debug("\t| essid, rssi, channel: " + str(essid) +", "+ str(rssi) +", "+ str(channel) +", "+ str(hr_rssi_tupple))
+    if LogHandler is not None:
+        LogHandler.logger.debug("\t| essid, rssi, channel: " + str(essid) +", "+ str(rssi) +", "+ str(channel) +", "+ str(hr_rssi_tupple))
     return essid, rssi, channel, hr_rssi_tupple
 
 #########################################################
@@ -146,7 +158,8 @@ def wifi_rssi(essid):
 #########################################################
 def set_access_point(_essid, _pwd, _channel=11, sta_auto_disable=True):
     """ SET ACCESS POINT WITH CUSTOM ESSID, CHANNEL, FORCE MODE LIKE SET WIFI METHOD...."""
-    LogHandler.logger.debug("[SET ACCESS POUNT METHOD] SET ACCESS POINT MODE:\n_essid,\t\t_pwd,\t_channel,\tsta_auto_disable\n" +\
+    if LogHandler is not None:
+        LogHandler.logger.debug("[SET ACCESS POUNT METHOD] SET ACCESS POINT MODE:\n_essid,\t\t_pwd,\t_channel,\tsta_auto_disable\n" +\
                              str(_essid) +",\t"+ str(_pwd) +",\t"+  str(_channel) +",\t\t"+ str(sta_auto_disable))
     if sta_auto_disable:
         sta_if = network.WLAN(network.STA_IF)
@@ -170,7 +183,7 @@ def set_access_point(_essid, _pwd, _channel=11, sta_auto_disable=True):
 #          AUTOMATIC NETWORK CONFIGURATION              #
 #IF STA AVAIBLE, IF NOT AP MODE                         #
 #########################################################
-def auto_network_configuration(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=True, _essid="NodeMcuBNM", _pwd="guest", _channel=11, sta_auto_disable=True):
+def auto_network_configuration(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=False, _essid="NodeMcuBNM", _pwd="guest", _channel=11, sta_auto_disable=True):
     # default connection type is STA
     isconnected, is_essid_exists = set_wifi(essid, pwd, timeout=timeout, ap_auto_disable=ap_auto_disable, essid_force_connect=essid_force_connect)
     print("STA======>" + str(isconnected) + "  - " + str(is_essid_exists))

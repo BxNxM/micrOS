@@ -19,6 +19,14 @@ try:
 except Exception as e:
     print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
     ConfigHandler = None
+
+try:
+    import progressled
+    print("[ MICROPYTHON MODULE LOAD ] -  progressled - from " + str(__name__)) 
+except Exception as e:
+    print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
+    progressled = None
+
 #########################################################
 #                                                       #
 #               CONFIGURATION PARAMTERS                 #
@@ -215,7 +223,8 @@ class interpreter_shell():
         # load config handler dict
         config_dict_ext = Plugins.ConfigHandlerPlugin_load()
         # merge dicts
-        config_dict = {**config_dict, **config_dict_ext}
+        #config_dict = {**config_dict, **config_dict_ext}
+        config_dict.update(config_dict_ext)
 
         param_list = param.split(" ")
         is_found = True
@@ -277,6 +286,8 @@ class interpreter_shell():
     # server side submethod
     @staticmethod
     def server_console(msg):
+        if progressled is not None:
+            progressled.pled.toggle()
         print("  "*interpreter_shell.serv_console_tabber + msg)
         interpreter_shell.serv_console_tabber+=1
 

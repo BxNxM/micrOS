@@ -1,0 +1,8 @@
+{
+  "man": "timeout_user\t- user timeout in sec\nuid\t- unique id\nid\t- human readable id\nman\t- manual",
+  "micrOs_manual": "=== microOS ===\nexit\t- close shell connection\nhelp\t- list avaible commands\necho\t- simple printer\nversion\t- print versions info\nconfig\t- gives access for config parameters\nexec\t- run any function from module",
+  "sta_essid": "elektroncsakpozitivan",
+  "sta_pwd": "BNM3,1415",
+  "log_limit": "auto_1/4",
+  "log_boot_clean": "False"
+}

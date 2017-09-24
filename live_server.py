@@ -3,20 +3,21 @@ import sys
 # Try to import - SUCCESS if we are on micropython
 try:
     import network
+    print("[ MICROPYTHON MODULE LOAD ] -  network - from " + str(__name__))
     sta_if = network.WLAN(network.STA_IF)
     if sta_if.active():
         server_ip = sta_if.ifconfig()[0]
     else:
-        raise Exception("!!! STA IS NOT ACTIVE !!!")
+        raise Exception("!!! STA IS NOT ACTIVE !!! - from " + str(__name__))
 except Exception as e:
-    print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e))
+    print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
     server_ip = "ERROR"
 
 try:
     import ConfigHandler
-    print("MICROPYTHON MODULE LOAD: ConfigHandler")
+    print("[ MICROPYTHON MODULE LOAD ] -  ConfigHandler - from " + str(__name__))
 except Exception as e:
-    print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e))
+    print("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
     ConfigHandler = None
 #########################################################
 #                                                       #
@@ -134,6 +135,7 @@ class live_server():
 #                                                       #
 #########################################################
 class interpreter_shell():
+    # AVAIBLE COMMANDS FROM SHELL PROMPT
     cmd_dict={  "exit": None,
                 "help": "interpreter_shell.help",
                 "echo": "interpreter_shell.echo",
@@ -184,9 +186,10 @@ class interpreter_shell():
     @staticmethod
     def help(server):
         text = "AVAIBLE COMMANDS:\n"
-        for key in interpreter_shell.cmd_dict:
-            text += "\t" + str(key) + "\n"
-        return text
+        try:
+            return text + str(Plugins.ConfigHandler_get("micrOs_manual"))
+        except Exception as e:
+            return text + " manual key not in node_config.cfg file! " + str(e)
 
     @staticmethod
     def echo(server, string=""):
@@ -213,7 +216,6 @@ class interpreter_shell():
         config_dict_ext = Plugins.ConfigHandlerPlugin_load()
         # merge dicts
         config_dict = {**config_dict, **config_dict_ext}
-        print(config_dict)
 
         param_list = param.split(" ")
         is_found = True
@@ -241,6 +243,9 @@ class interpreter_shell():
                     except:
                         # if input string... convert for exec
                         value = '"' + str(param_list[2]) + '"'
+                    # timeout_user parameter must be integer!
+                    if param_list[0] == "timeout_user" and  not ("int" in str(type(value))):
+                        return "timeout_user must be integer!"
                     set_cmd = config_dict[cmd] + " = " + str(value)
                     try:
                         # set value is simple variable
@@ -310,14 +315,19 @@ class Plugins():
     def config_manual_generator(conf_dict):
         manual = ""
         for key, value in conf_dict.items():
+            if key == "man":
+                value = "manual for configuartion"
+            if key == "micrOs_manual":
+                value = "manual from microOs shell"
             try:
                 value = str(eval(value))
             except Exception as e1:
                 try:
                     value = str(exec(value))
                 except Exception as e2:
-                    print(str(value) + " is not a variable or function!\n" + str(e1) + "\n" + str(e2))
-            manual += "config " + str(key) + "\t" + str(value) + "\n"
+                    interpreter_shell.server_console(str(value) + " is not a variable or function!\n" + str(e1) + "\n" + str(e2))
+            key_lenght = len(str(key))
+            manual += "config " + str(key) + " "*(20-key_lenght) + ": " + str(value) + "\n"
         return manual
 
 #########################################################

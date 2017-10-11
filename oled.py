@@ -1,6 +1,7 @@
 import ssd1306
 import machine
 import time
+# framebuf quickguide: http://docs.micropython.org/en/latest/wipy/library/framebuf.html
 
 class oled(ssd1306.SSD1306_I2C):
 
@@ -28,7 +29,7 @@ class oled(ssd1306.SSD1306_I2C):
     def display(self, option):
         if option == "poweron":
             self.poweron()
-        elif option == "poweron":
+        elif option == "poweroff":
             self.poweroff()
 
     def pixel(self, x, y, col):
@@ -51,6 +52,7 @@ class oled(ssd1306.SSD1306_I2C):
         self.fill_rect(x, y, text_size*len(string), text_size, col=0)
         super().text(string, x, y, col)
 
+# demo
 '''
 instance = oled()
 instance.pixel(10, 10, 1)
@@ -69,6 +71,11 @@ class GUI(oled):
 
     def __init__(self, width=128, height=64, i2c=None, addr=0x3c, external_vcc=False):
         super().__init__(width, height, i2c, addr, external_vcc)
+        # page state - page_manager
+        self.page_index = 0
+        self.previous_page_index = 0
+        self.isfirst_call = True
+        self.page_manager_except = False
 
     # TOP RSSI VIEWER
     def rssi_bar(self, value, bar_height=3):
@@ -105,7 +112,6 @@ class GUI(oled):
         # DRAW STATUS
         self.line(xy_start=(127, self.height-bar_height), xy_end=(127, self.height), col=1)
 
-    '''
     # use this function in loop
     def page_manager(self, page_def_list, button_obj_read, wifi_rssi=0):
         # clean if exception happened
@@ -115,7 +121,7 @@ class GUI(oled):
         index_buff = self.page_index
         if not self.isfirst_call:
             # read button - if true increase page index
-            #print(">>> read button")
+            print(">>> read button")
             self.page_index+=button_obj_read()[1]
             #print(">>> read button - button index: " + str(self.page_index))
             if self.page_index > len(page_def_list)-1:
@@ -126,16 +132,16 @@ class GUI(oled):
         self.button_indicator(index_buff)
         # clean full page if page is changed
         if self.page_index != self.previous_page_index:
-            #print(">>> clean screen")
-            self.fill_rect(xy_start=(0, 0), xy_end=(self.width-1, self.height-1), col=0)
+            print(">>> clean screen")
+            self.fill_rect(0, 0, self.width-1, self.height, col=0)
             self.previous_page_index = self.page_index
         # draw page_bar
-        #print(">>> draw page_bar")
+        print(">>> draw page_bar")
         self.page_bar(len(page_def_list), self.page_index)
         #print(">>> draw rssi bar")
         self.rssi_bar(wifi_rssi)
         # run page
-        #print(">>> draw page" + str(page_def_list[self.page_index]))
+        print(">>> draw page" + str(page_def_list[self.page_index]))
         try:
             page_def_list[self.page_index](self)
             # call given function page
@@ -152,27 +158,84 @@ class GUI(oled):
 
     def  button_indicator(self, index_buff):
         # if button was pressed - page goues up to down
+        x = 46
+        y = 24
+        width = 31
+        height = 15
         if index_buff < self.page_index:
-            self.square_filled(xy_start=(47,25), xy_end=(50+26, 28+10), pxl=0)
-            self.text("-->", xp=50, yp=28)
-            self.square(xy_start=(47,25), xy_end=(50+26, 28+10))
+            self.fill_rect(x,y, width, height, col=0)
+            self.text("-->", x=50, y=28)
+            self.rect(x,y, width, height)
             self.show()
         elif index_buff > self.page_index:
-            self.square_filled(xy_start=(47,25), xy_end=(50+26, 28+10), pxl=0)
-            self.text("<--", xp=50, yp=28)
-            self.square(xy_start=(47,25), xy_end=(50+26, 28+10))
+            self.fill_rect(x,y, width, height, col=0)
+            self.text("<--", x=50, y=28)
+            self.rect(x,y, width, height)
             self.show()
-    '''
 
-gui = GUI()
-for i in range(1, 4):
-    gui.rssi_bar(i)
-    gui.show()
-    time.sleep(1)
+    def draw_page_function(self, page, wifi_rssi=0):
+        #print(">>> draw rssi bar")
+        self.rssi_bar(wifi_rssi)
+        try:
+            page(self)
+            self.show()
+        except Exception as e:
+            print("draw_page_function EXCEPTION: " + str(e))
 
-for k in range(2, 10):
-    for i in range(0, k):
-        gui.page_bar(k, i)
-        gui.show()
+#simulate
+def button():
+    time.sleep(0.5)
+    return True, 1
+    #return False, 0
+
+# DEMO
+def page0_demo(oled_panel):
+    text="Page 0 width"
+    oled_panel.text(text, x=10, y=10)
+    text="page_bar"
+    oled_panel.text(text, x=10, y=20)
+def page1_demo(oled_panel):
+    text="Page 1 width"
+    oled_panel.text(text, x=10, y=10)
+    text="Page 1.1 width"
+    oled_panel.text(text, x=10, y=10)
+    text="page_bar"
+    oled_panel.text(text, x=10, y=20)
+def page2_demo(oled_panel):
+    text="Page 2 width"
+    oled_panel.text(text, x=10, y=10)
+    text="page_bar"
+    oled_panel.text(text, x=10, y=20)
+
+def rssi_bar_demo(oled_frame):
+    for k in range (0, 3):
+        for i in range(0, 4):
+            oled_frame.rssi_bar(value=i, bar_height=3)
+            oled_frame.show()
+            time.sleep(0.5)
+
+def page_bar_demo(oled_frame):
+    for k in range(2, 10):
+        for i in range(0, k):
+            oled_frame.page_bar(k, i)
+            oled_frame.show()
+            time.sleep(1)
+
+def page_manager_demo(oled_frame):
+    page_list = []
+    page_list.append(page0_demo)
+    page_list.append(page1_demo)
+    page_list.append(page2_demo)
+    while True:
+        oled_frame.page_manager(page_list, button)
         time.sleep(1)
+
+
+#oled_frame = GUI()
+#rssi_bar_demo(oled_frame)
+#page_bar_demo(oled_frame)
+#page_manager_demo(oled_frame)
+#oled_frame.draw_page_function(page0_demo)
+
+
 

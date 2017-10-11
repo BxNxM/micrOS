@@ -61,7 +61,7 @@ class ConfigHandler(object):
             if LogHandler is not None:
                 LogHandler.logger.exception("ConfigHandler.write_cfg_file write json: " + str(e))
             else:
-                raise Exception("ConfigHandler.write_cfg_file write json: " + str(e))
+                print("ConfigHandler.write_cfg_file write json: " + str(e))
 
     def read_cfg_file(cls):
         try:

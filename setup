@@ -1,0 +1,114 @@
+#/bin/bash
+##########################################################################################################################
+#  _   _    ____    _____    ______            __  __    _____   _    _      _____   ______   _______   _    _   _____   #
+# | \ | |  / __ \  |  __ \  |  ____|          |  \/  |  / ____| | |  | |    / ____| |  ____| |__   __| | |  | | |  __ \  #
+# |  \| | | |  | | | |  | | | |__     ______  | \  / | | |      | |  | |   | (___   | |__       | |    | |  | | | |__) | #
+# | . ` | | |  | | | |  | | |  __|   |______| | |\/| | | |      | |  | |    \___ \  |  __|      | |    | |  | | |  ___/  #
+# | |\  | | |__| | | |__| | | |____           | |  | | | |____  | |__| |    ____) | | |____     | |    | |__| | | |      #
+# |_| \_|  \____/  |_____/  |______|          |_|  |_|  \_____|  \____/    |_____/  |______|    |_|     \____/  |_|1.0   #
+##########################################################################################################################
+# NEEDED PROGRAMS:
+# - ESPTOOLS.PY: pip2 install esptool
+# - pip3 install adafruit-ampy && pip2 install adafruit-ampy
+# - CP210X DRIVER FOR TTL UART TO USB
+# - MICROPYTHON FRAMEWORK
+
+# TURN OFF ESP DEBUG MODE ON BOARD:
+#>>> import esp
+#>>> esp.osdebug(None)
+#
+# AMPY:
+# - ampy run <.py>
+# - ampy run - n <.py>                  --no_output (run on banckground)
+
+# TUTORIAL: https://learn.adafruit.com/micropython-basics-esp8266-webrepl/overview?view=all
+##########################################################################################################################
+info_printout="false"
+
+#=========================================================================================================================#
+# GLOBAL VARIABLES FOR NODE-MCU DEV KIT FOR MAC
+#export SETUP_PATH=`pwd`
+export SETUP_PATH="${BASH_SOURCE[0]}"
+export SETUP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+#export MICROPYTHON_PATH=`ls ${SETUP_PATH}/framework/*.bin`
+export MICROPYTHON_PATH=`ls ${SETUP_DIR}/framework/*.bin`
+export nodemcu_PATH='/dev/tty.SLAB_USBtoUART'
+export AMPY_PORT=$nodemcu_PATH                                  # set for ampy env
+
+function _ampy_get_all_() {
+
+    local files=($(ampy ls))
+    local files_db=${#files[@]}
+    local DATE=`date +%Y_%m_%d_%H_%M_%S`
+    local dirname="upyton_components_${DATE}"
+
+    echo -e "MAKE DIR: ${dirname}"
+    mkdir ${SETUP_DIR}/playground/${dirname}
+    if ! [[ -d ${SETUP_DIR}/playground/${dirname} ]]
+    then
+        echo -e "FAILURE"
+    fi
+
+    for((i=0; i<${files_db}; i++))
+    do
+        echo -e "\tCOPY FROM NODEMCU: ampy get ${files[$i]} -> ${SETUP_DIR}/playground/${dirname}/${files[$i]}"
+        ampy get ${files[$i]} ${SETUP_DIR}/playground/${dirname}/${files[$i]}
+    done
+}
+
+function _ampy_put_all() {
+
+    local dir_path_actual=$(pwd)
+    local files=($(ls ${dir_path_actual}/*.py && ls ${dir_path_actual}/*.json))
+    for((index=0; index<${#files[@]}; index++))
+    do
+        echo -e "\tCOPY TO NODEMCU: ampy put ${files[$index]} -> ${nodemcu_PATH}"
+        ampy put ${files[$index]}
+    done
+}
+
+#=========================================================================================================================#
+function micropy_toolkit() {
+    if [ -e $nodemcu_PATH ]
+    then
+        # GLOBAL DEV ALIASES | when device is connected
+        alias nodemcu_erase='esptool.py --port ${nodemcu_PATH} erase_flash'
+        alias nodemcu_deploy='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect -fm dio 0 ${MICROPYTHON_PATH}'
+        alias nodemcu_deploy_2='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect 0 ${MICROPYTHON_PATH}'
+        alias nodemcu_screen_pid='ps aux | grep [s]creen'
+        alias nodemcu_usedfrom='fuser ${nodemcu_PATH}'
+        alias nodemcu_disconnect='echo $( nodemcu_usedfrom | awk " {print $1} ") unconnected && kill $( nodemcu_usedfrom | awk " {print $1} ")'
+        alias nodemcu_connect='echo -e "WELCOME $USER - $(DATE)\nTO EXIT: ctrl-a d OR ctrl-a ctrl-d" && sleep 2 && screen ${nodemcu_PATH} 115200 && nodemcu_disconnect'
+        alias nodemcu_ampy_help='ampy --help'
+        alias gl='ampy get logs.log'                  # works if: device root folder has logs.log file
+        alias ampy_get_all='_ampy_get_all_'
+        alias ampy_put_all='_ampy_put_all'
+        # wget: http://linuxreviews.org/quicktips/wget/
+    else
+        echo -e "==================== DEVICE NOT FOUND ====================="
+        echo -e "\tSET IT IN SETUP SCRIPT, export nodemcu_PATH=XXXXX"
+        echo -e "\tXXXX - use <lsdiv> command"
+    fi
+
+    # GLOBAL DEV ALIASES | always avaible
+    alias lsdiv='ls -la /dev/tty.*'
+    alias get_DOCS='wget -r https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html'
+    alias nodemcu_help='alias | grep [n]ode_* && alias | grep [l]sdiv && alias | grep [g]et_DOC && alias | grep [g]l && alias | grep [a]mpy_get_all && alias | grep [a]mpy_put_all'
+    alias ss='source ${SETUP_PATH}'
+    alias gitl='git log --pretty=format:"%h %s" --graph'
+
+    if [ "$info_printout" == "true" ]
+    then
+        echo -e "============ NODE-MCU SETUP EXTERNAL VARIABLES ============"
+        echo -e "\tSETUP_PATH: $SETUP_PATH"
+        echo -e "\tMICROPYTHON_PATH: $MICROPYTHON_PATH"
+        echo -e "\tnodemcu_PATH: $nodemcu_PATH"
+        echo -e "=================== NODE-MCU SETUP FILE ==================="
+        nodemcu_help
+    fi
+    echo -e "====================== SOURCE DONE ========================"
+    #nodemcu_help
+}
+
+# EXECUTE TOOLKIT:
+micropy_toolkit

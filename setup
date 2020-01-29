@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 ##########################################################################################################################
 #  _   _    ____    _____    ______            __  __    _____   _    _      _____   ______   _______   _    _   _____   #
 # | \ | |  / __ \  |  __ \  |  ____|          |  \/  |  / ____| | |  | |    / ____| |  ____| |__   __| | |  | | |  __ \  #
@@ -23,92 +23,187 @@
 
 # TUTORIAL: https://learn.adafruit.com/micropython-basics-esp8266-webrepl/overview?view=all
 ##########################################################################################################################
-info_printout="false"
+DEBUG="true"
+
+#================= Colors ===================#
+PURPLE='\033[0;35m'
+NC='\033[0m'
 
 #=========================================================================================================================#
-# GLOBAL VARIABLES FOR NODE-MCU DEV KIT FOR MAC
-#export SETUP_PATH=`pwd`
-export SETUP_PATH="${BASH_SOURCE[0]}"
-export SETUP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-#export MICROPYTHON_PATH=`ls ${SETUP_PATH}/framework/*.bin`
-export MICROPYTHON_PATH=`ls ${SETUP_DIR}/framework/*.bin`
-export nodemcu_PATH='/dev/tty.SLAB_USBtoUART'
-export AMPY_PORT=$nodemcu_PATH                                  # set for ampy env
+# DEVELOPMENT FUNCTIONS
+function console() {
+    local msg="$*"
+    echo -e "${PURPLE}[NODEMCU]${NC} - $msg"
+}
+
+function welcome_and_init() {
+    console "============ MICROPYTHON DEV FRAMEWORK ============="
+    console "========== WELCOME $(date) =============="
+    console "================== MICROS =========================="
+
+    # GLOBAL VARIABLES FOR NODE-MCU DEV KIT FOR MAC
+    export SETUP_PATH="${BASH_SOURCE[0]}"
+    export SETUP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    export nodemcu_PATH='/dev/tty.SLAB_USBtoUART'
+    export AMPY_PORT="$nodemcu_PATH"                                  # set for ampy env
+    export MICROS_PATH="${SETUP_DIR}/MicrOS"
+
+    _get_micropython_fw_bin
+}
+
+function _get_micropython_fw_bin() {
+    local binaries_list=($(find "${SETUP_DIR}/framework/" -iname "*.bin"))
+    if [ "${#binaries_list[@]}" -eq 1 ]
+    then
+        export MICROPYTHON_PATH="${binaries_list[0]}"
+    else
+        console "Available micropython binaries, choose one by line number:"
+        for ((i=0; i<"${#binaries_list[@]}"; i++))
+        do
+            echo -e "\t[$i] - ${binaries_list[$i]}"
+        done
+        read -p "Selected micropython binary: " answer
+        export MICROPYTHON_PATH="${binaries_list[$answer]}"
+    fi
+}
 
 function _ampy_get_all_() {
 
+    console "NODEMCU GET ALL FILES"
     local files=($(ampy ls))
     local files_db=${#files[@]}
     local DATE=`date +%Y_%m_%d_%H_%M_%S`
     local dirname="upyton_components_${DATE}"
+    local copy_root_path="${SETUP_DIR}/playground/${dirname}"
 
-    echo -e "MAKE DIR: ${dirname}"
-    mkdir ${SETUP_DIR}/playground/${dirname}
-    if ! [[ -d ${SETUP_DIR}/playground/${dirname} ]]
+    console "MAKE DIR: ${dirname}"
+    mkdir -p "$copy_root_path"
+    if ! [[ -d "$copy_root_path" ]]
     then
-        echo -e "FAILURE"
+        console "FAILURE"
     fi
 
     for((i=0; i<${files_db}; i++))
     do
-        echo -e "\tCOPY FROM NODEMCU: ampy get ${files[$i]} -> ${SETUP_DIR}/playground/${dirname}/${files[$i]}"
-        ampy get ${files[$i]} ${SETUP_DIR}/playground/${dirname}/${files[$i]}
+        dir_content=($(ampy ls "${files[$i]}" 2>/dev/null))
+        if [ "${#dir_content[@]}" -eq 0 ] && [[ "${files[$i]}" == *"."* ]]
+        then
+            console "\tCOPY FROM NODEMCU: ampy get ${files[$i]} -> ${SETUP_DIR}/playground/${dirname}/${files[$i]}"
+            ampy get "${files[$i]}" "${SETUP_DIR}/playground/${dirname}/${files[$i]}"
+        else
+            console "\tCreate DIR: ${SETUP_DIR}/playground/${dirname}/${files[$i]}"
+            mkdir -p "${files[$i]}"
+            for file in "${dir_content[@]}"
+            do
+                dir_content2=($(ampy ls "$file" 2>/dev/null))
+                if [ "${#dir_content2[@]}" -eq 0 ] && [[ "$file" == *"."* ]]
+                then
+                    console "\tCOPY FROM NODEMCU: ampy get $file -> ${SETUP_DIR}/playground/${dirname}/$file"
+                    ampy get "$file" "${SETUP_DIR}/playground/${dirname}/$file"
+                else
+                    for file2 in "${dir_content2[@]}"
+                    do
+                        file2="${files[$i]}/$file/$file2"
+                        console "\tCOPY FROM NODEMCU: ampy get $file2 -> ${SETUP_DIR}/playground/${dirname}/$file2"
+                        ampy get "$file2" "${SETUP_DIR}/playground/${dirname}/$file2"
+                    done
+                fi
+            done
+        fi
     done
 }
 
 function _ampy_put_all() {
 
-    local dir_path_actual=$(pwd)
-    local files=($(ls ${dir_path_actual}/*.py && ls ${dir_path_actual}/*.json))
-    for((index=0; index<${#files[@]}; index++))
+    console "NODEMCU PUT ALL FILES [py | json]"
+    local dir_path_actual="${MICROS_PATH}"
+
+    local folder_list=($(find "$dir_path_actual" -type d))
+    local files_list=($(find "$dir_path_actual" -type f))
+
+    console "Create folder structure"
+    for((index=0; index<${#folder_list[@]}; index++))
     do
-        echo -e "\tCOPY TO NODEMCU: ampy put ${files[$index]} -> ${nodemcu_PATH}"
-        ampy put ${files[$index]}
+        folder_list[$index]=$(echo "${folder_list[$index]}" | sed 's|'"${MICROS_PATH}"'||g')
+        if [ "${folder_list[$index]}" == ""  ]
+        then
+            continue
+        fi
+        console "\tmkdir ${folder_list[$index]} -> ${nodemcu_PATH}"
+        local output=$(ampy mkdir "${folder_list[$index]}" 2>&1)
+        if [ "$?" -ne 0 ] && [[ "$output" == *"Directory already exists"* ]]
+        then
+            console "FAIL to create ${folder_list[$index]} -> ${nodemcu_PATH}"
+            console "$output"
+        fi
     done
+
+    for((index=0; index<${#files_list[@]}; index++))
+    do
+        local path_on_node=$(echo "${files_list[$index]}" | sed 's|'"${MICROS_PATH}"'||g')
+        console "\tCOPY TO NODEMCU: ampy put ${files_list[$index]} -> ${nodemcu_PATH}$path_on_node"
+        ampy put "${files_list[$index]}" "$path_on_node"
+        if [ "$?" -ne 0 ]
+        then
+            console "FAIL to copy ${folder_list[$index]} -> ${nodemcu_PATH}"
+        fi
+    done
+}
+
+function _set_dev_aliases() {
+    console "GLOBAL DEV ALIASES"
+    # GLOBAL DEV ALIASES | when device is connected
+    alias nodemcu_erase='esptool.py --port ${nodemcu_PATH} erase_flash'
+    alias nodemcu_deploy='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect -fm dio 0 ${MICROPYTHON_PATH}'
+    alias nodemcu_deploy_2='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect 0 ${MICROPYTHON_PATH}'
+    alias nodemcu_screen_pid='ps aux | grep [s]creen'
+    alias nodemcu_usedfrom='fuser ${nodemcu_PATH}'
+    alias nodemcu_disconnect='echo $( nodemcu_usedfrom | awk " {print $1} ") unconnected && kill $( nodemcu_usedfrom | awk " {print $1} ")'
+    alias nodemcu_connect='echo -e "WELCOME $USER - $(DATE)\nTO EXIT: ctrl-a d OR ctrl-a ctrl-d" && sleep 2 && screen ${nodemcu_PATH} 115200 && nodemcu_disconnect'
+    alias nodemcu_ampy_help='ampy --help'
+    alias nodemcu_gl='ampy get logs.log'                  # works if: device root folder has logs.log file
+    alias nodemcu_get_all='_ampy_get_all_'
+    alias nodemcu_put_all='_ampy_put_all'
+    # wget: http://linuxreviews.org/quicktips/wget/
+}
+
+function _set_default_aliases() {
+    console "GLOBAL DEV [DEFAULT] ALIASES"
+    # GLOBAL DEV ALIASES | always avaible
+    alias nodemcu_lsdiv='ls -la /dev/tty.*'
+    alias nodemcu_get_DOCS='wget -r https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html'
+    alias nodemcu_help='alias | grep [n]ode_* && alias | grep [l]sdiv && alias | grep [g]et_DOC && alias | grep [g]l && alias | grep [a]mpy_get_all && alias | grep [a]mpy_put_all'
+    alias ss='source ${SETUP_PATH}'
+    alias gitl='git log --pretty=format:"%h %s" --graph'
 }
 
 #=========================================================================================================================#
 function micropy_toolkit() {
-    if [ -e $nodemcu_PATH ]
+
+    if [ -e "$nodemcu_PATH" ]
     then
-        # GLOBAL DEV ALIASES | when device is connected
-        alias nodemcu_erase='esptool.py --port ${nodemcu_PATH} erase_flash'
-        alias nodemcu_deploy='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect -fm dio 0 ${MICROPYTHON_PATH}'
-        alias nodemcu_deploy_2='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect 0 ${MICROPYTHON_PATH}'
-        alias nodemcu_screen_pid='ps aux | grep [s]creen'
-        alias nodemcu_usedfrom='fuser ${nodemcu_PATH}'
-        alias nodemcu_disconnect='echo $( nodemcu_usedfrom | awk " {print $1} ") unconnected && kill $( nodemcu_usedfrom | awk " {print $1} ")'
-        alias nodemcu_connect='echo -e "WELCOME $USER - $(DATE)\nTO EXIT: ctrl-a d OR ctrl-a ctrl-d" && sleep 2 && screen ${nodemcu_PATH} 115200 && nodemcu_disconnect'
-        alias nodemcu_ampy_help='ampy --help'
-        alias gl='ampy get logs.log'                  # works if: device root folder has logs.log file
-        alias ampy_get_all='_ampy_get_all_'
-        alias ampy_put_all='_ampy_put_all'
-        # wget: http://linuxreviews.org/quicktips/wget/
+        _set_dev_aliases
     else
-        echo -e "==================== DEVICE NOT FOUND ====================="
-        echo -e "\tSET IT IN SETUP SCRIPT, export nodemcu_PATH=XXXXX"
-        echo -e "\tXXXX - use <lsdiv> command"
+        console "==================== DEVICE NOT FOUND ====================="
+        console "\tSET IT IN SETUP SCRIPT, export nodemcu_PATH=XXXXX"
+        console "\tXXXX - use <lsdiv> command"
     fi
+    _set_default_aliases
 
-    # GLOBAL DEV ALIASES | always avaible
-    alias lsdiv='ls -la /dev/tty.*'
-    alias get_DOCS='wget -r https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html'
-    alias nodemcu_help='alias | grep [n]ode_* && alias | grep [l]sdiv && alias | grep [g]et_DOC && alias | grep [g]l && alias | grep [a]mpy_get_all && alias | grep [a]mpy_put_all'
-    alias ss='source ${SETUP_PATH}'
-    alias gitl='git log --pretty=format:"%h %s" --graph'
-
-    if [ "$info_printout" == "true" ]
+    if [ "$DEBUG" == "true" ]
     then
-        echo -e "============ NODE-MCU SETUP EXTERNAL VARIABLES ============"
-        echo -e "\tSETUP_PATH: $SETUP_PATH"
-        echo -e "\tMICROPYTHON_PATH: $MICROPYTHON_PATH"
-        echo -e "\tnodemcu_PATH: $nodemcu_PATH"
-        echo -e "=================== NODE-MCU SETUP FILE ==================="
+        console "============ NODE-MCU SETUP EXTERNAL VARIABLES ============"
+        console "\tSETUP_PATH: $SETUP_PATH"
+        console "\tMICROPYTHON_PATH: $MICROPYTHON_PATH"
+        console "\tnodemcu_PATH: $nodemcu_PATH"
+        console "\tMICROS_PATH: $MICROS_PATH"
+        console "=================== NODE-MCU SETUP FILE ==================="
         nodemcu_help
     fi
-    echo -e "====================== SOURCE DONE ========================"
+    console "====================== SOURCE DONE ========================"
     #nodemcu_help
 }
 
 # EXECUTE TOOLKIT:
+welcome_and_init
 micropy_toolkit

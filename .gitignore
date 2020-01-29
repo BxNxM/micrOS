@@ -1,1 +1,2 @@
 *.mpy
+./micropython_repo/micropython/*

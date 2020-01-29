@@ -7,13 +7,21 @@
 #         _| |_| |  | | |    | |__| | | \ \  | |  ____) |       #
 #        |_____|_|  |_|_|     \____/|_|  \_\ |_| |_____/        #
 #################################################################
-import json
+import Console
 try:
-    import LogHandler
-    print("[ MICROPYTHON MODULE LOAD ] - LOGHANDLER - from " + str(__name__))
+    import ujson as json
 except Exception as e:
-    print("[ MICROPYTHON IMPORT ERROR ] - " + str(e)  + " - from " + str(__name__))
-    LogHandler = None
+    Console.write("ujson module not found: " + str(e))
+    import json
+
+CONFIG_PATH="node_config.json"
+DEFAULT_CONFIGURATION_TEMPLATE = {"sta_essid": "your_wifi_name",
+                                  "sta_pwd": "your_wifi_passwd",
+                                  "node_name": "slim01",
+                                  "progressled": True,
+                                  "nw_mode": "Unknown",
+                                  "ap_passwd": "admin",
+                                  "shell_timeout": 100}
 
 #################################################################
 #          _____ _                _____ _____                   #
@@ -26,59 +34,109 @@ except Exception as e:
 class ConfigHandler(object):
     __instance = None
 
-    def __new__(cls, name="confighandler", cfg_path="node_config.json"):
+    def __new__(cls, name="confighandler", cfg_path=CONFIG_PATH, cfg_template=DEFAULT_CONFIGURATION_TEMPLATE):
         if cls.__instance is None:
             cls.__instance = object.__new__(cls)
             cls.__instance.name = name
             cls.cfg_path = cfg_path
+            cls.cfg_template = cfg_template
         return cls.__instance
 
     # EXTERNAL FUNCTIONS - GET VALUE
     def get(cls, key):
+        try:
+            return cls.read_cfg_file().get(key, None)
+        except Exception as e:
+            Console.write("Get config value error: {}".format(e))
+        return None
+
+    # EXTERNAL FUNCTION - PUT VALUE
+    def put(cls, key, value):
+        ret_status = False
         config = cls.read_cfg_file()
         try:
-            value = config[key]
+            value = cls.value_type_handler(key, value)
+            if value is not None:
+                config[key] = value
+                cls.write_cfg_file(config)
+                ret_status = True
         except:
-            value = None
-        return value
+            pass
+        return ret_status
 
     # EXTERNAL FUNCTION - GET ALL
     def get_all(cls):
         config = cls.read_cfg_file()
         return config
 
-    # EXTERNAL FUNCTION - PUT VALUE
-    def put(cls, key, value):
-        config = cls.read_cfg_file()
-        config[key] = value
-        cls.write_cfg_file(config)
+    def print_all(cls):
+        data_struct = dict(cls.read_cfg_file())
+        if isinstance(data_struct, dict):
+            for key, value in data_struct.items():
+                Console.write("  {}: {}".format(key, value))
+        else:
+            Console.write("data_struct not dict: " + str(data_struct))
 
     def write_cfg_file(cls, dictionary):
+        if not isinstance(dictionary, dict):
+            Console.write("ConfigHandler.write_cfg_file - config data struct should be a dict!")
+            return False
         try:
             with open(cls.cfg_path, 'w') as f:
-                json.dump(dictionary, f, sort_keys=True, indent=2)
+                json.dump(dictionary, f)
+            return True
         except Exception as e:
-            if LogHandler is not None:
-                LogHandler.logger.exception("ConfigHandler.write_cfg_file write json: " + str(e))
-            else:
-                print("ConfigHandler.write_cfg_file write json: " + str(e))
+                Console.write("ConfigHandler.write_cfg_file error {} (json): {}".format(cls.cfg_path, e))
+                return False
 
     def read_cfg_file(cls):
         try:
             with open(cls.cfg_path, 'r') as f:
                 data_dict = json.load(f)
-        except:
+        except Exception as e:
+            Console.write("ConfigHandler.read_cfg_file error {} (json): {}".format(cls.cfg_path, e))
             data_dict = {}
         return data_dict
 
-#################################################################################################################
-#  _____ _   _  _____ _______       _   _ _______ _____       _______ ______                                    #
-# |_   _| \ | |/ ____|__   __|/\   | \ | |__   __|_   _|   /\|__   __|  ____|                                   #
-#   | | |  \| | (___    | |  /  \  |  \| |  | |    | |    /  \  | |  | |__                                      #
-#   | | | . ` |\___ \   | | / /\ \ | . ` |  | |    | |   / /\ \ | |  |  __|                                     #
-#  _| |_| |\  |____) |  | |/ ____ \| |\  |  | |   _| |_ / ____ \| |  | |____                                    #
-# |_____|_| \_|_____/   |_/_/    \_\_| \_|  |_|  |_____/_/    \_\_|  |______| a singleton, return instance      #
-#################################################################################################################
+    def inject_default_conf(cls, data_struct=None):
+        if data_struct == None:
+            data_struct = cls.cfg_template
+        elif not isinstance(data_struct, dict):
+            Console.write("inject_default_conf input data type must be dict")
+            return
+        data_dict = cls.read_cfg_file()
+        data_struct.update(data_dict)
+        try:
+            if cls.write_cfg_file(data_struct):
+                Console.write("Inject default data struct successful")
+            else:
+                Console.write("Inject default data struct failed")
+        except Exception as e:
+            Console.write(e)
+
+    def value_type_handler(cls, key, value):
+        value_in_cfg = cls.get(key)
+        try:
+            if isinstance(value_in_cfg, bool):
+                if value in ['True', 'true']:
+                    value = True
+                elif value in ['False', 'false']:
+                    value = False
+                elif isinstance(value, bool):
+                    value = value
+                else:
+                    raise Exception()
+                return value
+            elif isinstance(value_in_cfg, str):
+                return str(value)
+            elif isinstance(value_in_cfg, int):
+                return int(value)
+            elif isinstance(value_in_cfg, float):
+                return float(value)
+        except Exception as e:
+            Console.write("Input value type error! {}".format(e))
+            return None
+
 #################################################################
 #         __  __  ____  _____  _    _ _      ______             #
 #        |  \/  |/ __ \|  __ \| |  | | |    |  ____|            #
@@ -87,8 +145,9 @@ class ConfigHandler(object):
 #        | |  | | |__| | |__| | |__| | |____| |____             #
 #        |_|  |_|\____/|_____/ \____/|______|______| IMPORT     #
 #################################################################
-if "ConfigHandler" == __name__:
+if "ConfigHandler" in __name__:
     cfg = ConfigHandler()
+    cfg.inject_default_conf(DEFAULT_CONFIGURATION_TEMPLATE)
 
 #################################################################
 #         _____  ______ __  __  ____                            #
@@ -98,12 +157,10 @@ if "ConfigHandler" == __name__:
 #        | |__| | |____| |  | | |__| |                          #
 #        |_____/|______|_|  |_|\____/ and TEST                  #
 #################################################################
-if __name__ == "__main__":
+def confighandler_demo():
     cfg = ConfigHandler()
+    cfg.inject_default_conf(DEFAULT_CONFIGURATION_TEMPLATE)
+    cfg.print_all()
 
-    cfg.put("test1", "Test write (1)")
-    cfg.put("test2", "Test Write (2)")
-    cfg.put("test1", "Test write (3)")
-    cfg.get("test1")
-
-    print(cfg.get_all())
+if __name__ == "__main__":
+    confighandler_demo()

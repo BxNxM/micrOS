@@ -44,11 +44,13 @@ CONFIG_PATH="node_config.json"
 DEFAULT_CONFIGURATION_TEMPLATE = {"sta_essid": "your_wifi_name",
                                   "sta_pwd": "your_wifi_passwd",
                                   "node_name": "slim01",
+                                  "ap_passwd": "admin",
                                   "progressled": True,
                                   "debug_print": True,
                                   "nw_mode": "Unknown",
-                                  "ap_passwd": "admin",
-                                  "shell_timeout": 100}
+                                  "hw_uid": "Unknown",
+                                  "shell_timeout": 100,
+                                  "socket_port": 9008}
 
 #################################################################
 #                      CONFIGHANDLER  CLASS                     #

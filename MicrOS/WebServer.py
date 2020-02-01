@@ -6,35 +6,30 @@ import os
 #                         IMPORTS                       #
 #########################################################
 try:
-    import ConfigHandler
+    from ConfigHandler import console_write, cfg
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
+    console_write = None
+    cfg = None
 
 try:
-    import network
-    ConfigHandler.console_write("[ MICROPYTHON MODULE LOAD ] -  network - from " + str(__name__))
-    sta_if = network.WLAN(network.STA_IF)
+    from network import WLAN, STA_IF
+    console_write("[ MICROPYTHON MODULE LOAD ] -  network - from " + str(__name__))
+    sta_if = WLAN(STA_IF)
     if sta_if.active():
         server_ip = sta_if.ifconfig()[0]
     else:
         raise Exception("!!! STA IS NOT ACTIVE !!! - from " + str(__name__))
 except Exception as e:
-    ConfigHandler.console_write("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
+    console_write("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
     server_ip = "ERROR"
+    sta_if = None
 
 try:
     from InterpreterShell import reset_shell_state as InterpreterShell_reset_shell_state
     from InterpreterShell import shell as InterpreterShell_shell
 except Exception as e:
-    ConfigHandler.console_write("InterpreterShell import error: {}".format(e))
-
-#########################################################
-#               CONFIGURATION PARAMTERS                 #
-#########################################################
-# CONFIGURATION
-HOST = ''               # Symbolic name meaning all available interfaces
-PORT = 9008             # Arbitrary non-privileged port
-UID = "sa4r4fd4t6hg"    #TODO: get from machine
+    console_write("InterpreterShell import error: {}".format(e))
 
 #########################################################
 #                    SOCKET SERVER CLASS                #
@@ -45,15 +40,15 @@ class SocketServer():
     '''
     prompt = ">>> "
 
-    def __init__(self, HOST, PORT, UID=None, USER_TIMEOUT=None):
+    def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
         self.pre_prompt = ""
         self.server_console_indent = 0
         self.server_console("[ socket server ] <<constructor>>")
         self.host = HOST
-        self.port = PORT
+        self.port = self.__set_port_from_config(PORT)
         # ---- Config ---
         self.__set_timeout_value(USER_TIMEOUT)
-        self.uid = UID
+        self.get_uid_macaddr_hex(UID)
         self.platform = sys.platform
         # ---         ----
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -63,19 +58,37 @@ class SocketServer():
             self.server_console("[ socket server ] telnet 127.0.0.1 " + str(PORT))
         self.bind()
 
+    def get_uid_macaddr_hex(self, UID=None):
+        if UID is not None:
+            self.uid = UID
+        elif sta_if is not None:
+            mac = sta_if.config('mac')
+            self.uid = ""
+            for ot in list(mac):
+                self.uid += hex(ot)
+        else:
+            self.uid = "Unknown"
+        cfg.put("hw_uid", self.uid)
+
+    def __set_port_from_config(self, PORT):
+        if PORT is None:
+            return int(cfg.get("socket_port"))
+        else:
+            return int(PORT)
+
     def __set_timeout_value(self, USER_TIMEOUT, default_timeout=60):
         if USER_TIMEOUT is None:
             try:
-                self.timeout_user = int(ConfigHandler.cfg.get("shell_timeout"))
+                self.timeout_user = int(cfg.get("shell_timeout"))
             except Exception as e:
                 self.timeout_user = default_timeout
-                ConfigHandler.console_write("Injected value (timeout <int>) error: {}".format(e))
+                console_write("Injected value (timeout <int>) error: {}".format(e))
         else:
             try:
                 self.timeout_user = int(USER_TIMEOUT)
             except Exception as e:
                 self.timeout_user = default_timeout
-                ConfigHandler.console_write("USER_TIMEOUT value error, must be <int>: {}".format(e))
+                console_write("USER_TIMEOUT value error, must be <int>: {}".format(e))
 
     def bind(self):
         retry = 3
@@ -105,6 +118,7 @@ class SocketServer():
         except Exception as e:
             if str(e) in "socket.timeout: timed out":
                 self.server_console("[ socket server ] socket recv - connection with user - timeout " + str(self.timeout_user) + " sec")
+                self.reply_message("Session timeout {} sec".format(self.timeout_user))
                 self.disconnect()
             else:
                 raise e
@@ -115,7 +129,13 @@ class SocketServer():
         reply_str = receive_msg
         self.server_console("[ socket server ] RAW INPUT |{}|".format(data_str))
         if "exit" == data_str:
+            # For low level exit handling
+            self.reply_message("Bye!")
             self.disconnect()
+        if "hello" == data_str:
+            # For low level device identification - hello msg
+            self.reply_message("hello:{}:{}".format(cfg.get('node_name'), self.uid))
+            data_str = ""
         return str(data_str)
 
     def reply_message(self, msg):
@@ -159,11 +179,11 @@ class SocketServer():
         return "{}{} ".format(self.pre_prompt, SocketServer.prompt).encode('utf-8')
 
     def server_console(self, msg):
-        ConfigHandler.console_write("  "*self.server_console_indent + msg)
+        console_write("  "*self.server_console_indent + msg)
         self.server_console_indent+=1
 
     def __del__(self):
-        ConfigHandler.console_write("[ socket server ] <<destructor>>")
+        console_write("[ socket server ] <<destructor>>")
         try:
             self.conn.close()
         except:
@@ -174,14 +194,14 @@ class SocketServer():
 #                       MODULE INIT                     #
 #########################################################
 def main():
-    server = SocketServer(HOST, PORT, UID)
+    server = SocketServer()
     server.run()
 
 try:
     if __name__ == "__main__":
         main()
     if "WebServer" in __name__:
-        server = SocketServer(HOST, PORT, UID)
+        server = SocketServer()
         #server.run()
 except KeyboardInterrupt:
         server.__del__()

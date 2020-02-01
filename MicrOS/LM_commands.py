@@ -4,10 +4,6 @@ def mem_free():
     from micropython import mem_info
     return "CPU[Hz]: {}\nGC MemFree[byte]: {}".format(freq(), mem_free())
 
-def listdir():
-    from os import listdir
-    return(listdir())
-
 def reboot():
     from machine import reset
     reset()

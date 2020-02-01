@@ -1,6 +1,3 @@
-
-def a():
-    return "a"
-
-def b(k):
-    return "b" + str(k)
+def gc_mem_free():
+    import gc
+    return gc.mem_free()

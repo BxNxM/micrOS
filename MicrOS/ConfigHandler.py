@@ -1,35 +1,57 @@
 # VERSION: 1.0
+
+# SET IT LATER FROM CONFIG
+PLED_STAT = False
+DEBUG_PRINT = True
+pLED = None
+
 #################################################################
-#         _____ __  __ _____   ____  _____ _______ _____        #
-#        |_   _|  \/  |  __ \ / __ \|  __ \__   __/ ____|       #
-#          | | | \  / | |__) | |  | | |__) | | | | (___         #
-#          | | | |\/| |  ___/| |  | |  _  /  | |  \___ \        #
-#         _| |_| |  | | |    | |__| | | \ \  | |  ____) |       #
-#        |_____|_|  |_|_|     \____/|_|  \_\ |_| |_____/        #
+#                     CONSOLE WRITE FUNCTIONS                   #
 #################################################################
-import Console
+def progress_led_toggle_adaptor(func):
+    def wrapper(*args, **kwargs):
+        global pLED, PLED_STAT
+        if pLED and PLED_STAT: pLED.pled.toggle()
+        output = func(*args, **kwargs)
+        if pLED and PLED_STAT: pLED.pled.toggle()
+        return output
+    return wrapper
+
+@progress_led_toggle_adaptor
+def console_write(msg):
+    global DEBUG_PRINT
+    if DEBUG_PRINT:
+        print(msg)
+
+#################################################################
+#                           IMPORTS                             #
+#################################################################
 try:
     import ujson as json
 except Exception as e:
-    Console.write("ujson module not found: " + str(e))
+    console_write("ujson module not found: " + str(e))
     import json
 
+try:
+    import ProgressLED as pLED
+except Exception as e:
+    pLED = False
+
+#################################################################
+#                       MODULE CONFIG
+#################################################################
 CONFIG_PATH="node_config.json"
 DEFAULT_CONFIGURATION_TEMPLATE = {"sta_essid": "your_wifi_name",
                                   "sta_pwd": "your_wifi_passwd",
                                   "node_name": "slim01",
                                   "progressled": True,
+                                  "debug_print": True,
                                   "nw_mode": "Unknown",
                                   "ap_passwd": "admin",
                                   "shell_timeout": 100}
 
 #################################################################
-#          _____ _                _____ _____                   #
-#         / ____| |        /\    / ____/ ____|                  #
-#        | |    | |       /  \  | (___| (___                    #
-#        | |    | |      / /\ \  \___ \\___ \                   #
-#        | |____| |____ / ____ \ ____) |___) |                  #
-#         \_____|______/_/    \_\_____/_____/                   #
+#                      CONFIGHANDLER  CLASS                     #
 #################################################################
 class ConfigHandler(object):
     __instance = None
@@ -47,7 +69,7 @@ class ConfigHandler(object):
         try:
             return cls.read_cfg_file().get(key, None)
         except Exception as e:
-            Console.write("Get config value error: {}".format(e))
+            console_write("Get config value error: {}".format(e))
         return None
 
     # EXTERNAL FUNCTION - PUT VALUE
@@ -73,20 +95,20 @@ class ConfigHandler(object):
         data_struct = dict(cls.read_cfg_file())
         if isinstance(data_struct, dict):
             for key, value in data_struct.items():
-                Console.write("  {}: {}".format(key, value))
+                console_write("  {}: {}".format(key, value))
         else:
-            Console.write("data_struct not dict: " + str(data_struct))
+            console_write("data_struct not dict: " + str(data_struct))
 
     def write_cfg_file(cls, dictionary):
         if not isinstance(dictionary, dict):
-            Console.write("ConfigHandler.write_cfg_file - config data struct should be a dict!")
+            console_write("ConfigHandler.write_cfg_file - config data struct should be a dict!")
             return False
         try:
             with open(cls.cfg_path, 'w') as f:
                 json.dump(dictionary, f)
             return True
         except Exception as e:
-                Console.write("ConfigHandler.write_cfg_file error {} (json): {}".format(cls.cfg_path, e))
+                console_write("ConfigHandler.write_cfg_file error {} (json): {}".format(cls.cfg_path, e))
                 return False
 
     def read_cfg_file(cls):
@@ -94,7 +116,7 @@ class ConfigHandler(object):
             with open(cls.cfg_path, 'r') as f:
                 data_dict = json.load(f)
         except Exception as e:
-            Console.write("ConfigHandler.read_cfg_file error {} (json): {}".format(cls.cfg_path, e))
+            console_write("ConfigHandler.read_cfg_file error {} (json): {}".format(cls.cfg_path, e))
             data_dict = {}
         return data_dict
 
@@ -102,17 +124,17 @@ class ConfigHandler(object):
         if data_struct == None:
             data_struct = cls.cfg_template
         elif not isinstance(data_struct, dict):
-            Console.write("inject_default_conf input data type must be dict")
+            console_write("inject_default_conf input data type must be dict")
             return
         data_dict = cls.read_cfg_file()
         data_struct.update(data_dict)
         try:
             if cls.write_cfg_file(data_struct):
-                Console.write("Inject default data struct successful")
+                console_write("[CONFIGHANDLER] Inject default data struct successful")
             else:
-                Console.write("Inject default data struct failed")
+                console_write("[CONFIGHANDLER] Inject default data struct failed")
         except Exception as e:
-            Console.write(e)
+            console_write(e)
 
     def value_type_handler(cls, key, value):
         value_in_cfg = cls.get(key)
@@ -134,20 +156,26 @@ class ConfigHandler(object):
             elif isinstance(value_in_cfg, float):
                 return float(value)
         except Exception as e:
-            Console.write("Input value type error! {}".format(e))
+            console_write("Input value type error! {}".format(e))
             return None
 
 #################################################################
-#         __  __  ____  _____  _    _ _      ______             #
-#        |  \/  |/ __ \|  __ \| |  | | |    |  ____|            #
-#        | \  / | |  | | |  | | |  | | |    | |__               #
-#        | |\/| | |  | | |  | | |  | | |    |  __|              #
-#        | |  | | |__| | |__| | |__| | |____| |____             #
-#        |_|  |_|\____/|_____/ \____/|______|______| IMPORT     #
+#                       MODULE AUTO INIT                        #
 #################################################################
-if "ConfigHandler" in __name__:
+def init_module():
+    global PLED_STAT, DEBUG_PRINT
     cfg = ConfigHandler()
     cfg.inject_default_conf(DEFAULT_CONFIGURATION_TEMPLATE)
+    try:
+        PLED_STAT = cfg.get("progressled")
+        DEBUG_PRINT = cfg.get("debug_print")
+    except Exception as e:
+        print(e)
+        DEBUG_PRINT = False
+    return cfg
+
+if "ConfigHandler" in __name__:
+    cfg = init_module()
 
 #################################################################
 #         _____  ______ __  __  ____                            #
@@ -158,8 +186,7 @@ if "ConfigHandler" in __name__:
 #        |_____/|______|_|  |_|\____/ and TEST                  #
 #################################################################
 def confighandler_demo():
-    cfg = ConfigHandler()
-    cfg.inject_default_conf(DEFAULT_CONFIGURATION_TEMPLATE)
+    cfg = init_module()
     cfg.print_all()
 
 if __name__ == "__main__":

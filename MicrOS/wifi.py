@@ -200,6 +200,8 @@ def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable
     else:
         ConfigHandler.cfg.put("nw_mode", "STA")
 
+def network_wifi_scan():
+    return [ i[0].decode("utf-8") for i in network.WLAN().scan() ]
 
 #########################################################
 #                                                       #

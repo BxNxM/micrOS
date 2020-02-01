@@ -25,12 +25,12 @@ def __shell(msg, WebServerObj):
     msg_list = msg.strip().split()
 
     # CONFIGURE MODE
-    if msg_list[0] == "configure":
+    if msg_list[0] == "configure" or msg_list[0] == "conf":
         if len(msg_list) == 1:
             CONFIGURE_MODE = True
             WebServerObj.pre_prompt = "[configure] "
         msg_list = []
-    elif msg_list[0] == "noconfigure":
+    elif msg_list[0] == "noconfigure" or msg_list[0] == "noconf":
         if len(msg_list) == 1:
             CONFIGURE_MODE = False
             WebServerObj.pre_prompt = ""
@@ -39,11 +39,11 @@ def __shell(msg, WebServerObj):
     # HELP MSG
     if "help" in msg_list:
         WebServerObj.reply_message("Configure mode:")
-        WebServerObj.reply_message("   configure    - Enter conf mode")
-        WebServerObj.reply_message("      Key       - Get value")
-        WebServerObj.reply_message("      Key:Value - Set value")
-        WebServerObj.reply_message("      dump      - Dump all data")
-        WebServerObj.reply_message("   noconfigure - Exit conf mod")
+        WebServerObj.reply_message("   configure|conf     - Enter conf mode")
+        WebServerObj.reply_message("         Key          - Get value")
+        WebServerObj.reply_message("         Key:Value    - Set value")
+        WebServerObj.reply_message("         dump         - Dump all data")
+        WebServerObj.reply_message("   noconfigure|noconf - Exit conf mod")
         WebServerObj.reply_message("Command mode:")
         show_LMs_functions(WebServerObj)
         msg_list = []
@@ -103,7 +103,7 @@ def execute_LM_function(argument_list, WebServerObj):
     '''
     if len(argument_list) >= 2:
         LM_name = argument_list[0]
-        LM_function = argument_list[1]
+        LM_function = "".join(argument_list[1:])
     try:
         WebServerObj.server_console("{}.{}".format(LM_name, LM_function))
         exec("import " + str(LM_name))

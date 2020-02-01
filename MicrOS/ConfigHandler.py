@@ -45,12 +45,13 @@ DEFAULT_CONFIGURATION_TEMPLATE = {"sta_essid": "your_wifi_name",
                                   "sta_pwd": "your_wifi_passwd",
                                   "node_name": "slim01",
                                   "ap_passwd": "admin",
-                                  "progressled": True,
+                                  "hbprogled": True,
                                   "debug_print": True,
                                   "nw_mode": "Unknown",
                                   "hw_uid": "Unknown",
-                                  "shell_timeout": 100,
-                                  "socket_port": 9008}
+                                  "socket_timeout": 100,
+                                  "socket_port": 9008,
+                                  "dev_ipaddr": "Unknown"}
 
 #################################################################
 #                      CONFIGHANDLER  CLASS                     #
@@ -169,7 +170,7 @@ def init_module():
     cfg = ConfigHandler()
     cfg.inject_default_conf(DEFAULT_CONFIGURATION_TEMPLATE)
     try:
-        PLED_STAT = cfg.get("progressled")
+        PLED_STAT = cfg.get("hbprogled")
         DEBUG_PRINT = cfg.get("debug_print")
     except Exception as e:
         print(e)

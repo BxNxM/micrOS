@@ -16,13 +16,8 @@ try:
     from network import WLAN, STA_IF
     console_write("[ MICROPYTHON MODULE LOAD ] -  network - from " + str(__name__))
     sta_if = WLAN(STA_IF)
-    if sta_if.active():
-        server_ip = sta_if.ifconfig()[0]
-    else:
-        raise Exception("!!! STA IS NOT ACTIVE !!! - from " + str(__name__))
 except Exception as e:
     console_write("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
-    server_ip = "ERROR"
     sta_if = None
 
 try:
@@ -49,14 +44,12 @@ class SocketServer():
         # ---- Config ---
         self.__set_timeout_value(USER_TIMEOUT)
         self.get_uid_macaddr_hex(UID)
-        self.platform = sys.platform
         # ---         ----
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if self.platform == "esp8266":
-            self.server_console("[ socket server ] telnet " + str(server_ip) + " " + str(PORT))
+        if "esp" in sys.platform:
+            self.server_console("[ socket server ] telnet " + str(cfg.get("dev_ipaddr")) + " " + str(self.port))
         else:
-            self.server_console("[ socket server ] telnet 127.0.0.1 " + str(PORT))
-        self.bind()
+            self.server_console("[ socket server ] telnet 127.0.0.1 " + str(self.port))
 
     def get_uid_macaddr_hex(self, UID=None):
         if UID is not None:
@@ -79,7 +72,7 @@ class SocketServer():
     def __set_timeout_value(self, USER_TIMEOUT, default_timeout=60):
         if USER_TIMEOUT is None:
             try:
-                self.timeout_user = int(cfg.get("shell_timeout"))
+                self.timeout_user = int(cfg.get("socket_timeout"))
             except Exception as e:
                 self.timeout_user = default_timeout
                 console_write("Injected value (timeout <int>) error: {}".format(e))
@@ -116,7 +109,7 @@ class SocketServer():
         try:
             data_byte = self.conn.recv(1024)
         except Exception as e:
-            if str(e) in "socket.timeout: timed out":
+            if "TIMEDOUT" in str(e) or "timoeout" in str(e):
                 self.server_console("[ socket server ] socket recv - connection with user - timeout " + str(self.timeout_user) + " sec")
                 self.reply_message("Session timeout {} sec".format(self.timeout_user))
                 self.disconnect()
@@ -165,6 +158,7 @@ class SocketServer():
         self.accept()
 
     def run(self, inloop = True):
+        self.bind()
         while inloop:
             msg = self.wait_for_message()
             reply_msg = InterpreterShell_shell(msg, WebServerObj=self)

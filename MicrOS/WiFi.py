@@ -94,6 +94,7 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
                     timeout -= 1
                     time.sleep(0.2)
         console_write("\t|\t| network config: " + str(sta_if.ifconfig()))
+        cfg.put("dev_ipaddr", str(sta_if.ifconfig()[0]))
         console_write("\t|\t| WIFI SETUP STA: " + str(sta_if.isconnected()))
     else:
         console_write("\t| already conneted (sta)")

@@ -38,6 +38,8 @@ def __shell(msg, WebServerObj):
 
     # HELP MSG
     if "help" in msg_list:
+        WebServerObj.reply_message("hello - default hello msg - identify device (WebServer)")
+        WebServerObj.reply_message("exit  - exit from shell socket prompt (WebServer)")
         WebServerObj.reply_message("Configure mode:")
         WebServerObj.reply_message("   configure|conf     - Enter conf mode")
         WebServerObj.reply_message("         Key          - Get value")

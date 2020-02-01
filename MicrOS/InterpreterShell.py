@@ -105,13 +105,14 @@ def execute_LM_function(argument_list, WebServerObj):
     '''
     if len(argument_list) >= 2:
         LM_name = argument_list[0]
-        LM_function = "".join(argument_list[1:])
+        LM_function_call = "".join(argument_list[1:])
+        LM_function = argument_list[1].split('(')[0]
     try:
-        WebServerObj.server_console("{}.{}".format(LM_name, LM_function))
-        exec("import " + str(LM_name))
-        WebServerObj.reply_message(str(eval("{}.{}".format(LM_name, LM_function))))
+        WebServerObj.server_console("from {} import {}".format(LM_name, LM_function))
+        exec("from {} import {}".format(LM_name, LM_function))
+        WebServerObj.reply_message(str(eval("{}".format(LM_function_call))))
     except Exception as e:
-        WebServerObj.reply_message(str(e))
+        WebServerObj.reply_message("execute_LM_function: " + str(e))
 
 def reset_shell_state():
     global CONFIGURE_MODE

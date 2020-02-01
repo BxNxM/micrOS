@@ -44,7 +44,14 @@ def show_debug_page():
         text("NW_MODE: {}".format(cfg.get("nw_mode")), 0, 0)
         text("IP: {}".format(cfg.get("dev_ipaddr")), 0, 10)
         text("FreeMem: {}".format(mem_free()), 0, 20)
+        text("PORT: {}".format(cfg.get("socket_port")), 0, 30)
+        text("NAME: {}".format(cfg.get("node_name")), 0, 40)
     except Exception as e:
         return str(e)
+
+def wakeup_oled_debug_page_execute():
+    from ConfigHandler import cfg
+    if cfg.get("debug_print"):
+        show_debug_page()
 
 

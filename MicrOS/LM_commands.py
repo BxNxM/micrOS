@@ -20,5 +20,11 @@ def wifi_scan():
     from Wifi import network_wifi_scan
     return(network_wifi_scan())
 
-def add2numbs(x, y):
-    return "{} + {} = {}".format(x, y, x+y)
+def addnumbs(*args):
+    cnt=0
+    msg=""
+    for k in args:
+        cnt+=k
+        msg+="{}+".format(k)
+    msg = msg[:-1]
+    return "{} = {}".format(msg, cnt)

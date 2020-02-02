@@ -47,8 +47,36 @@ function welcome_and_init() {
     export nodemcu_PATH='/dev/tty.SLAB_USBtoUART'
     export AMPY_PORT="$nodemcu_PATH"                                  # set for ampy env
     export MICROS_PATH="${SETUP_DIR}/MicrOS"
+    export MICROS_MPY_PATH="${SETUP_DIR}/mpy-MicrOS"
 
     _get_micropython_fw_bin
+}
+
+function precompile() {
+    local exception_file_list=("boot.py" "main.py" "LM_")
+    local files_list=($(find "$MICROS_PATH" -type f -iname "*.py"))
+    for py in ${files_list[@]}
+    do
+        local isskip=0
+        for skipfile in ${exception_file_list[@]}
+        do
+            if [[ "$py" == *"$skipfile"* ]]
+            then
+                isskip=1
+            fi
+        done
+
+        if [ "$isskip" -eq 1 ]
+        then
+            console "[i] Skip compile: $py"
+            console "Copy $py -> $MICROS_MPY_PATH"
+            cp "$py" "$MICROS_MPY_PATH"
+        else
+            local mpy_name="$(echo "$(basename $py)" | cut -d'.' -f 1).mpy"
+            console "Compile: \$MPYCOMPILE $py -o $MICROS_MPY_PATH/$mpy_name -v"
+            "$MPYCOMPILE" "$py" -o "$MICROS_MPY_PATH/$mpy_name" -v
+        fi
+    done
 }
 
 function _get_micropython_fw_bin() {
@@ -115,37 +143,29 @@ function _ampy_get_all_() {
 
 function _ampy_put_all() {
 
-    console "NODEMCU PUT ALL FILES [mpy | py | json]"
-    local dir_path_actual="${MICROS_PATH}"
+    console "NODEMCU PUT ALL FILES"
+    console "Select MicrOS source:\n\t[1] ${MICROS_PATH}\n\t[2] ${MICROS_MPY_PATH}"
+    read -p "===> Select source: 1 | 2 ?" answer
+    if [ "$answer" -eq 1 ]
+    then
+        local dir_path_actual="${MICROS_PATH}"
+        console "Done: ${MICROS_PATH}"
+    else
+        local dir_path_actual="${MICROS_MPY_PATH}"
+        console "Done: ${MICROS_MPY_PATH}"
+    fi
 
-    local folder_list=($(find "$dir_path_actual" -type d))
     local files_list=($(find "$dir_path_actual" -type f))
-
-    console "Create folder structure"
-    for((index=0; index<${#folder_list[@]}; index++))
-    do
-        folder_list[$index]=$(echo "${folder_list[$index]}" | sed 's|'"${MICROS_PATH}"'||g')
-        if [ "${folder_list[$index]}" == ""  ]
-        then
-            continue
-        fi
-        console "\tmkdir ${folder_list[$index]} -> ${nodemcu_PATH}"
-        local output=$(ampy mkdir "${folder_list[$index]}" 2>&1)
-        if [ "$?" -ne 0 ] && [[ "$output" == *"Directory already exists"* ]]
-        then
-            console "FAIL to create ${folder_list[$index]} -> ${nodemcu_PATH}"
-            console "$output"
-        fi
-    done
 
     for((index=0; index<${#files_list[@]}; index++))
     do
-        local path_on_node=$(echo "${files_list[$index]}" | sed 's|'"${MICROS_PATH}"'||g')
-        console "\tCOPY TO NODEMCU: ampy put ${files_list[$index]} -> ${nodemcu_PATH}$path_on_node"
+        local path_on_node=$(basename "${files_list[$index]}")
+        console "\tCOPY TO NODEMCU: ampy put ${files_list[$index]} -> ${nodemcu_PATH}/$path_on_node"
         ampy put "${files_list[$index]}" "$path_on_node"
         if [ "$?" -ne 0 ]
         then
-            console "FAIL to copy ${folder_list[$index]} -> ${nodemcu_PATH}"
+            console "-- ERROR --"
+            break
         fi
     done
 }
@@ -178,6 +198,7 @@ function _set_default_aliases() {
     alias ll='ls -lh'
     alias llt='ls -lth'
     source ~/.bash_aliases
+    source "${SETUP_DIR}/micropython_repo/setup"
 }
 
 #=========================================================================================================================#

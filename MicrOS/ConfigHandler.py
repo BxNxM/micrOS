@@ -11,9 +11,9 @@ pLED = None
 def progress_led_toggle_adaptor(func):
     def wrapper(*args, **kwargs):
         global pLED, PLED_STAT
-        if pLED and PLED_STAT: pLED.pled.toggle()
+        if pLED and PLED_STAT: pLED.toggle()
         output = func(*args, **kwargs)
-        if pLED and PLED_STAT: pLED.pled.toggle()
+        if pLED and PLED_STAT: pLED.toggle()
         return output
     return wrapper
 
@@ -27,10 +27,10 @@ def console_write(msg):
 #                           IMPORTS                             #
 #################################################################
 try:
-    import ujson as json
+    from ujson import load, dump
 except Exception as e:
     console_write("ujson module not found: " + str(e))
-    import json
+    from json import load, dump
 
 try:
     import ProgressLED as pLED
@@ -41,17 +41,18 @@ except Exception as e:
 #                       MODULE CONFIG
 #################################################################
 CONFIG_PATH="node_config.json"
-DEFAULT_CONFIGURATION_TEMPLATE = {"sta_essid": "your_wifi_name",
-                                  "sta_pwd": "your_wifi_passwd",
-                                  "node_name": "slim01",
-                                  "ap_passwd": "admin",
-                                  "hbprogled": True,
-                                  "debug_print": True,
-                                  "nw_mode": "Unknown",
-                                  "hw_uid": "Unknown",
-                                  "socket_timeout": 100,
-                                  "socket_port": 9008,
-                                  "dev_ipaddr": "Unknown"}
+DEFAULT_CONFIGURATION_TEMPLATE = {"staessid": "your_wifi_name",
+                                  "stapwd": "your_wifi_passwd",
+                                  "devfid": "slim01",
+                                  "appwd": "admin",
+                                  "pled": True,
+                                  "dbg": True,
+                                  "nwmd": "n/a",
+                                  "hwuid": "n/a",
+                                  "soctout": 100,
+                                  "socport": 9008,
+                                  "devip": "n/a",
+                                  "timirq": True}
 
 #################################################################
 #                      CONFIGHANDLER  CLASS                     #
@@ -108,7 +109,7 @@ class ConfigHandler(object):
             return False
         try:
             with open(cls.cfg_path, 'w') as f:
-                json.dump(dictionary, f)
+                dump(dictionary, f)
             return True
         except Exception as e:
                 console_write("ConfigHandler.write_cfg_file error {} (json): {}".format(cls.cfg_path, e))
@@ -117,7 +118,7 @@ class ConfigHandler(object):
     def read_cfg_file(cls):
         try:
             with open(cls.cfg_path, 'r') as f:
-                data_dict = json.load(f)
+                data_dict = load(f)
         except Exception as e:
             console_write("ConfigHandler.read_cfg_file error {} (json): {}".format(cls.cfg_path, e))
             data_dict = {}
@@ -170,8 +171,8 @@ def init_module():
     cfg = ConfigHandler()
     cfg.inject_default_conf(DEFAULT_CONFIGURATION_TEMPLATE)
     try:
-        PLED_STAT = cfg.get("hbprogled")
-        DEBUG_PRINT = cfg.get("debug_print")
+        PLED_STAT = cfg.get("pled")
+        DEBUG_PRINT = cfg.get("dbg")
     except Exception as e:
         print(e)
         DEBUG_PRINT = False
@@ -191,6 +192,7 @@ if "ConfigHandler" in __name__:
 def confighandler_demo():
     cfg = init_module()
     cfg.print_all()
+    console_write("Write console msg ...")
 
 if __name__ == "__main__":
     confighandler_demo()

@@ -1,5 +1,5 @@
-import network
-import time
+from network import AP_IF, STA_IF, WLAN
+from time import sleep
 
 try:
     from ConfigHandler import console_write, cfg
@@ -17,10 +17,10 @@ def wifi_info():
     wifi_info_dict = {}
 
     # the access point
-    ap_if = network.WLAN(network.AP_IF)
+    ap_if = WLAN(AP_IF)
 
     # station mode - connect to wifi
-    sta_if = network.WLAN(network.STA_IF)
+    sta_if = WLAN(STA_IF)
 
     # turn access point on:
     #ap_if.active(True)
@@ -68,11 +68,11 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
     console_write("[SET_WIFI METHOD] SET WIFI NETWORK:\nparameters: essid,\t\t\tpwd,\t\ttimeout,\tap_auto_disable,\tessid_force_connect\n            " + \
                              str(essid) +",\t"+  str(pwd) +",\t"+ str(timeout) +",\t\t"+ str(ap_auto_disable) +",\t\t\t"+ str(essid_force_connect))
     if ap_auto_disable:
-        ap_if = network.WLAN(network.AP_IF)
+        ap_if = WLAN(AP_IF)
         if ap_if.active():
             ap_if.active(False)
 
-    sta_if = network.WLAN(network.STA_IF)
+    sta_if = WLAN(STA_IF)
     sta_if.active(True)
     is_essid_exists = False
     # disconnect before connect to selected essid *** normally micropython framework connected to last known wlan network automaticly
@@ -92,12 +92,13 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
                 while not sta_if.isconnected() and timeout > 0:
                     console_write("Waiting for connection... " + str(timeout) + "/50" )
                     timeout -= 1
-                    time.sleep(0.2)
+                    sleep(0.4)
         console_write("\t|\t| network config: " + str(sta_if.ifconfig()))
-        cfg.put("dev_ipaddr", str(sta_if.ifconfig()[0]))
+        cfg.put("devip", str(sta_if.ifconfig()[0]))
         console_write("\t|\t| WIFI SETUP STA: " + str(sta_if.isconnected()))
     else:
         console_write("\t| already conneted (sta)")
+        cfg.put("devip", str(sta_if.ifconfig()[0]))
         # we are connected already
         for wifi_spot in sta_if.scan():
             if essid in str(wifi_spot):
@@ -115,7 +116,7 @@ def wifi_rssi(essid):
     console_write("[WIFI RSSI METHOD] GET RSSI AND CHANNEL FOR GIVEN ESSID")
     rssi = None
     channel = None
-    sta_if = network.WLAN(network.STA_IF)
+    sta_if = WLAN(STA_IF)
     sta_if.active(True)
     # if sta not connected to the given essid
     if not sta_if.isconnected():
@@ -156,11 +157,11 @@ def set_access_point(_essid, _pwd, _channel=11, sta_auto_disable=True):
     console_write("[SET ACCESS POUNT METHOD] SET ACCESS POINT MODE:\n_essid,\t\t_pwd,\t_channel,\tsta_auto_disable\n" +\
                              str(_essid) +",\t"+ str(_pwd) +",\t"+  str(_channel) +",\t\t"+ str(sta_auto_disable))
     if sta_auto_disable:
-        sta_if = network.WLAN(network.STA_IF)
+        sta_if = WLAN(STA_IF)
         if sta_if.isconnected():
             sta_if.active(False)
 
-    ap_if = network.WLAN(network.AP_IF)
+    ap_if = WLAN(AP_IF)
     ap_if.active(True)
     is_success = False
     # Set WiFi access point name (formally known as ESSID) and WiFi channel
@@ -180,29 +181,29 @@ def set_access_point(_essid, _pwd, _channel=11, sta_auto_disable=True):
 def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable=True, essid_force_connect=False, _essid=None, _pwd=None, _channel=11, sta_auto_disable=True):
     # GET DATA - STA
     if essid is None:
-        essid = cfg.get("sta_essid")
+        essid = cfg.get("staessid")
     if pwd is None:
-        pwd = cfg.get("sta_pwd")
+        pwd = cfg.get("stapwd")
     # GET DATA - AP
     if _essid is None:
-        _essid = cfg.get("node_name")
+        _essid = cfg.get("devfid")
     if _pwd is None:
-        _pwd = cfg.get("ap_passwd")
+        _pwd = cfg.get("appwd")
 
     # default connection type is STA
     isconnected, is_essid_exists = set_wifi(essid, pwd, timeout=timeout, ap_auto_disable=ap_auto_disable, essid_force_connect=essid_force_connect)
     console_write("STA======>" + str(isconnected) + "  - " + str(is_essid_exists))
     # if sta is not avaible, connect make AP for configuration
     if not (isconnected and is_essid_exists):
-        console_write("STA MODE IS DISABLE - ESSID or PWD not valid")
+        console_write("STA MODE IS DISABLE - ESSID:{} or PWD:{} not valid".format(essid, pwd))
         ap_is_success, ap_essid, ap_channel, ap_config_mac = set_access_point(_essid=_essid, _pwd=_pwd, _channel=_channel, sta_auto_disable=sta_auto_disable)
         console_write("AP======>" + str(ap_is_success) + "  - " + str(ap_essid) + " - " + str(ap_channel) + " - " + str(ap_config_mac))
-        cfg.put("nw_mode", "AP")
+        cfg.put("nwmd", "AP")
     else:
-        cfg.put("nw_mode", "STA")
+        cfg.put("nwmd", "STA")
 
 def network_wifi_scan():
-    return [ i[0].decode("utf-8") for i in network.WLAN().scan() ]
+    return [ i[0].decode("utf-8") for i in WLAN().scan() ]
 
 #########################################################
 #                                                       #

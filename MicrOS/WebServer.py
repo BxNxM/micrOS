@@ -47,7 +47,7 @@ class SocketServer():
         # ---         ----
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if "esp" in sys.platform:
-            self.server_console("[ socket server ] telnet " + str(cfg.get("dev_ipaddr")) + " " + str(self.port))
+            self.server_console("[ socket server ] telnet " + str(cfg.get("devip")) + " " + str(self.port))
         else:
             self.server_console("[ socket server ] telnet 127.0.0.1 " + str(self.port))
 
@@ -60,19 +60,19 @@ class SocketServer():
             for ot in list(mac):
                 self.uid += hex(ot)
         else:
-            self.uid = "Unknown"
-        cfg.put("hw_uid", self.uid)
+            self.uid = "n/a"
+        cfg.put("hwuid", self.uid)
 
     def __set_port_from_config(self, PORT):
         if PORT is None:
-            return int(cfg.get("socket_port"))
+            return int(cfg.get("socport"))
         else:
             return int(PORT)
 
     def __set_timeout_value(self, USER_TIMEOUT, default_timeout=60):
         if USER_TIMEOUT is None:
             try:
-                self.timeout_user = int(cfg.get("socket_timeout"))
+                self.timeout_user = int(cfg.get("soctout"))
             except Exception as e:
                 self.timeout_user = default_timeout
                 console_write("Injected value (timeout <int>) error: {}".format(e))
@@ -127,7 +127,7 @@ class SocketServer():
             self.disconnect()
         if "hello" == data_str:
             # For low level device identification - hello msg
-            self.reply_message("hello:{}:{}".format(cfg.get('node_name'), self.uid))
+            self.reply_message("hello:{}:{}".format(cfg.get('devfid'), self.uid))
             data_str = ""
         return str(data_str)
 

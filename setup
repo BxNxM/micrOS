@@ -115,7 +115,7 @@ function _ampy_get_all_() {
 
 function _ampy_put_all() {
 
-    console "NODEMCU PUT ALL FILES [py | json]"
+    console "NODEMCU PUT ALL FILES [mpy | py | json]"
     local dir_path_actual="${MICROS_PATH}"
 
     local folder_list=($(find "$dir_path_actual" -type d))
@@ -175,6 +175,9 @@ function _set_default_aliases() {
     alias nodemcu_help='alias | grep [n]ode_* && alias | grep [l]sdiv && alias | grep [g]et_DOC && alias | grep [g]l && alias | grep [a]mpy_get_all && alias | grep [a]mpy_put_all'
     alias ss='source ${SETUP_PATH}'
     alias gitl='git log --pretty=format:"%h %s" --graph'
+    alias ll='ls -lh'
+    alias llt='ls -lth'
+    source ~/.bash_aliases
 }
 
 #=========================================================================================================================#
@@ -201,7 +204,6 @@ function micropy_toolkit() {
         nodemcu_help
     fi
     console "====================== SOURCE DONE ========================"
-    #nodemcu_help
 }
 
 # EXECUTE TOOLKIT:

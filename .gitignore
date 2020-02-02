@@ -1,2 +1,5 @@
-*.mpy
+MicrOS/*.mpy
 ./micropython_repo/micropython/*
+**.pyc
+MicrOS/node_config.json
+

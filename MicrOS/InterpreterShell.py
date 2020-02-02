@@ -1,8 +1,12 @@
-import os
+from os import listdir
 try:
-    import ConfigHandler
+    from ConfigHandler import cfg
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
+try:
+    from gc import collect, mem_free
+except:
+    pass
 
 #########################################################
 #                    MODULE VARIABLES                   #
@@ -66,15 +70,15 @@ def configure(attributes, WebServerObj):
     # Get value
     if len(attributes) == 1:
         if attributes[0] == "dump":
-            WebServerObj.reply_message(ConfigHandler.cfg.get_all())
+            WebServerObj.reply_message(cfg.get_all())
         else:
             key = attributes[0]
-            WebServerObj.reply_message(ConfigHandler.cfg.get(key))
+            WebServerObj.reply_message(cfg.get(key))
     # Set value
     elif len(attributes) == 2:
         key = attributes[0]
         value = attributes[1]
-        WebServerObj.reply_message(ConfigHandler.cfg.put(key, value))
+        WebServerObj.reply_message(cfg.put(key, value))
     else:
         WebServerObj.reply_message("Too many arguments - [1] key [2] value")
 
@@ -85,7 +89,7 @@ def command(attributes_list, WebServerObj):
     execute_LM_function(attributes_list, WebServerObj)
 
 def load_LMs():
-    LM_MODULE_LIST = [i for i in os.listdir() if i.startswith('LM_')]
+    LM_MODULE_LIST = [i for i in listdir() if i.startswith('LM_')]
     LM_MODULE_LIST = [i.replace('.py', '') for i in LM_MODULE_LIST if i.endswith('.py')]
     return LM_MODULE_LIST
 
@@ -113,6 +117,9 @@ def execute_LM_function(argument_list, WebServerObj):
         WebServerObj.reply_message(str(eval("{}".format(LM_function_call))))
     except Exception as e:
         WebServerObj.reply_message("execute_LM_function: " + str(e))
+        if "memory allocation failed" in str(e):
+            collect()
+            WebServerObj.reply_message("execute_LM_function -gc-ollect-memfree: " + str(mem_free()))
 
 def reset_shell_state():
     global CONFIGURE_MODE

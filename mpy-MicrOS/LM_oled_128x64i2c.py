@@ -1,5 +1,4 @@
 OLED = None
-DEBUG_CNT=0
 
 def init():
     global OLED
@@ -39,18 +38,17 @@ def draw_rect(sx, sy, ex, ey, state=1, show=True):
     return True
 
 def show_debug_page():
-    global DEBUG_CNT
     try:
         from ConfigHandler import cfg
         from gc import mem_free
+        from time import localtime
         clean()
-        text("NW_MODE: {}".format(cfg.get("nwmd")), 0, 0, show=False)
-        text("IP: {}".format(cfg.get("devip")), 0, 10, show=False)
-        text("FreeMem: {}".format(mem_free()), 0, 20, show=False)
-        text("PORT: {}".format(cfg.get("socport")), 0, 30, show=False)
-        text("NAME: {}".format(cfg.get("devfid")), 0, 40, show=False)
-        DEBUG_CNT+=1
-        text("REFRESH: {}".format(DEBUG_CNT), 0, 50, show=True)
+        text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 0, show=False)
+        text("NW_MODE: {}".format(cfg.get("nwmd")), 0, 10, show=False)
+        text("IP: {}".format(cfg.get("devip")), 0, 20, show=False)
+        text("FreeMem: {}".format(mem_free()), 0, 30, show=False)
+        text("PORT: {}".format(cfg.get("socport")), 0, 40, show=False)
+        text("NAME: {}".format(cfg.get("devfid")), 0, 50, show=True)
     except Exception as e:
         return str(e)
 

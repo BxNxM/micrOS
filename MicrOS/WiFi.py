@@ -8,6 +8,20 @@ except Exception as e:
     console_write = None
     cfg = None
 
+def setNTP():
+    from ntptime import settime
+    from time import sleep
+    from ConfigHandler import console_write
+    for _ in range(4):
+        try:
+            settime()
+            console_write("NTP setup DONE")
+            return True
+        except Exception as e:
+            console_write("NTP setup errer.:{}".format(e))
+        sleep(0.5)
+    return False
+
 #########################################################
 #                                                       #
 #               SIMPLE WIFI INFO GETTER                 #
@@ -201,6 +215,7 @@ def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable
         cfg.put("nwmd", "AP")
     else:
         cfg.put("nwmd", "STA")
+        setNTP()
 
 def network_wifi_scan():
     return [ i[0].decode("utf-8") for i in WLAN().scan() ]

@@ -27,3 +27,7 @@ def addnumbs(*args):
         msg+="{}+".format(k)
     msg = msg[:-1]
     return "{} = {}".format(msg, cnt)
+
+def time():
+    from time import localtime
+    return localtime()

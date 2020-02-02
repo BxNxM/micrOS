@@ -2,4 +2,4 @@ MicrOS/*.mpy
 ./micropython_repo/micropython/*
 **.pyc
 MicrOS/node_config.json
-
+mpy-MicrOS/node_config.json

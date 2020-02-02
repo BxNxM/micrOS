@@ -111,6 +111,8 @@ def execute_LM_function(argument_list, WebServerObj):
         LM_name = argument_list[0]
         LM_function_call = "".join(argument_list[1:])
         LM_function = argument_list[1].split('(')[0]
+        if "(" not in LM_function_call and ")" not in LM_function_call:
+            LM_function_call = "{}()".format(LM_function)
     try:
         WebServerObj.server_console("from {} import {}".format(LM_name, LM_function))
         exec("from {} import {}".format(LM_name, LM_function))

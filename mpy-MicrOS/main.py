@@ -33,5 +33,9 @@ oled_debug_msg()
 # Enable interrupt with callback function
 interrupt_handler()
 
-# Run Web/Socket server
-server.run()
+while True:
+    try:
+        # Run Web/Socket server
+        server.run()
+    except Exception as e:
+        print("Socket Server error: " +str(e))

@@ -20,7 +20,7 @@ def oled_debug_msg(timer=None):
 def interrupt_handler():
     try:
         from InterruptHandler import enableInterrupt
-        enableInterrupt(cbf=oled_debug_msg)
+        enableInterrupt(cbf=oled_debug_msg, period_ms=6000)
     except:
         print("DEBUG: InterruptHandler.enableInterrupt error")
 

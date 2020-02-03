@@ -45,11 +45,14 @@ class SocketServer():
         self.__set_timeout_value(USER_TIMEOUT)
         self.get_uid_macaddr_hex(UID)
         # ---         ----
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.init_socket()
         if "esp" in sys.platform:
             self.server_console("[ socket server ] telnet " + str(cfg.get("devip")) + " " + str(self.port))
         else:
             self.server_console("[ socket server ] telnet 127.0.0.1 " + str(self.port))
+
+    def init_socket(self):
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def get_uid_macaddr_hex(self, UID=None):
         if UID is not None:
@@ -160,10 +163,16 @@ class SocketServer():
     def run(self, inloop = True):
         self.bind()
         while inloop:
-            msg = self.wait_for_message()
-            reply_msg = InterpreterShell_shell(msg, WebServerObj=self)
-            if reply_msg is not None:
-                self.reply_message(reply_msg)
+            try:
+                msg = self.wait_for_message()
+                reply_msg = InterpreterShell_shell(msg, WebServerObj=self)
+                if reply_msg is not None:
+                    self.reply_message(reply_msg)
+            except Exception as e:
+                console_write("SocketServer error: " + str(e))
+                self.deinit_socket()
+                self.init_socket()
+                self.bind()
         if not inloop:
             msg = self.wait_for_message()
             reply_msg = InterpreterShell_shell(msg, WebServerObj=self)
@@ -176,13 +185,16 @@ class SocketServer():
         console_write("  "*self.server_console_indent + msg)
         self.server_console_indent+=1
 
-    def __del__(self):
-        console_write("[ socket server ] <<destructor>>")
+    def deinit_socket(self):
         try:
             self.conn.close()
         except:
             pass
-        #self.s.close()
+        self.s.close()
+
+    def __del__(self):
+        console_write("[ socket server ] <<destructor>>")
+        self.deinit_socket()
 
 #########################################################
 #                       MODULE INIT                     #

@@ -7,17 +7,37 @@ User function injection over LM_<userapp>.py
 - [ **DONE** ] Configuration management - json based
 	- split / subconfig handling ? - load optimization
 - [ **DONE** ] Network autoconfiguration - STA - AP fallback
-	- AP mode add WPA encription	
+	- [ **DONE** ] AP mode add WPA encription
 - [ **DONE** ] PM modul import optimization
 - [ **DONE** ] Timer interrupts - async program execution - display refresh / heartbeat led / etc.? 
 	- https://docs.micropython.org/en/latest/library/machine.Timer.html
 - Button (GPIO) interrupt - event handling
 - [ **DONE** ] Precompile py -> mpy modules - mpy-cross compiler
-	- precompile flow automatization
+	- [ **DONE** ] precompile flow automatization
 
 > Note:
 To remove ^M after get source files from nodemcu in vim:
 :%s/ <press^V^M> //g
+
+## Quick guide
+
+#### Source devenv
+
+```
+source setup
+```
+
+#### Deploy micropython
+
+```
+nodemcu_erase; nodemcu deploy
+```
+
+#### Put resorces to nodemcu
+
+```
+nodemcu_put_all
+```
 
 ## Socket terminal example
 
@@ -73,7 +93,7 @@ Command mode:
 ```                          
 >>>  conf
 [configure] >>>  dump
-{'stapwd': 'BNM3,1415', 'devfid': 'slim01', 'appwd': 'admin', 'timirq': True, 'soctout': 100, 'pled': True, 'hwuid': '0x600x10x940x1f0x7e0xfa', 'socport': 9008, 'dbg': True, 'nwmd': 'STA', 'devip': '10.0.1.77', 'staessid': 'elektroncsakpozitivan'}
+{'stapwd': '<your_wifi_password>', 'devfid': 'slim01', 'appwd': 'admin', 'timirq': True, 'soctout': 100, 'pled': True, 'hwuid': '0x600x10x940x1f0x7e0xfa', 'socport': 9008, 'dbg': True, 'nwmd': 'STA', 'devip': '10.0.1.77', 'staessid': 'your_wifi_name'}
 [configure] >>>  devfid
 slim01
 [configure] >>>  noconf

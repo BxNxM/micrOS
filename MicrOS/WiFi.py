@@ -166,10 +166,10 @@ def wifi_rssi(essid):
 #               SET WIFI ACCESS POINT MODE              #
 #                                                       #
 #########################################################
-def set_access_point(_essid, _pwd, _channel=11, sta_auto_disable=True):
-    """ SET ACCESS POINT WITH CUSTOM ESSID, CHANNEL, FORCE MODE LIKE SET WIFI METHOD...."""
-    console_write("[SET ACCESS POUNT METHOD] SET ACCESS POINT MODE:\n_essid,\t\t_pwd,\t_channel,\tsta_auto_disable\n" +\
-                             str(_essid) +",\t"+ str(_pwd) +",\t"+  str(_channel) +",\t\t"+ str(sta_auto_disable))
+def set_access_point(_essid, _pwd, _authmode=3, sta_auto_disable=True):
+    """ SET ACCESS POINT WITH CUSTOM ESSID, AUTHMODE, FORCE MODE LIKE SET WIFI METHOD...."""
+    console_write("[SET ACCESS POUNT METHOD] SET ACCESS POINT MODE:\n_essid,\t\t_pwd,\t_authmode,\tsta_auto_disable\n" +\
+                             str(_essid) +",\t\t"+ str(_pwd) +",\t"+  str(_authmode) +",\t\t"+ str(sta_auto_disable))
     if sta_auto_disable:
         sta_if = WLAN(STA_IF)
         if sta_if.isconnected():
@@ -178,21 +178,22 @@ def set_access_point(_essid, _pwd, _channel=11, sta_auto_disable=True):
     ap_if = WLAN(AP_IF)
     ap_if.active(True)
     is_success = False
-    # Set WiFi access point name (formally known as ESSID) and WiFi channel
+    # Set WiFi access point name (formally known as ESSID) and WiFi authmode (2): WPA2
     try:
-        ap_if.config(essid=_essid, channel=_channel)
+        ap_if.config(essid=_essid, password=_pwd, authmode=_authmode)
     except Exception as e:
         console_write(">>>>>>>>>>>>>>" + str(e))
-    if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('channel') == _channel:
+    if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
         is_success = True
-    return is_success, ap_if.config('essid'), ap_if.config('channel'), ap_if.config('mac')
+        cfg.put("devip", ap_if.ifconfig()[0])
+    return is_success, ap_if.config('essid'), ap_if.config('authmode'), ap_if.config('mac')
 
 #########################################################
 #                                                       #
 #          AUTOMATIC NETWORK CONFIGURATION              #
 #IF STA AVAIBLE, IF NOT AP MODE                         #
 #########################################################
-def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable=True, essid_force_connect=False, _essid=None, _pwd=None, _channel=11, sta_auto_disable=True):
+def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable=True, essid_force_connect=False, _essid=None, _pwd=None, _authmode=3, sta_auto_disable=True):
     # GET DATA - STA
     if essid is None:
         essid = cfg.get("staessid")
@@ -210,8 +211,8 @@ def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable
     # if sta is not avaible, connect make AP for configuration
     if not (isconnected and is_essid_exists):
         console_write("STA MODE IS DISABLE - ESSID:{} or PWD:{} not valid".format(essid, pwd))
-        ap_is_success, ap_essid, ap_channel, ap_config_mac = set_access_point(_essid=_essid, _pwd=_pwd, _channel=_channel, sta_auto_disable=sta_auto_disable)
-        console_write("AP======>" + str(ap_is_success) + "  - " + str(ap_essid) + " - " + str(ap_channel) + " - " + str(ap_config_mac))
+        ap_is_success, ap_essid, ap_authmode, ap_config_mac = set_access_point(_essid=_essid, _pwd=_pwd, _authmode=_authmode, sta_auto_disable=sta_auto_disable)
+        console_write("AP======>" + str(ap_is_success) + "  - " + str(ap_essid) + " - " + str(ap_authmode) + " - " + str(ap_config_mac))
         cfg.put("nwmd", "AP")
     else:
         cfg.put("nwmd", "STA")

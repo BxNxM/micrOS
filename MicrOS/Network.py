@@ -1,5 +1,5 @@
 from network import AP_IF, STA_IF, WLAN
-from time import sleep
+from time import sleep, localtime, time
 
 try:
     from ConfigHandler import console_write, cfg
@@ -8,69 +8,30 @@ except Exception as e:
     console_write = None
     cfg = None
 
-def setNTP():
+def setNTP_RTC():
     from ntptime import settime
-    from time import sleep
-    from ConfigHandler import console_write
+    from machine import RTC
+
     for _ in range(4):
-        try:
-            settime()
-            console_write("NTP setup DONE")
-            return True
-        except Exception as e:
-            console_write("NTP setup errer.:{}".format(e))
+        if WLAN(STA_IF).isconnected():
+            break
         sleep(0.5)
+
+    if WLAN(STA_IF).isconnected():
+        for _ in range(4):
+            try:
+                settime()
+                rtc = RTC()
+                (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfg.get('gmttime'))*3600)
+                rtc.datetime((year, month, mday, 0, hour, minute, second, 0))
+                console_write("NTP setup DONE: {}".format(localtime()))
+                return True
+            except Exception as e:
+                console_write("NTP setup errer.:{}".format(e))
+            sleep(0.5)
+    else:
+        console_write("NTP setup errer: STA not connected!")
     return False
-
-#########################################################
-#                                                       #
-#               SIMPLE WIFI INFO GETTER                 #
-#                                                       #
-#########################################################
-def wifi_info():
-    wifi_info_dict = {}
-
-    # the access point
-    ap_if = WLAN(AP_IF)
-
-    # station mode - connect to wifi
-    sta_if = WLAN(STA_IF)
-
-    # turn access point on:
-    #ap_if.active(True)
-    # turn access point off:
-    #ap_if.active(False)
-
-    # turn station mode on:
-    #sta_if.active(True)
-    # turn station mode off:
-    #sta_if.active(False)
-
-    # turn on station mode:
-    #sta_if.connect('<your ESSID>', '<your password>')
-    #sta_if.config('password')
-
-    wifi_info_dict = {  'ap_state': str(ap_if.active()),
-                        'sta_state': str(sta_if.active()),
-                        'ap_isconnected': str(ap_if.isconnected()),
-                        'sta_isconnected': str(sta_if.isconnected()),
-                        'ap_iplist': ap_if.ifconfig(),
-                        'sta_iplist': sta_if.ifconfig(),
-    }
-    if wifi_info_dict['ap_state'] == "True":
-        #wifi_info_dict['ap_avaible_networks'] = str(ap_if.scan())
-        wifi_info_dict['ap_avaible_networks'] = str(None)
-    else:
-        wifi_info_dict['ap_avaible_networks'] = str(None)
-
-    if wifi_info_dict['sta_state'] == "True":
-        wifi_info_dict['sta_avaible_networks'] = str(sta_if.scan())
-        #wifi_info_dict['sta_avaible_networks'] = str(None)
-    else:
-        wifi_info_dict['sta_avaible_networks'] = str(None)
-
-    #console_write(wifi_info_dict)
-    return wifi_info_dict
 
 #########################################################
 #                                                       #
@@ -216,35 +177,7 @@ def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable
         cfg.put("nwmd", "AP")
     else:
         cfg.put("nwmd", "STA")
-        setNTP()
+        setNTP_RTC()
 
 def network_wifi_scan():
     return [ i[0].decode("utf-8") for i in WLAN().scan() ]
-
-#########################################################
-#                                                       #
-#               TEST AND DEMO FUNCTIONS                 #
-#                                                       #
-#########################################################
-def network_demo():
-    auto_network_configuration(essid="mywifi_essid", pwd="mywifi_passwd")
-
-    '''
-    # TEST CALLS
-    #https://docs.micropython.org/en/latest/esp8266/library/network.html
-    console_write("--TEST--> SET WIFI (STA)\n")
-    console_write(set_wifi("mywifi_essid", "mywifi_passwd"))
-
-    console_write("--TEST--> SET ACCESS POINT (AP)\n")
-    console_write(set_access_point("NodeMcu", "guest"))
-
-    console_write("--TEST--> GET WIFI RSSI INFO\n")
-    console_write(wifi_rssi("mywifi_essid"))
-    '''
-
-    console_write("--TEST--> GET WIFI INFOS (after sta set)\n")
-    wifi_info_dict = wifi_info()
-    console_write(wifi_info_dict)
-
-if __name__ == "__main__":
-    network_demo()

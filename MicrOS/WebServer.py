@@ -33,7 +33,7 @@ class SocketServer():
     '''
     USER_TIMEOUT - sec
     '''
-    prompt = ">>> "
+    prompt = "{} $ ".format(cfg.get('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
         self.pre_prompt = ""

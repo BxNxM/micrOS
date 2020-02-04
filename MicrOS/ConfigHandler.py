@@ -52,7 +52,8 @@ DEFAULT_CONFIGURATION_TEMPLATE = {"staessid": "your_wifi_name",
                                   "soctout": 100,
                                   "socport": 9008,
                                   "devip": "n/a",
-                                  "timirq": True}
+                                  "timirq": True,
+                                  "gmttime": +1}
 
 #################################################################
 #                      CONFIGHANDLER  CLASS                     #

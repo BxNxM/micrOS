@@ -1,4 +1,4 @@
-from WiFi import auto_network_configuration
+from Network import auto_network_configuration
 from WebServer import server
 
 def oled_debug_msg(timer=None):
@@ -20,7 +20,7 @@ def oled_debug_msg(timer=None):
 def interrupt_handler():
     try:
         from InterruptHandler import enableInterrupt
-        enableInterrupt(cbf=oled_debug_msg, period_ms=6000)
+        enableInterrupt(cbf=oled_debug_msg, period_ms=5000)
     except:
         print("DEBUG: InterruptHandler.enableInterrupt error")
 

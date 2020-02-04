@@ -98,6 +98,7 @@ def show_LMs_functions(WebServerObj):
         exec("import " + str(LM))
         LM_functions = eval("dir({})".format(LM))
         LM_functions = [i for i in LM_functions if not i.startswith('__')]
+        LM = LM.replace('LM_', '')
         WebServerObj.reply_message("   {}".format(LM))
         for func in LM_functions:
             WebServerObj.reply_message("   {}{}".format(" "*len(LM), func))
@@ -108,7 +109,7 @@ def execute_LM_function(argument_list, WebServerObj):
     2. param. - function call with parameters, i.e. a()
     '''
     if len(argument_list) >= 2:
-        LM_name = argument_list[0]
+        LM_name = "LM_{}".format(argument_list[0])
         LM_function_call = "".join(argument_list[1:])
         LM_function = argument_list[1].split('(')[0]
         if "(" not in LM_function_call and ")" not in LM_function_call:

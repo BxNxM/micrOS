@@ -53,6 +53,7 @@ DEFAULT_CONFIGURATION_TEMPLATE = {"staessid": "your_wifi_name",
                                   "socport": 9008,
                                   "devip": "n/a",
                                   "timirq": True,
+                                  "extirq": True,
                                   "gmttime": +1}
 
 #################################################################

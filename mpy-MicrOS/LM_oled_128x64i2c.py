@@ -56,5 +56,3 @@ def wakeup_oled_debug_page_execute():
     from ConfigHandler import cfg
     if cfg.get("dbg"):
         show_debug_page()
-
-

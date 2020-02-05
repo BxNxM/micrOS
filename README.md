@@ -14,7 +14,7 @@ User function injection over LM_<userapp>.py
 - [ **DONE** ] PM modul import optimization
 - [ **DONE** ] Timer interrupts - async program execution - display refresh / heartbeat led / etc.? 
 	- https://docs.micropython.org/en/latest/library/machine.Timer.html
-- Button (GPIO) interrupt - event handling
+- [ **DONE** ] Button (GPIO) interrupt - event handling
 - [ **DONE** ] Precompile py -> mpy modules - mpy-cross compiler
 	- [ **DONE** ] precompile flow automatization
 
@@ -26,13 +26,13 @@ To remove ^M after get source files from nodemcu in vim:
 
 #### Dependences
 
-- Deploy dependences
- - esptool.py
- - ampy 
+- **Deploy** dependences
+	- esptool.py
+	- ampy 
 
-- Connection dependences
- - screen
- - telnet
+- **Connection** dependences
+	- screen
+	- telnet
 
 #### Source devenv
 

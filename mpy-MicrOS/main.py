@@ -1,5 +1,5 @@
 from Network import auto_network_configuration
-from WebServer import server
+from SocketServer import server
 
 #################################################################
 #                       CALLBACK FUNCTIONS                      #

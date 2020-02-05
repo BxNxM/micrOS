@@ -1,40 +1,40 @@
-OLED = None
+__OLED = None
 
-def init():
-    global OLED
-    if OLED is None:
+def __init():
+    global __OLED
+    if __OLED is None:
         import machine
         import ssd1306
         i2c = machine.I2C(-1, machine.Pin(5), machine.Pin(4))
-        OLED = ssd1306.SSD1306_I2C(128, 64, i2c)
+        __OLED = ssd1306.SSD1306_I2C(128, 64, i2c)
 
 def text(intext="<text>", posx=0, posy=0, show=True):
-    if OLED is None: init()
-    OLED.text(intext, posx, posy)
-    if show: OLED.show()
+    if __OLED is None: __init()
+    __OLED.text(intext, posx, posy)
+    if show: __OLED.show()
     return True
 
 def invert(state=True):
-    if OLED is None: init()
-    OLED.invert(state)
+    if __OLED is None: __init()
+    __OLED.invert(state)
     return True
 
 def clean(state=0, show=True):
-    if OLED is None: init()
-    OLED.fill(state)
-    if show: OLED.show()
+    if __OLED is None: __init()
+    __OLED.fill(state)
+    if show: __OLED.show()
     return True
 
 def draw_line(sx, sy, ex, ey, state=1, show=True):
-    if OLED is None: init()
-    OLED.line(sx, sy, ex, ey, state)
-    if show: OLED.show()
+    if __OLED is None: __init()
+    __OLED.line(sx, sy, ex, ey, state)
+    if show: __OLED.show()
     return True
 
 def draw_rect(sx, sy, ex, ey, state=1, show=True):
-    if OLED is None: init()
-    OLED.rect(sx, sy, ex, ey, state)
-    if show: OLED.show()
+    if __OLED is None: __init()
+    __OLED.rect(sx, sy, ex, ey, state)
+    if show: __OLED.show()
     return True
 
 def show_debug_page():
@@ -56,3 +56,18 @@ def wakeup_oled_debug_page_execute():
     from ConfigHandler import cfg
     if cfg.get("dbg"):
         show_debug_page()
+
+def poweron():
+    if __OLED is None: __init()
+    __OLED.poweron()
+
+def poweroff():
+    if __OLED is None: __init()
+    __OLED.poweroff()
+
+def __deinit():
+    global __OLED
+    if __OLED is not None:
+        clean
+        poweroff()
+        __OLED = None

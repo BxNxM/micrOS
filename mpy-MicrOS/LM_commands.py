@@ -10,9 +10,9 @@ def reboot():
 
 def wifi_rssi(essid=None):
     try:
-        from Wifi import wifi_rssi
+        from Network import wifi_rssi
     except Exception as e:
-        return "Wifi.wifi_rssi import error: " + str(e)
+        return "Network.wifi_rssi import error: " + str(e)
     if essid is None:
         from ConfigHandler import cfg
         return(wifi_rssi(cfg.get('staessid')))

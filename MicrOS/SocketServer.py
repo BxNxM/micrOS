@@ -1,6 +1,5 @@
-import socket
-import sys
-import os
+from socket import socket, AF_INET, SOCK_STREAM
+from sys import platform
 
 #########################################################
 #                         IMPORTS                       #
@@ -46,13 +45,13 @@ class SocketServer():
         self.get_uid_macaddr_hex(UID)
         # ---         ----
         self.init_socket()
-        if "esp" in sys.platform:
+        if "esp" in platform:
             self.server_console("[ socket server ] telnet " + str(cfg.get("devip")) + " " + str(self.port))
         else:
             self.server_console("[ socket server ] telnet 127.0.0.1 " + str(self.port))
 
     def init_socket(self):
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s = socket(AF_INET, SOCK_STREAM)
 
     def get_uid_macaddr_hex(self, UID=None):
         if UID is not None:
@@ -165,7 +164,7 @@ class SocketServer():
         while inloop:
             try:
                 msg = self.wait_for_message()
-                reply_msg = InterpreterShell_shell(msg, WebServerObj=self)
+                reply_msg = InterpreterShell_shell(msg, SocketServerObj=self)
                 if reply_msg is not None:
                     self.reply_message(reply_msg)
             except Exception as e:
@@ -175,7 +174,7 @@ class SocketServer():
                 self.bind()
         if not inloop:
             msg = self.wait_for_message()
-            reply_msg = InterpreterShell_shell(msg, WebServerObj=self)
+            reply_msg = InterpreterShell_shell(msg, SocketServerObj=self)
             self.reply_message(reply_msg)
 
     def get_prompt(self):
@@ -206,7 +205,7 @@ def main():
 try:
     if __name__ == "__main__":
         main()
-    if "WebServer" in __name__:
+    if "SocketServer" in __name__:
         server = SocketServer()
         #server.run()
 except KeyboardInterrupt:

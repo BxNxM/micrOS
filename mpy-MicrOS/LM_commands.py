@@ -6,6 +6,11 @@ def mem_free():
 
 def reboot():
     from machine import reset
+    try:
+        from LM_oled_128x64i2c import __deinit
+        __deinit()
+    except:
+        pass
     reset()
 
 def wifi_rssi(essid=None):
@@ -14,8 +19,8 @@ def wifi_rssi(essid=None):
     except Exception as e:
         return "Network.wifi_rssi import error: " + str(e)
     if essid is None:
-        from ConfigHandler import cfg
-        return(wifi_rssi(cfg.get('staessid')))
+        from ConfigHandler import cfgget
+        return(wifi_rssi(cfgget('staessid')))
     else:
         return(wifi_rssi(essid))
 

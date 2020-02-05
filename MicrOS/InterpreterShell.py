@@ -1,6 +1,6 @@
 from os import listdir
 try:
-    from ConfigHandler import cfg
+    from ConfigHandler import cfgget, cfgput, cfgget_all
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
 try:
@@ -70,15 +70,15 @@ def configure(attributes, SocketServerObj):
     # Get value
     if len(attributes) == 1:
         if attributes[0] == "dump":
-            SocketServerObj.reply_message(cfg.get_all())
+            SocketServerObj.reply_message(cfgget_all())
         else:
             key = attributes[0]
-            SocketServerObj.reply_message(cfg.get(key))
+            SocketServerObj.reply_message(cfgget(key))
     # Set value
     elif len(attributes) == 2:
         key = attributes[0]
         value = attributes[1]
-        SocketServerObj.reply_message(cfg.put(key, value))
+        SocketServerObj.reply_message(cfgput(key, value))
     else:
         SocketServerObj.reply_message("Too many arguments - [1] key [2] value")
 

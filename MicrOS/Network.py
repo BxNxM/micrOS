@@ -2,11 +2,10 @@ from network import AP_IF, STA_IF, WLAN
 from time import sleep, localtime, time
 
 try:
-    from ConfigHandler import console_write, cfg
+    from ConfigHandler import console_write, cfgget, cfgput
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
     console_write = None
-    cfg = None
 
 def setNTP_RTC():
     from ntptime import settime
@@ -22,7 +21,7 @@ def setNTP_RTC():
             try:
                 settime()
                 rtc = RTC()
-                (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfg.get('gmttime'))*3600)
+                (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfgget('gmttime'))*3600)
                 rtc.datetime((year, month, mday, 0, hour, minute, second, 0))
                 console_write("NTP setup DONE: {}".format(localtime()))
                 return True
@@ -69,11 +68,11 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
                     timeout -= 1
                     sleep(0.4)
         console_write("\t|\t| network config: " + str(sta_if.ifconfig()))
-        cfg.put("devip", str(sta_if.ifconfig()[0]))
+        cfgput("devip", str(sta_if.ifconfig()[0]))
         console_write("\t|\t| WIFI SETUP STA: " + str(sta_if.isconnected()))
     else:
         console_write("\t| already conneted (sta)")
-        cfg.put("devip", str(sta_if.ifconfig()[0]))
+        cfgput("devip", str(sta_if.ifconfig()[0]))
         # we are connected already
         for wifi_spot in sta_if.scan():
             if essid in str(wifi_spot):
@@ -118,6 +117,8 @@ def wifi_rssi(essid):
         hr_rssi_tupple = "NotGood", 1
     elif rssi >= -90:
         hr_rssi_tupple = "Unusable", 0
+    else:
+        hr_rssi_tupple = "N/A", -1
 
     console_write("\t| essid, rssi, channel: " + str(essid) +", "+ str(rssi) +", "+ str(channel) +", "+ str(hr_rssi_tupple))
     return essid, rssi, channel, hr_rssi_tupple
@@ -143,10 +144,10 @@ def set_access_point(_essid, _pwd, _authmode=3, sta_auto_disable=True):
     try:
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode)
     except Exception as e:
-        console_write(">>>>>>>>>>>>>>" + str(e))
+        console_write(">"*10 + str(e))
     if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
         is_success = True
-        cfg.put("devip", ap_if.ifconfig()[0])
+        cfgput("devip", ap_if.ifconfig()[0])
     return is_success, ap_if.config('essid'), ap_if.config('authmode'), ap_if.config('mac')
 
 #########################################################
@@ -157,26 +158,26 @@ def set_access_point(_essid, _pwd, _authmode=3, sta_auto_disable=True):
 def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable=True, essid_force_connect=False, _essid=None, _pwd=None, _authmode=3, sta_auto_disable=True):
     # GET DATA - STA
     if essid is None:
-        essid = cfg.get("staessid")
+        essid = cfgget("staessid")
     if pwd is None:
-        pwd = cfg.get("stapwd")
+        pwd = cfgget("stapwd")
     # GET DATA - AP
     if _essid is None:
-        _essid = cfg.get("devfid")
+        _essid = cfgget("devfid")
     if _pwd is None:
-        _pwd = cfg.get("appwd")
+        _pwd = cfgget("appwd")
 
     # default connection type is STA
     isconnected, is_essid_exists = set_wifi(essid, pwd, timeout=timeout, ap_auto_disable=ap_auto_disable, essid_force_connect=essid_force_connect)
-    console_write("STA======>" + str(isconnected) + "  - " + str(is_essid_exists))
+    console_write("STA===>" + str(isconnected) + "  - " + str(is_essid_exists))
     # if sta is not avaible, connect make AP for configuration
     if not (isconnected and is_essid_exists):
         console_write("STA MODE IS DISABLE - ESSID:{} or PWD:{} not valid".format(essid, pwd))
         ap_is_success, ap_essid, ap_authmode, ap_config_mac = set_access_point(_essid=_essid, _pwd=_pwd, _authmode=_authmode, sta_auto_disable=sta_auto_disable)
-        console_write("AP======>" + str(ap_is_success) + "  - " + str(ap_essid) + " - " + str(ap_authmode) + " - " + str(ap_config_mac))
-        cfg.put("nwmd", "AP")
+        console_write("AP===>" + str(ap_is_success) + "  - " + str(ap_essid) + " - " + str(ap_authmode) + " - " + str(ap_config_mac))
+        cfgput("nwmd", "AP")
     else:
-        cfg.put("nwmd", "STA")
+        cfgput("nwmd", "STA")
         setNTP_RTC()
 
 def network_wifi_scan():

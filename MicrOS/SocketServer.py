@@ -5,11 +5,10 @@ from sys import platform
 #                         IMPORTS                       #
 #########################################################
 try:
-    from ConfigHandler import console_write, cfg
+    from ConfigHandler import console_write, cfgget, cfgput
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
     console_write = None
-    cfg = None
 
 try:
     from network import WLAN, STA_IF
@@ -32,7 +31,7 @@ class SocketServer():
     '''
     USER_TIMEOUT - sec
     '''
-    prompt = "{} $ ".format(cfg.get('devfid'))
+    prompt = "{} $ ".format(cfgget('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
         self.pre_prompt = ""
@@ -46,7 +45,7 @@ class SocketServer():
         # ---         ----
         self.init_socket()
         if "esp" in platform:
-            self.server_console("[ socket server ] telnet " + str(cfg.get("devip")) + " " + str(self.port))
+            self.server_console("[ socket server ] telnet " + str(cfgget("devip")) + " " + str(self.port))
         else:
             self.server_console("[ socket server ] telnet 127.0.0.1 " + str(self.port))
 
@@ -63,18 +62,18 @@ class SocketServer():
                 self.uid += hex(ot)
         else:
             self.uid = "n/a"
-        cfg.put("hwuid", self.uid)
+        cfgput("hwuid", self.uid)
 
     def __set_port_from_config(self, PORT):
         if PORT is None:
-            return int(cfg.get("socport"))
+            return int(cfgget("socport"))
         else:
             return int(PORT)
 
     def __set_timeout_value(self, USER_TIMEOUT, default_timeout=60):
         if USER_TIMEOUT is None:
             try:
-                self.timeout_user = int(cfg.get("soctout"))
+                self.timeout_user = int(cfgget("soctout"))
             except Exception as e:
                 self.timeout_user = default_timeout
                 console_write("Injected value (timeout <int>) error: {}".format(e))
@@ -129,7 +128,7 @@ class SocketServer():
             self.disconnect()
         if "hello" == data_str:
             # For low level device identification - hello msg
-            self.reply_message("hello:{}:{}".format(cfg.get('devfid'), self.uid))
+            self.reply_message("hello:{}:{}".format(cfgget('devfid'), self.uid))
             data_str = ""
         return str(data_str)
 
@@ -209,4 +208,4 @@ try:
         server = SocketServer()
         #server.run()
 except KeyboardInterrupt:
-        server.__del__()
+    console_write("Keyboard interrupt in SocketServer.")

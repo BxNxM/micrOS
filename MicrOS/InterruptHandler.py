@@ -1,4 +1,4 @@
-from ConfigHandler import cfg, console_write
+from ConfigHandler import cfgget, console_write
 from micropython import alloc_emergency_exception_buf
 alloc_emergency_exception_buf(100)
 
@@ -22,7 +22,7 @@ def secureInterruptHandler(timer=None):
 def enableInterrupt(callback=None, period_ms=4000):
     global TIMIQQ_CALLBACK
     TIMIQQ_CALLBACK = callback
-    interrupt_is_enabled = cfg.get("timirq")
+    interrupt_is_enabled = cfgget("timirq")
     if callback is not None and interrupt_is_enabled:
         console_write("TIMIRQ ENABLED")
         from machine import Timer
@@ -51,7 +51,7 @@ def secureEventInterruptHandler(pin=None):
 def init_eventPIN(callback=None, pin=12):
     global EVIQQ_CALLBACK
     EVIQQ_CALLBACK = callback
-    interrupt_is_enabled = cfg.get('extirq')
+    interrupt_is_enabled = cfgget('extirq')
     if callback is not None and interrupt_is_enabled:
         console_write("EVENTIRQ ENABLED")
         from machine import Pin

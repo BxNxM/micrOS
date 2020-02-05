@@ -39,22 +39,22 @@ def draw_rect(sx, sy, ex, ey, state=1, show=True):
 
 def show_debug_page():
     try:
-        from ConfigHandler import cfg
+        from ConfigHandler import cfgget
         from gc import mem_free
         from time import localtime
         clean()
         text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 0, show=False)
-        text("NW_MODE: {}".format(cfg.get("nwmd")), 0, 10, show=False)
-        text("IP: {}".format(cfg.get("devip")), 0, 20, show=False)
+        text("NW_MODE: {}".format(cfgget("nwmd")), 0, 10, show=False)
+        text("IP: {}".format(cfgget("devip")), 0, 20, show=False)
         text("FreeMem: {}".format(mem_free()), 0, 30, show=False)
-        text("PORT: {}".format(cfg.get("socport")), 0, 40, show=False)
-        text("NAME: {}".format(cfg.get("devfid")), 0, 50, show=True)
+        text("PORT: {}".format(cfgget("socport")), 0, 40, show=False)
+        text("NAME: {}".format(cfgget("devfid")), 0, 50, show=True)
     except Exception as e:
         return str(e)
 
 def wakeup_oled_debug_page_execute():
-    from ConfigHandler import cfg
-    if cfg.get("dbg"):
+    from ConfigHandler import cfgget
+    if cfgget("dbg"):
         show_debug_page()
 
 def poweron():

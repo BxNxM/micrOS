@@ -34,7 +34,7 @@ To remove ^M after get source files from nodemcu in vim:
 	- screen
 	- telnet
 
-#### Source devenv
+#### Source devenv (bash)
 
 ```
 source setup
@@ -73,9 +73,9 @@ hello:slim01:0x600x10x940x1f0x7e0xfa
 ### Get help
 
 ```
->>>  help
-hello - default hello msg - identify device (WebServer)
-exit  - exit from shell socket prompt (WebServer)
+slim01 $  help
+hello - default hello msg - identify device (SocketServer)
+exit  - exit from shell socket prompt (SocketServer)
 Configure mode:
    configure|conf     - Enter conf mode
          Key          - Get value
@@ -83,46 +83,44 @@ Configure mode:
          dump         - Dump all data
    noconfigure|noconf - Exit conf mod
 Command mode:
-   LM_oled_128x64i2c
-                    init
-                    invert
-                    text
-                    show_debug_page
-                    wakeup_oled_debug_page_execute
-                    OLED
-                    DEBUG_CNT
-                    clean
-                    draw_line
-                    draw_rect
-   LM_commands
-              mem_free
-              wifi_rssi
-              reboot
-              addnumbs
+   oled_128x64i2c
+                 invert
+                 text
+                 poweroff
+                 poweron
+                 show_debug_page
+                 wakeup_oled_debug_page_execute
+                 clean
+                 draw_line
+                 draw_rect
+   commands
+           listdir
+           time
+           memfree
+           gccollect
+           reboot
+           wifirssi
+           addnumbs
 ```
  
 ### Embedded config handler
  
-```                          
->>>  conf
-[configure] >>>  dump
-{'stapwd': '<your_wifi_password>', 'devfid': 'slim01', 'appwd': 'admin', 'timirq': True, 'soctout': 100, 'pled': True, 'hwuid': '0x600x10x940x1f0x7e0xfa', 'socport': 9008, 'dbg': True, 'nwmd': 'STA', 'devip': '10.0.1.77', 'staessid': 'your_wifi_name'}
-[configure] >>>  devfid
-slim01
-[configure] >>>  noconf
+```  
+slim01 $  conf                        
+[configure] slim01 $  dump
+{'stapwd': '<your_wifi_password>', 'gmttime': 1, 'nwmd': 'STA', 'soctout': 100, 'timirq': True, 'appwd': 'ADmin123', 'devfid': 'slim01', 'extirq': True, 'dbg': True, 'devip': '10.0.1.6', 'hwuid': '0x600x10x940x1f0x7e0xfa', 'staessid': '<your_wifi_name>', 'socport': 9008, 'pled': True}
+[configure] slim01 $  noconf
 ```
 
 ### Load Modules - User defined functions
 
 ```
->>>  LM_commands wifi_rssi()
-('elektroncsakpozitivan', -52, 11, ('VeryGood', 3))
->>>  LM_commands  mem_free()
+slim01 $  commands memfree
 CPU[Hz]: 160000000
-GC MemFree[byte]: 5600
->>>  LM_commands addnumbs(2020, 2, 2)
-2020+2+2 = 2024
->>>  exit
+GC MemFree[byte]: 6080
+slim01 $  commands addnumbs(1,2,3,4)
+1+2+3+4 = 10
+slim01 $  exit
 Bye!
 exit and close connection from ('10.0.1.7', 53069)
 Connection closed by foreign host.
@@ -141,6 +139,8 @@ Connection closed by foreign host.
 | soctout		| Socket / Web server connection timeout (because single user | handling)
 | socport		| Socket / Web server service port
 | timirg		| Timer interrupt enable - "subprocess" - function callback
+| extirq     | External event interrupt - "subprocess" - function callback
+| gmttime    | NTP - RTC - timezone setup 
 | nwmd 		| STATE STORAGE - system saves nw mode here - AP / STA
 | hwuid		| STATE STORAGE - hardwer address - dev uid
 | devip		| STATE STORAGE - system stores device ip here

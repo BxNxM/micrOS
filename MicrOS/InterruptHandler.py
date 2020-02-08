@@ -34,6 +34,10 @@ def enableInterrupt(callback=None, period_ms=4000):
 #################################################################
 #                    EXTERNAL INTERRUPT(S)                      #
 #################################################################
+# trigger=Pin.IRQ_FALLING   signal HIGH to LOW
+# trigger=Pin.IRQ_RISING    signal LOW to HIGH
+# trigger=3                 both
+#################################################################
 EVIRQ_OVERALP = False
 EVIQQ_CALLBACK = None
 def secureEventInterruptHandler(pin=None):

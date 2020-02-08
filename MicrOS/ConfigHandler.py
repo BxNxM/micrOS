@@ -44,7 +44,7 @@ CONFIG_PATH="node_config.json"
 DEFAULT_CONFIGURATION_TEMPLATE = {"staessid": "your_wifi_name",
                                   "stapwd": "your_wifi_passwd",
                                   "devfid": "slim01",
-                                  "appwd": "Admin123",
+                                  "appwd": "ADmin123",
                                   "pled": True,
                                   "dbg": False,
                                   "nwmd": "n/a",
@@ -76,8 +76,7 @@ def cfgput(key, value):
             del cfg_dict_buffer
             return True
     except:
-        pass
-    return False
+        return False
 
 def cfgprint_all():
     data_struct = dict(__read_cfg_file())
@@ -91,7 +90,6 @@ def cfgget_all():
     return __read_cfg_file()
 
 def __read_cfg_file():
-    global CONFIG_PATH
     try:
         with open(CONFIG_PATH, 'r') as f:
             data_dict = load(f)
@@ -101,13 +99,13 @@ def __read_cfg_file():
     return data_dict
 
 def __write_cfg_file(dictionary):
-    global CONFIG_PATH
     if not isinstance(dictionary, dict):
         console_write("[CONFIGHANDLER] __write_cfg_file - config data struct should be a dict!")
         return False
     try:
         with open(CONFIG_PATH, 'w') as f:
             dump(dictionary, f)
+            del dictionary
         return True
     except Exception as e:
             console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
@@ -126,11 +124,14 @@ def __inject_default_conf():
             console_write("[CONFIGHANDLER] Inject default data struct failed")
     except Exception as e:
         console_write(e)
+    finally:
+        del DEFAULT_CONFIGURATION_TEMPLATE
 
 def __value_type_handler(key, value):
     value_in_cfg = cfgget(key)
     try:
         if isinstance(value_in_cfg, bool):
+            del value_in_cfg
             if value in ['True', 'true']:
                 value = True
             elif value in ['False', 'false']:
@@ -141,10 +142,13 @@ def __value_type_handler(key, value):
                 raise Exception()
             return value
         elif isinstance(value_in_cfg, str):
+            del value_in_cfg
             return str(value)
         elif isinstance(value_in_cfg, int):
+            del value_in_cfg
             return int(value)
         elif isinstance(value_in_cfg, float):
+            del value_in_cfg
             return float(value)
     except Exception as e:
         console_write("Input value type error! {}".format(e))
@@ -160,7 +164,7 @@ def __init_module():
         PLED_STAT = cfgget("pled")
         DEBUG_PRINT = cfgget("dbg")
     except Exception as e:
-        print(e)
+        console_write("[CONFIGHANDLER] module init error: {}".format(e))
         DEBUG_PRINT = False
 
 if "ConfigHandler" in __name__:

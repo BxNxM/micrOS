@@ -1,8 +1,13 @@
-def mem_free():
+def memfree():
     from gc import mem_free
     from machine import freq
     from micropython import mem_info
     return "CPU[Hz]: {}\nGC MemFree[byte]: {}".format(freq(), mem_free())
+
+def gccollect():
+    from gc import collect
+    collect()
+    return memfree()
 
 def reboot():
     from machine import reset
@@ -13,7 +18,7 @@ def reboot():
         pass
     reset()
 
-def wifi_rssi(essid=None):
+def wifirssi(essid=None):
     try:
         from Network import wifi_rssi
     except Exception as e:
@@ -36,3 +41,7 @@ def addnumbs(*args):
 def time():
     from time import localtime
     return localtime()
+
+def listdir():
+    from os import listdir
+    return listdir()

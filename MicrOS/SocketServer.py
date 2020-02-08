@@ -126,6 +126,7 @@ class SocketServer():
             # For low level exit handling
             self.reply_message("Bye!")
             self.disconnect()
+            data_str = ""
         if "hello" == data_str:
             # For low level device identification - hello msg
             self.reply_message("hello:{}:{}".format(cfgget('devfid'), self.uid))

@@ -1,12 +1,7 @@
-from os import listdir
 try:
     from ConfigHandler import cfgget, cfgput, cfgget_all
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
-try:
-    from gc import collect, mem_free
-except:
-    pass
 
 #########################################################
 #                    MODULE VARIABLES                   #
@@ -89,8 +84,10 @@ def command(attributes_list, SocketServerObj):
     execute_LM_function(attributes_list, SocketServerObj)
 
 def load_LMs():
+    from os import listdir
     LM_MODULE_LIST = [i for i in listdir() if i.startswith('LM_')]
     LM_MODULE_LIST = [i.replace('.py', '') for i in LM_MODULE_LIST if i.endswith('.py')]
+    del listdir
     return LM_MODULE_LIST
 
 def show_LMs_functions(SocketServerObj):
@@ -121,8 +118,12 @@ def execute_LM_function(argument_list, SocketServerObj):
     except Exception as e:
         SocketServerObj.reply_message("execute_LM_function: " + str(e))
         if "memory allocation failed" in str(e):
+            from gc import collect, mem_free
             collect()
             SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: " + str(mem_free()))
+            del collect, mem_free
+    finally:
+        del LM_function, LM_name, LM_function_call
 
 def reset_shell_state():
     global CONFIGURE_MODE

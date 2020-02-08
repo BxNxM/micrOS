@@ -19,7 +19,6 @@ except Exception as e:
     sta_if = None
 
 try:
-    from InterpreterShell import reset_shell_state as InterpreterShell_reset_shell_state
     from InterpreterShell import shell as InterpreterShell_shell
 except Exception as e:
     console_write("InterpreterShell import error: {}".format(e))
@@ -153,7 +152,12 @@ class SocketServer():
         self.reply_message("exit and close connection from " + str(self.addr))
         self.conn.close()
         # Reset Shell & prompt
-        InterpreterShell_reset_shell_state()
+        try:
+            from InterpreterShell import reset_shell_state as InterpreterShell_reset_shell_state
+            InterpreterShell_reset_shell_state()
+            del InterpreterShell_reset_shell_state
+        except Exception as e:
+            console_write("InterpreterShell_reset_shell_state error: " + str(e))
         self.pre_prompt = ""
         self.server_console_indent = 0
         # Accept new connection
@@ -163,8 +167,7 @@ class SocketServer():
         self.bind()
         while inloop:
             try:
-                msg = self.wait_for_message()
-                reply_msg = InterpreterShell_shell(msg, SocketServerObj=self)
+                reply_msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
                 if reply_msg is not None:
                     self.reply_message(reply_msg)
             except Exception as e:
@@ -173,8 +176,7 @@ class SocketServer():
                 self.init_socket()
                 self.bind()
         if not inloop:
-            msg = self.wait_for_message()
-            reply_msg = InterpreterShell_shell(msg, SocketServerObj=self)
+            reply_msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
             self.reply_message(reply_msg)
 
     def get_prompt(self):

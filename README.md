@@ -23,7 +23,7 @@ To remove ^M after get source files from nodemcu in vim:
 :%s/ <press^V^M> //g
 
 ## Quick guide
-
+ 
 #### Dependences
 
 - **Deploy** dependences
@@ -31,9 +31,13 @@ To remove ^M after get source files from nodemcu in vim:
 	- ampy 
 
 - **Connection** dependences
-	- screen
-	- telnet
-
+	- screen (serial port connection)
+	- telnet / or use dedicated **socketClient**
+		- tools/socketClient.py
+			- embedded device scan (arp -a dependency)
+			- cache device data
+			- non-interactive and interactive modes
+	
 #### Source devenv (bash)
 
 ```
@@ -43,7 +47,7 @@ source setup
 #### Deploy micropython
 
 ```
-nodemcu_erase; nodemcu deploy
+nodemcu_erase && nodemcu deploy
 ```
 
 #### Put resorces to nodemcu

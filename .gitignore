@@ -4,3 +4,4 @@ MicrOS/*.mpy
 MicrOS/node_config.json
 mpy-MicrOS/node_config.json
 MicrOS/.idea/
+tools/device_conn_cache.json

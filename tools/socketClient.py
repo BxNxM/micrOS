@@ -7,10 +7,76 @@ myfolder = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(myfolder)
 import select
 import time
+import nwscan
+import json
 
 class ConnectionData():
     HOST = 'localhost'
     PORT = 9008
+    MICROS_DEV_IP_DICT = {}
+    DEVICE_CACHE_PATH = os.path.join(myfolder, "device_conn_cache.json")
+
+    @staticmethod
+    def filter_MicrOS_devices():
+        for device in nwscan.map_wlan_devices():
+            socket = None
+            if '.' in device[0]:
+                try:
+                    print("Device Query on {} ...".format(device[0]))
+                    socket = SocketDictClient(host=device[0], port=ConnectionData.PORT)
+                    reply = socket.non_interactive('hello')
+                    if "hello" in reply:
+                        print("[MicrOS] Device: {} reply: {}".format(device[0], reply))
+                        fuid = reply.split(':')[1]
+                        uid = reply.split(':')[2]
+                        ConnectionData.MICROS_DEV_IP_DICT[uid] = [device[0], device[1], fuid]
+                    else:
+                        print("[Non MicrOS] Device: {} reply: {}".format(device[0], reply))
+                except Exception as e:
+                    print("{} scan warning: {}".format(device, e))
+                finally:
+                    if socket is not None and socket.conn is not None:
+                        socket.conn.close()
+                    del socket
+        ConnectionData.write_MicrOS_device_cache(ConnectionData.MICROS_DEV_IP_DICT)
+        print("AVAILABLE MICROS DEVICES: {}".format(ConnectionData.MICROS_DEV_IP_DICT))
+
+    @staticmethod
+    def write_MicrOS_device_cache(device_dict):
+        cache_path = ConnectionData.DEVICE_CACHE_PATH
+        print("Write MicrOS device cache: {}".format(cache_path))
+        with open(cache_path, 'w') as f:
+            json.dump(device_dict, f, indent=4)
+
+    @staticmethod
+    def read_MicrOS_device_cache():
+        cache_path = ConnectionData.DEVICE_CACHE_PATH
+        if os.path.isfile(cache_path):
+            print("Load MicrOS device cache: {}".format(cache_path))
+            with open(cache_path, 'r') as f:
+                ConnectionData.MICROS_DEV_IP_DICT = json.load(f)
+        else:
+            print("Load MicrOS device cache not found: {}".format(cache_path))
+
+    @staticmethod
+    def select_device():
+        print("Activate MicrOS device connection address")
+        if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:
+            key = list(ConnectionData.MICROS_DEV_IP_DICT.keys())[0]
+            ConnectionData.HOST = ConnectionData.MICROS_DEV_IP_DICT[key][0]
+        else:
+            print("TODO: select device - more then one available")
+
+    @staticmethod
+    def auto_execute(search=False):
+        if not os.path.isfile(ConnectionData.DEVICE_CACHE_PATH):
+            search = True
+        if search:
+            ConnectionData.filter_MicrOS_devices()
+        else:
+            ConnectionData.read_MicrOS_device_cache()
+        ConnectionData.select_device()
+        return ConnectionData.HOST
 
 class SocketDictClient():
 
@@ -39,7 +105,7 @@ class SocketDictClient():
     def receive_data(self):
         data = ""
         data_list = []
-        if select.select([self.conn], [], [], 0.2)[0]:
+        if select.select([self.conn], [], [], 1)[0]:
             time.sleep(1)
             data = self.conn.recv(self.bufsize).decode('utf-8')
             data_list = data.split('\n')
@@ -64,8 +130,9 @@ class SocketDictClient():
             cmd_args = cmd_list
         else:
             Exception("non_interactive function input must be list ot str!")
-        self.console(socketdictclient.run_command(cmd_args))
+        ret_msg = self.console(self.run_command(cmd_args))
         self.close_connection()
+        return ret_msg
 
     def close_connection(self):
         self.run_command("exit")
@@ -88,8 +155,9 @@ class SocketDictClient():
         else:
             str_msg = msg
         print(str_msg, end=end)
+        return str_msg
 
-if __name__ == "__main__":
+def main():
     try:
         socketdictclient = SocketDictClient(host=ConnectionData.HOST, port=ConnectionData.PORT)
         if len(sys.argv[1:]) == 0:
@@ -101,3 +169,7 @@ if __name__ == "__main__":
     except Exception as e:
         if "Connection reset by peer" not in str(e):
             print("FAILED TO START: " + str(e))
+
+if __name__ == "__main__":
+    ConnectionData.auto_execute()
+    main()

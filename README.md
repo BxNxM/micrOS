@@ -150,4 +150,116 @@ Connection closed by foreign host.
 | devip		| STATE STORAGE - system stores device ip here
 
 
+## SocketClient
+
+### Config:
+
+```json
+{
+    "<UINIGUE ID - MAC ADDRESS (UID)>": [
+        "<MICROS DEVIDE IP (DEVIP)>",
+        "<MICROS DEVIDE MAC>",
+        "<MICROS FRIENDLY NAME (FUID)>"
+    ]
+}
+```
+
+> NOTE: MUST TO HAVE DATA FOR CONNECTION: 
+```
+<MICROS DEVIDE IP (DEVIP)>
+```
+
+> All the other data can be dummy value :) 
+
+### SocketClient usage:
+
+
+```
+source setup
+socketclient
+
+or
+
+cd tool/
+./socketClient.py
+```
+
+#### Non interactive mode
+
+Use with command line input arguments.
+
+```
+bash-3.2$ socketclient help
+Load MicrOS device cache: /Users/<User>/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
+Activate MicrOS device connection address
+hello - default hello msg - identify device (SocketServer)
+exit  - exit from shell socket prompt (SocketServer)
+Configure mode:
+   configure|conf     - Enter conf mode
+         Key          - Get value
+         Key:Value    - Set value
+         dump         - Dump all data
+   noconfigure|noconf - Exit conf mod
+Command mode:
+   oled_128x64i2c
+                 invert
+                 text
+                 poweroff
+                 poweron
+                 show_debug_page
+                 wakeup_oled_debug_page_execute
+                 clean
+                 draw_line
+                 draw_rect
+   commands
+           listdir
+           time
+           memfree
+           gccollect
+           reboot
+           wifirssi
+           addnumbs
+bash-3.2$
+```
+
+#### Interactive mode
+
+```
+bash-3.2$ socketclient 
+Load MicrOS device cache: /Users/<User>/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
+Activate MicrOS device connection address
+slim01 $  help
+hello - default hello msg - identify device (SocketServer)
+exit  - exit from shell socket prompt (SocketServer)
+Configure mode:
+   configure|conf     - Enter conf mode
+         Key          - Get value
+         Key:Value    - Set value
+         dump         - Dump all data
+   noconfigure|noconf - Exit conf mod
+Command mode:
+   oled_128x64i2c
+                 invert
+                 text
+                 poweroff
+                 poweron
+                 show_debug_page
+                 wakeup_oled_debug_page_execute
+                 clean
+                 draw_line
+                 draw_rect
+   commands
+           listdir
+           time
+           memfree
+           gccollect
+           reboot
+           wifirssi
+           addnumbs
+slim01 $  exit
+Bye!
+exit and close connection from ('10.0.1.7', 50518)
+```
+
+
 git push -u origin master

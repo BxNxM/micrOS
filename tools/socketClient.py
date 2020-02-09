@@ -12,7 +12,7 @@ import json
 
 class ConnectionData():
     HOST = 'localhost'
-    PORT = 9008
+    PORT = 9008                 # TODO: Get from MicrOS config ../MicroOS/node_config.json
     MICROS_DEV_IP_DICT = {}
     DEVICE_CACHE_PATH = os.path.join(myfolder, "device_conn_cache.json")
 
@@ -60,12 +60,22 @@ class ConnectionData():
 
     @staticmethod
     def select_device():
+        device_choose_list = []
         print("Activate MicrOS device connection address")
         if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:
             key = list(ConnectionData.MICROS_DEV_IP_DICT.keys())[0]
             ConnectionData.HOST = ConnectionData.MICROS_DEV_IP_DICT[key][0]
         else:
-            print("TODO: select device - more then one available")
+            print("[i]         FUID        IP               UID")
+            for index, device in enumerate(ConnectionData.MICROS_DEV_IP_DICT.keys()):
+                uid = device
+                devip = ConnectionData.MICROS_DEV_IP_DICT[device][0]
+                fuid = ConnectionData.MICROS_DEV_IP_DICT[device][2]
+                print("[{}] Device: {} - {} - {}".format(index, fuid, devip, uid))
+                device_choose_list.append(devip)
+            index = int(input("Choose a device index: "))
+            ConnectionData.HOST = device_choose_list[index]
+            print("Device IP was set: {}".format(ConnectionData.HOST))
 
     @staticmethod
     def auto_execute(search=False):
@@ -77,6 +87,10 @@ class ConnectionData():
             ConnectionData.read_MicrOS_device_cache()
         ConnectionData.select_device()
         return ConnectionData.HOST
+
+    @staticmethod
+    def read_port_from_nodeconf():
+        pass
 
 class SocketDictClient():
 
@@ -105,10 +119,17 @@ class SocketDictClient():
     def receive_data(self):
         data = ""
         data_list = []
-        if select.select([self.conn], [], [], 1)[0]:
-            time.sleep(1)
-            data = self.conn.recv(self.bufsize).decode('utf-8')
-            data_list = data.split('\n')
+        if select.select([self.conn], [], [], 2)[0]:
+            if self.is_interactive:
+                time.sleep(1)
+                data = self.conn.recv(self.bufsize).decode('utf-8')
+                data_list = data.split('\n')
+            else:
+                while data == "" or data == "slim01 $  ":
+                    time.sleep(1)
+                    data += self.conn.recv(self.bufsize).decode('utf-8')
+                    #print("====> |{}|".format(data))
+                data_list = data.split('\n')
         return data, data_list
 
     def interactive(self):

@@ -199,6 +199,7 @@ function _set_default_aliases() {
     alias llt='ls -lth'
     source ~/.bash_aliases
     source "${SETUP_DIR}/micropython_repo/setup"
+    alias  socketclient="${SETUP_DIR}/tools/socketClient.py"
 }
 
 #=========================================================================================================================#

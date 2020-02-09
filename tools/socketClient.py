@@ -86,11 +86,24 @@ class ConnectionData():
         else:
             ConnectionData.read_MicrOS_device_cache()
         ConnectionData.select_device()
-        return ConnectionData.HOST
+        ConnectionData.read_port_from_nodeconf()
+        return ConnectionData.HOST, ConnectionData.PORT
 
     @staticmethod
     def read_port_from_nodeconf():
-        pass
+        base_path = myfolder + os.sep + ".." + os.sep + "MicrOS" + os.sep
+        config_path = base_path + "node_config.json"
+        confighandler_path = base_path + "ConfigHandler.py"
+        port_data = ""
+        if os.path.isfile(config_path):
+            with open(config_path) as json_file:
+                port_data = json.load(json_file)['socport']
+            try:
+                ConnectionData.PORT = int(port_data)
+            except:
+                print("PORT: {} from {} invalid, must be integer".format(port_data, config_path))
+        else:
+            print("PORT INFORMATION COMES FROM: {}, but not exists!\n\t[HINT] Run {} script to generate default MicrOS config.".format(config_path, confighandler_path))
 
 class SocketDictClient():
 

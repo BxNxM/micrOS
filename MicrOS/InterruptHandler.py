@@ -60,7 +60,7 @@ def init_eventPIN(callback=None, pin=12):
         console_write("EVENTIRQ ENABLED")
         from machine import Pin
         event_pin = Pin(pin, Pin.IN, Pin.PULL_UP)
-        event_pin.irq(trigger=Pin.IRQ_FALLING, handler=secureEventInterruptHandler)
+        event_pin.irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
     else:
         console_write("EVENTIRQ: isenable: {} callback: {}".format(interrupt_is_enabled, callback))
 

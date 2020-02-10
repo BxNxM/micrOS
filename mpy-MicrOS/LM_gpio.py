@@ -26,8 +26,10 @@ def RGB(r=None, g=None, b=None):
     return init_output + "SET RGB"
 
 def RGB_deinit():
-    if __RLED is not None or __GLED is not None or __BLED is not None:
-        __RLED.deinit()
-        __GLED.deinit()
-        __BLED.deinit()
-        return "DEINIT RGB"
+    init_output = ""
+    if __RLED is None or __GLED is None or __BLED is None: init_output + __RGB_init() + "\n"
+    RGB(0,0,0)
+    __RLED.deinit()
+    __GLED.deinit()
+    __BLED.deinit()
+    return init_output + "DEINIT RGB"

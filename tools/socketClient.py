@@ -157,9 +157,9 @@ class SocketDictClient():
     def receive_data(self):
         data = ""
         data_list = []
-        if select.select([self.conn], [], [], 2)[0]:
+        if select.select([self.conn], [], [], 3)[0]:
             if self.is_interactive:
-                time.sleep(1)
+                time.sleep(1.5)
                 data = self.conn.recv(self.bufsize).decode('utf-8')
                 data_list = data.split('\n')
             else:
@@ -188,7 +188,15 @@ class SocketDictClient():
             cmd_args = cmd_list
         else:
             Exception("non_interactive function input must be list ot str!")
-        ret_msg = self.console(self.run_command(cmd_args))
+        ret_msg = self.command_pipeline(cmd_args)
+        return ret_msg
+
+    def command_pipeline(self, cmd_args, separator='<a>'):
+        cmd_pipeline = cmd_args.split(separator)
+        ret_msg = ""
+        for cmd in cmd_pipeline:
+            cmd = cmd.strip()
+            ret_msg = self.console(self.run_command(cmd))
         self.close_connection()
         return ret_msg
 
@@ -233,6 +241,7 @@ def socket_commandline_args(arg_list):
     if "--help" in arg_list:
         print("--scan\t\t- scan devices")
         print("--dev\t\t- select device - value should be: fuid or uid or devip")
+        print("HINT\t\t- In non interactive mode you can pipe commands with <a> separator")
         sys.exit(0)
     return arg_list, return_action_dict
 

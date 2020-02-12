@@ -69,8 +69,9 @@ class ConnectionData():
             print("Load MicrOS device cache not found: {}".format(cache_path))
 
     @staticmethod
-    def select_device():
+    def select_device(dev=None):
         device_choose_list = []
+        device_was_found = False
         print("Activate MicrOS device connection address")
         if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:
             key = list(ConnectionData.MICROS_DEV_IP_DICT.keys())[0]
@@ -83,23 +84,30 @@ class ConnectionData():
                 fuid = ConnectionData.MICROS_DEV_IP_DICT[device][2]
                 print("[{}] Device: {} - {} - {}".format(index, fuid, devip, uid))
                 device_choose_list.append(devip)
-            if len(device_choose_list) > 1:
-                index = int(input("Choose a device index: "))
-                ConnectionData.HOST = device_choose_list[index]
-                print("Device IP was set: {}".format(ConnectionData.HOST))
-            else:
-                print("Device not found.")
-                sys.exit(0)
+                if device is not None:
+                    if dev == uid or dev == devip or dev == fuid:
+                        print("Device was found: {}".format(dev))
+                        ConnectionData.HOST = devip
+                        device_was_found = True
+                        break
+            if not device_was_found:
+                if len(device_choose_list) > 1:
+                    index = int(input("Choose a device index: "))
+                    ConnectionData.HOST = device_choose_list[index]
+                    print("Device IP was set: {}".format(ConnectionData.HOST))
+                else:
+                    print("Device not found.")
+                    sys.exit(0)
 
     @staticmethod
-    def auto_execute(search=False):
+    def auto_execute(search=False, dev=None):
         if not os.path.isfile(ConnectionData.DEVICE_CACHE_PATH):
             search = True
         if search:
             ConnectionData.filter_MicrOS_devices()
         else:
             ConnectionData.read_MicrOS_device_cache()
-        ConnectionData.select_device()
+        ConnectionData.select_device(dev=dev)
         ConnectionData.read_port_from_nodeconf()
         return ConnectionData.HOST, ConnectionData.PORT
 
@@ -211,14 +219,21 @@ class SocketDictClient():
 #                       MAIN                            #
 #########################################################
 def socket_commandline_args(arg_list):
-    return_action_dict = {'search': False}
+    return_action_dict = {'search': False, 'dev': None}
     if "--scan" in arg_list:
         arg_list.remove("--scan")
         return_action_dict['search'] = True
+    if "--dev" in arg_list:
+        for index, arg in enumerate(arg_list):
+            if arg == "--dev":
+                return_action_dict['dev'] = arg_list[index+1]
+                arg_list.remove("--dev")
+                arg_list.remove(return_action_dict['dev'])
+                break
     if "--help" in arg_list:
         print("--scan\t\t- scan devices")
+        print("--dev\t\t- select device - value should be: fuid or uid or devip")
         sys.exit(0)
-
     return arg_list, return_action_dict
 
 def main(args):
@@ -236,5 +251,5 @@ def main(args):
 
 if __name__ == "__main__":
     args, action = socket_commandline_args(sys.argv[1:])
-    ConnectionData.auto_execute(search=action['search'])
+    ConnectionData.auto_execute(search=action['search'], dev=action['dev'])
     main(args)

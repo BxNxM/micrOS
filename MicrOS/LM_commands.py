@@ -29,19 +29,6 @@ def wifirssi(essid=None):
     else:
         return(wifi_rssi(essid))
 
-def addnumbs(*args):
-    cnt=0
-    msg=""
-    for k in args:
-        cnt+=k
-        msg+="{}+".format(k)
-    msg = msg[:-1]
-    return "{} = {}".format(msg, cnt)
-
 def time():
     from time import localtime
     return localtime()
-
-def listdir():
-    from os import listdir
-    return listdir()

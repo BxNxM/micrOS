@@ -5,7 +5,8 @@ def __init():
     if __OLED is None:
         import machine
         import ssd1306
-        i2c = machine.I2C(-1, machine.Pin(5), machine.Pin(4))
+        from LogicalPins import getPlatformValByKey
+        i2c = machine.I2C(-1, machine.Pin(getPlatformValByKey('i2c_scl')), machine.Pin(getPlatformValByKey('i2c_sda')))
         __OLED = ssd1306.SSD1306_I2C(128, 64, i2c)
 
 def text(intext="<text>", posx=0, posy=0, show=True):

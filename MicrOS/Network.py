@@ -82,49 +82,6 @@ def set_wifi(essid, pwd, timeout=50, ap_auto_disable=True, essid_force_connect=F
 
 #########################################################
 #                                                       #
-#                 GET WIFI STRENGHT                     #
-#                                                       #
-#########################################################
-def wifi_rssi(essid):
-    """ GET SSID AND CHANNEL FOR THE SELECTED ESSID"""
-    console_write("[WIFI RSSI METHOD] GET RSSI AND CHANNEL FOR GIVEN ESSID")
-    rssi = None
-    channel = None
-    sta_if = WLAN(STA_IF)
-    sta_if.active(True)
-    # if sta not connected to the given essid
-    if not sta_if.isconnected():
-        return None, None, None, (None, 0)
-    # if we are connected - get informations
-    try:
-        wifi_list = sta_if.scan()
-    except:
-        rssi = 0
-        channel = None
-        wifi_list = []
-    for wifi_spot in wifi_list:
-        if essid in str(wifi_spot):
-            rssi = wifi_spot[3]
-            channel = wifi_spot[2]
-    # calculate human readable quality for rssi - hr_rssi_tupple: human readuble rssi tumpe [0]- string, [1]: number 0-4
-    if rssi >= -30:
-        hr_rssi_tupple = "Amazing", 4
-    elif rssi >= -67:
-        hr_rssi_tupple = "VeryGood", 3
-    elif rssi >= -70:
-        hr_rssi_tupple = "Okey", 2
-    elif rssi >= -80:
-        hr_rssi_tupple = "NotGood", 1
-    elif rssi >= -90:
-        hr_rssi_tupple = "Unusable", 0
-    else:
-        hr_rssi_tupple = "N/A", -1
-
-    console_write("\t| essid, rssi, channel: " + str(essid) +", "+ str(rssi) +", "+ str(channel) +", "+ str(hr_rssi_tupple))
-    return essid, rssi, channel, hr_rssi_tupple
-
-#########################################################
-#                                                       #
 #               SET WIFI ACCESS POINT MODE              #
 #                                                       #
 #########################################################
@@ -179,6 +136,50 @@ def auto_network_configuration(essid=None, pwd=None, timeout=50, ap_auto_disable
     else:
         cfgput("nwmd", "STA")
         setNTP_RTC()
+
+#########################################################
+#                                                       #
+#                 GET WIFI STRENGHT                     #
+#                                                       #
+#########################################################
+def wifi_rssi(essid):
+    """ GET SSID AND CHANNEL FOR THE SELECTED ESSID"""
+    console_write("[WIFI RSSI METHOD] GET RSSI AND CHANNEL FOR GIVEN ESSID")
+    rssi = None
+    channel = None
+    sta_if = WLAN(STA_IF)
+    sta_if.active(True)
+    # if sta not connected to the given essid
+    if not sta_if.isconnected():
+        return None, None, None, (None, 0)
+    # if we are connected - get informations
+    try:
+        wifi_list = sta_if.scan()
+    except:
+        rssi = 0
+        channel = None
+        wifi_list = []
+    for wifi_spot in wifi_list:
+        if essid in str(wifi_spot):
+            rssi = wifi_spot[3]
+            channel = wifi_spot[2]
+    # calculate human readable quality for rssi - hr_rssi_tupple: human readuble rssi tumpe [0]- string, [1]: number 0-4
+    if rssi >= -30:
+        hr_rssi_tupple = "Amazing", 4
+    elif rssi >= -67:
+        hr_rssi_tupple = "VeryGood", 3
+    elif rssi >= -70:
+        hr_rssi_tupple = "Okey", 2
+    elif rssi >= -80:
+        hr_rssi_tupple = "NotGood", 1
+    elif rssi >= -90:
+        hr_rssi_tupple = "Unusable", 0
+    else:
+        hr_rssi_tupple = "N/A", -1
+
+    console_write("\t| essid, rssi, channel: " + str(essid) +", "+ str(rssi) +", "+ str(channel) +", "+ str(hr_rssi_tupple))
+    return essid, rssi, channel, hr_rssi_tupple
+
 
 def network_wifi_scan():
     return [ i[0].decode("utf-8") for i in WLAN().scan() ]

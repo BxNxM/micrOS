@@ -261,6 +261,4 @@ Bye!
 exit and close connection from ('10.0.1.7', 50518)
 ```
 
-TODO: SERVO CONTROLL: https://icircuit.net/micropython-controlling-servo-esp32-nodemcu/2385
-
 git push -u origin master

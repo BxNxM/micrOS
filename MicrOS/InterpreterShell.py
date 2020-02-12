@@ -105,6 +105,7 @@ def execute_LM_function(argument_list, SocketServerObj):
     1. param. - LM name, i.e. LM_commands
     2. param. - function call with parameters, i.e. a()
     '''
+    from machine import disable_irq, enable_irq
     if len(argument_list) >= 2:
         LM_name = "LM_{}".format(argument_list[0])
         LM_function_call = "".join(argument_list[1:])
@@ -113,7 +114,9 @@ def execute_LM_function(argument_list, SocketServerObj):
             LM_function_call = "{}()".format(LM_function)
     try:
         SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
+        state = disable_irq()
         exec("from {} import {}".format(LM_name, LM_function))
+        enable_irq(state)
         SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
     except Exception as e:
         SocketServerObj.reply_message("execute_LM_function: " + str(e))
@@ -122,8 +125,6 @@ def execute_LM_function(argument_list, SocketServerObj):
             collect()
             SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: " + str(mem_free()))
             del collect, mem_free
-    finally:
-        del LM_function, LM_name, LM_function_call
 
 def reset_shell_state():
     global CONFIGURE_MODE

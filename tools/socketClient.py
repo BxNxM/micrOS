@@ -158,7 +158,6 @@ class SocketDictClient():
                 while data == "" or data == "slim01 $  ":
                     time.sleep(1)
                     data += self.conn.recv(self.bufsize).decode('utf-8')
-                    #print("====> |{}|".format(data))
                 data_list = data.split('\n')
         return data, data_list
 

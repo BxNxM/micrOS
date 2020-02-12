@@ -174,8 +174,8 @@ function _set_dev_aliases() {
     console "GLOBAL DEV ALIASES"
     # GLOBAL DEV ALIASES | when device is connected
     alias nodemcu_erase='esptool.py --port ${nodemcu_PATH} erase_flash'
-    alias nodemcu_deploy='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect -fm dio 0 ${MICROPYTHON_PATH}'
-    alias nodemcu_deploy_2='esptool.py --port $nodemcu_PATH --baud 460800 write_flash --flash_size=detect 0 ${MICROPYTHON_PATH}'
+    alias nodemcu_deploy='esptool.py --port ${nodemcu_PATH} --baud 460800 write_flash --flash_size=detect -fm dio 0 ${MICROPYTHON_PATH}'
+    alias nodemcu_deploy_esp32='esptool.py --chip esp32 --port ${nodemcu_PATH} --baud 460800 write_flash -z 0x1000 ${MICROPYTHON_PATH}'
     alias nodemcu_screen_pid='ps aux | grep [s]creen'
     alias nodemcu_usedfrom='fuser ${nodemcu_PATH}'
     alias nodemcu_disconnect='echo $( nodemcu_usedfrom | awk " {print $1} ") unconnected && kill $( nodemcu_usedfrom | awk " {print $1} ")'

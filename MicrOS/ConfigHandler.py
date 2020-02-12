@@ -41,20 +41,22 @@ except Exception as e:
 #                       MODULE CONFIG
 #################################################################
 CONFIG_PATH="node_config.json"
-DEFAULT_CONFIGURATION_TEMPLATE = {"staessid": "your_wifi_name",
-                                  "stapwd": "your_wifi_passwd",
-                                  "devfid": "slim01",
-                                  "appwd": "ADmin123",
-                                  "pled": True,
-                                  "dbg": False,
-                                  "nwmd": "n/a",
-                                  "hwuid": "n/a",
-                                  "soctout": 100,
-                                  "socport": 9008,
-                                  "devip": "n/a",
-                                  "timirq": True,
-                                  "extirq": True,
-                                  "gmttime": +1}
+def default_config():
+    DEFAULT_CONFIGURATION_TEMPLATE = {"staessid": "your_wifi_name",
+                                      "stapwd": "your_wifi_passwd",
+                                      "devfid": "slim01",
+                                      "appwd": "ADmin123",
+                                      "pled": True,
+                                      "dbg": False,
+                                      "nwmd": "n/a",
+                                      "hwuid": "n/a",
+                                      "soctout": 100,
+                                      "socport": 9008,
+                                      "devip": "n/a",
+                                      "timirq": True,
+                                      "extirq": True,
+                                      "gmttime": +1}
+    return DEFAULT_CONFIGURATION_TEMPLATE
 
 #################################################################
 #                  CONFIGHANDLER  FUNCTIONS                     #
@@ -112,20 +114,20 @@ def __write_cfg_file(dictionary):
             return False
 
 def __inject_default_conf():
-    global DEFAULT_CONFIGURATION_TEMPLATE
-    if not isinstance(DEFAULT_CONFIGURATION_TEMPLATE, dict):
+    default_config_dict = default_config()
+    if not isinstance(default_config_dict, dict):
         console_write("__inject_default_conf input data type must be dict")
         return
-    DEFAULT_CONFIGURATION_TEMPLATE.update(__read_cfg_file())
+    default_config_dict.update(__read_cfg_file())
     try:
-        if __write_cfg_file(DEFAULT_CONFIGURATION_TEMPLATE):
+        if __write_cfg_file(default_config_dict):
             console_write("[CONFIGHANDLER] Inject default data struct successful")
         else:
             console_write("[CONFIGHANDLER] Inject default data struct failed")
     except Exception as e:
         console_write(e)
     finally:
-        del DEFAULT_CONFIGURATION_TEMPLATE
+        del default_config_dict
 
 def __value_type_handler(key, value):
     value_in_cfg = cfgget(key)

@@ -1,6 +1,7 @@
 # VERSION 1.0
 from machine import Pin
 from time import sleep
+from LogicalPins import getPlatformValByKey
 
 #################################################################
 #          _____ _                _____ _____                   #
@@ -11,7 +12,7 @@ from time import sleep
 #         \_____|______/_/    \_\_____/_____/                   #
 #################################################################
 try:
-    pled = Pin(16, Pin.OUT)
+    pled = Pin(getPlatformValByKey('progressled'), Pin.OUT)
 except:
     pled = None
 

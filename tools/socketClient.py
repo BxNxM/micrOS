@@ -10,9 +10,12 @@ import time
 import nwscan
 import json
 
+#########################################################
+#                 Device data handling                  #
+#########################################################
 class ConnectionData():
     HOST = 'localhost'
-    PORT = 9008                 # TODO: Get from MicrOS config ../MicroOS/node_config.json
+    PORT = 9008
     MICROS_DEV_IP_DICT = {}
     DEVICE_CACHE_PATH = os.path.join(myfolder, "device_conn_cache.json")
 
@@ -22,6 +25,9 @@ class ConnectionData():
             socket = None
             if '.' in device[0]:
                 try:
+                    if not (device[0].startswith('10.') or device[0].startswith('192.')):
+                        print("Invalid device IP:{} - skip".format(device[0]))
+                        continue
                     print("Device Query on {} ...".format(device[0]))
                     socket = SocketDictClient(host=device[0], port=ConnectionData.PORT)
                     reply = socket.non_interactive('hello')
@@ -43,10 +49,12 @@ class ConnectionData():
 
     @staticmethod
     def write_MicrOS_device_cache(device_dict):
+        ConnectionData.read_MicrOS_device_cache()
         cache_path = ConnectionData.DEVICE_CACHE_PATH
         print("Write MicrOS device cache: {}".format(cache_path))
         with open(cache_path, 'w') as f:
-            json.dump(device_dict, f, indent=4)
+            ConnectionData.MICROS_DEV_IP_DICT.update(device_dict)
+            json.dump(ConnectionData.MICROS_DEV_IP_DICT, f, indent=4)
 
     @staticmethod
     def read_MicrOS_device_cache():
@@ -54,7 +62,9 @@ class ConnectionData():
         if os.path.isfile(cache_path):
             print("Load MicrOS device cache: {}".format(cache_path))
             with open(cache_path, 'r') as f:
-                ConnectionData.MICROS_DEV_IP_DICT = json.load(f)
+                cache_content = json.load(f)
+                cache_content.update(ConnectionData.MICROS_DEV_IP_DICT)
+                ConnectionData.MICROS_DEV_IP_DICT = cache_content
         else:
             print("Load MicrOS device cache not found: {}".format(cache_path))
 
@@ -73,9 +83,13 @@ class ConnectionData():
                 fuid = ConnectionData.MICROS_DEV_IP_DICT[device][2]
                 print("[{}] Device: {} - {} - {}".format(index, fuid, devip, uid))
                 device_choose_list.append(devip)
-            index = int(input("Choose a device index: "))
-            ConnectionData.HOST = device_choose_list[index]
-            print("Device IP was set: {}".format(ConnectionData.HOST))
+            if len(device_choose_list) > 1:
+                index = int(input("Choose a device index: "))
+                ConnectionData.HOST = device_choose_list[index]
+                print("Device IP was set: {}".format(ConnectionData.HOST))
+            else:
+                print("Device not found.")
+                sys.exit(0)
 
     @staticmethod
     def auto_execute(search=False):
@@ -105,6 +119,9 @@ class ConnectionData():
         else:
             print("PORT INFORMATION COMES FROM: {}, but not exists!\n\t[HINT] Run {} script to generate default MicrOS config.".format(config_path, confighandler_path))
 
+#########################################################
+#               Socket Client Class                     #
+#########################################################
 class SocketDictClient():
 
     def __init__(self, host='localhost', port=9008, bufsize=4096):
@@ -191,13 +208,27 @@ class SocketDictClient():
         print(str_msg, end=end)
         return str_msg
 
-def main():
+#########################################################
+#                       MAIN                            #
+#########################################################
+def socket_commandline_args(arg_list):
+    return_action_dict = {'search': False}
+    if "--scan" in arg_list:
+        arg_list.remove("--scan")
+        return_action_dict['search'] = True
+    if "--help" in arg_list:
+        print("--scan\t\t- scan devices")
+        sys.exit(0)
+
+    return arg_list, return_action_dict
+
+def main(args):
     try:
         socketdictclient = SocketDictClient(host=ConnectionData.HOST, port=ConnectionData.PORT)
-        if len(sys.argv[1:]) == 0:
+        if len(args) == 0:
             socketdictclient.interactive()
         else:
-            socketdictclient.non_interactive(sys.argv[1:])
+            socketdictclient.non_interactive(args)
     except KeyboardInterrupt:
         pass
     except Exception as e:
@@ -205,5 +236,6 @@ def main():
             print("FAILED TO START: " + str(e))
 
 if __name__ == "__main__":
-    ConnectionData.auto_execute()
-    main()
+    args, action = socket_commandline_args(sys.argv[1:])
+    ConnectionData.auto_execute(search=action['search'])
+    main(args)

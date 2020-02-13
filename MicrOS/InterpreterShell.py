@@ -14,13 +14,15 @@ CONFIGURE_MODE = False
 def shell(msg=None, SocketServerObj=None):
     try:
         __shell(msg, SocketServerObj)
+        return True, ""
     except Exception as e:
         SocketServerObj.reply_message("Runtime error: {}".format(e))
+        return False, str(e)
 
 def __shell(msg, SocketServerObj):
     global CONFIGURE_MODE
     if msg is None or msg == "":
-        return ""
+        return None
     msg_list = msg.strip().split()
 
     # CONFIGURE MODE
@@ -57,7 +59,6 @@ def __shell(msg, SocketServerObj):
     elif not CONFIGURE_MODE and len(msg_list) != 0:
         command(msg_list, SocketServerObj)
 
-
 #########################################################
 #               CONFIGURE MODE HANDLER                  #
 #########################################################
@@ -87,18 +88,26 @@ def load_LMs():
     from os import listdir
     LM_MODULE_LIST = [i for i in listdir() if i.startswith('LM_')]
     LM_MODULE_LIST = [i.replace('.py', '') for i in LM_MODULE_LIST if i.endswith('.py')]
-    del listdir
+    #del listdir
     return LM_MODULE_LIST
 
 def show_LMs_functions(SocketServerObj):
     for LM in load_LMs():
-        exec("import " + str(LM))
-        LM_functions = eval("dir({})".format(LM))
-        LM_functions = [i for i in LM_functions if not i.startswith('__')]
-        LM = LM.replace('LM_', '')
-        SocketServerObj.reply_message("   {}".format(LM))
-        for func in LM_functions:
-            SocketServerObj.reply_message("   {}{}".format(" "*len(LM), func))
+        try:
+            exec("import " + str(LM))
+            LM_functions = [i for i in eval("dir({})".format(LM)) if not i.startswith('__')]
+            LM = LM.replace('LM_', '')
+            SocketServerObj.reply_message("   {}".format(LM))
+            for func in LM_functions:
+                SocketServerObj.reply_message("   {}{}".format(" "*len(LM), func))
+        except Exception as e:
+            SocketServerObj.reply_message("LM PARSER WARNING: {}".format(e))
+            raise Exception("show_LMs_functions exception: {}".format(e))
+        #finally:
+        #    try:
+        #        del LM_functions, LM
+        #    except:
+        #        pass
 
 def execute_LM_function(argument_list, SocketServerObj):
     '''
@@ -117,6 +126,7 @@ def execute_LM_function(argument_list, SocketServerObj):
         state = disable_irq()
         exec("from {} import {}".format(LM_name, LM_function))
         enable_irq(state)
+        #del state
         SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
     except Exception as e:
         SocketServerObj.reply_message("execute_LM_function: " + str(e))
@@ -124,7 +134,11 @@ def execute_LM_function(argument_list, SocketServerObj):
             from gc import collect, mem_free
             collect()
             SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: " + str(mem_free()))
-            del collect, mem_free
+            #del collect, mem_free
+    #try:
+    #    del disable_irq, enable_irq, LM_name, LM_function_call, LM_function
+    #except:
+    #    pass
 
 def reset_shell_state():
     global CONFIGURE_MODE

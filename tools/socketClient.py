@@ -154,17 +154,17 @@ class SocketDictClient():
             sys.exit(0)
         return data
 
-    def receive_data(self):
+    def receive_data(self, wait_before_msg=1):
         data = ""
         data_list = []
         if select.select([self.conn], [], [], 3)[0]:
             if self.is_interactive:
-                time.sleep(1.5)
+                time.sleep(wait_before_msg)
                 data = self.conn.recv(self.bufsize).decode('utf-8')
                 data_list = data.split('\n')
             else:
                 while data == "" or data == "slim01 $  ":
-                    time.sleep(1)
+                    time.sleep(wait_before_msg)
                     data += self.conn.recv(self.bufsize).decode('utf-8')
                 data_list = data.split('\n')
         return data, data_list

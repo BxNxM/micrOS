@@ -48,6 +48,7 @@ function welcome_and_init() {
     export AMPY_PORT="$nodemcu_PATH"                                  # set for ampy env
     export MICROS_PATH="${SETUP_DIR}/MicrOS"
     export MICROS_MPY_PATH="${SETUP_DIR}/mpy-MicrOS"
+    PS1='\e[33;1m\u@\h: \e[31m\W\e[0m\$ '
 
     _get_micropython_fw_bin
 }
@@ -189,15 +190,15 @@ function _set_dev_aliases() {
 
 function _set_default_aliases() {
     console "GLOBAL DEV [DEFAULT] ALIASES"
+    source ~/.bash_aliases
     # GLOBAL DEV ALIASES | always avaible
-    alias nodemcu_lsdiv='ls -la /dev/tty.*'
+    alias nodemcu_lsdiv='ls -Gla /dev/tty.*'
     alias nodemcu_get_DOCS='wget -r https://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html'
     alias nodemcu_help='alias | grep [n]ode_* && alias | grep [l]sdiv && alias | grep [g]et_DOC && alias | grep [g]l && alias | grep [a]mpy_get_all && alias | grep [a]mpy_put_all'
     alias ss='source ${SETUP_PATH}'
     alias gitl='git log --pretty=format:"%h %s" --graph'
-    alias ll='ls -lh'
-    alias llt='ls -lth'
-    source ~/.bash_aliases
+    alias ll='ls -Glh'
+    alias llt='ls -Glth'
     source "${SETUP_DIR}/micropython_repo/setup"
     alias  socketclient="${SETUP_DIR}/tools/socketClient.py"
 }

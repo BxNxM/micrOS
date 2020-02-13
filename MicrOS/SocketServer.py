@@ -1,4 +1,4 @@
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from sys import platform
 
 #########################################################
@@ -17,11 +17,6 @@ try:
 except Exception as e:
     console_write("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
     sta_if = None
-
-try:
-    from InterpreterShell import shell as InterpreterShell_shell
-except Exception as e:
-    console_write("InterpreterShell import error: {}".format(e))
 
 #########################################################
 #                    SOCKET SERVER CLASS                #
@@ -84,14 +79,14 @@ class SocketServer():
                 console_write("USER_TIMEOUT value error, must be <int>: {}".format(e))
 
     def bind(self):
-        retry = 3
+        retry = 6
         for i in range(retry):
             try:
+                self.s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
                 self.s.bind((self.host, self.port))
                 break
             except Exception as msg:
                 self.server_console('[ socket server ] Bind failed. Error Code : ' + str(msg))
-                self.port +=1
         self.server_console('[ socket server ] Socket bind complete')
         self.s.listen(10)
         self.server_console('[ socket server ] Socket now listening')
@@ -155,9 +150,12 @@ class SocketServer():
         try:
             from InterpreterShell import reset_shell_state as InterpreterShell_reset_shell_state
             InterpreterShell_reset_shell_state()
-            del InterpreterShell_reset_shell_state
+            #del InterpreterShell_reset_shell_state
+            from gc import collect
+            collect()
+            del collect
         except Exception as e:
-            console_write("InterpreterShell_reset_shell_state error: " + str(e))
+            console_write("InterpreterShell_reset_shell_state / gc collect error: " + str(e))
         self.pre_prompt = ""
         self.server_console_indent = 0
         # Accept new connection
@@ -167,17 +165,20 @@ class SocketServer():
         self.bind()
         while inloop:
             try:
-                reply_msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
-                if reply_msg is not None:
-                    self.reply_message(reply_msg)
+                from InterpreterShell import shell as InterpreterShell_shell
+                is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
+                if not is_healthy:
+                    console_write("==> InterpreterShell error: " + str(msg))
+                del InterpreterShell_shell
             except Exception as e:
-                console_write("SocketServer error: " + str(e))
+                console_write("[REINIT] SocketServer error: " + str(e))
                 self.deinit_socket()
                 self.init_socket()
                 self.bind()
         if not inloop:
-            reply_msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
-            self.reply_message(reply_msg)
+            from InterpreterShell import shell as InterpreterShell_shell
+            is_healthy = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
+            del InterpreterShell_shell, is_healthy
 
     def get_prompt(self):
         return "{}{} ".format(self.pre_prompt, SocketServer.prompt).encode('utf-8')

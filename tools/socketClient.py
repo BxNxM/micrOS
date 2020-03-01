@@ -163,7 +163,7 @@ class SocketDictClient():
                 data = self.conn.recv(self.bufsize).decode('utf-8')
                 data_list = data.split('\n')
             else:
-                while data == "" or data == "slim01 $  ":
+                while data == "":
                     time.sleep(wait_before_msg)
                     data += self.conn.recv(self.bufsize).decode('utf-8')
                 data_list = data.split('\n')

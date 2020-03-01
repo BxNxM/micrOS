@@ -75,7 +75,7 @@ def cfgput(key, value):
             cfg_dict_buffer = __read_cfg_file()
             cfg_dict_buffer[key] = value
             __write_cfg_file(cfg_dict_buffer)
-            del cfg_dict_buffer
+            del cfg_dict_buffer, value
             return True
     except:
         return False

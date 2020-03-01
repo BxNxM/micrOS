@@ -29,6 +29,13 @@ def wifirssi(essid=None):
     else:
         return(wifi_rssi(essid))
 
+def irq(state=True):
+    from machine import disable_irq, enable_irq
+    if state:
+        enable_irq()
+    else:
+        disable_irq()
+
 def time():
     from time import localtime
     return localtime()

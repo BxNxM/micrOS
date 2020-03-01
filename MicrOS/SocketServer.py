@@ -1,5 +1,7 @@
-from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from sys import platform
+from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+from DynamicExec import DynamicExec
+from gc import collect
 
 #########################################################
 #                         IMPORTS                       #
@@ -28,6 +30,7 @@ class SocketServer():
     prompt = "{} $ ".format(cfgget('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
+        self.CONFIGURE_MODE = False
         self.pre_prompt = ""
         self.server_console_indent = 0
         self.server_console("[ socket server ] <<constructor>>")
@@ -148,14 +151,10 @@ class SocketServer():
         self.conn.close()
         # Reset Shell & prompt
         try:
-            from InterpreterShell import reset_shell_state as InterpreterShell_reset_shell_state
-            InterpreterShell_reset_shell_state()
-            #del InterpreterShell_reset_shell_state
-            from gc import collect
+            self.CONFIGURE_MODE = False
             collect()
-            del collect
         except Exception as e:
-            console_write("InterpreterShell_reset_shell_state / gc collect error: " + str(e))
+            console_write("[ERROR] gc collect: " + str(e))
         self.pre_prompt = ""
         self.server_console_indent = 0
         # Accept new connection
@@ -165,20 +164,19 @@ class SocketServer():
         self.bind()
         while inloop:
             try:
-                from InterpreterShell import shell as InterpreterShell_shell
-                is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
+                is_healthy, msg = DynamicExec(self.wait_for_message(), SocketServerObj=self, module='InterpreterShell', function='shell')
+                #is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
                 if not is_healthy:
                     console_write("==> InterpreterShell error: " + str(msg))
-                del InterpreterShell_shell
             except Exception as e:
                 console_write("[REINIT] SocketServer error: " + str(e))
                 self.deinit_socket()
                 self.init_socket()
                 self.bind()
         if not inloop:
-            from InterpreterShell import shell as InterpreterShell_shell
-            is_healthy = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
-            del InterpreterShell_shell, is_healthy
+            is_healthy = DynamicExec(self.wait_for_message(), SocketServerObj=self, module='InterpreterShell', function='shell')
+            #is_healthy = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
+            del is_healthy
 
     def get_prompt(self):
         return "{}{} ".format(self.pre_prompt, SocketServer.prompt).encode('utf-8')

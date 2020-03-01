@@ -55,19 +55,35 @@ function welcome_and_init() {
 
 function precompile() {
     local exception_file_list=("boot.py" "main.py" "LM_")
+    local exception_white_list=()
     local files_list=($(find "$MICROS_PATH" -type f -iname "*.py"))
+    local py_base=""
+    local skip=0
+
+    console "Cleanup [*.py, *.mpy] $MICROS_MPY_PATH folder."
+    pushd $MICROS_MPY_PATH
+        rm -f "*.py"
+        rm -f "*.mpy"
+    popd
+
     for py in ${files_list[@]}
     do
-        local isskip=0
-        for skipfile in ${exception_file_list[@]}
+        py_base="$(basename $py)"
+        skip=0
+        for skip_file in ${exception_file_list[@]}
         do
-            if [[ "$py" == *"$skipfile"* ]]
+            if [[ "$py_base" == *"$skip_file"* ]]
             then
-                isskip=1
+                if [[ "$py_base" == *"LM_"* ]] && [[ "${exception_white_list[*]}" == *"$py_base"* ]]
+                then
+                    skip=0
+                else
+                    skip=1
+                fi
             fi
         done
 
-        if [ "$isskip" -eq 1 ]
+        if [ "$skip" -eq 1 ]
         then
             console "[i] Skip compile: $py"
             console "Copy $py -> $MICROS_MPY_PATH"
@@ -185,6 +201,7 @@ function _set_dev_aliases() {
     alias nodemcu_gl='ampy get logs.log'                  # works if: device root folder has logs.log file
     alias nodemcu_get_all='_ampy_get_all_'
     alias nodemcu_put_all='_ampy_put_all'
+    alias make_all_done='nodemcu_erase && nodemcu_deploy && nodemcu_put_all'
     # wget: http://linuxreviews.org/quicktips/wget/
 }
 

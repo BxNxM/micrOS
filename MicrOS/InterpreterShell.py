@@ -2,38 +2,53 @@ try:
     from ConfigHandler import cfgget, cfgput, cfgget_all
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
+try:
+    from machine import disable_irq, enable_irq
+except Exception as e:
+    disable_irq = None
+    enable_irq = None
+    print("Failed to import machine: {}".format(e))
+try:
+    from gc import collect, mem_free
+except Exception as e:
+    print("Failed to import gc: {}".format(e))
 
-#########################################################
-#                    MODULE VARIABLES                   #
-#########################################################
-CONFIGURE_MODE = False
+from os import listdir
+from DynamicExec import varResolver
 
 #########################################################
 #             SHELL Interpreter FUNCTIONS               #
 #########################################################
-def shell(msg=None, SocketServerObj=None):
+def shell(*args, **kwargs):
+    '''
+    Socket server - interpreter shell wrapper
+    '''
+    msg = varResolver(fallback_index=0, args_tuple=args, kwargs_dict=kwargs)
+    SocketServerObj = varResolver(key='SocketServerObj', fallback_index=1, args_tuple=args, kwargs_dict=kwargs)
     try:
         __shell(msg, SocketServerObj)
         return True, ""
     except Exception as e:
-        SocketServerObj.reply_message("Runtime error: {}".format(e))
+        SocketServerObj.reply_message("[SHELL] Runtime error: {}".format(e))
         return False, str(e)
 
 def __shell(msg, SocketServerObj):
-    global CONFIGURE_MODE
+    '''
+    Socket server - interpreter shell
+    '''
     if msg is None or msg == "":
         return None
     msg_list = msg.strip().split()
 
-    # CONFIGURE MODE
+    # CONFIGURE MODE 'ENV' SETUP
     if msg_list[0] == "configure" or msg_list[0] == "conf":
         if len(msg_list) == 1:
-            CONFIGURE_MODE = True
+            SocketServerObj.CONFIGURE_MODE = True
             SocketServerObj.pre_prompt = "[configure] "
         msg_list = []
     elif msg_list[0] == "noconfigure" or msg_list[0] == "noconf":
         if len(msg_list) == 1:
-            CONFIGURE_MODE = False
+            SocketServerObj.CONFIGURE_MODE = False
             SocketServerObj.pre_prompt = ""
         msg_list = []
 
@@ -41,23 +56,23 @@ def __shell(msg, SocketServerObj):
     if "help" in msg_list:
         SocketServerObj.reply_message("hello - default hello msg - identify device (SocketServer)")
         SocketServerObj.reply_message("exit  - exit from shell socket prompt (SocketServer)")
-        SocketServerObj.reply_message("Configure mode:")
+        SocketServerObj.reply_message("[CONF] Configure mode:")
         SocketServerObj.reply_message("   configure|conf     - Enter conf mode")
         SocketServerObj.reply_message("         Key          - Get value")
         SocketServerObj.reply_message("         Key:Value    - Set value")
         SocketServerObj.reply_message("         dump         - Dump all data")
         SocketServerObj.reply_message("   noconfigure|noconf - Exit conf mod")
-        SocketServerObj.reply_message("Command mode:")
+        SocketServerObj.reply_message("[EXEC] Command mode:")
         show_LMs_functions(SocketServerObj)
         msg_list = []
 
     # EXECUTE:
     # @1 Configure mode
-    if CONFIGURE_MODE and len(msg_list) != 0:
+    if SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
         configure(msg_list, SocketServerObj)
     # @2 Command mode
-    elif not CONFIGURE_MODE and len(msg_list) != 0:
-        command(msg_list, SocketServerObj)
+    elif not SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
+        execute_LM_function(argument_list=msg_list, SocketServerObj=SocketServerObj)
 
 #########################################################
 #               CONFIGURE MODE HANDLER                  #
@@ -81,40 +96,34 @@ def configure(attributes, SocketServerObj):
 #########################################################
 #               COMMAND MODE & LMS HANDLER              #
 #########################################################
-def command(attributes_list, SocketServerObj):
-    execute_LM_function(attributes_list, SocketServerObj)
-
 def load_LMs():
-    from os import listdir
-    LM_MODULE_LIST = [i for i in listdir() if i.startswith('LM_')]
-    LM_MODULE_LIST = [i.replace('.py', '') for i in LM_MODULE_LIST if i.endswith('.py')]
-    #del listdir
+    LM_MODULE_LIST = [i for i in listdir() if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))]
+    LM_MODULE_LIST = [i.split('.')[0] for i in LM_MODULE_LIST]
     return LM_MODULE_LIST
 
 def show_LMs_functions(SocketServerObj):
     for LM in load_LMs():
+        LMpath = '{}.py'.format(LM)
+        if LMpath not in listdir():
+            LMpath = './{}.mpy'.format(LM)
         try:
-            exec("import " + str(LM))
-            LM_functions = [i for i in eval("dir({})".format(LM)) if not i.startswith('__')]
-            LM = LM.replace('LM_', '')
-            SocketServerObj.reply_message("   {}".format(LM))
-            for func in LM_functions:
-                SocketServerObj.reply_message("   {}{}".format(" "*len(LM), func))
+            with open(LMpath, 'r') as f:
+                SocketServerObj.reply_message("   {}".format(LM.replace('LM_', '')))
+                while True:
+                    line = f.readline()
+                    if not line:
+                        break
+                    if "def" in line and "def __" not in line:
+                        SocketServerObj.reply_message("   {}{}".format(" "*len(LM.replace('LM_', '')), line.split('(')[0].split(' ')[1]))
         except Exception as e:
-            SocketServerObj.reply_message("LM PARSER WARNING: {}".format(e))
-            raise Exception("show_LMs_functions exception: {}".format(e))
-        #finally:
-        #    try:
-        #        del LM_functions, LM
-        #    except:
-        #        pass
+            SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LM, e))
+            raise Exception("show_LMs_functions [{}] exception: {}".format(LM, e))
 
 def execute_LM_function(argument_list, SocketServerObj):
     '''
     1. param. - LM name, i.e. LM_commands
     2. param. - function call with parameters, i.e. a()
     '''
-    from machine import disable_irq, enable_irq
     if len(argument_list) >= 2:
         LM_name = "LM_{}".format(argument_list[0])
         LM_function_call = "".join(argument_list[1:])
@@ -123,24 +132,17 @@ def execute_LM_function(argument_list, SocketServerObj):
             LM_function_call = "{}()".format(LM_function)
     try:
         SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
-        state = disable_irq()
+        if disable_irq is not None:
+            status = disable_irq()
         exec("from {} import {}".format(LM_name, LM_function))
-        enable_irq(state)
-        #del state
+        if enable_irq is not None:
+            enable_irq(status)
         SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
     except Exception as e:
+        if enable_irq is not None:
+            enable_irq(status)
         SocketServerObj.reply_message("execute_LM_function: " + str(e))
         if "memory allocation failed" in str(e):
-            from gc import collect, mem_free
             collect()
-            SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: " + str(mem_free()))
-            #del collect, mem_free
-    #try:
-    #    del disable_irq, enable_irq, LM_name, LM_function_call, LM_function
-    #except:
-    #    pass
-
-def reset_shell_state():
-    global CONFIGURE_MODE
-    CONFIGURE_MODE = False
+            SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: {}".format(mem_free()))
 

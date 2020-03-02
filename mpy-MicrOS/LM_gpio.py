@@ -31,6 +31,9 @@ def RGB_deinit():
     __RLED.deinit()
     __GLED.deinit()
     __BLED.deinit()
+    __RLED = None
+    __GLED = None
+    __BLED = None
     return "DEINIT RGB"
 
 def __SERVO_init():
@@ -62,6 +65,7 @@ def Servo_deinit():
     __SERVO_init
     try:
         __SERVO.deinit()
+        __SERVO = None
         return "DEINIT SERVO"
     except Exception as e:
         return str(e)

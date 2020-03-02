@@ -169,6 +169,7 @@ class SocketServer():
                     console_write("==> InterpreterShell error: " + str(msg))
             except Exception as e:
                 console_write("[REINIT] SocketServer error: " + str(e))
+                collect()               # gc collect
                 self.deinit_socket()
                 self.init_socket()
                 self.bind()

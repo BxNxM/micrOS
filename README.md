@@ -1,4 +1,10 @@
-# MicrOS - IOT
+# MicrOS - IOT platfrom
+
+## Architecture
+
+![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
+
+## Device Pinout
 
 ![esp8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/ESP8266-NodeMCU-kit-12-E-pinout-gpio-pin.png?raw=true)
 

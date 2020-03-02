@@ -12,8 +12,8 @@ def gccollect():
 def reboot():
     from machine import reset
     try:
-        from LM_oled_128x64i2c import __deinit
-        __deinit()
+        from LM_oled_128x64i2c import poweroff
+        poweroff()
     except:
         pass
     reset()

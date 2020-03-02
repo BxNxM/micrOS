@@ -12,8 +12,8 @@ def gccollect():
 def reboot():
     from machine import reset
     try:
-        from LM_oled_128x64i2c import __deinit
-        __deinit()
+        from LM_oled_128x64i2c import poweroff
+        poweroff()
     except:
         pass
     reset()
@@ -28,13 +28,6 @@ def wifirssi(essid=None):
         return(wifi_rssi(cfgget('staessid')))
     else:
         return(wifi_rssi(essid))
-
-def irq(state=True):
-    from machine import disable_irq, enable_irq
-    if state:
-        enable_irq()
-    else:
-        disable_irq()
 
 def time():
     from time import localtime

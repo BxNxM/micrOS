@@ -1,7 +1,7 @@
 from sys import platform
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
-from DynamicExec import DynamicExec
 from gc import collect
+from InterpreterShell import shell as InterpreterShell_shell
 
 #########################################################
 #                         IMPORTS                       #
@@ -164,8 +164,7 @@ class SocketServer():
         self.bind()
         while inloop:
             try:
-                is_healthy, msg = DynamicExec(self.wait_for_message(), SocketServerObj=self, module='InterpreterShell', function='shell')
-                #is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
+                is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
                 if not is_healthy:
                     console_write("==> InterpreterShell error: " + str(msg))
             except Exception as e:
@@ -174,8 +173,7 @@ class SocketServer():
                 self.init_socket()
                 self.bind()
         if not inloop:
-            is_healthy = DynamicExec(self.wait_for_message(), SocketServerObj=self, module='InterpreterShell', function='shell')
-            #is_healthy = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
+            is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
             del is_healthy
 
     def get_prompt(self):

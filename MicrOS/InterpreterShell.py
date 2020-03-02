@@ -14,17 +14,14 @@ except Exception as e:
     print("Failed to import gc: {}".format(e))
 
 from os import listdir
-from DynamicExec import varResolver
 
 #########################################################
 #             SHELL Interpreter FUNCTIONS               #
 #########################################################
-def shell(*args, **kwargs):
+def shell(msg, SocketServerObj):
     '''
     Socket server - interpreter shell wrapper
     '''
-    msg = varResolver(fallback_index=0, args_tuple=args, kwargs_dict=kwargs)
-    SocketServerObj = varResolver(key='SocketServerObj', fallback_index=1, args_tuple=args, kwargs_dict=kwargs)
     try:
         __shell(msg, SocketServerObj)
         return True, ""
@@ -81,7 +78,11 @@ def configure(attributes, SocketServerObj):
     # Get value
     if len(attributes) == 1:
         if attributes[0] == "dump":
-            SocketServerObj.reply_message(cfgget_all())
+            val_spacer = 10
+            for key, value in cfgget_all().items():
+                spcr = (int(val_spacer/3) - int(val_spacer/5))
+                spcr2 = (val_spacer - len(key))
+                SocketServerObj.reply_message("  {}{}:{} {}".format(key, " "*spcr2, " "*spcr,  value))
         else:
             key = attributes[0]
             SocketServerObj.reply_message(cfgget(key))
@@ -131,13 +132,15 @@ def execute_LM_function(argument_list, SocketServerObj):
         if "(" not in LM_function_call and ")" not in LM_function_call:
             LM_function_call = "{}()".format(LM_function)
     try:
-        SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
         if disable_irq is not None:
             status = disable_irq()
+        # LM LOAD & EXECUTE #
+        SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
         exec("from {} import {}".format(LM_name, LM_function))
+        SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
+        # ----------------- #
         if enable_irq is not None:
             enable_irq(status)
-        SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
     except Exception as e:
         if enable_irq is not None:
             enable_irq(status)

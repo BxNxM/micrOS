@@ -29,6 +29,13 @@ def wifirssi(essid=None):
     else:
         return(wifi_rssi(essid))
 
+def heartbeat():
+    from ProgressLED import toggle
+    from time import sleep
+    toggle()
+    sleep(0.1)
+    toggle()
+
 def time():
     from time import localtime
     return localtime()

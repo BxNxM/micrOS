@@ -1,29 +1,28 @@
 from ConfigHandler import cfgget, console_write
 from micropython import alloc_emergency_exception_buf
+from InterpreterShell import execute_LM_function
 alloc_emergency_exception_buf(100)
 
 #################################################################
 #                       TIMER INTERRUPT(S)                      #
 #################################################################
 TIMIRQ_OVERALP = False
-TIMIQQ_CALLBACK = None
 def secureInterruptHandler(timer=None):
-    global TIMIRQ_OVERALP, TIMIQQ_CALLBACK
-    if not TIMIRQ_OVERALP and TIMIQQ_CALLBACK is not None:
+    global TIMIRQ_OVERALP
+    if not TIMIRQ_OVERALP:
         TIMIRQ_OVERALP = True
         try:
-            TIMIQQ_CALLBACK(timer)
+            timirqcbf = cfgget('timirqcbf')
+            if timirqcbf != 'n/a':
+                execute_LM_function(timirqcbf.split(' '))
         except Exception as e:
             console_write("TIMIRQ callback error: " + str(e))
         TIMIRQ_OVERALP = False
     else:
         console_write("TIMIRQ process overlap... skip job.")
 
-def enableInterrupt(callback=None, period_ms=4000):
-    global TIMIQQ_CALLBACK
-    TIMIQQ_CALLBACK = callback
-    interrupt_is_enabled = cfgget("timirq")
-    if callback is not None and interrupt_is_enabled:
+def enableInterrupt(period_ms=4000):
+    if cfgget("timirq") and cfgget('timirqcbf') != 'n/a':
         console_write("TIMIRQ ENABLED")
         from machine import Timer
         timer = Timer(0)
@@ -39,24 +38,22 @@ def enableInterrupt(callback=None, period_ms=4000):
 # trigger=3                 both
 #################################################################
 EVIRQ_OVERALP = False
-EVIQQ_CALLBACK = None
 def secureEventInterruptHandler(pin=None):
-    global EVIRQ_OVERALP, EVIQQ_CALLBACK
-    if not EVIRQ_OVERALP and EVIQQ_CALLBACK is not None:
+    global EVIRQ_OVERALP
+    if not EVIRQ_OVERALP:
         EVIRQ_OVERALP = True
         try:
-            EVIQQ_CALLBACK(pin)
+            extirqcbf = cfgget('extirqcbf')
+            if extirqcbf != 'n/a':
+                execute_LM_function(extirqcbf.split(' '))
         except Exception as e:
             console_write("EVENTIRQ callback error: " + str(e))
         EVIRQ_OVERALP = False
     else:
         console_write("EVENTIRQ process overlap... skip job.")
 
-def init_eventPIN(callback=None, pin=12):
-    global EVIQQ_CALLBACK
-    EVIQQ_CALLBACK = callback
-    interrupt_is_enabled = cfgget('extirq')
-    if callback is not None and interrupt_is_enabled:
+def init_eventPIN(pin=12):
+    if cfgget('extirq') and cfgget('extirqcbf') != 'n/a':
         console_write("EVENTIRQ ENABLED")
         from machine import Pin
         event_pin = Pin(pin, Pin.IN, Pin.PULL_UP)

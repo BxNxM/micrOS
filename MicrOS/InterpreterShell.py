@@ -87,12 +87,13 @@ def configure(attributes, SocketServerObj):
             key = attributes[0]
             SocketServerObj.reply_message(cfgget(key))
     # Set value
-    elif len(attributes) == 2:
+    elif len(attributes) >= 2:
         key = attributes[0]
-        value = attributes[1]
-        SocketServerObj.reply_message(cfgput(key, value))
-    else:
-        SocketServerObj.reply_message("Too many arguments - [1] key [2] value")
+        value = " ".join(attributes[1:])
+        try:
+            SocketServerObj.reply_message(cfgput(key, value))
+        except Exception as e:
+            SocketServerObj.reply_message("Set config error: ".format(e))
 
 #########################################################
 #               COMMAND MODE & LMS HANDLER              #
@@ -120,7 +121,7 @@ def show_LMs_functions(SocketServerObj):
             SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LM, e))
             raise Exception("show_LMs_functions [{}] exception: {}".format(LM, e))
 
-def execute_LM_function(argument_list, SocketServerObj):
+def execute_LM_function(argument_list, SocketServerObj=None):
     '''
     1. param. - LM name, i.e. LM_commands
     2. param. - function call with parameters, i.e. a()
@@ -135,17 +136,24 @@ def execute_LM_function(argument_list, SocketServerObj):
         if disable_irq is not None:
             status = disable_irq()
         # LM LOAD & EXECUTE #
-        SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
+        if  SocketServerObj is not None:
+            SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
         exec("from {} import {}".format(LM_name, LM_function))
-        SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
+        if  SocketServerObj is not None:
+            SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
+        else:
+            eval("{}".format(LM_function_call))
         # ----------------- #
         if enable_irq is not None:
             enable_irq(status)
     except Exception as e:
         if enable_irq is not None:
             enable_irq(status)
-        SocketServerObj.reply_message("execute_LM_function: " + str(e))
+        if  SocketServerObj is not None:
+            SocketServerObj.reply_message("execute_LM_function: " + str(e))
+        else:
+            print("execute_LM_function: " + str(e))
         if "memory allocation failed" in str(e):
             collect()
-            SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: {}".format(mem_free()))
+            if  SocketServerObj is not None: SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: {}".format(mem_free()))
 

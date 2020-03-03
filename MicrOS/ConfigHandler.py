@@ -54,7 +54,9 @@ def default_config():
                                       "socport": 9008,
                                       "devip": "n/a",
                                       "timirq": True,
+                                      "timirqcbf": "n/a",
                                       "extirq": True,
+                                      "extirqcbf": "n/a",
                                       "gmttime": +1}
     return DEFAULT_CONFIGURATION_TEMPLATE
 

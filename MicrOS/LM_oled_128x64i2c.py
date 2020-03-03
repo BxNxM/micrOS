@@ -1,4 +1,5 @@
 __OLED = None
+__INVERT = True
 
 def __init():
     global __OLED
@@ -15,9 +16,14 @@ def text(intext="<text>", posx=0, posy=0, show=True):
     if show: __OLED.show()
     return True
 
-def invert(state=True):
+def invert(state=None):
+    global __INVERT
     if  __OLED is None: __init()
-    __OLED.invert(state)
+    if state is not None:
+        __OLED.invert(state)
+    else:
+        __INVERT = not __INVERT
+        __OLED.invert(__INVERT)
     return True
 
 def clean(state=0, show=True):

@@ -1,6 +1,6 @@
 # MicrOS - IOT platfrom
 
-## Architecture
+## System Architecture
 
 ![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
 
@@ -11,18 +11,18 @@
 Esp8266 Micropython based - APPlication Core - with -
 User function injection over LM_<userapp>.py 
 
-- [ **DONE** ] Main block “thread” - rest api socket server
-	- [ **DONE** ] command "shell" terminal - config handling - LoadModule ->command invocation
-- [ **DONE** ] Configuration management - json based
-	- split / subconfig handling ? - load optimization
-- [ **DONE** ] Network autoconfiguration - STA - AP fallback
-	- [ **DONE** ] AP mode add WPA encription
-- [ **DONE** ] PM modul import optimization
-- [ **DONE** ] Timer interrupts - async program execution - display refresh / heartbeat led / etc.? 
-	- https://docs.micropython.org/en/latest/library/machine.Timer.html
-- [ **DONE** ] Button (GPIO) interrupt - event handling
-- [ **DONE** ] Precompile py -> mpy modules - mpy-cross compiler
-	- [ **DONE** ] precompile flow automatization
+## MicrOS Features
+
+- Config handling - node_config.json
+- Socket interpreter - interactive interruption with the device
+	- Config SET/GET/DUMP
+	- Load Module function execution
+- Network handling
+	- STA / AP based on config
+- Socket client - interactive - non interactive mode
+- Interrupt callbacks	
+	- Time based
+	- Event based 	 
 
 > Note:
 To remove ^M after get source files from nodemcu in vim:
@@ -41,7 +41,7 @@ To remove ^M after get source files from nodemcu in vim:
 	- telnet / or use dedicated **socketClient**
 		- tools/socketClient.py
 			- embedded device scan (arp -a dependency)
-			- cache device data
+			- cache device connection data
 			- non-interactive and interactive modes
 	
 #### Source devenv (bash)
@@ -50,90 +50,107 @@ To remove ^M after get source files from nodemcu in vim:
 source setup
 ```
 
-#### Deploy micropython
+#### Erase device & Deploy micropython & Put MicrOS resources 
 
 ```
-nodemcu_erase && nodemcu deploy
+make_all_done
 ```
 
-#### Put resorces to nodemcu
-
-```
-nodemcu_put_all
-```
-
-## Socket terminal example
-
-### Connect device
-
-```
-╰─➤  telnet <deviceIP> <devicePORT>
-Trying <deviceIP>...
-Connected to <deviceIP>.
-Escape character is '^]'.
-```
+## Socket terminal example - non interactive
 
 ### Identify device
 
 ```
->>>  hello
-hello:slim01:0x600x10x940x1f0x7e0xfa
+socketclient --dev slim01 hello
+Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
+Activate MicrOS device connection address
+[i]         FUID        IP               UID
+[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+Device was found: slim01
+hello:slim01:0x500x20x910x680xc0xf7
 ```
 
 ### Get help
 
 ```
-slim01 $  help
+socketclient --dev slim01 help
+Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
+Activate MicrOS device connection address
+[i]         FUID        IP               UID
+[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+Device was found: slim01
 hello - default hello msg - identify device (SocketServer)
 exit  - exit from shell socket prompt (SocketServer)
-Configure mode:
+[CONF] Configure mode:
    configure|conf     - Enter conf mode
          Key          - Get value
          Key:Value    - Set value
          dump         - Dump all data
    noconfigure|noconf - Exit conf mod
-Command mode:
+[EXEC] Command mode:
    oled_128x64i2c
-                 invert
                  text
-                 poweroff
-                 poweron
-                 show_debug_page
-                 wakeup_oled_debug_page_execute
+                 invert
                  clean
                  draw_line
                  draw_rect
-   commands
-           listdir
-           time
-           memfree
-           gccollect
-           reboot
-           wifirssi
-           addnumbs
+                 show_debug_page
+                 wakeup_oled_debug_page_execute
+                 poweron
+                 poweroff
+   system
+         memfree
+         gccollect
+         reboot
+         wifirssi
+         heartbeat
+         time
+   gpio
+       RGB
+       RGB_deinit
+       Servo
+       Servo_deinit
 ```
  
 ### Embedded config handler
  
 ```  
-slim01 $  conf                        
-[configure] slim01 $  dump
-{'stapwd': '<your_wifi_password>', 'gmttime': 1, 'nwmd': 'STA', 'soctout': 100, 'timirq': True, 'appwd': 'ADmin123', 'devfid': 'slim01', 'extirq': True, 'dbg': True, 'devip': '10.0.1.6', 'hwuid': '0x600x10x940x1f0x7e0xfa', 'staessid': '<your_wifi_name>', 'socport': 9008, 'pled': True}
-[configure] slim01 $  noconf
+socketclient --dev slim01 conf '<a>' dump
+Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
+Activate MicrOS device connection address
+[i]         FUID        IP               UID
+[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+Device was found: slim01
+[configure] slim01
+  stapwd    :  <your_wifi_password>
+  gmttime   :  1
+  nwmd      :  STA
+  soctout   :  100
+  timirq    :  True
+  appwd     :  Admin123
+  devfid    :  slim01
+  extirq    :  True
+  dbg       :  True
+  timirqcbf :  oled_128x64i2c show_debug_page
+  hwuid     :  0x500x20x910x680xc0xf7
+  staessid  :  <your_wifi_name>
+  devip     :  10.0.1.73
+  extirqcbf :  oled_128x64i2c invert
+  socport   :  9008
+  pled      :  True
 ```
 
 ### Load Modules - User defined functions
 
 ```
-slim01 $  commands memfree
+socketclient --dev slim01 system memfree
+Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
+Activate MicrOS device connection address
+[i]         FUID        IP               UID
+[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+Device was found: slim01
 CPU[Hz]: 160000000
-GC MemFree[byte]: 6080
-slim01 $  commands addnumbs(1,2,3,4)
-1+2+3+4 = 10
-slim01 $  exit
-Bye!
-exit and close connection from ('10.0.1.7', 53069)
-Connection closed by foreign host.
+GC MemFree[byte]: 5552
 ```
 
 ## Node Configuration
@@ -148,13 +165,28 @@ Connection closed by foreign host.
 | dbg	       |    	Debug mode - enable printouts and debug activities (oled)		
 | soctout		| Socket / Web server connection timeout (because single user | handling)
 | socport		| Socket / Web server service port
-| timirg		| Timer interrupt enable - "subprocess" - function callback
-| extirq     | External event interrupt - "subprocess" - function callback
+| timirg		| Timer interrupt enable - "subprocess"
+|timirqcbf   | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
+| extirq     | External event interrupt - "subprocess"
+| extirqcbf   | Callback function (LM) from config, example: `oled_128x64i2c invert`
 | gmttime    | NTP - RTC - timezone setup 
 | nwmd 		| STATE STORAGE - system saves nw mode here - AP / STA
 | hwuid		| STATE STORAGE - hardwer address - dev uid
 | devip		| STATE STORAGE - system stores device ip here
 
+
+## Logical pin accociation
+
+```
+'progressled': 16,    # BUILT IN LED
+'servo': 15,          # D8
+'pwm_red': 2,         # D4
+'pwm_green': 13,      # D7
+'pwm_blue': 0,        # D3
+'i2c_sda': 4,         # D2
+'i2c_scl': 5,         # D1
+'button': 12          # D6
+```
 
 ## SocketClient
 
@@ -190,81 +222,53 @@ cd tool/
 ./socketClient.py
 ```
 
-#### Non interactive mode
-
-Use with command line input arguments.
-
-```
-bash-3.2$ socketclient help
-Load MicrOS device cache: /Users/<User>/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
-Activate MicrOS device connection address
-hello - default hello msg - identify device (SocketServer)
-exit  - exit from shell socket prompt (SocketServer)
-Configure mode:
-   configure|conf     - Enter conf mode
-         Key          - Get value
-         Key:Value    - Set value
-         dump         - Dump all data
-   noconfigure|noconf - Exit conf mod
-Command mode:
-   oled_128x64i2c
-                 invert
-                 text
-                 poweroff
-                 poweron
-                 show_debug_page
-                 wakeup_oled_debug_page_execute
-                 clean
-                 draw_line
-                 draw_rect
-   commands
-           listdir
-           time
-           memfree
-           gccollect
-           reboot
-           wifirssi
-           addnumbs
-bash-3.2$
-```
-
 #### Interactive mode
 
 ```
-bash-3.2$ socketclient 
-Load MicrOS device cache: /Users/<User>/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
+socketclient
+Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
+[i]         FUID        IP               UID
+[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+Choose a device index: 0
+Device IP was set: 10.0.1.73
 slim01 $  help
 hello - default hello msg - identify device (SocketServer)
 exit  - exit from shell socket prompt (SocketServer)
-Configure mode:
+[CONF] Configure mode:
    configure|conf     - Enter conf mode
          Key          - Get value
          Key:Value    - Set value
          dump         - Dump all data
    noconfigure|noconf - Exit conf mod
-Command mode:
+[EXEC] Command mode:
    oled_128x64i2c
-                 invert
                  text
-                 poweroff
-                 poweron
-                 show_debug_page
-                 wakeup_oled_debug_page_execute
+                 invert
                  clean
                  draw_line
                  draw_rect
-   commands
-           listdir
-           time
-           memfree
-           gccollect
-           reboot
-           wifirssi
-           addnumbs
+                 show_debug_page
+                 wakeup_oled_debug_page_execute
+                 poweron
+                 poweroff
+   system
+         memfree
+         gccollect
+         reboot
+         wifirssi
+         heartbeat
+         time
+   gpio
+       RGB
+       RGB_deinit
+       Servo
+       Servo_deinit
+slim01 $  gpio RGB(0,0,0)
+SET RGB
 slim01 $  exit
 Bye!
-exit and close connection from ('10.0.1.7', 50518)
+exit and close connection from ('10.0.1.7', 51733)
 ```
 
 git push -u origin master

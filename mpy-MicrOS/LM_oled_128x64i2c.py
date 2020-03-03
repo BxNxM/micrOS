@@ -3,11 +3,12 @@ __INVERT = True
 
 def __init():
     global __OLED
-    from machine import Pin, I2C
-    from ssd1306 import SSD1306_I2C
-    from LogicalPins import getPlatformValByKey
-    i2c = I2C(-1, Pin(getPlatformValByKey('i2c_scl')), Pin(getPlatformValByKey('i2c_sda')))
-    __OLED = SSD1306_I2C(128, 64, i2c)
+    if __OLED is None:
+        from machine import Pin, I2C
+        from ssd1306 import SSD1306_I2C
+        from LogicalPins import getPlatformValByKey
+        i2c = I2C(-1, Pin(getPlatformValByKey('i2c_scl')), Pin(getPlatformValByKey('i2c_sda')))
+        __OLED = SSD1306_I2C(128, 64, i2c)
     return __OLED
 
 def text(intext="<text>", posx=0, posy=0, show=True):

@@ -14,15 +14,15 @@ User function injection over LM_<userapp>.py
 ## MicrOS Features
 
 - Config handling - node_config.json
-- Socket interpreter - interactive interruption with the device
+- Socket interpreter - communication interface with the device
 	- Config SET/GET/DUMP
 	- Load Module function execution
 - Network handling
 	- STA / AP based on config
-- Socket client - interactive - non interactive mode
-- Interrupt callbacks	
+- Interrupt callback
 	- Time based
-	- Event based 	 
+	- Event based
+- Socket client - interactive - non interactive mode
 
 > Note:
 To remove ^M after get source files from nodemcu in vim:

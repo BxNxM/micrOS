@@ -170,9 +170,10 @@ class SocketServer():
             except Exception as e:
                 console_write("[REINIT] SocketServer error: " + str(e))
                 collect()               # gc collect
-                self.deinit_socket()
-                self.init_socket()
-                self.bind()
+                self.disconnect()
+                #self.deinit_socket()
+                #self.init_socket()
+                #self.bind()
         if not inloop:
             is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
             del is_healthy
@@ -185,6 +186,7 @@ class SocketServer():
         self.server_console_indent+=1
 
     def deinit_socket(self):
+        self.server_console_indent = 0
         try:
             self.conn.close()
         except:

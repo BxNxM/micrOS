@@ -5,7 +5,7 @@ __SERVO = None
 
 def __RGB_init():
     global __RLED, __GLED, __BLED
-    if __RLED is None or __GLED is None or  __BLED is None:
+    if __RLED is None or __GLED is None or __BLED is None:
         from machine import Pin, PWM
         from LogicalPins import getPlatformValByKey
         d7_gpio13_red = Pin(getPlatformValByKey('pwm_red'))
@@ -31,9 +31,6 @@ def RGB_deinit():
     __RLED.deinit()
     __GLED.deinit()
     __BLED.deinit()
-    __RLED = None
-    __GLED = None
-    __BLED = None
     return "DEINIT RGB"
 
 def __SERVO_init():
@@ -62,11 +59,9 @@ def Servo(duty=100):
         return str(e)
 
 def Servo_deinit():
-    global __SERVO
     __SERVO_init()
     try:
         __SERVO.deinit()
-        __SERVO = None
         return "DEINIT SERVO"
     except Exception as e:
         return str(e)

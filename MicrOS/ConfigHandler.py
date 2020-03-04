@@ -1,4 +1,5 @@
 # VERSION: 1.0
+from time import sleep
 
 # SET IT LATER FROM CONFIG
 PLED_STAT = False
@@ -94,12 +95,14 @@ def cfgget_all():
     return __read_cfg_file()
 
 def __read_cfg_file():
-    try:
-        with open(CONFIG_PATH, 'r') as f:
-            data_dict = load(f)
-    except Exception as e:
-        console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
-        data_dict = {}
+    data_dict = {}
+    while len(data_dict) <= 0:
+        try:
+            with open(CONFIG_PATH, 'r') as f:
+                data_dict = load(f)
+        except Exception as e:
+            console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
+            sleep(0.1)
     return data_dict
 
 def __write_cfg_file(dictionary):

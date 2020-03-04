@@ -62,7 +62,8 @@ def Servo(duty=100):
         return str(e)
 
 def Servo_deinit():
-    __SERVO_init
+    global __SERVO
+    __SERVO_init()
     try:
         __SERVO.deinit()
         __SERVO = None

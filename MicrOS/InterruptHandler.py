@@ -28,7 +28,7 @@ def enableInterrupt(period_ms=4000):
         timer = Timer(0)
         timer.init(period=period_ms, mode=Timer.PERIODIC, callback=secureInterruptHandler)
     else:
-        console_write("TIMIRQ: isenable: {} callback: {}".format(interrupt_is_enabled, callback))
+        console_write("TIMIRQ: isenable: {} callback: {}".format(cfgget("timirq"), cfgget('timirqcbf')))
 
 #################################################################
 #                    EXTERNAL INTERRUPT(S)                      #
@@ -59,5 +59,5 @@ def init_eventPIN(pin=12):
         event_pin = Pin(pin, Pin.IN, Pin.PULL_UP)
         event_pin.irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
     else:
-        console_write("EVENTIRQ: isenable: {} callback: {}".format(interrupt_is_enabled, callback))
+        console_write("EVENTIRQ: isenable: {} callback: {}".format(cfgget('extirq'), cfgget('extirqcbf')))
 

@@ -94,7 +94,7 @@ def cfgprint_all():
 def cfgget_all():
     return __read_cfg_file()
 
-def __read_cfg_file():
+def __read_cfg_file(nosafe=False):
     data_dict = {}
     while len(data_dict) <= 0:
         try:
@@ -102,6 +102,8 @@ def __read_cfg_file():
                 data_dict = load(f)
         except Exception as e:
             console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
+            if nosafe:
+                break
             sleep(0.1)
     return data_dict
 
@@ -123,7 +125,7 @@ def __inject_default_conf():
     if not isinstance(default_config_dict, dict):
         console_write("__inject_default_conf input data type must be dict")
         return
-    default_config_dict.update(__read_cfg_file())
+    default_config_dict.update(__read_cfg_file(nosafe=True))
     try:
         if __write_cfg_file(default_config_dict):
             console_write("[CONFIGHANDLER] Inject default data struct successful")

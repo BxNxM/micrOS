@@ -1,7 +1,7 @@
 from ConfigHandler import cfgget, console_write
 from micropython import alloc_emergency_exception_buf
 from InterpreterShell import execute_LM_function
-alloc_emergency_exception_buf(100)
+alloc_emergency_exception_buf(300)
 
 #################################################################
 #                       TIMER INTERRUPT(S)                      #

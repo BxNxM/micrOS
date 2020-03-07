@@ -60,16 +60,10 @@ def show_debug_page():
     except Exception as e:
         return str(e)
 
-def wakeup_oled_debug_page_execute():
-    from ConfigHandler import cfgget
-    if cfgget("dbg"):
-        show_debug_page()
-
 def poweron():
     if  __OLED is None: __init()
     __OLED.poweron()
 
 def poweroff():
     if  __OLED is None: __init()
-    clean()
     __OLED.poweroff()

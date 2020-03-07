@@ -155,24 +155,24 @@ GC MemFree[byte]: 5552
 
 ## Node Configuration
 
-| Parameters | Description |
-| :----------: | ----------- |
-| staessid   | 	Wifi station name 
-| stapwd		| Wifi station password
-| devfid		| Device friendly name / AP name - access point mode
-| appwd		| AP password - access point mode
-| pled			| Progress led - heart beat
-| dbg	       |    	Debug mode - enable printouts and debug activities (oled)		
-| soctout		| Socket / Web server connection timeout (because single user | handling)
-| socport		| Socket / Web server service port
-| timirg		| Timer interrupt enable - "subprocess"
-|timirqcbf   | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
-| extirq     | External event interrupt - "subprocess"
-| extirqcbf   | Callback function (LM) from config, example: `oled_128x64i2c invert`
-| gmttime    | NTP - RTC - timezone setup 
-| nwmd 		| STATE STORAGE - system saves nw mode here - AP / STA
-| hwuid		| STATE STORAGE - hardwer address - dev uid
-| devip		| STATE STORAGE - system stores device ip here
+| Parameters names | Reboot required | Description |
+| :----------: | :-----------: | ----------- |
+| staessid   |        Yes      | 	Wifi station name 
+| stapwd		|        Yes      | Wifi station password
+| devfid		|        No       | Device friendly name / AP name - access point mode
+| appwd		|        Yes      | AP password - access point mode
+| pled			|        Yes      | Progress led - heart beat
+| dbg	       |        Yes      |	Debug mode - enable system printouts		
+| soctout		|        Yes      | Socket / Web server connection timeout (because single user | handling)
+| socport		|         Yes     | Socket / Web server service port
+| timirg		|        Yes      | Timer interrupt enable - "subprocess"
+|timirqcbf   |        No        | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
+| extirq     |       Yes        | External event interrupt - "subprocess"
+| extirqcbf   |      No        | Callback function (LM) from config, example: `oled_128x64i2c invert`
+| gmttime    |        Yes      | NTP - RTC - timezone setup 
+| nwmd 		|       N/A       |STATE STORAGE - system saves nw mode here - AP / STA
+| hwuid		|      N/A         | STATE STORAGE - hardwer address - dev uid
+| devip		|       N/A         | STATE STORAGE - system stores device ip here
 
 
 ## Logical pin accociation

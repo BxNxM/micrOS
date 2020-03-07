@@ -2,16 +2,19 @@ try:
     from ConfigHandler import cfgget, cfgput, cfgget_all
 except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
+
 try:
     from machine import disable_irq, enable_irq
 except Exception as e:
     disable_irq = None
     enable_irq = None
     print("Failed to import machine: {}".format(e))
+
 try:
-    from gc import collect, mem_free
+    from gc import collect
 except Exception as e:
-    print("Failed to import gc: {}".format(e))
+    collect = None
+    print("Failed to import gc.colect: {}".format(e))
 
 from os import listdir
 
@@ -22,9 +25,11 @@ def shell(msg, SocketServerObj):
     '''
     Socket server - interpreter shell wrapper
     '''
+    if len(msg.strip()) == 0:
+        return True, ''
     try:
-        __shell(msg, SocketServerObj)
-        return True, ""
+        state = __shell(msg, SocketServerObj)
+        return state, ""                       # True - good, False execute soft reboot
     except Exception as e:
         SocketServerObj.reply_message("[SHELL] Runtime error: {}".format(e))
         return False, str(e)
@@ -33,8 +38,10 @@ def __shell(msg, SocketServerObj):
     '''
     Socket server - interpreter shell
     '''
+    retval = True
+
     if msg is None or msg == "":
-        return None
+        return retval
     msg_list = msg.strip().split()
 
     # CONFIGURE MODE 'ENV' SETUP
@@ -52,6 +59,7 @@ def __shell(msg, SocketServerObj):
     # HELP MSG
     if "help" in msg_list:
         SocketServerObj.reply_message("hello - default hello msg - identify device (SocketServer)")
+        SocketServerObj.reply_message("version  - shows MicrOS version")
         SocketServerObj.reply_message("exit  - exit from shell socket prompt (SocketServer)")
         SocketServerObj.reply_message("[CONF] Configure mode:")
         SocketServerObj.reply_message("   configure|conf     - Enter conf mode")
@@ -66,10 +74,12 @@ def __shell(msg, SocketServerObj):
     # EXECUTE:
     # @1 Configure mode
     if SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
-        configure(msg_list, SocketServerObj)
+        retval = configure(msg_list, SocketServerObj)
     # @2 Command mode
     elif not SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
-        execute_LM_function(argument_list=msg_list, SocketServerObj=SocketServerObj)
+        retval = execute_LM_function(argument_list=msg_list, SocketServerObj=SocketServerObj)
+
+    return retval
 
 #########################################################
 #               CONFIGURE MODE HANDLER                  #
@@ -94,6 +104,7 @@ def configure(attributes, SocketServerObj):
             SocketServerObj.reply_message(cfgput(key, value))
         except Exception as e:
             SocketServerObj.reply_message("Set config error: ".format(e))
+    return True
 
 #########################################################
 #               COMMAND MODE & LMS HANDLER              #
@@ -126,6 +137,7 @@ def execute_LM_function(argument_list, SocketServerObj=None):
     1. param. - LM name, i.e. LM_commands
     2. param. - function call with parameters, i.e. a()
     '''
+    recovery_query = False
     if len(argument_list) >= 2:
         LM_name = "LM_{}".format(argument_list[0])
         LM_function_call = "".join(argument_list[1:])
@@ -143,6 +155,7 @@ def execute_LM_function(argument_list, SocketServerObj=None):
             SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
         else:
             eval("{}".format(LM_function_call))
+        if collect is not None: collect()
         # ----------------- #
         if enable_irq is not None:
             enable_irq(status)
@@ -154,6 +167,6 @@ def execute_LM_function(argument_list, SocketServerObj=None):
         else:
             print("execute_LM_function: " + str(e))
         if "memory allocation failed" in str(e):
-            collect()
-            if  SocketServerObj is not None: SocketServerObj.reply_message("execute_LM_function -gc-ollect-memfree: {}".format(mem_free()))
+            recovery_query = True
+    return not recovery_query
 

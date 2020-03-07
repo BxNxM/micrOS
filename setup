@@ -201,7 +201,7 @@ function _set_dev_aliases() {
     alias nodemcu_gl='ampy get logs.log'                  # works if: device root folder has logs.log file
     alias nodemcu_get_all='_ampy_get_all_'
     alias nodemcu_put_all='_ampy_put_all'
-    alias make_all_done='nodemcu_erase && nodemcu_deploy && nodemcu_put_all'
+    alias make_all_done='nodemcu_erase && sleep 1 && nodemcu_deploy && sleep 2 &&  nodemcu_put_all'
     # wget: http://linuxreviews.org/quicktips/wget/
 }
 

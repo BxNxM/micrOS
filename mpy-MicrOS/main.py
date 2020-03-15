@@ -8,7 +8,7 @@ from LogicalPins import getPlatformValByKey
 def interrupt_handler():
     try:
         from InterruptHandler import enableInterrupt
-        enableInterrupt(period_ms=5000)
+        enableInterrupt()
     except Exception as e:
         print("DEBUG: InterruptHandler.enableInterrupt error: {}".format(e))
 

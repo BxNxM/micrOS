@@ -167,6 +167,7 @@ GC MemFree[byte]: 5552
 | socport		|         Yes     | Socket / Web server service port
 | timirg		|        Yes      | Timer interrupt enable - "subprocess"
 |timirqcbf   |        No        | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
+| timirqseq   |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
 | extirq     |       Yes        | External event interrupt - "subprocess"
 | extirqcbf   |      No        | Callback function (LM) from config, example: `oled_128x64i2c invert`
 | gmttime    |        Yes      | NTP - RTC - timezone setup 

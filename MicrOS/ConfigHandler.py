@@ -56,6 +56,7 @@ def default_config():
                                       "devip": "n/a",
                                       "timirq": True,
                                       "timirqcbf": "n/a",
+                                      "timirqseq": 3000,
                                       "extirq": True,
                                       "extirqcbf": "n/a",
                                       "gmttime": +1}

@@ -50,7 +50,7 @@ def show_debug_page():
         from ConfigHandler import cfgget
         from gc import mem_free
         from time import localtime
-        clean()
+        clean(show=False)
         text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 0, show=False)
         text("NW_MODE: {}".format(cfgget("nwmd")), 0, 10, show=False)
         text("IP: {}".format(cfgget("devip")), 0, 20, show=False)

@@ -86,7 +86,10 @@ def __shell(msg, SocketServerObj):
 #               CONFIGURE MODE HANDLER                  #
 #########################################################
 def configure(attributes, SocketServerObj):
-    # Get value
+    # DISBALE BG INTERRUPTS
+    if disable_irq is not None:
+        status = disable_irq()
+    # [CONFIG] Get value
     if len(attributes) == 1:
         if attributes[0] == "dump":
             val_spacer = 10
@@ -97,7 +100,7 @@ def configure(attributes, SocketServerObj):
         else:
             key = attributes[0]
             SocketServerObj.reply_message(cfgget(key))
-    # Set value
+    # [CONFIG] Set value
     elif len(attributes) >= 2:
         key = attributes[0]
         value = " ".join(attributes[1:])
@@ -105,6 +108,9 @@ def configure(attributes, SocketServerObj):
             SocketServerObj.reply_message(cfgput(key, value))
         except Exception as e:
             SocketServerObj.reply_message("Set config error: ".format(e))
+    # ENABLE BG INTERRUPTS
+    if enable_irq is not None:
+        enable_irq(status)
     return True
 
 #########################################################

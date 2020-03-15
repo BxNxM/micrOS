@@ -41,11 +41,16 @@ def secureInterruptHandler(timer=None):
 def enableInterrupt(period_ms=4000):
     if cfgget("timirq") and cfgget('timirqcbf') != 'n/a':
         console_write("TIMIRQ ENABLED")
+        try:
+            period_ms_usr = int(cfgget("timirqseq"))
+        except Exception as e:
+            console_write("TIMIRQ period query error: {}".format(e))
+            period_ms_usr = period_ms
         from machine import Timer
         timer = Timer(0)
-        timer.init(period=period_ms, mode=Timer.PERIODIC, callback=secureInterruptHandler)
+        timer.init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
     else:
-        console_write("TIMIRQ: isenable: {} callback: {}".format(cfgget("timirq"), cfgget('timirqcbf')))
+        console_write("TIMIRQ: isenable: {} callback: {} period: {}".format(cfgget("timirq"), cfgget('timirqcbf'), period_ms_usr))
 
 #################################################################
 #                    EXTERNAL INTERRUPT(S)                      #

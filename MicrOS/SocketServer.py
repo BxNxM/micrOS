@@ -36,7 +36,7 @@ class SocketServer():
     prompt = "{} $ ".format(cfgget('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.5'
+        self.socket_interpreter_version = '0.6'
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -203,30 +203,33 @@ class SocketServer():
             try:
                 is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
                 if not is_healthy:
-                    console_write("[EXEC-WARNING] InterpreterShell internal error: " + str(msg))
-                    self.__recovery()
+                    console_write("[EXEC-WARNING] InterpreterShell internal error: {}".format(msg))
+                    self.__recovery(errlvl=0)
             except Exception as e:
-                console_write("[EXEC-ERROR] InterpreterShell error: " + str(e))
-                self.__recovery()
+                console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
+                self.__recovery(errlvl=1)
         if not inloop:
             is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
             del is_healthy
 
-    def __recovery(self):
+    def __recovery(self, errlvl=0):
         '''
-        Ideas here - how to handle memory problems?
+        Handle memory errors here
         '''
-        self.reply_message("... recovery ...")
+        self.reply_message("[HA] system recovery ...")
         if 'esp' in platform:
             collect()
-            self.reply_message("execute_LM_function -gc-ollect-memfree: {}".format(mem_free()))
-
-            #self.reconnect()
-            #self.deinit_socket()
-            #from machine import reset
-            #reset()
+            self.reply_message("[HA] gc-ollect-memfree: {}".format(mem_free()))
+            if errlvl == 1:
+                try:
+                    self.reply_message("[HA] Critical error - disconnect & hard reset")
+                    self.deinit_socket()
+                    from machine import reset
+                    reset()
+                except Exception as e:
+                    console_write("[HA] Recovery error: {}".format(e))
         else:
-            console_write("[SOFT RESTART VM] only available on MicrOS")
+            console_write("[HA] recovery only available on esp - nodemcu")
 
     def get_prompt(self):
         return "{}{} ".format(self.pre_prompt, SocketServer.prompt).encode('utf-8')

@@ -1,7 +1,24 @@
 from ConfigHandler import cfgget, console_write
-from micropython import alloc_emergency_exception_buf
 from InterpreterShell import execute_LM_function
-alloc_emergency_exception_buf(300)
+
+#################################################################
+#            CONFIGURE INTERRUPT MEMORY BUFFER                  #
+#################################################################
+def set_emergency_buffer(base_buff_kb=300):
+    from micropython import alloc_emergency_exception_buf
+    buff_size_kb = 0
+    if cfgget("timirq"):
+        buff_size_kb += base_buff_kb
+    if cfgget('extirq'):
+        buff_size_kb += base_buff_kb
+    if buff_size_kb > 0:
+        console_write("Interrupts was enabled, alloc_emergency_exception_buf={}".format(buff_size_kb))
+        alloc_emergency_exception_buf(buff_size_kb)
+    else:
+        console_write("Interrupts disabled, skip alloc_emergency_exception_buf configuration.")
+
+# Call set_emergency_buffer immediately.
+set_emergency_buffer()
 
 #################################################################
 #                       TIMER INTERRUPT(S)                      #

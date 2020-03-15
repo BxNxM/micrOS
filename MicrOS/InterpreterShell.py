@@ -17,6 +17,7 @@ except Exception as e:
     print("Failed to import gc.colect: {}".format(e))
 
 from os import listdir
+from sys import modules
 
 #########################################################
 #             SHELL Interpreter FUNCTIONS               #
@@ -147,16 +148,18 @@ def execute_LM_function(argument_list, SocketServerObj=None):
     try:
         if disable_irq is not None:
             status = disable_irq()
-        # LM LOAD & EXECUTE #
+        # --- LM LOAD & EXECUTE --- #
         if  SocketServerObj is not None:
             SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
+        # [1] LOAD MODULE
         exec("from {} import {}".format(LM_name, LM_function))
+        # [2] EXECUTE FUNCTION FROM MODULE
         if  SocketServerObj is not None:
             SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
         else:
             eval("{}".format(LM_function_call))
         if collect is not None: collect()
-        # ----------------- #
+        # ------------------------- #
         if enable_irq is not None:
             enable_irq(status)
     except Exception as e:
@@ -167,6 +170,9 @@ def execute_LM_function(argument_list, SocketServerObj=None):
         else:
             print("execute_LM_function: " + str(e))
         if "memory allocation failed" in str(e):
+            # UNLOAD MODULE IF MEMORY ERROR ACCURED
+            if LM_name in modules.keys():
+                del modules[LM_name]
             recovery_query = True
     return not recovery_query
 

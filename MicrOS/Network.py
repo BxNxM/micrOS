@@ -59,6 +59,11 @@ def set_wifi(essid, pwd, timeout=50):
                 console_write("\t| [NW: STA] Waiting for connection... " + str(timeout) + "/50" )
                 timeout -= 1
                 sleep(0.4)
+            # Set static IP - here because some data comes from connection.
+            if __set_wifi_dev_static_ip(sta_if):
+                sta_if.disconnect()
+                del sta_if
+                return set_wifi()
         else:
             console_write("\t| [NW: STA] Wifi network was NOT found: {}".format(essid))
             return False
@@ -69,6 +74,27 @@ def set_wifi(essid, pwd, timeout=50):
         console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
         cfgput("devip", str(sta_if.ifconfig()[0]))
     return sta_if.isconnected()
+
+def __set_wifi_dev_static_ip(sta_if):
+    reconfigured = False
+    console_write("[NW: STA] Set device static IP.")
+    stored_ip = cfgget('devip')
+    if 'n/a' not in stored_ip and '.' in stored_ip:
+        conn_ips = list(sta_if.ifconfig())
+        if conn_ips[0] != stored_ip:
+            conn_ips[0] = stored_ip
+            console_write("\t| [NW: STA] DEV. StaticIP: {}".format(stored_ip))
+            try:
+                # IP address, subnet mask, gateway and DNS server
+                sta_if.ifconfig(tuple(conn_ips))
+                reconfigured = True
+            except Exception as e:
+                console_write("\t\t| [NW: STA] StaticIP conf. failed: {}".format(e))
+        else:
+            console_write("[NW: STA] StaticIP was already set: {}".format(stored_ip))
+    else:
+        console_write("[NW: STA] IP was not stored: {}".format(stored_ip))
+    return reconfigured
 
 #########################################################
 #                                                       #

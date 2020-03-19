@@ -152,7 +152,7 @@ def execute_LM_function(argument_list, SocketServerObj=None):
         if "(" not in LM_function_call and ")" not in LM_function_call:
             LM_function_call = "{}()".format(LM_function)
     try:
-        if disable_irq is not None:
+        if disable_irq is not None and SocketServerObj is not None:     # SocketServerObj is None from Interrupts - shared functionality
             status = disable_irq()
         # --- LM LOAD & EXECUTE --- #
         if  SocketServerObj is not None:
@@ -166,10 +166,10 @@ def execute_LM_function(argument_list, SocketServerObj=None):
             eval("{}".format(LM_function_call))
         if collect is not None: collect()
         # ------------------------- #
-        if enable_irq is not None:
+        if enable_irq is not None and SocketServerObj is not None:      # SocketServerObj is None from Interrupts - shared functionality
             enable_irq(status)
     except Exception as e:
-        if enable_irq is not None:
+        if enable_irq is not None and SocketServerObj is not None:      # SocketServerObj is None from Interrupts - shared functionality
             enable_irq(status)
         if  SocketServerObj is not None:
             SocketServerObj.reply_message("execute_LM_function: " + str(e))

@@ -258,6 +258,11 @@ def main(args):
         if "Connection reset by peer" not in str(e):
             print("FAILED TO START: " + str(e))
 
+def run(arg_list=[]):
+    args, action = socket_commandline_args(arg_list)
+    ConnectionData.auto_execute(search=action['search'], dev=action['dev'])
+    main(args)
+
 if __name__ == "__main__":
     args, action = socket_commandline_args(sys.argv[1:])
     ConnectionData.auto_execute(search=action['search'], dev=action['dev'])

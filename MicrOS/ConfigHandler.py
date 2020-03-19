@@ -43,7 +43,8 @@ except Exception as e:
 #################################################################
 CONFIG_PATH="node_config.json"
 def default_config():
-    DEFAULT_CONFIGURATION_TEMPLATE = {"staessid": "your_wifi_name",
+    DEFAULT_CONFIGURATION_TEMPLATE = {"version": "n/a",
+                                      "staessid": "your_wifi_name",
                                       "stapwd": "your_wifi_passwd",
                                       "devfid": "slim01",
                                       "appwd": "ADmin123",

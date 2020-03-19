@@ -13,26 +13,29 @@ import socketClient
 
 def arg_parse():
     parser = argparse.ArgumentParser(prog="MicrOS dev toolkit - deploy, connect, update, etc.", \
-                                     description="CMDline wrapper for {}".format(API_DIR_PATH, 'MicrOSDevEnv.py'))
-    parser.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (MicrOS) & Install (MicrOS)")
-    parser.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) MicrOS. \
+                                     description="CMDline wrapper for {}\n and for {}".format( \
+                                            os.path.join(API_DIR_PATH, 'MicrOSDevEnv.py'), \
+                                            os.path.join(SOCKET_CLIENT_DIR_PATH, 'socketClient.py')))
+
+    base_group = parser.add_argument_group("Base commands")
+    base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (MicrOS) & Install (MicrOS)")
+    base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) MicrOS. \
                                                                     - node config will be restored")
-    parser.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
-    parser.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactivve mode.")
+    base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
+    base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactivve mode.")
 
-    group = parser.add_argument_group("Development & Deployment")
-    group.add_argument("-e", "--erase", action="store_true", help="Erase device")
-    group.add_argument("-d", "--deploy", action="store_true", help="Deploy micropython")
-    group.add_argument("-i", "--install", action="store_true", help="Install MicrOS on micropython")
-    group.add_argument("-l", "--list_devs_n_bins", action="store_true", help="List connected devices & micropython binaries.")
-    group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile MicrOS system [py -> mpy]")
-    group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
+    dev_group = parser.add_argument_group("Development & Deployment & Connection")
+    dev_group.add_argument("-e", "--erase", action="store_true", help="Erase device")
+    dev_group.add_argument("-d", "--deploy", action="store_true", help="Deploy micropython")
+    dev_group.add_argument("-i", "--install", action="store_true", help="Install MicrOS on micropython")
+    dev_group.add_argument("-l", "--list_devs_n_bins", action="store_true", help="List connected devices & micropython binaries.")
+    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile MicrOS system [py -> mpy]")
+    dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
+    dev_group.add_argument("-ls", "--node_ls", action="store_true", help="List micrOS node filesystem content.")
+    dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")
 
-    group2 = parser.add_argument_group("Connection")
-    group2.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")
-
-    group3 = parser.add_argument_group("Toolkit development")
-    group3.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")
+    toolkit_group = parser.add_argument_group("Toolkit development")
+    toolkit_group.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")
 
     args = parser.parse_args()
     return args
@@ -78,6 +81,9 @@ def get_MicrOS_version(api_obj):
 def update_micrOS_on_node(api_obj):
     api_obj.update_micros_via_usb()
 
+def node_ls(api_obj):
+    api_obj.list_micros_filesystem()
+
 if __name__ == "__main__":
     cmd_args = arg_parse()
 
@@ -118,3 +124,5 @@ if __name__ == "__main__":
     if cmd_args.update:
         update_micrOS_on_node(api_obj)
 
+    if cmd_args.node_ls:
+        node_ls(api_obj)

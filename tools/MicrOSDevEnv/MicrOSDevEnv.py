@@ -5,6 +5,7 @@ from TerminalColors import Colors
 import os
 import sys
 import time
+import re
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 
 class MicrOSDevTool():
@@ -14,7 +15,6 @@ class MicrOSDevTool():
         self.deployment_app_dependences = ['ampy', 'esptool.py']
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0']
         self.selected_device_type = 'esp8266'
-        self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
         self.dev_types_and_cmds = \
                 {'esp8266': \
                    {'erase': 'esptool.py --port {dev} erase_flash', \
@@ -27,6 +27,8 @@ class MicrOSDevTool():
         self.MicrOS_dir_path = os.path.join(MYPATH, "../../MicrOS")
         self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "../../mpy-MicrOS")
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
+        self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
+        self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
 
         # Filled by methods
         self.micropython_bins_list = []
@@ -201,9 +203,14 @@ class MicrOSDevTool():
             return False
 
     def __clone_micropython_repo(self):
-        command = 'git clone https://github.com/micropython/micropython.git'
-        # TODO: [1] check micropython repo path - CLONE if not exists / update
-        #       [2] check path: self.mpy_cross_compiler_path - make if not exists
+        if os.path.isdir(self.micropython_repo_path) and os.path.isfile(self.mpy_cross_compiler_path):
+            return True
+        else:
+            command = 'git clone https://github.com/micropython/micropython.git'
+            # TODO: [1] check micropython repo path - CLONE if not exists / update
+            #       [2] check path: self.mpy_cross_compiler_path - make if not exists
+            return False        #TODO: set True
+
 
     def __cleanup_precompiled_dir(self):
         for source in [ pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path) \
@@ -216,6 +223,11 @@ class MicrOSDevTool():
         self.console("------------------------------------------")
         self.console("-            DEPLOY MICROPYTHON          -", state='imp')
         self.console("------------------------------------------")
+
+        # Return if components for precompile not exists
+        if not self.__clone_micropython_repo():
+            self.console("Precompile - missing dependences - skip")
+            return
 
         if not self.dummy_exec:
             self.__cleanup_precompiled_dir()
@@ -331,8 +343,8 @@ class MicrOSDevTool():
         self.console("Device was used from: {}".format(processid))
         return processid
 
-    def update_micros_via_usb(self):
-        ampy_cmd = erase_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
+    def update_micros_via_usb(self, force=False):
+        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.__get_device()
         arguments = 'get node_config.json'
         command = ampy_cmd.format(dev=device, args=arguments)
@@ -343,20 +355,60 @@ class MicrOSDevTool():
             stdout = 'Dummy stdout'
         if exitcode == 0:
             self.console("Get Node config (node_config.json)\n{}".format(stdout))
-            # TODO: save config + redeploy
+            repo_version, node_version = self.get_micrOS_version(stdout)
+            self.console("Repo version: {} Node_version: {}".format(repo_version, node_version))
+            if repo_version != node_version or force:
+                self.console("Update necesarry {} -> {}".format(node_version, repo_version), state='ok')
+                state = self.__override_local_config_from_node(node_config=stdout)
+                if state:
+                    self.deploy_micros()
+                else:
+                    self.console("Saving node config failed - SKIP update/rediploy", state='err')
+            else:
+                self.console("System is up-to-date.")
         else:
             self.console("Node config error: {} - {}".format(stdout, stderr))
 
-    def get_micrOS_version(self):
+    def __override_local_config_from_node(self, node_config=None):
+        node_config_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
+        self.console("Overwrite node_config.json with connected node config: {}".format(node_config_path), state='ok')
+        if not self.dummy_exec and node_config is not None:
+            with open(node_config_path, 'w') as f:
+                f.write(node_config)
+        return True
+
+    def get_micrOS_version(self, config_string=None):
         code_version_var_name = 'self.socket_interpreter_version'
         # Get MicrOS local repo version
         micros_version_module = os.path.join(self.MicrOS_dir_path, 'SocketServer.py')
         with open(micros_version_module, 'r') as f:
-            code_lines = f.read().split('\n')
-        versions = [ line.strip().split('=')[1] for line in code_lines if line.strip().startswith(code_version_var_name) ]
-        version = versions[0].strip()
-        # TODO: get micros version on node...
-        return version, ""
+            code_lines_string = f.read()
+        regex = r"\d.\d.\d-\d"
+        version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
+
+        if not self.dummy_exec and config_string is not None:
+            try:
+                version_on_node = re.findall(regex, config_string, re.MULTILINE)[0]
+            except Exception as e:
+                self.console("Obsolete node version - node version was not defined: {}".format(e), state='warn')
+                version_on_node = 0
+        else:
+            version_on_node = "dummy version"
+        return version, version_on_node
+
+    def list_micros_filesystem(self):
+        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
+        device = self.__get_device()
+        command = ampy_cmd.format(dev=device, args='ls')
+        if not self.dummy_exec:
+            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+        else:
+            exitcode = 0
+            stdout = 'Dummy stdout'
+        if exitcode == 0:
+            self.console("MicrOS node content:\n{}".format(stdout), state='ok')
+        else:
+            self.console("MicrOS node content list error:\n{}".format(stderr), state='err')
 
     def deploy_micros(self):
         self.erase_dev()

@@ -36,7 +36,7 @@ class SocketServer():
     prompt = "{} $ ".format(cfgget('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.6'
+        self.socket_interpreter_version = '0.0.6-2'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -197,6 +197,10 @@ class SocketServer():
         self.__accept()
 
     def run(self, inloop = True):
+        try:
+            cfgput('version', self.socket_interpreter_version)
+        except Exception as e:
+            console_write("Export system version to config failed: {}".format(e))
         self.init_socket()
         self.bind_and_accept()
         while inloop:

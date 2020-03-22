@@ -24,36 +24,74 @@ User function injection over LM_<userapp>.py
 	- Event based
 - Socket client - interactive - non interactive mode
 
-> Note:
-To remove ^M after get source files from nodemcu in vim:
-:%s/ <press^V^M> //g
-
 ## Quick guide
- 
-#### Dependences
+
+### Supported OS for development
+
+- MacOS
+- Linux (Raspbain, Ubuntu, Debian)
+
+### Setup development environment
+
+- Clone MicrOS repo:
+
+```
+git clone https://github.com/BxNxM/MicrOs.git
+```
+
+#### External Dependences
 
 - **Deploy** dependences
 	- esptool.py
-	- ampy 
+	- ampy
 
 - **Connection** dependences
 	- screen (serial port connection)
-	- telnet / or use dedicated **socketClient**
-		- tools/socketClient.py
-			- embedded device scan (arp -a dependency)
-			- cache device connection data
-			- non-interactive and interactive modes
+	- tools/socketClient.py (devToolKit.py -c)
+		- arp -a (device scanner)
 	
-#### Source devenv (bash)
+#### Development toolkit
+
+**User commands**
 
 ```
-source setup
+./devToolKit.py -h
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+Base commands:
+  -m, --make            Erase & Deploy & Precompile (MicrOS) & Install (MicrOS)
+  -r, --update          Update/redeploy connected (usb) MicrOS. - node config will be restored
+  -c, --connect         Connect via socketclinet
+  -p CONNECT_PARAMETERS, --connect_parameters CONNECT_PARAMETERS
+                        Parameters for connection in non-interactivve mode.
 ```
 
-#### Erase device & Deploy micropython & Put MicrOS resources 
+**Developer commands**
 
 ```
-make_all_done
+Development & Deployment & Connection:
+  -e, --erase           Erase device
+  -d, --deploy          Deploy micropython
+  -i, --install         Install MicrOS on micropython
+  -l, --list_devs_n_bins
+                        List connected devices & micropython binaries.
+  -cc, --cross_compile_micros
+                        Cross Compile MicrOS system [py -> mpy]
+  -v, --version         Get micrOS version - repo + connected device.
+  -ls, --node_ls        List micrOS node filesystem content.
+  -u, --connect_via_usb
+                        Connect via serial port - usb
+
+Toolkit development:
+  --dummy               Skip subshell executions - for API logic test.
+```
+
+#### Erase device & Deploy micropython & Install MicrOS 
+
+```
+./devToolKit.py --make
 ```
 
 ## Socket terminal example - non interactive
@@ -61,7 +99,7 @@ make_all_done
 ### Identify device
 
 ```
-socketclient --dev slim01 hello
+./devToolKit.py -c -p '--dev slim01 hello'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
@@ -73,7 +111,7 @@ hello:slim01:0x500x20x910x680xc0xf7
 ### Get help
 
 ```
-socketclient --dev slim01 help
+./devToolKit.py -c -p '--dev slim01 help'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
@@ -115,7 +153,7 @@ exit  - exit from shell socket prompt (SocketServer)
 ### Embedded config handler
  
 ```  
-socketclient --dev slim01 conf '<a>' dump
+./devToolKit.py -c -p '--dev slim01 conf <a> dump'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
@@ -143,7 +181,7 @@ Device was found: slim01
 ### Load Modules - User defined functions
 
 ```
-socketclient --dev slim01 system memfree
+./devToolKit.py -c -p '--dev slim01 system memfree'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
@@ -178,6 +216,8 @@ GC MemFree[byte]: 5552
 
 ## Logical pin accociation
 
+[MicrOS/LogicalPins.py](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LogicalPins.py)
+
 ```
 'progressled': 16,    # BUILT IN LED
 'servo': 15,          # D8
@@ -210,23 +250,12 @@ GC MemFree[byte]: 5552
 
 > All the other data can be dummy value :) 
 
-### SocketClient usage:
-
-
-```
-source setup
-socketclient
-
-or
-
-cd tool/
-./socketClient.py
-```
-
 #### Interactive mode
 
 ```
-socketclient
+./devToolKit.py -c 
+or
+./devToolKit.py -connect
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID

@@ -221,7 +221,7 @@ class MicrOSDevTool():
 
     def precompile_micros(self):
         self.console("------------------------------------------")
-        self.console("-            DEPLOY MICROPYTHON          -", state='imp')
+        self.console("-             PRECOMPILE MICROS          -", state='imp')
         self.console("------------------------------------------")
 
         # Return if components for precompile not exists
@@ -249,10 +249,12 @@ class MicrOSDevTool():
         # Execute based on filetered sets
         # |-> PRECOMPILE
         for to_compile in tmp_precompile_set:
-            source_path = os.path.join(self.MicrOS_dir_path, to_compile)
+            #source_path = os.path.join(self.MicrOS_dir_path, to_compile)
             precompiled_target_name = to_compile.replace('.py', '.mpy')
-            command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path, \
-                                                                                          to_compile=source_path, \
+            command = "pushd {pushd}; {mpy_cross} {to_compile} -o {target_path}/{target_name} -v; popd".format( \
+                                                                                          pushd=self.MicrOS_dir_path, \
+                                                                                          mpy_cross=self.mpy_cross_compiler_path, \
+                                                                                          to_compile=to_compile, \
                                                                                           target_path=self.precompiled_MicrOS_dir_path, \
                                                                                           target_name=precompiled_target_name)
             self.console("Precomile: {}\n|->CMD: {}".format(to_compile, command), state='imp')
@@ -281,24 +283,27 @@ class MicrOSDevTool():
         if error_cnt != 0:
             self.console("Some modules [{}] not compiled properly - please check the logs.".format(error_cnt))
             sys.exit(4)
+        else:
+            return True
 
     def put_micros_to_dev(self):
         ampy_cmd = erase_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.__get_device()
         for source in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path):
-            source_path = os.path.join(self.precompiled_MicrOS_dir_path, source)
-            ampy_args = 'put {from_} {to}'.format(from_=source_path, to=os.path.basename(source))
+            ampy_args = 'put {from_}'.format(from_=source)
             command = ampy_cmd.format(dev=device, args=ampy_args)
-            print("Put {} -> {}".format(source_path, '{}/{}'.format(device, os.path.basename(source))))
-            print("CMD: {}".format(command))
+            command = '{pushd}; {cmd}; popd'.format(pushd='pushd {}'.format(self.precompiled_MicrOS_dir_path), cmd=command)
             if not self.dummy_exec:
                 exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
             else:
                 exitcode = 0
-            if exitcode == 0:
-                self.console("|-> OK", state='ok')
+                stderr = ''
+            if exitcode == 0 and stderr == '':
+                self.console("[ OK ] PUT {}".format(source), state='ok')
+                self.console(" |-> CMD: {}".format(command))
             else:
-                self.console("|-> ERROR", state='err')
+                self.console("[ ERROR ] PUT {}\n{}".format(source, stderr), state='err')
+                self.console(" |-> CMD: {}".format(command))
                 sys.exit(5)
         return True
 
@@ -411,12 +416,19 @@ class MicrOSDevTool():
             self.console("MicrOS node content list error:\n{}".format(stderr), state='err')
 
     def deploy_micros(self):
-        self.erase_dev()
-        time.sleep(1)
-        self.deploy_micropython_dev()
-        time.sleep(1)
-        self.precompile_micros()
-        self.put_micros_to_dev()
+        if self.erase_dev():
+            time.sleep(2)
+            if self.deploy_micropython_dev():
+                time.sleep(2)
+                if self.precompile_micros():
+                    time.sleep(1)
+                    self.put_micros_to_dev()
+                else:
+                    self.console("MicrOS install error", state='err')
+            else:
+                self.console("Deploy micropython error", state='err')
+        else:
+            self.console("Erase device error", state='err')
 
 if __name__ == "__main__":
     d = MicrOSDevTool()

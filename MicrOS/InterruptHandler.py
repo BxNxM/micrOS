@@ -10,7 +10,7 @@ def set_emergency_buffer(base_buff_kb=300):
     if cfgget("timirq"):
         buff_size_kb += base_buff_kb
     if cfgget('extirq'):
-        buff_size_kb += base_buff_kb
+        buff_size_kb += int(base_buff_kb / 2)
     if buff_size_kb > 0:
         console_write("Interrupts was enabled, alloc_emergency_exception_buf={}".format(buff_size_kb))
         alloc_emergency_exception_buf(buff_size_kb)
@@ -50,7 +50,7 @@ def enableInterrupt(period_ms=4000):
         timer = Timer(0)
         timer.init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
     else:
-        console_write("TIMIRQ: isenable: {} callback: {} period: {}".format(cfgget("timirq"), cfgget('timirqcbf'), period_ms_usr))
+        console_write("TIMIRQ: isenable: {} callback: {}".format(cfgget("timirq"), cfgget('timirqcbf')))
 
 #################################################################
 #                    EXTERNAL INTERRUPT(S)                      #

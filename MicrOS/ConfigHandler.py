@@ -5,6 +5,7 @@ from time import sleep
 PLED_STAT = False
 DEBUG_PRINT = True
 pLED = None
+CONF_LOCK = False
 
 #################################################################
 #                     CONSOLE WRITE FUNCTIONS                   #
@@ -49,16 +50,16 @@ def default_config():
                                       "devfid": "slim01",
                                       "appwd": "ADmin123",
                                       "pled": True,
-                                      "dbg": False,
+                                      "dbg": True,
                                       "nwmd": "n/a",
                                       "hwuid": "n/a",
                                       "soctout": 100,
                                       "socport": 9008,
                                       "devip": "n/a",
-                                      "timirq": True,
+                                      "timirq": False,
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
-                                      "extirq": True,
+                                      "extirq": False,
                                       "extirqcbf": "n/a",
                                       "gmttime": +1}
     return DEFAULT_CONFIGURATION_TEMPLATE
@@ -97,30 +98,39 @@ def cfgget_all():
     return __read_cfg_file()
 
 def __read_cfg_file(nosafe=False):
+    global CONF_LOCK
     data_dict = {}
     while len(data_dict) <= 0:
         try:
-            with open(CONFIG_PATH, 'r') as f:
-                data_dict = load(f)
+            if not CONF_LOCK:
+                CONF_LOCK = True
+                with open(CONFIG_PATH, 'r') as f:
+                    data_dict = load(f)
+                CONF_LOCK = False
         except Exception as e:
+            CONF_LOCK = False
             console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
             if nosafe:
                 break
-            sleep(0.1)
+            sleep(0.2)
     return data_dict
 
 def __write_cfg_file(dictionary):
     if not isinstance(dictionary, dict):
         console_write("[CONFIGHANDLER] __write_cfg_file - config data struct should be a dict!")
         return False
-    try:
-        with open(CONFIG_PATH, 'w') as f:
-            dump(dictionary, f)
-            del dictionary
-        return True
-    except Exception as e:
+
+    state = False
+    while not state:
+        try:
+            with open(CONFIG_PATH, 'w') as f:
+                dump(dictionary, f)
+            state = True
+        except Exception as e:
             console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
-            return False
+            state = False
+        sleep(0.2)
+    return state
 
 def __inject_default_conf():
     default_config_dict = default_config()

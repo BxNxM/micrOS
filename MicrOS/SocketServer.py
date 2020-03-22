@@ -1,6 +1,7 @@
 from sys import platform
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from InterpreterShell import shell as InterpreterShell_shell
+from time import sleep
 
 #########################################################
 #                         IMPORTS                       #
@@ -36,7 +37,7 @@ class SocketServer():
     prompt = "{} $ ".format(cfgget('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.6-2'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.7-0'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -227,11 +228,13 @@ class SocketServer():
             if errlvl == 1:
                 try:
                     self.reply_message("[HA] Critical error - disconnect & hard reset")
-                    self.deinit_socket()
+                    collect()
+                    sleep(1)
+                    self.reconnect()
                     from machine import reset
                     reset()
                 except Exception as e:
-                    console_write("[HA] Recovery error: {}".format(e))
+                    console_write("==> [!!!][HA] Recovery error: {}".format(e))
         else:
             console_write("[HA] recovery only available on esp - nodemcu")
 

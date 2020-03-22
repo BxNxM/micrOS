@@ -81,7 +81,7 @@ def __set_wifi_dev_static_ip(sta_if):
     stored_ip = cfgget('devip')
     if 'n/a' not in stored_ip and '.' in stored_ip:
         conn_ips = list(sta_if.ifconfig())
-        if conn_ips[0] != stored_ip:
+        if conn_ips[0] != stored_ip and conn_ips[-1].split('.')[0:1] == stored_ip.split('.')[0:1]:      # check change and ip type
             conn_ips[0] = stored_ip
             console_write("\t| [NW: STA] DEV. StaticIP: {}".format(stored_ip))
             try:
@@ -147,6 +147,8 @@ def auto_network_configuration(essid=None, pwd=None, timeout=50, _essid=None, _p
             if state:
                 cfgput("nwmd", "AP")
         else:
+            if cfgget("nwmd") == "AP":  # Reset dev (static)ip if previous nw setup was AP
+                cfgput("devip", "n/a")
             cfgput("nwmd", "STA")
             setNTP_RTC()
 

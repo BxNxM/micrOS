@@ -6,7 +6,7 @@
 
 ## Device Pinout
 
-![esp8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/ESP8266-NodeMCU-kit-12-E-pinout-gpio-pin.png?raw=true)
+![MicrOSESP8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/NodeMCUPinOut.png?raw=true)
 
 Esp8266 Micropython based - APPlication Core - with -
 User function injection over LM_<userapp>.py 

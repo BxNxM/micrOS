@@ -1,16 +1,21 @@
 from machine import Pin, time_pulse_us
 from time import sleep_us
-from LogicalPins import getPlatformValByKey
+__TRIGGER_OBJ = None
+__ECHO_OBJ = None
 
 def __init_HCSR04():
-        trigger_pin = getPlatformValByKey('dist_trigger')
-        echo_pin = getPlatformValByKey('dist_echo')
-        # Init trigger pin (out)
-        trigger_pin_obj = Pin(trigger_pin, mode=Pin.OUT, pull=None)
-        trigger_pin_obj.value(0)
-        # Init echo pin (in)
-        echo_pin_obj = Pin(echo_pin, mode=Pin.IN, pull=None)
-        return trigger_pin_obj, echo_pin_obj
+        global __TRIGGER_OBJ, __ECHO_OBJ
+        if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
+            from LogicalPins import getPlatformValByKey
+
+            trigger_pin = getPlatformValByKey('dist_trigger')
+            echo_pin = getPlatformValByKey('dist_echo')
+            # Init trigger pin (out)
+            __TRIGGER_OBJ = Pin(trigger_pin, mode=Pin.OUT, pull=None)
+            __TRIGGER_OBJ.value(0)
+            # Init echo pin (in)
+            __ECHO_OBJ = Pin(echo_pin, mode=Pin.IN, pull=None)
+        return __TRIGGER_OBJ, __ECHO_OBJ
 
 
 def __send_pulse_and_wait(echo_timeout_us=1000000):

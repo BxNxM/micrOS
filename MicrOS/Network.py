@@ -63,7 +63,7 @@ def set_wifi(essid, pwd, timeout=50):
             if __set_wifi_dev_static_ip(sta_if):
                 sta_if.disconnect()
                 del sta_if
-                return set_wifi()
+                return set_wifi(essid, pwd)
         else:
             console_write("\t| [NW: STA] Wifi network was NOT found: {}".format(essid))
             return False

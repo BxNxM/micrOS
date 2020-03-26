@@ -58,7 +58,7 @@ def __shell(msg, SocketServerObj):
         msg_list = []
 
     # HELP MSG
-    if "help" in msg_list:
+    if "help" in msg_list and "help" == msg_list[0]:
         SocketServerObj.reply_message("hello - default hello msg - identify device (SocketServer)")
         SocketServerObj.reply_message("version  - shows MicrOS version")
         SocketServerObj.reply_message("exit  - exit from shell socket prompt (SocketServer)")

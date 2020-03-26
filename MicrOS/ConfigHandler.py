@@ -107,6 +107,9 @@ def __read_cfg_file(nosafe=False):
                 with open(CONFIG_PATH, 'r') as f:
                     data_dict = load(f)
                 CONF_LOCK = False
+            else:
+                console_write("[CONFIGHANDLER] __read_cfg_file: LOCK")
+                sleep(0.2)
         except Exception as e:
             CONF_LOCK = False
             console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
@@ -116,6 +119,7 @@ def __read_cfg_file(nosafe=False):
     return data_dict
 
 def __write_cfg_file(dictionary):
+    global CONF_LOCK
     if not isinstance(dictionary, dict):
         console_write("[CONFIGHANDLER] __write_cfg_file - config data struct should be a dict!")
         return False
@@ -123,9 +127,13 @@ def __write_cfg_file(dictionary):
     state = False
     while not state:
         try:
-            with open(CONFIG_PATH, 'w') as f:
-                dump(dictionary, f)
-            state = True
+            if not CONF_LOCK:
+                with open(CONFIG_PATH, 'w') as f:
+                    dump(dictionary, f)
+                state = True
+            else:
+                console_write("[CONFIGHANDLER] __write_cfg_file: LOCK")
+                sleep(0.2)
         except Exception as e:
             console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
             state = False

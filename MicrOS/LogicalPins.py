@@ -12,7 +12,7 @@ def getPlatformValByKey(key):
                                           'pwm_blue': 0,        # D3
                                           'i2c_sda': 4,         # D2
                                           'i2c_scl': 5,         # D1
-                                          'button': 12,         # D6
+                                          'extirqpin': 12,      # D6
                                           'dist_trigger': 16,   # D0
                                           'dist_echo': 14       # D5
                                           }

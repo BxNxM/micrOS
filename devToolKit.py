@@ -13,7 +13,7 @@ import socketClient
 
 def arg_parse():
     parser = argparse.ArgumentParser(prog="MicrOS dev toolkit - deploy, connect, update, etc.", \
-                                     description="CMDline wrapper for {}\n and for {}".format( \
+                                            description="CMDline wrapper for {}\n and for {}".format( \
                                             os.path.join(API_DIR_PATH, 'MicrOSDevEnv.py'), \
                                             os.path.join(SOCKET_CLIENT_DIR_PATH, 'socketClient.py')))
 
@@ -33,11 +33,18 @@ def arg_parse():
     dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
     dev_group.add_argument("-ls", "--node_ls", action="store_true", help="List micrOS node filesystem content.")
     dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")
+    dev_group.add_argument("-b", "--backup_node_config", action="store_true", help="Backup usb connected node config.")
+    dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update")
+    dev_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
 
     toolkit_group = parser.add_argument_group("Toolkit development")
     toolkit_group.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")
 
     args = parser.parse_args()
+
+    if args.force_update:
+        args.update = True
+
     return args
 
 def list_devs_n_bins(api_obj):
@@ -68,6 +75,9 @@ def connect(args=None):
     else:
         socketClient.run(arg_list=[])
 
+def search_devices():
+    socketClient.ConnectionData.filter_MicrOS_devices()
+
 def precompile_micrOS(api_obj):
     api_obj.precompile_micros()
 
@@ -78,11 +88,15 @@ def get_MicrOS_version(api_obj):
     print(api_obj.get_micrOS_version())
 
 
-def update_micrOS_on_node(api_obj):
-    api_obj.update_micros_via_usb()
+def update_micrOS_on_node(api_obj, force=False):
+    api_obj.update_micros_via_usb(force=force)
 
 def node_ls(api_obj):
     api_obj.list_micros_filesystem()
+
+def backup_node_config(api_obj):
+    api_obj.backup_node_config()
+
 
 if __name__ == "__main__":
     cmd_args = arg_parse()
@@ -94,6 +108,9 @@ if __name__ == "__main__":
         api_obj = MicrOSDevEnv.MicrOSDevTool()
 
     # Commands
+    if cmd_args.search_devices:
+        search_devices()
+
     if cmd_args.list_devs_n_bins:
         list_devs_n_bins(api_obj)
 
@@ -122,7 +139,11 @@ if __name__ == "__main__":
         get_MicrOS_version(api_obj)
 
     if cmd_args.update:
-        update_micrOS_on_node(api_obj)
+        update_micrOS_on_node(api_obj, force=cmd_args.force_update)
 
     if cmd_args.node_ls:
         node_ls(api_obj)
+
+    if cmd_args.backup_node_config:
+        backup_node_config(api_obj)
+

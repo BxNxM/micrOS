@@ -1,5 +1,6 @@
 from ConfigHandler import cfgget, console_write
 from InterpreterShell import execute_LM_function
+from LogicalPins import getPlatformValByKey
 
 #################################################################
 #            CONFIGURE INTERRUPT MEMORY BUFFER                  #
@@ -74,8 +75,9 @@ def secureEventInterruptHandler(pin=None):
     else:
         console_write("EVENTIRQ process overlap... skip job.")
 
-def init_eventPIN(pin=12):
+def init_eventPIN():
     if cfgget('extirq') and cfgget('extirqcbf') != 'n/a':
+        pin = getPlatformValByKey('extirqpin')
         console_write("EVENTIRQ ENABLED")
         from machine import Pin
         event_pin = Pin(pin, Pin.IN, Pin.PULL_UP)

@@ -18,6 +18,16 @@ class ConnectionData():
     PORT = 9008
     MICROS_DEV_IP_DICT = {}
     DEVICE_CACHE_PATH = os.path.join(myfolder, "device_conn_cache.json")
+    DEFAULT_CONFIG_FRAGMNENT = { "__devuid__": [ \
+                                                "192.168.4.1", \
+                                                "__dev_mac_addr__", \
+                                                "__default_device_on_AP__" \
+                                                ],
+                                  "__localhost__": [ \
+                                                "127.0.0.1", \
+                                                "__local_mac_addr__", \
+                                                "device_localhost"
+                                               ] }
 
     @staticmethod
     def filter_MicrOS_devices():
@@ -53,6 +63,7 @@ class ConnectionData():
         cache_path = ConnectionData.DEVICE_CACHE_PATH
         print("Write MicrOS device cache: {}".format(cache_path))
         with open(cache_path, 'w') as f:
+            ConnectionData.MICROS_DEV_IP_DICT.update(ConnectionData.DEFAULT_CONFIG_FRAGMNENT)
             ConnectionData.MICROS_DEV_IP_DICT.update(device_dict)
             json.dump(ConnectionData.MICROS_DEV_IP_DICT, f, indent=4)
 

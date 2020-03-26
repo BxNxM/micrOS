@@ -1,6 +1,5 @@
 from Network import auto_network_configuration
 from SocketServer import server
-from LogicalPins import getPlatformValByKey
 
 #################################################################
 #               EVENT/INTERRUPT HANDLER INTERFACES              #
@@ -15,7 +14,7 @@ def interrupt_handler():
 def extrernal_interrupt_handler():
     try:
         from InterruptHandler import init_eventPIN
-        init_eventPIN(pin=getPlatformValByKey('button'))
+        init_eventPIN()
     except Exception as e:
         print("DEBUG: InterruptHandler.init_eventPIN error: {}".format(e))
 

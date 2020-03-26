@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import re
+import json
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 
 class MicrOSDevTool():
@@ -25,10 +26,12 @@ class MicrOSDevTool():
 
         # DevEnv base pathes
         self.MicrOS_dir_path = os.path.join(MYPATH, "../../MicrOS")
+        self.MicrOS_node_config_archive = os.path.join(MYPATH, "../../node_config_archive")
         self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "../../mpy-MicrOS")
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
+        self.precompile_LM_wihitelist = ["LM_system.py"]
 
         # Filled by methods
         self.micropython_bins_list = []
@@ -240,7 +243,7 @@ class MicrOSDevTool():
         for source in [ pysource for pysource in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if pysource.endswith('.py') ]:
             is_blacklisted = False
             for black_prefix in file_prefix_blacklist:
-                if source.startswith(black_prefix):
+                if source.startswith(black_prefix) and source not in self.precompile_LM_wihitelist:
                     is_blacklisted = True
             if is_blacklisted:
                 tmp_skip_compile_set.add(source)
@@ -286,7 +289,24 @@ class MicrOSDevTool():
         else:
             return True
 
+    def __validate_json(self):
+        is_valid = True
+        local_config_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
+        try:
+            if os.path.isfile(local_config_path):
+                with open(local_config_path, 'r') as f:
+                    text = f.read()
+                    json.loads(text)
+        except ValueError as e:
+            self.console("Invalid config: {}\n{}".format(local_config_path, e))
+            is_valid = False
+        return is_valid
+
     def put_micros_to_dev(self):
+        config_is_valid = self.__validate_json()
+        if not config_is_valid:
+            sys.exit(6)
+
         ampy_cmd = erase_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.__get_device()
         for source in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path):
@@ -349,15 +369,7 @@ class MicrOSDevTool():
         return processid
 
     def update_micros_via_usb(self, force=False):
-        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
-        device = self.__get_device()
-        arguments = 'get node_config.json'
-        command = ampy_cmd.format(dev=device, args=arguments)
-        if not self.dummy_exec:
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-        else:
-            exitcode = 0
-            stdout = 'Dummy stdout'
+        exitcode, stdout, stderr = self.__get_node_config()
         if exitcode == 0:
             self.console("Get Node config (node_config.json)\n{}".format(stdout))
             repo_version, node_version = self.get_micrOS_version(stdout)
@@ -366,13 +378,98 @@ class MicrOSDevTool():
                 self.console("Update necesarry {} -> {}".format(node_version, repo_version), state='ok')
                 state = self.__override_local_config_from_node(node_config=stdout)
                 if state:
-                    self.deploy_micros()
+                    self.deploy_micros(restore=False)
+                    self.archive_node_config()
                 else:
                     self.console("Saving node config failed - SKIP update/rediploy", state='err')
             else:
                 self.console("System is up-to-date.")
         else:
             self.console("Node config error: {} - {}".format(stdout, stderr))
+
+    def __get_node_config(self):
+        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
+        device = self.__get_device()
+        arguments = 'get node_config.json'
+        command = ampy_cmd.format(dev=device, args=arguments)
+        if not self.dummy_exec:
+            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+            self.archive_node_config()
+        else:
+            exitcode = 0
+            stdout = 'Dummy stdout'
+            stderr = ''
+        return exitcode, stdout, stderr
+
+    def __generate_default_config(self):
+        self.console("GENERATE DEFAULT NODE_CONFIG.JSON")
+        create_default_config_command = "pushd {pushd}; python3 ConfigHandler.py; popd".format(pushd=self.MicrOS_dir_path)
+        if not self.dummy_exec:
+            # Remove actual defualt config
+            LocalMachine.FileHandler.remove(os.path.join(self.MicrOS_dir_path, 'node_config.json'))
+            # Create default config
+            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(create_default_config_command, shell=True)
+        else:
+            exitcode = 0
+        if exitcode == 0:
+            return True
+        return False
+
+    def backup_node_config(self):
+        exitcode, stdout, stderr = self.__get_node_config()
+        if exitcode == 0:
+            state = self.__override_local_config_from_node(node_config=stdout)
+            if state:
+                self.archive_node_config()
+
+    def archive_node_config(self):
+        self.console("ARCHIVE NODE_CONFIG.JSON")
+        local_node_config = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
+        if os.path.isfile(local_node_config):
+            node_devfid = ''
+            with open(local_node_config, 'r') as f:
+                node_devfid = json.load(f)['devfid']
+            archive_node_config = os.path.join(self.MicrOS_node_config_archive, '{}-node_config.json'.format(node_devfid))
+            LocalMachine.FileHandler.create_dir(self.MicrOS_node_config_archive)
+            self.console("Archive node_config... to {}".format(archive_node_config))
+            if not self.dummy_exec:
+                LocalMachine.FileHandler.copy(local_node_config, archive_node_config)
+
+    def restore_and_create_node_config(self):
+        self.console("RESTORE NODE_CONFIG.JSON")
+        self.__generate_default_config()
+        conf_list = []
+        index = -1
+        if os.path.isdir(self.MicrOS_node_config_archive):
+            conf_list = [ conf for conf in LocalMachine.FileHandler.list_dir(self.MicrOS_node_config_archive) if conf.endswith('json') ]
+        self.console("Select config file to deplay:")
+        for index, conf in enumerate(conf_list):
+            self.console("  [{}] {}".format(index, conf))
+        self.console("  [{}] {}".format(index+1, 'NEW'))
+        self.console("  [{}] {}".format(index+2, 'SKIP'))
+        conf_list.append(os.path.join('node_config.json'))
+        conf_list.append(os.path.join('SKIP'))
+        selected_index = int(input("Select index: "))
+        if selected_index == len(conf_list) -1:
+            return
+        selected_config = conf_list[selected_index]
+        if '-' in selected_config:
+            target_path = os.path.join(self.precompiled_MicrOS_dir_path, selected_config.split('-')[1])
+            source_path = os.path.join(self.MicrOS_node_config_archive, selected_config)
+        else:
+            target_path = os.path.join(self.precompiled_MicrOS_dir_path, selected_config)
+            source_path = os.path.join(self.MicrOS_dir_path, selected_config)
+        self.console("Restore config: {} -> {}".format(source_path, target_path))
+        if not self.dummy_exec:
+            LocalMachine.FileHandler.copy(source_path, target_path)
+
+        self.console("========== INFO ==========")
+        self.console("To edit your config, open: {}".format(target_path))
+        input("To continue, press enter.")
+
+        with open(target_path, 'r') as f:
+            config = f.read()
+        print("Deployment with config:\n{}".format(config))
 
     def __override_local_config_from_node(self, node_config=None):
         node_config_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
@@ -415,7 +512,9 @@ class MicrOSDevTool():
         else:
             self.console("MicrOS node content list error:\n{}".format(stderr), state='err')
 
-    def deploy_micros(self):
+    def deploy_micros(self, restore=True):
+        if restore:
+            self.restore_and_create_node_config()
         if self.erase_dev():
             time.sleep(2)
             if self.deploy_micropython_dev():
@@ -423,6 +522,7 @@ class MicrOSDevTool():
                 if self.precompile_micros():
                     time.sleep(1)
                     self.put_micros_to_dev()
+                    self.archive_node_config()
                 else:
                     self.console("MicrOS install error", state='err')
             else:

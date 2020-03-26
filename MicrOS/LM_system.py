@@ -18,6 +18,25 @@ def reboot():
         pass
     reset()
 
+def heartbeat():
+    from ProgressLED import toggle
+    from time import sleep
+    toggle()
+    sleep(0.1)
+    toggle()
+
+def time():
+    from time import localtime
+    return localtime()
+
+def setNTP():
+    from Network import setNTP_RTC
+    state = setNTP_RTC()
+    if state:
+        return time()
+    else:
+        return "NTP-RTC setup failed."
+
 def wifirssi(essid=None):
     try:
         from Network import wifi_rssi
@@ -29,13 +48,5 @@ def wifirssi(essid=None):
     else:
         return(wifi_rssi(essid))
 
-def heartbeat():
-    from ProgressLED import toggle
-    from time import sleep
-    toggle()
-    sleep(0.1)
-    toggle()
-
-def time():
-    from time import localtime
-    return localtime()
+def help():
+    return ('memfree', 'gccollect', 'reboot', 'heartbeat', 'time')

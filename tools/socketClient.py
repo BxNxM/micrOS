@@ -83,17 +83,20 @@ class ConnectionData():
     def select_device(dev=None):
         device_choose_list = []
         device_was_found = False
-        print("Activate MicrOS device connection address")
+        if dev is None:
+            print("Activate MicrOS device connection address")
         if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:
             key = list(ConnectionData.MICROS_DEV_IP_DICT.keys())[0]
             ConnectionData.HOST = ConnectionData.MICROS_DEV_IP_DICT[key][0]
         else:
-            print("[i]         FUID        IP               UID")
+            if dev is None:
+                print("[i]         FUID        IP               UID")
             for index, device in enumerate(ConnectionData.MICROS_DEV_IP_DICT.keys()):
                 uid = device
                 devip = ConnectionData.MICROS_DEV_IP_DICT[device][0]
                 fuid = ConnectionData.MICROS_DEV_IP_DICT[device][2]
-                print("[{}] Device: {} - {} - {}".format(index, fuid, devip, uid))
+                if dev is None:
+                    print("[{}] Device: {} - {} - {}".format(index, fuid, devip, uid))
                 device_choose_list.append(devip)
                 if device is not None:
                     if dev == uid or dev == devip or dev == fuid:

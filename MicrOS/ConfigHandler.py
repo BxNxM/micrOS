@@ -1,11 +1,15 @@
-# VERSION: 1.0
+# VERSION: 1.5
 from time import sleep
 
 # SET IT LATER FROM CONFIG
-PLED_STAT = False
-DEBUG_PRINT = True
+# - progressled vars
 pLED = None
+PLED_STAT = False
+# - initial debug print value
+DEBUG_PRINT = True
+# - config handling
 CONF_LOCK = False
+CONFIG_CACHE = {}
 
 #################################################################
 #                     CONSOLE WRITE FUNCTIONS                   #
@@ -68,6 +72,7 @@ def default_config():
 #                  CONFIGHANDLER  FUNCTIONS                     #
 #################################################################
 def cfgget(key):
+    #console_write("\t\t--- [GET CFG][LOCK: {}] {}".format(CONF_LOCK, key))
     try:
         return __read_cfg_file().get(key, None)
     except Exception as e:
@@ -75,6 +80,9 @@ def cfgget(key):
     return None
 
 def cfgput(key, value):
+    #console_write("\t\t-+- [PUT CFG][LOCK: {}] {} = {}".format(CONF_LOCK, key, value))
+    if cfgget(key) == value:
+        return True
     try:
         value = __value_type_handler(key, value)
         if value is not None:
@@ -98,54 +106,66 @@ def cfgget_all():
     return __read_cfg_file()
 
 def __read_cfg_file(nosafe=False):
-    global CONF_LOCK
+    global CONF_LOCK, CONFIG_CACHE
     data_dict = {}
     while len(data_dict) <= 0:
+        #console_write("\t\t|--- [READ CFG][LOCK: {}]".format(CONF_LOCK))
         try:
             if not CONF_LOCK:
-                CONF_LOCK = True
-                with open(CONFIG_PATH, 'r') as f:
-                    data_dict = load(f)
-                CONF_LOCK = False
+                if len(CONFIG_CACHE) == 0:
+                    # READ JSON CONFIG
+                    CONF_LOCK = True
+                    with open(CONFIG_PATH, 'r') as f:
+                        data_dict = load(f)
+                        CONFIG_CACHE = data_dict
+                    CONF_LOCK = False
+                else:
+                    # READ CACHE
+                    data_dict = CONFIG_CACHE
             else:
                 console_write("[CONFIGHANDLER] __read_cfg_file: LOCK")
                 sleep(0.2)
         except Exception as e:
             CONF_LOCK = False
             console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
+            # Write out initial config, if no config exists.
             if nosafe:
                 break
             sleep(0.2)
     return data_dict
 
 def __write_cfg_file(dictionary):
-    global CONF_LOCK
+    global CONF_LOCK, CONFIG_CACHE
     if not isinstance(dictionary, dict):
         console_write("[CONFIGHANDLER] __write_cfg_file - config data struct should be a dict!")
         return False
 
-    state = False
-    while not state:
+    while True:
+        #console_write("\t\t|--- [WRITE CFG][LOCK: {}] WRITE CFG".format(CONF_LOCK))
         try:
             if not CONF_LOCK:
+                CONF_LOCK = True
+                # WRITE CACHE
+                CONFIG_CACHE = dictionary
+                # WRITE JSON CONFIG
                 with open(CONFIG_PATH, 'w') as f:
                     dump(dictionary, f)
-                state = True
+                CONF_LOCK = False
+                break
             else:
                 console_write("[CONFIGHANDLER] __write_cfg_file: LOCK")
                 sleep(0.2)
         except Exception as e:
             console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
-            state = False
+            CONF_LOCK = False
         sleep(0.2)
-    return state
+    return True
 
 def __inject_default_conf():
     default_config_dict = default_config()
-    if not isinstance(default_config_dict, dict):
-        console_write("__inject_default_conf input data type must be dict")
-        return
-    default_config_dict.update(__read_cfg_file(nosafe=True))
+    live_config = __read_cfg_file(nosafe=True)
+    default_config_dict.update(live_config)
+    console_write("[CONFIGHANDLER] inject config:\n{}".format(default_config_dict))
     try:
         if __write_cfg_file(default_config_dict):
             console_write("[CONFIGHANDLER] Inject default data struct successful")

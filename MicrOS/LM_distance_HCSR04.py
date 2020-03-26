@@ -45,3 +45,13 @@ def distance_mm():
 def distance_cm():
         return (__send_pulse_and_wait() / 2) / 29.1
 
+def deinit():
+    global __TRIGGER_OBJ, __ECHO_OBJ
+    trigger_pin, echo_pin = __init_HCSR04()
+    trigger_pin.deinit()
+    echo_pin.deinit()
+    __TRIGGER_OBJ = None
+    __ECHO_OBJ = None
+
+def help():
+    return ('distance_mm', 'distance_cm', 'deinit')

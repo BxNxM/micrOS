@@ -37,7 +37,7 @@ class SocketServer():
     prompt = "{} $ ".format(cfgget('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.7-3'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.8-0'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -154,18 +154,40 @@ class SocketServer():
         self.server_console("[ socket server ] RAW INPUT |{}|".format(data_str))
         if "exit" == data_str:
             # For low level exit handling
+            data_str = ""
             self.reply_message("Bye!")
             self.reconnect()
-            data_str = ""
         if "hello" == data_str:
             # For low level device identification - hello msg
-            self.reply_message("hello:{}:{}".format(cfgget('devfid'), self.uid))
             data_str = ""
+            self.reply_message("hello:{}:{}".format(cfgget('devfid'), self.uid))
         if "version" == data_str:
             # For MicrOS system version info
+            data_str = ""
             self.reply_message("{}".format(self.socket_interpreter_version))
+        if "reboot" == data_str:
+            self.reply_message("Reboot MicrOS system.")
+            self.__safe_reboot_system()
             data_str = ""
         return str(data_str)
+
+    def __safe_reboot_system(self):
+        from ConfigHandler import CONF_LOCK
+        self.server_console("Execute safe reboot: __safe_reboot_system()")
+        while True:
+            if not CONF_LOCK:
+                CONF_LOCK = True
+                self.reply_message("System is rebooting now, bye :)")
+                self.conn.close()
+                if 'esp' in platform:
+                    sleep(1)
+                    from machine import reset
+                    reset()
+                else:
+                    break
+            else:
+                self.reply_message("Waiting for system safe reboot ...")
+                sleep(0.1)
 
     def reply_message(self, msg):
         if len(str(msg).strip()) == 0:
@@ -230,9 +252,7 @@ class SocketServer():
                     self.reply_message("[HA] Critical error - disconnect & hard reset")
                     collect()
                     sleep(1)
-                    self.reconnect()
-                    from machine import reset
-                    reset()
+                    self.__safe_reboot_system()
                 except Exception as e:
                     console_write("==> [!!!][HA] Recovery error: {}".format(e))
         else:

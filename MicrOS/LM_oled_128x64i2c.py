@@ -59,11 +59,17 @@ def show_debug_page():
         text("NAME: {}".format(cfgget("devfid")), 0, 50, show=True)
     except Exception as e:
         return str(e)
+    return True
 
 def poweron():
     if  __OLED is None: __init()
     __OLED.poweron()
+    return True
 
 def poweroff():
     if  __OLED is None: __init()
     __OLED.poweroff()
+    return True
+
+def help():
+    return ('text', 'invert', 'clean', 'draw_line', 'draw_rect', 'show_debug_page', 'poweron', 'poweroff')

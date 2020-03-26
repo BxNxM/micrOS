@@ -31,3 +31,6 @@ def RGB_deinit():
     __GLED.deinit()
     __BLED.deinit()
     return "DEINIT RGB"
+
+def help():
+    return ('RGB', 'RGB_deinit')

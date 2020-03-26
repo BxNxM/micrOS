@@ -32,3 +32,6 @@ def Servo_deinit():
         return "DEINIT SERVO"
     except Exception as e:
         return str(e)
+
+def help():
+    return ('Servo', 'Servo_deinit')

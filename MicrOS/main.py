@@ -1,5 +1,6 @@
 from Network import auto_network_configuration
 from SocketServer import server
+from sys import modules
 
 #################################################################
 #               EVENT/INTERRUPT HANDLER INTERFACES              #
@@ -18,6 +19,9 @@ def extrernal_interrupt_handler():
     except Exception as e:
         print("DEBUG: InterruptHandler.init_eventPIN error: {}".format(e))
 
+def cleanup_modules():
+    del modules['Network']
+
 #################################################################
 #                      MAIN FUNCTION CALLS                      #
 #################################################################
@@ -29,6 +33,9 @@ interrupt_handler()
 
 # SET external interrupt with extirqcbf from nodeconfig
 extrernal_interrupt_handler()
+
+# Clean up unused modules
+cleanup_modules()
 
 # RUN Web/Socket server
 server.run()

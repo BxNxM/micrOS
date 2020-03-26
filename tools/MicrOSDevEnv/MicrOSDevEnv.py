@@ -31,7 +31,7 @@ class MicrOSDevTool():
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
-        self.precompile_LM_wihitelist = ["LM_system.py"]
+        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py"]
 
         # Filled by methods
         self.micropython_bins_list = []
@@ -379,7 +379,6 @@ class MicrOSDevTool():
                 state = self.__override_local_config_from_node(node_config=stdout)
                 if state:
                     self.deploy_micros(restore=False)
-                    self.archive_node_config()
                 else:
                     self.console("Saving node config failed - SKIP update/rediploy", state='err')
             else:
@@ -520,7 +519,7 @@ class MicrOSDevTool():
             if self.deploy_micropython_dev():
                 time.sleep(2)
                 if self.precompile_micros():
-                    time.sleep(1)
+                    time.sleep(2)
                     self.put_micros_to_dev()
                     self.archive_node_config()
                 else:

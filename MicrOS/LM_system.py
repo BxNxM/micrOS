@@ -9,15 +9,6 @@ def gccollect():
     collect()
     return memfree()
 
-def reboot():
-    from machine import reset
-    try:
-        from LM_oled_128x64i2c import poweroff
-        poweroff()
-    except:
-        pass
-    reset()
-
 def heartbeat():
     from ProgressLED import toggle
     from time import sleep
@@ -48,5 +39,9 @@ def wifirssi(essid=None):
     else:
         return(wifi_rssi(essid))
 
+def modules():
+    from sys import modules
+    return modules
+
 def help():
-    return ('memfree', 'gccollect', 'reboot', 'heartbeat', 'time')
+    return ('memfree', 'gccollect', 'heartbeat', 'time', 'modules')

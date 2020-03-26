@@ -59,9 +59,10 @@ def __shell(msg, SocketServerObj):
 
     # HELP MSG
     if "help" in msg_list and "help" == msg_list[0]:
-        SocketServerObj.reply_message("hello - default hello msg - identify device (SocketServer)")
-        SocketServerObj.reply_message("version  - shows MicrOS version")
-        SocketServerObj.reply_message("exit  - exit from shell socket prompt (SocketServer)")
+        SocketServerObj.reply_message("hello   - default hello msg - identify device (SocketServer)")
+        SocketServerObj.reply_message("version - shows MicrOS version")
+        SocketServerObj.reply_message("exit    - exit from shell socket prompt (SocketServer)")
+        SocketServerObj.reply_message("reboot  - system safe reboot (SocketServer)")
         SocketServerObj.reply_message("[CONF] Configure mode:")
         SocketServerObj.reply_message("   configure|conf     - Enter conf mode")
         SocketServerObj.reply_message("         Key          - Get value")
@@ -127,14 +128,17 @@ def show_LMs_functions(SocketServerObj):
         if LMpath not in listdir():
             LMpath = './{}.mpy'.format(LM)
         try:
-            with open(LMpath, 'r') as f:
-                SocketServerObj.reply_message("   {}".format(LM.replace('LM_', '')))
-                while True:
-                    line = f.readline()
-                    if not line:
-                        break
-                    if "def" in line and "def __" not in line:
-                        SocketServerObj.reply_message("   {}{}".format(" "*len(LM.replace('LM_', '')), line.split('(')[0].split(' ')[1]))
+            SocketServerObj.reply_message("   {}".format(LM.replace('LM_', '')))
+            if LMpath.endswith('.mpy'):
+                SocketServerObj.reply_message("   {}help".format(" "*len(LM.replace('LM_', ''))))
+            else:
+                with open(LMpath, 'r') as f:
+                    while True:
+                        line = f.readline()
+                        if not line:
+                            break
+                        if "def" in line and "def __" not in line:
+                            SocketServerObj.reply_message("   {}{}".format(" "*len(LM.replace('LM_', '')), line.split('(')[0].split(' ')[1]))
         except Exception as e:
             SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LM, e))
             raise Exception("show_LMs_functions [{}] exception: {}".format(LM, e))

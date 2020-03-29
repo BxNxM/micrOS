@@ -2,7 +2,7 @@ __RLED = None
 __GLED = None
 __BLED = None
 __RGB_STATE = False
-__RGB_CACHE = ()
+__RGB_CACHE = (800, 800, 800)
 
 def __RGB_init():
     global __RLED, __GLED, __BLED
@@ -33,31 +33,20 @@ def RGB(r=None, g=None, b=None):
     return "SET RGB"
 
 def RGB_deinit():
-    from time import sleep
-    global __RLED, __GLED, __BLED, __RGB_STATE
+    global __RGB_STATE
     RGB(0,0,0)
     __RGB_STATE = False
-    sleep(0.5)
-    __RLED.deinit()
-    __GLED.deinit()
-    __BLED.deinit()
-    __RLED = None
-    __GLED = None
-    __BLED = None
     return "DEINIT RGB"
 
 def RGB_toggle():
     global __RGB_STATE, __RGB_CACHE
     if __RGB_STATE:
         __RGB_STATE = False
-        __RGB_CACHE = (__RLED.duty(), __GLED.duty(), __GLED.duty())
+        __RGB_CACHE = __RLED.duty(), __GLED.duty(), __BLED.duty()
         RGB(0, 0, 0)
     else:
         __RGB_STATE = True
-        if len(__RGB_CACHE) != 3:
-            RGB(800, 800, 800)
-        else:
-            RGB(__RGB_CACHE[0], __RGB_CACHE[1], __RGB_CACHE[2])
+        RGB(__RGB_CACHE[0], __RGB_CACHE[1], __RGB_CACHE[2])
     return "ON" if __RGB_STATE else "OFF"
 
 def help():

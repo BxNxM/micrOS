@@ -34,4 +34,4 @@ def Servo_deinit():
         return str(e)
 
 def help():
-    return ('Servo', 'Servo_deinit')
+    return ('Servo(duty=<int>40-120)', 'Servo_deinit')

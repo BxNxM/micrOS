@@ -111,6 +111,19 @@ def applications(app):
 if __name__ == "__main__":
     cmd_args = arg_parse()
 
+    # Socket interface module
+    if cmd_args.applications:
+        applications(cmd_args.applications)
+        sys.exit(0)
+
+    if cmd_args.connect:
+        connect(args=cmd_args.connect_parameters)
+        sys.exit(0)
+
+    if cmd_args.search_devices:
+        search_devices()
+        sys.exit(0)
+
     # Create API object ()
     if cmd_args.dummy:
         api_obj = MicrOSDevEnv.MicrOSDevTool(dummy_exec=True)
@@ -118,9 +131,6 @@ if __name__ == "__main__":
         api_obj = MicrOSDevEnv.MicrOSDevTool()
 
     # Commands
-    if cmd_args.search_devices:
-        search_devices()
-
     if cmd_args.list_devs_n_bins:
         list_devs_n_bins(api_obj)
 
@@ -135,9 +145,6 @@ if __name__ == "__main__":
 
     if cmd_args.install:
         install(api_obj)
-
-    if cmd_args.connect:
-        connect(args=cmd_args.connect_parameters)
 
     if cmd_args.cross_compile_micros:
         precompile_micrOS(api_obj)
@@ -154,8 +161,8 @@ if __name__ == "__main__":
     if cmd_args.backup_node_config:
         backup_node_config(api_obj)
 
-    if cmd_args.applications:
-        applications(cmd_args.applications)
-
     if cmd_args.connect_via_usb:
         connect_via_usb(api_obj)
+
+    sys.exit(0)
+

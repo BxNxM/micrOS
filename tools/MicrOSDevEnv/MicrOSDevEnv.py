@@ -31,7 +31,7 @@ class MicrOSDevTool():
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
-        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py"]
+        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py"]
 
         # Filled by methods
         self.micropython_bins_list = []
@@ -265,7 +265,7 @@ class MicrOSDevTool():
                 exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
             else:
                 exitcode = 0
-            if exitcode == 0:
+            if exitcode == 0 and stderr == '':
                 self.console("|---> DONE", state='ok')
             else:
                 self.console("|---> ERROR: {} - {}".format(stdout, stderr), state='err')
@@ -307,9 +307,13 @@ class MicrOSDevTool():
         if not config_is_valid:
             sys.exit(6)
 
-        ampy_cmd = erase_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
+        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.__get_device()
-        for source in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path):
+        source_to_put_device = LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
+        # Set source order - main, boot
+        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('boot.py')))
+        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('main.py')))
+        for source in source_to_put_device:
             ampy_args = 'put {from_}'.format(from_=source)
             command = ampy_cmd.format(dev=device, args=ampy_args)
             command = '{pushd}; {cmd}; popd'.format(pushd='pushd {}'.format(self.precompiled_MicrOS_dir_path), cmd=command)

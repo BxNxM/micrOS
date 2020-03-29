@@ -1,5 +1,7 @@
 from network import AP_IF, STA_IF, WLAN
 from time import sleep, localtime, time
+from ntptime import settime
+from machine import RTC
 
 try:
     from ConfigHandler import console_write, cfgget, cfgput
@@ -7,10 +9,10 @@ except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
     console_write = None
 
+#########################################################
+#                 NTP & RTC TIME SETUP                  #
+#########################################################
 def setNTP_RTC():
-    from ntptime import settime
-    from machine import RTC
-
     for _ in range(4):
         if WLAN(STA_IF).isconnected():
             break
@@ -33,9 +35,7 @@ def setNTP_RTC():
     return False
 
 #########################################################
-#                                                       #
 #                  SET WIFI STA MODE                    #
-#                                                       #
 #########################################################
 def set_wifi(essid, pwd, timeout=50):
     console_write('[NW: STA] SET WIFI: {}'.format(essid))
@@ -79,7 +79,7 @@ def __set_wifi_dev_static_ip(sta_if):
     reconfigured = False
     console_write("[NW: STA] Set device static IP.")
     stored_ip = cfgget('devip')
-    if 'n/a' not in stored_ip and '.' in stored_ip:
+    if 'n/a' not in stored_ip.lower() and '.' in stored_ip:
         conn_ips = list(sta_if.ifconfig())
         if conn_ips[0] != stored_ip and conn_ips[-1].split('.')[0:1] == stored_ip.split('.')[0:1]:      # check change and ip type
             conn_ips[0] = stored_ip
@@ -122,9 +122,8 @@ def set_access_point(_essid, _pwd, _authmode=3):
     return ap_if.active()
 
 #########################################################
-#                                                       #
 #          AUTOMATIC NETWORK CONFIGURATION              #
-#IF STA AVAIBLE, IF NOT AP MODE                         #
+#          IF STA AVAIBLE, IF NOT AP MODE               #
 #########################################################
 def auto_network_configuration(essid=None, pwd=None, timeout=50, _essid=None, _pwd=None, _authmode=3, retry=3):
     # GET DATA - STA
@@ -151,50 +150,4 @@ def auto_network_configuration(essid=None, pwd=None, timeout=50, _essid=None, _p
                 cfgput("devip", "n/a")
             cfgput("nwmd", "STA")
             setNTP_RTC()
-
-#########################################################
-#                                                       #
-#                 GET WIFI STRENGHT                     #
-#                                                       #
-#########################################################
-def network_wifi_scan():
-    return [ i[0].decode("utf-8") for i in WLAN().scan() ]
-
-def wifi_rssi(essid):
-    """ GET SSID AND CHANNEL FOR THE SELECTED ESSID"""
-    console_write("[WIFI RSSI METHOD] GET RSSI AND CHANNEL FOR GIVEN ESSID")
-    rssi = None
-    channel = None
-    sta_if = WLAN(STA_IF)
-    sta_if.active(True)
-    # if sta not connected to the given essid
-    if not sta_if.isconnected():
-        return None, None, None, (None, 0)
-    # if we are connected - get informations
-    try:
-        wifi_list = sta_if.scan()
-    except:
-        rssi = 0
-        channel = None
-        wifi_list = []
-    for wifi_spot in wifi_list:
-        if essid in str(wifi_spot):
-            rssi = wifi_spot[3]
-            channel = wifi_spot[2]
-    # calculate human readable quality for rssi - hr_rssi_tupple: human readuble rssi tumpe [0]- string, [1]: number 0-4
-    if rssi >= -30:
-        hr_rssi_tupple = "Amazing", 4
-    elif rssi >= -67:
-        hr_rssi_tupple = "VeryGood", 3
-    elif rssi >= -70:
-        hr_rssi_tupple = "Okey", 2
-    elif rssi >= -80:
-        hr_rssi_tupple = "NotGood", 1
-    elif rssi >= -90:
-        hr_rssi_tupple = "Unusable", 0
-    else:
-        hr_rssi_tupple = "N/A", -1
-
-    console_write("\t| essid, rssi, channel: " + str(essid) +", "+ str(rssi) +", "+ str(channel) +", "+ str(hr_rssi_tupple))
-    return essid, rssi, channel, hr_rssi_tupple
 

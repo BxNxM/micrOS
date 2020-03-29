@@ -2,6 +2,7 @@ from sys import platform
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from InterpreterShell import shell as InterpreterShell_shell
 from time import sleep
+from Hooks import profiling_info
 
 #########################################################
 #                         IMPORTS                       #
@@ -34,25 +35,20 @@ class SocketServer():
     '''
     USER_TIMEOUT - sec
     '''
-    prompt = "{} $ ".format(cfgget('devfid'))
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.8-0'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.9-0'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
         self.host = HOST
         # ---- Config ---
+        self.prompt = "{} $ ".format(cfgget('devfid'))
         self.port = self.__set_port_from_config(PORT)
         self.__set_timeout_value(USER_TIMEOUT)
         self.__get_uid_macaddr_hex(UID)
         # ---         ----
         self.server_console("[ socket server ] <<constructor>>")
-        # ---         ----
-        if "esp" in platform:
-            self.server_console("[ socket server ] telnet " + str(cfgget("devip")) + " " + str(self.port))
-        else:
-            self.server_console("[ socket server ] telnet 127.0.0.1 " + str(self.port))
 
     #####################################
     #     Embedded Config Handling      #
@@ -138,8 +134,9 @@ class SocketServer():
         self.reply_message(prompt)
         self.conn.settimeout(self.timeout_user)
         try:
-            data_byte = self.conn.recv(1024)
+            data_byte = self.conn.recv(512)
         except Exception as e:
+            data_byte = b''
             if "TIMEDOUT" in str(e) or "timoeout" in str(e):
                 self.server_console("[ socket server ] socket recv - connection with user - timeout " + str(self.timeout_user) + " sec")
                 self.reply_message("Session timeout {} sec".format(self.timeout_user))
@@ -150,7 +147,6 @@ class SocketServer():
             data_str = data_byte.decode("utf-8").strip()
         except:
             data_str = "ctrl-c"
-        reply_str = receive_msg
         self.server_console("[ socket server ] RAW INPUT |{}|".format(data_str))
         if "exit" == data_str:
             # For low level exit handling
@@ -184,6 +180,7 @@ class SocketServer():
                     from machine import reset
                     reset()
                 else:
+                    self.reconnect()
                     break
             else:
                 self.reply_message("Waiting for system safe reboot ...")
@@ -219,14 +216,19 @@ class SocketServer():
         # Accept new connection
         self.__accept()
 
-    def run(self, inloop = True):
+    def run(self):
+        if "esp" in platform:
+            self.server_console("[ socket server ] SERVER ADDR: telnet " + str(cfgget("devip")) + " " + str(self.port))
+        else:
+            self.server_console("[ socket server ] SERVER ADDR: telnet 127.0.0.1 " + str(self.port))
+
         try:
             cfgput('version', self.socket_interpreter_version)
         except Exception as e:
             console_write("Export system version to config failed: {}".format(e))
         self.init_socket()
         self.bind_and_accept()
-        while inloop:
+        while True:
             try:
                 is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
                 if not is_healthy:
@@ -235,9 +237,7 @@ class SocketServer():
             except Exception as e:
                 console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
                 self.__recovery(errlvl=1)
-        if not inloop:
-            is_healthy, msg = InterpreterShell_shell(self.wait_for_message(), SocketServerObj=self)
-            del is_healthy
+            profiling_info(label='[X] AFTER INTERPRETER EXECUTION')
 
     def __recovery(self, errlvl=0):
         '''
@@ -259,11 +259,11 @@ class SocketServer():
             console_write("[HA] recovery only available on esp - nodemcu")
 
     def get_prompt(self):
-        return "{}{} ".format(self.pre_prompt, SocketServer.prompt).encode('utf-8')
+        return "{}{} ".format(self.pre_prompt, self.prompt).encode('utf-8')
 
     def server_console(self, msg):
         console_write("  "*self.server_console_indent + msg)
-        self.server_console_indent+=1
+        self.server_console_indent += 1
 
     def __del__(self):
         console_write("[ socket server ] <<destructor>>")
@@ -281,6 +281,6 @@ try:
         main()
     if "SocketServer" in __name__:
         server = SocketServer()
-        #server.run()
+        profiling_info(label='[0] AFTER SOCKET SERVER CREATION')
 except KeyboardInterrupt:
     console_write("Keyboard interrupt in SocketServer.")

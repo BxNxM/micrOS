@@ -3,7 +3,7 @@ from sys import platform
 def getPlatformValByKey(key):
     function_pins_on_platfrom_dict = {}
     if 'esp32' in platform:
-        function_pins_on_platfrom_dict = {'progressled': 2}
+        function_pins_on_platfrom_dict = {'progressled': 2}     # BUILT IN LED
     elif 'esp8266' in platform:
         function_pins_on_platfrom_dict = {'progressled': 16,    # BUILT IN LED
                                           'servo': 15,          # D8

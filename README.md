@@ -194,7 +194,7 @@ GC MemFree[byte]: 5552
 ## Node Configuration
 
 | Parameters names | Reboot required | Description |
-| :----------: | :-----------: | ----------- |
+| ---------- | :-----------: | ----------- |
 | staessid   |        Yes      | 	Wifi station name 
 | stapwd		|        Yes      | Wifi station password
 | devfid		|        No       | Device friendly name / AP name - access point mode
@@ -204,14 +204,15 @@ GC MemFree[byte]: 5552
 | soctout		|        Yes      | Socket / Web server connection timeout (because single user | handling)
 | socport		|         Yes     | Socket / Web server service port
 | timirg		|        Yes      | Timer interrupt enable - "subprocess"
-|timirqcbf   |        No        | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
+|timirqcbf   |        Yes        | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
 | timirqseq   |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
 | extirq     |       Yes        | External event interrupt - "subprocess"
-| extirqcbf   |      No        | Callback function (LM) from config, example: `oled_128x64i2c invert`
+| extirqcbf   |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
+| boothook    |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
 | gmttime    |        Yes      | NTP - RTC - timezone setup 
 | nwmd 		|       N/A       |STATE STORAGE - system saves nw mode here - AP / STA
 | hwuid		|      N/A         | STATE STORAGE - hardwer address - dev uid
-| devip		|       N/A         | STATE STORAGE - system stores device ip here
+| devip		|       N/A         | STATE STORAGE - system stores device ip here - first stored IP in STA mode will be the device static IP on the network.
 
 
 ## Logical pin accociation
@@ -300,5 +301,10 @@ slim01 $  exit
 Bye!
 exit and close connection from ('10.0.1.7', 51733)
 ```
+
+## HINTS
+
+- Save **screen** console buffer (**output**)
+Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 git push -u origin master

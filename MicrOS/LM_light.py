@@ -25,11 +25,16 @@ def RGB(r=None, g=None, b=None):
     return "SET RGB"
 
 def RGB_deinit():
-    __RGB_init()
-    RGB(r=0, g=0, b=0)
+    from time import sleep
+    global __RLED, __GLED, __BLED
+    RGB(0,0,0)
+    sleep(0.5)
     __RLED.deinit()
     __GLED.deinit()
     __BLED.deinit()
+    __RLED = None
+    __GLED = None
+    __BLED = None
     return "DEINIT RGB"
 
 def help():

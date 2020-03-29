@@ -1,54 +1,58 @@
 # VERSION: 1.5
+#################################################################
+#                           IMPORTS                             #
+#################################################################
 from time import sleep
+from json import load, dump
+from LogicalPins import getPlatformValByKey
+
+try:
+    from machine import Pin
+    PLED = Pin(getPlatformValByKey('progressled'), Pin.OUT)
+except Exception as e:
+    print("[WARNING] Progressled not available on device: {}".format(e))
+    PLED = None
 
 # SET IT LATER FROM CONFIG
-# - progressled vars
-pLED = None
-PLED_STAT = False
-# - initial debug print value
 DEBUG_PRINT = True
 # - config handling
 CONF_LOCK = False
 CONFIG_CACHE = {}
+# - MicrOS config
+CONFIG_PATH = "node_config.json"
 
 #################################################################
 #                     CONSOLE WRITE FUNCTIONS                   #
 #################################################################
+
+
 def progress_led_toggle_adaptor(func):
+    global PLED
     def wrapper(*args, **kwargs):
-        global pLED, PLED_STAT
-        if pLED and PLED_STAT: pLED.toggle()
+        try:
+            if PLED is not None: PLED.value(not PLED.value())
+        except: pass
         output = func(*args, **kwargs)
-        if pLED and PLED_STAT: pLED.toggle()
+        try:
+            if PLED is not None: PLED.value(not PLED.value())
+        except: pass
         return output
     return wrapper
 
+
 @progress_led_toggle_adaptor
 def console_write(msg):
-    global DEBUG_PRINT
     if DEBUG_PRINT:
         print(msg)
 
-#################################################################
-#                           IMPORTS                             #
-#################################################################
-try:
-    from ujson import load, dump
-except Exception as e:
-    console_write("ujson module not found: " + str(e))
-    from json import load, dump
-
-try:
-    import ProgressLED as pLED
-except Exception as e:
-    pLED = False
 
 #################################################################
 #                       MODULE CONFIG
 #################################################################
-CONFIG_PATH="node_config.json"
+
+
 def default_config():
-    DEFAULT_CONFIGURATION_TEMPLATE = {"version": "n/a",
+    default_configuration_template = {"version": "n/a",
                                       "staessid": "your_wifi_name",
                                       "stapwd": "your_wifi_passwd",
                                       "devfid": "slim01",
@@ -65,12 +69,15 @@ def default_config():
                                       "timirqseq": 3000,
                                       "extirq": False,
                                       "extirqcbf": "n/a",
+                                      "boothook": "n/a",
                                       "gmttime": +1}
-    return DEFAULT_CONFIGURATION_TEMPLATE
+    return default_configuration_template
 
 #################################################################
 #                  CONFIGHANDLER  FUNCTIONS                     #
 #################################################################
+
+
 def cfgget(key):
     #console_write("\t\t--- [GET CFG][LOCK: {}] {}".format(CONF_LOCK, key))
     try:
@@ -78,6 +85,7 @@ def cfgget(key):
     except Exception as e:
         console_write("[CONFIGHANDLER] Get config value error: {}".format(e))
     return None
+
 
 def cfgput(key, value):
     #console_write("\t\t-+- [PUT CFG][LOCK: {}] {} = {}".format(CONF_LOCK, key, value))
@@ -94,6 +102,7 @@ def cfgput(key, value):
     except:
         return False
 
+
 def cfgprint_all():
     data_struct = dict(__read_cfg_file())
     if isinstance(data_struct, dict):
@@ -102,8 +111,15 @@ def cfgprint_all():
     else:
         console_write("[CONFIGHANDLER] data_struct not dict: " + str(data_struct))
 
+
 def cfgget_all():
     return __read_cfg_file()
+
+
+#################################################################
+#             CONFIGHANDLER  INTERNAL FUNCTIONS                 #
+#################################################################
+
 
 def __read_cfg_file(nosafe=False):
     global CONF_LOCK, CONFIG_CACHE
@@ -134,6 +150,7 @@ def __read_cfg_file(nosafe=False):
             sleep(0.2)
     return data_dict
 
+
 def __write_cfg_file(dictionary):
     global CONF_LOCK, CONFIG_CACHE
     if not isinstance(dictionary, dict):
@@ -161,6 +178,7 @@ def __write_cfg_file(dictionary):
         sleep(0.2)
     return True
 
+
 def __inject_default_conf():
     default_config_dict = default_config()
     live_config = __read_cfg_file(nosafe=True)
@@ -175,6 +193,7 @@ def __inject_default_conf():
         console_write(e)
     finally:
         del default_config_dict
+
 
 def __value_type_handler(key, value):
     value_in_cfg = cfgget(key)
@@ -206,26 +225,27 @@ def __value_type_handler(key, value):
 #################################################################
 #                       MODULE AUTO INIT                        #
 #################################################################
-def __init_module():
-    global PLED_STAT, DEBUG_PRINT
-    __inject_default_conf()
-    try:
-        PLED_STAT = cfgget("pled")
-        DEBUG_PRINT = cfgget("dbg")
-    except Exception as e:
-        console_write("[CONFIGHANDLER] module init error: {}".format(e))
-        DEBUG_PRINT = False
+
 
 if "ConfigHandler" in __name__:
-    __init_module()
+    __inject_default_conf()
+    DEBUG_PRINT = cfgget("dbg")
+    if not cfgget('pled'): PLED = None
 
 #################################################################
 #                            DEMO                               #
 #################################################################
+
+
 def confighandler_demo():
-    __init_module()
+    global DEBUG_PRINT, PLED
+    __inject_default_conf()
+    DEBUG_PRINT = cfgget("dbg")
+    if not cfgget('pled'): PLED = None
+
     cfgprint_all()
     console_write("Write console msg ...")
+
 
 if __name__ == "__main__":
     confighandler_demo()

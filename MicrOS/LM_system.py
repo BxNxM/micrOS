@@ -1,47 +1,48 @@
 def memfree():
     from gc import mem_free
     from machine import freq
-    from micropython import mem_info
     return "CPU[Hz]: {}\nGC MemFree[byte]: {}".format(freq(), mem_free())
 
+
 def gccollect():
-    from gc import collect
+    from gc import collect, mem_free
     collect()
-    return memfree()
+    return "GC MemFree[byte]: {}".format(mem_free())
+
 
 def heartbeat():
-    from ProgressLED import toggle
+    from ConfigHandler import PLED
     from time import sleep
-    toggle()
+    if PLED is not None: PLED.value(not PLED.value())
     sleep(0.1)
-    toggle()
+    if PLED is not None: PLED.value(not PLED.value())
+    return "<3 heartbeat <3"
+
 
 def time():
     from time import localtime
     return localtime()
 
+
 def setNTP():
     from Network import setNTP_RTC
-    state = setNTP_RTC()
-    if state:
+    if setNTP_RTC():
         return time()
     else:
         return "NTP-RTC setup failed."
 
-def wifirssi(essid=None):
-    try:
-        from Network import wifi_rssi
-    except Exception as e:
-        return "Network.wifi_rssi import error: " + str(e)
-    if essid is None:
-        from ConfigHandler import cfgget
-        return(wifi_rssi(cfgget('staessid')))
-    else:
-        return(wifi_rssi(essid))
 
-def modules():
+def modules(unload=None):
     from sys import modules
-    return modules
+    if unload is None:
+        return modules.keys()
+    else:
+        try:
+            del modules[unload]
+            return "Module unload {} done.".format(unload)
+        except Exception as e:
+            return "Module unload failed: {}".format(e)
+
 
 def help():
     return ('memfree', 'gccollect', 'heartbeat', 'time', 'modules')

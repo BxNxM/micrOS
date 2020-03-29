@@ -10,30 +10,25 @@ except Exception as e:
     enable_irq = None
     print("Failed to import machine: {}".format(e))
 
-try:
-    from gc import collect
-except Exception as e:
-    collect = None
-    print("Failed to import gc.colect: {}".format(e))
-
 from os import listdir
 from sys import modules
 
 #########################################################
 #             SHELL Interpreter FUNCTIONS               #
 #########################################################
+
+
 def shell(msg, SocketServerObj):
     '''
     Socket server - interpreter shell wrapper
     '''
-    if len(msg.strip()) == 0:
-        return True, ''
     try:
         state = __shell(msg, SocketServerObj)
-        return state, ""                       # True - good, False execute soft reboot
+        return state, 'Okay'                   # True - good, False execute soft reboot
     except Exception as e:
         SocketServerObj.reply_message("[SHELL] Runtime error: {}".format(e))
         return False, str(e)
+
 
 def __shell(msg, SocketServerObj):
     '''
@@ -41,7 +36,7 @@ def __shell(msg, SocketServerObj):
     '''
     retval = True
 
-    if msg is None or msg == "":
+    if msg is None or len(msg.strip()) == 0:
         return retval
     msg_list = msg.strip().split()
 
@@ -86,6 +81,8 @@ def __shell(msg, SocketServerObj):
 #########################################################
 #               CONFIGURE MODE HANDLER                  #
 #########################################################
+
+
 def configure(attributes, SocketServerObj):
     # DISBALE BG INTERRUPTS
     if disable_irq is not None:
@@ -117,16 +114,13 @@ def configure(attributes, SocketServerObj):
 #########################################################
 #               COMMAND MODE & LMS HANDLER              #
 #########################################################
-def load_LMs():
-    LM_MODULE_LIST = [i for i in listdir() if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))]
-    LM_MODULE_LIST = [i.split('.')[0] for i in LM_MODULE_LIST]
-    return LM_MODULE_LIST
+
 
 def show_LMs_functions(SocketServerObj):
-    for LM in load_LMs():
+    for LM in [i.split('.')[0] for i in listdir() if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))]:
         LMpath = '{}.py'.format(LM)
         if LMpath not in listdir():
-            LMpath = './{}.mpy'.format(LM)
+            LMpath = '{}.mpy'.format(LM)
         try:
             SocketServerObj.reply_message("   {}".format(LM.replace('LM_', '')))
             if LMpath.endswith('.mpy'):
@@ -143,10 +137,12 @@ def show_LMs_functions(SocketServerObj):
             SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LM, e))
             raise Exception("show_LMs_functions [{}] exception: {}".format(LM, e))
 
-def execute_LM_function(argument_list, SocketServerObj=None):
+
+def execute_LM_function_Core(argument_list, SocketServerObj=None):
     '''
     1. param. - LM name, i.e. LM_commands
     2. param. - function call with parameters, i.e. a()
+    NOTE: SocketServerObj is None from Interrupts and Hooks - shared functionality
     '''
     recovery_query = False
     if len(argument_list) >= 2:
@@ -156,33 +152,45 @@ def execute_LM_function(argument_list, SocketServerObj=None):
         if "(" not in LM_function_call and ")" not in LM_function_call:
             LM_function_call = "{}()".format(LM_function)
     try:
-        if disable_irq is not None and SocketServerObj is not None:     # SocketServerObj is None from Interrupts - shared functionality
-            status = disable_irq()
         # --- LM LOAD & EXECUTE --- #
-        if  SocketServerObj is not None:
+        if SocketServerObj is not None:
             SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
         # [1] LOAD MODULE
         exec("from {} import {}".format(LM_name, LM_function))
         # [2] EXECUTE FUNCTION FROM MODULE
-        if  SocketServerObj is not None:
+        if SocketServerObj is not None:
             SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
         else:
             eval("{}".format(LM_function_call))
-        if collect is not None: collect()
         # ------------------------- #
-        if enable_irq is not None and SocketServerObj is not None:      # SocketServerObj is None from Interrupts - shared functionality
-            enable_irq(status)
     except Exception as e:
-        if enable_irq is not None and SocketServerObj is not None:      # SocketServerObj is None from Interrupts - shared functionality
-            enable_irq(status)
-        if  SocketServerObj is not None:
-            SocketServerObj.reply_message("execute_LM_function: " + str(e))
+        if SocketServerObj is not None:
+            SocketServerObj.reply_message("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
         else:
-            print("execute_LM_function: " + str(e))
+            print("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
         if "memory allocation failed" in str(e):
             # UNLOAD MODULE IF MEMORY ERROR ACCURED
             if LM_name in modules.keys():
                 del modules[LM_name]
             recovery_query = True
+    # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
     return not recovery_query
+
+def execute_LM_function(argument_list, SocketServerObj=None):
+    '''
+    1. param. - LM name, i.e. LM_commands
+    2. param. - function call with parameters, i.e. a()
+    '''
+    try:
+        if disable_irq is not None:
+            status = disable_irq()
+        health = execute_LM_function_Core(argument_list, SocketServerObj)
+        if enable_irq is not None:
+            enable_irq(status)
+    except Exception as e:
+        if enable_irq is not None:
+            enable_irq(status)
+        health = False
+    # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
+    return health
 

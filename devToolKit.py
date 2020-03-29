@@ -129,9 +129,6 @@ if __name__ == "__main__":
     if cmd_args.connect:
         connect(args=cmd_args.connect_parameters)
 
-    if cmd_args.connect_via_usb:
-        connect_via_usb(api_obj)
-
     if cmd_args.cross_compile_micros:
         precompile_micrOS(api_obj)
 
@@ -147,3 +144,5 @@ if __name__ == "__main__":
     if cmd_args.backup_node_config:
         backup_node_config(api_obj)
 
+    if cmd_args.connect_via_usb:
+        connect_via_usb(api_obj)

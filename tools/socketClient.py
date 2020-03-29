@@ -266,16 +266,18 @@ def main(args):
             socketdictclient.interactive()
         else:
             socketdictclient.non_interactive(args)
+        return True
     except KeyboardInterrupt:
-        pass
+        return True
     except Exception as e:
         if "Connection reset by peer" not in str(e):
             print("FAILED TO START: " + str(e))
+        return False
 
 def run(arg_list=[]):
     args, action = socket_commandline_args(arg_list)
     ConnectionData.auto_execute(search=action['search'], dev=action['dev'])
-    main(args)
+    return main(args)
 
 if __name__ == "__main__":
     args, action = socket_commandline_args(sys.argv[1:])

@@ -5,8 +5,10 @@ import sys
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 SOCKET_CLIENT_DIR_PATH = os.path.join(MYPATH, 'tools/')
 API_DIR_PATH = os.path.join(MYPATH, 'tools/MicrOSDevEnv/')
+APP_DIR = os.path.join(MYPATH, 'apps')
 sys.path.append(API_DIR_PATH)
 sys.path.append(SOCKET_CLIENT_DIR_PATH)
+sys.path.append(APP_DIR)
 import argparse
 import MicrOSDevEnv
 import socketClient
@@ -23,6 +25,7 @@ def arg_parse():
                                                                     - node config will be restored")
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
     base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactivve mode.")
+    base_group.add_argument("-a", "--applications", type=str, help="List/Execute frontend applications. [list]")
 
     dev_group = parser.add_argument_group("Development & Deployment & Connection")
     dev_group.add_argument("-e", "--erase", action="store_true", help="Erase device")
@@ -97,6 +100,13 @@ def node_ls(api_obj):
 def backup_node_config(api_obj):
     api_obj.backup_node_config()
 
+def applications(app):
+    if app.strip() == 'ImpiGame':
+        import CatGame_app
+        CatGame_app.app()
+    else:
+        print("\tImpiGame")
+
 
 if __name__ == "__main__":
     cmd_args = arg_parse()
@@ -143,6 +153,9 @@ if __name__ == "__main__":
 
     if cmd_args.backup_node_config:
         backup_node_config(api_obj)
+
+    if cmd_args.applications:
+        applications(cmd_args.applications)
 
     if cmd_args.connect_via_usb:
         connect_via_usb(api_obj)

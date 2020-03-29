@@ -10,7 +10,6 @@ from LogicalPins import getPlatformValByKey
 def set_emergency_buffer(base_buff_kb=200):
     from micropython import alloc_emergency_exception_buf
     buff_size_kb = 0
-    print("=+=> [DEBUG] set_emergency_buffer")
     if cfgget("timirq"):
         buff_size_kb += base_buff_kb
     if cfgget('extirq'):
@@ -63,13 +62,12 @@ def enableInterrupt(period_ms=3000):
 
 
 CFG_EVIRQCBF = 'n/a'
-def secureEventInterruptHandler():
+def secureEventInterruptHandler(pin=None):
     try:
         if CFG_EVIRQCBF.lower() != 'n/a':
             execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
     except Exception as e:
         console_write("[IRQ] EVENTIRQ callback: {} error: " + str(CFG_EVIRQCBF, e))
-
 
 
 def init_eventPIN():

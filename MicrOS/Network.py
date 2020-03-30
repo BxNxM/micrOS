@@ -40,6 +40,7 @@ def setNTP_RTC():
 def set_uid_macaddr_hex(sta_if=None):
     uid = "n/a"
     if sta_if is not None:
+        uid = ""
         for ot in list(sta_if.config('mac')):
             uid += hex(ot)
     cfgput("hwuid", uid)

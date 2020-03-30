@@ -29,7 +29,7 @@ class SocketServer():
     '''
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.9-4'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.9-5'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""

@@ -1,3 +1,7 @@
+from ConfigHandler import cfgget
+from gc import mem_free
+from time import localtime
+
 __OLED = None
 __INVERT = True
 
@@ -12,14 +16,13 @@ def __init():
     return __OLED
 
 def text(intext="<text>", posx=0, posy=0, show=True):
-    if  __OLED is None: __init()
-    __OLED.text(intext, posx, posy)
+    __init().text(intext, posx, posy)
     if show: __OLED.show()
     return True
 
 def invert(state=None):
     global __INVERT
-    if  __OLED is None: __init()
+    __init()
     if state is not None:
         __OLED.invert(state)
     else:
@@ -28,28 +31,22 @@ def invert(state=None):
     return True
 
 def clean(state=0, show=True):
-    if  __OLED is None: __init()
-    __OLED.fill(state)
+    __init().fill(state)
     if show: __OLED.show()
     return True
 
 def draw_line(sx, sy, ex, ey, state=1, show=True):
-    if  __OLED is None: __init()
-    __OLED.line(sx, sy, ex, ey, state)
+    __init().line(sx, sy, ex, ey, state)
     if show: __OLED.show()
     return True
 
 def draw_rect(sx, sy, ex, ey, state=1, show=True):
-    if  __OLED is None: __init()
-    __OLED.rect(sx, sy, ex, ey, state)
+    __init().rect(sx, sy, ex, ey, state)
     if show: __OLED.show()
     return True
 
 def show_debug_page():
     try:
-        from ConfigHandler import cfgget
-        from gc import mem_free
-        from time import localtime
         clean(show=False)
         text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 0, show=False)
         text("NW_MODE: {}".format(cfgget("nwmd")), 0, 10, show=False)
@@ -62,13 +59,11 @@ def show_debug_page():
     return True
 
 def poweron():
-    if  __OLED is None: __init()
-    __OLED.poweron()
+    __init().poweron()
     return True
 
 def poweroff():
-    if  __OLED is None: __init()
-    __OLED.poweroff()
+    __init().poweroff()
     return True
 
 def help():

@@ -54,17 +54,18 @@ def __shell(msg, SocketServerObj):
 
     # HELP MSG
     if "help" in msg_list and "help" == msg_list[0]:
-        SocketServerObj.reply_message("hello   - default hello msg - identify device (SocketServer)")
-        SocketServerObj.reply_message("version - shows MicrOS version")
-        SocketServerObj.reply_message("exit    - exit from shell socket prompt (SocketServer)")
-        SocketServerObj.reply_message("reboot  - system safe reboot (SocketServer)")
-        SocketServerObj.reply_message("[CONF] Configure mode:")
+        SocketServerObj.reply_message("[MICROS]   - commands (built-in)")
+        SocketServerObj.reply_message("   hello   - default hello msg - identify device (SocketServer)")
+        SocketServerObj.reply_message("   version - shows MicrOS version")
+        SocketServerObj.reply_message("   exit    - exit from shell socket prompt (SocketServer)")
+        SocketServerObj.reply_message("   reboot  - system safe reboot (SocketServer)")
+        SocketServerObj.reply_message("[CONF] Configure mode (built-in):")
         SocketServerObj.reply_message("   configure|conf     - Enter conf mode")
         SocketServerObj.reply_message("         Key          - Get value")
         SocketServerObj.reply_message("         Key:Value    - Set value")
         SocketServerObj.reply_message("         dump         - Dump all data")
         SocketServerObj.reply_message("   noconfigure|noconf - Exit conf mod")
-        SocketServerObj.reply_message("[EXEC] Command mode:")
+        SocketServerObj.reply_message("[EXEC] Command mode (LMs):")
         show_LMs_functions(SocketServerObj)
         msg_list = []
 

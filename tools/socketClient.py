@@ -17,7 +17,7 @@ class ConnectionData():
     HOST = 'localhost'
     PORT = 9008
     MICROS_DEV_IP_DICT = {}
-    DEVICE_CACHE_PATH = os.path.join(myfolder, "device_conn_cache.json")
+    DEVICE_CACHE_PATH = os.path.join(myfolder, "../user_data/device_conn_cache.json")
     DEFAULT_CONFIG_FRAGMNENT = { "__devuid__": [ \
                                                 "192.168.4.1", \
                                                 "__dev_mac_addr__", \

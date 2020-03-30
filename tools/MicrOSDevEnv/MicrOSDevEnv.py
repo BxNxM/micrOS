@@ -7,6 +7,7 @@ import sys
 import time
 import re
 import json
+import pprint
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 
 class MicrOSDevTool():
@@ -26,7 +27,7 @@ class MicrOSDevTool():
 
         # DevEnv base pathes
         self.MicrOS_dir_path = os.path.join(MYPATH, "../../MicrOS")
-        self.MicrOS_node_config_archive = os.path.join(MYPATH, "../../node_config_archive")
+        self.MicrOS_node_config_archive = os.path.join(MYPATH, "../../user_data/node_config_archive")
         self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "../../mpy-MicrOS")
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
@@ -311,8 +312,8 @@ class MicrOSDevTool():
         device = self.__get_device()
         source_to_put_device = LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
         # Set source order - main, boot
-        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('boot.py')))
         source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('main.py')))
+        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('boot.py')))
         for source in source_to_put_device:
             ampy_args = 'put {from_}'.format(from_=source)
             command = ampy_cmd.format(dev=device, args=ampy_args)
@@ -375,7 +376,8 @@ class MicrOSDevTool():
     def update_micros_via_usb(self, force=False):
         exitcode, stdout, stderr = self.__get_node_config()
         if exitcode == 0:
-            self.console("Get Node config (node_config.json)\n{}".format(stdout))
+            self.console("Get Node config (node_config.json):")
+            pprint.PrettyPrinter(indent=4).pprint(json.loads(stdout))
             repo_version, node_version = self.get_micrOS_version(stdout)
             self.console("Repo version: {} Node_version: {}".format(repo_version, node_version))
             if repo_version != node_version or force:
@@ -419,11 +421,18 @@ class MicrOSDevTool():
         return False
 
     def backup_node_config(self):
-        exitcode, stdout, stderr = self.__get_node_config()
-        if exitcode == 0:
-            state = self.__override_local_config_from_node(node_config=stdout)
-            if state:
-                self.archive_node_config()
+        if len(self.micros_devices) > 0:
+            exitcode, stdout, stderr = self.__get_node_config()
+            print("1-: {}\n{}\n{}".format(exitcode, stdout, stderr))
+            if exitcode == 0:
+                self.console("Get Node config (node_config.json):")
+                pprint.PrettyPrinter(indent=4).pprint(json.loads(stdout))
+                state = self.__override_local_config_from_node(node_config=stdout)
+                if state:
+                    self.archive_node_config()
+                    return True
+        self.console("exitcode: {}\n{}\n{}".format(exitcode, stdout, stderr))
+        return False
 
     def archive_node_config(self):
         self.console("ARCHIVE NODE_CONFIG.JSON")

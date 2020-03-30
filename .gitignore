@@ -1,8 +1,7 @@
-MicrOS/*.mpy
 ./micropython_repo/micropython/*
+MicrOS/*.mpy
 **.pyc
 MicrOS/node_config.json
 mpy-MicrOS/node_config.json
 MicrOS/.idea/
-tools/device_conn_cache.json
-node_config_archive
+**__pycache__

@@ -35,9 +35,20 @@ def setNTP_RTC():
     return False
 
 #########################################################
+#              GET DEVICE UID BY MAC ADDRESS            #
+#########################################################
+def set_uid_macaddr_hex(sta_if=None):
+    uid = "n/a"
+    if sta_if is not None:
+        for ot in list(sta_if.config('mac')):
+            uid += hex(ot)
+    cfgput("hwuid", uid)
+
+
+#########################################################
 #                  SET WIFI STA MODE                    #
 #########################################################
-def set_wifi(essid, pwd, timeout=50):
+def set_wifi(essid, pwd, timeout=60):
     console_write('[NW: STA] SET WIFI: {}'.format(essid))
 
     # Disable AP mode
@@ -56,7 +67,7 @@ def set_wifi(essid, pwd, timeout=50):
             sta_if.connect(essid, pwd)
             # wait for connection, with timeout set
             while not sta_if.isconnected() and timeout > 0:
-                console_write("\t| [NW: STA] Waiting for connection... " + str(timeout) + "/50" )
+                console_write("\t| [NW: STA] Waiting for connection... " + str(timeout) + "/60" )
                 timeout -= 1
                 sleep(0.4)
             # Set static IP - here because some data comes from connection.
@@ -69,10 +80,12 @@ def set_wifi(essid, pwd, timeout=50):
             return False
         console_write("\t|\t| [NW: STA] network config: " + str(sta_if.ifconfig()))
         cfgput("devip", str(sta_if.ifconfig()[0]))
+        set_uid_macaddr_hex(sta_if)
         console_write("\t|\t| [NW: STA] CONNECTED: " + str(sta_if.isconnected()))
     else:
         console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
         cfgput("devip", str(sta_if.ifconfig()[0]))
+        set_uid_macaddr_hex(sta_if)
     return sta_if.isconnected()
 
 def __set_wifi_dev_static_ip(sta_if):

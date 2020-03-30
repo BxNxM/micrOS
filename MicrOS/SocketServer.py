@@ -20,14 +20,6 @@ except Exception as e:
     print("Failed to import ConfigHandler: {}".format(e))
     console_write = None
 
-try:
-    from network import WLAN, STA_IF
-    console_write("[ MICROPYTHON MODULE LOAD ] -  network - from " + str(__name__))
-    sta_if = WLAN(STA_IF)
-except Exception as e:
-    console_write("[ MYCROPYTHON IMPORT ERROR ] - " + str(e) + " - from " + str(__name__))
-    sta_if = None
-
 #########################################################
 #                    SOCKET SERVER CLASS                #
 #########################################################
@@ -37,7 +29,7 @@ class SocketServer():
     '''
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.9-2'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.9-4'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -56,14 +48,8 @@ class SocketServer():
     def __get_uid_macaddr_hex(self, UID=None):
         if UID is not None:
             self.uid = UID
-        elif sta_if is not None:
-            mac = sta_if.config('mac')
-            self.uid = ""
-            for ot in list(mac):
-                self.uid += hex(ot)
         else:
-            self.uid = "n/a"
-        cfgput("hwuid", self.uid)
+            self.uid = cfgget("hwuid")
 
     def __set_port_from_config(self, PORT):
         if PORT is None:
@@ -71,19 +57,19 @@ class SocketServer():
         else:
             return int(PORT)
 
-    def __set_timeout_value(self, USER_TIMEOUT, default_timeout=60):
-        if USER_TIMEOUT is None:
+    def __set_timeout_value(self, timeout=None, default_timeout=60):
+        if timeout is None:
             try:
                 self.timeout_user = int(cfgget("soctout"))
             except Exception as e:
                 self.timeout_user = default_timeout
                 console_write("Injected value (timeout <int>) error: {}".format(e))
+        elif isinstance(timeout, int):
+            self.timeout_user = timeout
+            console_write("Timeout value (timeout <int>): {}".format(self.timeout_user))
         else:
-            try:
-                self.timeout_user = int(USER_TIMEOUT)
-            except Exception as e:
-                self.timeout_user = default_timeout
-                console_write("USER_TIMEOUT value error, must be <int>: {}".format(e))
+            self.timeout_user = default_timeout
+            console_write("Timeout value (timeout <int>) must be integer {}, default: {}".format(timeout, self.timeout_user))
 
     #####################################
     #       Socket Server Methods       #
@@ -129,7 +115,7 @@ class SocketServer():
         self.conn, self.addr = self.s.accept()
         self.server_console('[ socket server ] Connected with ' + self.addr[0] + ':' + str(self.addr[1]))
 
-    def wait_for_message(self, receive_msg="received: "):
+    def wait_for_message(self):
         prompt = self.get_prompt()
         self.reply_message(prompt)
         self.conn.settimeout(self.timeout_user)

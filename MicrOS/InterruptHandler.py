@@ -7,7 +7,7 @@ from LogicalPins import getPlatformValByKey
 #################################################################
 
 
-def set_emergency_buffer(base_buff_kb=200):
+def set_emergency_buffer(base_buff_kb=300):
     from micropython import alloc_emergency_exception_buf
     buff_size_kb = 0
     if cfgget("timirq"):

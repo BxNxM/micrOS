@@ -103,15 +103,6 @@ def cfgput(key, value):
         return False
 
 
-def cfgprint_all():
-    data_struct = dict(__read_cfg_file())
-    if isinstance(data_struct, dict):
-        for key, value in data_struct.items():
-            console_write("  {}: {}".format(key, value))
-    else:
-        console_write("[CONFIGHANDLER] data_struct not dict: " + str(data_struct))
-
-
 def cfgget_all():
     return __read_cfg_file()
 
@@ -153,10 +144,6 @@ def __read_cfg_file(nosafe=False):
 
 def __write_cfg_file(dictionary):
     global CONF_LOCK, CONFIG_CACHE
-    if not isinstance(dictionary, dict):
-        console_write("[CONFIGHANDLER] __write_cfg_file - config data struct should be a dict!")
-        return False
-
     while True:
         #console_write("\t\t|--- [WRITE CFG][LOCK: {}] WRITE CFG".format(CONF_LOCK))
         try:
@@ -242,8 +229,7 @@ def confighandler_demo():
     __inject_default_conf()
     DEBUG_PRINT = cfgget("dbg")
     if not cfgget('pled'): PLED = None
-
-    cfgprint_all()
+    cfgget_all()
     console_write("Write console msg ...")
 
 

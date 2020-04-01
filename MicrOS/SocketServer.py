@@ -29,7 +29,7 @@ class SocketServer():
     '''
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.9-5'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.9-6'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -189,7 +189,10 @@ class SocketServer():
     def reconnect(self):
         # Close session
         self.server_console("[ socket server ] exit and close connection from " + str(self.addr))
-        self.reply_message("exit and close connection from " + str(self.addr))
+        try:
+            self.reply_message("exit and close connection from " + str(self.addr))
+        except Exception as e:
+            pass
         self.conn.close()
         # Reset Shell & prompt
         try:
@@ -220,6 +223,9 @@ class SocketServer():
                 if not is_healthy:
                     console_write("[EXEC-WARNING] InterpreterShell internal error: {}".format(msg))
                     self.__recovery(errlvl=0)
+            except OSError:
+                    # BrokenPipeError
+                    self.reconnect()
             except Exception as e:
                 console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
                 self.__recovery(errlvl=1)

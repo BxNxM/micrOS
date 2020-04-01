@@ -87,12 +87,13 @@ def cfgget(key):
     return None
 
 
-def cfgput(key, value):
+def cfgput(key, value, type_check=False):
     #console_write("\t\t-+- [PUT CFG][LOCK: {}] {} = {}".format(CONF_LOCK, key, value))
     if cfgget(key) == value:
         return True
     try:
-        value = __value_type_handler(key, value)
+        if type_check:
+            value = __value_type_handler(key, value)
         if value is not None:
             cfg_dict_buffer = __read_cfg_file()
             cfg_dict_buffer[key] = value

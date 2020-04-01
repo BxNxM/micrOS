@@ -51,6 +51,7 @@ def set_uid_macaddr_hex(sta_if=None):
 #########################################################
 def set_wifi(essid, pwd, timeout=60):
     console_write('[NW: STA] SET WIFI: {}'.format(essid))
+    essid_found = False
 
     # Disable AP mode
     ap_if = WLAN(AP_IF)
@@ -63,14 +64,22 @@ def set_wifi(essid, pwd, timeout=60):
     sta_if.active(True)
     if not sta_if.isconnected():
         console_write('\t| [NW: STA] CONNECT TO NETWORK {}'.format(essid))
-        if essid in [ wifispot[0].decode('utf-8') for wifispot in sta_if.scan() ]:
+        # Scan wifi network - retry workaround
+        for _ in range(0, 2):
+            if essid in [ wifispot[0].decode('utf-8') for wifispot in sta_if.scan() ]:
+                essid_found = True
+                console_write('\t| - [NW: STA] ESSID WAS FOUND {}'.format(essid_found))
+                break
+            sleep(1)
+        # Connect to the located wifi network
+        if essid_found:
             # connect to network
             sta_if.connect(essid, pwd)
             # wait for connection, with timeout set
             while not sta_if.isconnected() and timeout > 0:
                 console_write("\t| [NW: STA] Waiting for connection... " + str(timeout) + "/60" )
                 timeout -= 1
-                sleep(0.4)
+                sleep(0.5)
             # Set static IP - here because some data comes from connection.
             if __set_wifi_dev_static_ip(sta_if):
                 sta_if.disconnect()

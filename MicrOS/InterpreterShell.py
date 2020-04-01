@@ -104,7 +104,7 @@ def configure(attributes, SocketServerObj):
         key = attributes[0]
         value = " ".join(attributes[1:])
         try:
-            SocketServerObj.reply_message(cfgput(key, value))
+            SocketServerObj.reply_message(cfgput(key, value, type_check=True))
         except Exception as e:
             SocketServerObj.reply_message("Set config error: ".format(e))
     # ENABLE BG INTERRUPTS
@@ -148,10 +148,13 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
     recovery_query = False
     if len(argument_list) >= 2:
         LM_name = "LM_{}".format(argument_list[0])
-        LM_function_call = "".join(argument_list[1:])
         LM_function = argument_list[1].split('(')[0]
-        if "(" not in LM_function_call and ")" not in LM_function_call:
-            LM_function_call = "{}()".format(LM_function)
+        LM_function_call = "".join(argument_list[1:])
+        if not LM_function_call.endswith(')'):
+            # Auto complete brackets "(" ")" with arguments
+            # ARG 0: LM_function
+            # ARG 1: LM function arguments (without '(' and/or ')')
+            LM_function_call = "{}({})".format(LM_function, str(" ".join(" ".join(argument_list[1:]).split('(')[1:])).replace(')', ''))
     try:
         # --- LM LOAD & EXECUTE --- #
         if SocketServerObj is not None:

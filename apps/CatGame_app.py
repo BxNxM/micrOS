@@ -11,7 +11,7 @@ DEVICE = 'ImpiGame'
 BASE_CMD = ['--dev', DEVICE ]
 CMD_PIPE_SEP = '<a>'
 
-def app(iteration=25):
+def app(iteration=60):
     global DEVICE, BASE_CMD, CMD_PIPE_SEP
     for _ in range(iteration):
         piped_commands = []

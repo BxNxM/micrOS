@@ -5,13 +5,7 @@
 from time import sleep
 from json import load, dump
 from LogicalPins import getPlatformValByKey
-
-try:
-    from machine import Pin
-    PLED = Pin(getPlatformValByKey('progressled'), Pin.OUT)
-except Exception as e:
-    print("[WARNING] Progressled not available on device: {}".format(e))
-    PLED = None
+from LogicalPins import getPlatformValByKey
 
 # SET IT LATER FROM CONFIG
 DEBUG_PRINT = True
@@ -21,10 +15,16 @@ CONFIG_CACHE = {}
 # - MicrOS config
 CONFIG_PATH = "node_config.json"
 
+
 #################################################################
 #                     CONSOLE WRITE FUNCTIONS                   #
 #################################################################
-
+try:
+    from machine import Pin
+    PLED = Pin(getPlatformValByKey('progressled'), Pin.OUT)
+except Exception as e:
+    print("[WARNING] Progressled not available on device: {}".format(e))
+    PLED = None
 
 def progress_led_toggle_adaptor(func):
     global PLED
@@ -39,12 +39,15 @@ def progress_led_toggle_adaptor(func):
         return output
     return wrapper
 
+#################################################################
+#                     CONSOLE WRITE FUNCTIONS                   #
+#################################################################
+
 
 @progress_led_toggle_adaptor
 def console_write(msg):
     if DEBUG_PRINT:
         print(msg)
-
 
 #################################################################
 #                       MODULE CONFIG
@@ -218,7 +221,7 @@ def __value_type_handler(key, value):
 if "ConfigHandler" in __name__:
     __inject_default_conf()
     DEBUG_PRINT = cfgget("dbg")
-    if not cfgget('pled'): PLED = None
+    if not cfgget('pled'): PLED = None  # Disable pled
 
 #################################################################
 #                            DEMO                               #
@@ -226,7 +229,7 @@ if "ConfigHandler" in __name__:
 
 
 def confighandler_demo():
-    global DEBUG_PRINT, PLED
+    global DEBUG_PRINT
     __inject_default_conf()
     DEBUG_PRINT = cfgget("dbg")
     if not cfgget('pled'): PLED = None

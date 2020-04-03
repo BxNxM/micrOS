@@ -1,3 +1,5 @@
+from ConfigHandler import progress_led_toggle_adaptor
+
 def memfree():
     from gc import mem_free
     from machine import freq
@@ -10,12 +12,10 @@ def gccollect():
     return "GC MemFree[byte]: {}".format(mem_free())
 
 
+@progress_led_toggle_adaptor
 def heartbeat():
-    from ConfigHandler import PLED
     from time import sleep
-    if PLED is not None: PLED.value(not PLED.value())
     sleep(0.1)
-    if PLED is not None: PLED.value(not PLED.value())
     return "<3 heartbeat <3"
 
 

@@ -1,5 +1,5 @@
 from ConfigHandler import cfgget, console_write
-from InterpreterShell import execute_LM_function_Core
+from InterpreterCore import execute_LM_function_Core
 from LogicalPins import getPlatformValByKey
 
 #################################################################
@@ -7,7 +7,7 @@ from LogicalPins import getPlatformValByKey
 #################################################################
 
 
-def set_emergency_buffer(base_buff_kb=500):
+def set_emergency_buffer(base_buff_kb=1000):
     from micropython import alloc_emergency_exception_buf
     buff_size_kb = 0
     if cfgget("timirq"):
@@ -31,9 +31,9 @@ def secureInterruptHandler(timer=None):
         if CFG_TIMIRQCBF.lower() != 'n/a':
             state = execute_LM_function_Core(CFG_TIMIRQCBF.split(' '))
             if not state:
-                console_write("[IRQ] {} execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
+                console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
     except Exception as e:
-        console_write("[IRQ] TIMIRQ callback: {} error: " + str(e, CFG_TIMIRQCBF))
+        console_write("[IRQ] TIMIRQ callback: {} error: {}".format(CFG_TIMIRQCBF, e))
 
 
 def enableInterrupt(period_ms=3000):
@@ -65,9 +65,11 @@ CFG_EVIRQCBF = 'n/a'
 def secureEventInterruptHandler(pin=None):
     try:
         if CFG_EVIRQCBF.lower() != 'n/a':
-            execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
+            state = execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
+            if not state:
+                console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
     except Exception as e:
-        console_write("[IRQ] EVENTIRQ callback: {} error: " + str(CFG_EVIRQCBF, e))
+        console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(CFG_EVIRQCBF, e))
 
 
 def init_eventPIN():

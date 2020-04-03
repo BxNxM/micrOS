@@ -1,5 +1,5 @@
 from ConfigHandler import cfgget, console_write
-from InterpreterShell import execute_LM_function_Core
+from InterpreterCore import execute_LM_function_Core
 try:
     from micropython import mem_info
 except:

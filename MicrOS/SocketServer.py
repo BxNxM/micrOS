@@ -29,7 +29,7 @@ class SocketServer():
     '''
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.9-7'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.9-8'     # "Semantic" system version
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -173,9 +173,6 @@ class SocketServer():
                 sleep(0.1)
 
     def reply_message(self, msg):
-        if len(str(msg).strip()) == 0:
-            self.server_console("[ socket server ] No msg income: {}".format(msg))
-            return None
         if type(msg) is bytes:
             self.conn.sendall(msg)              # conn sendall
         else:
@@ -184,7 +181,7 @@ class SocketServer():
                 msg = msg.encode("utf-8")
                 self.conn.sendall(msg)          # conn sendall
             except Exception as e:
-                self.server_console("[ socket server ] " + str(e))
+                self.server_console("[ socket server ] REPLY ERROR: {}".format(e))
 
     def reconnect(self):
         # Close session

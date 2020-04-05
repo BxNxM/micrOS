@@ -1,5 +1,3 @@
-from ConfigHandler import cfgget
-from gc import mem_free
 from time import localtime, sleep
 
 __OLED = None
@@ -51,86 +49,6 @@ def draw_rect(sx, sy, ex, ey, state=1, show=True):
     return True
 
 
-def show_debug_page():
-    try:
-        clean(show=True)
-        text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 0, show=False)
-        text("NW_MODE: {}".format(cfgget("nwmd")), 0, 10, show=False)
-        text("IP: {}".format(cfgget("devip")), 0, 20, show=False)
-        text("FreeMem: {}".format(mem_free()), 0, 30, show=False)
-        text("PORT: {}".format(cfgget("socport")), 0, 40, show=False)
-        text("NAME: {}".format(cfgget("devfid")), 0, 50, show=True)
-    except Exception as e:
-        return str(e)
-    return True
-
-
-def simple_page():
-
-    try:
-        clean()
-        text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 10, show=False)
-        pixel_art()
-    except Exception as e:
-        return str(e)
-
-    return True
-
-
-def pixel_art():
-    base_point = (55, 40)
-    base_size = 15
-    delta_size = 5
-
-    # MAIN RECT
-    draw_rect(base_point[0]-delta_size, base_point[1]-delta_size, base_size+delta_size, base_size+delta_size)
-    sleep(0.15)
-
-    # TOP-LEFT CORNER
-    draw_rect(base_point[0]-delta_size, base_point[1]-delta_size, base_size, base_size)
-    sleep(0.15)
-    # BUTTON-RIGHT CORNER
-    draw_rect(base_point[0], base_point[1], base_size, base_size)
-    sleep(0.15)
-
-    # TOP-LEFT CORNER2
-    draw_rect(base_point[0]-delta_size, base_point[1]-delta_size, base_size-delta_size, base_size-delta_size)
-    sleep(0.15)
-    # BUTTON-RIGHT CORNER2
-    draw_rect(base_point[0]+delta_size, base_point[1]+delta_size, base_size-delta_size, base_size-delta_size)
-    sleep(0.15)
-
-    # TOP-LEFT CORNER3
-    draw_rect(base_point[0]-delta_size, base_point[1]-delta_size, base_size-delta_size*2, base_size-delta_size*2)
-    sleep(0.15)
-    # BUTTON-RIGHT CORNER3
-    draw_rect(base_point[0]+delta_size*2, base_point[1]+delta_size*2, base_size-delta_size*2, base_size-delta_size*2)
-    sleep(0.15)
-
-    # Jumping cube - top-left - and back
-    draw_rect(base_point[0]-delta_size*2, base_point[1]-delta_size*2, base_size-delta_size*2, base_size-delta_size*2)
-    draw_rect(base_point[0]-delta_size, base_point[1]-delta_size, base_size-delta_size*2, base_size-delta_size*2, 0)      #
-    sleep(0.1)
-    draw_rect(base_point[0]-delta_size*3, base_point[1]-delta_size*3, base_size-delta_size*2, base_size-delta_size*2)
-    draw_rect(base_point[0]-delta_size*2, base_point[1]-delta_size*2, base_size-delta_size*2, base_size-delta_size*2, 0)    #
-    sleep(0.1)
-    draw_rect(base_point[0]-delta_size*4, base_point[1]-delta_size*4, base_size-delta_size*2, base_size-delta_size*2)
-    draw_rect(base_point[0]-delta_size*3, base_point[1]-delta_size*3, base_size-delta_size*2, base_size-delta_size*2, 0)    #
-    sleep(0.1)
-    draw_rect(base_point[0]-delta_size*4, base_point[1]-delta_size*4, base_size-delta_size*2, base_size-delta_size*2)
-    draw_rect(base_point[0]-delta_size*4, base_point[1]-delta_size*4, base_size-delta_size*2, base_size-delta_size*2, 0)    #
-    sleep(0.1)
-    draw_rect(base_point[0]-delta_size*3, base_point[1]-delta_size*3, base_size-delta_size*2, base_size-delta_size*2)
-    draw_rect(base_point[0]-delta_size*4, base_point[1]-delta_size*4, base_size-delta_size*2, base_size-delta_size*2, 0)
-    sleep(0.1)
-    draw_rect(base_point[0]-delta_size*2, base_point[1]-delta_size*2, base_size-delta_size*2, base_size-delta_size*2)
-    draw_rect(base_point[0]-delta_size*3, base_point[1]-delta_size*3, base_size-delta_size*2, base_size-delta_size*2, 0)
-    sleep(0.1)
-    draw_rect(base_point[0]-delta_size, base_point[1]-delta_size, base_size-delta_size*2, base_size-delta_size*2)
-    draw_rect(base_point[0]-delta_size*2, base_point[1]-delta_size*2, base_size-delta_size*2, base_size-delta_size*2, 0)
-    invert()
-
-
 def poweron():
     __init().poweron()
     return True
@@ -142,4 +60,4 @@ def poweroff():
 
 
 def help():
-    return ('text', 'invert', 'clean', 'draw_line', 'draw_rect', 'show_debug_page', 'simple_page', 'poweron', 'poweroff')
+    return ('text', 'invert', 'clean', 'draw_line', 'draw_rect', 'poweron', 'poweroff')

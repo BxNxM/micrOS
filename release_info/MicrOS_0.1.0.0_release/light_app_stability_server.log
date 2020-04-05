@@ -1,0 +1,140 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 150, 350)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 34736, free: 3216
+ No. of 1-blocks: 349, 2-blocks: 104, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59459)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59462
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 59
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 250, 50)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 33792, free: 4160
+ No. of 1-blocks: 316, 2-blocks: 93, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59462)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59463
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 48
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 250, 150)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 33952, free: 4000
+ No. of 1-blocks: 326, 2-blocks: 93, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59463)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59464
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 250, 250)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 33904, free: 4048
+ No. of 1-blocks: 325, 2-blocks: 92, max blk sz: 264, max free sz: 48
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59464)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59467
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 55
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 250, 350)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 33952, free: 4000
+ No. of 1-blocks: 326, 2-blocks: 93, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59467)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59475
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 350, 50)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 36768, free: 1184
+ No. of 1-blocks: 446, 2-blocks: 107, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59475)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59508
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 53
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 350, 150)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 34272, free: 3680
+ No. of 1-blocks: 346, 2-blocks: 95, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59508)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59511
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 350, 250)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 33952, free: 4000
+ No. of 1-blocks: 326, 2-blocks: 93, max blk sz: 264, max free sz: 46
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59511)
+[ socket server ] wait to accept a connection - blocking call...
+  [ socket server ] Connected with 10.0.1.7:59513
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 35104, free: 2848
+ No. of 1-blocks: 374, 2-blocks: 97, max blk sz: 264, max free sz: 45
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    [ socket server ] RAW INPUT |light RGB(350, 350, 350)|
+      from LM_light import RGB
+~~~~~ [PROFILING INFO] - [X] AFTER INTERPRETER EXECUTION ~~~~~
+stack: 2480 out of 8192
+GC: total: 37952, used: 33712, free: 4240
+ No. of 1-blocks: 315, 2-blocks: 93, max blk sz: 264, max free sz: 43
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        [ socket server ] RAW INPUT |exit|
+          [ socket server ] exit and close connection from ('10.0.1.7', 59513)
+[ socket server ] wait to accept a connection - blocking call...
+

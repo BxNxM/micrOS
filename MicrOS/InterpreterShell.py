@@ -1,8 +1,9 @@
-try:
-    from ConfigHandler import cfgget, cfgput, cfgget_all
-except Exception as e:
-    print("Failed to import ConfigHandler: {}".format(e))
-
+#################################################################
+#                           IMPORTS                             #
+#################################################################
+from ConfigHandler import cfgget, cfgput, cfgget_all
+from InterpreterCore import execute_LM_function_Core
+from os import listdir
 try:
     from machine import disable_irq, enable_irq
 except Exception as e:
@@ -10,17 +11,14 @@ except Exception as e:
     enable_irq = None
     print("Failed to import machine: {}".format(e))
 
-from InterpreterCore import execute_LM_function_Core
-from os import listdir
-
-#########################################################
-#             SHELL Interpreter FUNCTIONS               #
-#########################################################
+#################################################################
+#                  SHELL Interpreter FUNCTIONS                  #
+#################################################################
 
 def shell(msg, SocketServerObj):
-    '''
+    """
     Socket server - interpreter shell wrapper
-    '''
+    """
     try:
         state = __shell(msg, SocketServerObj)
         return state, 'Okay'                   # True - good, False execute soft reboot
@@ -30,16 +28,16 @@ def shell(msg, SocketServerObj):
 
 
 def __shell(msg, SocketServerObj):
-    '''
+    """
     Socket server - interpreter shell
-    '''
-    retval = True
+    """
+    return_state = True
 
     if msg is None or len(msg.strip()) == 0:
-        return retval
+        return return_state
     msg_list = msg.strip().split()
 
-    # CONFIGURE MODE 'ENV' SETUP
+    # CONFIGURE MODE: ACCESS FOR NODE_CONFIG.JSON
     if msg_list[0] == "configure" or msg_list[0] == "conf":
         if len(msg_list) == 1:
             SocketServerObj.CONFIGURE_MODE = True
@@ -71,16 +69,16 @@ def __shell(msg, SocketServerObj):
     # EXECUTE:
     # @1 Configure mode
     if SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
-        retval = configure(msg_list, SocketServerObj)
+        return_state = configure(msg_list, SocketServerObj)
     # @2 Command mode
     elif not SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
-        retval = execute_LM_function(argument_list=msg_list, SocketServerObj=SocketServerObj)
+        return_state = execute_LM_function(argument_list=msg_list, SocketServerObj=SocketServerObj)
+    # RETURN STATE: True:OK or False:ERROR
+    return return_state
 
-    return retval
-
-#########################################################
-#               CONFIGURE MODE HANDLER                  #
-#########################################################
+#################################################################
+#                     CONFIGURE MODE HANDLER                    #
+#################################################################
 
 
 def configure(attributes, SocketServerObj):
@@ -111,12 +109,16 @@ def configure(attributes, SocketServerObj):
         enable_irq(status)
     return True
 
-#########################################################
-#               COMMAND MODE & LMS HANDLER              #
-#########################################################
+#################################################################
+#                   COMMAND MODE & LMS HANDLER                  #
+#################################################################
 
 
 def show_LMs_functions(SocketServerObj):
+    """
+    Dump LM modules with functions - in case of [py] files
+    Dump LM module with help function call - in case of [mpy] files
+    """
     for LM in [i.split('.')[0] for i in listdir() if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))]:
         LMpath = '{}.py'.format(LM)
         if LMpath not in listdir():
@@ -145,13 +147,18 @@ def execute_LM_function(argument_list, SocketServerObj):
     '''
     try:
         if disable_irq is not None:
+            # Disable IRQ execution until SocketShell CMD evaluation
             status = disable_irq()
+        # Execute command via InterpreterCore
         health = execute_LM_function_Core(argument_list, SocketServerObj)
         if enable_irq is not None:
+            # Enable IRQ execution after SocketShell CMD evaluation
             enable_irq(status)
     except Exception as e:
         if enable_irq is not None:
+            # Emergency Enable IRQ execution
             enable_irq(status)
+        SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
         health = False
     # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
     return health

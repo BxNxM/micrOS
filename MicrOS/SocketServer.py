@@ -1,12 +1,14 @@
+#########################################################
+#                         IMPORTS                       #
+#########################################################
+
 from sys import platform
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+from ConfigHandler import console_write, cfgget, cfgput
 from InterpreterShell import shell as InterpreterShell_shell
 from time import sleep
 from Hooks import profiling_info
 
-#########################################################
-#                         IMPORTS                       #
-#########################################################
 try:
     from gc import collect, mem_free
 except Exception as e:
@@ -14,22 +16,16 @@ except Exception as e:
     collect = None
     mem_free = None
 
-try:
-    from ConfigHandler import console_write, cfgget, cfgput
-except Exception as e:
-    print("Failed to import ConfigHandler: {}".format(e))
-    console_write = None
-
 #########################################################
 #                    SOCKET SERVER CLASS                #
 #########################################################
 class SocketServer():
-    '''
+    """
     USER_TIMEOUT - sec
-    '''
+    """
 
     def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.9-8'     # "Semantic" system version
+        self.socket_interpreter_version = '0.0.9-9'
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
@@ -75,18 +71,18 @@ class SocketServer():
     #       Socket Server Methods       #
     #####################################
     def init_socket(self):
-        '''
+        """
         Socket init:
             socket create + setup as reusable (for rebind)
-        '''
+        """
         self.s = socket(AF_INET, SOCK_STREAM)
         self.s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
 
     def deinit_socket(self):
-        '''
+        """
         Socket deinit:
             close connection - close socket - reset console print indentation
-        '''
+        """
         self.server_console_indent = 0
         try:
             self.conn.close()
@@ -229,9 +225,9 @@ class SocketServer():
             profiling_info(label='[X] AFTER INTERPRETER EXECUTION')
 
     def __recovery(self, errlvl=0):
-        '''
+        """
         Handle memory errors here
-        '''
+        """
         self.reply_message("[HA] system recovery ...")
         if 'esp' in platform:
             collect()
@@ -261,15 +257,24 @@ class SocketServer():
 #########################################################
 #                       MODULE INIT                     #
 #########################################################
-def main():
-    server = SocketServer()
-    server.run()
 
-try:
-    if __name__ == "__main__":
-        main()
-    if "SocketServer" in __name__:
+
+if "SocketServer" in __name__:
+    try:
         server = SocketServer()
         profiling_info(label='[0] AFTER SOCKET SERVER CREATION')
-except KeyboardInterrupt:
-    console_write("Keyboard interrupt in SocketServer.")
+    except KeyboardInterrupt:
+        console_write("Keyboard interrupt in SocketServer.")
+
+#########################################################
+#                 MAIN (FOR TEST REASONS)               #
+#########################################################
+
+
+if __name__ == "__main__":
+    try:
+        server = SocketServer()
+        server.run()
+    except KeyboardInterrupt:
+        console_write("Keyboard interrupt in SocketServer.")
+

@@ -11,6 +11,13 @@
 Esp8266 Micropython based - APPlication Core - with -
 User function injection over LM_<userapp>.py 
 
+
+### RELESE NOTE
+
+|    VERSION   |    RELEASE INFO   |         COMMIT         |
+| :----------: | :---------------: | :--------------------: |
+|  **0.1.0.0** |    LINK           |
+
 ## MicrOS Features
 
 - Config handling - node_config.json
@@ -209,6 +216,7 @@ GC MemFree[byte]: 5552
 | extirq     |       Yes        | External event interrupt - "subprocess"
 | extirqcbf   |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
 | boothook    |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
+| irqmembuf   |       Yes       | IRQ emebergcy memory buffer configuration: default 1000 byte. `(Timirq:) irqmembuf + (Extirq:) irqmembuf/2`
 | gmttime    |        Yes      | NTP - RTC - timezone setup 
 | nwmd 		|       N/A       |STATE STORAGE - system saves nw mode here - AP / STA
 | hwuid		|      N/A         | STATE STORAGE - hardwer address - dev uid

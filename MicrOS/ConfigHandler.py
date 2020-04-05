@@ -1,11 +1,16 @@
-# VERSION: 1.5
 #################################################################
 #                           IMPORTS                             #
 #################################################################
 from time import sleep
 from json import load, dump
 from LogicalPins import getPlatformValByKey
-from LogicalPins import getPlatformValByKey
+
+try:
+    from machine import Pin
+    PLED = Pin(getPlatformValByKey('progressled'), Pin.OUT)
+except Exception as e:
+    print("[WARNING] Progressled not available on device: {}".format(e))
+    PLED = None
 
 # SET IT LATER FROM CONFIG
 DEBUG_PRINT = True
@@ -14,40 +19,6 @@ CONF_LOCK = False
 CONFIG_CACHE = {}
 # - MicrOS config
 CONFIG_PATH = "node_config.json"
-
-
-#################################################################
-#                     CONSOLE WRITE FUNCTIONS                   #
-#################################################################
-try:
-    from machine import Pin
-    PLED = Pin(getPlatformValByKey('progressled'), Pin.OUT)
-except Exception as e:
-    print("[WARNING] Progressled not available on device: {}".format(e))
-    PLED = None
-
-def progress_led_toggle_adaptor(func):
-    global PLED
-    def wrapper(*args, **kwargs):
-        try:
-            if PLED is not None: PLED.value(not PLED.value())
-        except: pass
-        output = func(*args, **kwargs)
-        try:
-            if PLED is not None: PLED.value(not PLED.value())
-        except: pass
-        return output
-    return wrapper
-
-#################################################################
-#                     CONSOLE WRITE FUNCTIONS                   #
-#################################################################
-
-
-@progress_led_toggle_adaptor
-def console_write(msg):
-    if DEBUG_PRINT:
-        print(msg)
 
 #################################################################
 #                       MODULE CONFIG
@@ -70,11 +41,37 @@ def default_config():
                                       "timirq": False,
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
+                                      "irqmembuf": 1000,
                                       "extirq": False,
                                       "extirqcbf": "n/a",
                                       "boothook": "n/a",
                                       "gmttime": +1}
     return default_configuration_template
+
+#################################################################
+#                     CONSOLE WRITE FUNCTIONS                   #
+#################################################################
+
+
+def progress_led_toggle_adaptor(func):
+    global PLED
+    def wrapper(*args, **kwargs):
+        try:
+            if PLED is not None: PLED.value(not PLED.value())
+        except: pass
+        output = func(*args, **kwargs)
+        try:
+            if PLED is not None: PLED.value(not PLED.value())
+        except: pass
+        return output
+    return wrapper
+
+
+@progress_led_toggle_adaptor
+def console_write(msg):
+    if DEBUG_PRINT:
+        print(msg)
+
 
 #################################################################
 #                  CONFIGHANDLER  FUNCTIONS                     #
@@ -174,7 +171,8 @@ def __inject_default_conf():
     default_config_dict = default_config()
     live_config = __read_cfg_file(nosafe=True)
     default_config_dict.update(live_config)
-    console_write("[CONFIGHANDLER] inject config:\n{}".format(default_config_dict))
+    if default_config_dict['dbg']:
+        console_write("[CONFIGHANDLER] inject config:\n{}".format(default_config_dict))
     try:
         if __write_cfg_file(default_config_dict):
             console_write("[CONFIGHANDLER] Inject default data struct successful")
@@ -219,9 +217,9 @@ def __value_type_handler(key, value):
 
 
 if "ConfigHandler" in __name__:
-    __inject_default_conf()
-    DEBUG_PRINT = cfgget("dbg")
-    if not cfgget('pled'): PLED = None  # Disable pled
+    __inject_default_conf()                     # Validate / update / create user config
+    DEBUG_PRINT = cfgget('dbg')                 # Inject from user conf
+    if not cfgget('pled'): PLED = None          # Turn off progressled if necesary
 
 #################################################################
 #                            DEMO                               #
@@ -229,12 +227,13 @@ if "ConfigHandler" in __name__:
 
 
 def confighandler_demo():
-    global DEBUG_PRINT
-    __inject_default_conf()
-    DEBUG_PRINT = cfgget("dbg")
-    if not cfgget('pled'): PLED = None
-    cfgget_all()
-    console_write("Write console msg ...")
+    global DEBUG_PRINT, PLED
+    __inject_default_conf()                     # Validate / update / create user config
+    DEBUG_PRINT = cfgget('dbg')                 # Inject from user conf
+    if not cfgget('pled'): PLED = None          # Turn off progressled if necesary
+
+    cfgget_all()                                # Dump full config
+    console_write("Write console msg ...")      # Test console write
 
 
 if __name__ == "__main__":

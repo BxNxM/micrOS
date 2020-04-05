@@ -32,7 +32,7 @@ class MicrOSDevTool():
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
-        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py"]
+        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py"]
 
         # Filled by methods
         self.micropython_bins_list = []

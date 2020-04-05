@@ -1,0 +1,1 @@
+{"version": "0.1.0-0", "staessid": "your-wifi-name", "stapwd": "your-wifi-password", "devfid": "node01", "appwd": "ADmin123", "pled": true, "dbg": true, "nwmd": "n/a", "hwuid": "n/a", "soctout": 100, "socport": 9008, "devip": "n/a", "timirq": false, "timirqcbf": "n/a", "timirqseq": 3000, "extirq": false, "extirqcbf": "n/a", "boothook": "n/a", "irqmembuf": 1000, "gmttime": 1}

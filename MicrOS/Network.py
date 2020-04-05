@@ -1,17 +1,17 @@
+#################################################################
+#                           IMPORTS                             #
+#################################################################
 from network import AP_IF, STA_IF, WLAN
 from time import sleep, localtime, time
 from ntptime import settime
 from machine import RTC
+from ConfigHandler import console_write, cfgget, cfgput
 
-try:
-    from ConfigHandler import console_write, cfgget, cfgput
-except Exception as e:
-    print("Failed to import ConfigHandler: {}".format(e))
-    console_write = None
+#################################################################
+#                      NTP & RTC TIME SETUP                     #
+#################################################################
 
-#########################################################
-#                 NTP & RTC TIME SETUP                  #
-#########################################################
+
 def setNTP_RTC():
     for _ in range(4):
         if WLAN(STA_IF).isconnected():
@@ -34,9 +34,11 @@ def setNTP_RTC():
         console_write("NTP setup errer: STA not connected!")
     return False
 
-#########################################################
-#              GET DEVICE UID BY MAC ADDRESS            #
-#########################################################
+#################################################################
+#                   GET DEVICE UID BY MAC ADDRESS               #
+#################################################################
+
+
 def set_uid_macaddr_hex(sta_if=None):
     uid = "n/a"
     if sta_if is not None:
@@ -46,9 +48,11 @@ def set_uid_macaddr_hex(sta_if=None):
     cfgput("hwuid", uid)
 
 
-#########################################################
-#                  SET WIFI STA MODE                    #
-#########################################################
+#################################################################
+#                       SET WIFI STA MODE                       #
+#################################################################
+
+
 def set_wifi(essid, pwd, timeout=60):
     console_write('[NW: STA] SET WIFI: {}'.format(essid))
     essid_found = False
@@ -98,6 +102,7 @@ def set_wifi(essid, pwd, timeout=60):
         set_uid_macaddr_hex(sta_if)
     return sta_if.isconnected()
 
+
 def __set_wifi_dev_static_ip(sta_if):
     reconfigured = False
     console_write("[NW: STA] Set device static IP.")
@@ -119,11 +124,12 @@ def __set_wifi_dev_static_ip(sta_if):
         console_write("[NW: STA] IP was not stored: {}".format(stored_ip))
     return reconfigured
 
-#########################################################
-#                                                       #
-#               SET WIFI ACCESS POINT MODE              #
-#                                                       #
-#########################################################
+
+#################################################################
+#                    SET WIFI ACCESS POINT MODE                 #
+#################################################################
+
+
 def set_access_point(_essid, _pwd, _authmode=3):
     console_write("[NW: AP] SET AP MODE: {} - {} - auth mode: {}".format(_essid, _pwd, _authmode))
 
@@ -144,33 +150,39 @@ def set_access_point(_essid, _pwd, _authmode=3):
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
     return ap_if.active()
 
-#########################################################
-#          AUTOMATIC NETWORK CONFIGURATION              #
-#          IF STA AVAIBLE, IF NOT AP MODE               #
-#########################################################
-def auto_network_configuration(essid=None, pwd=None, timeout=50, _essid=None, _pwd=None, _authmode=3, retry=3):
-    # GET DATA - STA
-    if essid is None:
-        essid = cfgget("staessid")
-    if pwd is None:
-        pwd = cfgget("stapwd")
-    # GET DATA - AP
-    if _essid is None:
-        _essid = cfgget("devfid")
-    if _pwd is None:
-        _pwd = cfgget("appwd")
+#################################################################
+#              AUTOMATIC NETWORK CONFIGURATION                  #
+#               IF STA AVAIBLE, IF NOT AP MODE                  #
+#################################################################
 
-    state = False
-    while not state and retry > 0:
-        retry -= 1
-        state = set_wifi(essid, pwd, timeout)
-        if not state:
+
+def auto_network_configuration(_authmode=3, retry=3):
+    # GET DATA - STA
+    essid = cfgget("staessid")
+    pwd = cfgget("stapwd")
+    # GET DATA - AP
+    _essid = cfgget("devfid")
+    _pwd = cfgget("appwd")
+
+    for _ in range(0, retry):
+        # Reset dev (static)ip if previous nw setup was AP
+        if cfgget("nwmd") == "AP":
+            cfgput("devip", "n/a")
+        # SET WIFI (STA) MODE
+        state = set_wifi(essid, pwd)
+        if state:
+            # Save STA NW mode
+            cfgput("nwmd", "STA")
+            # Set NTP - RTC
+            setNTP_RTC()
+            # BREAK - STA mode successfully  configures
+            break
+        else:
+            # SET AP MODE
             state = set_access_point(_essid, _pwd, _authmode)
             if state:
+                # Save AP NW mode
                 cfgput("nwmd", "AP")
-        else:
-            if cfgget("nwmd") == "AP":  # Reset dev (static)ip if previous nw setup was AP
-                cfgput("devip", "n/a")
-            cfgput("nwmd", "STA")
-            setNTP_RTC()
+                # BREAK - AP mode successfully  configures
+                break
 

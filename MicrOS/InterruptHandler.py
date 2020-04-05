@@ -1,3 +1,6 @@
+#################################################################
+#                            IMPORTS                            #
+#################################################################
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
 from LogicalPins import getPlatformValByKey
@@ -7,8 +10,9 @@ from LogicalPins import getPlatformValByKey
 #################################################################
 
 
-def set_emergency_buffer(base_buff_kb=1000):
+def set_emergency_buffer():
     from micropython import alloc_emergency_exception_buf
+    base_buff_kb = cfgget('irqmembuf') if cfgget('irqmembuf') is not None else 1000
     buff_size_kb = 0
     if cfgget("timirq"):
         buff_size_kb += base_buff_kb
@@ -18,7 +22,7 @@ def set_emergency_buffer(base_buff_kb=1000):
         console_write("[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={}".format(buff_size_kb))
         alloc_emergency_exception_buf(buff_size_kb)
     else:
-        console_write("Interrupts disabled, skip alloc_emergency_exception_buf configuration.")
+        console_write("[IRQ] Interrupts disabled, skip alloc_emergency_exception_buf configuration.")
 
 #################################################################
 #                       TIMER INTERRUPT(S)                      #
@@ -27,8 +31,12 @@ def set_emergency_buffer(base_buff_kb=1000):
 
 CFG_TIMIRQCBF = 'n/a'
 def secureInterruptHandler(timer=None):
+    """
+    TIMER INTERRUPT CALLBACK FUNCTION WRAPPER
+    """
     try:
         if CFG_TIMIRQCBF.lower() != 'n/a':
+            # Execute CBF from config
             state = execute_LM_function_Core(CFG_TIMIRQCBF.split(' '))
             if not state:
                 console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
@@ -36,7 +44,10 @@ def secureInterruptHandler(timer=None):
         console_write("[IRQ] TIMIRQ callback: {} error: {}".format(CFG_TIMIRQCBF, e))
 
 
-def enableInterrupt(period_ms=3000):
+def enableInterrupt():
+    """
+    TIMER INTERRUPT CONFIGURATION
+    """
     global CFG_TIMIRQCBF
     CFG_TIMIRQCBF = cfgget('timirqcbf')
     if cfgget("timirq") and CFG_TIMIRQCBF.lower() != 'n/a':
@@ -44,7 +55,7 @@ def enableInterrupt(period_ms=3000):
             period_ms_usr = int(cfgget("timirqseq"))
         except Exception as e:
             console_write("[IRQ] TIMIRQ period query error: {}".format(e))
-            period_ms_usr = period_ms
+            period_ms_usr = 3000
         console_write("[IRQ] TIMIRQ ENABLED: SEQ: {} CBF: {}".format(period_ms_usr, CFG_TIMIRQCBF))
         from machine import Timer
         timer = Timer(0)
@@ -63,6 +74,9 @@ def enableInterrupt(period_ms=3000):
 
 CFG_EVIRQCBF = 'n/a'
 def secureEventInterruptHandler(pin=None):
+    """
+    EVENT INTERRUPT CALLBACK FUNCTION WRAPPER
+    """
     try:
         if CFG_EVIRQCBF.lower() != 'n/a':
             state = execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
@@ -73,6 +87,9 @@ def secureEventInterruptHandler(pin=None):
 
 
 def init_eventPIN():
+    """
+    EVENT INTERRUPT CONFIGURATION
+    """
     global CFG_EVIRQCBF
     CFG_EVIRQCBF = cfgget('extirqcbf')
     if cfgget('extirq') and CFG_EVIRQCBF.lower() != 'n/a':

@@ -1,0 +1,78 @@
+#########################################################################
+                  MICROS 0.1.0.0 - THE FIRST STABLE RELEASE
+#########################################################################
+MICROS MEMORY USAGE:          ~ 3280 byte [ on nodemcu - esp8266: 32 % ]
+MEMORY FREE, BASELOAD:         10160 byte
+MEMORY FREE, MICROS BASELOAD:   6880 byte
+#########################################################################
+                  BOOTLOG WITH baseload-node_confing.json
+#########################################################################
+
+lorýýýN$l`sÒNll`ýýýýnœÿpýýN|ýllll #ýýýý|{ýýlýoýýoýl`ýý{ýpýýýý$`ýýrýpýýl2ýd ýnýlýýýll rdýýoýýýBý|ýýbl#ýýB|ýýýýllBýpýNoý[CONFIGHANDLER] inject config:
+{'timirqseq': 3000, 'extirqcbf': 'n/a', 'extirq': False, 'irqmembuf': 1000, 'gmttime': 1, 'devfid': 'node01', 'hwuid': 'n/a', 'version': '0.1.0-0', 'stapwd': 'your-wifi-password', 'appwd': 'ADmin123', 'timirqcbf': 'n/a', 'staessid': 'your-wifi-name', 'soctout': 100, 'devip': 'n/a', 'boothook': 'n/a', 'timirq': False, 'pled': True, 'dbg': True, 'nwmd': 'STA', 'socport': 9008}
+[CONFIGHANDLER] Inject default data struct successful
+[ socket server ] <<constructor>>
+~~~~~ [PROFILING INFO] - [0] AFTER SOCKET SERVER CREATION ~~~~~
+stack: 2864 out of 8192
+GC: total: 37952, used: 30416, free: 7536
+ No. of 1-blocks: 328, 2-blocks: 85, max blk sz: 264, max free sz: 471
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~ [PROFILING INFO] - [1] MAIN BASELOAD ~~~~~
+stack: 2256 out of 8192
+GC: total: 37952, used: 30864, free: 7088
+ No. of 1-blocks: 348, 2-blocks: 87, max blk sz: 264, max free sz: 443
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[BOOT HOOKS] EXECUTION...
+~~~~~ [PROFILING INFO] - [2] AFTER SAFE BOOT HOOK ~~~~~
+stack: 2256 out of 8192
+GC: total: 37952, used: 27792, free: 10160
+ No. of 1-blocks: 263, 2-blocks: 78, max blk sz: 264, max free sz: 451
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[NW: STA] SET WIFI: elektroncsakpozitivan
+        | [NW: STA] CONNECT TO NETWORK elektroncsakpozitivan
+        | - [NW: STA] ESSID WAS FOUND True
+        | [NW: STA] Waiting for connection... 60/60
+        | [NW: STA] Waiting for connection... 59/60
+        | [NW: STA] Waiting for connection... 58/60
+        | [NW: STA] Waiting for connection... 57/60
+        | [NW: STA] Waiting for connection... 56/60
+        | [NW: STA] Waiting for connection... 55/60
+[NW: STA] Set device static IP.
+        | [NW: STA] DEV. StaticIP: <devip>
+[NW: STA] SET WIFI: elektroncsakpozitivan
+        | [NW: STA] CONNECT TO NETWORK elektroncsakpozitivan
+        | - [NW: STA] ESSID WAS FOUND True
+        | [NW: STA] Waiting for connection... 60/60
+        | [NW: STA] Waiting for connection... 59/60
+        | [NW: STA] Waiting for connection... 58/60
+        | [NW: STA] Waiting for connection... 57/60
+        | [NW: STA] Waiting for connection... 56/60
+[NW: STA] Set device static IP.
+[NW: STA] StaticIP was already set: <devip>
+        |       | [NW: STA] network config: ('<devip>', '<mask>', '<router>', '<gateway>')
+        |       | [NW: STA] CONNECTED: True
+NTP setup errer.:[Errno 110] ETIMEDOUT
+NTP setup DONE: (2020, 4, 5, 13, 33, 42, 6, 96)
+~~~~~ [PROFILING INFO] - [3] AFTER NETWORK CONFIGURATION ~~~~~
+stack: 2256 out of 8192
+GC: total: 37952, used: 31744, free: 6208
+ No. of 1-blocks: 396, 2-blocks: 90, max blk sz: 264, max free sz: 232
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[IRQ] Interrupts disabled, skip alloc_emergency_exception_buf configuration.
+[IRQ] TIMIRQ: isenable: False callback: n/a
+~~~~~ [PROFILING INFO] - [4] AFTER TIMER INTERRUPT SETUP ~~~~~
+stack: 2256 out of 8192
+GC: total: 37952, used: 30496, free: 7456
+ No. of 1-blocks: 310, 2-blocks: 82, max blk sz: 264, max free sz: 299
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[IRQ] EVENTIRQ: isenable: False callback: n/a
+~~~~~ [PROFILING INFO] - [5] AFTER EXTERNAL INTERRUPT SETUP ~~~~~
+stack: 2256 out of 8192
+GC: total: 37952, used: 31072, free: 6880
+ No. of 1-blocks: 333, 2-blocks: 83, max blk sz: 264, max free sz: 299
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  [ socket server ] SERVER ADDR: telnet <devip> <socport>
+    [ socket server ] Socket bind complete
+      [ socket server ] Socket now listening
+        [ socket server ] wait to accept a connection - blocking call...
+

@@ -3,10 +3,10 @@
 #################################################################
 from time import sleep
 from json import load, dump
-from LogicalPins import getPlatformValByKey
 
 try:
     from machine import Pin
+    from LogicalPins import getPlatformValByKey
     PLED = Pin(getPlatformValByKey('progressled'), Pin.OUT)
 except Exception as e:
     print("[WARNING] Progressled not available on device: {}".format(e))
@@ -14,8 +14,6 @@ except Exception as e:
 
 # SET IT LATER FROM CONFIG
 DEBUG_PRINT = True
-# - config handling
-CONF_LOCK = False
 CONFIG_CACHE = {}
 # - MicrOS config
 CONFIG_PATH = "node_config.json"
@@ -54,7 +52,6 @@ def default_config():
 
 
 def progress_led_toggle_adaptor(func):
-    global PLED
     def wrapper(*args, **kwargs):
         try:
             if PLED is not None: PLED.value(not PLED.value())
@@ -79,7 +76,6 @@ def console_write(msg):
 
 
 def cfgget(key):
-    #console_write("\t\t--- [GET CFG][LOCK: {}] {}".format(CONF_LOCK, key))
     try:
         return __read_cfg_file().get(key, None)
     except Exception as e:
@@ -88,7 +84,6 @@ def cfgget(key):
 
 
 def cfgput(key, value, type_check=False):
-    #console_write("\t\t-+- [PUT CFG][LOCK: {}] {} = {}".format(CONF_LOCK, key, value))
     if cfgget(key) == value:
         return True
     try:
@@ -114,27 +109,19 @@ def cfgget_all():
 
 
 def __read_cfg_file(nosafe=False):
-    global CONF_LOCK, CONFIG_CACHE
+    global CONFIG_CACHE
     data_dict = {}
     while len(data_dict) <= 0:
-        #console_write("\t\t|--- [READ CFG][LOCK: {}]".format(CONF_LOCK))
         try:
-            if not CONF_LOCK:
-                if len(CONFIG_CACHE) == 0:
-                    # READ JSON CONFIG
-                    CONF_LOCK = True
-                    with open(CONFIG_PATH, 'r') as f:
-                        data_dict = load(f)
-                        CONFIG_CACHE = data_dict
-                    CONF_LOCK = False
-                else:
-                    # READ CACHE
-                    data_dict = CONFIG_CACHE
+            if len(CONFIG_CACHE) == 0:
+                # READ JSON CONFIG
+                with open(CONFIG_PATH, 'r') as f:
+                    data_dict = load(f)
+                    CONFIG_CACHE = data_dict
             else:
-                console_write("[CONFIGHANDLER] __read_cfg_file: LOCK")
-                sleep(0.2)
+                # READ CACHE
+                data_dict = CONFIG_CACHE
         except Exception as e:
-            CONF_LOCK = False
             console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
             # Write out initial config, if no config exists.
             if nosafe:
@@ -144,25 +131,17 @@ def __read_cfg_file(nosafe=False):
 
 
 def __write_cfg_file(dictionary):
-    global CONF_LOCK, CONFIG_CACHE
+    global CONFIG_CACHE
     while True:
-        #console_write("\t\t|--- [WRITE CFG][LOCK: {}] WRITE CFG".format(CONF_LOCK))
         try:
-            if not CONF_LOCK:
-                CONF_LOCK = True
-                # WRITE CACHE
-                CONFIG_CACHE = dictionary
-                # WRITE JSON CONFIG
-                with open(CONFIG_PATH, 'w') as f:
-                    dump(dictionary, f)
-                CONF_LOCK = False
-                break
-            else:
-                console_write("[CONFIGHANDLER] __write_cfg_file: LOCK")
-                sleep(0.2)
+            # WRITE CACHE
+            CONFIG_CACHE = dictionary
+            # WRITE JSON CONFIG
+            with open(CONFIG_PATH, 'w') as f:
+                dump(dictionary, f)
+            break
         except Exception as e:
             console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(CONFIG_PATH, e))
-            CONF_LOCK = False
         sleep(0.2)
     return True
 
@@ -189,9 +168,9 @@ def __value_type_handler(key, value):
     try:
         if isinstance(value_in_cfg, bool):
             del value_in_cfg
-            if value in ['True', 'true']:
+            if value.lower() == 'true':
                 value = True
-            elif value in ['False', 'false']:
+            elif value.lower() == 'false':
                 value = False
             elif isinstance(value, bool):
                 value = value

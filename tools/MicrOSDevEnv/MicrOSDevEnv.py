@@ -497,7 +497,7 @@ class MicrOSDevTool():
         micros_version_module = os.path.join(self.MicrOS_dir_path, 'SocketServer.py')
         with open(micros_version_module, 'r') as f:
             code_lines_string = f.read()
-        regex = r"\d.\d.\d-\d"
+        regex = r"\d+.\d+.\d+-\d+"
         version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
 
         if not self.dummy_exec and config_string is not None:

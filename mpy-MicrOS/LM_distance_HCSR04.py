@@ -3,6 +3,7 @@ from time import sleep_us
 __TRIGGER_OBJ = None
 __ECHO_OBJ = None
 
+
 def __init_HCSR04():
         global __TRIGGER_OBJ, __ECHO_OBJ
         if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
@@ -42,8 +43,10 @@ def distance_mm():
         # pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582
         return __send_pulse_and_wait() * 100 // 582
 
+
 def distance_cm():
         return (__send_pulse_and_wait() / 2) / 29.1
+
 
 def deinit():
     global __TRIGGER_OBJ, __ECHO_OBJ
@@ -52,6 +55,7 @@ def deinit():
     echo_pin.deinit()
     __TRIGGER_OBJ = None
     __ECHO_OBJ = None
+
 
 def help():
     return ('distance_mm', 'distance_cm', 'deinit')

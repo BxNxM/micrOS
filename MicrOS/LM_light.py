@@ -4,6 +4,7 @@ __BLED = None
 __RGB_STATE = False
 __RGB_CACHE = (800, 800, 800)
 
+
 def __RGB_init():
     global __RLED, __GLED, __BLED
     if __RLED is None or __GLED is None or __BLED is None:
@@ -15,6 +16,7 @@ def __RGB_init():
         __RLED = PWM(d7_gpio13_red, freq=80)
         __GLED = PWM(d4_gpio2_green, freq=80)
         __BLED = PWM(d3_gpio0_blue, freq=80)
+
 
 def RGB(r=None, g=None, b=None):
     global __RGB_STATE
@@ -32,11 +34,13 @@ def RGB(r=None, g=None, b=None):
     __RGB_STATE = _rgb_state
     return "SET RGB"
 
+
 def RGB_deinit():
     global __RGB_STATE
     RGB(0,0,0)
     __RGB_STATE = False
     return "DEINIT RGB"
+
 
 def RGB_toggle():
     global __RGB_STATE, __RGB_CACHE
@@ -48,6 +52,7 @@ def RGB_toggle():
         __RGB_STATE = True
         RGB(__RGB_CACHE[0], __RGB_CACHE[1], __RGB_CACHE[2])
     return "ON" if __RGB_STATE else "OFF"
+
 
 def help():
     return ('RGB', 'RGB_toggle', 'RGB_deinit')

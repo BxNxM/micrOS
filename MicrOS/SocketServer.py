@@ -19,53 +19,27 @@ except Exception as e:
 #########################################################
 #                    SOCKET SERVER CLASS                #
 #########################################################
-class SocketServer():
+
+
+class SocketServer:
     """
-    USER_TIMEOUT - sec
+    Socket message packet layer - send and receive
+    InterpreterShell invocation with msg
     """
 
-    def __init__(self, HOST='', PORT=None, UID=None, USER_TIMEOUT=None):
-        self.socket_interpreter_version = '0.0.9-9'
+    def __init__(self, host='', port=None, uid=None, user_timeout_sec=None):
+        self.socket_interpreter_version = '0.0.9-10'
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""
-        self.host = HOST
+        self.host = host
         # ---- Config ---
         self.prompt = "{} $ ".format(cfgget('devfid'))
-        self.port = self.__set_port_from_config(PORT)
-        self.__set_timeout_value(USER_TIMEOUT)
-        self.__get_uid_macaddr_hex(UID)
+        self.port = port if port is not None else cfgget("socport")
+        self.timeout_user = user_timeout_sec if user_timeout_sec is not None else int(cfgget("soctout"))
+        self.uid = uid if uid is not None else str(cfgget("hwuid"))
         # ---         ----
         self.server_console("[ socket server ] <<constructor>>")
-
-    #####################################
-    #     Embedded Config Handling      #
-    #####################################
-    def __get_uid_macaddr_hex(self, UID=None):
-        if UID is not None:
-            self.uid = UID
-        else:
-            self.uid = cfgget("hwuid")
-
-    def __set_port_from_config(self, PORT):
-        if PORT is None:
-            return int(cfgget("socport"))
-        else:
-            return int(PORT)
-
-    def __set_timeout_value(self, timeout=None, default_timeout=60):
-        if timeout is None:
-            try:
-                self.timeout_user = int(cfgget("soctout"))
-            except Exception as e:
-                self.timeout_user = default_timeout
-                console_write("Injected value (timeout <int>) error: {}".format(e))
-        elif isinstance(timeout, int):
-            self.timeout_user = timeout
-            console_write("Timeout value (timeout <int>): {}".format(self.timeout_user))
-        else:
-            self.timeout_user = default_timeout
-            console_write("Timeout value (timeout <int>) must be integer {}, default: {}".format(timeout, self.timeout_user))
 
     #####################################
     #       Socket Server Methods       #
@@ -94,8 +68,7 @@ class SocketServer():
     #      Socket Connection Methods    #
     #####################################
     def bind_and_accept(self):
-        retry = 20
-        for i in range(retry):
+        for i in range(0, 20):
             try:
                 self.s.bind((self.host, self.port))
                 break
@@ -112,7 +85,7 @@ class SocketServer():
         self.server_console('[ socket server ] Connected with ' + self.addr[0] + ':' + str(self.addr[1]))
 
     def wait_for_message(self):
-        prompt = self.get_prompt()
+        prompt = "{}{} ".format(self.pre_prompt, self.prompt).encode('utf-8')
         self.reply_message(prompt)
         self.conn.settimeout(self.timeout_user)
         try:
@@ -150,23 +123,15 @@ class SocketServer():
         return str(data_str)
 
     def __safe_reboot_system(self):
-        from ConfigHandler import CONF_LOCK
         self.server_console("Execute safe reboot: __safe_reboot_system()")
-        while True:
-            if not CONF_LOCK:
-                CONF_LOCK = True
-                self.reply_message("System is rebooting now, bye :)")
-                self.conn.close()
-                if 'esp' in platform:
-                    sleep(1)
-                    from machine import reset
-                    reset()
-                else:
-                    self.reconnect()
-                    break
-            else:
-                self.reply_message("Waiting for system safe reboot ...")
-                sleep(0.1)
+        self.reply_message("System is rebooting now, bye :)")
+        self.conn.close()
+        if 'esp' in platform:
+            sleep(1)
+            from machine import reset
+            reset()
+        else:
+            self.reconnect()
 
     def reply_message(self, msg):
         if type(msg) is bytes:
@@ -184,7 +149,7 @@ class SocketServer():
         self.server_console("[ socket server ] exit and close connection from " + str(self.addr))
         try:
             self.reply_message("exit and close connection from " + str(self.addr))
-        except Exception as e:
+        except:
             pass
         self.conn.close()
         # Reset Shell & prompt
@@ -242,9 +207,6 @@ class SocketServer():
                     console_write("==> [!!!][HA] Recovery error: {}".format(e))
         else:
             console_write("[HA] recovery only available on esp - nodemcu")
-
-    def get_prompt(self):
-        return "{}{} ".format(self.pre_prompt, self.prompt).encode('utf-8')
 
     def server_console(self, msg):
         console_write("  "*self.server_console_indent + msg)

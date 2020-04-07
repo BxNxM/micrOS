@@ -97,7 +97,7 @@ def simple_page():
         # Draw time
         __OLED.text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 10)
         __OLED.show()
-        pixel_art()
+        #pixel_art()
     except Exception as e:
         return str(e)
     return True

@@ -12,15 +12,11 @@ from LogicalPins import getPlatformValByKey
 
 def set_emergency_buffer():
     from micropython import alloc_emergency_exception_buf
-    base_buff_kb = cfgget('irqmembuf') if cfgget('irqmembuf') is not None else 1000
-    buff_size_kb = 0
-    if cfgget("timirq"):
-        buff_size_kb += base_buff_kb
-    if cfgget('extirq'):
-        buff_size_kb += int(base_buff_kb / 2)
-    if buff_size_kb > 0:
-        console_write("[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={}".format(buff_size_kb))
-        alloc_emergency_exception_buf(buff_size_kb)
+    irqmembuf = cfgget('irqmembuf')
+    emergency_buff_kb = irqmembuf if irqmembuf is not None and isinstance(irqmembuf, int) else 1000
+    if cfgget('extirq') or cfgget("timirq"):
+        console_write("[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={}".format(emergency_buff_kb))
+        alloc_emergency_exception_buf(emergency_buff_kb)
     else:
         console_write("[IRQ] Interrupts disabled, skip alloc_emergency_exception_buf configuration.")
 

@@ -6,12 +6,20 @@ class Colors():
         ERR = '\033[91m'
         WARN = '\033[93m'
         BOLD = '\033[1m'
+        OKBLUE = '\033[94m'
+        OKGREEN = '\033[92m'
+        HEADER = '\033[95m'
+        UNDERLINE = '\033[4m'
     else:
         NC = ''
         OK = ''
         ERR = ''
         WARN = ''
         BOLD = ''
+        OKBLUE = ''
+        OKGREEN = ''
+        HEADER = ''
+        UNDERLINE = ''
 
 if __name__ == "__main__":
     #TEST COLORS:

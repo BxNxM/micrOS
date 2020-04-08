@@ -3,12 +3,15 @@
 import sys
 import socket
 import os
-myfolder = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(myfolder)
+MYDIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(MYDIR)
+DEVENV_PATH = os.path.join(MYDIR, 'MicrOSDevEnv')
+sys.path.append(DEVENV_PATH)
 import select
 import time
 import nwscan
 import json
+from TerminalColors import Colors
 
 #########################################################
 #                 Device data handling                  #
@@ -17,7 +20,7 @@ class ConnectionData():
     HOST = 'localhost'
     PORT = 9008
     MICROS_DEV_IP_DICT = {}
-    DEVICE_CACHE_PATH = os.path.join(myfolder, "../user_data/device_conn_cache.json")
+    DEVICE_CACHE_PATH = os.path.join(MYDIR, "../user_data/device_conn_cache.json")
     DEFAULT_CONFIG_FRAGMNENT = { "__devuid__": [ \
                                                 "192.168.4.1", \
                                                 "__dev_mac_addr__", \
@@ -31,7 +34,8 @@ class ConnectionData():
 
     @staticmethod
     def filter_MicrOS_devices():
-        for device in nwscan.map_wlan_devices():
+        filtered_devices = nwscan.filter_by_open_port(device_ip_list=nwscan.map_wlan_devices(), port=ConnectionData.PORT)
+        for device in filtered_devices:
             socket = None
             if '.' in device[0]:
                 try:
@@ -78,6 +82,7 @@ class ConnectionData():
                 ConnectionData.MICROS_DEV_IP_DICT = cache_content
         else:
             print("Load MicrOS device cache not found: {}".format(cache_path))
+        return ConnectionData.MICROS_DEV_IP_DICT
 
     @staticmethod
     def select_device(dev=None):
@@ -90,44 +95,49 @@ class ConnectionData():
             ConnectionData.HOST = ConnectionData.MICROS_DEV_IP_DICT[key][0]
         else:
             if dev is None:
-                print("[i]         FUID        IP               UID")
+                print("{}[i]         FUID        IP               UID{}".format(Colors.OKGREEN, Colors.NC))
             for index, device in enumerate(ConnectionData.MICROS_DEV_IP_DICT.keys()):
                 uid = device
                 devip = ConnectionData.MICROS_DEV_IP_DICT[device][0]
                 fuid = ConnectionData.MICROS_DEV_IP_DICT[device][2]
                 if dev is None:
-                    print("[{}] Device: {} - {} - {}".format(index, fuid, devip, uid))
+                    print("[{}{}{}] Device: {}{}{} - {} - {}".format(Colors.BOLD, index, Colors.NC, \
+                                                                 Colors.OKBLUE, fuid, Colors.NC, \
+                                                                 devip, uid))
                 device_choose_list.append(devip)
                 if device is not None:
                     if dev == uid or dev == devip or dev == fuid:
-                        print("Device was found: {}".format(dev))
+                        print("{}Device was found: {}{}".format(Colors.OK, dev, Colors.NC))
                         ConnectionData.HOST = devip
                         device_was_found = True
                         break
             if not device_was_found:
                 if len(device_choose_list) > 1:
-                    index = int(input("Choose a device index: "))
+                    index = int(input("{}Choose a device index: {}".format(Colors.OK, Colors.NC)))
                     ConnectionData.HOST = device_choose_list[index]
                     print("Device IP was set: {}".format(ConnectionData.HOST))
                 else:
-                    print("Device not found.")
+                    print("{}Device not found.{}".format(Colors.ERR, Colors.NC))
                     sys.exit(0)
 
     @staticmethod
-    def auto_execute(search=False, dev=None):
+    def auto_execute(search=False, status=False, dev=None):
         if not os.path.isfile(ConnectionData.DEVICE_CACHE_PATH):
             search = True
         if search:
             ConnectionData.filter_MicrOS_devices()
         else:
             ConnectionData.read_MicrOS_device_cache()
+        if status:
+            ConnectionData.nodes_status()
+            sys.exit(0)
         ConnectionData.select_device(dev=dev)
         ConnectionData.read_port_from_nodeconf()
         return ConnectionData.HOST, ConnectionData.PORT
 
     @staticmethod
     def read_port_from_nodeconf():
-        base_path = myfolder + os.sep + ".." + os.sep + "MicrOS" + os.sep
+        base_path = MYDIR + os.sep + ".." + os.sep + "MicrOS" + os.sep
         config_path = base_path + "node_config.json"
         confighandler_path = base_path + "ConfigHandler.py"
         port_data = ""
@@ -141,12 +151,50 @@ class ConnectionData():
         else:
             print("PORT INFORMATION COMES FROM: {}, but not exists!\n\t[HINT] Run {} script to generate default MicrOS config.".format(config_path, confighandler_path))
 
+    @staticmethod
+    def nodes_status():
+        spr_offset1 = 30
+        nodes_dict = ConnectionData.read_MicrOS_device_cache()
+        spacer1 = " " * (spr_offset1-14)
+        print("{cols}       [ UID ]{spr1}[ FUID ]\t[ IP ]\t\t[ STATUS ]\t[ MEMFREE ]\t[ VERSION ]{cole}"\
+              .format(spr1=spacer1, cols=Colors.OKBLUE+Colors.BOLD, cole=Colors.NC))
+        for uid, data in nodes_dict.items():
+            ip = data[0]
+            fuid = "{}{}{}".format(Colors.HEADER, data[2], Colors.NC)
+            if uid not in ['__devuid__', '__localhost__']:
+                spacer1 = " "*(spr_offset1 - len(uid))
+
+                # print status msgs
+                is_online = "{}ONLINE{}".format(Colors.OK, Colors.NC) if nwscan.node_is_online(ip, port=ConnectionData.PORT) else "{}OFFLINE{}".format(Colors.WARN, Colors.NC)
+                mem_data = '<memfree>'
+                version_data = '<n/a>'
+
+                # is online
+                if 'ONLINE' in is_online:
+                    # get mem_data
+                    mem_data = SocketDictClient(\
+                        host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['system memfree'])
+                    mem_data = "{} byte".format(str(mem_data.split('\n')[1]).split(':')[-1])
+                    # get version data
+                    version_data = SocketDictClient( \
+                        host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['version'])
+
+                # Generate line printout
+                data_line_str = "{uid}{spr1}{fuid}\t{ip}\t{stat}\t\t{mem}\t{version}" \
+                    .format(uid=uid, spr1=spacer1, fuid=fuid, ip=ip,\
+                            stat=is_online, mem=mem_data, version=version_data)
+                # Print line
+                print(data_line_str)
+
 #########################################################
 #               Socket Client Class                     #
 #########################################################
+
+
 class SocketDictClient():
 
-    def __init__(self, host='localhost', port=9008, bufsize=4096):
+    def __init__(self, host='localhost', port=9008, bufsize=4096, silent_mode=False):
+        self.silent_mode = silent_mode
         self.is_interactive = False
         self.bufsize = bufsize
         self.host = host
@@ -234,17 +282,23 @@ class SocketDictClient():
                 str_msg = filtered_msg.strip()
         else:
             str_msg = msg
-        print(str_msg, end=end)
+        if not self.silent_mode:
+            print(str_msg, end=end)
         return str_msg
 
 #########################################################
 #                       MAIN                            #
 #########################################################
+
+
 def socket_commandline_args(arg_list):
-    return_action_dict = {'search': False, 'dev': None}
+    return_action_dict = {'search': False, 'dev': None, 'status': False}
     if "--scan" in arg_list:
         arg_list.remove("--scan")
         return_action_dict['search'] = True
+    if "--stat" in arg_list:
+        arg_list.remove("--stat")
+        return_action_dict['status'] = True
     if "--dev" in arg_list:
         for index, arg in enumerate(arg_list):
             if arg == "--dev":
@@ -255,9 +309,11 @@ def socket_commandline_args(arg_list):
     if "--help" in arg_list:
         print("--scan\t\t- scan devices")
         print("--dev\t\t- select device - value should be: fuid or uid or devip")
+        print("--stat\t\t- show devides online/offline - and memory data")
         print("HINT\t\t- In non interactive mode you can pipe commands with <a> separator")
         sys.exit(0)
     return arg_list, return_action_dict
+
 
 def main(args):
     try:
@@ -274,12 +330,14 @@ def main(args):
             print("FAILED TO START: " + str(e))
         return False
 
+
 def run(arg_list=[]):
     args, action = socket_commandline_args(arg_list)
-    ConnectionData.auto_execute(search=action['search'], dev=action['dev'])
+    ConnectionData.auto_execute(search=action['search'], status=action['status'],  dev=action['dev'])
     return main(args)
+
 
 if __name__ == "__main__":
     args, action = socket_commandline_args(sys.argv[1:])
-    ConnectionData.auto_execute(search=action['search'], dev=action['dev'])
+    ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['dev'])
     main(args)

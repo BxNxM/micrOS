@@ -26,6 +26,7 @@ def arg_parse():
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
     base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactivve mode.")
     base_group.add_argument("-a", "--applications", type=str, help="List/Execute frontend applications. [list]")
+    base_group.add_argument("-stat", "--node_status", action="store_true", help="Show all available MicrOS devices status data.")
 
     dev_group = parser.add_argument_group("Development & Deployment & Connection")
     dev_group.add_argument("-e", "--erase", action="store_true", help="Erase device")
@@ -50,6 +51,7 @@ def arg_parse():
 
     return args
 
+
 def list_devs_n_bins(api_obj):
     dev_list = api_obj.micros_devices
     bin_list = api_obj.micropython_bins_list
@@ -60,17 +62,22 @@ def list_devs_n_bins(api_obj):
     for bin_ in bin_list:
         print("\t{}".format(bin_))
 
+
 def make(api_obj):
     api_obj.deploy_micros()
+
 
 def erase(api_obj):
     api_obj.erase_dev()
 
+
 def deploy(api_obj):
     api_obj.deploy_micropython_dev()
 
+
 def install(api_obj):
     api_obj.put_micros_to_dev()
+
 
 def connect(args=None):
     if args is not None and len(args) != 0:
@@ -78,14 +85,22 @@ def connect(args=None):
     else:
         socketClient.run(arg_list=[])
 
+
+def node_status():
+    socketClient.run(arg_list=['--stat'])
+
+
 def search_devices():
     socketClient.ConnectionData.filter_MicrOS_devices()
+
 
 def precompile_micrOS(api_obj):
     api_obj.precompile_micros()
 
+
 def connect_via_usb(api_obj):
     api_obj.connect_dev()
+
 
 def get_MicrOS_version(api_obj):
     print(api_obj.get_micrOS_version())
@@ -94,11 +109,14 @@ def get_MicrOS_version(api_obj):
 def update_micrOS_on_node(api_obj, force=False):
     api_obj.update_micros_via_usb(force=force)
 
+
 def node_ls(api_obj):
     api_obj.list_micros_filesystem()
 
+
 def backup_node_config(api_obj):
     api_obj.backup_node_config()
+
 
 def applications(app):
     if app.strip() == 'ImpiGame':
@@ -129,6 +147,10 @@ if __name__ == "__main__":
         api_obj = MicrOSDevEnv.MicrOSDevTool(dummy_exec=True)
     else:
         api_obj = MicrOSDevEnv.MicrOSDevTool()
+
+    # Get all connected node status
+    if cmd_args.node_status:
+        node_status()
 
     # Commands
     if cmd_args.list_devs_n_bins:

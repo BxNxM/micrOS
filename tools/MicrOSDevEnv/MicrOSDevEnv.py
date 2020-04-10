@@ -33,6 +33,7 @@ class MicrOSDevTool():
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
         self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py"]
+        self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
 
         # Filled by methods
         self.micropython_bins_list = []
@@ -266,6 +267,7 @@ class MicrOSDevTool():
                 exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
             else:
                 exitcode = 0
+                stderr = ''
             if exitcode == 0 and stderr == '':
                 self.console("|---> DONE", state='ok')
             else:
@@ -456,32 +458,46 @@ class MicrOSDevTool():
             conf_list = [ conf for conf in LocalMachine.FileHandler.list_dir(self.MicrOS_node_config_archive) if conf.endswith('json') ]
         self.console("Select config file to deplay:")
         for index, conf in enumerate(conf_list):
-            self.console("  [{}] {}".format(index, conf))
-        self.console("  [{}] {}".format(index+1, 'NEW'))
-        self.console("  [{}] {}".format(index+2, 'SKIP'))
+            self.console("  [{}{}{}] {}".format(Colors.BOLD, index, Colors.NC, conf))
+        self.console("  [{}{}{}] {}".format(Colors.BOLD, index+1, Colors.NC, 'NEW'))
+        self.console("  [{}{}{}] {}".format(Colors.BOLD, index+2, Colors.NC, 'SKIP'))
         conf_list.append(os.path.join('node_config.json'))
         conf_list.append(os.path.join('SKIP'))
         selected_index = int(input("Select index: "))
-        if selected_index == len(conf_list) -1:
-            return
+        # Use (already existing) selected config to restore
         selected_config = conf_list[selected_index]
         if '-' in selected_config:
+            # Restore saved config
             target_path = os.path.join(self.precompiled_MicrOS_dir_path, selected_config.split('-')[1])
             source_path = os.path.join(self.MicrOS_node_config_archive, selected_config)
+        elif selected_index == len(conf_list) -1:
+            # SKIP restore config - use the local version in mpy-MicrOS folder
+            target_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
+            source_path = None
         else:
+            # Create new config - from MicrOS folder path -> mpy-MicrOS folder
             target_path = os.path.join(self.precompiled_MicrOS_dir_path, selected_config)
             source_path = os.path.join(self.MicrOS_dir_path, selected_config)
         self.console("Restore config: {} -> {}".format(source_path, target_path))
         if not self.dummy_exec:
-            LocalMachine.FileHandler.copy(source_path, target_path)
+            if source_path is not None:
+                LocalMachine.FileHandler.copy(source_path, target_path)
 
-        self.console("========== INFO ==========")
-        self.console("To edit your config, open: {}".format(target_path))
-        input("To continue, press enter.")
+        # In case of NEW config - profile injection option
+        if selected_index == len(conf_list) - 2:
+            # Inject profile data
+            if self.inject_profile(target_path) is None:
+                # Dump untouched config content
+                with open(target_path, 'r') as f:
+                    self.console("[ INFO ] Actual config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
 
+        # Manual config editing breakpoint
+        self.console("=================== INFO =====================")
+        self.console("[ INFO ] To edit your config, open: {}".format(target_path))
+        input("[ QUESTION ] To continue, press enter.")
+        # Dump config content
         with open(target_path, 'r') as f:
-            config = f.read()
-        print("Deployment with config:\n{}".format(config))
+            self.console("[ INFO ] Deployment with config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
 
     def __override_local_config_from_node(self, node_config=None):
         node_config_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
@@ -523,6 +539,69 @@ class MicrOSDevTool():
             self.console("MicrOS node content:\n{}".format(stdout), state='ok')
         else:
             self.console("MicrOS node content list error:\n{}".format(stderr), state='err')
+
+
+    def inject_profile(self, target_path):
+        profile_list = [ profile for profile in LocalMachine.FileHandler.list_dir(self.node_config_profiles_path) if profile.endswith('.json') ]
+        for index, profile in enumerate(profile_list):
+            self.console("[{}]\t{}".format(index, profile))
+        profile = input("[ QUESTION ] Select {}profile{} or to skip press enter: ".format(Colors.BOLD, Colors.NC))
+        if len(profile.strip()) == 0:
+            self.console("SKIP profile selection.")
+            return None
+        else:
+            self.console("Profile was selected: {}{}{}".format(Colors.OK, profile_list[int(profile)], Colors.NC))
+        # Read default conf
+        default_conf_path = os.path.join(self.MicrOS_dir_path, 'node_config.json')
+        with open(default_conf_path, 'r') as f:
+            default_conf_dict = json.load(f)
+        # Read profile
+        profile_path = os.path.join(self.node_config_profiles_path, profile_list[int(profile)])
+        with open(profile_path, 'r')  as f:
+            profile_dict = json.load(f)
+        for key, value in profile_dict.items():
+            if value is None:
+                # Get input - cast variable type
+                value_ = None
+                while value_ is None:
+                    value = input(" |-> Fill {}{}{} config parameter, type {}: "
+                                  .format(Colors.BOLD, key, Colors.NC, type(default_conf_dict.get(key))))
+                    value_ = self.__convert_data_type(default_conf_dict.get(key), value)
+                value = value_
+                # Save value
+                profile_dict[key] = value
+                self.console(" |--> SET {}: {}".format(key, value))
+        # Create New profiled config - merge dicts
+        default_conf_dict.update(profile_dict)
+        # Dump Data
+        self.console("Configured node_config.json:")
+        self.console(json.dumps(default_conf_dict, indent=4, sort_keys=True))
+        # Write data
+        self.console("Write config to {}".format(target_path))
+        with open(target_path, 'w') as f:
+            json.dump(default_conf_dict, f)
+        return True
+
+    def __convert_data_type(self, target_type_value, input_var):
+        try:
+            if isinstance(target_type_value, bool):
+                self.console("BOOL: {}".format(input_var))
+                return bool(input_var)
+            elif isinstance(target_type_value, int):
+                self.console("INT: {}".format(input_var))
+                return int(input_var)
+            elif isinstance(target_type_value, float):
+                self.console("FLOAT: {}".format(input_var))
+                return float(input_var)
+            elif isinstance(target_type_value, str):
+                self.console("STR: {}".format(input_var))
+                return str(input_var)
+            else:
+                self.console("NON SUPPORTED TYPE")
+                return None
+        except Exception as e:
+            self.console("TYPE CASTING ERROR: {}".format(e))
+            return None
 
     def deploy_micros(self, restore=True):
         if restore:

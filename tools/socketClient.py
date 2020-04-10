@@ -59,7 +59,7 @@ class ConnectionData():
                         socket.conn.close()
                     del socket
         ConnectionData.write_MicrOS_device_cache(ConnectionData.MICROS_DEV_IP_DICT)
-        print("AVAILABLE MICROS DEVICES: {}".format(ConnectionData.MICROS_DEV_IP_DICT))
+        print("AVAILABLE MICROS DEVICES:\n{}".format(json.dumps(ConnectionData.MICROS_DEV_IP_DICT, indent=4, sort_keys=True)))
 
     @staticmethod
     def write_MicrOS_device_cache(device_dict):

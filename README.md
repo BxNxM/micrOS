@@ -14,9 +14,9 @@ User function injection over LM_<userapp>.py
 
 ### RELESE NOTE
 
-|    VERSION   |    RELEASE INFO    |     MICROS MEMORY USAGE    |         COMMIT         |   SUPPORTED DEVICE   | APP PROFILES
-| :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: |
-|  **0.1.0.0** | [Release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/MicrOS_Release_Info-0.1.0-0)| 14 - 38 % (1300-3400 byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles)
+|    VERSION   |    RELEASE INFO    |     MICROS MEMORY USAGE    |         COMMIT         |   SUPPORTED DEVICE   | APP PROFILES   |     NOTE       |
+| :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: | -------------- |
+|  **0.1.0.0** | [Release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/MicrOS_Release_Info-0.1.0-0)| 14 - 38 % (1300-3400 byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | First stable release
 
 ## MicrOS Tutorial
 
@@ -44,6 +44,8 @@ User function injection over LM_<userapp>.py
 	- Event based
 - Socket client - interactive - non interactive mode
 
+----------------------------------------
+
 ## Quick guide
 
 ### Supported OS for development
@@ -70,8 +72,69 @@ git clone https://github.com/BxNxM/MicrOs.git
 	- tools/socketClient.py (devToolKit.py -c)
 		- arp -a (device scanner)
 		- ping (device scanner)
-	
-#### Development toolkit
+
+#### Erase device & Deploy micropython & Install MicrOS 
+
+Go to micrOS repo, where the `devToolKit.py` located.
+
+```
+cd MicrOs 
+./devToolKit.py --make
+```
+> Note: Follow the steps :)
+
+
+Search and Connect to the device
+
+```
+./devToolKit.py -s -c
+```
+
+----------------------------------------
+
+## Node Configuration, parameters
+
+| Parameters names |   Default value and type    | Reboot required |          Description            |
+| ---------------- | :-------------------------: | :-------------: | ------------------------------- |
+| staessid         |   `your_wifi_name` `<str>`  |       Yes       |     Wifi station name 
+| stapwd		      | `your_wifi_passwd` `<str>`  |       Yes       |     Wifi station password
+| devfid		      |    `node01`  `<str>`        |       No        | Device friendly name / AP name  - access point mode
+| appwd		      |   `ADmin123`  `<str>`       |       Yes       | AP password - access point mode
+| pled			      |     `True`    `<bool>`      |      Yes        | Progress led - heart beat
+| dbg	             |     `True`    `<bool>`      |       Yes       | Debug mode - enable system printout
+| soctout		      |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (because single user | handling)
+| socport		      |    `9008`  `<int>`          |       Yes       | Socket / Web server service port
+| timirq		      |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - "subprocess"
+|timirqcbf         |      `n/a`   `<str>`        |      Yes       | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
+| timirqseq        |    `3000`   `<int>`        |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
+| extirq           |     `False`  `<bool>`      |      Yes        | External event interrupt - "subprocess"
+| extirqcbf        |     `n/a`  `<str>`         |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
+| boothook         |    `n/a` `<str>`          |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
+| irqmembuf         |    `1000` `<int>`        |       Yes       | IRQ emebergcy memory buffer configuration in case of `timirq` or `exitirq` is/are enabled: default 1000 byte.
+| gmttime          |     `+1`   `<int>`        |        Yes      | NTP - RTC - timezone setup 
+| nwmd 		      |     `n/a`  `<str>`         |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
+| hwuid		      |      `n/a`  `<str>`        |       N/A       | STATE STORAGE - hardwer address - dev uid
+| devip		      |      `n/a`  `<str>`        |     N/A         | STATE STORAGE - system stores device ip here - first stored IP in STA mode will be the device static IP on the network.
+
+
+## Logical pin accociation
+
+[MicrOS/LogicalPins.py](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LogicalPins.py)
+
+```
+'progressled': 16,    # BUILT IN LED
+'servo': 15,          # D8
+'pwm_red': 13,        # D7
+'pwm_green': 2,       # D4 
+'pwm_blue': 0,        # D3
+'i2c_sda': 4,         # D2
+'i2c_scl': 5,         # D1
+'button': 12          # D6
+```												
+
+----------------------------------------
+
+### Development toolkit in details
 
 **User commands**
 
@@ -107,12 +170,6 @@ Development & Deployment & Connection:
 
 Toolkit development:
   --dummy               Skip subshell executions - for API logic test.
-```
-
-#### Erase device & Deploy micropython & Install MicrOS 
-
-```
-./devToolKit.py --make
 ```
 
 ## Socket terminal example - non interactive
@@ -212,46 +269,6 @@ CPU[Hz]: 160000000
 GC MemFree[byte]: 5552
 ```
 
-## Node Configuration
-
-| Parameters names |   Default value and type    | Reboot required |          Description            |
-| ---------------- | :-------------------------: | :-------------: | ------------------------------- |
-| staessid         |   `your_wifi_name` `<str>`  |       Yes       |     Wifi station name 
-| stapwd		      | `your_wifi_passwd` `<str>`  |       Yes       |     Wifi station password
-| devfid		      |    `node01`  `<str>`        |       No        | Device friendly name / AP name  - access point mode
-| appwd		      |   `ADmin123`  `<str>`       |       Yes       | AP password - access point mode
-| pled			      |     `True`    `<bool>`      |      Yes        | Progress led - heart beat
-| dbg	             |     `True`    `<bool>`      |       Yes       | Debug mode - enable system printout
-| soctout		      |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (because single user | handling)
-| socport		      |    `9008`  `<int>`          |       Yes       | Socket / Web server service port
-| timirq		      |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - "subprocess"
-|timirqcbf         |      `n/a`   `<str>`        |      Yes       | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
-| timirqseq        |    `3000`   `<int>`        |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
-| extirq           |     `False`  `<bool>`      |      Yes        | External event interrupt - "subprocess"
-| extirqcbf        |     `n/a`  `<str>`         |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
-| boothook         |    `n/a` `<str>`          |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
-| irqmembuf         |    `1000` `<int>`        |       Yes       | IRQ emebergcy memory buffer configuration in case of `timirq` or `exitirq` is/are enabled: default 1000 byte.
-| gmttime          |     `+1`   `<int>`        |        Yes      | NTP - RTC - timezone setup 
-| nwmd 		      |     `n/a`  `<str>`         |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
-| hwuid		      |      `n/a`  `<str>`        |       N/A       | STATE STORAGE - hardwer address - dev uid
-| devip		      |      `n/a`  `<str>`        |     N/A         | STATE STORAGE - system stores device ip here - first stored IP in STA mode will be the device static IP on the network.
-
-
-## Logical pin accociation
-
-[MicrOS/LogicalPins.py](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LogicalPins.py)
-
-```
-'progressled': 16,    # BUILT IN LED
-'servo': 15,          # D8
-'pwm_red': 13,        # D7
-'pwm_green': 2,       # D4 
-'pwm_blue': 0,        # D3
-'i2c_sda': 4,         # D2
-'i2c_scl': 5,         # D1
-'button': 12          # D6
-```
-
 ## SocketClient
 
 ### Config:
@@ -322,6 +339,109 @@ SET RGB
 slim01 $  exit
 Bye!
 exit and close connection from ('10.0.1.7', 51733)
+```
+
+## Project structure
+
+### MicrOS resources library
+
+```
+├── MicrOS
+│   ├── ConfigHandler.py
+│   ├── Hooks.py
+│   ├── InterpreterCore.py
+│   ├── InterpreterShell.py
+│   ├── LogicalPins.py
+│   ├── Network.py
+│   ├── SocketServer.py
+│   ├── InterruptHandler.py
+│   ├── boot.py
+│   ├── main.py
+```
+> Note: Core MicrOS components
+
+```
+│   ├── LM_distance_HCSR04.py
+│   ├── LM_light.py
+│   ├── LM_motion_sensor.py
+│   ├── LM_oled_128x64i2c.py
+│   ├── LM_oled_widgets.py
+│   ├── LM_servo.py
+│   ├── LM_system.py
+```
+> LM (Load Modules) - Application logic - accessable over socket server as a command
+
+```
+│   └── node_config.json
+```
+> Note: System description config
+
+### MicrOS development tools library
+
+```
+├── devToolKit.py
+├── tools
+│   ├── MicrOSDevEnv
+```
+> Note: devToolKit wrapper resources for development, deployment, precompile, etc.
+
+```
+│   ├── nwscan.py
+│   ├── socketClient.py
+```
+> Note: devToolKit wrapper socket based connection handling
+
+```
+├── user_data
+│   ├── device_conn_cache.json
+│   └── node_config_archive
+```
+> Note: User data dir: conatins node connection informations (devToolKit --search_devices) and deployed node config backups are here.
+
+
+### MicrOS deployment resources
+
+Precompiled components with the actual user configured config location
+
+```
+├── mpy-MicrOS
+│   ├── ConfigHandler.mpy
+│   ├── Hooks.mpy
+│   ├── InterpreterCore.mpy
+│   ├── InterpreterShell.mpy
+│   ├── InterruptHandler.mpy
+│   ├── LM_distance_HCSR04.py
+│   ├── LM_light.mpy
+│   ├── LM_motion_sensor.py
+│   ├── LM_oled_128x64i2c.mpy
+│   ├── LM_oled_widgets.mpy
+│   ├── LM_servo.py
+│   ├── LM_system.mpy
+│   ├── LogicalPins.mpy
+│   ├── Network.mpy
+│   ├── SocketServer.mpy
+│   ├── boot.py
+│   ├── main.py
+│   └── node_config.json
+```
+
+> Note: These resources will be copy to the micropython base.
+
+### Other project resoures 
+
+```
+├── apps
+│   ├── CatGame_app.py
+│   ├── Template.app.py
+│   └── __pycache__
+├── driver_cp210x
+│   ├── Mac_OSX_VCP_Driver
+│   └── SiLabsUSBDriverDisk.dmg
+├── framework
+│   └── esp8266-20191220-v1.12.bin
+├── release_info
+│   ├── MicrOS_Release_Info-0.1.0-0
+│   └── node_config_profiles
 ```
 
 ## HINTS

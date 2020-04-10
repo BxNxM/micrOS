@@ -27,7 +27,7 @@ def default_config():
     default_configuration_template = {"version": "n/a",
                                       "staessid": "your_wifi_name",
                                       "stapwd": "your_wifi_passwd",
-                                      "devfid": "slim01",
+                                      "devfid": "node01",
                                       "appwd": "ADmin123",
                                       "pled": True,
                                       "dbg": True,

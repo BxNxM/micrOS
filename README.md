@@ -14,11 +14,24 @@ User function injection over LM_<userapp>.py
 
 ### RELESE NOTE
 
-|    VERSION   |    RELEASE INFO   |         COMMIT         |
-| :----------: | :---------------: | :--------------------: |
-|  **0.1.0.0** |    LINK           |
+|    VERSION   |    RELEASE INFO    |     MICROS MEMORY USAGE    |         COMMIT         |   SUPPORTED DEVICE   | APP PROFILES
+| :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: |
+|  **0.1.0.0** | [Release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/MicrOS_Release_Info-0.1.0-0)| 14 - 38 % (1300-3400 byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles)
 
-## MicrOS Features
+## MicrOS Tutorial
+
+> **Coming soon**
+
+- How to deploy to device
+- Configuration
+- Built in function + Load Modules
+- Client examples
+- Backup config - cluster monitoring
+- Create custom Load Modules (LMs)
+
+> **Coming soon**
+
+## MicrOS Framework Features
 
 - Config handling - node_config.json
 - Socket interpreter - communication interface with the device
@@ -56,6 +69,7 @@ git clone https://github.com/BxNxM/MicrOs.git
 	- screen (serial port connection)
 	- tools/socketClient.py (devToolKit.py -c)
 		- arp -a (device scanner)
+		- ping (device scanner)
 	
 #### Development toolkit
 
@@ -200,27 +214,27 @@ GC MemFree[byte]: 5552
 
 ## Node Configuration
 
-| Parameters names | Reboot required | Description |
-| ---------- | :-----------: | ----------- |
-| staessid   |        Yes      | 	Wifi station name 
-| stapwd		|        Yes      | Wifi station password
-| devfid		|        No       | Device friendly name / AP name - access point mode
-| appwd		|        Yes      | AP password - access point mode
-| pled			|        Yes      | Progress led - heart beat
-| dbg	       |        Yes      |	Debug mode - enable system printouts		
-| soctout		|        Yes      | Socket / Web server connection timeout (because single user | handling)
-| socport		|         Yes     | Socket / Web server service port
-| timirg		|        Yes      | Timer interrupt enable - "subprocess"
-|timirqcbf   |        Yes        | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
-| timirqseq   |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
-| extirq     |       Yes        | External event interrupt - "subprocess"
-| extirqcbf   |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
-| boothook    |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
-| irqmembuf   |       Yes       | IRQ emebergcy memory buffer configuration: default 1000 byte. `(Timirq:) irqmembuf + (Extirq:) irqmembuf/2`
-| gmttime    |        Yes      | NTP - RTC - timezone setup 
-| nwmd 		|       N/A       |STATE STORAGE - system saves nw mode here - AP / STA
-| hwuid		|      N/A         | STATE STORAGE - hardwer address - dev uid
-| devip		|       N/A         | STATE STORAGE - system stores device ip here - first stored IP in STA mode will be the device static IP on the network.
+| Parameters names |   Default value and type    | Reboot required |          Description            |
+| ---------------- | :-------------------------: | :-------------: | ------------------------------- |
+| staessid         |   `your_wifi_name` `<str>`  |       Yes       |     Wifi station name 
+| stapwd		      | `your_wifi_passwd` `<str>`  |       Yes       |     Wifi station password
+| devfid		      |    `node01`  `<str>`        |       No        | Device friendly name / AP name  - access point mode
+| appwd		      |   `ADmin123`  `<str>`       |       Yes       | AP password - access point mode
+| pled			      |     `True`    `<bool>`      |      Yes        | Progress led - heart beat
+| dbg	             |     `True`    `<bool>`      |       Yes       | Debug mode - enable system printout
+| soctout		      |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (because single user | handling)
+| socport		      |    `9008`  `<int>`          |       Yes       | Socket / Web server service port
+| timirq		      |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - "subprocess"
+|timirqcbf         |      `n/a`   `<str>`        |      Yes       | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
+| timirqseq        |    `3000`   `<int>`        |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
+| extirq           |     `False`  `<bool>`      |      Yes        | External event interrupt - "subprocess"
+| extirqcbf        |     `n/a`  `<str>`         |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
+| boothook         |    `n/a` `<str>`          |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
+| irqmembuf         |    `1000` `<int>`        |       Yes       | IRQ emebergcy memory buffer configuration in case of `timirq` or `exitirq` is/are enabled: default 1000 byte.
+| gmttime          |     `+1`   `<int>`        |        Yes      | NTP - RTC - timezone setup 
+| nwmd 		      |     `n/a`  `<str>`         |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
+| hwuid		      |      `n/a`  `<str>`        |       N/A       | STATE STORAGE - hardwer address - dev uid
+| devip		      |      `n/a`  `<str>`        |     N/A         | STATE STORAGE - system stores device ip here - first stored IP in STA mode will be the device static IP on the network.
 
 
 ## Logical pin accociation

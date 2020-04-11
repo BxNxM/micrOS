@@ -17,27 +17,48 @@ That config subset can contains 2 types of values:
 
 ## Available profiles
 
-**default_profile-node_config.json**
+**`default_profile-node_config.json`**
 
 > The most lightweight option, only runs the Socket Shell interface.
+> 
 > - Interrupts: OFF (no memory allocation)
 > - Preloaded modules: OFF
 > - Network up and running + communication interface ONLY.
 
-**heartbeat_profile-node_config.json**
+Example commands: `default_profile_command_examples.txt`
+
+**`heartbeat_profile-node_config.json`**
 
 > Beep function - flashing light feedback, minimal setup also.
+> 
 > - Interrupts:
 >  - Timer interrupt: ON
 >  - External/Event interrupt: OFF 
 > - Preloaded modules: OFF
 > - Network up and running + communication interface active.
 
-**lamp_profile-node_config.json**
+Example commands: `heartbeat_profile_command_examples.txt`
+
+**`lamp_profile-node_config.json`**
 
 > Smart RGB Lamp app with button. 
+> 
 > - Interrupts:
 >  - Timer interrupt: ON - heartbeat feedback led
 >  - External/Event interrupt: Button - push detection - toggle led state 
 > - Preloaded modules: RGB LED (gpio) setup
 > - Network up and running + communication interface active.
+
+Example commands: `lamp_profile_command_examples.txt`
+
+**`catgame_profile-node_config.json`**
+
+> Servo based interactive cat toy
+> 
+> - Interrupts:
+>  - Timer interrupt: ON
+>  - External/Event interrupt: OFF
+> - Preloaded modules: OFF
+> - Network up and running + communication interface active.
+
+Example commands: `catgame_profile_command_examples.txt`

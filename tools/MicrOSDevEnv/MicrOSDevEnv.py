@@ -580,6 +580,10 @@ class MicrOSDevTool():
         self.console("Write config to {}".format(target_path))
         with open(target_path, 'w') as f:
             json.dump(default_conf_dict, f)
+        # Show command hints for selected profile
+        example_commands_file_path = profile_path.replace('-node_config.json', '_command_examples.txt')
+        with open(example_commands_file_path, 'r') as f:
+            self.console("{} profile command {}HINTS{}:\n{}".format(profile_path, Colors.OK, Colors.NC, f.read()))
         return True
 
     def __convert_data_type(self, target_type_value, input_var):

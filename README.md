@@ -427,21 +427,32 @@ Precompiled components with the actual user configured config location
 
 > Note: These resources will be copy to the micropython base.
 
+### Release info and Application Profiles
+
+```
+├── release_info
+│   ├── MicrOS_Release_Info-0.1.0-0
+│   └── node_config_profiles
+```
+> Note:  Under node_config_profiles you can find **configuration temaples**, named **profiles** (devenv automatically able to inject these under deployment) - there are also **command examples** for each application.
+
+> **MicrOS_Release_Info** folder(s) conatins system verification logs like:
+> 
+> - bootup log with different configurations
+> - application execution log
+> - memory measurements
+
 ### Other project resoures 
 
 ```
 ├── apps
 │   ├── CatGame_app.py
 │   ├── Template.app.py
-│   └── __pycache__
 ├── driver_cp210x
 │   ├── Mac_OSX_VCP_Driver
 │   └── SiLabsUSBDriverDisk.dmg
 ├── framework
 │   └── esp8266-20191220-v1.12.bin
-├── release_info
-│   ├── MicrOS_Release_Info-0.1.0-0
-│   └── node_config_profiles
 ```
 
 ## HINTS

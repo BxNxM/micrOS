@@ -1,0 +1,16 @@
+{
+ "timirqseq": 3000,
+ "irqmembuf": 1000,
+ "extirq": false,
+ "extirqcbf": "n/a",
+ "timirqcbf": "system heartbeat",
+ "boothook": "n/a",
+ "timirq": true,
+ "pled": true,
+ "socport": 9008,
+ "dbg": null,
+ "gmttime": null,
+ "devfid": null,
+ "stapwd": null,
+ "staessid": null
+}

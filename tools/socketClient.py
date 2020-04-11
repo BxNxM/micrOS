@@ -172,12 +172,17 @@ class ConnectionData():
                 # is online
                 if 'ONLINE' in is_online:
                     # get mem_data
-                    mem_data = SocketDictClient(\
-                        host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['system memfree'])
-                    mem_data = "{} byte".format(str(mem_data.split('\n')[1]).split(':')[-1])
+                    try:
+                        mem_data = SocketDictClient(\
+                            host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['system memfree'])
+                        mem_data = "{} byte".format(str(str(mem_data.split('\n')[1]).split(':')[-1]).strip())
+                    except:
+                        pass
                     # get version data
-                    version_data = SocketDictClient( \
-                        host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['version'])
+                    try:
+                        version_data = SocketDictClient(host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['version'])
+                    except:
+                        pass
 
                 # Generate line printout
                 data_line_str = "{uid}{spr1}{fuid}\t{ip}\t{stat}\t\t{mem}\t{version}" \

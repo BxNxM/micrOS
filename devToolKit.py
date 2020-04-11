@@ -12,6 +12,7 @@ sys.path.append(APP_DIR)
 import argparse
 import MicrOSDevEnv
 import socketClient
+import LocalMachine
 
 def arg_parse():
     parser = argparse.ArgumentParser(prog="MicrOS dev toolkit - deploy, connect, update, etc.", \
@@ -119,12 +120,30 @@ def backup_node_config(api_obj):
 
 
 def applications(app):
-    if app.strip() == 'ImpiGame':
-        import CatGame_app
-        CatGame_app.app()
+    app_list = [app for app in LocalMachine.FileHandler.list_dir(APP_DIR) if app.endswith('.py') and not app.startswith('Template')]
+    if app.lower() == 'list' or app.lower() == 'help' or app.lower() == '-':
+        for index, app_content in enumerate(app_list):
+            print("\t[{index}] - {appc}".format(index=index, appc=app_content))
+        index = input("[QUESTION] Select Appllication by index: ")
+        try:
+            index = int(index)
+            app_name = app_list[index].replace('_app.py', '')
+        except:
+            app_name = None
+        if app_name is not None:
+            __execute_app(app_name)
+    elif app in [app_name.replace('_app.py', '') for app_name in app_list]:
+        print("[ RUN ] {}".format(app))
+        __execute_app(app)
     else:
-        print("\tImpiGame")
+        print("[ APP ] {} was not found.".format(app))
 
+def __execute_app(app_name, app_postfix='_app'):
+    app_name = "{}{}".format(app_name, app_postfix)
+    print("[APP] import {}".format(app_name))
+    exec("import {}".format(app_name))
+    print("[APP] {}.app()".format(app_name))
+    print(eval("{}.app()".format(app_name)))
 
 if __name__ == "__main__":
     cmd_args = arg_parse()

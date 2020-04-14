@@ -146,18 +146,9 @@ def execute_LM_function(argument_list, SocketServerObj):
     2. param. - function call with parameters, i.e. a()
     '''
     try:
-        if disable_irq is not None:
-            # Disable IRQ execution until SocketShell CMD evaluation
-            status = disable_irq()
         # Execute command via InterpreterCore
         health = execute_LM_function_Core(argument_list, SocketServerObj)
-        if enable_irq is not None:
-            # Enable IRQ execution after SocketShell CMD evaluation
-            enable_irq(status)
     except Exception as e:
-        if enable_irq is not None:
-            # Emergency Enable IRQ execution
-            enable_irq(status)
         SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
         health = False
     # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION

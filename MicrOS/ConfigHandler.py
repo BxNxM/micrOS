@@ -39,7 +39,7 @@ def default_config():
                                       "timirq": False,
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
-                                      "irqmembuf": 1000,
+                                      "irqmembuf": 1300,
                                       "extirq": False,
                                       "extirqcbf": "n/a",
                                       "boothook": "n/a",
@@ -168,12 +168,10 @@ def __value_type_handler(key, value):
     try:
         if isinstance(value_in_cfg, bool):
             del value_in_cfg
-            if value.lower() == 'true':
+            if str(value).lower() == 'true':
                 value = True
-            elif value.lower() == 'false':
+            elif str(value).lower() == 'false':
                 value = False
-            elif isinstance(value, bool):
-                value = value
             else:
                 raise Exception()
             return value

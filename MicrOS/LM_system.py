@@ -1,5 +1,6 @@
 from ConfigHandler import progress_led_toggle_adaptor
 
+
 def memfree():
     from gc import mem_free
     from machine import freq
@@ -24,12 +25,23 @@ def time():
     return localtime()
 
 
-def setNTP():
-    from Network import setNTP_RTC
-    if setNTP_RTC():
-        return time()
-    else:
-        return "NTP-RTC setup failed."
+def NTPTime():
+    try:
+        from time import localtime, time
+        from ntptime import settime
+        from machine import RTC
+        from ConfigHandler import cfgget
+
+        # Sync with NTP server
+        settime()
+        # Get localtime + GMT
+        (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfgget('gmttime'))*3600)
+        # Create RealTimeClock + Set RTC with time (+timezone)
+        RTC().datetime((year, month, mday, 0, hour, minute, second, 0))
+        # Print time
+        return localtime()
+    except Exception as e:
+        return "NTP time errer.:{}".format(e)
 
 
 def modules(unload=None):
@@ -45,4 +57,4 @@ def modules(unload=None):
 
 
 def help():
-    return ('memfree', 'gccollect', 'heartbeat', 'time', 'modules')
+    return ('memfree', 'gccollect', 'heartbeat', 'time', 'NTPTime', 'modules')

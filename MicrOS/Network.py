@@ -21,10 +21,13 @@ def setNTP_RTC():
     if WLAN(STA_IF).isconnected():
         for _ in range(4):
             try:
+                # Sync with NTP server
                 settime()
-                rtc = RTC()
+                # Get localtime + GMT
                 (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfgget('gmttime'))*3600)
-                rtc.datetime((year, month, mday, 0, hour, minute, second, 0))
+                # Create RealTimeClock + Set RTC with time (+timezone)
+                RTC().datetime((year, month, mday, 0, hour, minute, second, 0))
+                # Print time
                 console_write("NTP setup DONE: {}".format(localtime()))
                 return True
             except Exception as e:
@@ -152,7 +155,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
 
 #################################################################
 #              AUTOMATIC NETWORK CONFIGURATION                  #
-#               IF STA AVAIBLE, IF NOT AP MODE                  #
+#              IF STA AVAILABLE, IF NOT AP MODE                 #
 #################################################################
 
 
@@ -185,4 +188,3 @@ def auto_network_configuration(_authmode=3, retry=3):
                 cfgput("nwmd", "AP")
                 # BREAK - AP mode successfully  configures
                 break
-

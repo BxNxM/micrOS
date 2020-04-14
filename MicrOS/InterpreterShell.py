@@ -131,8 +131,7 @@ def show_LMs_functions(SocketServerObj):
                 with open(LMpath, 'r') as f:
                     while True:
                         line = f.readline()
-                        if not line:
-                            break
+                        if not line: break
                         if "def" in line and "def __" not in line:
                             SocketServerObj.reply_message("   {}{}".format(" "*len(LM.replace('LM_', '')), line.split('(')[0].split(' ')[1]))
         except Exception as e:
@@ -141,10 +140,10 @@ def show_LMs_functions(SocketServerObj):
 
 
 def execute_LM_function(argument_list, SocketServerObj):
-    '''
+    """
     1. param. - LM name, i.e. LM_commands
     2. param. - function call with parameters, i.e. a()
-    '''
+    """
     try:
         # Execute command via InterpreterCore
         health = execute_LM_function_Core(argument_list, SocketServerObj)

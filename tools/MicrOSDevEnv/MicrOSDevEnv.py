@@ -34,6 +34,7 @@ class MicrOSDevTool():
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
         self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py"]
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
+        self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 
         # Filled by methods
         self.micropython_bins_list = []
@@ -210,11 +211,37 @@ class MicrOSDevTool():
     def __clone_micropython_repo(self):
         if os.path.isdir(self.micropython_repo_path) and os.path.isfile(self.mpy_cross_compiler_path):
             return True
-        else:
-            command = 'git clone https://github.com/micropython/micropython.git'
-            # TODO: [1] check micropython repo path - CLONE if not exists / update
-            #       [2] check path: self.mpy_cross_compiler_path - make if not exists
-            return False        #TODO: set True
+        # Download micropython repo if necessary
+        if not os.path.isdir(self.micropython_repo_path):
+            command = 'pushd {pushd}; git clone {url} {name}; popd'.format(pushd=os.path.dirname(self.micropython_repo_path),\
+                                                                           name=os.path.basename(self.micropython_repo_path),\
+                                                                           url=self.micropython_git_repo_url)
+            self.console("Clone micropython repo: {}".format(command))
+            if not self.dummy_exec:
+                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+            else:
+                exitcode = 0
+                stderr = ''
+            if exitcode == 0 and len(stderr) == 0:
+                self.console("\tClone {}DONE{}".format(Colors.OK, Colors.NC))
+            else:
+                self.console("GIT CLONE {}ERROR{}:\n{}\n{}".format(Colors.ERR, Colors.NC, stdout, stderr))
+                return False
+        # Compile mpy-cross for precompiling
+        if not os.path.isfile(self.mpy_cross_compiler_path):
+            command = 'pushd {pushd}; make; popd'.format(pushd=os.path.dirname(self.mpy_cross_compiler_path))
+            self.console("Compile mpy-cross: {}".format(command))
+            if not self.dummy_exec:
+                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+            else:
+                exitcode = 0
+                stderr = ''
+            if exitcode == 0 and len(stderr) == 0:
+                self.console("\tCompile mpy-cross {}DONE{}".format(Colors.OK, Colors.NC))
+            else:
+                self.console("Precompile mpy-cross {}FAILED{}".format(Colors.ERR, Colors.NC))
+                return False
+        return True
 
 
     def __cleanup_precompiled_dir(self):

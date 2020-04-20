@@ -1,4 +1,10 @@
 __SERVO = None
+__SERVO2 = None
+
+#########################################
+#             SERVO CONTROL [1]         #
+#########################################
+
 
 def __SERVO_init():
     global __SERVO
@@ -16,8 +22,8 @@ def __SERVO_init():
 
 def Servo(duty=100):
     s = __SERVO_init()
-    if duty > 120:
-        duty = 120
+    if duty > 115:
+        duty = 1115
     elif duty < 40:
         duty = 40
     try:
@@ -26,6 +32,7 @@ def Servo(duty=100):
         return "SET SERVO: duty: {}".format(duty)
     except Exception as e:
         return str(e)
+
 
 def Servo_demo():
     from time import sleep
@@ -36,6 +43,7 @@ def Servo_demo():
     Servo(70)
     return "Servo DEMO"
 
+
 def Servo_deinit():
     s = __SERVO_init()
     try:
@@ -44,6 +52,51 @@ def Servo_deinit():
     except Exception as e:
         return str(e)
 
+#########################################
+#             SERVO CONTROL [2]         #
+#########################################
+
+
+def __SERVO2_init():
+    global __SERVO2
+    if __SERVO2 is None:
+        from machine import Pin, PWM
+        from LogicalPins import getPlatformValByKey
+        try:
+            pin = Pin(getPlatformValByKey('pwm_green'))     # Alternative wiring
+            __SERVO2 = PWM(pin, freq=50)
+            del pin
+        except Exception as e:
+            return str(e)
+    return __SERVO2
+
+
+def Servo2(duty=100):
+    s = __SERVO2_init()
+    if duty > 115:
+        duty = 115
+    elif duty < 40:
+        duty = 40
+    try:
+        # duty for servo is between 40 - 115
+        s.duty(duty)
+        return "SET SERVO: duty: {}".format(duty)
+    except Exception as e:
+        return str(e)
+
+
+def Servo2_deinit():
+    s = __SERVO2_init()
+    try:
+        s.deinit()
+        return "DEINIT SERVO"
+    except Exception as e:
+        return str(e)
+
+
+#########################################
+#                 HELP                  #
+#########################################
 
 def help():
-    return ('Servo(duty=<int>40-115)', 'Servo_demo', 'Servo_deinit')
+    return ('Servo(duty=<int>40-115)', 'Servo_demo', 'Servo_deinit', 'Servo2', 'Servo2_deinit')

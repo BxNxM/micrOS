@@ -32,7 +32,7 @@ class MicrOSDevTool():
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
-        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py"]
+        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", "LM_air.py"]
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 

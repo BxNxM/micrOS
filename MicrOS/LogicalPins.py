@@ -22,6 +22,7 @@ def getPlatformValByKey(key):
                                           'i2c_scl': 5,         # D1
                                           'extirqpin': 12,      # D6
                                           'dist_trigger': 16,   # D0
-                                          'dist_echo': 14       # D5
+                                          'dist_echo': 14,      # D5
+                                          'dht_pin': 10         # SD3
                                           }
     return function_pins_on_platfrom_dict.get(key, None)

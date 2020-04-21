@@ -14,7 +14,7 @@ BASE_CMD = ['--dev', DEVICE ]
 def app():
     global DEVICE, BASE_CMD
     while True:
-        args = BASE_CMD + ['air temp <a> air hum <a> air getMQ135GasPPM']
+        args = BASE_CMD + ['air dht_measure <a> air getMQ135GasPPM']
         try:
             socketClient.run(args)
             time.sleep(2)

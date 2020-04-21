@@ -28,7 +28,7 @@ class SocketServer:
     """
 
     def __init__(self, host='', port=None, uid=None, user_timeout_sec=None):
-        self.socket_interpreter_version = '0.0.9-17'
+        self.socket_interpreter_version = '0.0.9-18'
         self.server_console_indent = 0
         self.CONFIGURE_MODE = False
         self.pre_prompt = ""

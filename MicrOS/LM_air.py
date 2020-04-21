@@ -17,19 +17,23 @@ def __init_DHT22():
     return DHT_OBJ
 
 
-def temp():
+def __temp_hum():
     __init_DHT22().measure()
-    return "{} ºC".format(DHT_OBJ.temperature())
+    return DHT_OBJ.temperature(), DHT_OBJ.humidity()
+
+
+def temp():
+    return dht_measure().split('\n')[0]
 
 
 def hum():
-    __init_DHT22().measure()
-    return "{} %".format(DHT_OBJ.humidity())
+    return dht_measure().split('\n')[1]
 
 
-def temp_hum():
-    __init_DHT22().measure()
-    return DHT_OBJ.temperature(), DHT_OBJ.humidity()
+def dht_measure():
+    temp_, hum_ = __temp_hum()
+    return "{} ºC\n{} %".format(temp_, hum_)
+
 
 #########################################
 #            MQ135 GAS SENSOR           #
@@ -95,7 +99,7 @@ def getMQ135GasPPM(temperature=None, humidity=None):
         5,000ppm        Workplace exposure limit (as 8-hour TWA) in most jurisdictions.
         >40,000 ppm     Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
     """
-    _temperature, _humidity = temp_hum()
+    _temperature, _humidity = __temp_hum()
     temperature = _temperature  if temperature is None else temperature
     humidity = _humidity if humidity is None else humidity
 
@@ -116,5 +120,5 @@ def getMQ135GasPPM(temperature=None, humidity=None):
 
 
 def help():
-    return 'temp', 'hum', 'getMQ135GasPPM(temperature, humidity)'
+    return 'dht_measure', 'temp', 'hum', 'getMQ135GasPPM(temperature, humidity)'
 

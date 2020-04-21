@@ -60,4 +60,4 @@ def poweroff():
 
 
 def help():
-    return ('text', 'invert', 'clean', 'draw_line', 'draw_rect', 'poweron', 'poweroff')
+    return 'text', 'invert', 'clean', 'draw_line', 'draw_rect', 'poweron', 'poweroff'

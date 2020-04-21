@@ -54,5 +54,5 @@ def toggle_invert():
 
 
 def help():
-    return ('simple_page', 'show_debug_page', 'toggle_invert')
+    return 'simple_page', 'show_debug_page', 'toggle_invert'
 

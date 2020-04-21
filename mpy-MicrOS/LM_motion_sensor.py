@@ -19,4 +19,4 @@ def PIR_deinit():
     return "DEINIT PIR SENSOR"
 
 def help():
-    return ('get_PIR_state', 'PIR_deinit')
+    return 'get_PIR_state', 'PIR_deinit'

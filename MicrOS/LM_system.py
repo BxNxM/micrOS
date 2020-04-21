@@ -57,4 +57,4 @@ def modules(unload=None):
 
 
 def help():
-    return ('memfree', 'gccollect', 'heartbeat', 'time', 'NTPTime', 'modules')
+    return 'memfree', 'gccollect', 'heartbeat', 'time', 'NTPTime', 'modules'

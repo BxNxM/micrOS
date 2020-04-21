@@ -143,7 +143,9 @@ def __execute_app(app_name, app_postfix='_app'):
     print("[APP] import {}".format(app_name))
     exec("import {}".format(app_name))
     print("[APP] {}.app()".format(app_name))
-    print(eval("{}.app()".format(app_name)))
+    return_value = eval("{}.app()".format(app_name))
+    if return_value is not None:
+        print(return_value)
 
 if __name__ == "__main__":
     cmd_args = arg_parse()

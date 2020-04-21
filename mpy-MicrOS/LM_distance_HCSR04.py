@@ -5,18 +5,18 @@ __ECHO_OBJ = None
 
 
 def __init_HCSR04():
-        global __TRIGGER_OBJ, __ECHO_OBJ
-        if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
-            from LogicalPins import getPlatformValByKey
+    global __TRIGGER_OBJ, __ECHO_OBJ
+    if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
+        from LogicalPins import getPlatformValByKey
 
-            trigger_pin = getPlatformValByKey('dist_trigger')
-            echo_pin = getPlatformValByKey('dist_echo')
-            # Init trigger pin (out)
-            __TRIGGER_OBJ = Pin(trigger_pin, mode=Pin.OUT, pull=None)
-            __TRIGGER_OBJ.value(0)
-            # Init echo pin (in)
-            __ECHO_OBJ = Pin(echo_pin, mode=Pin.IN, pull=None)
-        return __TRIGGER_OBJ, __ECHO_OBJ
+        trigger_pin = getPlatformValByKey('dist_trigger')
+        echo_pin = getPlatformValByKey('dist_echo')
+        # Init trigger pin (out)
+        __TRIGGER_OBJ = Pin(trigger_pin, mode=Pin.OUT, pull=None)
+        __TRIGGER_OBJ.value(0)
+        # Init echo pin (in)
+        __ECHO_OBJ = Pin(echo_pin, mode=Pin.IN, pull=None)
+    return __TRIGGER_OBJ, __ECHO_OBJ
 
 
 def __send_pulse_and_wait(echo_timeout_us=1000000):
@@ -36,16 +36,18 @@ def __send_pulse_and_wait(echo_timeout_us=1000000):
         raise ex
 
 def distance_mm():
-        # To calculate the distance we get the pulse_time and divide it by 2
-        # (the pulse walk the distance twice) and by 29.1 becasue
-        # the sound speed on air (343.2 m/s), that It's equivalent to
-        # 0.34320 mm/us that is 1mm each 2.91us
-        # pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582
-        return __send_pulse_and_wait() * 100 // 582
+    """
+    To calculate the distance we get the pulse_time and divide it by 2
+    (the pulse walk the distance twice) and by 29.1 becasue
+    the sound speed on air (343.2 m/s), that It's equivalent to
+    0.34320 mm/us that is 1mm each 2.91us
+    pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582
+    """
+    return __send_pulse_and_wait() * 100 // 582
 
 
 def distance_cm():
-        return (__send_pulse_and_wait() / 2) / 29.1
+    return (__send_pulse_and_wait() / 2) / 29.1
 
 
 def deinit():
@@ -58,4 +60,4 @@ def deinit():
 
 
 def help():
-    return ('distance_mm', 'distance_cm', 'deinit')
+    return 'distance_mm', 'distance_cm', 'deinit'

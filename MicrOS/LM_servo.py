@@ -23,7 +23,7 @@ def __SERVO_init():
 def Servo(duty=100):
     s = __SERVO_init()
     if duty > 115:
-        duty = 1115
+        duty = 115
     elif duty < 40:
         duty = 40
     try:
@@ -99,4 +99,4 @@ def Servo2_deinit():
 #########################################
 
 def help():
-    return ('Servo(duty=<int>40-115)', 'Servo_demo', 'Servo_deinit', 'Servo2', 'Servo2_deinit')
+    return 'Servo(duty=<int>40-115)', 'Servo_demo', 'Servo_deinit', 'Servo2', 'Servo2_deinit'

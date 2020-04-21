@@ -128,4 +128,4 @@ def neopixel_toggle():
 #########################################
 
 def help():
-    return ('RGB', 'RGB_toggle', 'neopixel', 'neopixel_toggle', 'RGB_deinit')
+    return 'RGB', 'RGB_toggle', 'neopixel', 'neopixel_toggle', 'RGB_deinit'

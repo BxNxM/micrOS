@@ -110,11 +110,11 @@ def getMQ135GasPPM(temperature=None, humidity=None):
             status = "WARNING"
         elif ppm > 5000:
             status = "CRITICAL"
-        return "Status: {} - {} PPM".format(status, ppm)
+        return "{} PPM - {}".format(ppm, status)
     except Exception as e:
         return "getMQ135GasPPM ERROR: {}".format(e)
 
 
 def help():
-    return ('temp', 'hum', 'getMQ135GasPPM(temperature, humidity)')
+    return 'temp', 'hum', 'getMQ135GasPPM(temperature, humidity)'
 

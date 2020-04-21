@@ -329,7 +329,10 @@ def main(args):
             socketdictclient.non_interactive(args)
         return True
     except KeyboardInterrupt:
-        return True
+        try:
+            socketdictclient.close_connection()
+        except: pass
+        sys.exit(0)
     except Exception as e:
         if "Connection reset by peer" not in str(e):
             print("FAILED TO START: " + str(e))

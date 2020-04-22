@@ -1,25 +1,24 @@
-import math
-from machine import ADC
+from math import pow
 
 #########################################
 #  DHT22 temperature & humidity sensor  #
 #########################################
-DHT_OBJ = None
+__DHT_OBJ = None
 
 
 def __init_DHT22():
-    global DHT_OBJ
-    if DHT_OBJ is None:
+    global __DHT_OBJ
+    if __DHT_OBJ is None:
         from dht import DHT22
         from machine import Pin
-        from LogicalPins import getPlatformValByKey
-        DHT_OBJ = DHT22(Pin(getPlatformValByKey('dht_pin')))
-    return DHT_OBJ
+        from LogicalPins import get_pin_on_platform_by_key
+        __DHT_OBJ = DHT22(Pin(get_pin_on_platform_by_key('simple_1')))
+    return __DHT_OBJ
 
 
 def __temp_hum():
     __init_DHT22().measure()
-    return DHT_OBJ.temperature(), DHT_OBJ.humidity()
+    return __DHT_OBJ.temperature(), __DHT_OBJ.humidity()
 
 
 def temp():
@@ -38,7 +37,7 @@ def dht_measure():
 #########################################
 #            MQ135 GAS SENSOR           #
 #########################################
-
+__ADC = None
 
 MQ123_CONST = {'RLOAD': 10.0,        # The load resistance on the board
                'RZERO': 76.63,       # Calibration resistance at atmospheric CO2 level
@@ -68,8 +67,12 @@ def __get_correction_factor(temperature, humidity):
 
 def __get_resistance():
     """Returns the resistance of the sensor in kOhms // -1 if not value got in pin"""
-    adc = ADC(0)
-    value = adc.read()
+    global __ADC
+    if __ADC is None:
+        from machine import ADC
+        from LogicalPins import get_pin_on_platform_by_key
+        __ADC = ADC(get_pin_on_platform_by_key('adc_0'))
+    value = __ADC.read()
     if value == 0:
         return -1
     return (1023./value - 1.) * MQ123_CONST['RLOAD']
@@ -77,13 +80,13 @@ def __get_resistance():
 
 def __get_corrected_resistance(temperature, humidity):
     """Gets the resistance of the sensor corrected for temperature/humidity"""
-    return __get_resistance()/ __get_correction_factor(temperature, humidity)
+    return __get_resistance()/__get_correction_factor(temperature, humidity)
 
 
 def get_corrected_ppm(temperature, humidity):
     """Returns the ppm of CO2 sensed (assuming only CO2 in the air)
     corrected for temperature/humidity"""
-    return MQ123_CONST['PARA'] * math.pow((__get_corrected_resistance(temperature, humidity)\
+    return MQ123_CONST['PARA'] * pow((__get_corrected_resistance(temperature, humidity)\
                                            / MQ123_CONST['RZERO']), -MQ123_CONST['PARB'])
 
 

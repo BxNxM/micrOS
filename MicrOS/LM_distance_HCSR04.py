@@ -7,10 +7,10 @@ __ECHO_OBJ = None
 def __init_HCSR04():
     global __TRIGGER_OBJ, __ECHO_OBJ
     if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
-        from LogicalPins import getPlatformValByKey
+        from LogicalPins import get_pin_on_platform_by_key
 
-        trigger_pin = getPlatformValByKey('dist_trigger')
-        echo_pin = getPlatformValByKey('dist_echo')
+        trigger_pin = get_pin_on_platform_by_key('simple_0')
+        echo_pin = get_pin_on_platform_by_key('pwm_5')
         # Init trigger pin (out)
         __TRIGGER_OBJ = Pin(trigger_pin, mode=Pin.OUT, pull=None)
         __TRIGGER_OBJ.value(0)

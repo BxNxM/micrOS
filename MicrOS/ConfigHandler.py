@@ -6,8 +6,8 @@ from json import load, dump
 
 try:
     from machine import Pin
-    from LogicalPins import getPlatformValByKey
-    PLED = Pin(getPlatformValByKey('progressled'), Pin.OUT)
+    from LogicalPins import get_pin_on_platform_by_key
+    PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
 except Exception as e:
     print("[WARNING] Progressled not available on device: {}".format(e))
     PLED = None

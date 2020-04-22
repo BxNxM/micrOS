@@ -25,10 +25,10 @@ def __RGB_init():
     global __RLED, __GLED, __BLED
     if __RLED is None or __GLED is None or __BLED is None:
         from machine import Pin, PWM
-        from LogicalPins import getPlatformValByKey
-        d7_gpio13_red = Pin(getPlatformValByKey('pwm_red'))
-        d4_gpio2_green = Pin(getPlatformValByKey('pwm_green'))
-        d3_gpio0_blue = Pin(getPlatformValByKey('pwm_blue'))
+        from LogicalPins import get_pin_on_platform_by_key
+        d7_gpio13_red = Pin(get_pin_on_platform_by_key('pwm_1'))
+        d4_gpio2_green = Pin(get_pin_on_platform_by_key('pwm_2'))
+        d3_gpio0_blue = Pin(get_pin_on_platform_by_key('pwm_3'))
         __RLED = PWM(d7_gpio13_red, freq=80)
         __GLED = PWM(d4_gpio2_green, freq=80)
         __BLED = PWM(d3_gpio0_blue, freq=80)
@@ -84,8 +84,8 @@ def __init_NEOPIXEL():
     if __NEOPIXEL_OBJ is None:
         from neopixel import NeoPixel
         from machine import Pin
-        from LogicalPins import getPlatformValByKey
-        neopixel_pin = Pin(getPlatformValByKey('pwm_blue'))  # Get Neopixel pin from LED PIN pool
+        from LogicalPins import get_pin_on_platform_by_key
+        neopixel_pin = Pin(get_pin_on_platform_by_key('pwm_3'))  # Get Neopixel pin from LED PIN pool
         __NEOPIXEL_OBJ = NeoPixel(neopixel_pin, 8)           # initialize for max 8 segments
     return __NEOPIXEL_OBJ
 

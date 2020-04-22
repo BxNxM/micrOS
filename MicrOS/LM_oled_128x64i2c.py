@@ -8,8 +8,8 @@ def __init():
     if __OLED is None:
         from machine import Pin, I2C
         from ssd1306 import SSD1306_I2C
-        from LogicalPins import getPlatformValByKey
-        i2c = I2C(-1, Pin(getPlatformValByKey('i2c_scl')), Pin(getPlatformValByKey('i2c_sda')))
+        from LogicalPins import get_pin_on_platform_by_key
+        i2c = I2C(-1, Pin(get_pin_on_platform_by_key('i2c_scl')), Pin(get_pin_on_platform_by_key('i2c_sda')))
         __OLED = SSD1306_I2C(128, 64, i2c)
     return __OLED
 

@@ -3,7 +3,7 @@
 #################################################################
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
-from LogicalPins import getPlatformValByKey
+from LogicalPins import get_pin_on_platform_by_key
 
 #################################################################
 #            CONFIGURE INTERRUPT MEMORY BUFFER                  #
@@ -89,7 +89,7 @@ def init_eventPIN():
     global CFG_EVIRQCBF
     CFG_EVIRQCBF = cfgget('extirqcbf')
     if cfgget('extirq') and CFG_EVIRQCBF.lower() != 'n/a':
-        pin = getPlatformValByKey('extirqpin')
+        pin = get_pin_on_platform_by_key('pwm_4')
         console_write("[IRQ] EVENTIRQ ENABLED PIN: {} CBF: {}".format(pin, CFG_EVIRQCBF))
         from machine import Pin
         event_pin = Pin(pin, Pin.IN, Pin.PULL_UP)

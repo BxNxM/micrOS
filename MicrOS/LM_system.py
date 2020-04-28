@@ -56,5 +56,16 @@ def modules(unload=None):
             return "Module unload failed: {}".format(e)
 
 
+def freq(mode=None):
+    from machine import freq
+    if mode is not None and mode.lower().strip() == 'low':
+        freq(80000000)
+        return 'LOW MODE: CPU 8Mhz'
+    elif mode is not None and mode.lower().strip() == 'high':
+        freq(160000000)
+        return 'HIGH MODE: CPU 16Mhz'
+    return '{} ? high or low'.format(mode)
+
+
 def help():
-    return 'memfree', 'gccollect', 'heartbeat', 'time', 'NTPTime', 'modules'
+    return 'memfree', 'gccollect', 'heartbeat', 'time', 'NTPTime', 'modules', 'freq'

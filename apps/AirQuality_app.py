@@ -17,7 +17,7 @@ def app():
         args = BASE_CMD + ['air dht_measure <a> air getMQ135GasPPM']
         try:
             socketClient.run(args)
-            time.sleep(2)
+            time.sleep(5)
         except KeyboardInterrupt:
             break
 

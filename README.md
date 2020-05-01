@@ -8,8 +8,9 @@
 
 ![MicrOSESP8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/NodeMCUPinOut.png?raw=true)
 
-Esp8266 Micropython based - APPlication Core - with -
-User function injection over LM_<userapp>.py 
+## Network and Communication
+
+![micrOSNW](https://github.com/BxNxM/MicrOS/blob/master/media/NetworkTopology.png?raw=true)
 
 
 ### RELESE NOTE

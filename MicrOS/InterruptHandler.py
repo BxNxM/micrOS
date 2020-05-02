@@ -34,8 +34,7 @@ def secureInterruptHandler(timer=None):
         if CFG_TIMIRQCBF.lower() != 'n/a':
             # Execute CBF from config
             state = execute_LM_function_Core(CFG_TIMIRQCBF.split(' '))
-            if not state:
-                console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
+            if not state: console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
     except Exception as e:
         console_write("[IRQ] TIMIRQ callback: {} error: {}".format(CFG_TIMIRQCBF, e))
 
@@ -54,8 +53,8 @@ def enableInterrupt():
             period_ms_usr = 3000
         console_write("[IRQ] TIMIRQ ENABLED: SEQ: {} CBF: {}".format(period_ms_usr, CFG_TIMIRQCBF))
         from machine import Timer
-        timer = Timer(0)
-        timer.init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
+        # Init timer irq with callback function wrapper
+        Timer(0).init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
     else:
         console_write("[IRQ] TIMIRQ: isenable: {} callback: {}".format(cfgget("timirq"), cfgget('timirqcbf')))
 
@@ -76,8 +75,7 @@ def secureEventInterruptHandler(pin=None):
     try:
         if CFG_EVIRQCBF.lower() != 'n/a':
             state = execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
-            if not state:
-                console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
+            if not state: console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
     except Exception as e:
         console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(CFG_EVIRQCBF, e))
 
@@ -92,8 +90,8 @@ def init_eventPIN():
         pin = get_pin_on_platform_by_key('pwm_4')
         console_write("[IRQ] EVENTIRQ ENABLED PIN: {} CBF: {}".format(pin, CFG_EVIRQCBF))
         from machine import Pin
-        event_pin = Pin(pin, Pin.IN, Pin.PULL_UP)
-        event_pin.irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
+        # Init event irq with callback function wrapper
+        Pin(pin, Pin.IN, Pin.PULL_UP).irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
     else:
         console_write("[IRQ] EVENTIRQ: isenable: {} callback: {}".format(cfgget('extirq'), CFG_EVIRQCBF))
 

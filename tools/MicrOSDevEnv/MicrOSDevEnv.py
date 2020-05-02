@@ -32,7 +32,7 @@ class MicrOSDevTool():
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
-        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", "LM_air.py"]
+        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", "LM_air.py", "LM_servo.py"]
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 
@@ -535,7 +535,7 @@ class MicrOSDevTool():
         return True
 
     def get_micrOS_version(self, config_string=None):
-        code_version_var_name = 'self.socket_interpreter_version'
+        code_version_var_name = 'self.__socket_interpreter_version'
         # Get MicrOS local repo version
         micros_version_module = os.path.join(self.MicrOS_dir_path, 'SocketServer.py')
         with open(micros_version_module, 'r') as f:

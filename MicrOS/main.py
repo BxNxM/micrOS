@@ -7,7 +7,7 @@ except Exception as e:
     print("=> [!!!][MAIN DEBUG] Network packacge not available on device: {}".format(e))
     auto_network_configuration = None
 
-from SocketServer import server
+from SocketServer import SocketServer
 from Hooks import bootup_hook, profiling_info
 
 #################################################################
@@ -52,13 +52,17 @@ profiling_info(label='[2] AFTER SAFE BOOT HOOK')
 if auto_network_configuration is not None: auto_network_configuration()
 profiling_info(label='[3] AFTER NETWORK CONFIGURATION')
 
+# LOAD Singleton SocketServer [1]
+SocketServer()
+profiling_info(label='[4] AFTER SOCKET SERVER CREATION')
+
 # SET interrupt with timirqcbf from nodeconfig
 interrupt_handler()
-profiling_info(label='[4] AFTER TIMER INTERRUPT SETUP')
+profiling_info(label='[5] AFTER TIMER INTERRUPT SETUP')
 
 # SET external interrupt with extirqcbf from nodeconfig
 external_interrupt_handler()
-profiling_info(label='[5] AFTER EXTERNAL INTERRUPT SETUP')
+profiling_info(label='[6] AFTER EXTERNAL INTERRUPT SETUP')
 
-# RUN Web/Socket server
-server.run()
+# RUN Singleton SocketServer - main loop [2]
+SocketServer().run()

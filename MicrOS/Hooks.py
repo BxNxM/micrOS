@@ -19,7 +19,7 @@ def bootup_hook():
     """
     console_write("[BOOT HOOKS] EXECUTION...")
     if cfgget('boothook') is not None and cfgget('boothook').lower() != 'n/a':
-        for shell_cmd in [cmd.strip() for cmd in tuple(cfgget('boothook').split(';')) if len(cmd.split()) > 1]:
+        for shell_cmd in (cmd.strip() for cmd in tuple(cfgget('boothook').split(';')) if len(cmd.split()) > 1):
             console_write("|-[BOOT HOOKS] SHELL EXEC: {}".format(shell_cmd))
             try:
                 state = execute_LM_function_Core(shell_cmd.split())

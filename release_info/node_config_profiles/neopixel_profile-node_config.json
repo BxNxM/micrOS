@@ -1,0 +1,17 @@
+{
+ "timirqseq": 2000,
+ "irqmembuf": 1000,
+ "extirq": true,
+ "extirqcbf": "neopixel neopixel_toggle",
+ "timirqcbf": "system heartbeat",
+ "boothook": "",
+ "timirq": true,
+ "pled": true,
+ "socport": 9008,
+ "dbg": null,
+ "gmttime": null,
+ "devfid": null,
+ "stapwd": null,
+ "staessid": null,
+ "devip": null
+}

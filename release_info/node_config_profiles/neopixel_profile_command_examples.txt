@@ -1,0 +1,6 @@
+devToolKit -h
+devToolKit -c -p '--dev <device> help'
+devToolKit -c -p '--dev <device> light help'
+devToolKit -c -p '--dev <device> neopixel neopixel(r=0, g=0, b=0)'
+devToolKit -c -p '--dev <device> neopixel neopixel(r=255, g=255, b=255)'
+devToolKit -c -p '--dev <device> neopixel neopixel_toggle'

@@ -73,7 +73,7 @@ def set_wifi(essid, pwd, timeout=60):
         console_write('\t| [NW: STA] CONNECT TO NETWORK {}'.format(essid))
         # Scan wifi network - retry workaround
         for _ in range(0, 2):
-            if essid in [ wifispot[0].decode('utf-8') for wifispot in sta_if.scan() ]:
+            if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
                 essid_found = True
                 console_write('\t| - [NW: STA] ESSID WAS FOUND {}'.format(essid_found))
                 break

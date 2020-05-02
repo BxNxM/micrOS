@@ -15,6 +15,7 @@ except Exception as e:
 #                  SHELL Interpreter FUNCTIONS                  #
 #################################################################
 
+
 def shell(msg, SocketServerObj):
     """
     Socket server - interpreter shell wrapper
@@ -119,7 +120,7 @@ def show_LMs_functions(SocketServerObj):
     Dump LM modules with functions - in case of [py] files
     Dump LM module with help function call - in case of [mpy] files
     """
-    for LM in [i.split('.')[0] for i in listdir() if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))]:
+    for LM in (i.split('.')[0] for i in listdir() if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))):
         LMpath = '{}.py'.format(LM)
         if LMpath not in listdir():
             LMpath = '{}.mpy'.format(LM)

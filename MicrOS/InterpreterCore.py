@@ -10,11 +10,11 @@ from sys import modules
 
 
 def execute_LM_function_Core(argument_list, SocketServerObj=None):
-    '''
+    """
     1. param. - LM name, i.e. LM_commands
     2. param. - function call with parameters, i.e. a()
     NOTE: SocketServerObj is None from Interrupts and Hooks - shared functionality
-    '''
+    """
     # health - True [no action] - False [system soft recovery]
     health = True
     if len(argument_list) >= 2:

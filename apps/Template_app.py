@@ -9,13 +9,15 @@ import socketClient
 
 # FILL OUT
 DEVICE = 'slim01'
-BASE_CMD = ['--dev', DEVICE ]
+BASE_CMD = ['--dev', DEVICE]
+
 
 def app():
     global DEVICE, BASE_CMD
     # EDIT YOUR COMMAND
     args = BASE_CMD + ['help']
     socketClient.run(args)
+
 
 if __name__ == "__main__":
     app()

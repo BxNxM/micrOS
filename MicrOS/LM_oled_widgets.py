@@ -1,6 +1,6 @@
 from ConfigHandler import cfgget
 from gc import mem_free
-from time import localtime, sleep
+from time import localtime
 
 __OLED = None
 __INVERT = False

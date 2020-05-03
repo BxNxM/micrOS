@@ -321,13 +321,14 @@ def socket_commandline_args(arg_list):
 
 
 def main(args):
+    answer_msg = None
     try:
         socketdictclient = SocketDictClient(host=ConnectionData.HOST, port=ConnectionData.PORT)
         if len(args) == 0:
             socketdictclient.interactive()
         else:
-            socketdictclient.non_interactive(args)
-        return True
+            answer_msg = socketdictclient.non_interactive(args)
+        return True, answer_msg
     except KeyboardInterrupt:
         try:
             socketdictclient.close_connection()
@@ -336,7 +337,7 @@ def main(args):
     except Exception as e:
         if "Connection reset by peer" not in str(e):
             print("FAILED TO START: " + str(e))
-        return False
+        return False, answer_msg
 
 
 def run(arg_list=[]):

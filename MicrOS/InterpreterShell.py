@@ -1,9 +1,9 @@
 #################################################################
 #                           IMPORTS                             #
 #################################################################
+from os import listdir
 from ConfigHandler import cfgget, cfgput, cfgget_all
 from InterpreterCore import execute_LM_function_Core
-from os import listdir
 try:
     from machine import disable_irq, enable_irq
 except Exception as e:
@@ -51,7 +51,7 @@ def __shell(msg, SocketServerObj):
         msg_list = []
 
     # HELP MSG
-    if "help" in msg_list and "help" == msg_list[0]:
+    if "help" in msg_list and msg_list[0] == 'help':
         SocketServerObj.reply_message("[MICROS]   - commands (built-in)")
         SocketServerObj.reply_message("   hello   - default hello msg - identify device (SocketServer)")
         SocketServerObj.reply_message("   version - shows MicrOS version")
@@ -93,7 +93,7 @@ def configure(attributes, SocketServerObj):
             for key, value in cfgget_all().items():
                 spcr = (int(val_spacer/3) - int(val_spacer/5))
                 spcr2 = (val_spacer - len(key))
-                SocketServerObj.reply_message("  {}{}:{} {}".format(key, " "*spcr2, " "*spcr,  value))
+                SocketServerObj.reply_message("  {}{}:{} {}".format(key, " "*spcr2, " "*spcr, value))
         else:
             key = attributes[0]
             SocketServerObj.reply_message(cfgget(key))
@@ -104,7 +104,7 @@ def configure(attributes, SocketServerObj):
         try:
             SocketServerObj.reply_message(cfgput(key, value, type_check=True))
         except Exception as e:
-            SocketServerObj.reply_message("Set config error: ".format(e))
+            SocketServerObj.reply_message("Set config error: {}".format(e))
     # ENABLE BG INTERRUPTS
     if enable_irq is not None:
         enable_irq(status)
@@ -132,7 +132,8 @@ def show_LMs_functions(SocketServerObj):
                 with open(LMpath, 'r') as f:
                     while True:
                         line = f.readline()
-                        if not line: break
+                        if not line:
+                            break
                         if "def" in line and "def __" not in line:
                             SocketServerObj.reply_message("   {}{}".format(" "*len(LM.replace('LM_', '')), line.split('(')[0].split(' ')[1]))
         except Exception as e:

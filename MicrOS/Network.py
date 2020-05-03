@@ -1,8 +1,8 @@
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from network import AP_IF, STA_IF, WLAN
 from time import sleep, localtime, time
+from network import AP_IF, STA_IF, WLAN
 from ntptime import settime
 from machine import RTC
 from ConfigHandler import console_write, cfgget, cfgput
@@ -84,7 +84,7 @@ def set_wifi(essid, pwd, timeout=60):
             sta_if.connect(essid, pwd)
             # wait for connection, with timeout set
             while not sta_if.isconnected() and timeout > 0:
-                console_write("\t| [NW: STA] Waiting for connection... " + str(timeout) + "/60" )
+                console_write("\t| [NW: STA] Waiting for connection... " + str(timeout) + "/60")
                 timeout -= 1
                 sleep(0.5)
             # Set static IP - here because some data comes from connection.
@@ -147,7 +147,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
         console_write("[NW: AP] Configure")
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode)
     except Exception as e:
-        console_write("[NW: AP] Config Error".format(e))
+        console_write("[NW: AP] Config Error: {}".format(e))
     if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
         cfgput("devip", ap_if.ifconfig()[0])
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
@@ -180,11 +180,10 @@ def auto_network_configuration(_authmode=3, retry=3):
             setNTP_RTC()
             # BREAK - STA mode successfully  configures
             break
-        else:
-            # SET AP MODE
-            state = set_access_point(_essid, _pwd, _authmode)
-            if state:
-                # Save AP NW mode
-                cfgput("nwmd", "AP")
-                # BREAK - AP mode successfully  configures
-                break
+        # SET AP MODE
+        state = set_access_point(_essid, _pwd, _authmode)
+        if state:
+            # Save AP NW mode
+            cfgput("nwmd", "AP")
+            # BREAK - AP mode successfully  configures
+            break

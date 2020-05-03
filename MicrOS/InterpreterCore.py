@@ -26,7 +26,6 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
             LM_function_call = "{}({})".format(LM_function, str(" ".join(" ".join(argument_list[1:]).split('(')[1:])).replace(')', ''))
         try:
             # --- LM LOAD & EXECUTE --- #
-            if SocketServerObj is not None: SocketServerObj.server_console("from {} import {}".format(LM_name, LM_function))
             # [1] LOAD MODULE
             exec("from {} import {}".format(LM_name, LM_function))
             # [2] EXECUTE FUNCTION FROM MODULE - over SocketServerObj or /dev/null

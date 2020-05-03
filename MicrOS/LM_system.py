@@ -7,7 +7,7 @@ def memfree():
     return "CPU[Hz]: {}\nGC MemFree[byte]: {}".format(freq(), mem_free())
 
 
-def gccollect():
+def gcollect():
     from gc import collect, mem_free
     collect()
     return "GC MemFree[byte]: {}".format(mem_free())
@@ -20,12 +20,12 @@ def heartbeat():
     return "<3 heartbeat <3"
 
 
-def time():
+def clock():
     from time import localtime
     return localtime()
 
 
-def NTPTime():
+def ntp():
     try:
         from time import localtime, time
         from ntptime import settime
@@ -44,28 +44,27 @@ def NTPTime():
         return "NTP time errer.:{}".format(e)
 
 
-def modules(unload=None):
+def module(unload=None):
     from sys import modules
     if unload is None:
         return modules.keys()
-    else:
-        try:
-            del modules[unload]
-            return "Module unload {} done.".format(unload)
-        except Exception as e:
-            return "Module unload failed: {}".format(e)
+    try:
+        del modules[unload]
+        return "Module unload {} done.".format(unload)
+    except Exception as e:
+        return "Module unload failed: {}".format(e)
 
 
-def freq(mode=None):
+def pwr(mode=None):
     from machine import freq
-    if mode is not None and mode.lower().strip() == 'low':
+    if mode is not None and mode.lower().strip() == 'norm':
         freq(80000000)
         return 'LOW MODE: CPU 8Mhz'
-    elif mode is not None and mode.lower().strip() == 'high':
+    if mode is not None and mode.lower().strip() == 'boost':
         freq(160000000)
         return 'HIGH MODE: CPU 16Mhz'
-    return '{} ? high or low'.format(mode)
+    return '{} ? boost or norm'.format(mode)
 
 
 def help():
-    return 'memfree', 'gccollect', 'heartbeat', 'time', 'NTPTime', 'modules', 'freq'
+    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'pwr'

@@ -37,6 +37,7 @@ def external_interrupt_handler():
     except Exception as e:
         print("=> [MAIN DEBUG] InterruptHandler.init_eventPIN error: {}".format(e))
 
+
 #################################################################
 #                      MAIN FUNCTION CALLS                      #
 #################################################################

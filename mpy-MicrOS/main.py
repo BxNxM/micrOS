@@ -1,6 +1,7 @@
 #################################################################
 #                           IMPORTS                             #
 #################################################################
+from sys import modules
 try:
     from Network import auto_network_configuration
 except Exception as e:
@@ -36,6 +37,7 @@ def external_interrupt_handler():
         init_eventPIN()
     except Exception as e:
         print("=> [MAIN DEBUG] InterruptHandler.init_eventPIN error: {}".format(e))
+
 
 #################################################################
 #                      MAIN FUNCTION CALLS                      #

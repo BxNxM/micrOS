@@ -54,7 +54,8 @@ def enableInterrupt():
         console_write("[IRQ] TIMIRQ ENABLED: SEQ: {} CBF: {}".format(period_ms_usr, CFG_TIMIRQCBF))
         from machine import Timer
         # Init timer irq with callback function wrapper
-        Timer(0).init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
+        timer = Timer(0)
+        timer.init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
     else:
         console_write("[IRQ] TIMIRQ: isenable: {} callback: {}".format(cfgget("timirq"), cfgget('timirqcbf')))
 
@@ -89,9 +90,10 @@ def init_eventPIN():
     if cfgget('extirq') and CFG_EVIRQCBF.lower() != 'n/a':
         pin = get_pin_on_platform_by_key('pwm_4')
         console_write("[IRQ] EVENTIRQ ENABLED PIN: {} CBF: {}".format(pin, CFG_EVIRQCBF))
-        from machine import Pin
         # Init event irq with callback function wrapper
-        Pin(pin, Pin.IN, Pin.PULL_UP).irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
+        from machine import Pin
+        pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
+        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
     else:
         console_write("[IRQ] EVENTIRQ: isenable: {} callback: {}".format(cfgget('extirq'), CFG_EVIRQCBF))
 

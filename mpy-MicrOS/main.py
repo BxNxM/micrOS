@@ -1,7 +1,6 @@
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from sys import modules
 try:
     from Network import auto_network_configuration
 except Exception as e:

@@ -46,7 +46,7 @@ def app(test_cycle=64):
         print("CMD: {}".format(command))
         status, answer = socketClient.run(command)
         evaluate_test_data(answer, test_cycle)
-        time.sleep(1)
+        time.sleep(0.1)
     print("[i] Communication stability test with Lamp parameter configurations.")
     print("ERR: {} / ALL {} {}% success rate.".format(TestData.ERR_CNT, TestData.EXEC_CNT, round(100*(1-(TestData.ERR_CNT/TestData.EXEC_CNT)))))
 

@@ -4,7 +4,7 @@
  "extirq": false,
  "extirqcbf": "n/a",
  "timirqcbf": "system heartbeat",
- "boothook": "n/a",
+ "boothook": "system heartbeat",
  "timirq": true,
  "pled": true,
  "socport": 9008,

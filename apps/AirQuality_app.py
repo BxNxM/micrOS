@@ -8,7 +8,7 @@ sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
 
 # FILL OUT
-DEVICE = 'node01'
+DEVICE = 'airquality'
 BASE_CMD = ['--dev', DEVICE ]
 
 def app():

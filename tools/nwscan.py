@@ -4,20 +4,22 @@ MYPATH = os.path.dirname(os.path.abspath(__file__))
 API_DIR_PATH = os.path.join(MYPATH, 'MicrOSDevEnv/')
 sys.path.append(API_DIR_PATH)
 import LocalMachine
+import SearchDevices
 
 
 def map_wlan_devices():
-    print("Find devices connected to the network... [arp -a]")
     devices = []
-    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command('arp -a', shell=True)
-    if exitcode == 0:
-        for device in stdout.split('\n'):
-            try:
-                devip = device.split(' ')[1][1:-1]
-                macaddr = device.split(' ')[3]
-                devices.append([devip, macaddr])
-            except:
-                pass
+    host_address_list = SearchDevices.online_device_scanner()
+    for device in host_address_list:
+        devip = device
+        macaddr = "n/a"
+        try:
+            exitcode, stdout, stderr = LocalMachine.run_command('arp -n {}'.format(device), shell=True)
+            if exitcode == 0:
+                macaddr = stdout.split(' ')[3]
+        except Exception:
+            pass
+        devices.append([devip, macaddr])
     return devices
 
 

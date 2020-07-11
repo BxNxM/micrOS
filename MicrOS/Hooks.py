@@ -1,11 +1,12 @@
 #################################################################
 #                           IMPORTS                             #
 #################################################################
+from machine import freq
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
 try:
     from micropython import mem_info
-except:
+except Exception:
     mem_info = None
 
 #################################################################
@@ -26,6 +27,13 @@ def bootup_hook():
                 console_write("|-[BOOT HOOKS] state: {}".format(state))
             except Exception as e:
                 console_write("|--[BOOT HOOKS] error: {}".format(e))
+
+    if cfgget('boostmd') is True:
+        console_write("[BOOT HOOKS] Set up CPU 16MHz - boostmd: {}".format(cfgget('boostmd')))
+        freq(160000000)
+    else:
+        console_write("[BOOT HOOKS] Set up CPU 8MHz - boostmd: {}".format(cfgget('boostmd')))
+        freq(80000000)
 
 
 def profiling_info(label=""):

@@ -64,4 +64,4 @@ def neopixel_toggle():
 #########################################
 
 def help():
-    return 'neopixel', 'neopixel_toggle'
+    return 'neopixel(r=<0-255>, g=<0-255>, b=<0-255>', 'neopixel_toggle'

@@ -55,16 +55,5 @@ def module(unload=None):
         return "Module unload failed: {}".format(e)
 
 
-def pwr(mode=None):
-    from machine import freq
-    if mode is not None and mode.lower().strip() == 'norm':
-        freq(80000000)
-        return 'LOW MODE: CPU 8Mhz'
-    if mode is not None and mode.lower().strip() == 'boost':
-        freq(160000000)
-        return 'HIGH MODE: CPU 16Mhz'
-    return '{} ? boost or norm'.format(mode)
-
-
 def help():
-    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'pwr'
+    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module'

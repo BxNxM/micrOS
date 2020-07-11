@@ -69,4 +69,4 @@ def RGB_toggle():
 #########################################
 
 def help():
-    return 'RGB', 'RGB_toggle', 'RGB_deinit'
+    return 'RGB(r=<0-1000>, g=<0-1000>, b=<0,1000>)', 'RGB_toggle', 'RGB_deinit'

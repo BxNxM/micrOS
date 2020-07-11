@@ -43,7 +43,8 @@ def default_config():
                                       "extirq": False,
                                       "extirqcbf": "n/a",
                                       "boothook": "n/a",
-                                      "gmttime": +1}
+                                      "gmttime": +1,
+                                      "boostmd": True}
     return default_configuration_template
 
 #################################################################

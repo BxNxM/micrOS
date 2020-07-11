@@ -333,6 +333,7 @@ class MicrOSDevTool():
         return is_valid
 
     def put_micros_to_dev(self):
+        status = True
         config_is_valid = self.__validate_json()
         if not config_is_valid:
             sys.exit(6)
@@ -347,19 +348,34 @@ class MicrOSDevTool():
             ampy_args = 'put {from_}'.format(from_=source)
             command = ampy_cmd.format(dev=device, args=ampy_args)
             command = '{pushd}; {cmd}; popd'.format(pushd='pushd {}'.format(self.precompiled_MicrOS_dir_path), cmd=command)
+            status &= self.__safe_execute_ampy_cmd(command, source)
+            if not status:
+                self.console("MICROS INSTALL FAILED", state='err')
+                sys.exit(5)
+        return True
+
+    def __safe_execute_ampy_cmd(self, command, source, retry=8):
+        retry_orig = retry
+        for retry in range(1, retry_orig):
             if not self.dummy_exec:
-                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                try:
+                    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                except Exception as e:
+                    self.console(e)
             else:
                 exitcode = 0
                 stderr = ''
             if exitcode == 0 and stderr == '':
-                self.console("[ OK ] PUT {}".format(source), state='ok')
+                self.console("[ OK ][{}/{}] PUT {}".format(retry, retry_orig, source), state='ok')
                 self.console(" |-> CMD: {}".format(command))
+                status = True
+                break
             else:
-                self.console("[ ERROR ] PUT {}\n{}".format(source, stderr), state='err')
+                self.console("[ ERROR ][{}/{}] PUT {}\n{}".format(retry, retry_orig, source, stderr), state='err')
                 self.console(" |-> CMD: {}".format(command))
-                sys.exit(5)
-        return True
+                status = False
+        return status
+
 
     def connect_dev(self):
         self.console("WELCOME $USER - $(DATE)")

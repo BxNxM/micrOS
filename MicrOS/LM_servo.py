@@ -46,9 +46,8 @@ def Servo_demo():
 
 
 def Servo_deinit():
-    s = __SERVO_init()
     try:
-        s.deinit()
+        __SERVO_init().deinit()
         return "DEINIT SERVO"
     except Exception as e:
         return str(e)
@@ -85,10 +84,9 @@ def Servo2(duty=100):
 
 
 def Servo2_deinit():
-    s = __SERVO2_init()
     try:
-        s.deinit()
-        return "DEINIT SERVO"
+        __SERVO2_init().deinit()
+        return "DEINIT SERVO2"
     except Exception as e:
         return str(e)
 

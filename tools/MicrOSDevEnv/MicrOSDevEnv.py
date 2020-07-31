@@ -680,11 +680,11 @@ class MicrOSDevTool():
                         if not line:
                             break
                         if "def" in line and "def __" not in line:
-                            function_name = line.split('(')[0].split(' ')[1]
+                            function_name = '{})'.format(line.split(')')[0]).replace("def", '').strip()
                             module_function_dict[module_int_name].append(function_name)
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
-        self.console("Dump micrOS static manual: sfuncman.json to {}".format(static_help_json_path))
+        self.console("Dump micrOS static manual: {}".format(static_help_json_path))
         with open(static_help_json_path, 'w') as f:
             json.dump(module_function_dict, f, indent=2)
 

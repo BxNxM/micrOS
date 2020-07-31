@@ -1,0 +1,70 @@
+{
+  "oled_128x64i2c": [
+    "text",
+    "invert",
+    "clean",
+    "draw_line",
+    "draw_rect",
+    "poweron",
+    "poweroff",
+    "help"
+  ],
+  "system": [
+    "memfree",
+    "gcollect",
+    "heartbeat",
+    "clock",
+    "ntp",
+    "module",
+    "help"
+  ],
+  "light": [
+    "RGB",
+    "RGB_deinit",
+    "RGB_toggle",
+    "help"
+  ],
+  "switch": [
+    "set_state",
+    "toggle",
+    "help"
+  ],
+  "servo": [
+    "Servo",
+    "Servo_demo",
+    "Servo_deinit",
+    "Servo2",
+    "Servo2_deinit",
+    "help"
+  ],
+  "neopixel": [
+    "neopixel",
+    "neopixel_toggle",
+    "help"
+  ],
+  "oled_widgets": [
+    "simple_page",
+    "show_debug_page",
+    "toggle_invert",
+    "help"
+  ],
+  "air": [
+    "temp",
+    "hum",
+    "dht_measure",
+    "get_corrected_ppm",
+    "getMQ135GasPPM",
+    "help"
+  ],
+  "distance_HCSR04": [
+    "distance_mm",
+    "distance_cm",
+    "deinit",
+    "help"
+  ],
+  "motion_sensor": [
+    "get_PIR_state",
+    "PIR_deinit",
+    "help"
+  ]
+}

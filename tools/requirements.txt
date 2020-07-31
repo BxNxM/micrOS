@@ -1,0 +1,8 @@
+ecdsa==0.15
+esptool==2.8
+ipaddress==1.0.23
+netaddr==0.8.0
+netifaces==0.10.9
+pyaes==1.6.1
+pyserial==3.4
+six==1.15.0

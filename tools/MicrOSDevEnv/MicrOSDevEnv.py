@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import LocalMachine
-from TerminalColors import Colors
 import os
 import sys
 import time
@@ -9,6 +7,8 @@ import re
 import json
 import pprint
 MYPATH = os.path.dirname(os.path.abspath(__file__))
+import LocalMachine
+from TerminalColors import Colors
 
 class MicrOSDevTool():
 
@@ -18,12 +18,17 @@ class MicrOSDevTool():
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0']
         self.selected_device_type = 'esp8266'
         self.dev_types_and_cmds = \
-                {'esp8266': \
-                   {'erase': 'esptool.py --port {dev} erase_flash', \
-                    'deploy': 'esptool.py --port {dev} --baud 460800 write_flash --flash_size=detect -fm dio 0 {micropython}', \
+                {'esp8266':
+                   {'erase': 'esptool.py --port {dev} erase_flash',
+                    'deploy': 'esptool.py --port {dev} --baud 460800 write_flash --flash_size=detect -fm dio 0 {micropython}',
                     'connect': 'screen {dev} 115200',
-                    'ampy_cmd': 'ampy -p {dev} -b 115200 {args}'} \
-                }
+                    'ampy_cmd': 'ampy -p {dev} -b 115200 {args}'},
+                 'esp32':
+                     {'erase': 'esptool.py --port {dev} erase_flash',
+                      'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
+                      'connect': 'screen {dev} 115200',
+                      'ampy_cmd': 'ampy -p {dev} -b 115200 {args}'},
+                 }
 
         # DevEnv base pathes
         self.MicrOS_dir_path = os.path.join(MYPATH, "../../MicrOS")
@@ -52,30 +57,35 @@ class MicrOSDevTool():
         # Check dependences method
         state = self.deployment_dependence_handling()
         if state:
-            # Find micropython binaries
-            mp_bins = self.get_micropython_binaries()
-            # Find MicrOS devices
-            devices = self.get_devices()
-            if len(mp_bins) > 0 and len(devices) > 0:
-                self.console("Micropython binary and device was found.", state='ok')
-                self.__select_device_and_micropython()
-            else:
-                self.console("Micropython binary and/or device missing!\nBINS: {}\nDEV: {}".format(mp_bins, devices), state='err')
-                #sys.exit(2)
+           # Find micropython binaries
+           self.get_micropython_binaries()
+           # Find MicrOS devices
+           self.get_devices()
+           self.__select_devicetype_and_micropython()
         else:
             self.console("Please install the dependences: {}".format(self.deployment_app_dependences), state='err')
             sys.exit(1)
 
-    def __select_device_and_micropython(self):
-        # Select micropython TODO
-        if len(self.micropython_bins_list) > 1:
-            # set self.index_of_sected_micropython_bin
-            pass
+    def __select_devicetype_and_micropython(self):
+        if len(self.dev_types_and_cmds.keys()) > 1:
+            self.console("Please select device type from the list:")
+            for index, device_type in enumerate(self.dev_types_and_cmds.keys()):
+                self.console(" {} - {}".format(index, device_type))
+            self.selected_device_type = list(self.dev_types_and_cmds.keys())[int(input("Select index: "))]
 
-        # Select device TODO
-        if len(self.micros_devices) > 1:
-            # set self.index_of_selected_device
-            pass
+        micropython_bin_for_type = [mbin for mbin in self.micropython_bins_list if self.selected_device_type.lower() in mbin]
+        selected_index = 0
+        if len(micropython_bin_for_type) > 1:
+            self.console("Please select micropython for deployment")
+            for index, mpbin in enumerate(micropython_bin_for_type):
+                self.console(" {} - {}".format(index, mpbin))
+            selected_index = int(input("Selected index: "))
+        self.index_of_sected_micropython_bin = self.micropython_bins_list.index(micropython_bin_for_type[selected_index])
+
+        self.console("-"*60)
+        self.console("Selected device type: {}".format(self.selected_device_type))
+        self.console("Selected micropython bin: {}".format(self.micropython_bins_list[self.index_of_sected_micropython_bin]))
+        self.console("-"*60)
 
     def __get_device(self):
         if not self.dummy_exec:
@@ -145,6 +155,7 @@ class MicrOSDevTool():
             self.console("Device was found. :)", state="ok")
         else:
             self.console("No device was connected. :(", state="err")
+        # TODO: handle multiple devices: self.index_of_selected_device
         return self.micros_devices
 
     def get_micropython_binaries(self):
@@ -650,6 +661,33 @@ class MicrOSDevTool():
             self.console("TYPE CASTING ERROR: {}".format(e))
             return None
 
+    def LM_functions_static_dump_gen(self):
+        """
+        Generate static module-function provider json description: sfuncman.json
+        [!] name dependency with micrOS internal manual provider
+        """
+        static_help_json_path = os.path.join(self.MicrOS_dir_path, 'sfuncman.json')
+        module_function_dict = {}
+        for LM in (i.split('.')[0] for i in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if
+                   i.startswith('LM_') and (i.endswith('.py'))):
+            LMpath = '{}/{}.py'.format(self.MicrOS_dir_path, LM)
+            try:
+                module_int_name = LM.replace('LM_', '')
+                module_function_dict[module_int_name] = []
+                with open(LMpath, 'r') as f:
+                    while True:
+                        line = f.readline()
+                        if not line:
+                            break
+                        if "def" in line and "def __" not in line:
+                            function_name = line.split('(')[0].split(' ')[1]
+                            module_function_dict[module_int_name].append(function_name)
+            except Exception as e:
+                self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
+        self.console("Dump micrOS static manual: sfuncman.json to {}".format(static_help_json_path))
+        with open(static_help_json_path, 'w') as f:
+            json.dump(module_function_dict, f, indent=2)
+
     def deploy_micros(self, restore=True):
         if restore:
             self.restore_and_create_node_config()
@@ -659,6 +697,7 @@ class MicrOSDevTool():
                 time.sleep(2)
                 if self.precompile_micros():
                     time.sleep(2)
+                    self.LM_functions_static_dump_gen()
                     self.put_micros_to_dev()
                     self.archive_node_config()
                 else:
@@ -668,6 +707,7 @@ class MicrOSDevTool():
         else:
             self.console("Erase device error", state='err')
 
+
 if __name__ == "__main__":
     d = MicrOSDevTool()
-    d.erase_dev()
+    d.LM_functions_static_dump_gen()

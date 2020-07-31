@@ -163,15 +163,15 @@ if __name__ == "__main__":
         search_devices()
         sys.exit(0)
 
+    # Get all connected node status
+    if cmd_args.node_status:
+        node_status()
+
     # Create API object ()
     if cmd_args.dummy:
         api_obj = MicrOSDevEnv.MicrOSDevTool(dummy_exec=True)
     else:
         api_obj = MicrOSDevEnv.MicrOSDevTool()
-
-    # Get all connected node status
-    if cmd_args.node_status:
-        node_status()
 
     # Commands
     if cmd_args.list_devs_n_bins:

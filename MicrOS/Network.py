@@ -1,3 +1,14 @@
+"""
+Module is responsible for network configuration
+dedicated to micrOS framework.
+- STA / STA
+- static IP configuration
+- NTP clock setup in case of STA
+- generate UID based on mac address
+- network status expose to config
+
+Designed by Marcell Ban aka BxNxM
+"""
 #################################################################
 #                           IMPORTS                             #
 #################################################################
@@ -160,19 +171,12 @@ def set_access_point(_essid, _pwd, _authmode=3):
 
 
 def auto_network_configuration(_authmode=3, retry=3):
-    # GET DATA - STA
-    essid = cfgget("staessid")
-    pwd = cfgget("stapwd")
-    # GET DATA - AP
-    _essid = cfgget("devfid")
-    _pwd = cfgget("appwd")
-
     for _ in range(0, retry):
         # Reset dev (static)ip if previous nw setup was AP
         if cfgget("nwmd") == "AP":
             cfgput("devip", "n/a")
         # SET WIFI (STA) MODE
-        state = set_wifi(essid, pwd)
+        state = set_wifi(cfgget("staessid"), cfgget("stapwd"))
         if state:
             # Save STA NW mode
             cfgput("nwmd", "STA")
@@ -181,7 +185,7 @@ def auto_network_configuration(_authmode=3, retry=3):
             # BREAK - STA mode successfully  configures
             break
         # SET AP MODE
-        state = set_access_point(_essid, _pwd, _authmode)
+        state = set_access_point(cfgget("devfid"), cfgget("appwd"), _authmode)
         if state:
             # Save AP NW mode
             cfgput("nwmd", "AP")

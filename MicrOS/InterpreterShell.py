@@ -1,3 +1,13 @@
+"""
+Module is responsible for shell like environment
+dedicated to micrOS framework.
+Built-in-function:
+- Shell wrapper for safe InterpreterCore interface
+- Configuration handling interface - state machine handling
+- Help (runtime) message generation
+
+Designed by Marcell Ban aka BxNxM
+"""
 #################################################################
 #                           IMPORTS                             #
 #################################################################
@@ -73,7 +83,18 @@ def __shell(msg, SocketServerObj):
         return_state = configure(msg_list, SocketServerObj)
     # @2 Command mode
     elif not SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
-        return_state = execute_LM_function(argument_list=msg_list, SocketServerObj=SocketServerObj)
+        """
+        INPUT MSG STRUCTURE
+        1. param. - LM name, i.e. LM_commands
+        2. param. - function call with parameters, i.e. a()
+        """
+        try:
+            # Execute command via InterpreterCore
+            return_state = execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
+        except Exception as e:
+            SocketServerObj.reply_message("[ERROR] execute_LM_function_Core \
+                                          internal error: {}".format(e))
+            return_state = False
     # RETURN STATE: True:OK or False:ERROR
     return return_state
 
@@ -83,7 +104,7 @@ def __shell(msg, SocketServerObj):
 
 
 def configure(attributes, SocketServerObj):
-    # DISBALE BG INTERRUPTS
+    # DISABLE BG INTERRUPTS
     if disable_irq is not None:
         status = disable_irq()
     # [CONFIG] Get value
@@ -93,7 +114,8 @@ def configure(attributes, SocketServerObj):
             for key, value in cfgget_all().items():
                 spcr = (int(val_spacer/3) - int(val_spacer/5))
                 spcr2 = (val_spacer - len(key))
-                SocketServerObj.reply_message("  {}{}:{} {}".format(key, " "*spcr2, " "*spcr, value))
+                SocketServerObj.reply_message("  {}{}:{} {}"
+                                              .format(key, " "*spcr2, " "*spcr, value))
         else:
             key = attributes[0]
             SocketServerObj.reply_message(cfgget(key))
@@ -120,7 +142,8 @@ def show_LMs_functions(SocketServerObj):
     Dump LM modules with functions - in case of [py] files
     Dump LM module with help function call - in case of [mpy] files
     """
-    for LM in (i.split('.')[0] for i in listdir() if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))):
+    for LM in (i.split('.')[0] for i in listdir()
+               if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))):
         LMpath = '{}.py'.format(LM)
         if LMpath not in listdir():
             LMpath = '{}.mpy'.format(LM)
@@ -135,23 +158,9 @@ def show_LMs_functions(SocketServerObj):
                         if not line:
                             break
                         if "def" in line and "def __" not in line:
-                            SocketServerObj.reply_message("   {}{}".format(" "*len(LM.replace('LM_', '')), line.split('(')[0].split(' ')[1]))
+                            SocketServerObj.reply_message("   {}{}"
+                                                          .format(" "*len(LM.replace('LM_', '')),
+                                                                  line.split('(')[0].split(' ')[1]))
         except Exception as e:
             SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LM, e))
             raise Exception("show_LMs_functions [{}] exception: {}".format(LM, e))
-
-
-def execute_LM_function(argument_list, SocketServerObj):
-    """
-    1. param. - LM name, i.e. LM_commands
-    2. param. - function call with parameters, i.e. a()
-    """
-    try:
-        # Execute command via InterpreterCore
-        health = execute_LM_function_Core(argument_list, SocketServerObj)
-    except Exception as e:
-        SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
-        health = False
-    # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
-    return health
-

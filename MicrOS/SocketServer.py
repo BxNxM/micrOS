@@ -1,3 +1,19 @@
+"""
+Module is responsible for socket server
+dedicated to micrOS framework.
+- The heart of communication
+- micrOS version handler
+- Maintain connections
+- built in exposed commands
+    - hello
+    - version
+    - exit
+    - reboot
+- server recovery handling
+- providing server console instance
+
+Designed by Marcell Ban aka BxNxM
+"""
 #########################################################
 #                         IMPORTS                       #
 #########################################################
@@ -32,7 +48,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.0.9-25'
+    __socket_interpreter_version = '0.0.9-27'
 
     def __new__(cls):
         """
@@ -104,7 +120,7 @@ class SocketServer:
     def __accept(self):
         self.server_console("[ socket server ] wait to accept a connection - blocking call...")
         self.conn, self.addr = self.s.accept()
-        self.server_console('[ socket server ] Connected with ' + self.addr[0] + ':' + str(self.addr[1]))
+        self.server_console('[ socket server ] Connected with {}:{}'.format(self.addr[0], self.addr[1]))
 
     def __wait_for_message(self):
         prompt = "{}{} ".format(self.pre_prompt, self.prompt).encode('utf-8')
@@ -116,7 +132,7 @@ class SocketServer:
             data_byte = b''
             if "TIMEDOUT" in str(e) or "timoeout" in str(e):
                 self.server_console(
-                    "[ socket server ] socket recv - connection with user - timeout " + str(self.timeout_user) + " sec")
+                    "[ socket server ] socket recv - connection with user - timeout {} sec".format(self.timeout_user))
                 self.reply_message("Session timeout {} sec".format(self.timeout_user))
                 self.__reconnect()
             else:
@@ -157,7 +173,7 @@ class SocketServer:
             self.__reconnect()
 
     def reply_message(self, msg):
-        if type(msg) is bytes:
+        if isinstance(msg, bytes):
             self.conn.sendall(msg)  # conn sendall
         else:
             try:
@@ -184,7 +200,7 @@ class SocketServer:
 
     def run(self):
         if "esp" in platform:
-            self.server_console("[ socket server ] SERVER ADDR: telnet " + str(cfgget("devip")) + " " + str(self.port))
+            self.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), self.port))
         else:
             self.server_console("[ socket server ] SERVER ADDR: telnet 127.0.0.1 " + str(self.port))
 
@@ -218,7 +234,7 @@ class SocketServer:
         self.reply_message("[HA] system recovery ...")
         if 'esp' in platform:
             collect()
-            self.reply_message("[HA] gc-ollect-memfree: {}".format(mem_free()))
+            self.reply_message("[HA] gc-collect-memfree: {}".format(mem_free()))
             if errlvl == 1:
                 try:
                     self.reply_message("[HA] Critical error - disconnect & hard reset")

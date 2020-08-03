@@ -1,3 +1,11 @@
+"""
+Module is responsible for hardware interrupt
+handling dedicated to micrOS framework.
+- Setting up interrupt memory buffer from config
+- Configure time based and external interrupts
+
+Designed by Marcell Ban aka BxNxM
+"""
 #################################################################
 #                            IMPORTS                            #
 #################################################################
@@ -5,16 +13,17 @@ from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
 from LogicalPins import get_pin_on_platform_by_key
 
+
 #################################################################
 #            CONFIGURE INTERRUPT MEMORY BUFFER                  #
 #################################################################
 
 
 def set_emergency_buffer():
-    from micropython import alloc_emergency_exception_buf
     irqmembuf = cfgget('irqmembuf')
     emergency_buff_kb = irqmembuf if irqmembuf is not None and isinstance(irqmembuf, int) else 1000
     if cfgget('extirq') or cfgget("timirq"):
+        from micropython import alloc_emergency_exception_buf
         console_write("[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={}".format(emergency_buff_kb))
         alloc_emergency_exception_buf(emergency_buff_kb)
     else:
@@ -103,4 +112,3 @@ def init_eventPIN():
 
 
 set_emergency_buffer()
-

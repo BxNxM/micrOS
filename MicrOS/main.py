@@ -1,3 +1,9 @@
+"""
+Module is responsible for high level function invocations
+dedicated to micrOS framework.
+
+Designed by Marcell Ban aka BxNxM
+"""
 #################################################################
 #                           IMPORTS                             #
 #################################################################

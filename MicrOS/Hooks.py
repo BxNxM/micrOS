@@ -1,13 +1,30 @@
+"""
+Module is responsible for collect the additional
+feature definition dedicated to micrOS framework.
+
+Boot phase execution based on config
+- initialize / preload modules to memory
+
+Profiling info
+- free memory monitoring between seperated phases
+- memory block usage
+
+Designed by Marcell Ban aka BxNxM
+"""
+
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from machine import freq
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
 try:
     from micropython import mem_info
 except Exception:
     mem_info = None
+try:
+    from machine import freq
+except Exception:
+    freq = None
 
 #################################################################
 #                          FUNCTIONS                            #
@@ -30,10 +47,10 @@ def bootup_hook():
 
     if cfgget('boostmd') is True:
         console_write("[BOOT HOOKS] Set up CPU 16MHz - boostmd: {}".format(cfgget('boostmd')))
-        freq(160000000)
+        if freq is not None: freq(160000000)
     else:
         console_write("[BOOT HOOKS] Set up CPU 8MHz - boostmd: {}".format(cfgget('boostmd')))
-        freq(80000000)
+        if freq is not None: freq(80000000)
 
 
 def profiling_info(label=""):
@@ -43,7 +60,7 @@ def profiling_info(label=""):
     if cfgget('dbg'):
         console_write("{} [PROFILING INFO] - {} {}".format('~'*5, label, '~'*5))
         try:
-            mem_info()
+            if mem_info is not None: mem_info()
         except Exception as e:
             console_write("MEM INFO QUERY ERROR: {}".format(e))
         console_write("~"*30)

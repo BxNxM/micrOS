@@ -1,3 +1,10 @@
+"""
+Module is responsible for board independent
+input/output handling dedicated to micrOS framework.
+- Hardware based pinout handling
+
+Designed by Marcell Ban aka BxNxM
+"""
 #################################################################
 #                           IMPORTS                             #
 #################################################################
@@ -9,10 +16,9 @@ from sys import platform
 
 
 def get_pin_on_platform_by_key(key):
-    function_pins_on_platfrom_dict = {}
     if 'esp32' in platform:
         return {'builtin': 2}.get(key, None)     # BUILT IN LED - progress_led
-    elif 'esp8266' in platform:
+    if 'esp8266' in platform:
         return {'builtin': 16,    # BUILT IN LED - progress_led
                 'pwm_0': 15,      # D8 - servo
                 'pwm_1': 13,      # D7 - pwm_red
@@ -28,3 +34,4 @@ def get_pin_on_platform_by_key(key):
                 'simple_2': 9,    # SD2 - PIR
                 'switch': 3       # RX - SIMPLE IO SWITCH
                 }.get(key, None)
+    return None

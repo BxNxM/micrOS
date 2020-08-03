@@ -466,4 +466,7 @@ Precompiled components with the actual user configured config location
 - Save **screen** console buffer (**output**)
 Press `ctrl + A :` and type `hardcopy -h <filename>`
 
+- Create callgraph: [pycallgraph](http://pycallgraph.slowchop.com/en/master/)
+
+
 git push -u origin master

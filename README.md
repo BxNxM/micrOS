@@ -11,9 +11,9 @@
 
 ### RELESE NOTE
 
-|    VERSION   |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |         COMMIT         |  SUPPORTED DEVICE(S) | APP PROFILES   |     NOTE       |
+|  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |         COMMIT         |  SUPPORTED DEVICE(S) | APP PROFILES   |     NOTE       |
 | :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: | -------------- |
-|  **0.1.0.0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | Stable Core with applications - first release
+|  **v0.1.0.0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) | `aee52442c6577783c5230a51fbd0e660e08df3e6` | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | Stable Core with applications - first release
 
 ## MicrOS Tutorial
 
@@ -497,5 +497,11 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - Create callgraph: [pycallgraph](http://pycallgraph.slowchop.com/en/master/)
 
+GIT:
+- Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
+
+- Publish tags: `git push origin --tags`
+
+- Pretty git view: `git log --pretty=oneline`
 
 git push -u origin master

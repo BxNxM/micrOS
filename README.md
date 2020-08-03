@@ -17,7 +17,7 @@
 
 |    VERSION   |    RELEASE INFO    |     MICROS MEMORY USAGE    |         COMMIT         |   SUPPORTED DEVICE   | APP PROFILES   |     NOTE       |
 | :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: | -------------- |
-|  **0.1.0.0** | [Release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/MicrOS_Release_Info-0.1.0-0)| 14 - 38 % (1300-3400 byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | First stable release
+|  **0.1.0.0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | First stable release
 
 ## MicrOS Tutorial
 

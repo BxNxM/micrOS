@@ -200,4 +200,7 @@ def __value_type_handler(key, value):
 if "ConfigHandler" in __name__:
     __inject_default_conf()                     # Validate / update / create user config
     __DEBUG_PRINT = cfgget('dbg')                 # Inject from user conf
-    if not cfgget('pled'): PLED = None          # Turn off progressled if necesary
+    if not cfgget('pled'): PLED = None          # Turn off progressled if necessary
+
+if __name__ == "__main__":
+    __inject_default_conf()

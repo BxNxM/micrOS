@@ -17,7 +17,7 @@
 
 |    VERSION   |    RELEASE INFO    |     MICROS MEMORY USAGE    |         COMMIT         |   SUPPORTED DEVICE   | APP PROFILES   |     NOTE       |
 | :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: | -------------- |
-|  **0.1.0.0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | First stable release
+|  **0.1.0.0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) |       commit           | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | Stable Core with applications - first release
 
 ## MicrOS Tutorial
 
@@ -35,11 +35,14 @@
 ## MicrOS Framework Features
 
 - Config handling - node_config.json
+- Boot phase handling - preload modules - I/O initialization from node_config
 - Socket interpreter - communication interface with the device
 	- Config SET/GET/DUMP
-	- Load Module function execution
+	- LM - Load Module function execution
 - Network handling
 	- STA / AP based on config
+	- NTP setup
+	- static IP configuration
 - Interrupt callback
 	- Time based
 	- Event based
@@ -52,7 +55,7 @@
 ### Supported OS for development
 
 - MacOS
-- Linux (Raspbain, Ubuntu, Debian)
+- Linux (Raspbain, Ubuntu, Debian) - beta
 
 ### Setup development environment
 

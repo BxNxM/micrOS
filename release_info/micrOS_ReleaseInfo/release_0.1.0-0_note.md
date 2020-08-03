@@ -30,7 +30,7 @@ measurement error on baseload: 144 byte, 1,5%
 
 |  version  |       memory usage    | board type  |     config    |
 | :------:  | :-------------------: | :---------: | :-----------: |
-| 0.0.1-0   |   **~13%** 1216 byte  |  esp8266    |     link      |
+| 0.0.1-0   |   **~13%** 1216 byte  |  esp8266    |     [default_profile](https://github.com/BxNxM/MicrOS/blob/master/release_info/node_config_profiles/default_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -109,7 +109,7 @@ GC: total: 37952, used: 29776, free: 8176
 
 |  version  |       memory usage    | board type  |     config    | 
 | :------:  | :-------------------: | :---------: | :-----------: |
-| 0.0.1-0   |   **~28%** 2544 byte  |    espXY    |     link      |
+| 0.0.1-0   |   **~28%** 2544 byte  |  esp8266    |     [heartbeat_profile](https://github.com/BxNxM/MicrOS/blob/master/release_info/node_config_profiles/heartbeat_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -185,7 +185,7 @@ GC: total: 37952, used: 31152, free: 6800
 
 |  version  |   memory usage   | board type  |     config    | 
 | :------:  | :--------------: | :---------: | :-----------: |
-| 0.0.1-0   |  38% 3520 byte   |    espXY    |     link      |
+| 0.0.1-0   |  38% 3520 byte   |  esp8266    |     [lamp_profile](https://github.com/BxNxM/MicrOS/blob/master/release_info/node_config_profiles/lamp_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 

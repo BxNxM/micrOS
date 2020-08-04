@@ -11,9 +11,9 @@
 
 ### RELESE NOTE
 
-|  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |         COMMIT         |  SUPPORTED DEVICE(S) | APP PROFILES   |     NOTE       |
-| :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: | -------------- |
-|  **v0.1.0.0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) | `aee52442c6577783c5230a51fbd0e660e08df3e6` | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | Stable Core with applications - first release
+|  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |         COMMIT         |  SUPPORTED DEVICE(S) | APP PROFILES | Load Modules  |     NOTE       |
+| :----------: | :----------------: | :------------------------: | :--------------------: |  :-----------------: | :------------: | :------------:| -------------- |
+|  **v0.1.0.0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) | `aee52442c6577783c5230a51fbd0e660e08df3e6` | nodemcu - esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.1.0-0.json)| Stable Core with applications - first release
 
 ## MicrOS Tutorial
 
@@ -36,11 +36,11 @@
 - Socket interpreter - communication interface with the device
 	- Config SET/GET/DUMP
 	- LM - Load Module function execution
-- Network handling
-	- STA / AP based on config
+- Network handling - based on node_config 
+	- STA / AP 
 	- NTP setup
 	- static IP configuration
-- Interrupt callback
+- Interrupt callback - based on node_config 
 	- Time based
 	- Event based
 - Socket client - interactive - non interactive mode

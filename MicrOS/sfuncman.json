@@ -38,7 +38,9 @@
     "help()"
   ],
   "neopixel": [
+    "neopixel_cache_load_n_init(n=8, cache=True)",
     "neopixel(r=None, g=None, b=None, n=8)",
+    "neopixel_segment(s=0, r=None, g=None, b=None)",
     "neopixel_toggle()",
     "help()"
   ],

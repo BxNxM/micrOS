@@ -4,7 +4,7 @@
  "extirq": true,
  "extirqcbf": "neopixel neopixel_toggle",
  "timirqcbf": "system heartbeat",
- "boothook": "",
+ "boothook": "neopixel neopixel_cache_load_n_init; system heartbeat",
  "timirq": true,
  "pled": true,
  "socport": 9008,

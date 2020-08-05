@@ -51,11 +51,9 @@
     "help()"
   ],
   "air": [
-    "temp()",
-    "hum()",
     "dht_measure()",
-    "get_corrected_ppm(temperature, humidity)",
     "getMQ135GasPPM(temperature=None, humidity=None)",
+    "measure()",
     "help()"
   ],
   "distance_HCSR04": [

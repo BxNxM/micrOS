@@ -21,17 +21,9 @@ def __temp_hum():
     return __DHT_OBJ.temperature(), __DHT_OBJ.humidity()
 
 
-def temp():
-    return dht_measure().split('\n')[0]
-
-
-def hum():
-    return dht_measure().split('\n')[1]
-
-
 def dht_measure():
     temp_, hum_ = __temp_hum()
-    return "{} ºC\n{} %".format(temp_, hum_)
+    return "\n{} ºC\n{} %".format(temp_, hum_)
 
 
 #########################################
@@ -80,7 +72,7 @@ def __get_corrected_resistance(temperature, humidity):
     return __get_resistance()/__get_correction_factor(temperature, humidity)
 
 
-def get_corrected_ppm(temperature, humidity):
+def __get_corrected_ppm(temperature, humidity):
     """
     Returns the ppm of CO2 sensed (assuming only CO2 in the air)
     corrected for temperature/humidity
@@ -104,13 +96,12 @@ def getMQ135GasPPM(temperature=None, humidity=None):
         5,000ppm        Workplace exposure limit (as 8-hour TWA) in most jurisdictions.
         >40,000 ppm     Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
     """
-    _temperature, _humidity = __temp_hum()
-    temperature = _temperature  if temperature is None else temperature
-    humidity = _humidity if humidity is None else humidity
+    if temperature is None or humidity is None:
+        temperature, humidity = __temp_hum()
 
     try:
         status = 'n/a'
-        ppm = get_corrected_ppm(temperature, humidity)
+        ppm = __get_corrected_ppm(temperature, humidity)
         if ppm <= 1000:
             status = 'PERFECT'
         elif ppm <= 2000:
@@ -119,11 +110,16 @@ def getMQ135GasPPM(temperature=None, humidity=None):
             status = "WARNING"
         elif ppm > 4000:
             status = "CRITICAL"
-        return "{} PPM - {}".format(ppm, status)
+        return "\n{} PPM - {}".format(ppm, status)
     except Exception as e:
-        return "getMQ135GasPPM ERROR: {}".format(e)
+        return "\ngetMQ135GasPPM ERROR: {}".format(e)
+
+
+def measure():
+    _temp, _hum = __temp_hum()
+    return "\n{} ºC\n{} %{}".format(_temp, _hum, getMQ135GasPPM(_temp, _hum))
 
 
 def help():
-    return 'dht_measure', 'temp', 'hum', 'getMQ135GasPPM(temperature, humidity)'
+    return 'measure', 'dht_measure', 'getMQ135GasPPM(temp, hum)'
 

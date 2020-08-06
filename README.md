@@ -1,5 +1,10 @@
 # MicrOS - IOT platfrom
 
+## System Architecture visualization
+
+![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOS.gif?raw=true)
+
+
 ## System Architecture
 
 ![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
@@ -497,11 +502,14 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - Create callgraph: [pycallgraph](http://pycallgraph.slowchop.com/en/master/)
 
+- Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`  
+
 GIT:
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
 
 - Publish tags: `git push origin --tags`
 
 - Pretty git view: `git log --pretty=oneline`
+
 
 git push -u origin master

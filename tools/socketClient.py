@@ -288,7 +288,10 @@ class SocketDictClient():
         else:
             str_msg = msg
         if not self.silent_mode:
-            print(str_msg, end=end)
+            try:
+                print(str_msg, end=end)
+            except UnicodeEncodeError:
+                print(str_msg.encode('ascii', 'ignore').decode('ascii'), end=end)
         return str_msg
 
 #########################################################

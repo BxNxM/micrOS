@@ -16,6 +16,7 @@
     "clock()",
     "ntp()",
     "module(unload=None)",
+    "cachedump()",
     "help()"
   ],
   "light": [
@@ -25,6 +26,7 @@
     "help()"
   ],
   "switch": [
+    "switch_cache_load_n_init(mode='r', datain=0, cache=None)",
     "set_state(state)",
     "toggle()",
     "help()"

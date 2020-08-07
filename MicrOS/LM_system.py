@@ -55,5 +55,15 @@ def module(unload=None):
         return "Module unload failed: {}".format(e)
 
 
+def cachedump():
+    from os import listdir
+    return_str = ""
+    for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
+        return_str += "{}: ".format(pds)
+        with open(pds, 'r') as f:
+            return_str += "{}\n".format(f.read())
+    return return_str
+
+
 def help():
     return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module'

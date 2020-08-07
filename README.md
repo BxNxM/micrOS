@@ -1,8 +1,34 @@
-# MicrOS - IOT platfrom
+# micrOS - IOT platform
 
-## System Architecture visualization
+## micrOS system, message-function visualization 
 
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOS.gif?raw=true)
+
+>Note: **Python Socket Client** for application development also available besides smartphone application (example below).
+
+
+## MicrOS Framework Features
+
+- **Config handling** - node_config.json
+- **Boot phase** handling - preload modules - I/O initialization from node_config
+- **Socket interpreter** - wireless communication interface with the devices/nodes
+	- **System commands**: `help, version, reboot, etc.` 
+	- **Config** SET/GET/DUMP
+	- **LM** - Load Module function execution
+- **Network handling** - based on node_config 
+	- STA / AP 
+	- NTP setup
+	- static IP configuration
+- **Scheduling / External events** - Interrupt callback - based on node_config 
+	- Time based
+	- Event based
+- Load Module **application** handling
+	- Lot of built-in functions
+	- Clreate you own module with 2 easy steps
+		- Create a file in `MicrOS` folder like: `LM_<your_app_name>.py`
+		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy`	  
+	
+- Socket client - interactive - non interactive mode 
 
 
 ## System Architecture
@@ -33,22 +59,6 @@
 - Create custom Load Modules (LMs)
 
 > **Coming soon**
-
-## MicrOS Framework Features
-
-- Config handling - node_config.json
-- Boot phase handling - preload modules - I/O initialization from node_config
-- Socket interpreter - communication interface with the device
-	- Config SET/GET/DUMP
-	- LM - Load Module function execution
-- Network handling - based on node_config 
-	- STA / AP 
-	- NTP setup
-	- static IP configuration
-- Interrupt callback - based on node_config 
-	- Time based
-	- Event based
-- Socket client - interactive - non interactive mode
 
 ----------------------------------------
 

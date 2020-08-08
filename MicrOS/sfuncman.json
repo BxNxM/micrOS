@@ -58,6 +58,12 @@
     "measure()",
     "help()"
   ],
+  "dimmer": [
+    "set_value(value=None)",
+    "dimmer_cache_load_n_init(cache=True)",
+    "toggle()",
+    "help()"
+  ],
   "distance_HCSR04": [
     "distance_mm()",
     "distance_cm()",

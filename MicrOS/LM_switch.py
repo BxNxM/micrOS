@@ -14,7 +14,7 @@ def __SWITCH_init():
     if __SWITCH_OBJ is None:
         from machine import Pin
         from LogicalPins import get_pin_on_platform_by_key
-        __SWITCH_OBJ = Pin(get_pin_on_platform_by_key('switch'), Pin.OUT)
+        __SWITCH_OBJ = Pin(get_pin_on_platform_by_key('simple_0'), Pin.OUT)
         switch_cache_load_n_init('r')
     return __SWITCH_OBJ
 

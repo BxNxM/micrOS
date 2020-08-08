@@ -27,11 +27,10 @@ def get_pin_on_platform_by_key(key):
                 'i2c_sda': 4,     # D2 - OLED
                 'i2c_scl': 5,     # D1 - OLED
                 'pwm_4': 12,      # D6 - extirqpin
-                'simple_0': 16,   # D0 - dist_trigger
-                'pwm_5': 14,      # D5 - dist_echo
+                'simple_0': 16,   # D0 - dist_trigger / switch
+                'pwm_5': 14,      # D5 - dist_echo / dimmer
                 'simple_1': 10,   # SD3 - dht_pin
                 'adc_0': 0,       # ADC0 - CO2
-                'simple_2': 9,    # SD2 - PIR
-                'switch': 3       # RX - SIMPLE IO SWITCH
+                'simple_2': 9     # SD2 - PIR
                 }.get(key, None)
     return None

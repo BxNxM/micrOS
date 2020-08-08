@@ -66,4 +66,4 @@ def cachedump():
 
 
 def help():
-    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module'
+    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump'

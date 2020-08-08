@@ -1,0 +1,88 @@
+#########################################
+#     ANALOG DIMMER CONTROLLER PARAMS   #
+#########################################
+__DIMMER_OBJ = None
+# DATA: state:ON/OFF, value:0-1000
+__DIMMER_CACHE = [0, 500]
+__PERSISTENT_CACHE = True
+
+
+#########################################
+#         ANALOG DIMMER WITH PWM        #
+#########################################
+
+def __dimmer_init():
+    global __DIMMER_OBJ
+    if __DIMMER_OBJ is None:
+        from machine import Pin, PWM
+        from LogicalPins import get_pin_on_platform_by_key
+        dimmer_pin = Pin(get_pin_on_platform_by_key('pwm_5'))
+        __DIMMER_OBJ = PWM(dimmer_pin, freq=80)
+    return __DIMMER_OBJ
+
+
+def __persistent_cache_manager(mode='r'):
+    global __DIMMER_CACHE
+    """
+    pds - persistent data structure
+    modes:
+        r - recover
+        s - save
+    """
+    if not __PERSISTENT_CACHE:
+        return
+    if mode == 's':
+        # SAVE CACHE
+        try:
+            with open('dimmer.pds', 'w') as f:
+                f.write("{},{}".format(__DIMMER_CACHE[0], __DIMMER_CACHE[1]))
+                return
+        except:
+            return
+    try:
+        # RESTORE CACHE
+        with open('dimmer.pds', 'r') as f:
+            __DIMMER_CACHE = [int(data) for data in f.read().strip().split(',')]
+    except Exception:
+        pass
+
+
+def set_value(value=None):
+    global __DIMMER_CACHE
+    # restore data from cache if was not provided
+    value = int(__DIMMER_CACHE[1] if value is None else value)
+    if 0 <= value <= 1000:
+        __dimmer_init().duty(value)
+        if value == 0:
+            __DIMMER_CACHE[0] = 0        # SAVE STATE TO CACHE
+        else:
+            __DIMMER_CACHE[1] = value    # SAVE VALUE TO CACHE
+            __DIMMER_CACHE[0] = 1        # SAVE STATE TO CACHE
+        __persistent_cache_manager('s')
+        return "SET DIMMER: {}".format(value)
+    return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)
+
+
+def dimmer_cache_load_n_init(cache=True):
+    global __PERSISTENT_CACHE
+    __PERSISTENT_CACHE = cache
+    __persistent_cache_manager('r')
+    if __DIMMER_CACHE[0] == 0:
+        return "DIMMER OFF"
+    return set_value()
+
+
+def toggle():
+    """
+    Toggle led state based on the stored one
+    """
+    if __DIMMER_CACHE[0] == 1:
+        return set_value(0)         # Set value to 0 - OFF
+    return set_value()              # Set value to the cached - ON
+
+#########################################
+#                   HELP                #
+#########################################
+
+def help():
+    return 'set_value(value=<0-1000>)', 'toggle', 'dimmer_cache_load_n_init(cache=True)'

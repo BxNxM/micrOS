@@ -14,12 +14,6 @@ Designed by Marcell Ban aka BxNxM
 from os import listdir
 from ConfigHandler import cfgget, cfgput, cfgget_all
 from InterpreterCore import execute_LM_function_Core
-try:
-    from machine import disable_irq, enable_irq
-except Exception as e:
-    disable_irq = None
-    enable_irq = None
-    print("Failed to import machine: {}".format(e))
 
 #################################################################
 #                  SHELL Interpreter FUNCTIONS                  #
@@ -105,9 +99,6 @@ def __shell(msg, SocketServerObj):
 
 def configure(attributes, SocketServerObj):
     # DISABLE BG INTERRUPTS
-    if disable_irq is not None:
-        status = disable_irq()
-    # [CONFIG] Get value
     if len(attributes) == 1:
         if attributes[0] == "dump":
             val_spacer = 10
@@ -128,8 +119,6 @@ def configure(attributes, SocketServerObj):
         except Exception as e:
             SocketServerObj.reply_message("Set config error: {}".format(e))
     # ENABLE BG INTERRUPTS
-    if enable_irq is not None:
-        enable_irq(status)
     return True
 
 #################################################################

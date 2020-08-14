@@ -20,14 +20,14 @@
     "help()"
   ],
   "light": [
-    "RGB(r=None, g=None, b=None)",
-    "RGB_deinit()",
-    "RGB_toggle()",
+    "rgb_cache_load_n_init(cache=None)",
+    "rgb(r=None, g=None, b=None)",
+    "toggle()",
     "help()"
   ],
   "switch": [
-    "switch_cache_load_n_init(mode='r', datain=0, cache=None)",
-    "set_state(state)",
+    "switch_cache_load_n_init(cache=None)",
+    "set_state(state=None)",
     "toggle()",
     "help()"
   ],
@@ -40,10 +40,10 @@
     "help()"
   ],
   "neopixel": [
-    "neopixel_cache_load_n_init(n=8, cache=True)",
+    "neopixel_cache_load_n_init(cache=None, n=8)",
     "neopixel(r=None, g=None, b=None, n=8)",
-    "neopixel_segment(s=0, r=None, g=None, b=None)",
-    "neopixel_toggle()",
+    "segment(s=0, r=None, g=None, b=None)",
+    "toggle()",
     "help()"
   ],
   "oled_widgets": [
@@ -60,7 +60,7 @@
   ],
   "dimmer": [
     "set_value(value=None)",
-    "dimmer_cache_load_n_init(cache=True)",
+    "dimmer_cache_load_n_init(cache=None)",
     "toggle()",
     "help()"
   ],

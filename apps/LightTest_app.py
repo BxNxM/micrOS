@@ -20,7 +20,7 @@ class TestData:
 
 
 def evaluate_test_data(answer_msg, test_cycle=None):
-    expectation_in_data = 'NEOPIXEL WAS SET'
+    expectation_in_data = 'NEOPIXEL SET TO'
     TestData.EXEC_CNT += 1
     if expectation_in_data in answer_msg:
         print("- [ OK ] |{}|".format(answer_msg))

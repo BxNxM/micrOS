@@ -1,67 +1,97 @@
 #########################################
-#       ANALOG RGB CONTROLLER PARAMS    #
+#       ANALOG rgb CONTROLLER PARAMS    #
 #########################################
-__RLED = None
-__GLED = None
-__BLED = None
-__RGB_STATE = False
-__RGB_CACHE = (800, 800, 800)
+__RGB_OBJS = (None, None, None)
+__RGB_CACHE = [600, 600, 600, 0]           # R, G, B, RGB state
+__PERSISTENT_CACHE = False
 
 
 #########################################
-#      ANALOG RGB WITH 3 channel PWM    #
+#      ANALOG rgb WITH 3 channel PWM    #
 #########################################
 
 def __RGB_init():
-    global __RLED, __GLED, __BLED
-    if __RLED is None or __GLED is None or __BLED is None:
+    global __RGB_OBJS
+    if __RGB_OBJS[0] is None or __RGB_OBJS[1] is None or __RGB_OBJS[2] is None:
         from machine import Pin, PWM
         from LogicalPins import get_pin_on_platform_by_key
-        d7_gpio13_red = Pin(get_pin_on_platform_by_key('pwm_1'))
-        d4_gpio2_green = Pin(get_pin_on_platform_by_key('pwm_2'))
-        d3_gpio0_blue = Pin(get_pin_on_platform_by_key('pwm_3'))
-        __RLED = PWM(d7_gpio13_red, freq=80)
-        __GLED = PWM(d4_gpio2_green, freq=80)
-        __BLED = PWM(d3_gpio0_blue, freq=80)
+        red = Pin(get_pin_on_platform_by_key('pwm_1'))
+        green = Pin(get_pin_on_platform_by_key('pwm_2'))
+        blue = Pin(get_pin_on_platform_by_key('pwm_3'))
+        __RGB_OBJS = (PWM(red, freq=80),
+                      PWM(green, freq=80),
+                      PWM(blue, freq=80))
+    return __RGB_OBJS
 
 
-def RGB(r=None, g=None, b=None):
-    global __RGB_STATE
+def __persistent_cache_manager(mode):
+    """
+    pds - persistent data structure
+    modes:
+        r - recover, s - save
+    """
+    if not __PERSISTENT_CACHE:
+        return
+    global __RGB_CACHE
+    if mode == 's':
+        # SAVE CACHE
+        with open('rgb.pds', 'w') as f:
+            f.write(','.join([str(k) for k in __RGB_CACHE]))
+        return
+    try:
+        # RESTORE CACHE
+        with open('rgb.pds', 'r') as f:
+            __RGB_CACHE = [int(data) for data in f.read().strip().split(',')]
+    except:
+        pass
+
+
+def rgb_cache_load_n_init(cache=None):
+    from sys import platform
+    global __PERSISTENT_CACHE
+    if cache is None:
+        __PERSISTENT_CACHE = True if platform == 'esp32' else False
+    else:
+        __PERSISTENT_CACHE = cache
+    rgb(0, 0, 0)                           # Init pins at bootup
+    __persistent_cache_manager('r')        # recover data cache
+    if __PERSISTENT_CACHE and __RGB_CACHE[3] == 1:
+        rgb()                              # Recover state if ON
+    return "CACHE: {}".format(__PERSISTENT_CACHE)
+
+
+def rgb(r=None, g=None, b=None):
+    global __RGB_CACHE
+    r = __RGB_CACHE[0] if r is None else r
+    g = __RGB_CACHE[1] if g is None else g
+    b = __RGB_CACHE[2] if b is None else b
     __RGB_init()
-    _rgb_state = False
-    if r is not None:
-        __RLED.duty(r)
-        _rgb_state = _rgb_state or (True if r > 0 else False)
-    if g is not None:
-        __GLED.duty(g)
-        _rgb_state = _rgb_state or (True if g > 0 else False)
-    if b is not None:
-        __BLED.duty(b)
-        _rgb_state = _rgb_state or (True if b > 0 else False)
-    __RGB_STATE = _rgb_state
-    return "SET RGB"
+    __RGB_CACHE[3] = False
+    __RGB_OBJS[0].duty(r)
+    __RGB_CACHE[3] |= True if r > 0 else False
+    __RGB_OBJS[1].duty(g)
+    __RGB_CACHE[3] |= True if g > 0 else False
+    __RGB_OBJS[2].duty(b)
+    __RGB_CACHE[3] |= True if b > 0 else False
+    # Cache channel duties if ON
+    if __RGB_CACHE[3]:
+        __RGB_CACHE = [__RGB_OBJS[0].duty(), __RGB_OBJS[1].duty(), __RGB_OBJS[2].duty(), 1]
+    else:
+        __RGB_CACHE[3] = 0
+    # Save config
+    __persistent_cache_manager('s')
+    return "SET rgb: R{}G{}B{}".format(r, g, b)
 
 
-def RGB_deinit():
-    global __RGB_STATE
-    RGB(0,0,0)
-    __RGB_STATE = False
-    return "DEINIT RGB"
-
-
-def RGB_toggle():
+def toggle():
     """
     Toggle led state based on the stored one
     """
-    global __RGB_STATE, __RGB_CACHE
-    if __RGB_STATE:
-        __RGB_STATE = False
-        __RGB_CACHE = __RLED.duty(), __GLED.duty(), __BLED.duty()
-        RGB(0, 0, 0)
-    else:
-        __RGB_STATE = True
-        RGB(__RGB_CACHE[0], __RGB_CACHE[1], __RGB_CACHE[2])
-    return "ON" if __RGB_STATE else "OFF"
+    if __RGB_CACHE[3]:
+        rgb(0, 0, 0)
+        return "OFF"
+    rgb()
+    return "ON"
 
 
 #########################################
@@ -69,4 +99,7 @@ def RGB_toggle():
 #########################################
 
 def help():
-    return 'RGB(r=<0-1000>, g=<0-1000>, b=<0,1000>)', 'RGB_toggle', 'RGB_deinit'
+    return 'rgb(r=<0-1000>, g=<0-1000>, b=<0,1000>)',\
+           'toggle', \
+           'rgb_cache_load_n_init(cache=None<True/False>)',\
+           '[!]PersistentStateCacheDisabledOn:esp8266'

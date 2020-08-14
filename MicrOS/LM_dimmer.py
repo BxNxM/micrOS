@@ -4,7 +4,7 @@
 __DIMMER_OBJ = None
 # DATA: state:ON/OFF, value:0-1000
 __DIMMER_CACHE = [0, 500]
-__PERSISTENT_CACHE = True
+__PERSISTENT_CACHE = False
 
 
 #########################################
@@ -22,28 +22,24 @@ def __dimmer_init():
 
 
 def __persistent_cache_manager(mode='r'):
-    global __DIMMER_CACHE
     """
     pds - persistent data structure
     modes:
-        r - recover
-        s - save
+        r - recover, s - save
     """
     if not __PERSISTENT_CACHE:
         return
+    global __DIMMER_CACHE
     if mode == 's':
         # SAVE CACHE
-        try:
-            with open('dimmer.pds', 'w') as f:
-                f.write("{},{}".format(__DIMMER_CACHE[0], __DIMMER_CACHE[1]))
-                return
-        except:
-            return
+        with open('dimmer.pds', 'w') as f:
+            f.write(','.join([str(k) for k in __DIMMER_CACHE]))
+        return
     try:
         # RESTORE CACHE
         with open('dimmer.pds', 'r') as f:
             __DIMMER_CACHE = [int(data) for data in f.read().strip().split(',')]
-    except Exception:
+    except:
         pass
 
 
@@ -63,13 +59,19 @@ def set_value(value=None):
     return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)
 
 
-def dimmer_cache_load_n_init(cache=True):
+def dimmer_cache_load_n_init(cache=None):
+    from sys import platform
     global __PERSISTENT_CACHE
-    __PERSISTENT_CACHE = cache
+    if cache is None:
+        __PERSISTENT_CACHE = True if platform == 'esp32' else False
+    else:
+        __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')
-    if __DIMMER_CACHE[0] == 0:
-        return "DIMMER OFF"
-    return set_value()
+    if __PERSISTENT_CACHE and __DIMMER_CACHE[0] == 1:
+        set_value()
+    else:
+        set_value(0)
+    return "CACHE: {}".format(__PERSISTENT_CACHE)
 
 
 def toggle():
@@ -85,4 +87,6 @@ def toggle():
 #########################################
 
 def help():
-    return 'set_value(value=<0-1000>)', 'toggle', 'dimmer_cache_load_n_init(cache=True)'
+    return 'set_value(value=<0-1000>)', 'toggle',\
+           'dimmer_cache_load_n_init(cache=True)', \
+           '[!]PersistentStateCacheDisabledOn:esp8266'

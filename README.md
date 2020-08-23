@@ -515,6 +515,8 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`  
 
+- Build micropython with frozen resources: https://github.com/micropython/micropython/tree/master/ports/esp8266
+
 GIT:
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
 

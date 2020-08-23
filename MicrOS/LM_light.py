@@ -18,9 +18,9 @@ def __RGB_init():
         red = Pin(get_pin_on_platform_by_key('pwm_1'))
         green = Pin(get_pin_on_platform_by_key('pwm_2'))
         blue = Pin(get_pin_on_platform_by_key('pwm_3'))
-        __RGB_OBJS = (PWM(red, freq=80),
-                      PWM(green, freq=80),
-                      PWM(blue, freq=80))
+        __RGB_OBJS = (PWM(red, freq=480),
+                      PWM(green, freq=480),
+                      PWM(blue, freq=480))
     return __RGB_OBJS
 
 

@@ -11,10 +11,11 @@ __PERSISTENT_CACHE = False
 #########################################
 
 
-def __init_NEOPIXEL(n=8):
+def __init_NEOPIXEL(n=24):
     """
     Init NeoPixel module
     n - number of led fragments
+    n - must be set from code! (no persistent object handling in LMs)
     """
     global __NEOPIXEL_OBJ
     if __NEOPIXEL_OBJ is None:
@@ -49,7 +50,7 @@ def __persistent_cache_manager(mode):
         pass
 
 
-def neopixel_cache_load_n_init(cache=None, n=8):
+def neopixel_cache_load_n_init(cache=None):
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
@@ -58,11 +59,11 @@ def neopixel_cache_load_n_init(cache=None, n=8):
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')        # recover data cache
     if __PERSISTENT_CACHE and __DCACHE[3] == 1:
-        neopixel(n=n)                           # Set each LED for the same color
+        neopixel()                         # Set each LED for the same color
     return "CACHE: {}".format(__PERSISTENT_CACHE)
 
 
-def neopixel(r=None, g=None, b=None, n=8):
+def neopixel(r=None, g=None, b=None):
     """
     Simple NeoPixel wrapper
     - Set all led fragments for the same color set
@@ -73,7 +74,7 @@ def neopixel(r=None, g=None, b=None, n=8):
     g = __DCACHE[1] if g is None else g
     b = __DCACHE[2] if b is None else b
     # Set each LED for the same color
-    for element in range(0, __init_NEOPIXEL(n=n).n):    # Iterate over led string elements
+    for element in range(0, __init_NEOPIXEL().n):    # Iterate over led string elements
         __NEOPIXEL_OBJ[element] = (r, g, b)             # Set LED element color
     __NEOPIXEL_OBJ.write()                              # Send data to device
     # Set cache
@@ -113,5 +114,5 @@ def toggle():
 
 def help():
     return 'neopixel(r=<0-255>, g, b, n=8', 'toggle', \
-           'neopixel_cache_load_n_init(cache=None<True/False>, n=<led_count>', \
+           'neopixel_cache_load_n_init(cache=None<True/False>', \
            'segment(s=<0-n>, r, g, b', '[!]PersistentStateCacheDisabledOn:esp8266'

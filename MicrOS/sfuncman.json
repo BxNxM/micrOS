@@ -40,10 +40,16 @@
     "help()"
   ],
   "neopixel": [
-    "neopixel_cache_load_n_init(cache=None, n=8)",
-    "neopixel(r=None, g=None, b=None, n=8)",
+    "neopixel_cache_load_n_init(cache=None)",
+    "neopixel(r=None, g=None, b=None)",
     "segment(s=0, r=None, g=None, b=None)",
     "toggle()",
+    "help()"
+  ],
+  "esp32": [
+    "hall()",
+    "intemp()",
+    "touchpin14()",
     "help()"
   ],
   "oled_widgets": [
@@ -62,6 +68,11 @@
     "set_value(value=None)",
     "dimmer_cache_load_n_init(cache=None)",
     "toggle()",
+    "help()"
+  ],
+  "adc": [
+    "measure()",
+    "action_fltr(limit=20, threshold=1)",
     "help()"
   ],
   "distance_HCSR04": [

@@ -1,10 +1,14 @@
+from sys import platform
 #########################################
 #       DIGITAL CONTROLLER PARAMS       #
 #########################################
 # Values: R, G, B, STATE_ON_OFF, IS_INITIALIZED
 __DCACHE = [100, 100, 100, 0]
 __NEOPIXEL_OBJ = None
-__PERSISTENT_CACHE = False
+__PERSISTENT_CACHE = None
+if __PERSISTENT_CACHE is None:
+    __PERSISTENT_CACHE = True if platform == 'esp32' else False
+
 
 #########################################
 #        DIGITAL rgb WITH 1 "PWM"       #
@@ -51,11 +55,8 @@ def __persistent_cache_manager(mode):
 
 
 def neopixel_cache_load_n_init(cache=None):
-    from sys import platform
     global __PERSISTENT_CACHE
-    if cache is None:
-        __PERSISTENT_CACHE = True if platform == 'esp32' else False
-    else:
+    if cache is not None:
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')        # recover data cache
     if __PERSISTENT_CACHE and __DCACHE[3] == 1:

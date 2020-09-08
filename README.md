@@ -1,6 +1,6 @@
 # micrOS - IOT platform
 
-![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo.png?raw=true)
+![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true)
 
 ## micrOS system, message-function visualization 
 

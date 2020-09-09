@@ -1,15 +1,16 @@
 from time import sleep
-IRQSEQ = 5000
+IRQSEQ = 2000
 
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
 # SCHEDULER TIME FORMAT: WD, H, M, S
 # 1:18:2:1
 # *:*:*:*
-scheduler_input = [('1:18:20:5', "MONDAY EVENT"),
-                   ('3:20:1:5', "WEDNESDAY EVENT"),
-                   ('*:8:15:5', "LAMP ON EVERYDAY"),
-                   ('*:10:1:5', "LAMP OFF EVERYDAY"),
-                   ('5:20:0:*', "EVERY SEC ON FRIDAY")]
+scheduler_input = [('1:18:20:5', "[1]MONDAY EVENT"),
+                   ('3:20:1:5', "[2]WEDNESDAY EVENT"),
+                   ('*:8:15:5', "[3]LAMP ON EVERYDAY"),
+                   ('*:10:1:5', "[4]LAMP OFF EVERYDAY"),
+                   ('5:20:0:*', "[5]EVERY SEC ON FRIDAY"),
+                   ('7:23:20:15', "[6]END OF WEEEEEEKKKK")]
 
 #############################
 #     SYSTEM TEST MODULES   #
@@ -61,10 +62,10 @@ def __scheduler_trigger(scheduler_fragment, sec_tolerance=2):
     # Time frame +/- corrections
     tolerance_min = __convert_sec_to_time(check_time_now_sec - sec_tolerance)
     tolerance_max = __convert_sec_to_time(check_time_now_sec + sec_tolerance)
-    print("[{}]\tmin{}<->max{}\tdelta: +/- {}".format(check_time_now,
-                                                      tolerance_min,
-                                                      tolerance_max,
-                                                      sec_tolerance), end='\r')
+    #print("[{}]\tmin{}<->max{}\tdelta: +/- {}".format(check_time_now,
+    #                                                  tolerance_min,
+    #                                                  tolerance_max,
+    #                                                  sec_tolerance), end='\r')
     sleep(0.0001) # TODO: REMOVE
     # Check WD - WEEK DAY
     if check_time[0] == '*' or check_time[0] == check_time_now[0]:
@@ -73,19 +74,25 @@ def __scheduler_trigger(scheduler_fragment, sec_tolerance=2):
             # Check M - MINUTE
             if check_time[2] == '*' or tolerance_min[1] <= check_time[2] <= tolerance_max[1]:
                 # Check S - SECOND
-                if check_time[3] == '*' or tolerance_min[2] <= check_time[3] <= tolerance_max[2]:
+                min, max = tolerance_min[2], tolerance_max[2]
+                if tolerance_min[2] > tolerance_max[2]:
+                    min, max = tolerance_max[2], tolerance_min[2]
+                if check_time[3] == '*' or min <= check_time[3] <= max:
                     # Execute load module TODO
-                    print("[EXEC][{} -- {}] EXECUTE LM: {}".format(check_time_now,
+                    print("[EXEC][{}] {} <-> {} [{}] EXECUTE LM: {}".format(check_time_now,
+                                                                   tolerance_min,
+                                                                   tolerance_max,
                                                                    scheduler_fragment[0],
                                                                    scheduler_fragment[1]))
-                '''
+                """
                 else:
                     print("[SKIP EXEC][{} -- {}] EXECUTE LM: {} [{}-{}]".format(check_time_now,
                                                                    scheduler_fragment[0],
                                                                    scheduler_fragment[1],
                                                                    tolerance_min,
                                                                    tolerance_max))
-                '''
+                """
+
 
 
 def scheduler():

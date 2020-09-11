@@ -48,6 +48,8 @@ def default_config():
                                       "socport": 9008,
                                       "devip": "n/a",
                                       "timirq": False,
+                                      "cron": False,
+                                      "cron_tasks": 'n/a',
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
                                       "irqmembuf": 1300,

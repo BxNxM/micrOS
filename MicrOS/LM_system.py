@@ -65,5 +65,10 @@ def cachedump():
     return return_str
 
 
+def scheduler(task='*:*:*:*!HELLOBELLO', period=2):
+    from Scheduler import scheduler
+    return scheduler(task, period)
+
+
 def help():
-    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump'
+    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump', 'scheduler(task, irqperiod)'

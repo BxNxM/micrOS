@@ -12,6 +12,7 @@ Designed by Marcell Ban aka BxNxM
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
 from LogicalPins import get_pin_on_platform_by_key
+from Scheduler import scheduler
 
 
 #################################################################
@@ -35,10 +36,25 @@ def set_emergency_buffer():
 
 
 CFG_TIMIRQCBF = 'n/a'
+CFG_CRON_TASKS = 'n/a'
+
+
 def secureInterruptHandler(timer=None):
     """
     TIMER INTERRUPT CALLBACK FUNCTION WRAPPER
+    - FIRST PRIORITY: SCHEDULER
+    - SECOND PRIORITY: SIMPLE PERIODIC CALLBACK
     """
+    try:
+        if CFG_CRON_TASKS.lower() != 'n/a':
+            period = int(cfgget("timirqseq"))
+            state = scheduler(CFG_CRON_TASKS, period)
+            if not state: console_write("[IRQ] TIMIRQ (cron) scheduler error")
+            return state
+    except Exception as e:
+        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(CFG_CRON_TASKS, e))
+        return
+
     try:
         if CFG_TIMIRQCBF.lower() != 'n/a':
             # Execute CBF from config
@@ -49,12 +65,22 @@ def secureInterruptHandler(timer=None):
 
 
 def enableInterrupt():
+    if cfgget("timirq"):
+        # Select simple or advanced scheduler options
+        if cfgget('cron'):
+            __enableInterruptScheduler()
+        else:
+            __enableInterruptSimple()
+
+
+def __enableInterruptSimple():
     """
-    TIMER INTERRUPT CONFIGURATION
+    SIMPLE TIMER INTERRUPT CONFIGURATION
     """
     global CFG_TIMIRQCBF
-    CFG_TIMIRQCBF = cfgget('timirqcbf')
-    if cfgget("timirq") and CFG_TIMIRQCBF.lower() != 'n/a':
+    # LOAD DATA FOR TIMER IRQ: cfgget("timirq")
+    if cfgget('timirqcbf').lower() != 'n/a':
+        CFG_TIMIRQCBF = cfgget('timirqcbf')
         try:
             period_ms_usr = int(cfgget("timirqseq"))
         except Exception as e:
@@ -62,11 +88,33 @@ def enableInterrupt():
             period_ms_usr = 3000
         console_write("[IRQ] TIMIRQ ENABLED: SEQ: {} CBF: {}".format(period_ms_usr, CFG_TIMIRQCBF))
         from machine import Timer
-        # Init timer irq with callback function wrapper
+        # INIT TIMER IRQ with callback function wrapper
         timer = Timer(0)
         timer.init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
     else:
         console_write("[IRQ] TIMIRQ: isenable: {} callback: {}".format(cfgget("timirq"), cfgget('timirqcbf')))
+
+
+def __enableInterruptScheduler():
+    """
+    SMART TIMER INTERRUPT CONFIGURATION
+    """
+    global CFG_CRON_TASKS
+    # LOAD DATA FOR CRON SCHEDULERL: cfgget("timirq") and cfgget('cron')
+    if cfgget('cron_tasks') != 'n/a':
+        CFG_CRON_TASKS = cfgget('cron_tasks')
+        try:
+            period_ms_usr = int(cfgget("timirqseq"))
+        except Exception as e:
+            console_write("[IRQ] TIMIRQ period query error: {}".format(e))
+            period_ms_usr = 3000
+        console_write("[IRQ] TIMIRQ ENABLED: SEQ: {} TaskScheduler (cron)".format(period_ms_usr))
+        from machine import Timer
+        # INIT TIMER IRQ with callback function wrapper
+        timer = Timer(0)
+        timer.init(period=period_ms_usr, mode=Timer.PERIODIC, callback=secureInterruptHandler)
+    else:
+        console_write("[IRQ] TIMIRQ (cron): isenable: {} tasks: {}".format(cfgget("timirq"), CFG_CRON_TASKS))
 
 #################################################################
 #                    EXTERNAL INTERRUPT(S)                      #
@@ -78,6 +126,8 @@ def enableInterrupt():
 
 
 CFG_EVIRQCBF = 'n/a'
+
+
 def secureEventInterruptHandler(pin=None):
     """
     EVENT INTERRUPT CALLBACK FUNCTION WRAPPER

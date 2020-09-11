@@ -17,6 +17,7 @@
     "ntp()",
     "module(unload=None)",
     "cachedump()",
+    "scheduler(task='*:*:*:*!HELLOBELLO', period=2)",
     "help()"
   ],
   "light": [

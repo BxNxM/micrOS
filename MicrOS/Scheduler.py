@@ -1,4 +1,3 @@
-# DUMMY IRQ VALUE
 from time import localtime
 from InterpreterCore import execute_LM_function_Core
 
@@ -42,9 +41,9 @@ def __scheduler_trigger(time_now, scheduler_fragment, sec_tolerance=2):
     tolerance_min = __convert_sec_to_time(check_time_now_sec - sec_tolerance)
     tolerance_max = __convert_sec_to_time(check_time_now_sec + sec_tolerance)
     print("{} [{}]\tmin{}<->max{}\tdelta: +/- {}".format(task_id, check_time_now,
-                                                              tolerance_min,
-                                                              tolerance_max,
-                                                              sec_tolerance), end='\r')
+                                                         tolerance_min,
+                                                         tolerance_max,
+                                                         sec_tolerance), end='\r')
     # Check WD - WEEK DAY
     if check_time[0] == '*' or check_time[0] == check_time_now[0]:
         # Check H - HOUR
@@ -60,11 +59,11 @@ def __scheduler_trigger(time_now, scheduler_fragment, sec_tolerance=2):
                     if check_time[3] == '*' or task_id not in LAST_CRON_TASK:
                         lm_state = execute_LM_function_Core(scheduler_fragment[1].split())
                         print("[CRON]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(check_time_now,
-                                                                                   tolerance_min,
-                                                                                   tolerance_max,
-                                                                                   scheduler_fragment[0],
-                                                                                   lm_state,
-                                                                                   scheduler_fragment[1]))
+                                                                                             tolerance_min,
+                                                                                             tolerance_max,
+                                                                                             scheduler_fragment[0],
+                                                                                             lm_state,
+                                                                                             scheduler_fragment[1]))
                         # EXECUTED CACHE
                         if check_time[3] != '*' and check_time[2] != '*':
                             # SAVE WHEN Sec and Min not *
@@ -95,8 +94,6 @@ def scheduler(raw_cron_input, irqperiod):
     """
     scheduler_input = deserialize_raw_input(raw_cron_input)
     return_state = False
-    # Format: Y, M, D, H, M, S, WD, YD
-    #time_now = GEN.__next__()       # TODO: replace with system time
     time_now = localtime()[0:8]
     for cron in scheduler_input:
         state = __scheduler_trigger(time_now, cron, sec_tolerance=irqperiod)

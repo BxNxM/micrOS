@@ -49,7 +49,7 @@ def default_config():
                                       "devip": "n/a",
                                       "timirq": False,
                                       "cron": False,
-                                      "cron_tasks": 'n/a',
+                                      "crontasks": 'n/a',
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
                                       "irqmembuf": 1300,

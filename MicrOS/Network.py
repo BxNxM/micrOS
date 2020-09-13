@@ -53,11 +53,11 @@ def setNTP_RTC():
 #################################################################
 
 
-def set_uid_macaddr_hex(sta_if=None):
+def set_uid_macaddr_hex(interface=None):
     uid = "n/a"
-    if sta_if is not None:
+    if interface is not None:
         uid = ""
-        for ot in list(sta_if.config('mac')):
+        for ot in list(interface.config('mac')):
             uid += hex(ot)
     cfgput("hwuid", uid)
 
@@ -162,6 +162,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
     if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
         cfgput("devip", ap_if.ifconfig()[0])
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
+    set_uid_macaddr_hex(ap_if)
     return ap_if.active()
 
 #################################################################

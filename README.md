@@ -115,25 +115,27 @@ Search and Connect to the device
 
 | Parameters names |   Default value and type    | Reboot required |          Description            |
 | ---------------- | :-------------------------: | :-------------: | ------------------------------- |
-| staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi station name 
-| stapwd		   | `your_wifi_passwd` `<str>`  |       Yes       | Wifi station password
-| devfid		   |    `node01`  `<str>`        |       No        | Device friendly name / AP name  - access point mode
-| appwd		       |   `ADmin123`  `<str>`       |       Yes       | AP password - access point mode
-| pled			   |     `True`    `<bool>`      |      Yes        | Progress led - heart beat
+| staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi station name
+| stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi station password
+| devfid           |    `node01`  `<str>`        |       No        | Device friendly name / AP name  - access point mode
+| appwd            |   `ADmin123`  `<str>`       |       Yes       | AP password - access point mode
+| pled             |     `True`    `<bool>`      |      Yes        | Progress led - heart beat
 | dbg	           |     `True`    `<bool>`      |       Yes       | Debug mode - enable system printout
-| soctout		   |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (because single user | handling)
-| socport		   |    `9008`  `<int>`          |       Yes       | Socket / Web server service port
-| timirq		   |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - "subprocess"
+| soctout          |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (because single user | handling)
+| socport          |    `9008`  `<int>`          |       Yes       | Socket / Web server service port
+| timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - "subprocess"
 | timirqcbf        |      `n/a`   `<str>`        |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
+| cron             |     `False`  `<bool>`       |       Yes       | Cron time based task scheduling enabler in timer irq
+| crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
 | timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
-| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt - "subprocess"
+| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt - "subprocess", e.g.: button press
 | extirqcbf        |     `n/a`  `<str>`          |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
 | boothook         |    `n/a` `<str>`            |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
 | irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer configuration in case of `timirq` or `exitirq` is/are enabled: default 1000 byte.
-| gmttime          |     `+1`   `<int>`          |        Yes      | NTP - RTC - timezone setup 
-| nwmd 		       |     `n/a`  `<str>`          |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
-| hwuid		       |      `n/a`  `<str>`         |       N/A       | STATE STORAGE - hardware address - dev uid
-| devip		       |      `n/a`  `<str>`         |      N/A        | first stored IP in STA mode will be the device static IP on the network or set static IP manually here
+| gmttime          |     `+1`   `<int>`          |        Yes      | NTP - RTC - timezone setup
+| nwmd             |     `n/a`  `<str>`          |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
+| hwuid            |      `n/a`  `<str>`         |       N/A       | STATE STORAGE - hardware address - dev uid
+| devip            |      `n/a`  `<str>`         |      N/A        | first stored IP in STA mode will be the device static IP on the network or set static IP manually here
 | boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high
 
 ## Logical pin association

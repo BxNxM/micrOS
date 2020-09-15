@@ -152,7 +152,7 @@ def init_eventPIN():
     EVENT INTERRUPT CONFIGURATION
     """
     global CFG_EVIRQCBF
-    if cfgget('extirq') and CFG_EVIRQCBF.lower() != 'n/a':
+    if cfgget('extirq') and cfgget('extirqcbf').lower() != 'n/a':
         CFG_EVIRQCBF = cfgget('extirqcbf')
         pin = get_pin_on_platform_by_key('pwm_4')
         console_write("[IRQ] EVENTIRQ ENABLED PIN: {} CBF: {}".format(pin, CFG_EVIRQCBF))

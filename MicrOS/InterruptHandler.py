@@ -20,11 +20,11 @@ from LogicalPins import get_pin_on_platform_by_key
 from Scheduler import scheduler
 
 
-# TIMER IRQ AND CRON STATEFUL VARIABLES
-CFG_TIMIRQCBF = 'n/a'
-CFG_CRON_TASKS = 'n/a'
+# TIMER IRQ AND CRON VALUES PERSISTENT CACHE
+# timirqcbf (simple), crontasks, timirqseq
+CFG_TIMER_IRQ = ['n/a', 'n/a', 3]
 
-# EVENT IRQ STATEFUL VARIABLE
+# EVENT IRQ VALUE PERSISTENT CACHE
 CFG_EVIRQCBF = 'n/a'
 
 #################################################################
@@ -54,20 +54,19 @@ def set_emergency_buffer():
 def secureInterruptHandlerSimple(timer=None):
     try:
         # Execute CBF from cached config
-        state = execute_LM_function_Core(CFG_TIMIRQCBF.split(' '))
+        state = execute_LM_function_Core(CFG_TIMER_IRQ[0].split(' '))
         if not state:
-            console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
+            console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(CFG_TIMER_IRQ[0]))
     except Exception as e:
-        console_write("[IRQ] TIMIRQ callback: {} error: {}".format(CFG_TIMIRQCBF, e))
+        console_write("[IRQ] TIMIRQ callback: {} error: {}".format(CFG_TIMER_IRQ[0], e))
 
 
 def secureInterruptHandlerScheduler(timer=None):
     try:
-        period = int(cfgget("timirqseq")/1000)
-        # Execute CBF LIST from cached config
-        scheduler(CFG_CRON_TASKS, period)
+        # Execute CBF LIST from local cached config with timirqseq in sec
+        scheduler(CFG_TIMER_IRQ[1], CFG_TIMER_IRQ[2])
     except Exception as e:
-        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(CFG_CRON_TASKS, e))
+        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(CFG_TIMER_IRQ[1], e))
 
 
 #############################################
@@ -88,8 +87,10 @@ def enableInterrupt():
         # Configure advanced scheduler OR simple repeater
         if cfgget('cron') and cfgget('crontasks').lower() != 'n/a':
             console_write("|-- TIMER IRQ MODE: SCHEDULER")
+            # ENABLE ADVANCED SCHEDULER (BASED ON SIMPLE TIMIRQ)
             __enableInterruptScheduler()
             return
+        # ENABLE SIMPLE PERIODIC INTERRUPT
         console_write("|-- TIMER IRQ MODE: SIMPLE")
         __enableInterruptSimple()
 
@@ -99,9 +100,9 @@ def __enableInterruptScheduler():
     SMART TIMER INTERRUPT CONFIGURATION
     # MUST BE CHECK BEFORE CALL: cfgget("timirq") and cfgget('cron') and cfgget('crontasks')
     """
-    global CFG_CRON_TASKS
     # CACHE TASKS FOR CBF
-    CFG_CRON_TASKS = cfgget('crontasks')
+    CFG_TIMER_IRQ[1] = cfgget('crontasks')
+    CFG_TIMER_IRQ[2] = int(cfgget("timirqseq") / 1000)
     from machine import Timer
     # INIT TIMER IRQ with callback function wrapper
     timer = Timer(0)
@@ -112,11 +113,10 @@ def __enableInterruptSimple():
     """
     SIMPLE TIMER INTERRUPT CONFIGURATION
     """
-    global CFG_TIMIRQCBF
     # LOAD DATA FOR TIMER IRQ: cfgget("timirq")
-    if cfgget('timirqcbf').lower() != 'n/a':
-        # CACHE TASK FOR CBF
-        CFG_TIMIRQCBF = cfgget('timirqcbf')
+    # CACHE TASK FOR CBF
+    CFG_TIMER_IRQ[0] = cfgget('timirqcbf')
+    if CFG_TIMER_IRQ[0].lower() != 'n/a':
         from machine import Timer
         # INIT TIMER IRQ with callback function wrapper
         timer = Timer(0)
@@ -142,7 +142,7 @@ def secureEventInterruptHandler(pin=None):
         if CFG_EVIRQCBF.lower() != 'n/a':
             state = execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
             if not state:
-                console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_TIMIRQCBF))
+                console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_EVIRQCBF))
     except Exception as e:
         console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(CFG_EVIRQCBF, e))
 

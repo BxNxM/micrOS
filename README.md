@@ -138,6 +138,9 @@ Search and Connect to the device
 | devip            |      `n/a`  `<str>`         |      N/A        | first stored IP in STA mode will be the device static IP on the network or set static IP manually here
 | boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high
 
+
+> Note: To enabling `cron` scheuler - hardware interrupt must be enabled `timirq` (for cron logic sampling), perid will be `timirqseq`
+
 ## Logical pin association
 
 [MicrOS/LogicalPins.py](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LogicalPins.py)

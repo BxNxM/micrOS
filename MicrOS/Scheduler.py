@@ -29,14 +29,14 @@ def systime(sec):
 
 
 def system_time_generator(max=100000000):
-    from random import randint
-    generator = (systime(sec) for sec in range(0, max, 2))
+    generator = (systime(sec) for sec in range(0, max, 3))
     return generator
 
 
-def dummyirq_sec(raw_cron_input):
+def dummyirq_sec(raw_cron_input, irqperiod):
+    from time import sleep
     while True:
-        scheduler(raw_cron_input, irqperiod=2)
+        scheduler(raw_cron_input, irqperiod)
         sleep(0.00001)
 
 
@@ -73,33 +73,22 @@ def __cron_task_cache_manager(now_in_sec, sec_tolarent):
             LAST_CRON_TASKS.remove(LAST_CRON_TASKS[index])
 
 
-def __scheduler_trigger(cron_time_now, scheduler_fragment, sec_tolerance=2):
+def __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, scheduler_fragment, sec_tolerance=2):
     """
     SchedulerCore logic
         cron time now format: WD, H, M, S
     """
     check_time = tuple(int(t.strip()) if t.strip() != '*' else t.strip() for t in scheduler_fragment[0].split(':'))
+    # Cron actual time (now) parts summary in sec
+    check_time_now_sec = check_time_now_sec_tuple[0] + check_time_now_sec_tuple[1] + check_time_now_sec_tuple[2]
+    # Cron overall requested time in sec - hour in sec, minute in sec, sec
+    check_time_scheduler_sec = int(check_time_now_sec_tuple[0] if check_time[1] == '*' else check_time[1] * 3600) \
+                               + int(check_time_now_sec_tuple[1] if check_time[2] == '*' else check_time[2] * 60) \
+                               + int(check_time_now_sec_tuple[2] if check_time[3] == '*' else check_time[3])
 
-    # Cron time now parts in sec
-    time_now_hour_in_sec = cron_time_now[1] * 3600
-    time_now_minute_in_sec = cron_time_now[2] * 60
-    time_now_sec_in_sec = cron_time_now[3]
-    # Cron overall time now in sec
-    check_time_now_sec = time_now_hour_in_sec + time_now_minute_in_sec + time_now_sec_in_sec
-
-    # Cron requested time parts in sec
-    time_task_hour_in_sec = time_now_hour_in_sec if check_time[1] == '*' else check_time[1] * 3600
-    time_task_minute_in_sec = time_now_minute_in_sec if check_time[2] == '*' else check_time[2] * 60
-    time_task_sec_in_sec = time_now_sec_in_sec if check_time[3] == '*' else check_time[3]
-    # Cron overall requested time in sec
-    check_time_scheduler_sec = time_task_hour_in_sec + time_task_minute_in_sec + time_task_sec_in_sec
-
-    # Delete unnecessary variables
-    del time_task_hour_in_sec, time_task_minute_in_sec, time_task_sec_in_sec
-    del time_now_hour_in_sec, time_now_minute_in_sec, time_now_sec_in_sec
 
     # Time frame +/- corrections
-    tolerance_min_sec = check_time_now_sec - sec_tolerance
+    tolerance_min_sec = 0 if check_time_now_sec - sec_tolerance < 0 else check_time_now_sec - sec_tolerance
     tolerance_max_sec = check_time_now_sec + sec_tolerance
 
     task_id = "{}:{}|{}".format(check_time[0], check_time_scheduler_sec, scheduler_fragment[1].replace(' ', ''))
@@ -145,9 +134,22 @@ def scheduler(raw_cron_input, irqperiod):
     scheduler_input = deserialize_raw_input(raw_cron_input)
     return_state = False
     time_now = localtime()[0:8]
-    # time_now = GEN.__next__()
+    #time_now = GEN.__next__()   # TODO: remove after test
+
+    # Actual time - WD, H, M, S
     cron_time_now = (time_now[-2], time_now[-5], time_now[-4], time_now[-3])
+    # Cron overall time now in sec - hour in sec, minute in sec, sec
+    check_time_now_sec_tuple = (cron_time_now[1] * 3600, cron_time_now[2] * 60, cron_time_now[3])
+
     for cron in scheduler_input:
-        state = __scheduler_trigger(cron_time_now, cron, sec_tolerance=irqperiod)
+        state = __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, cron, sec_tolerance=irqperiod)
         return_state |= state
     return return_state
+
+
+'''
+if __name__ == '__main__':
+    # TEST CODE
+    from ConfigHandler import cfgget
+    dummyirq_sec(cfgget('crontasks'), int(cfgget('timirqseq')/1000))
+'''

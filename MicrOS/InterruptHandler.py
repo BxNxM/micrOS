@@ -7,7 +7,7 @@ handling dedicated to micrOS framework.
 - Time based IRQ:
     - Simple with fix period callback
     - Advanced - time stump ! LM function;
-    -            1-7:0-59:0-59:0-59!system heartbeat; etc.
+    -            0-6:0-24:0-59:0-59!system heartbeat; etc.
 
 Designed by Marcell Ban aka BxNxM
 """

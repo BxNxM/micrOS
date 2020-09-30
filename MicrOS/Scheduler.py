@@ -43,6 +43,7 @@ def dummyirq_sec(raw_cron_input, irqperiod):
 GEN = system_time_generator()
 '''
 
+
 #############################
 #    SCHEDULER FUNCTIONS    #
 #############################
@@ -86,7 +87,6 @@ def __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, scheduler_fragm
                                + int(check_time_now_sec_tuple[1] if check_time[2] == '*' else check_time[2] * 60) \
                                + int(check_time_now_sec_tuple[2] if check_time[3] == '*' else check_time[3])
 
-
     # Time frame +/- corrections
     tolerance_min_sec = 0 if check_time_now_sec - sec_tolerance < 0 else check_time_now_sec - sec_tolerance
     tolerance_max_sec = check_time_now_sec + sec_tolerance
@@ -100,17 +100,19 @@ def __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, scheduler_fragm
             __cron_task_cache_manager(check_time_now_sec, sec_tolerance)
             if check_time[3] == '*' or task_id not in LAST_CRON_TASKS:
                 lm_state = execute_LM_function_Core(scheduler_fragment[1].split())
-                print("[CRON]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
-                                                                                     __convert_sec_to_time(tolerance_min_sec),
-                                                                                     __convert_sec_to_time(tolerance_max_sec),
-                                                                                     scheduler_fragment[0],
-                                                                                     lm_state,
-                                                                                     scheduler_fragment[1]))
+                if not lm_state:
+                    print("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
+                                                                                               __convert_sec_to_time(tolerance_min_sec),
+                                                                                               __convert_sec_to_time(tolerance_max_sec),
+                                                                                               scheduler_fragment[0],
+                                                                                               lm_state,
+                                                                                               scheduler_fragment[1]))
+
                 # SAVE TASK TO CACHE
                 if check_time[3] != '*':
                     # SAVE WHEN SEC not *
                     LAST_CRON_TASKS.append(task_id)
-                    return True
+                return True
     return False
 
 
@@ -134,7 +136,7 @@ def scheduler(raw_cron_input, irqperiod):
     scheduler_input = deserialize_raw_input(raw_cron_input)
     return_state = False
     time_now = localtime()[0:8]
-    #time_now = GEN.__next__()   # TODO: remove after test
+    # time_now = GEN.__next__()   # TODO: remove after test
 
     # Actual time - WD, H, M, S
     cron_time_now = (time_now[-2], time_now[-5], time_now[-4], time_now[-3])

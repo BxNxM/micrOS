@@ -60,6 +60,7 @@ def __shell(msg, SocketServerObj):
         SocketServerObj.reply_message("   hello   - default hello msg - identify device (SocketServer)")
         SocketServerObj.reply_message("   version - shows MicrOS version")
         SocketServerObj.reply_message("   exit    - exit from shell socket prompt (SocketServer)")
+        SocketServerObj.reply_message("   webrepl - start web repl for file transfers - update")
         SocketServerObj.reply_message("   reboot  - system safe reboot (SocketServer)")
         SocketServerObj.reply_message("[CONF] Configure mode (built-in):")
         SocketServerObj.reply_message("   configure|conf     - Enter conf mode")

@@ -48,7 +48,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.1.5-0'
+    __socket_interpreter_version = '0.1.6-0'
 
     def __new__(cls):
         """
@@ -159,6 +159,9 @@ class SocketServer:
             data_str = ""
             self.reply_message("Reboot micrOS system.")
             self.__safe_reboot_system()
+        if data_str == 'webrepl':
+            data_str = ""
+            self.reply_message(self.start_micropython_webrepl())
         return str(data_str)
 
     def __safe_reboot_system(self):
@@ -254,6 +257,20 @@ class SocketServer:
         console_write("[ socket server ] <<destructor>>")
         self.__deinit_socket()
 
+    def start_micropython_webrepl(self):
+        self.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
+        self.reply_message("  [!] micrOS socket shell will be available again after reboot.")
+        self.reply_message("  \trestart machine shortcut: import reset")
+        self.reply_message("  Connect over http://micropython.org/webrepl/ ws://{}:8266".format(self.addr[0]))
+        self.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
+        self.reply_message(" See you soon! :)")
+        self.__deinit_socket()
+        try:
+            import webrepl
+            self.reply_message(webrepl.start(password=cfgget('appwd')))
+        except Exception as e:
+            return e
+        return True
 
 #########################################################
 #                 MAIN (FOR TEST REASONS)               #

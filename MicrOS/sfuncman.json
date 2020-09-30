@@ -17,7 +17,6 @@
     "ntp()",
     "module(unload=None)",
     "cachedump()",
-    "scheduler(cron='*:*:*:*', lm='system', fg='heartbeat', period=2)",
     "help()"
   ],
   "light": [

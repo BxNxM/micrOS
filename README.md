@@ -520,9 +520,10 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - Create callgraph: [pycallgraph](http://pycallgraph.slowchop.com/en/master/)
 
-- Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`  
+- Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`
 
 - Build micropython with frozen resources: https://github.com/micropython/micropython/tree/master/ports/esp8266
+
 
 GIT:
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
@@ -531,5 +532,6 @@ GIT:
 
 - Pretty git view: `git log --pretty=oneline`
 
+- File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'`
 
 git push -u origin master

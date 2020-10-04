@@ -261,7 +261,7 @@ class SocketServer:
         self.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
         self.reply_message("  [!] micrOS socket shell will be available again after reboot.")
         self.reply_message("  \trestart machine shortcut: import reset")
-        self.reply_message("  Connect over http://micropython.org/webrepl/ ws://{}:8266".format(self.addr[0]))
+        self.reply_message("  Connect over http://micropython.org/webrepl/ ws://{}:8266".format(cfgget("devip")))
         self.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
         self.reply_message(" See you soon! :)")
         self.__deinit_socket()

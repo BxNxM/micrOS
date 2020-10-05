@@ -87,7 +87,9 @@ class ConnectionData():
     @staticmethod
     def select_device(dev=None):
         device_choose_list = []
+        device_fid_in_order = []
         device_was_found = False
+        device_fid = None
         if dev is None:
             print("Activate MicrOS device connection address")
         if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:
@@ -105,6 +107,7 @@ class ConnectionData():
                                                                  Colors.OKBLUE, fuid, Colors.NC, \
                                                                  devip, uid))
                 device_choose_list.append(devip)
+                device_fid_in_order.append(fuid)
                 if device is not None:
                     if dev == uid or dev == devip or dev == fuid:
                         print("{}Device was found: {}{}".format(Colors.OK, dev, Colors.NC))
@@ -115,10 +118,12 @@ class ConnectionData():
                 if len(device_choose_list) > 1:
                     index = int(input("{}Choose a device index: {}".format(Colors.OK, Colors.NC)))
                     ConnectionData.HOST = device_choose_list[index]
+                    device_fid = device_fid_in_order[index]
                     print("Device IP was set: {}".format(ConnectionData.HOST))
                 else:
                     print("{}Device not found.{}".format(Colors.ERR, Colors.NC))
                     sys.exit(0)
+        return ConnectionData.HOST, device_fid
 
     @staticmethod
     def auto_execute(search=False, status=False, dev=None):

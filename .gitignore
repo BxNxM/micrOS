@@ -1,4 +1,5 @@
 micropython_repo/micropython/
+micropython_repo/webrepl/
 MicrOS/*.mpy
 **.pyc
 MicrOS/node_config.json

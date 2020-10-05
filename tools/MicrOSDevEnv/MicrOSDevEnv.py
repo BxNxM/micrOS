@@ -9,6 +9,9 @@ import pprint
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 import LocalMachine
 from TerminalColors import Colors
+sys.path.append(os.path.join(MYPATH, '../'))
+import socketClient
+
 
 class MicrOSDevTool():
 
@@ -36,6 +39,7 @@ class MicrOSDevTool():
         self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "../../mpy-MicrOS")
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
+        self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
         self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", "LM_air.py", "LM_servo.py", "LM_neopixel.py", "LM_switch.py", "LM_dimmer.py"]
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
@@ -562,7 +566,6 @@ class MicrOSDevTool():
         return True
 
     def get_micrOS_version(self, config_string=None):
-        code_version_var_name = 'self.__socket_interpreter_version'
         # Get MicrOS local repo version
         micros_version_module = os.path.join(self.MicrOS_dir_path, 'SocketServer.py')
         with open(micros_version_module, 'r') as f:
@@ -706,6 +709,113 @@ class MicrOSDevTool():
                 self.console("Deploy micropython error", state='err')
         else:
             self.console("Erase device error", state='err')
+
+    def __clone_webrepl_repo(self):
+        if os.path.isdir(os.path.dirname(self.webreplcli_repo_path)) and os.path.isfile(self.webreplcli_repo_path):
+            return True
+        # Download webrepl repo if necessary
+        if not os.path.isfile(self.webreplcli_repo_path):
+            command = 'pushd {pushd}; git clone {url} {name}; popd'.format(
+                pushd=os.path.dirname(os.path.dirname(self.webreplcli_repo_path)),
+                name='webrepl',
+                url='https://github.com/micropython/webrepl.git')
+            self.console("Clone webrepl repo: {}".format(command))
+            if not self.dummy_exec:
+                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+            else:
+                exitcode = 0
+                stderr = ''
+            if exitcode == 0:
+                self.console("\tClone {}DONE{}".format(Colors.OK, Colors.NC))
+            else:
+                self.console("GIT CLONE {}ERROR{}:\nstdout: {}\nstderr: {}".format(Colors.ERR, Colors.NC, stdout, stderr))
+                return False
+        return True
+
+    def update_with_webrepl(self, force=False):
+        """
+        OTA UPDATE
+            git clone https://github.com/micropython/webrepl.git
+            info: https://techoverflow.net/2020/02/22/how-to-upload-files-to-micropython-using-webrepl-using-webrepl_cli-py/
+            ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
+        """
+        if not self.__clone_webrepl_repo():
+            self.console("Webrepl repo not available...")
+            return False
+        self.precompile_micros()
+
+        # Get specific device from device list
+        self.console("Select device to update ...")
+        socketClient.ConnectionData.read_MicrOS_device_cache()
+        # Get device IP and friendly name
+        device_ip, fuid = socketClient.ConnectionData.select_device()
+        self.console("\tDevice was selected: {} -> {}".format(fuid, device_ip))
+
+        # Get repo version
+        with open(os.path.join(self.MicrOS_dir_path, 'SocketServer.py'), 'r') as f:
+            code_lines_string = f.read()
+        regex = r"\d+.\d+.\d+-\d+"
+        repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
+
+        # Get data before update from device
+        status, answer_msg = socketClient.run(['--dev', fuid, 'version'])
+        device_version = answer_msg.strip() if status else Exception("Get device version failed")
+        status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
+        webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
+        self.console("  Device: {} ({})".format(fuid, device_ip))
+        self.console("  Device version: {}".format(device_version))
+        self.console("  Repo version: {}".format(repo_version))
+        self.console("  WebRepl password: {}".format(webrepl_password))
+
+        if device_version == repo_version:
+            if not force:
+                self.console("\t[SKIP UPDATE] Device on same version with repo: {} == {}".format(device_version, repo_version))
+                self.console("\tBye")
+                return False
+
+        self.console("For continue write Y, micrOS socket won't be available until reset, webrepl for file transfer will be activated.")
+        if 'n' == input("Do you want to continue? Y/N  ").lower():
+            self.console("\tBye")
+            return False
+        else:
+            status, answer_msg = socketClient.run(['--dev', fuid, 'help'])
+            if status:
+                if 'webrepl' in answer_msg:
+                    status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
+                    self.console(answer_msg)
+                    time.sleep(2)
+                else:
+                    self.console("Webrepl not available on device, update over USB.")
+                    return False
+            else:
+                self.console("Get help from device failed.")
+                return False
+
+        self.console("Copy files to device...")
+        self.console("\tCreate update tag on device (webrepl force start) - in case of failure")
+        # TODO???: create .UPDATE file - micrOS boot file function - recovery mode
+        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)\
+                        if pysource.endswith('.py') or pysource.endswith('.mpy')]:
+            if 'boot.py' in source or 'boot.mpy' in source or 'main.py' in source or 'main.mpy' in source:
+                self.console("\t[SKIP] updating {} - only available over USB update".format(source))
+                continue
+            source_absolute_path = os.path.join(self.precompiled_MicrOS_dir_path, source)
+            source_name = os.path.basename(source)
+            self.console("{} copy over webrepl {}:{}".format(source_absolute_path, device_ip, source_name))
+            command = '{api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path, pwd=webrepl_password,
+                                                                                input_file=source_absolute_path, host=device_ip,
+                                                                                target_path=source_name)
+            if self.dummy_exec:
+                self.console("Webrepl CMD: {}".format(command))
+            else:
+                LocalMachine.CommandHandler.run_command(command, shell=True)
+        self.console("\tRemove update tag - update was successfully finished")
+        # TODO???: remove .UPDATE file - micrOS boot file function - recovery mode
+
+        self.console("Please reset your device.")
+        self.console("\t[1]HINT: open in browser: http://micropython.org/webrepl/#{}:8266/".format(device_ip))
+        self.console("\t[2]HINT: log in and execute: import reset")
+        self.console("\t[3]HINT: OR skip [2] point and reset manually")
 
 
 if __name__ == "__main__":

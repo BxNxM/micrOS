@@ -41,15 +41,12 @@ def arg_parse():
     dev_group.add_argument("-b", "--backup_node_config", action="store_true", help="Backup usb connected node config.")
     dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update")
     dev_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
+    dev_group.add_argument("-o", "--OTA", action="store_true", help="OTA (OverTheArir update with webrepl)")
+
 
     toolkit_group = parser.add_argument_group("Toolkit development")
     toolkit_group.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")
-
     args = parser.parse_args()
-
-    if args.force_update:
-        args.update = True
-
     return args
 
 
@@ -85,6 +82,10 @@ def connect(args=None):
         socketClient.run(arg_list=args.split(' '))
     else:
         socketClient.run(arg_list=[])
+
+
+def ota_update(api_obj, force=False):
+    api_obj.update_with_webrepl(force=force)
 
 
 def node_status():
@@ -138,6 +139,7 @@ def applications(app):
     else:
         print("[ APP ] {} was not found.".format(app))
 
+
 def __execute_app(app_name, app_postfix='_app'):
     app_name = "{}{}".format(app_name, app_postfix)
     print("[APP] import {}".format(app_name))
@@ -146,6 +148,7 @@ def __execute_app(app_name, app_postfix='_app'):
     return_value = eval("{}.app()".format(app_name))
     if return_value is not None:
         print(return_value)
+
 
 if __name__ == "__main__":
     cmd_args = arg_parse()
@@ -174,6 +177,9 @@ if __name__ == "__main__":
         api_obj = MicrOSDevEnv.MicrOSDevTool()
 
     # Commands
+    if cmd_args.OTA:
+        ota_update(api_obj, force=cmd_args.force_update)
+
     if cmd_args.list_devs_n_bins:
         list_devs_n_bins(api_obj)
 

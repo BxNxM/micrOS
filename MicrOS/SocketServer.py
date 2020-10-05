@@ -48,7 +48,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.1.6-0'
+    __socket_interpreter_version = '0.1.6-1'
 
     def __new__(cls):
         """
@@ -261,7 +261,7 @@ class SocketServer:
         self.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
         self.reply_message("  [!] micrOS socket shell will be available again after reboot.")
         self.reply_message("  \trestart machine shortcut: import reset")
-        self.reply_message("  Connect over http://micropython.org/webrepl/ ws://{}:8266".format(cfgget("devip")))
+        self.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(cfgget("devip")))
         self.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
         self.reply_message(" See you soon! :)")
         self.__deinit_socket()

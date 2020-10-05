@@ -2,7 +2,7 @@
  "timirqseq": 2000,
  "irqmembuf": 1000,
  "extirq": true,
- "extirqcbf": "neopixel neopixel_toggle",
+ "extirqcbf": "neopixel toggle",
  "timirqcbf": "system heartbeat",
  "boothook": "neopixel neopixel_cache_load_n_init",
  "timirq": false,

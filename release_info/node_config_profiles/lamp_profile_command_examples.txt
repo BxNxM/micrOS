@@ -1,6 +1,6 @@
 devToolKit -h
 devToolKit -c -p '--dev <device> help'
 devToolKit -c -p '--dev <device> light help'
-devToolKit -c -p '--dev <device> light RGB(r=0, g=0, b=0)'
-devToolKit -c -p '--dev <device> light RGB(r=1000, g=1000, b=1000)'
-devToolKit -c -p '--dev <device> light RGB_toggle'
+devToolKit -c -p '--dev <device> light rgb(r=0, g=0, b=0)'
+devToolKit -c -p '--dev <device> light rgb(r=1000, g=1000, b=1000)'
+devToolKit -c -p '--dev <device> light toggle'

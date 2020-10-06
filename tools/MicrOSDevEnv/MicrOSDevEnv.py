@@ -879,6 +879,7 @@ class MicrOSDevTool():
                     self.console("|-- OK", state='OK')
                 else:
                     self.console("|-- ERR: {}\n{}".format(stderr, stdout), state='ERR')
+                    return False
         self.console("\t[!] Delete update lock (webrepl bootup) under OTA update", state='IMP')
         if self.__lock_update_with_webrepl(host=device_ip, lock=False, pwd=webrepl_password):
             self.console("\tOTA UPDATE WAS SUCCESSFUL", state='OK')

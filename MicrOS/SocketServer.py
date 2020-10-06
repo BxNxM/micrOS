@@ -48,7 +48,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.1.6-1'
+    __socket_interpreter_version = '0.1.7-0'
 
     def __new__(cls):
         """
@@ -161,7 +161,7 @@ class SocketServer:
             self.__safe_reboot_system()
         if data_str == 'webrepl':
             data_str = ""
-            self.reply_message(self.start_micropython_webrepl())
+            self.start_micropython_webrepl()
         return str(data_str)
 
     def __safe_reboot_system(self):
@@ -264,13 +264,12 @@ class SocketServer:
         self.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(cfgget("devip")))
         self.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
         self.reply_message(" See you soon! :)")
-        self.__deinit_socket()
         try:
             import webrepl
             self.reply_message(webrepl.start(password=cfgget('appwd')))
+            self.__del__()
         except Exception as e:
-            return e
-        return True
+            self.reply_message("Error while starting webrepl: {}".format(e))
 
 #########################################################
 #                 MAIN (FOR TEST REASONS)               #

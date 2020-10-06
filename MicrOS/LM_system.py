@@ -65,5 +65,13 @@ def cachedump():
     return return_str
 
 
+def ifmode():
+    try:
+        with open('.if_mode', 'r') as f:
+            return f.read()
+    except:
+        return 'micros'
+
+
 def help():
-    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump'
+    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump', 'ifmode'

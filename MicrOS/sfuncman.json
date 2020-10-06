@@ -17,6 +17,7 @@
     "ntp()",
     "module(unload=None)",
     "cachedump()",
+    "ifmode()",
     "help()"
   ],
   "light": [

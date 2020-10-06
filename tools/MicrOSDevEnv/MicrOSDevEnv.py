@@ -732,6 +732,46 @@ class MicrOSDevTool():
                 return False
         return True
 
+    def __lock_update_with_webrepl(self, host, lock=False, pwd='ADmin123', clean=False):
+        """
+        [1] Create .if_mode file (local file system)
+            lock: True -> value: webrepl
+            lock: False -> value: micros
+        [2] Copy file to device
+        """
+        source_absolute_path = os.path.join(self.precompiled_MicrOS_dir_path, '.if_mode')
+        source_name = os.path.basename(source_absolute_path)
+
+        if clean:
+            os.remove(source_absolute_path)
+            return True
+
+        # Set lock file value
+        lock_value = 'micros'
+        if lock:
+            lock_value = 'webrepl'
+
+        # Create / modify file
+        with open(source_absolute_path, 'w') as f:
+            f.write(lock_value)
+
+        # Create copy command
+        command = '{api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path,
+                                                                            pwd=pwd,
+                                                                            input_file=source_absolute_path,
+                                                                            host=host,
+                                                                            target_path=source_name)
+        if self.dummy_exec:
+            self.console("Webrepl CMD: {}".format(command))
+            return True
+        else:
+            try:
+                LocalMachine.CommandHandler.run_command(command, shell=True)
+                return True
+            except Exception as e:
+                self.console("Create lock/unlock failed: {}".format(e))
+                return False
+
     def update_with_webrepl(self, force=False):
         """
         OTA UPDATE
@@ -740,16 +780,19 @@ class MicrOSDevTool():
             ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
         """
         if not self.__clone_webrepl_repo():
-            self.console("Webrepl repo not available...")
+            self.console("Webrepl repo not available...", state='ERR')
             return False
         self.precompile_micros()
 
+        force_mode = False
+        safe_mode_file_exception_list = ['boot.py', 'boot.mpy', 'main.py', 'main.mpy',
+                                         'Network.mpy', 'ConfigHandler.mpy']
         # Get specific device from device list
-        self.console("Select device to update ...")
+        self.console("Select device to update ...", state='IMP')
         socketClient.ConnectionData.read_MicrOS_device_cache()
         # Get device IP and friendly name
         device_ip, fuid = socketClient.ConnectionData.select_device()
-        self.console("\tDevice was selected: {} -> {}".format(fuid, device_ip))
+        self.console("\tDevice was selected: {} -> {}".format(fuid, device_ip), state='OK')
 
         # Get repo version
         with open(os.path.join(self.MicrOS_dir_path, 'SocketServer.py'), 'r') as f:
@@ -762,10 +805,13 @@ class MicrOSDevTool():
         device_version = answer_msg.strip() if status else Exception("Get device version failed")
         status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
         webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
-        self.console("  Device: {} ({})".format(fuid, device_ip))
-        self.console("  Device version: {}".format(device_version))
-        self.console("  Repo version: {}".format(repo_version))
-        self.console("  WebRepl password: {}".format(webrepl_password))
+        if not status and answer_msg is None:
+            # In case of update failure and retry (micrOS interface won't be active)
+            webrepl_password = input("Please write your webrepl password (appwd): ").strip()
+        self.console("  Device: {} ({})".format(fuid, device_ip), state='OK')
+        self.console("  Device version: {}".format(device_version), state='OK')
+        self.console("  Repo version: {}".format(repo_version), state='OK')
+        self.console("  WebRepl password: {}".format(webrepl_password), state='OK')
 
         if device_version == repo_version:
             if not force:
@@ -773,15 +819,27 @@ class MicrOSDevTool():
                 self.console("\tBye")
                 return False
 
-        self.console("For continue write Y, micrOS socket won't be available until reset, webrepl for file transfer will be activated.")
-        if 'n' == input("Do you want to continue? Y/N  ").lower():
+        self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE, PLEASE RESET YOUR DEVICE AFTER UPDATE.")
+        user_input = input("Do you want to continue? Y/N: ").lower()
+        # Detect update all mode - risky -> no recovery mode but updates all file on system
+        if user_input == 'yy':
+            msg_force = "[!!!] Force mode, update all files on micrOS system (recovery mode not available) Y/N: "
+            user_input_force = input(msg_force).strip().lower()
+            force_mode = True if user_input_force == 'y' else False
+        if 'n' == user_input:
             self.console("\tBye")
             return False
         else:
             status, answer_msg = socketClient.run(['--dev', fuid, 'help'])
+            if not status and answer_msg is None:
+                # In case of update failure and retry (micrOS interface won't be active)
+                status, answer_msg = True, 'webrepl'
             if status:
                 if 'webrepl' in answer_msg:
-                    status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
+                    if self.dummy_exec:
+                        status, answer_msg = True, 'dummy exec'
+                    else:
+                        status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
                     self.console(answer_msg)
                     time.sleep(2)
                 else:
@@ -791,14 +849,21 @@ class MicrOSDevTool():
                 self.console("Get help from device failed.")
                 return False
 
-        self.console("Copy files to device...")
-        self.console("\tCreate update tag on device (webrepl force start) - in case of failure")
-        # TODO???: create .UPDATE file - micrOS boot file function - recovery mode
-        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)\
+        self.console("[UPLOAD] Copy files to device...", state='IMP')
+        self.console("\t[!] Create update lock (webrepl bootup) under OTA update", state='IMP')
+        if not self.__lock_update_with_webrepl(host=device_ip, lock=True, pwd=webrepl_password):
+            self.console("OTA lock creation failed", state='ERR')
+            return
+
+        # Parse files and upload
+        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
                         if pysource.endswith('.py') or pysource.endswith('.mpy')]:
-            if 'boot.py' in source or 'boot.mpy' in source or 'main.py' in source or 'main.mpy' in source:
-                self.console("\t[SKIP] updating {} - only available over USB update".format(source))
+
+            # Handle force mode + file exception list (skip)
+            if not force_mode and source in safe_mode_file_exception_list:
+                self.console("\t[SKIP UPLOAD] updating {} - only available over USB update".format(source), state='WARN')
                 continue
+
             source_absolute_path = os.path.join(self.precompiled_MicrOS_dir_path, source)
             source_name = os.path.basename(source)
             self.console("{} copy over webrepl {}:{}".format(source_absolute_path, device_ip, source_name))
@@ -806,13 +871,22 @@ class MicrOSDevTool():
                                                                                 input_file=source_absolute_path, host=device_ip,
                                                                                 target_path=source_name)
             if self.dummy_exec:
-                self.console("Webrepl CMD: {}".format(command))
+                self.console("[UPLOAD] Webrepl CMD: {}".format(command))
             else:
-                LocalMachine.CommandHandler.run_command(command, shell=True)
-        self.console("\tRemove update tag - update was successfully finished")
-        # TODO???: remove .UPDATE file - micrOS boot file function - recovery mode
+                self.console("|- CMD: {}".format(command))
+                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                if exitcode == 0:
+                    self.console("|-- OK", state='OK')
+                else:
+                    self.console("|-- ERR: {}\n{}".format(stderr, stdout), state='ERR')
+        self.console("\t[!] Delete update lock (webrepl bootup) under OTA update", state='IMP')
+        if self.__lock_update_with_webrepl(host=device_ip, lock=False, pwd=webrepl_password):
+            self.console("\tOTA UPDATE WAS SUCCESSFUL", state='OK')
+            self.__lock_update_with_webrepl(device_ip, clean=True)
+        else:
+            self.console("\tOTA UPDATE WAS FAILED, PLEASE TRY AGAIN.", state='ERR')
 
-        self.console("Please reset your device.")
+        self.console("Please reset your device.", state='IMP')
         self.console("\t[1]HINT: open in browser: http://micropython.org/webrepl/#{}:8266/".format(device_ip))
         self.console("\t[2]HINT: log in and execute: import reset")
         self.console("\t[3]HINT: OR skip [2] point and reset manually")

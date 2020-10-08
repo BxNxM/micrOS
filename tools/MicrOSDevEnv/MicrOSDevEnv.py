@@ -785,7 +785,8 @@ class MicrOSDevTool():
         self.precompile_micros()
 
         force_mode = False
-        safe_mode_file_exception_list = ['boot.py', 'boot.mpy', 'main.py', 'main.mpy',
+        # Skip the following modules in OTA update (safe mode) to have recovery mode
+        safe_mode_file_exception_list = ['main.py', 'micrOSloader.mpy',
                                          'Network.mpy', 'ConfigHandler.mpy']
         # Get specific device from device list
         self.console("Select device to update ...", state='IMP')

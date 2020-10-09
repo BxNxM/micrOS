@@ -45,11 +45,48 @@ def __recovery_mode():
     print(webrepl.start(password=cfgget('appwd')))
 
 
+def __auto_restart_event():
+    """
+    Poll .if_mode value main loop in case of webrepl (background) mode:
+        Events for execute reboot:
+            - value: webrepl    [wait for update -> updater writes webrepl value under update]
+            - value: micros     [update was successful - reboot is necessary]
+    :return:
+    """
+    from time import sleep
+    trigger_is_active = False
+    wait_iteration_for_update_start = 3
+    while wait_iteration_for_update_start >= 0:
+        try:
+            with open('.if_mode', 'r') as f:
+                if_mode = f.read().strip().lower()
+        except Exception:
+            if_mode = None
+        if if_mode is None or if_mode == 'webrepl':
+            print("Check update status: InProgress")
+        else:
+            print("Wait for OTA update [{}]".format(wait_iteration_for_update_start))
+            wait_iteration_for_update_start -= 1
+        # Get trigger
+        if if_mode is not None and if_mode == 'webrepl':
+            trigger_is_active = True
+        # Check value if trigger active
+        if if_mode is not None and trigger_is_active and if_mode == 'micros':
+            print("[micrOS updater - auto reboot after file upload]")
+            import machine
+            machine.reset()
+        sleep(2)
+
+
 def main():
     if __interface_mode():
         # Main mode
         from micrOS import micrOS
-        micrOS()
+        try:
+            micrOS()
+        except Exception:
+            __auto_restart_event()
     else:
         # Recovery mode
         __recovery_mode()
+        __auto_restart_event()

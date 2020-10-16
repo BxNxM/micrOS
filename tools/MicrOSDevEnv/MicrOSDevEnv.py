@@ -51,25 +51,29 @@ class MicrOSDevTool():
         self.micros_devices = []
         self.index_of_sected_micropython_bin = 0
         self.index_of_selected_device = 0
+        self.devenv_usb_deployment_is_active = False
 
-        # Initialize DevEnv - find micropython binaries, device
-        self.__initialize_dev_env()
+        # Check dependences method
+        state = self.deployment_dependence_handling()
+        if not state:
+            self.console("Please install the dependences: {}".format(self.deployment_app_dependences), state='err')
+            sys.exit(1)
 
     #####################################################
     #               BASE / INTERNAL METHODS             #
     #####################################################
-    def __initialize_dev_env(self):
-        # Check dependences method
-        state = self.deployment_dependence_handling()
-        if state:
-           # Find micropython binaries
-           self.get_micropython_binaries()
-           # Find MicrOS devices
-           self.get_devices()
-           self.__select_devicetype_and_micropython()
+    def __initialize_dev_env_for_deployment_vis_usb(self):
+        if self.devenv_usb_deployment_is_active:
+            self.console("Devide and micropython was already selected")
+            self.console("Device: {}".format(self.micros_devices[self.index_of_selected_device]))
+            self.console("micropython: {}".format(self.micropython_bins_list[self.index_of_sected_micropython_bin]))
         else:
-            self.console("Please install the dependences: {}".format(self.deployment_app_dependences), state='err')
-            sys.exit(1)
+            # Find micropython binaries
+            self.get_micropython_binaries()
+            # Find MicrOS devices
+            self.get_devices()
+            self.__select_devicetype_and_micropython()
+            self.devenv_usb_deployment_is_active = True
 
     def __select_devicetype_and_micropython(self):
         if len(self.dev_types_and_cmds.keys()) > 1:
@@ -93,12 +97,14 @@ class MicrOSDevTool():
         self.console("-"*60)
 
     def __get_device(self):
+        self.__initialize_dev_env_for_deployment_vis_usb()
         if not self.dummy_exec:
             return self.micros_devices[self.index_of_selected_device]
         else:
             return "dummy_device"
 
     def __get_micropython(self):
+        self.__initialize_dev_env_for_deployment_vis_usb()
         return self.micropython_bins_list[self.index_of_sected_micropython_bin]
 
     def console(self, msg, state=None):
@@ -259,7 +265,6 @@ class MicrOSDevTool():
                 return False
         return True
 
-
     def __cleanup_precompiled_dir(self):
         for source in [ pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path) \
                         if pysource.endswith('.py') or pysource.endswith('.mpy') ]:
@@ -390,7 +395,6 @@ class MicrOSDevTool():
                 self.console(" |-> CMD: {}".format(command))
                 status = False
         return status
-
 
     def connect_dev(self):
         self.console("WELCOME $USER - $(DATE)")
@@ -596,7 +600,6 @@ class MicrOSDevTool():
             self.console("MicrOS node content:\n{}".format(stdout), state='ok')
         else:
             self.console("MicrOS node content list error:\n{}".format(stderr), state='err')
-
 
     def inject_profile(self, target_path):
         profile_list = [ profile for profile in LocalMachine.FileHandler.list_dir(self.node_config_profiles_path) if profile.endswith('.json') ]

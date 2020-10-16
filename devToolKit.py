@@ -6,9 +6,12 @@ MYPATH = os.path.dirname(os.path.abspath(__file__))
 SOCKET_CLIENT_DIR_PATH = os.path.join(MYPATH, 'tools/')
 API_DIR_PATH = os.path.join(MYPATH, 'tools/MicrOSDevEnv/')
 APP_DIR = os.path.join(MYPATH, 'apps')
+MICROS_DIR = os.path.join(MYPATH, 'MicrOS')
+MICROS_SIM_RESOURCES_DIR = os.path.join(MYPATH, 'tools/MicrOSDevEnv/micrOS_SIM')
 sys.path.append(API_DIR_PATH)
 sys.path.append(SOCKET_CLIENT_DIR_PATH)
 sys.path.append(APP_DIR)
+sys.path.append(MICROS_DIR)
 import argparse
 import MicrOSDevEnv
 import socketClient
@@ -22,6 +25,7 @@ def arg_parse():
 
     base_group = parser.add_argument_group("Base commands")
     base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (MicrOS) & Install (MicrOS)")
+    base_group.add_argument("-o", "--OTA", action="store_true", help="OTA (OverTheArir update with webrepl)")
     base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) MicrOS. \
                                                                     - node config will be restored")
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
@@ -39,9 +43,9 @@ def arg_parse():
     dev_group.add_argument("-ls", "--node_ls", action="store_true", help="List micrOS node filesystem content.")
     dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")
     dev_group.add_argument("-b", "--backup_node_config", action="store_true", help="Backup usb connected node config.")
-    dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update")
+    dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update and -o/--OTA")
     dev_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
-    dev_group.add_argument("-o", "--OTA", action="store_true", help="OTA (OverTheArir update with webrepl)")
+    dev_group.add_argument("-sim", "--simulate", action="store_true", help="start micrOS on your computer in simulated mode")
 
 
     toolkit_group = parser.add_argument_group("Toolkit development")
@@ -118,6 +122,18 @@ def node_ls(api_obj):
 
 def backup_node_config(api_obj):
     api_obj.backup_node_config()
+
+
+def simulate_micrOS():
+    mypath_bak = MYPATH
+    os.chdir(MICROS_DIR)
+    sys.path.append(MICROS_SIM_RESOURCES_DIR)
+    try:
+        import micrOSloader
+        micrOSloader.main()
+    except Exception as e:
+        print("[ERROR] micrOS SIM\n{}".format(e))
+    os.chdir(mypath_bak)
 
 
 def applications(app):
@@ -212,6 +228,9 @@ if __name__ == "__main__":
 
     if cmd_args.connect_via_usb:
         connect_via_usb(api_obj)
+
+    if cmd_args.simulate:
+        simulate_micrOS()
 
     sys.exit(0)
 

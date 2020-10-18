@@ -269,7 +269,7 @@ class MyConsole(QPlainTextEdit):
         self.setTextCursor(cursor)
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication(sys.argv)
     ex = App()
 
@@ -281,3 +281,7 @@ if __name__ == '__main__':
 
     ex.draw()
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

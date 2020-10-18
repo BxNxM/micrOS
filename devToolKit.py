@@ -16,6 +16,7 @@ import argparse
 import MicrOSDevEnv
 import socketClient
 import LocalMachine
+import micrOSdashboard
 
 
 def arg_parse():
@@ -167,7 +168,15 @@ def __execute_app(app_name, app_postfix='_app'):
         print(return_value)
 
 
+def init_gui():
+    if len(sys.argv) == 1:
+        print("Init GUI")
+        micrOSdashboard.main()
+
+
 if __name__ == "__main__":
+    init_gui()
+
     cmd_args = arg_parse()
 
     if cmd_args.simulate:

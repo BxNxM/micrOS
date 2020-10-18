@@ -17,6 +17,7 @@ import MicrOSDevEnv
 import socketClient
 import LocalMachine
 
+
 def arg_parse():
     parser = argparse.ArgumentParser(prog="MicrOS dev toolkit - deploy, connect, update, etc.", \
                                             description="CMDline wrapper for {}\n and for {}".format( \

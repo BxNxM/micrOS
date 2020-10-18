@@ -48,7 +48,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.1.9-0'
+    __socket_interpreter_version = '0.1.9-1'
 
     def __new__(cls):
         """
@@ -202,11 +202,7 @@ class SocketServer:
         self.__accept()
 
     def run(self):
-        if "esp" in platform:
-            self.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), self.port))
-        else:
-            self.server_console("[ socket server ] SERVER ADDR: telnet 127.0.0.1 " + str(self.port))
-
+        self.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), self.port))
         try:
             cfgput('version', self.__socket_interpreter_version)
         except Exception as e:

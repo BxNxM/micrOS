@@ -169,6 +169,9 @@ def __execute_app(app_name, app_postfix='_app'):
 if __name__ == "__main__":
     cmd_args = arg_parse()
 
+    if cmd_args.simulate:
+        simulate_micrOS()
+
     # Socket interface module
     if cmd_args.applications:
         applications(cmd_args.applications)
@@ -228,9 +231,6 @@ if __name__ == "__main__":
 
     if cmd_args.connect_via_usb:
         connect_via_usb(api_obj)
-
-    if cmd_args.simulate:
-        simulate_micrOS()
 
     sys.exit(0)
 

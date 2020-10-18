@@ -7,12 +7,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-try:
-    from Network import auto_network_configuration
-except Exception as e:
-    print("=> [!!!][MAIN DEBUG] Network packacge not available on device: {}".format(e))
-    auto_network_configuration = None
-
+from Network import auto_network_configuration
 from SocketServer import SocketServer
 from Hooks import bootup_hook, profiling_info
 

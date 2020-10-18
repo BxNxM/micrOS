@@ -91,6 +91,7 @@ def main():
         __recovery_mode()
         __auto_restart_event()
 
+
 if __name__ == '__main__':
     main()
 

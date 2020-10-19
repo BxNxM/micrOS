@@ -1,17 +1,19 @@
 import sys
 import os
+import threading
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QPixmap
-import time
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QApplication, QPlainTextEdit
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, 'MicrOSDevEnv'))
 import MicrOSDevEnv
 import socketClient
+sys.path.append(os.path.dirname(os.path.dirname(MYPATH)))
+import devToolKit
 
 
 class App(QWidget):
@@ -29,8 +31,9 @@ class App(QWidget):
         self.pbar = None
         self.pbar_status = 0
         self.dropdown_objects_list = {}
-        self.data_set = {'force': False}
+        self.ui_state_machine = {'force': False}
         self.console = None
+        self.device_conn_struct = []
 
         self.initUI()
 
@@ -123,7 +126,18 @@ class App(QWidget):
         print('__on_click_ota_update')
         self.console.append_output('__on_click_ota_update')
         self.progressbar_update()
-        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).update_with_webrepl()
+
+        fuid = self.ui_state_machine['device']
+        force = self.ui_state_machine['force']
+        devip = None
+        for conn_data in self.device_conn_struct:
+            if fuid == conn_data[0]:
+                devip = conn_data[1]
+        if devip is None:
+            self.console.append_output("[ERROR] Selecting device")
+        self.console.append_output("Start OTA update on {}:{}".format(fuid, devip))
+        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).update_with_webrepl(
+            device=(fuid, devip), non_interactive=True, force=force)
 
     @pyqtSlot()
     def __on_click_usb_update(self):
@@ -134,15 +148,19 @@ class App(QWidget):
 
     @pyqtSlot()
     def __on_click_serach_devices(self):
-        print('__on_click_serach_devices')
-        self.console.append_output('__on_click_serach_devices')
+        self.console.append_output('[Search] Search devices')
+        # Create a Thread with a function without any arguments
+        th = threading.Thread(target=socketClient.ConnectionData().filter_MicrOS_devices, daemon=True)
+        th.start()
         self.progressbar_update()
-        socketClient.ConnectionData().filter_MicrOS_devices()
 
     @pyqtSlot()
     def __on_click_simulator(self):
-        print('__on_click_simulator')
-        self.console.append_output('__on_click_simulator')
+        self.console.append_output('[Simulator] Start')
+        self.progressbar_update()
+        th = threading.Thread(target=devToolKit.simulate_micrOS, daemon=True)
+        th.start()
+        self.console.append_output('[Simulator] Started successfully')
         self.progressbar_update()
 
     def draw_logo(self):
@@ -184,16 +202,17 @@ class App(QWidget):
     def dropdown_board(self):
         dropdown_label = QLabel(self)
         dropdown_label.setText("Select board".upper())
-        dropdown_label.setGeometry(120, 30, 170, 30)
+        dropdown_label.setGeometry(120, 30, 160, 30)
 
         # creating a combo box widget
         combo_box = QComboBox(self)
 
         # setting geometry of combo box
-        combo_box.setGeometry(120, 60, 170, 30)
+        combo_box.setGeometry(120, 60, 160, 30)
 
         # GET DEVICE TYPES
         geek_list = MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).dev_types_and_cmds.keys()
+        self.ui_state_machine['board'] = list(geek_list)[0]
 
         # making it editable
         combo_box.setEditable(False)
@@ -219,22 +238,23 @@ class App(QWidget):
         view.setHidden(False)
 
         self.dropdown_objects_list['board'] = combo_box
-        combo_box.activated.connect(self.get_widget_values)
+        combo_box.activated.connect(self.__on_click_board_dropdown)
 
     def dropdown_micropythonbin(self):
         dropdown_label = QLabel(self)
         dropdown_label.setText("Select micropython".upper())
-        dropdown_label.setGeometry(310, 30, 170, 30)
+        dropdown_label.setGeometry(290, 30, 200, 30)
 
         # creating a combo box widget
         combo_box = QComboBox(self)
 
         # setting geometry of combo box
-        combo_box.setGeometry(310, 60, 170, 30)
+        combo_box.setGeometry(290, 60, 200, 30)
 
         # GET MICROPYTHON BINARIES
         geek_list = MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).get_micropython_binaries()
         geek_list = [os.path.basename(path) for path in geek_list]
+        self.ui_state_machine['micropython'] = geek_list[0]
 
         # making it editable
         combo_box.setEditable(False)
@@ -260,7 +280,7 @@ class App(QWidget):
         view.setHidden(False)
 
         self.dropdown_objects_list['micropython'] = combo_box
-        combo_box.activated.connect(self.get_widget_values)
+        combo_box.activated.connect(self.__on_click_micropython_dropdown)
 
     def dropdown_device(self):
         dropdown_label = QLabel(self)
@@ -274,17 +294,19 @@ class App(QWidget):
         combo_box.setGeometry(500, 60, 170, 30)
 
         # Get stored devices
-        fuid_uid_struct = []
         conn_data = socketClient.ConnectionData()
         conn_data.read_MicrOS_device_cache()
+        self.device_conn_struct = []
         for uid in conn_data.MICROS_DEV_IP_DICT.keys():
+            devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
             fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
-            tmp = (fuid,uid)
-            fuid_uid_struct.append(tmp)
+            tmp = (fuid, devip, uid)
+            self.device_conn_struct.append(tmp)
             print("\t{}".format(tmp))
 
         # Get devices friendly unique identifier
-        geek_list = [fuid[0] for fuid in fuid_uid_struct]
+        geek_list = [fuid[0] for fuid in self.device_conn_struct]
+        self.ui_state_machine['device'] = geek_list[0]
 
         # making it editable
         combo_box.setEditable(False)
@@ -310,18 +332,27 @@ class App(QWidget):
         view.setHidden(False)
 
         self.dropdown_objects_list['device'] = combo_box
-        combo_box.activated.connect(self.get_widget_values)
+        combo_box.activated.connect(self.__on_click_device_dropdown)
 
-    def get_widget_values(self, index):
-        self.data_set['board'] = self.dropdown_objects_list['board'].itemText(index)
-        self.data_set['micropython'] = self.dropdown_objects_list['micropython'].itemText(index)
-        self.data_set['device'] = self.dropdown_objects_list['device'].itemText(index)
+    def get_widget_values(self):
         self.__show_gui_state_on_console()
-        return self.data_set
+        return self.ui_state_machine
+
+    def __on_click_board_dropdown(self, index):
+        self.ui_state_machine['board'] = self.dropdown_objects_list['board'].itemText(index)
+        self.get_widget_values()
+
+    def __on_click_micropython_dropdown(self, index):
+        self.ui_state_machine['micropython'] = self.dropdown_objects_list['micropython'].itemText(index)
+        self.get_widget_values()
+
+    def __on_click_device_dropdown(self, index):
+        self.ui_state_machine['device'] = self.dropdown_objects_list['device'].itemText(index)
+        self.get_widget_values()
 
     def __show_gui_state_on_console(self):
         self.console.append_output("micrOS GUI Info")
-        for key, value in self.data_set.items():
+        for key, value in self.ui_state_machine.items():
             self.console.append_output("  {}: {}".format(key, value))
 
     def force_mode_radiobutton(self):
@@ -333,9 +364,9 @@ class App(QWidget):
     def __on_click_force_mode(self):
         radioBtn = self.sender()
         if radioBtn.isChecked():
-            self.data_set['force'] = True
+            self.ui_state_machine['force'] = True
         else:
-            self.data_set['force'] = False
+            self.ui_state_machine['force'] = False
         self.__show_gui_state_on_console()
 
 

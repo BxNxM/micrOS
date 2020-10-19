@@ -2,7 +2,6 @@
 
 import os
 import sys
-import time
 import re
 import json
 import pprint
@@ -781,7 +780,7 @@ class MicrOSDevTool():
                 self.console("Create lock/unlock failed: {}".format(e))
                 return False
 
-    def update_with_webrepl(self, force=False):
+    def update_with_webrepl(self, force=False, device=None, non_interactive=False):
         """
         OTA UPDATE
             git clone https://github.com/micropython/webrepl.git
@@ -801,7 +800,10 @@ class MicrOSDevTool():
         self.console("Select device to update ...", state='IMP')
         socketClient.ConnectionData.read_MicrOS_device_cache()
         # Get device IP and friendly name
-        device_ip, fuid = socketClient.ConnectionData.select_device()
+        if device is None:
+            device_ip, fuid = socketClient.ConnectionData.select_device()
+        else:
+            device_ip, fuid = device[0], device[1]
         self.console("\tDevice was selected: {} -> {}".format(fuid, device_ip), state='OK')
 
         # Get repo version
@@ -815,7 +817,9 @@ class MicrOSDevTool():
         device_version = answer_msg.strip() if status else Exception("Get device version failed")
         status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
         webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
-        if not status and answer_msg is None:
+        if non_interactive and not status and answer_msg is None:
+            webrepl_password = 'ADmin123'
+        elif not status and answer_msg is None:
             # In case of update failure and retry (micrOS interface won't be active)
             webrepl_password = input("Please write your webrepl password (appwd - default ADmin123): ").strip()
         self.console("  Device: {} ({})".format(fuid, device_ip), state='OK')
@@ -830,11 +834,17 @@ class MicrOSDevTool():
                 return False
 
         self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE, PLEASE RESET YOUR DEVICE AFTER UPDATE.")
-        user_input = input("Do you want to continue? Y/N: ").lower()
+        if non_interactive:
+            user_input = 'y'
+        else:
+            user_input = input("Do you want to continue? Y/N: ").lower()
         # Detect update all mode - risky -> no recovery mode but updates all file on system
         if user_input == 'yy':
             msg_force = "[!!!] Force mode, update all files on micrOS system (recovery mode not available) Y/N: "
-            user_input_force = input(msg_force).strip().lower()
+            if non_interactive:
+                user_input_force = 'y'
+            else:
+                user_input_force = input(msg_force).strip().lower()
             force_mode = True if user_input_force == 'y' else False
         if 'n' == user_input:
             self.console("\tBye")
@@ -858,6 +868,7 @@ class MicrOSDevTool():
             else:
                 self.console("Get help from device failed.")
                 return False
+        time.sleep(3)
 
         self.console("[UPLOAD] Copy files to device...", state='IMP')
         self.console("\t[!] Create update lock (webrepl bootup) under OTA update", state='IMP')
@@ -923,7 +934,7 @@ class MicrOSDevTool():
                 up_again_status = True
                 break
             if not up_again_status:
-                time.sleep(1.5)
+                time.sleep(2)
 
         # Print manual steps if necessary
         if not up_again_status:

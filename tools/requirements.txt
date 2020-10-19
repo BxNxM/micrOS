@@ -4,5 +4,7 @@ ipaddress==1.0.23
 netaddr==0.8.0
 netifaces==0.10.9
 pyaes==1.6.1
+PyQt5==5.15.1
+PyQt5-sip==12.8.1
 pyserial==3.4
 six==1.15.0

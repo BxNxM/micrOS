@@ -1,4 +1,5 @@
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
@@ -7,9 +8,15 @@ from PyQt5.QtGui import QIcon, QPixmap
 import time
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QApplication, QPlainTextEdit
+MYPATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(MYPATH, 'MicrOSDevEnv'))
+import MicrOSDevEnv
+import socketClient
 
 
 class App(QWidget):
+    # HEX COLOR: https://www.hexcolortool.com/C0BBFE#1f0000
+    TEXTCOLOR = "#1f0000"
 
     def __init__(self):
         super().__init__()
@@ -32,43 +39,50 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.setFixedWidth(self.width)
         self.setFixedHeight(self.height)
-        self.setStyleSheet("background-color: grey")
+        self.setStyleSheet("background-color: grey; color: {};".format(App.TEXTCOLOR))
         self.venv_indicator()
 
     def create_console(self):
         dropdown_label = QLabel(self)
         dropdown_label.setText("Console".upper())
-        dropdown_label.setStyleSheet("background-color : darkGray;")
+        dropdown_label.setStyleSheet("background-color : darkGray; color: {};".format(App.TEXTCOLOR))
         dropdown_label.setGeometry(250, 117, 420, 15)
         self.console = MyConsole(self)
 
-    def venv_indicator(self):
-        state = False
-        if hasattr(sys, 'real_prefix'):
-            state = True
+    def __detect_virtualenv(self):
+        def get_base_prefix_compat():
+            """Get base/real prefix, or sys.prefix if there is none."""
+            return getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix
 
-        if state:
+        def in_virtualenv():
+            return get_base_prefix_compat() != sys.prefix
+        return in_virtualenv()
+
+    def venv_indicator(self):
+        if self.__detect_virtualenv():
             label = QLabel(' [devEnv] virtualenv active', self)
             label.setGeometry(20, 5, self.width-50, 20)
-            label.setStyleSheet("background-color : green;")
+            label.setStyleSheet("background-color : green; color: {};".format(App.TEXTCOLOR))
         else:
             label = QLabel(' [devEnv] virtualenv inactive', self)
             label.setGeometry(20, 5, self.width-50, 20)
-            label.setStyleSheet("background-color : yellow;")
+            label.setStyleSheet("background-color : yellow; color: {};".format(App.TEXTCOLOR))
+            label.setToolTip("Please create your dependency environment:\nvirtualenv -p python3 venv\
+            \nsource venv/bin/activate\npip install -r micrOS/tools/requirements.txt")
 
     def buttons(self):
         height = 35
         width = 200
         yoffset = 3
-        buttons = {'Deploy (USB)': ['Install "empty" device, deploy micropython and micrOS Framework',
+        buttons = {'Deploy (USB)': ['Install "empty" device.\nDeploy micropython and micrOS Framework',
                                        20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
-                   'Update (OTA)': ['OTA - Over The Air (wifi) update, upload micrOS resources over webrepl',
+                   'Update (OTA)': ['OTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
                                   20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
-                   'Update (USB)': ['Update micrOS (with redeploy micropython) over USB',
+                   'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well) ',
                                        20, 115 + (height+yoffset) * 2, width, height, self.__on_click_usb_update, 'darkCyan'],
-                   'Search device': ['Search online micrOS devices on local network (wifi)',
+                   'Search device': ['Search online micrOS devices\nOn local wifi network.',
                                       20, 115 + (height + yoffset) * 3, width, height, self.__on_click_serach_devices, 'darkCyan'],
-                   'Simulator': ['Start micrOS on host with micropython dummy (module) interfaces',
+                   'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
                                       20, 115 + (height + yoffset) * 4, width, height, self.__on_click_simulator, 'darkCyan']
                    }
 
@@ -102,24 +116,28 @@ class App(QWidget):
         print('__on_click_usb_deploy')
         self.console.append_output('__on_click_usb_deploy')
         self.progressbar_update()
+        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).deploy_micros()
 
     @pyqtSlot()
     def __on_click_ota_update(self):
         print('__on_click_ota_update')
         self.console.append_output('__on_click_ota_update')
         self.progressbar_update()
+        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).update_with_webrepl()
 
     @pyqtSlot()
     def __on_click_usb_update(self):
         print('__on_click_usb_update')
         self.console.append_output('__on_click_usb_update')
         self.progressbar_update()
+        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).update_micros_via_usb()
 
     @pyqtSlot()
     def __on_click_serach_devices(self):
         print('__on_click_serach_devices')
         self.console.append_output('__on_click_serach_devices')
         self.progressbar_update()
+        socketClient.ConnectionData().filter_MicrOS_devices()
 
     @pyqtSlot()
     def __on_click_simulator(self):
@@ -131,8 +149,10 @@ class App(QWidget):
         label = QLabel(self)
         label.setGeometry(20, 30, 80, 80)
         label.setScaledContents(True)
-        pixmap = QPixmap('/Users/bnm/Documents/NodeMcu/MicrOs/media/logo_mini.png')
+        logo_path = os.path.join(MYPATH, '../media/logo_mini.png')
+        pixmap = QPixmap(logo_path)
         label.setPixmap(pixmap)
+        label.setToolTip("micrOS: https://github.com/BxNxM/micrOS")
 
     def progressbar(self):
         # creating progress bar
@@ -172,8 +192,8 @@ class App(QWidget):
         # setting geometry of combo box
         combo_box.setGeometry(120, 60, 170, 30)
 
-        # geek list
-        geek_list = ["esp8266", "esp32"]
+        # GET DEVICE TYPES
+        geek_list = MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).dev_types_and_cmds.keys()
 
         # making it editable
         combo_box.setEditable(False)
@@ -212,8 +232,9 @@ class App(QWidget):
         # setting geometry of combo box
         combo_box.setGeometry(310, 60, 170, 30)
 
-        # geek list
-        geek_list = ["micropython_1.11.bin", "micropython_1.12.bin"]
+        # GET MICROPYTHON BINARIES
+        geek_list = MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).get_micropython_binaries()
+        geek_list = [os.path.basename(path) for path in geek_list]
 
         # making it editable
         combo_box.setEditable(False)
@@ -252,8 +273,18 @@ class App(QWidget):
         # setting geometry of combo box
         combo_box.setGeometry(500, 60, 170, 30)
 
-        # geek list
-        geek_list = ["BedLamp", "airquality", "mazsola"]
+        # Get stored devices
+        fuid_uid_struct = []
+        conn_data = socketClient.ConnectionData()
+        conn_data.read_MicrOS_device_cache()
+        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
+            fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+            tmp = (fuid,uid)
+            fuid_uid_struct.append(tmp)
+            print("\t{}".format(tmp))
+
+        # Get devices friendly unique identifier
+        geek_list = [fuid[0] for fuid in fuid_uid_struct]
 
         # making it editable
         combo_box.setEditable(False)
@@ -294,17 +325,11 @@ class App(QWidget):
             self.console.append_output("  {}: {}".format(key, value))
 
     def force_mode_radiobutton(self):
-        #label = QLabel('Force mode for version override')
         rbtn1 = QRadioButton('Force mode', self)
         rbtn1.move(20, self.height-60)
         rbtn1.toggled.connect(self.__on_click_force_mode)
 
-        #layout = QVBoxLayout()
-        #layout.setGeometry(0, 0, 100, 20)
-        #layout.addWidget(label)
-        #layout.addWidget(rbtn1)
-        #self.setLayout(layout)
-
+    @pyqtSlot()
     def __on_click_force_mode(self):
         radioBtn = self.sender()
         if radioBtn.isChecked():

@@ -16,8 +16,9 @@ import socketClient
 
 class MicrOSDevTool():
 
-    def __init__(self, dummy_exec=False):
+    def __init__(self, dummy_exec=False, gui_console=None):
         self.dummy_exec = dummy_exec
+        self.gui_console = gui_console
         self.deployment_app_dependences = ['ampy', 'esptool.py']
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0']
         self.selected_device_type = 'esp8266'
@@ -127,6 +128,9 @@ class MicrOSDevTool():
             print(prompt.format(COL=Colors.ERR, msg=msg, END=Colors.NC))
         elif state.upper() == 'IMP':
             print(prompt.format(COL=Colors.BOLD, msg=msg, END=Colors.NC))
+
+        if self.gui_console is not None:
+            self.gui_console(msg)
 
     #####################################################
     #                    DevEnv METHODS                 #

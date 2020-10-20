@@ -2,8 +2,8 @@ micropython_repo/micropython/
 micropython_repo/webrepl/
 MicrOS/*.mpy
 **.pyc
-MicrOS/node_config.json
-mpy-MicrOS/node_config.json
-**__pycache__
 **.DS_Store
 **.idea/
+**__pycache__
+MicrOS/node_config.json
+mpy-MicrOS/node_config.json

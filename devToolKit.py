@@ -251,8 +251,8 @@ def __execute_app(app_name, app_postfix='_app'):
 
 
 def init_gui():
-    import micrOSdashboard
     if len(sys.argv) == 1:
+        import micrOSdashboard
         print("Init GUI")
         micrOSdashboard.main()
 

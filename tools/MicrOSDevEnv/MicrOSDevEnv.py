@@ -13,14 +13,14 @@ sys.path.append(os.path.join(MYPATH, '../'))
 import socketClient
 
 
-class MicrOSDevTool():
+class MicrOSDevTool:
 
-    def __init__(self, dummy_exec=False, gui_console=None):
+    def __init__(self, dummy_exec=False, gui_console=None, cmdgui=True):
         self.dummy_exec = dummy_exec
         self.gui_console = gui_console
+        self.cmdgui = cmdgui
         self.deployment_app_dependences = ['ampy', 'esptool.py']
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0']
-        self.selected_device_type = 'esp8266'
         self.dev_types_and_cmds = \
                 {'esp8266':
                    {'erase': 'esptool.py --port {dev} erase_flash',
@@ -47,10 +47,8 @@ class MicrOSDevTool():
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 
         # Filled by methods
-        self.micropython_bins_list = []
-        self.micros_devices = []
-        self.index_of_sected_micropython_bin = 0
-        self.index_of_selected_device = 0
+        self.selected_device_type = None
+        self.selected_micropython_bin = None
         self.devenv_usb_deployment_is_active = False
 
         # Check dependences method
@@ -65,47 +63,39 @@ class MicrOSDevTool():
     def __initialize_dev_env_for_deployment_vis_usb(self):
         if self.devenv_usb_deployment_is_active:
             self.console("Devide and micropython was already selected")
-            self.console("Device: {}".format(self.micros_devices[self.index_of_selected_device]))
-            self.console("micropython: {}".format(self.micropython_bins_list[self.index_of_sected_micropython_bin]))
+            self.console("Device: {}".format(self.selected_device_type))
+            self.console("micropython: {}".format(self.selected_micropython_bin))
         else:
             # Find micropython binaries
             self.get_micropython_binaries()
             # Find MicrOS devices
-            self.get_devices()
             self.__select_devicetype_and_micropython()
             self.devenv_usb_deployment_is_active = True
 
     def __select_devicetype_and_micropython(self):
+        print(self.dev_types_and_cmds.keys())
         if len(self.dev_types_and_cmds.keys()) > 1:
             self.console("Please select device type from the list:")
             for index, device_type in enumerate(self.dev_types_and_cmds.keys()):
                 self.console(" {} - {}".format(index, device_type))
-            self.selected_device_type = list(self.dev_types_and_cmds.keys())[int(input("Select index: "))]
+            if self.selected_device_type is None:
+                self.selected_device_type = list(self.dev_types_and_cmds.keys())[int(input("Select index: "))]
 
-        micropython_bin_for_type = [mbin for mbin in self.micropython_bins_list if self.selected_device_type.lower() in mbin]
+        micropython_bin_for_type = [mbin for mbin in self.get_micropython_binaries() if self.selected_device_type.lower() in mbin]
         selected_index = 0
         if len(micropython_bin_for_type) > 1:
             self.console("Please select micropython for deployment")
             for index, mpbin in enumerate(micropython_bin_for_type):
                 self.console(" {} - {}".format(index, mpbin))
-            selected_index = int(input("Selected index: "))
-        self.index_of_sected_micropython_bin = self.micropython_bins_list.index(micropython_bin_for_type[selected_index])
+            if self.cmdgui:
+                selected_index = int(input("Selected index: "))
+        if not self.devenv_usb_deployment_is_active:
+            self.selected_micropython_bin = micropython_bin_for_type[selected_index]
 
         self.console("-"*60)
         self.console("Selected device type: {}".format(self.selected_device_type))
-        self.console("Selected micropython bin: {}".format(self.micropython_bins_list[self.index_of_sected_micropython_bin]))
+        self.console("Selected micropython bin: {}".format(self.selected_micropython_bin))
         self.console("-"*60)
-
-    def __get_device(self):
-        self.__initialize_dev_env_for_deployment_vis_usb()
-        if not self.dummy_exec:
-            return self.micros_devices[self.index_of_selected_device]
-        else:
-            return "dummy_device"
-
-    def __get_micropython(self):
-        self.__initialize_dev_env_for_deployment_vis_usb()
-        return self.micropython_bins_list[self.index_of_sected_micropython_bin]
 
     def console(self, msg, state=None):
         '''
@@ -154,7 +144,10 @@ class MicrOSDevTool():
         self.console("------------------------------------------")
         self.console("-  LIST CONNECTED MICROS DEVICES VIA USB -", state='imp')
         self.console("------------------------------------------")
-        self.micros_devices = []
+        micros_devices = []
+
+        if self.dummy_exec:
+            return ['dummy_device']
 
         dev_path = '/dev/'
         content_list = [ dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev ]
@@ -162,30 +155,29 @@ class MicrOSDevTool():
             for dev_identifier in self.nodemcu_device_subnames:
                 if dev_identifier in present_dev:
                     dev_abs_path = os.path.join(dev_path, present_dev)
-                    self.micros_devices.append(dev_abs_path)
+                    micros_devices.append(dev_abs_path)
                     self.console("Device was found: {}".format(dev_abs_path), state="imp")
                     break
-        if len(self.micros_devices) > 0:
+        if len(micros_devices) > 0:
             self.console("Device was found. :)", state="ok")
         else:
             self.console("No device was connected. :(", state="err")
-        # TODO: handle multiple devices: self.index_of_selected_device
-        return self.micros_devices
+        return micros_devices
 
     def get_micropython_binaries(self):
         self.console("------------------------------------------")
         self.console("-         GET MICROPYTHON BINARIES       -", state='imp')
         self.console("------------------------------------------")
-        self.micropython_bins_list = []
+        micropython_bins_list = []
 
         mp_bin_list = [ binary for binary in LocalMachine.FileHandler.list_dir(self.micropython_bin_dir_path) if binary.endswith('.bin') ]
         for mp_bin in mp_bin_list:
-            self.micropython_bins_list.append(os.path.join(self.micropython_bin_dir_path, mp_bin))
-        if len(self.micropython_bins_list) > 0:
+            micropython_bins_list.append(os.path.join(self.micropython_bin_dir_path, mp_bin))
+        if len(micropython_bins_list) > 0:
             self.console("Micropython binary was found.", state='ok')
         else:
             self.console("Micropython binary was not found.", state='err')
-        return self.micropython_bins_list
+        return micropython_bins_list
 
     #####################################################
     #             DevEnv EXTERNAL METHODS               #
@@ -194,9 +186,11 @@ class MicrOSDevTool():
         self.console("------------------------------------------")
         self.console("-           ERASE MICROS DEVICE          -", state='imp')
         self.console("------------------------------------------")
+        self.__initialize_dev_env_for_deployment_vis_usb()
 
+        selected_device = self.get_devices()[0]
         erase_cmd = self.dev_types_and_cmds[self.selected_device_type]['erase']
-        selected_device = self.__get_device()
+        print("selected_device_port: {}".format(selected_device))
         command = erase_cmd.format(dev=selected_device)
         self.console("CMD: {}".format(command))
         if self.dummy_exec:
@@ -215,10 +209,11 @@ class MicrOSDevTool():
         self.console("------------------------------------------")
         self.console("-            DEPLOY MICROPYTHON          -", state='imp')
         self.console("------------------------------------------")
+        self.__initialize_dev_env_for_deployment_vis_usb()
 
         deploy_cmd = self.dev_types_and_cmds[self.selected_device_type]['deploy']
-        selected_device = self.__get_device()
-        selected_micropython = self.__get_micropython()
+        selected_device = self.get_devices()[0]
+        selected_micropython = self.selected_micropython_bin
         command = deploy_cmd.format(dev=selected_device, micropython=selected_micropython)
         self.console("CMD: {}".format(command))
         if self.dummy_exec:
@@ -357,13 +352,14 @@ class MicrOSDevTool():
         return is_valid
 
     def put_micros_to_dev(self):
+        self.__initialize_dev_env_for_deployment_vis_usb()
         status = True
         config_is_valid = self.__validate_json()
         if not config_is_valid:
             sys.exit(6)
 
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
-        device = self.__get_device()
+        device = self.get_devices()[0]
         source_to_put_device = LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
         # Set source order - main, boot
         source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('boot.py')))
@@ -400,12 +396,13 @@ class MicrOSDevTool():
         return status
 
     def connect_dev(self):
+        self.__initialize_dev_env_for_deployment_vis_usb()
         self.console("WELCOME $USER - $(DATE)")
         self.console("TO EXIT: ctrl-a d OR ctrl-a ctrl-d")
         time.sleep(2)
 
         connect_cmd = self.dev_types_and_cmds[self.selected_device_type]['connect']
-        selected_device = self.__get_device()
+        selected_device = self.get_devices()[0]
         command = connect_cmd.format(dev=selected_device)
         self.console("CMD: {}".format(command))
         if not self.dummy_exec:
@@ -424,7 +421,7 @@ class MicrOSDevTool():
 
     def __dev_used_from(self):
         fuser_cmd = 'fuser {dev}'
-        selected_device = self.__get_device()
+        selected_device = self.get_devices()[0]
         command = fuser_cmd.format(dev=selected_device)
         self.console("CMD: {}".format(command))
         if self.dummy_exec:
@@ -441,7 +438,9 @@ class MicrOSDevTool():
         return processid
 
     def update_micros_via_usb(self, force=False):
+        self.__initialize_dev_env_for_deployment_vis_usb()
         exitcode, stdout, stderr = self.__get_node_config()
+        print(self.__get_node_config())
         if exitcode == 0:
             self.console("Get Node config (node_config.json):")
             pprint.PrettyPrinter(indent=4).pprint(json.loads(stdout))
@@ -461,7 +460,7 @@ class MicrOSDevTool():
 
     def __get_node_config(self):
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
-        device = self.__get_device()
+        device = self.get_devices()[0]
         arguments = 'get node_config.json'
         command = ampy_cmd.format(dev=device, args=arguments)
         if not self.dummy_exec:
@@ -469,7 +468,7 @@ class MicrOSDevTool():
             self.archive_node_config()
         else:
             exitcode = 0
-            stdout = 'Dummy stdout'
+            stdout = '{"key": "Dummy stdout"}'
             stderr = ''
         return exitcode, stdout, stderr
 
@@ -488,7 +487,8 @@ class MicrOSDevTool():
         return False
 
     def backup_node_config(self):
-        if len(self.micros_devices) > 0:
+        self.__initialize_dev_env_for_deployment_vis_usb()
+        if len(self.get_devices()) > 0:
             exitcode, stdout, stderr = self.__get_node_config()
             print("1-: {}\n{}\n{}".format(exitcode, stdout, stderr))
             if exitcode == 0:
@@ -592,7 +592,7 @@ class MicrOSDevTool():
 
     def list_micros_filesystem(self):
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
-        device = self.__get_device()
+        device = self.get_devices()[0]
         command = ampy_cmd.format(dev=device, args='ls')
         if not self.dummy_exec:
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
@@ -698,6 +698,7 @@ class MicrOSDevTool():
             json.dump(module_function_dict, f, indent=2)
 
     def deploy_micros(self, restore=True):
+        self.__initialize_dev_env_for_deployment_vis_usb()
         if restore:
             self.restore_and_create_node_config()
         if self.erase_dev():
@@ -780,7 +781,7 @@ class MicrOSDevTool():
                 self.console("Create lock/unlock failed: {}".format(e))
                 return False
 
-    def update_with_webrepl(self, force=False, device=None, non_interactive=False):
+    def update_with_webrepl(self, force=False, device=None):
         """
         OTA UPDATE
             git clone https://github.com/micropython/webrepl.git
@@ -817,7 +818,7 @@ class MicrOSDevTool():
         device_version = answer_msg.strip() if status else Exception("Get device version failed")
         status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
         webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
-        if non_interactive and not status and answer_msg is None:
+        if not self.cmdgui and not status and answer_msg is None:
             webrepl_password = 'ADmin123'
         elif not status and answer_msg is None:
             # In case of update failure and retry (micrOS interface won't be active)
@@ -834,14 +835,14 @@ class MicrOSDevTool():
                 return False
 
         self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE, PLEASE RESET YOUR DEVICE AFTER UPDATE.")
-        if non_interactive:
+        if not self.cmdgui:
             user_input = 'y'
         else:
             user_input = input("Do you want to continue? Y/N: ").lower()
         # Detect update all mode - risky -> no recovery mode but updates all file on system
         if user_input == 'yy':
             msg_force = "[!!!] Force mode, update all files on micrOS system (recovery mode not available) Y/N: "
-            if non_interactive:
+            if not self.cmdgui:
                 user_input_force = 'y'
             else:
                 user_input_force = input(msg_force).strip().lower()
@@ -947,4 +948,4 @@ class MicrOSDevTool():
 
 if __name__ == "__main__":
     d = MicrOSDevTool()
-    d.LM_functions_static_dump_gen()
+    #d.LM_functions_static_dump_gen()

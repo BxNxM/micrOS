@@ -1,6 +1,7 @@
 import sys
 import os
 import threading
+import time
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
@@ -14,6 +15,8 @@ import MicrOSDevEnv
 import socketClient
 sys.path.append(os.path.dirname(os.path.dirname(MYPATH)))
 import devToolKit
+
+DUMMY_EXEC = False
 
 
 class App(QWidget):
@@ -34,7 +37,9 @@ class App(QWidget):
         self.ui_state_machine = {'force': False}
         self.console = None
         self.device_conn_struct = []
-
+        self.micropython_bin_pathes = []
+        self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
+        # Init UI elements
         self.initUI()
 
     def initUI(self):
@@ -44,8 +49,21 @@ class App(QWidget):
         self.setFixedHeight(self.height)
         self.setStyleSheet("background-color: grey; color: {};".format(App.TEXTCOLOR))
         self.venv_indicator()
+        self.main_ui()
 
-    def create_console(self):
+    def main_ui(self):
+        self.__create_console()
+        self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, gui_console=self.console.append_output, dummy_exec=DUMMY_EXEC)
+
+        self.progressbar()
+        self.draw_logo()
+        self.buttons()
+        self.dropdown_board()
+        self.dropdown_micropythonbin()
+        self.dropdown_device()
+        self.force_mode_radiobutton()
+
+    def __create_console(self):
         dropdown_label = QLabel(self)
         dropdown_label.setText("Console".upper())
         dropdown_label.setStyleSheet("background-color : darkGray; color: {};".format(App.TEXTCOLOR))
@@ -119,7 +137,12 @@ class App(QWidget):
         print('__on_click_usb_deploy')
         self.console.append_output('__on_click_usb_deploy')
         self.progressbar_update()
-        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).deploy_micros()
+
+        self.devtool_obj.selected_device_type = self.ui_state_machine['board']
+        self.devtool_obj.selected_micropython_bin = self.ui_state_machine['micropython']
+        self.devenv_usb_deployment_is_active = True
+        # Create a Thread with a function without any arguments
+        self.devtool_obj.deploy_micros(restore=False)
 
     @pyqtSlot()
     def __on_click_ota_update(self):
@@ -136,15 +159,18 @@ class App(QWidget):
         if devip is None:
             self.console.append_output("[ERROR] Selecting device")
         self.console.append_output("Start OTA update on {}:{}".format(fuid, devip))
-        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).update_with_webrepl(
-            device=(fuid, devip), non_interactive=True, force=force)
+        self.devtool_obj.update_with_webrepl(device=(fuid, devip), force=force)
 
     @pyqtSlot()
     def __on_click_usb_update(self):
         print('__on_click_usb_update')
         self.console.append_output('__on_click_usb_update')
         self.progressbar_update()
-        MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).update_micros_via_usb()
+
+        self.devtool_obj.selected_device_type = self.ui_state_machine['board']
+        self.devtool_obj.selected_micropython_bin = self.ui_state_machine['micropython']
+        self.devenv_usb_deployment_is_active = True
+        self.devtool_obj.update_micros_via_usb(force=False)
 
     @pyqtSlot()
     def __on_click_serach_devices(self):
@@ -189,14 +215,6 @@ class App(QWidget):
         print(self.pbar_status)
 
     def draw(self):
-        self.progressbar()
-        self.create_console()
-        self.draw_logo()
-        self.buttons()
-        self.dropdown_board()
-        self.dropdown_micropythonbin()
-        self.dropdown_device()
-        self.force_mode_radiobutton()
         self.show()
 
     def dropdown_board(self):
@@ -211,7 +229,7 @@ class App(QWidget):
         combo_box.setGeometry(120, 60, 160, 30)
 
         # GET DEVICE TYPES
-        geek_list = MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).dev_types_and_cmds.keys()
+        geek_list = self.devtool_obj.dev_types_and_cmds.keys()
         self.ui_state_machine['board'] = list(geek_list)[0]
 
         # making it editable
@@ -252,7 +270,8 @@ class App(QWidget):
         combo_box.setGeometry(290, 60, 200, 30)
 
         # GET MICROPYTHON BINARIES
-        geek_list = MicrOSDevEnv.MicrOSDevTool(gui_console=self.console.append_output).get_micropython_binaries()
+        geek_list = self.devtool_obj.get_micropython_binaries()
+        self.micropython_bin_pathes = geek_list
         geek_list = [os.path.basename(path) for path in geek_list]
         self.ui_state_machine['micropython'] = geek_list[0]
 
@@ -343,7 +362,10 @@ class App(QWidget):
         self.get_widget_values()
 
     def __on_click_micropython_dropdown(self, index):
-        self.ui_state_machine['micropython'] = self.dropdown_objects_list['micropython'].itemText(index)
+        micropython = self.dropdown_objects_list['micropython'].itemText(index)
+        #self.ui_state_machine['micropython'] = micropython
+        print(self.micropython_bin_pathes)
+        self.ui_state_machine['micropython'] = [path for path in self.micropython_bin_pathes if micropython in path][0]
         self.get_widget_values()
 
     def __on_click_device_dropdown(self, index):

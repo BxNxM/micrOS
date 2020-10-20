@@ -4,12 +4,38 @@ import os
 import sys
 import pip
 import venv
+try:
+    __file__
+except NameError:
+    raise AssertionError(
+        "You must run this like execfile('path/to/activate_this.py', dict(__file__='path/to/activate_this.py'))")
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def activate_venv():
     # Virtualenv handling in python
     virtualenv_path = os.path.join(MYPATH, 'tools/venv')
+
+    def activate_this():
+        old_os_path = os.environ.get('PATH', '')
+        os.environ['PATH'] = os.path.dirname(os.path.abspath(__file__)) + os.pathsep + old_os_path
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if sys.platform == 'win32':
+            site_packages = os.path.join(base, 'Lib', 'site-packages')
+        else:
+            site_packages = os.path.join(base, 'lib', 'python%s' % sys.version[:3], 'site-packages')
+        prev_sys_path = list(sys.path)
+        import site
+        site.addsitedir(site_packages)
+        sys.real_prefix = sys.prefix
+        sys.prefix = base
+        # Move the added items to the front of the path:
+        new_sys_path = []
+        for item in list(sys.path):
+            if item not in prev_sys_path:
+                new_sys_path.append(item)
+                sys.path.remove(item)
+        sys.path[:0] = new_sys_path
 
     def in_virtualenv():
         return (getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix) != sys.prefix
@@ -24,12 +50,11 @@ def activate_venv():
         return False
 
     def activate():
-        activate_this = os.path.join(virtualenv_path, 'bin/activate_this.py')
-
-        # Activate virtualenv
-        with open(activate_this) as f:
-            code = compile(f.read(), activate_this, 'exec')
-            exec(code, dict(__file__=activate_this))
+        try:
+            activate_this()
+        except Exception as e:
+            print("[VIRTUALENV] Activation failed: {}".format(e))
+            return False
         print("[VIRTUALENV] Activation was done")
         return True
 

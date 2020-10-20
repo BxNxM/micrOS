@@ -7,3 +7,4 @@ MicrOS/*.mpy
 **__pycache__
 MicrOS/node_config.json
 mpy-MicrOS/node_config.json
+tools/venv/

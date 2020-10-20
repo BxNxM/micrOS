@@ -3,6 +3,45 @@
 import os
 import sys
 MYPATH = os.path.dirname(os.path.abspath(__file__))
+import virtualenv
+import pip
+
+
+def activate_venv():
+    # Virtualenv handling in python
+    virtualenv_path = os.path.join(MYPATH, 'tools/venv')
+
+    def activate():
+        activate_this = os.path.join(virtualenv_path, 'bin/activate_this.py')
+
+        # Activate virtualenv
+        with open(activate_this) as f:
+            code = compile(f.read(), activate_this, 'exec')
+            exec(code, dict(__file__=activate_this))
+        print("[VIRTUALENV] Activation was done")
+
+    def install_requirements():
+        requirements_file = os.path.join(MYPATH, 'tools/requirements.txt')
+        try:
+            from pip._internal import main as pipmain
+        except ImportError:
+            from pip import main as pipmain
+        code = pipmain(["install", "-r", requirements_file])
+        if code == 0:
+            print("[VIRTUALENV] Install requirements was done")
+
+    def safe_main():
+        try:
+            virtualenv.create_environment(virtualenv_path)
+            print("[VIRTUALENV] Creation done")
+            activate()
+            install_requirements()
+        except Exception as e:
+            print("[VIRTUALENV] Activation failed {}\nTry to continue".format(e))
+    safe_main()
+
+
+activate_venv()
 SOCKET_CLIENT_DIR_PATH = os.path.join(MYPATH, 'tools/')
 API_DIR_PATH = os.path.join(MYPATH, 'tools/MicrOSDevEnv/')
 APP_DIR = os.path.join(MYPATH, 'apps')

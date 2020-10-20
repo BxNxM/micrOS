@@ -2,14 +2,29 @@
 
 import os
 import sys
-MYPATH = os.path.dirname(os.path.abspath(__file__))
 import virtualenv
 import pip
+MYPATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def activate_venv():
     # Virtualenv handling in python
     virtualenv_path = os.path.join(MYPATH, 'tools/venv')
+
+    def create():
+        try:
+            virtualenv.create(virtualenv_path)
+            print("[VIRTUALENV][create] Creation done")
+            return True
+        except Exception as e:
+            print("[VIRTUALENV][create] Create failed: {}".format(e))
+        try:
+            virtualenv.create_environment(virtualenv_path)
+            print("[VIRTUALENV][create_environment] Creation done")
+            return True
+        except Exception as e:
+            print("[VIRTUALENV][create_environment] Create failed: {}".format(e))
+        return False
 
     def activate():
         activate_this = os.path.join(virtualenv_path, 'bin/activate_this.py')
@@ -19,6 +34,7 @@ def activate_venv():
             code = compile(f.read(), activate_this, 'exec')
             exec(code, dict(__file__=activate_this))
         print("[VIRTUALENV] Activation was done")
+        return True
 
     def install_requirements():
         requirements_file = os.path.join(MYPATH, 'tools/requirements.txt')
@@ -29,15 +45,20 @@ def activate_venv():
         code = pipmain(["install", "-r", requirements_file])
         if code == 0:
             print("[VIRTUALENV] Install requirements was done")
+            return True
+        else:
+            return False
 
     def safe_main():
         try:
-            virtualenv.create_environment(virtualenv_path)
-            print("[VIRTUALENV] Creation done")
-            activate()
-            install_requirements()
+            state_create = create()
+            print("\tCreate: {}".format(state_create))
+            state_activate = activate()
+            print("\tActivate: {}".format(state_activate))
+            state_req = install_requirements()
+            print("\tRequirements: {}".format(state_req))
         except Exception as e:
-            print("[VIRTUALENV] Activation failed {}\nTry to continue".format(e))
+            print("[VIRTUALENV] Activation failed: {}\nTry to continue".format(e))
     safe_main()
 
 

@@ -2,8 +2,8 @@
 
 import os
 import sys
-import virtualenv
 import pip
+import venv
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -11,19 +11,16 @@ def activate_venv():
     # Virtualenv handling in python
     virtualenv_path = os.path.join(MYPATH, 'tools/venv')
 
-    def create():
+    def in_virtualenv():
+        return (getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix) != sys.prefix
+
+    def create_env():
         try:
-            virtualenv.create(virtualenv_path)
+            venv.create(virtualenv_path)
             print("[VIRTUALENV][create] Creation done")
             return True
         except Exception as e:
             print("[VIRTUALENV][create] Create failed: {}".format(e))
-        try:
-            virtualenv.create_environment(virtualenv_path)
-            print("[VIRTUALENV][create_environment] Creation done")
-            return True
-        except Exception as e:
-            print("[VIRTUALENV][create_environment] Create failed: {}".format(e))
         return False
 
     def activate():
@@ -51,10 +48,11 @@ def activate_venv():
 
     def safe_main():
         try:
-            state_create = create()
-            print("\tCreate: {}".format(state_create))
-            state_activate = activate()
-            print("\tActivate: {}".format(state_activate))
+            if not in_virtualenv():
+                state_create = create_env()
+                print("\tCreate: {}".format(state_create))
+                state_activate = activate()
+                print("\tActivate: {}".format(state_activate))
             state_req = install_requirements()
             print("\tRequirements: {}".format(state_req))
         except Exception as e:

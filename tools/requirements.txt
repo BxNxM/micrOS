@@ -2,6 +2,7 @@ adafruit-ampy==1.0.7
 click==7.1.2
 ecdsa==0.15
 esptool==2.8
+importlib-metadata==2.0.0
 importlib-resources==3.0.0
 ipaddress==1.0.23
 netaddr==0.8.0
@@ -12,4 +13,5 @@ PyQt5-sip==12.8.1
 pyserial==3.4
 python-dotenv==0.14.0
 six==1.15.0
+virtualenv==20.0.35
 zipp==3.3.1

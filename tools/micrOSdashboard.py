@@ -1,9 +1,11 @@
 import sys
 import os
 import threading
+import subprocess
 import time
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
 from PyQt5.QtGui import QIcon
+import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon, QPixmap
@@ -190,6 +192,8 @@ class App(QWidget):
         self.progressbar_update()
 
     def draw_logo(self):
+        """
+        Logo as static label
         label = QLabel(self)
         label.setGeometry(20, 30, 80, 80)
         label.setScaledContents(True)
@@ -197,6 +201,16 @@ class App(QWidget):
         pixmap = QPixmap(logo_path)
         label.setPixmap(pixmap)
         label.setToolTip("micrOS: https://github.com/BxNxM/micrOS")
+        """
+
+        logo_path = os.path.join(MYPATH, '../media/logo_mini.png')
+        button = QPushButton('', self)
+        button.setIcon(QIcon(logo_path))
+        button.setIconSize(QtCore.QSize(80, 80))
+        button.setGeometry(20, 30, 80, 80)
+        button.setToolTip("Open micrOS repo documentation")
+        button.setStyleSheet('border: 0px solid black;')
+        button.clicked.connect(self.__open_micrOS_URL)
 
     def progressbar(self):
         # creating progress bar
@@ -390,6 +404,19 @@ class App(QWidget):
         else:
             self.ui_state_machine['force'] = False
         self.__show_gui_state_on_console()
+
+    def __open_micrOS_URL(self):
+        self.console.append_output("Open micrOS repo documentation")
+        url = 'https://github.com/BxNxM/micrOS'
+        if sys.platform == 'win32':
+            os.startfile(url)
+        elif sys.platform == 'darwin':
+            subprocess.Popen(['open', url])
+        else:
+            try:
+                subprocess.Popen(['xdg-open', url])
+            except OSError:
+                print('Please open a browser on: {}'.format(url))
 
 
 class MyConsole(QPlainTextEdit):

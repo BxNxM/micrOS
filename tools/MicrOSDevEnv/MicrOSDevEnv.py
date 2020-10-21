@@ -772,6 +772,7 @@ class MicrOSDevTool:
             self.console("Webrepl CMD: {}".format(command))
             return True
         else:
+            self.console("Webrepl CMD: {}".format(command))
             try:
                 exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
                 if exitcode == 0:
@@ -804,8 +805,8 @@ class MicrOSDevTool:
         if device is None:
             device_ip, fuid = socketClient.ConnectionData.select_device()
         else:
-            device_ip, fuid = device[0], device[1]
-        self.console("\tDevice was selected: {} -> {}".format(fuid, device_ip), state='OK')
+            device_ip, fuid = device[1], device[0]
+        self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
 
         # Get repo version
         with open(os.path.join(self.MicrOS_dir_path, 'SocketServer.py'), 'r') as f:
@@ -818,6 +819,7 @@ class MicrOSDevTool:
         device_version = answer_msg.strip() if status else Exception("Get device version failed")
         status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
         webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
+
         if not self.cmdgui and not status and answer_msg is None:
             webrepl_password = 'ADmin123'
         elif not status and answer_msg is None:
@@ -948,4 +950,4 @@ class MicrOSDevTool:
 
 if __name__ == "__main__":
     d = MicrOSDevTool()
-    #d.LM_functions_static_dump_gen()
+    d.LM_functions_static_dump_gen()

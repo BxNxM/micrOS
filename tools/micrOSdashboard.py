@@ -41,6 +41,7 @@ class App(QWidget):
         self.device_conn_struct = []
         self.micropython_bin_pathes = []
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
+        self.socketcli_obj = socketClient.ConnectionData()
         # Init UI elements
         self.initUI()
 
@@ -100,7 +101,7 @@ class App(QWidget):
         buttons = {'Deploy (USB)': ['Install "empty" device.\nDeploy micropython and micrOS Framework',
                                        20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
                    'Update (OTA)': ['OTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
-                                  20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
+                                    20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
                    'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well) ',
                                        20, 115 + (height+yoffset) * 2, width, height, self.__on_click_usb_update, 'darkCyan'],
                    'Search device': ['Search online micrOS devices\nOn local wifi network.',
@@ -178,7 +179,7 @@ class App(QWidget):
     def __on_click_serach_devices(self):
         self.console.append_output('[Search] Search devices')
         # Create a Thread with a function without any arguments
-        th = threading.Thread(target=socketClient.ConnectionData().filter_MicrOS_devices, daemon=True)
+        th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=True)
         th.start()
         self.progressbar_update()
 
@@ -327,7 +328,7 @@ class App(QWidget):
         combo_box.setGeometry(500, 60, 170, 30)
 
         # Get stored devices
-        conn_data = socketClient.ConnectionData()
+        conn_data = self.socketcli_obj
         conn_data.read_MicrOS_device_cache()
         self.device_conn_struct = []
         for uid in conn_data.MICROS_DEV_IP_DICT.keys():

@@ -42,6 +42,7 @@ class App(QWidget):
         self.micropython_bin_pathes = []
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
         self.socketcli_obj = socketClient.ConnectionData()
+        self.bgjob_thread_obj_list = []
         # Init UI elements
         self.initUI()
 
@@ -145,7 +146,7 @@ class App(QWidget):
         self.devtool_obj.selected_micropython_bin = self.ui_state_machine['micropython']
         self.devenv_usb_deployment_is_active = True
         # Create a Thread with a function without any arguments
-        self.devtool_obj.deploy_micros(restore=False)
+        self.devtool_obj.deploy_micros(restore=False, purge_conf=True)
 
     @pyqtSlot()
     def __on_click_ota_update(self):
@@ -173,7 +174,7 @@ class App(QWidget):
         self.devtool_obj.selected_device_type = self.ui_state_machine['board']
         self.devtool_obj.selected_micropython_bin = self.ui_state_machine['micropython']
         self.devenv_usb_deployment_is_active = True
-        self.devtool_obj.update_micros_via_usb(force=False)
+        self.devtool_obj.update_micros_via_usb(force=self.ui_state_machine['force'])
 
     @pyqtSlot()
     def __on_click_serach_devices(self):
@@ -181,6 +182,7 @@ class App(QWidget):
         # Create a Thread with a function without any arguments
         th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=True)
         th.start()
+        self.bgjob_thread_obj_list.append(th)
         self.progressbar_update()
 
     @pyqtSlot()
@@ -189,6 +191,7 @@ class App(QWidget):
         self.progressbar_update()
         th = threading.Thread(target=devToolKit.simulate_micrOS, daemon=True)
         th.start()
+        self.bgjob_thread_obj_list.append(th)
         self.console.append_output('[Simulator] Started successfully')
         self.progressbar_update()
 

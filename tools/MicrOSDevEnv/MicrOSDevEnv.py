@@ -697,8 +697,14 @@ class MicrOSDevTool:
         with open(static_help_json_path, 'w') as f:
             json.dump(module_function_dict, f, indent=2)
 
-    def deploy_micros(self, restore=True):
+    def purge_node_config_from_workdir(self):
+        path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
+        LocalMachine.FileHandler().remove(path, ignore=False)
+
+    def deploy_micros(self, restore=True, purge_conf=False):
         self.__initialize_dev_env_for_deployment_vis_usb()
+        if purge_conf:
+            self.purge_node_config_from_workdir()
         if restore:
             self.restore_and_create_node_config()
         if self.erase_dev():

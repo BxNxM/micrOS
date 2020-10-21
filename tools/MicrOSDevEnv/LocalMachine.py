@@ -150,7 +150,7 @@ class FileHandler():
 
     @staticmethod
     def rename(path, new_name):
-        debug_print("[DEBUG] Rename file from " + input_file + " to " + output_file)
+        debug_print("[DEBUG] Rename file from " + path + " to " + new_name)
         os.rename(path, new_name)
 
     @staticmethod

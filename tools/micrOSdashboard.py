@@ -26,7 +26,6 @@ class ProgressbarUpdateThread(QThread):
     # Create a counter thread
     callback = pyqtSignal(int)
     eta_sec = 20
-    force_stop = False
 
     def run(self):
         step_in_sec = self.eta_sec / 100
@@ -35,9 +34,6 @@ class ProgressbarUpdateThread(QThread):
             cnt += 1
             time.sleep(step_in_sec)
             self.callback.emit(cnt)
-            if self.force_stop:
-                self.callback.emit(100)
-                break
 
 
 class micrOSGUI(QWidget):
@@ -62,9 +58,28 @@ class micrOSGUI(QWidget):
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
         self.socketcli_obj = socketClient.ConnectionData()
         self.bgjob_thread_obj_list = {}
+        self.bgjon_progress_monitor_thread_obj_list = {}
         # Init UI elements
         self.initUI()
+        self.__thread_progress_monitor()
 
+    def __thread_progress_monitor(self):
+        th = threading.Thread(target=self.__thread_monitor_logic, daemon=True)
+        th.start()
+
+    def __thread_monitor_logic(self):
+        while True:
+            remove_from_key = None
+            for bgprog, bgjob in self.bgjob_thread_obj_list.items():
+                if not bgjob.is_alive():
+                    print("[DONE] Job was finished: {}".format(bgprog))
+                    self.console.append_output("[DONE] Job was finished: {}".format(bgprog))
+                    remove_from_key = bgprog
+            if remove_from_key is not None:
+                self.bgjob_thread_obj_list.pop(remove_from_key, None)
+                self.bgjon_progress_monitor_thread_obj_list[remove_from_key].terminate()
+                self.bgjon_progress_monitor_thread_obj_list.pop(remove_from_key, None)
+            time.sleep(1)
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -164,13 +179,15 @@ class micrOSGUI(QWidget):
                 self.console.append_output('[SKIP][DEPLOY] already running.')
                 return
 
-        self.console.append_output('[DEPLOY] Deploy micrOS on new device\nwith factory config')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
         pth.eta_sec = 80
         pth.callback.connect(self.progressbar_update)
         pth.start()
+        pth.setTerminationEnabled(True)
+        self.bgjon_progress_monitor_thread_obj_list['usb_deploy'] = pth
 
+        self.console.append_output('[DEPLOY] Deploy micrOS on new device\nwith factory config')
         # Start job
         self.devtool_obj.selected_device_type = self.ui_state_machine['board']
         self.devtool_obj.selected_micropython_bin = self.ui_state_machine['micropython']
@@ -196,6 +213,8 @@ class micrOSGUI(QWidget):
         pth.eta_sec = 50
         pth.callback.connect(self.progressbar_update)
         pth.start()
+        pth.setTerminationEnabled(True)
+        self.bgjon_progress_monitor_thread_obj_list['ota_update'] = pth
 
         # Start job
         fuid = self.ui_state_machine['device']
@@ -228,6 +247,8 @@ class micrOSGUI(QWidget):
         pth.eta_sec = 50
         pth.callback.connect(self.progressbar_update)
         pth.start()
+        pth.setTerminationEnabled(True)
+        self.bgjon_progress_monitor_thread_obj_list['usb_update'] = pth
 
         # Start job
         self.devtool_obj.selected_device_type = self.ui_state_machine['board']
@@ -254,6 +275,8 @@ class micrOSGUI(QWidget):
         pth.eta_sec = 70
         pth.callback.connect(self.progressbar_update)
         pth.start()
+        pth.setTerminationEnabled(True)
+        self.bgjon_progress_monitor_thread_obj_list['serach_devices'] = pth
 
         # Start job
         self.console.append_output('|- start serach_devices job')
@@ -276,6 +299,8 @@ class micrOSGUI(QWidget):
         pth.eta_sec = 1
         pth.callback.connect(self.progressbar_update)
         pth.start()
+        pth.setTerminationEnabled(True)
+        self.bgjon_progress_monitor_thread_obj_list['simulator'] = pth
 
         # Start job
         self.console.append_output('|- start simulator job')

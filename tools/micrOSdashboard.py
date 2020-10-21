@@ -127,7 +127,7 @@ class micrOSGUI(QWidget):
                    'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well) ',
                                        20, 115 + (height+yoffset) * 2, width, height, self.__on_click_usb_update, 'darkCyan'],
                    'Search device': ['Search online micrOS devices\nOn local wifi network.',
-                                      20, 115 + (height + yoffset) * 3, width, height, self.__on_click_serach_devices, 'darkCyan'],
+                                     20, 115 + (height + yoffset) * 3, width, height, self.__on_click_search_devices, 'darkCyan'],
                    'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
                                       20, 115 + (height + yoffset) * 4, width, height, self.__on_click_simulator, 'darkCyan']
                    }
@@ -242,7 +242,7 @@ class micrOSGUI(QWidget):
         #self.devtool_obj.update_micros_via_usb(force=self.ui_state_machine['force'])
 
     @pyqtSlot()
-    def __on_click_serach_devices(self):
+    def __on_click_search_devices(self):
         if 'serach_devices' in self.bgjob_thread_obj_list.keys():
             if self.bgjob_thread_obj_list['serach_devices'].is_alive():
                 self.console.append_output('[SKIP][SEARCH] already running.')
@@ -258,7 +258,7 @@ class micrOSGUI(QWidget):
         # Start job
         self.console.append_output('|- start serach_devices job')
         # Create a Thread with a function without any arguments
-        th = threading.Thread(target=self.socketcli_obj.filter_micros_devices, daemon=True)
+        th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=True)
         th.start()
         self.bgjob_thread_obj_list['serach_devices'] = th
         self.console.append_output('|- serach_devices job was started')

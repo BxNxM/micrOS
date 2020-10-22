@@ -22,6 +22,14 @@ import devToolKit
 DUMMY_EXEC = False
 
 
+class ProgressbarTimers:
+    usb_deploy = 90
+    ota_update = 80
+    usb_update = 120
+    serach_devices = 120
+    simulator = 2
+
+
 class ProgressbarUpdateThread(QThread):
     # Create a counter thread
     callback = pyqtSignal(int)
@@ -34,6 +42,12 @@ class ProgressbarUpdateThread(QThread):
             cnt += 1
             time.sleep(step_in_sec)
             self.callback.emit(cnt)
+
+    def terminate(self):
+        self.callback.emit(99)
+        time.sleep(0.3)
+        self.callback.emit(100)
+        super().terminate()
 
 
 class micrOSGUI(QWidget):
@@ -144,7 +158,9 @@ class micrOSGUI(QWidget):
                    'Search device': ['Search online micrOS devices\nOn local wifi network.',
                                      20, 115 + (height + yoffset) * 3, width, height, self.__on_click_search_devices, 'darkCyan'],
                    'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
-                                      20, 115 + (height + yoffset) * 4, width, height, self.__on_click_simulator, 'darkCyan']
+                                      20, 115 + (height + yoffset) * 4, width, height, self.__on_click_simulator, 'darkCyan'],
+                   'LM Update (OTA)': ['Update LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
+                                      20, 115 + (height + yoffset) * 5, width, height, self.__on_click_lm_update, 'darkCyan']
                    }
 
         for key, data_struct in buttons.items():
@@ -181,7 +197,7 @@ class micrOSGUI(QWidget):
 
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
-        pth.eta_sec = 80
+        pth.eta_sec = ProgressbarTimers.usb_deploy
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
@@ -210,7 +226,7 @@ class micrOSGUI(QWidget):
         self.console.append_output('[OTA Update] Upload micrOS resources to selected device.')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
-        pth.eta_sec = 50
+        pth.eta_sec = ProgressbarTimers.ota_update
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
@@ -244,7 +260,7 @@ class micrOSGUI(QWidget):
         self.console.append_output('[USB Update] (Re)Install micropython\nand upload micrOS resources')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
-        pth.eta_sec = 50
+        pth.eta_sec = ProgressbarTimers.usb_update
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
@@ -272,7 +288,7 @@ class micrOSGUI(QWidget):
         self.console.append_output('[SEARCH] Search online devices on local network')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
-        pth.eta_sec = 70
+        pth.eta_sec = ProgressbarTimers.serach_devices
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
@@ -296,7 +312,7 @@ class micrOSGUI(QWidget):
         self.console.append_output('[SIMULATOR] Start micrOS on host (local machine)')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
-        pth.eta_sec = 1
+        pth.eta_sec = ProgressbarTimers.simulator
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
@@ -310,6 +326,9 @@ class micrOSGUI(QWidget):
         self.bgjob_thread_obj_list['simulator'] = th
         self.console.append_output('|- simulator job was started')
         self.progressbar_update()
+
+    def __on_click_lm_update(self):
+        pass
 
     def draw_logo(self):
         """
@@ -515,7 +534,7 @@ class micrOSGUI(QWidget):
 
     def force_mode_radiobutton(self):
         rbtn1 = QRadioButton('Force mode', self)
-        rbtn1.move(20, self.height-60)
+        rbtn1.move(20, self.height-55)
         rbtn1.toggled.connect(self.__on_click_force_mode)
 
     @pyqtSlot()
@@ -549,7 +568,7 @@ class MyConsole(QPlainTextEdit):
         self.setReadOnly(True)
         self.setMaximumBlockCount(20000)  # limit console to 20000 lines
         self._cursor_output = self.textCursor()
-        self.setGeometry(250, 132, 420, 175)
+        self.setGeometry(250, 132, 420, 210)
         MyConsole.console = self
 
     @pyqtSlot(str)

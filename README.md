@@ -6,7 +6,7 @@
 
 > Coming soon
 
-![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/appGUI.gif?raw=true =200x600)
+![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/appGUI.gif?raw=true)
 
 # micrOS Toolkit for PC
 

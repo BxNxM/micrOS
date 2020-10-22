@@ -1,5 +1,9 @@
 from sim_console import console
-import resource
+try:
+    import resource
+except Exception as e:
+    console("resource module import error: {}".format(e))
+    resource = None
 
 
 def alloc_emergency_exception_buf(*args, **kwargs):
@@ -8,8 +12,11 @@ def alloc_emergency_exception_buf(*args, **kwargs):
 
 
 def mem_info(*args, **kwargs):
-    usage = resource.getrusage(resource.RUSAGE_SELF)
-    max_mem = usage.ru_maxrss / 1024 / 1024        # bytes by default
+    if resource is None:
+        max_mem = "n/a"
+    else:
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        max_mem = usage.ru_maxrss / 1024 / 1024        # bytes by default
     console("Max RAM usage: {:.2f} Mb".format(max_mem))
     return max_mem
 

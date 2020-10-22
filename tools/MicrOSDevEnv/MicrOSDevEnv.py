@@ -56,6 +56,7 @@ class MicrOSDevTool:
         if not state:
             self.console("Please install the dependences: {}".format(self.deployment_app_dependences), state='err')
             sys.exit(1)
+        self.execution_verdict = []
 
     #####################################################
     #               BASE / INTERNAL METHODS             #
@@ -452,11 +453,17 @@ class MicrOSDevTool:
                 if state:
                     self.deploy_micros(restore=False)
                 else:
-                    self.console("Saving node config failed - SKIP update/rediploy", state='err')
+                    self.console("Saving node config failed - SKIP update/redeploy", state='err')
             else:
                 self.console("System is up-to-date.")
+                self.execution_verdict.append("[OK] usb_update system is up-to-date")
+                return True
         else:
             self.console("Node config error: {} - {}".format(stdout, stderr))
+            self.execution_verdict.append("[ERR] usb_update get node config error.")
+            return False
+        self.execution_verdict.append("[OK] usb_update was successful")
+        return True
 
     def __get_node_config(self):
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
@@ -718,10 +725,13 @@ class MicrOSDevTool:
                     self.archive_node_config()
                 else:
                     self.console("MicrOS install error", state='err')
+                    self.execution_verdict.append("[ERROR] usb_deploy - MicrOS install failed")
             else:
                 self.console("Deploy micropython error", state='err')
+                self.execution_verdict.append("[ERROR] usb_deploy - micropython install failed")
         else:
             self.console("Erase device error", state='err')
+        self.execution_verdict.append("[OK] usb_deploy was successful")
 
     def __clone_webrepl_repo(self):
         if os.path.isdir(os.path.dirname(self.webreplcli_repo_path)) and os.path.isfile(self.webreplcli_repo_path):
@@ -788,7 +798,7 @@ class MicrOSDevTool:
                 self.console("Create lock/unlock failed: {}".format(e))
                 return False
 
-    def update_with_webrepl(self, force=False, device=None):
+    def update_with_webrepl(self, force=False, device=None, lm_only=False):
         """
         OTA UPDATE
             git clone https://github.com/micropython/webrepl.git
@@ -798,6 +808,7 @@ class MicrOSDevTool:
 
         if not self.__clone_webrepl_repo():
             self.console("Webrepl repo not available...", state='ERR')
+            self.execution_verdict.append("[ERR] ota_update - clone webrepl repo")
             return False
         self.precompile_micros()
 
@@ -840,6 +851,7 @@ class MicrOSDevTool:
             if not force:
                 self.console("\t[SKIP UPDATE] Device on same version with repo: {} == {}".format(device_version, repo_version))
                 self.console("\tBye")
+                self.execution_verdict.append("[OK] ota_update - update not necessary (no new version)")
                 return False
 
         self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE, PLEASE RESET YOUR DEVICE AFTER UPDATE.")
@@ -873,9 +885,11 @@ class MicrOSDevTool:
                     time.sleep(2)
                 else:
                     self.console("Webrepl not available on device, update over USB.")
+                    self.execution_verdict.append("[ERR] ota_update - webrepl not availabl on node")
                     return False
             else:
                 self.console("Get help from device failed.")
+                self.execution_verdict.append("[ERR] ota_update - help command failed on device (no webrepl)")
                 return False
         time.sleep(3)
 
@@ -883,6 +897,7 @@ class MicrOSDevTool:
         self.console("\t[!] Create update lock (webrepl bootup) under OTA update", state='IMP')
         if not self.__lock_update_with_webrepl(host=device_ip, lock=True, pwd=webrepl_password):
             self.console("OTA lock creation failed", state='ERR')
+            self.execution_verdict.append("[ERR] ota_update - OTA update locked creation failed")
             return
 
         # Parse files and upload
@@ -898,6 +913,13 @@ class MicrOSDevTool:
                     "\t[{}%][SKIP UPLOAD] updating {} - only available over USB update".format(progress, source),
                     state='WARN')
                 continue
+
+            # Handle lm_only mode - skip upload for not LM_
+            if lm_only:
+                if "LM_" not in source:
+                    self.console(
+                        "\t[{}%][SKIP UPLOAD] updating {} - lm_only".format(progress, source, lm_only),
+                        state='WARN')
 
             # Copy retry mechanism
             exitcode = -1
@@ -923,6 +945,7 @@ class MicrOSDevTool:
                         self.console("|--- Retry upload file ...")
             if exitcode != 0:
                 self.console("|-- ERR: Update file failed, please try again.", state='ERR')
+                self.execution_verdict.append("[ERR] ota_update - Update files are failed, pls try again.")
                 return False
 
         self.console("\t[!] Delete update lock (webrepl bootup) under OTA update", state='IMP')
@@ -931,6 +954,7 @@ class MicrOSDevTool:
             self.__lock_update_with_webrepl(device_ip, clean=True)
         else:
             self.console("\tOTA UPDATE WAS FAILED, PLEASE TRY AGAIN.", state='ERR')
+            self.execution_verdict.append("[WARN] ota_update - failed to remove OTA update lock")
 
         self.console("Device will reboot automatically, please wait 4-8 seconds.")
         time.sleep(4)
@@ -952,6 +976,8 @@ class MicrOSDevTool:
             self.console("\t[1]HINT: open in browser: http://micropython.org/webrepl/#{}:8266/".format(device_ip))
             self.console("\t[2]HINT: log in and execute: import reset")
             self.console("\t[3]HINT: OR skip [2] point and reset manually")
+            self.execution_verdict.append("[WARN] ota_update - device auto restart failed,\nplease reset the device manually.")
+        self.execution_verdict.append("[OK] ota_update was successful")
 
 
 if __name__ == "__main__":

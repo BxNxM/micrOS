@@ -23,11 +23,12 @@ DUMMY_EXEC = False
 
 
 class ProgressbarTimers:
-    usb_deploy = 90
-    ota_update = 80
-    usb_update = 120
-    serach_devices = 120
-    simulator = 2
+    usb_deploy = 180
+    ota_update = 100
+    usb_update = usb_deploy + 10
+    serach_devices = 180
+    simulator = 3
+    lm_update = int(ota_update/2)
 
 
 class ProgressbarUpdateThread(QThread):
@@ -86,14 +87,17 @@ class micrOSGUI(QWidget):
             remove_from_key = None
             for bgprog, bgjob in self.bgjob_thread_obj_list.items():
                 if not bgjob.is_alive():
-                    print("[DONE] Job was finished: {}".format(bgprog))
-                    self.console.append_output("[DONE] Job was finished: {}".format(bgprog))
                     remove_from_key = bgprog
+                    # Get job (execution) verdicts
+                    job_verdict = '\n'.join(self.devtool_obj.execution_verdict)
+                    self.devtool_obj.execution_verdict = []
+                    # Print to console GUI
+                    self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
             if remove_from_key is not None:
                 self.bgjob_thread_obj_list.pop(remove_from_key, None)
                 self.bgjon_progress_monitor_thread_obj_list[remove_from_key].terminate()
                 self.bgjon_progress_monitor_thread_obj_list.pop(remove_from_key, None)
-            time.sleep(1)
+            time.sleep(2)
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -106,7 +110,6 @@ class micrOSGUI(QWidget):
 
     def main_ui(self):
         self.__create_console()
-        #self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, gui_console=self.console.append_output, dummy_exec=DUMMY_EXEC)
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
 
         self.init_progressbar()
@@ -145,6 +148,16 @@ class micrOSGUI(QWidget):
             label.setToolTip("Please create your dependency environment:\nvirtualenv -p python3 venv\
             \nsource venv/bin/activate\npip install -r micrOS/tools/requirements.txt")
 
+    def __validate_selected_device_with_micropython(self):
+        print(self.ui_state_machine)
+        selected_micropython_bin = self.ui_state_machine.get('micropython', None)
+        selected_device_type = self.ui_state_machine.get('board', None)
+        if selected_micropython_bin is None or selected_device_type is None:
+            print("Selected\ndevice {} and/or\nmicropython {} was not selected properly,incompatibilityty.".format(selected_micropython_bin, selected_device_type))
+        if selected_device_type in selected_micropython_bin:
+            return True
+        return False
+
     def buttons(self):
         height = 35
         width = 200
@@ -153,14 +166,14 @@ class micrOSGUI(QWidget):
                                        20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
                    'Update (OTA)': ['OTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
                                     20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
-                   'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well) ',
-                                       20, 115 + (height+yoffset) * 2, width, height, self.__on_click_usb_update, 'darkCyan'],
+                   'LM Update (OTA)': ['Update LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
+                                    20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan'],
                    'Search device': ['Search online micrOS devices\nOn local wifi network.',
                                      20, 115 + (height + yoffset) * 3, width, height, self.__on_click_search_devices, 'darkCyan'],
-                   'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
-                                      20, 115 + (height + yoffset) * 4, width, height, self.__on_click_simulator, 'darkCyan'],
-                   'LM Update (OTA)': ['Update LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
-                                      20, 115 + (height + yoffset) * 5, width, height, self.__on_click_lm_update, 'darkCyan']
+                   'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well)',
+                                      20, 115 + (height + yoffset) * 4, width, height, self.__on_click_usb_update, 'darkCyan'],
+                   'Simulator': [' Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
+                                      20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'darkCyan']
                    }
 
         for key, data_struct in buttons.items():
@@ -192,8 +205,11 @@ class micrOSGUI(QWidget):
     def __on_click_usb_deploy(self):
         if 'usb_deploy' in self.bgjob_thread_obj_list.keys():
             if self.bgjob_thread_obj_list['usb_deploy'].is_alive():
-                self.console.append_output('[SKIP][DEPLOY] already running.')
-                return
+                self.console.append_output('[usb_deploy]SKIP] already running.')
+                return False
+        if not self.__validate_selected_device_with_micropython():
+            self.console.append_output("[usb_deploy][WARN] Selected device is not compatible with selected micropython.")
+            return False
 
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
@@ -203,27 +219,28 @@ class micrOSGUI(QWidget):
         pth.setTerminationEnabled(True)
         self.bgjon_progress_monitor_thread_obj_list['usb_deploy'] = pth
 
-        self.console.append_output('[DEPLOY] Deploy micrOS on new device\nwith factory config')
+        self.console.append_output('[usb_deploy] Deploy micrOS on new device with factory config')
         # Start job
         self.devtool_obj.selected_device_type = self.ui_state_machine['board']
         self.devtool_obj.selected_micropython_bin = self.ui_state_machine['micropython']
         self.devenv_usb_deployment_is_active = True
         # Create a Thread with a function without any arguments
-        self.console.append_output('|- start usb_deploy job')
+        self.console.append_output('[usb_deploy] |- start usb_deploy job')
         th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore': False, 'purge_conf': True}, daemon=True)
         th.start()
         self.bgjob_thread_obj_list['usb_deploy'] = th
-        self.console.append_output('|- usb_deploy job was started')
+        self.console.append_output('[usb_deploy] |- usb_deploy job was started')
         #self.devtool_obj.deploy_micros(restore=False, purge_conf=True)
+        return True
 
     @pyqtSlot()
     def __on_click_ota_update(self):
         if 'ota_update' in self.bgjob_thread_obj_list.keys():
             if self.bgjob_thread_obj_list['ota_update'].is_alive():
-                self.console.append_output('[SKIP][OTA Update] already running.')
+                self.console.append_output('[ota_update][SKIP] already running.')
                 return
 
-        self.console.append_output('[OTA Update] Upload micrOS resources to selected device.')
+        self.console.append_output('[ota_update] Upload micrOS resources to selected device.')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
         pth.eta_sec = ProgressbarTimers.ota_update
@@ -240,24 +257,27 @@ class micrOSGUI(QWidget):
             if fuid == conn_data[0]:
                 devip = conn_data[1]
         if devip is None:
-            self.console.append_output("[ERROR] Selecting device")
-        self.console.append_output("Start OTA update on {}:{}".format(fuid, devip))
+            self.console.append_output("[ota_update][ERROR] Selecting device")
+        self.console.append_output("[ota_update] Start OTA update on {}:{}".format(fuid, devip))
         # create a thread with a function without any arguments
-        self.console.append_output('|- start ota_update job')
+        self.console.append_output('[ota_update] |- start ota_update job')
         th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': force}, daemon=True)
         th.start()
         self.bgjob_thread_obj_list['ota_update'] = th
-        self.console.append_output('|- ota_update job was started')
+        self.console.append_output('[ota_update] |- ota_update job was started')
         #self.devtool_obj.update_with_webrepl(device=(fuid, devip), force=force)
 
     @pyqtSlot()
     def __on_click_usb_update(self):
         if 'usb_update' in self.bgjob_thread_obj_list.keys():
             if self.bgjob_thread_obj_list['usb_update'].is_alive():
-                self.console.append_output('[SKIP][USB Update] already running.')
-                return
+                self.console.append_output('[usb_update][SKIP] already running.')
+                return False
+        if not self.__validate_selected_device_with_micropython():
+            self.console.append_output("[usb_update] [WARN] Selected device is not compatible with selected micropython.")
+            return False
 
-        self.console.append_output('[USB Update] (Re)Install micropython\nand upload micrOS resources')
+        self.console.append_output('[usb_update] (Re)Install micropython and upload micrOS resources')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
         pth.eta_sec = ProgressbarTimers.usb_update
@@ -271,21 +291,22 @@ class micrOSGUI(QWidget):
         self.devtool_obj.selected_micropython_bin = self.ui_state_machine['micropython']
         self.devenv_usb_deployment_is_active = True
         # create a thread with a function without any arguments
-        self.console.append_output('|- start usb_update job')
+        self.console.append_output('[usb_update] |- start usb_update job')
         th = threading.Thread(target=self.devtool_obj.update_micros_via_usb, kwargs={'force': self.ui_state_machine['force']}, daemon=True)
         th.start()
         self.bgjob_thread_obj_list['usb_update'] = th
-        self.console.append_output('|- usb_update job was started')
+        self.console.append_output('[usb_update] |- usb_update job was started')
         #self.devtool_obj.update_micros_via_usb(force=self.ui_state_machine['force'])
+        return True
 
     @pyqtSlot()
     def __on_click_search_devices(self):
         if 'serach_devices' in self.bgjob_thread_obj_list.keys():
             if self.bgjob_thread_obj_list['serach_devices'].is_alive():
-                self.console.append_output('[SKIP][SEARCH] already running.')
+                self.console.append_output('[search_devices][SKIP] already running.')
                 return
 
-        self.console.append_output('[SEARCH] Search online devices on local network')
+        self.console.append_output('[search_devices] Search online devices on local network')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
         pth.eta_sec = ProgressbarTimers.serach_devices
@@ -295,21 +316,21 @@ class micrOSGUI(QWidget):
         self.bgjon_progress_monitor_thread_obj_list['serach_devices'] = pth
 
         # Start job
-        self.console.append_output('|- start serach_devices job')
+        self.console.append_output('[search_devices] |- start serach_devices job')
         # Create a Thread with a function without any arguments
         th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=True)
         th.start()
         self.bgjob_thread_obj_list['serach_devices'] = th
-        self.console.append_output('|- serach_devices job was started')
+        self.console.append_output('[search_devices] |- serach_devices job was started')
 
     @pyqtSlot()
     def __on_click_simulator(self):
         if 'simulator' in self.bgjob_thread_obj_list.keys():
             if self.bgjob_thread_obj_list['simulator'].is_alive():
-                self.console.append_output('[SKIP][SIMULATOR] already running.')
+                self.console.append_output('[search_devices][SKIP] already running.')
                 return
 
-        self.console.append_output('[SIMULATOR] Start micrOS on host (local machine)')
+        self.console.append_output('[search_devices] Start micrOS on host (local machine)')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
         pth.eta_sec = ProgressbarTimers.simulator
@@ -319,16 +340,46 @@ class micrOSGUI(QWidget):
         self.bgjon_progress_monitor_thread_obj_list['simulator'] = pth
 
         # Start job
-        self.console.append_output('|- start simulator job')
+        self.console.append_output('[search_devices] |- start simulator job')
         self.progressbar_update()
         th = threading.Thread(target=devToolKit.simulate_micrOS, daemon=True)
         th.start()
         self.bgjob_thread_obj_list['simulator'] = th
-        self.console.append_output('|- simulator job was started')
+        self.console.append_output('[search_devices] |- simulator job was started')
         self.progressbar_update()
 
     def __on_click_lm_update(self):
-        pass
+        if 'lm_update' in self.bgjob_thread_obj_list.keys():
+            if self.bgjob_thread_obj_list['lm_update'].is_alive():
+                self.console.append_output('[lm_update][SKIP] already running.')
+                return
+
+        self.console.append_output('[lm_update] Update Load Modules over wifi')
+        # Start init_progressbar
+        pth = ProgressbarUpdateThread()
+        pth.eta_sec = ProgressbarTimers.lm_update
+        pth.callback.connect(self.progressbar_update)
+        pth.start()
+        pth.setTerminationEnabled(True)
+        self.bgjon_progress_monitor_thread_obj_list['lm_update'] = pth
+
+        # Start job
+        fuid = self.ui_state_machine['device']
+        force = self.ui_state_machine['force']
+        devip = None
+        for conn_data in self.device_conn_struct:
+            if fuid == conn_data[0]:
+                devip = conn_data[1]
+        if devip is None:
+            self.console.append_output("[lm_update][ERROR] Selecting device")
+        self.console.append_output("[lm_update] Start OTA lm_update on {}:{}".format(fuid, devip))
+        self.console.append_output('[lm_update] |- start lm_update job')
+        self.progressbar_update()
+        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': force, 'lm_only': True}, daemon=True)
+        th.start()
+        self.bgjob_thread_obj_list['lm_update'] = th
+        self.console.append_output('[lm_update] |- lm_update job was started')
+        self.progressbar_update()
 
     def draw_logo(self):
         """
@@ -356,7 +407,7 @@ class micrOSGUI(QWidget):
         self.pbar = QProgressBar(self)
 
         # setting its geometry
-        self.pbar.setGeometry(20, self.height-40, self.width-70, 30)
+        self.pbar.setGeometry(20, self.height-30, self.width-50, 30)
 
     def progressbar_update(self, value=None, reset=False):
         if reset:
@@ -534,7 +585,7 @@ class micrOSGUI(QWidget):
 
     def force_mode_radiobutton(self):
         rbtn1 = QRadioButton('Force mode', self)
-        rbtn1.move(20, self.height-55)
+        rbtn1.move(20, self.height-50)
         rbtn1.toggled.connect(self.__on_click_force_mode)
 
     @pyqtSlot()

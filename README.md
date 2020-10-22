@@ -1,6 +1,24 @@
-# micrOS - IOT platform
+# micrOS - IoT communication platform and so more...
 
 ![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true)
+
+# iOS / Android Application
+
+> Coming soon
+
+![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/appGUI.gif?raw=true =200x600)
+
+# micrOS Toolkit for PC
+
+> Run micrOS/devToolKit.py after repository was cloned
+
+> Verified OS list: macOS
+
+```
+python3 micrOS/devToolKit.py
+```
+
+![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOSToolkit.gif?raw=true)
 
 ## micrOS system, message-function visualization 
 
@@ -11,25 +29,28 @@
 
 ## MicrOS Framework Features
 
+- **OTA Update** - push update over wifi (webrepl automation)
 - **Config handling** - node_config.json
 - **Boot phase** handling - preload modules - I/O initialization from node_config
 - **Socket interpreter** - wireless communication interface with the devices/nodes
-	- **System commands**: `help, version, reboot, etc.` 
+	- **System commands**: `help, version, reboot, webrepl, etc.`
+		- webrepl <--> micrOS interface switch  
 	- **Config** SET/GET/DUMP
-	- **LM** - Load Module function execution
+	- **LM** - Load Module function execution (application modules)
 - **Network handling** - based on node_config 
 	- STA / AP 
 	- NTP setup
 	- static IP configuration
 - **Scheduling / External events** - Interrupt callback - based on node_config 
 	- Time based
+		- simple time "shot" trigger
+		- cron "timeboxed" task pool logic
 	- Event based
 - Load Module **application** handling
 	- Lot of built-in functions
-	- Clreate you own module with 2 easy steps
+	- Create your own module with 2 easy steps
 		- Create a file in `MicrOS` folder like: `LM_<your_app_name>.py`
 		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy`	  
-	
 - Socket client - interactive - non interactive mode 
 
 

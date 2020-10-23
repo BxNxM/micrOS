@@ -106,6 +106,7 @@ class micrOSGUI(QWidget):
         self.setFixedHeight(self.height)
         self.setStyleSheet("background-color: grey; color: {};".format(micrOSGUI.TEXTCOLOR))
         self.venv_indicator()
+        self.version_label()
         self.main_ui()
 
     def main_ui(self):
@@ -139,14 +140,21 @@ class micrOSGUI(QWidget):
     def venv_indicator(self):
         if self.__detect_virtualenv():
             label = QLabel(' [devEnv] virtualenv active', self)
-            label.setGeometry(20, 5, self.width-50, 20)
+            label.setGeometry(20, 5, self.width-150, 20)
             label.setStyleSheet("background-color : green; color: {};".format(micrOSGUI.TEXTCOLOR))
         else:
             label = QLabel(' [devEnv] virtualenv inactive', self)
-            label.setGeometry(20, 5, self.width-50, 20)
+            label.setGeometry(20, 5, self.width-150, 20)
             label.setStyleSheet("background-color : yellow; color: {};".format(micrOSGUI.TEXTCOLOR))
             label.setToolTip("Please create your dependency environment:\nvirtualenv -p python3 venv\
             \nsource venv/bin/activate\npip install -r micrOS/tools/requirements.txt")
+
+    def version_label(self):
+        width = 100
+        repo_version, _ = self.devtool_obj.get_micrOS_version()
+        label = QLabel("Version: {}".format(repo_version), self)
+        label.setGeometry(self.width-width-30, 5, width, 20)
+        label.setStyleSheet("background-color : gray; color: {}; border: 1px solid black;".format(micrOSGUI.TEXTCOLOR))
 
     def __validate_selected_device_with_micropython(self):
         print(self.ui_state_machine)

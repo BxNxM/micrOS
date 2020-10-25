@@ -26,11 +26,9 @@ from InterpreterShell import shell as InterpreterShell_shell
 
 try:
     from gc import collect, mem_free
-except Exception as e:
-    print("Failed to import gc: {}".format(e))
-    collect = None
-    mem_free = None
-
+except:
+    console_write("[SIMULATOR MODE IMPORT]")
+    from _gc import collect, mem_free
 
 #########################################################
 #                    SOCKET SERVER CLASS                #
@@ -48,7 +46,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.1.9-1'
+    __socket_interpreter_version = '0.2.0-0'
 
     def __new__(cls):
         """
@@ -195,7 +193,7 @@ class SocketServer:
         self.conn.close()
         # Reset Shell & prompt
         self.CONFIGURE_MODE = False
-        if collect is not None: collect()
+        collect()
         self.pre_prompt = ""
         self.server_console_indent = 0
         # Accept new connection
@@ -223,8 +221,7 @@ class SocketServer:
                 console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
                 self.__recovery(errlvl=1)
             # Memory dimensioning dump
-            if mem_free is not None:
-                self.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
+            self.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
 
     def __recovery(self, errlvl=0):
         """

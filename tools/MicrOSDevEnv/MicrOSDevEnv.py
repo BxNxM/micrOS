@@ -957,7 +957,7 @@ class MicrOSDevTool:
             self.execution_verdict.append("[WARN] ota_update - failed to remove OTA update lock")
 
         self.console("Device will reboot automatically, please wait 4-8 seconds.")
-        time.sleep(4)
+        time.sleep(2)
         up_again_status = False
         for is_up_again in range(0, 5):
             self.console("[{}/4] Try to connect ...".format(is_up_again))

@@ -101,3 +101,7 @@ class ADC:
 
     def read(self):
         return 420
+
+
+def freq(*args, **kwargs):
+    pass

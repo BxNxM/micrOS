@@ -55,7 +55,7 @@ def __auto_restart_event():
     """
     from time import sleep
     trigger_is_active = False
-    wait_iteration_for_update_start = 3
+    wait_iteration_for_update_start = 5
     while wait_iteration_for_update_start >= 0:
         try:
             with open('.if_mode', 'r') as f:
@@ -81,8 +81,8 @@ def __auto_restart_event():
 def main():
     if __interface_mode():
         # Main mode
-        from micrOS import micrOS
         try:
+            from micrOS import micrOS
             micrOS()
         except Exception:
             __auto_restart_event()

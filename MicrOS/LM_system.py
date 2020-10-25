@@ -2,13 +2,19 @@ from ConfigHandler import progress_led_toggle_adaptor
 
 
 def memfree():
-    from gc import mem_free
+    try:
+        from gc import mem_free
+    except:
+        from _gc import mem_free    # simulator mode
     from machine import freq
     return "CPU[Hz]: {}\nGC MemFree[byte]: {}".format(freq(), mem_free())
 
 
 def gcollect():
-    from gc import collect, mem_free
+    try:
+        from gc import collect, mem_free
+    except:
+        from _gc import collect, mem_free    # simulator mode
     collect()
     return "GC MemFree[byte]: {}".format(mem_free())
 

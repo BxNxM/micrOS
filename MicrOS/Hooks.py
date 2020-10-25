@@ -18,14 +18,8 @@ Designed by Marcell Ban aka BxNxM
 from sys import platform
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
-try:
-    from micropython import mem_info
-except Exception:
-    mem_info = None
-try:
-    from machine import freq
-except Exception:
-    freq = None
+from micropython import mem_info
+from machine import freq
 
 #################################################################
 #                          FUNCTIONS                            #
@@ -50,12 +44,11 @@ def bootup_hook():
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:
         console_write("[BOOT HOOKS] Set up CPU 16MHz/24MHz - boostmd: {}".format(cfgget('boostmd')))
-        if freq is not None:
-            if platform == 'esp8266': freq(160000000)
-            if platform == 'esp32': freq(240000000)
+        if platform == 'esp8266': freq(160000000)
+        if platform == 'esp32': freq(240000000)
     else:
         console_write("[BOOT HOOKS] Set up CPU 8MHz - boostmd: {}".format(cfgget('boostmd')))
-        if freq is not None: freq(80000000)
+        freq(80000000)
 
 
 def profiling_info(label=""):
@@ -64,10 +57,7 @@ def profiling_info(label=""):
     """
     if cfgget('dbg'):
         console_write("{} [PROFILING INFO] - {} {}".format('~'*5, label, '~'*5))
-        try:
-            if mem_info is not None: mem_info()
-        except Exception as e:
-            console_write("MEM INFO QUERY ERROR: {}".format(e))
+        mem_info()
         console_write("~"*30)
     else:
         console_write("[PROFILING INFO] SKIP dbg:{}".format(cfgget('dbg')))

@@ -2,32 +2,48 @@
 
 ![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true)
 
-# iOS / Android Application
+[1. micrOS Client Application](https://github.com/BxNxM/micrOS#ios--android-application)
+
+[2. micrOS installer](https://github.com/BxNxM/micrOS#micros-toolkit-for-pc)
+
+[3. micrOS system and features](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
+
+[4. micrOS node configuration](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
+
+----------------------------------------
+
+## iOS / Android Application
 
 > Coming soon
 
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/appGUI.gif?raw=true)
 
-# micrOS Toolkit for PC
+## micrOS Toolkit for PC
 
-> Run micrOS/devToolKit.py after repository was cloned
+- Clone micrOS repo:
 
-> Verified OS list: macOS
+```
+git clone https://github.com/BxNxM/micrOs.git
+```
+
+- Execute **devToolKit**
 
 ```
 python3 micrOS/devToolKit.py
 ```
 
+- Verified OS list: macOS
+
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOSToolkit.gif?raw=true)
 
-## micrOS system, message-function visualization 
+## micrOS System, message-function visualization 
 
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOS.gif?raw=true)
 
 >Note: **Python Socket Client** for application development also available besides smartphone application (example below).
 
 
-## MicrOS Framework Features
+## micrOS Framework Features
 
 - **OTA Update** - push update over wifi (webrepl automation)
 - **Config handling** - node_config.json
@@ -86,52 +102,6 @@ python3 micrOS/devToolKit.py
 
 ----------------------------------------
 
-## Quick guide
-
-### Supported OS for development
-
-- MacOS
-- Linux (Raspbain, Ubuntu, Debian) - beta
-
-### Setup development environment
-
-- Clone MicrOS repo:
-
-```
-git clone https://github.com/BxNxM/MicrOs.git
-```
-
-#### External Dependences
-
-- **Deploy** dependences
-	- esptool.py
-	- ampy
-
-- **Connection** dependences
-	- screen (serial port connection)
-	- tools/socketClient.py (devToolKit.py -c)
-		- arp -a (device scanner)
-		- ping (device scanner)
-
-#### Erase device & Deploy micropython & Install MicrOS 
-
-Go to micrOS repo, where the `devToolKit.py` located.
-
-```
-cd MicrOs 
-./devToolKit.py --make
-```
-> Note: Follow the steps :)
-
-
-Search and Connect to the device
-
-```
-./devToolKit.py -s -c
-```
-
-----------------------------------------
-
 ## micrOS **node configuration**, parameters with description
 
 | Parameters names |   Default value and type    | Reboot required |          Description            |
@@ -185,6 +155,53 @@ Search and Connect to the device
 ----------------------------------------
 
 ### Development toolkit in details
+
+
+## Quick guide
+
+### Supported OS for development
+
+- MacOS
+- Linux (Raspbain, Ubuntu, Debian) - beta
+
+### Setup development environment
+
+- Clone MicrOS repo:
+
+```
+git clone https://github.com/BxNxM/MicrOs.git
+```
+
+#### External Dependences
+
+- **Deploy** dependences
+	- esptool.py
+	- ampy
+
+- **Connection** dependences
+	- screen (serial port connection)
+	- tools/socketClient.py (devToolKit.py -c)
+		- arp -a (device scanner)
+		- ping (device scanner)
+
+#### Erase device & Deploy micropython & Install MicrOS 
+
+Go to micrOS repo, where the `devToolKit.py` located.
+
+```
+cd MicrOs 
+./devToolKit.py --make
+```
+> Note: Follow the steps :)
+
+
+Search and Connect to the device
+
+```
+./devToolKit.py -s -c
+```
+
+----------------------------------------
 
 **User commands**
 
@@ -533,6 +550,8 @@ Precompiled components with the actual user configured config location
 ├── framework
 │   └── esp8266-20191220-v1.12.bin
 ```
+
+----------------------------------------
 
 ## HINTS
 

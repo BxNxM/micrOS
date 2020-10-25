@@ -798,7 +798,7 @@ class MicrOSDevTool:
                 self.console("Create lock/unlock failed: {}".format(e))
                 return False
 
-    def update_with_webrepl(self, force=False, device=None, lm_only=False):
+    def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False):
         """
         OTA UPDATE
             git clone https://github.com/micropython/webrepl.git
@@ -856,7 +856,7 @@ class MicrOSDevTool:
 
         self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE, PLEASE RESET YOUR DEVICE AFTER UPDATE.")
         if not self.cmdgui:
-            user_input = 'y'
+            user_input = 'yy' if unsafe else 'y'
         else:
             user_input = input("Do you want to continue? Y/N: ").lower()
         # Detect update all mode - risky -> no recovery mode but updates all file on system

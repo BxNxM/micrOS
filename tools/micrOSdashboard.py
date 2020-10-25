@@ -3,15 +3,15 @@ import os
 import threading
 import subprocess
 import time
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QPushButton
 import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QApplication, QPlainTextEdit
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QFont
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, 'MicrOSDevEnv'))
 import MicrOSDevEnv
@@ -66,14 +66,14 @@ class micrOSGUI(QWidget):
         self.pbar = None
         self.pbar_status = 0
         self.dropdown_objects_list = {}
-        self.ui_state_machine = {'force': False}
+        self.ui_state_machine = {'ignore_version_check': False, 'unsafe_ota': False}
         self.console = None
         self.device_conn_struct = []
         self.micropython_bin_pathes = []
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
         self.socketcli_obj = socketClient.ConnectionData()
-        self.bgjob_thread_obj_list = {}
-        self.bgjon_progress_monitor_thread_obj_list = {}
+        self.bgjob_thread_obj_dict = {}
+        self.bgjon_progress_monitor_thread_obj_dict = {}
         # Init UI elements
         self.initUI()
         self.__thread_progress_monitor()
@@ -85,7 +85,7 @@ class micrOSGUI(QWidget):
     def __thread_monitor_logic(self):
         while True:
             remove_from_key = None
-            for bgprog, bgjob in self.bgjob_thread_obj_list.items():
+            for bgprog, bgjob in self.bgjob_thread_obj_dict.items():
                 if not bgjob.is_alive():
                     remove_from_key = bgprog
                     # Get job (execution) verdicts
@@ -94,13 +94,14 @@ class micrOSGUI(QWidget):
                     # Print to console GUI
                     self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
             if remove_from_key is not None:
-                self.bgjob_thread_obj_list.pop(remove_from_key, None)
-                self.bgjon_progress_monitor_thread_obj_list[remove_from_key].terminate()
-                self.bgjon_progress_monitor_thread_obj_list.pop(remove_from_key, None)
+                self.bgjob_thread_obj_dict.pop(remove_from_key, None)
+                self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
+                self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
             time.sleep(2)
 
     def initUI(self):
         self.setWindowTitle(self.title)
+        QToolTip.setFont(QFont('Helvetica', 15))
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.setFixedWidth(self.width)
         self.setFixedHeight(self.height)
@@ -119,7 +120,8 @@ class micrOSGUI(QWidget):
         self.dropdown_board()
         self.dropdown_micropythonbin()
         self.dropdown_device()
-        self.force_mode_radiobutton()
+        self.ignore_version_check_checkbox()
+        self.unsafe_core_update_ota_check_checkbox()
 
     def __create_console(self):
         dropdown_label = QLabel(self)
@@ -171,17 +173,17 @@ class micrOSGUI(QWidget):
         width = 200
         yoffset = 3
         buttons = {'Deploy (USB)': ['Install "empty" device.\nDeploy micropython and micrOS Framework',
-                                       20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
+                                       20, 115, width, height, self.__on_click_usb_deploy, 'purple'],
                    'Update (OTA)': ['OTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
                                     20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
                    'LM Update (OTA)': ['Update LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
                                     20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan'],
-                   'Search device': ['Search online micrOS devices\nOn local wifi network.',
-                                     20, 115 + (height + yoffset) * 3, width, height, self.__on_click_search_devices, 'darkCyan'],
                    'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well)',
-                                      20, 115 + (height + yoffset) * 4, width, height, self.__on_click_usb_update, 'darkCyan'],
+                                      20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'purple'],
+                   'Search device': ['Search online micrOS devices\nOn local wifi network.',
+                                     20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices, 'lightBlue'],
                    'Simulator': [' Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
-                                      20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'darkCyan']
+                                      20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen']
                    }
 
         for key, data_struct in buttons.items():
@@ -196,23 +198,13 @@ class micrOSGUI(QWidget):
             button = QPushButton(key, self)
             button.setToolTip(tool_tip)
             button.setGeometry(x, y, w, h)
-            button.setStyleSheet("QPushButton"
-                                 "{"
-                                 "background-color : darkCyan;"
-                                 "}"
-                                 "QPushButton::pressed"
-                                 "{"
-                                 "background-color : darkGreen;"
-                                 "}")
-
-
-            #"background-color: {}; border: 2px solid black;".format(bg))
+            button.setStyleSheet("QPushButton{background-color: " + bg + ";}QPushButton::pressed{background-color : green;}")
             button.clicked.connect(event_cbf)
 
     @pyqtSlot()
     def __on_click_usb_deploy(self):
-        if 'usb_deploy' in self.bgjob_thread_obj_list.keys():
-            if self.bgjob_thread_obj_list['usb_deploy'].is_alive():
+        if 'usb_deploy' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['usb_deploy'].is_alive():
                 self.console.append_output('[usb_deploy]SKIP] already running.')
                 return False
         if not self.__validate_selected_device_with_micropython():
@@ -225,7 +217,7 @@ class micrOSGUI(QWidget):
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_list['usb_deploy'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['usb_deploy'] = pth
 
         self.console.append_output('[usb_deploy] Deploy micrOS on new device with factory config')
         # Start job
@@ -236,15 +228,14 @@ class micrOSGUI(QWidget):
         self.console.append_output('[usb_deploy] |- start usb_deploy job')
         th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore': False, 'purge_conf': True}, daemon=True)
         th.start()
-        self.bgjob_thread_obj_list['usb_deploy'] = th
+        self.bgjob_thread_obj_dict['usb_deploy'] = th
         self.console.append_output('[usb_deploy] |- usb_deploy job was started')
-        #self.devtool_obj.deploy_micros(restore=False, purge_conf=True)
         return True
 
     @pyqtSlot()
     def __on_click_ota_update(self):
-        if 'ota_update' in self.bgjob_thread_obj_list.keys():
-            if self.bgjob_thread_obj_list['ota_update'].is_alive():
+        if 'ota_update' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['ota_update'].is_alive():
                 self.console.append_output('[ota_update][SKIP] already running.')
                 return
 
@@ -255,11 +246,12 @@ class micrOSGUI(QWidget):
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_list['ota_update'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['ota_update'] = pth
 
         # Start job
         fuid = self.ui_state_machine['device']
-        force = self.ui_state_machine['force']
+        ignore_version_check = self.ui_state_machine['ignore_version_check']
+        unsafe_ota_update = self.ui_state_machine['unsafe_ota']
         devip = None
         for conn_data in self.device_conn_struct:
             if fuid == conn_data[0]:
@@ -269,16 +261,15 @@ class micrOSGUI(QWidget):
         self.console.append_output("[ota_update] Start OTA update on {}:{}".format(fuid, devip))
         # create a thread with a function without any arguments
         self.console.append_output('[ota_update] |- start ota_update job')
-        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': force}, daemon=True)
+        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'unsafe': unsafe_ota_update}, daemon=True)
         th.start()
-        self.bgjob_thread_obj_list['ota_update'] = th
+        self.bgjob_thread_obj_dict['ota_update'] = th
         self.console.append_output('[ota_update] |- ota_update job was started')
-        #self.devtool_obj.update_with_webrepl(device=(fuid, devip), force=force)
 
     @pyqtSlot()
     def __on_click_usb_update(self):
-        if 'usb_update' in self.bgjob_thread_obj_list.keys():
-            if self.bgjob_thread_obj_list['usb_update'].is_alive():
+        if 'usb_update' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['usb_update'].is_alive():
                 self.console.append_output('[usb_update][SKIP] already running.')
                 return False
         if not self.__validate_selected_device_with_micropython():
@@ -292,7 +283,7 @@ class micrOSGUI(QWidget):
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_list['usb_update'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['usb_update'] = pth
 
         # Start job
         self.devtool_obj.selected_device_type = self.ui_state_machine['board']
@@ -300,17 +291,16 @@ class micrOSGUI(QWidget):
         self.devenv_usb_deployment_is_active = True
         # create a thread with a function without any arguments
         self.console.append_output('[usb_update] |- start usb_update job')
-        th = threading.Thread(target=self.devtool_obj.update_micros_via_usb, kwargs={'force': self.ui_state_machine['force']}, daemon=True)
+        th = threading.Thread(target=self.devtool_obj.update_micros_via_usb, kwargs={'force': self.ui_state_machine['ignore_version_check']}, daemon=True)
         th.start()
-        self.bgjob_thread_obj_list['usb_update'] = th
+        self.bgjob_thread_obj_dict['usb_update'] = th
         self.console.append_output('[usb_update] |- usb_update job was started')
-        #self.devtool_obj.update_micros_via_usb(force=self.ui_state_machine['force'])
         return True
 
     @pyqtSlot()
     def __on_click_search_devices(self):
-        if 'serach_devices' in self.bgjob_thread_obj_list.keys():
-            if self.bgjob_thread_obj_list['serach_devices'].is_alive():
+        if 'serach_devices' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['serach_devices'].is_alive():
                 self.console.append_output('[search_devices][SKIP] already running.')
                 return
 
@@ -321,20 +311,20 @@ class micrOSGUI(QWidget):
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_list['serach_devices'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['serach_devices'] = pth
 
         # Start job
         self.console.append_output('[search_devices] |- start serach_devices job')
         # Create a Thread with a function without any arguments
         th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=True)
         th.start()
-        self.bgjob_thread_obj_list['serach_devices'] = th
+        self.bgjob_thread_obj_dict['serach_devices'] = th
         self.console.append_output('[search_devices] |- serach_devices job was started')
 
     @pyqtSlot()
     def __on_click_simulator(self):
-        if 'simulator' in self.bgjob_thread_obj_list.keys():
-            if self.bgjob_thread_obj_list['simulator'].is_alive():
+        if 'simulator' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['simulator'].is_alive():
                 self.console.append_output('[search_devices][SKIP] already running.')
                 return
 
@@ -345,20 +335,20 @@ class micrOSGUI(QWidget):
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_list['simulator'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['simulator'] = pth
 
         # Start job
         self.console.append_output('[search_devices] |- start simulator job')
         self.progressbar_update()
         th = threading.Thread(target=devToolKit.simulate_micrOS, daemon=True)
         th.start()
-        self.bgjob_thread_obj_list['simulator'] = th
+        self.bgjob_thread_obj_dict['simulator'] = th
         self.console.append_output('[search_devices] |- simulator job was started')
         self.progressbar_update()
 
     def __on_click_lm_update(self):
-        if 'lm_update' in self.bgjob_thread_obj_list.keys():
-            if self.bgjob_thread_obj_list['lm_update'].is_alive():
+        if 'lm_update' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['lm_update'].is_alive():
                 self.console.append_output('[lm_update][SKIP] already running.')
                 return
 
@@ -369,11 +359,11 @@ class micrOSGUI(QWidget):
         pth.callback.connect(self.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_list['lm_update'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['lm_update'] = pth
 
         # Start job
         fuid = self.ui_state_machine['device']
-        force = self.ui_state_machine['force']
+        ignore_version_check = self.ui_state_machine['ignore_version_check']
         devip = None
         for conn_data in self.device_conn_struct:
             if fuid == conn_data[0]:
@@ -383,9 +373,9 @@ class micrOSGUI(QWidget):
         self.console.append_output("[lm_update] Start OTA lm_update on {}:{}".format(fuid, devip))
         self.console.append_output('[lm_update] |- start lm_update job')
         self.progressbar_update()
-        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': force, 'lm_only': True}, daemon=True)
+        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'lm_only': True}, daemon=True)
         th.start()
-        self.bgjob_thread_obj_list['lm_update'] = th
+        self.bgjob_thread_obj_dict['lm_update'] = th
         self.console.append_output('[lm_update] |- lm_update job was started')
         self.progressbar_update()
 
@@ -435,6 +425,7 @@ class micrOSGUI(QWidget):
 
         # creating a combo box widget
         combo_box = QComboBox(self)
+        combo_box.setToolTip("Select board type to install micrOS:\nmicropython + micrOS resources.")
 
         # setting geometry of combo box
         combo_box.setGeometry(120, 60, 160, 30)
@@ -476,6 +467,7 @@ class micrOSGUI(QWidget):
 
         # creating a combo box widget
         combo_box = QComboBox(self)
+        combo_box.setToolTip("Select micropython for selected board.")
 
         # setting geometry of combo box
         combo_box.setGeometry(290, 60, 200, 30)
@@ -484,11 +476,6 @@ class micrOSGUI(QWidget):
         self.micropython_bin_pathes = self.devtool_obj.get_micropython_binaries()
         geek_list = [os.path.basename(path) for path in self.micropython_bin_pathes]
         self.ui_state_machine['micropython'] = geek_list[0]
-
-        # Filter micropython based on board
-        #board = self.ui_state_machine.get('board', None)
-        #if board is not None:
-        #    geek_list = [mpython for mpython in geek_list if board in mpython]
 
         # making it editable
         combo_box.setEditable(False)
@@ -523,6 +510,8 @@ class micrOSGUI(QWidget):
 
         # creating a combo box widget
         combo_box = QComboBox(self)
+        combo_box.setToolTip("Select device for OTA operations.")
+
 
         # setting geometry of combo box
         combo_box.setGeometry(500, 60, 170, 30)
@@ -550,13 +539,12 @@ class micrOSGUI(QWidget):
 
         combo_box.setStyleSheet("QComboBox"
                                 "{"
-                                "border : 3px solid blue;"
+                                "border : 3px solid darkCyan;"
                                 "}"
                                 "QComboBox::on"
                                 "{"
                                 "border : 4px solid;"
                                 "border-color : orange orange orange orange;"
-
                                 "}")
 
         # getting view part of combo box
@@ -591,18 +579,35 @@ class micrOSGUI(QWidget):
         for key, value in self.ui_state_machine.items():
             self.console.append_output("  {}: {}".format(key, value))
 
-    def force_mode_radiobutton(self):
-        rbtn1 = QRadioButton('Force mode', self)
-        rbtn1.move(20, self.height-50)
-        rbtn1.toggled.connect(self.__on_click_force_mode)
+    def ignore_version_check_checkbox(self):
+        checkbox = QCheckBox('Ignore version check', self)
+        checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: yellow;}")
+        checkbox.move(20, self.height-50)
+        checkbox.setToolTip("Ignore version check,\nYou can force resource update on same version.")
+        checkbox.toggled.connect(self.__on_click_ignore_version_check)
+
+    def unsafe_core_update_ota_check_checkbox(self):
+        checkbox = QCheckBox('FSCO', self)      # ForceSystemCoreOta update
+        checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: red;}")
+        checkbox.move(self.width-90, self.height-50)
+        checkbox.setToolTip("[!!!] ForceSystemCoreOta update.\nIn case of failure it may require redeploy over USB")
+        checkbox.toggled.connect(self.__on_click_unsafe_core_update_ota)
 
     @pyqtSlot()
-    def __on_click_force_mode(self):
+    def __on_click_ignore_version_check(self):
         radioBtn = self.sender()
         if radioBtn.isChecked():
-            self.ui_state_machine['force'] = True
+            self.ui_state_machine['ignore_version_check'] = True
         else:
-            self.ui_state_machine['force'] = False
+            self.ui_state_machine['ignore_version_check'] = False
+        self.__show_gui_state_on_console()
+
+    def __on_click_unsafe_core_update_ota(self):
+        radioBtn = self.sender()
+        if radioBtn.isChecked():
+            self.ui_state_machine['unsafe_ota'] = True
+        else:
+            self.ui_state_machine['unsafe_ota'] = False
         self.__show_gui_state_on_console()
 
     def __open_micrOS_URL(self):
@@ -621,6 +626,7 @@ class micrOSGUI(QWidget):
 
 class MyConsole(QPlainTextEdit):
     console = None
+    lock = False
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -632,14 +638,19 @@ class MyConsole(QPlainTextEdit):
 
     @pyqtSlot(str)
     def append_output(self, text, end='\n'):
-        self._cursor_output.insertText("{}{}".format(text, end))
-        self.scroll_to_last_line()
+        if not MyConsole.lock:
+            MyConsole.lock = True
+            try:
+                self._cursor_output.insertText("{}{}".format(text, end))
+                self.scroll_to_last_line()
+            except Exception as e:
+                print("MyConsole.append_output failure: {}".format(e))
+            MyConsole.lock = False
 
     def scroll_to_last_line(self):
         cursor = self.textCursor()
         cursor.movePosition(QTextCursor.End)
-        cursor.movePosition(QTextCursor.Up if cursor.atBlockStart() else
-                            QTextCursor.StartOfLine)
+        cursor.movePosition(QTextCursor.Up if cursor.atBlockStart() else QTextCursor.StartOfLine)
         self.setTextCursor(cursor)
 
 

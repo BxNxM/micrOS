@@ -173,15 +173,15 @@ class micrOSGUI(QWidget):
         width = 200
         yoffset = 3
         buttons = {'Deploy (USB)': ['Install "empty" device.\nDeploy micropython and micrOS Framework',
-                                       20, 115, width, height, self.__on_click_usb_deploy, 'purple'],
+                                       20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
                    'Update (OTA)': ['OTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
                                     20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
                    'LM Update (OTA)': ['Update LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
                                     20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan'],
                    'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well)',
-                                      20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'purple'],
+                                      20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'darkCyan'],
                    'Search device': ['Search online micrOS devices\nOn local wifi network.',
-                                     20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices, 'lightBlue'],
+                                     20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices, 'darkCyan'],
                    'Simulator': [' Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
                                       20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen']
                    }

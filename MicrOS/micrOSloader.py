@@ -6,6 +6,11 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                    IMPORTS & START micrOS                     #
 #################################################################
+try:
+    # Simulator debug requirement...
+    import traceback
+except:
+    traceback = None
 
 
 def __interface_mode():
@@ -100,6 +105,7 @@ def main():
             from micrOS import micrOS
             micrOS()
         except Exception as e:
+            if traceback is not None: traceback.print_exc()
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
             print("[loader][main mode] micrOS start failed: {}".format(e))
             print("[loader][main mode] -> [recovery mode]")

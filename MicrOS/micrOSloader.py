@@ -18,6 +18,10 @@ def __interface_mode():
 
     It will force the system in bootup time to start
     webrepl (update) or micrOS (default)
+
+    return
+        True -> micrOS
+        False -> webrepl
     """
 
     try:
@@ -25,24 +29,31 @@ def __interface_mode():
             if_mode = f.read().strip().lower()
     except Exception:
         # start micrOS
+        print("[loader][if_mode:True] .if_mode file not exists -> micros interface")
         return True
 
     if if_mode == 'micros':
         # start micrOS
+        print("[loader][if_mode:True] .if_mode:{} -> micros interface".format(if_mode))
         return True
     # start webrepl
+    print("[loader][if_mode:False] .if_mode:{} -> webrepl interface".format(if_mode))
     return False
 
 
 def __recovery_mode():
     # Recovery mode (webrepl) - dependencies: Network, ConfigHandler
     from Network import auto_network_configuration
-    from ConfigHandler import cfgget
+    try:
+        from ConfigHandler import cfgget
+    except:
+        cfgget = None
     # Set up network
     auto_network_configuration()
     # Start webrepl
     import webrepl
-    print(webrepl.start(password=cfgget('appwd')))
+    appwd = 'ADmin123' if cfgget is None else cfgget('appwd')
+    print(webrepl.start(password=appwd))
 
 
 def __auto_restart_event():
@@ -56,23 +67,26 @@ def __auto_restart_event():
     from time import sleep
     trigger_is_active = False
     wait_iteration_for_update_start = 5
+    # Wait after webrepl started for possible ota updates (~10 sec)
     while wait_iteration_for_update_start >= 0:
+        # Parse .if_mode - interface selector
         try:
             with open('.if_mode', 'r') as f:
                 if_mode = f.read().strip().lower()
         except Exception:
             if_mode = None
         if if_mode is None or if_mode == 'webrepl':
-            print("Check update status: InProgress")
+            print("[loader][ota auto-rebooter][webrepl/None][{}] Update status: InProgress".format(wait_iteration_for_update_start))
         else:
-            print("Wait for OTA update [{}]".format(wait_iteration_for_update_start))
+            print("[loader][ota auto-rebooter][micros][{}] Wait for OTA update possible start".format(wait_iteration_for_update_start))
             wait_iteration_for_update_start -= 1
-        # Get trigger
-        if if_mode is not None and if_mode == 'webrepl':
+        # Get trigger  - if_mode changed to webrepl - ota update started - trigger wait
+        if not trigger_is_active and if_mode is not None and if_mode == 'webrepl':
             trigger_is_active = True
+            print("\t[loader][ota auto-rebooter] Trigger activated for wait ota finish")
         # Check value if trigger active
         if if_mode is not None and trigger_is_active and if_mode == 'micros':
-            print("[micrOS updater - auto reboot after file upload]")
+            print("[loader][ota auto-rebooter][micros][trigger: True] OTA was finished - reboot")
             import machine
             machine.reset()
         sleep(2)
@@ -82,12 +96,18 @@ def main():
     if __interface_mode():
         # Main mode
         try:
+            print("[loader][main mode] Start micrOS (default)")
             from micrOS import micrOS
             micrOS()
-        except Exception:
+        except Exception as e:
+            # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
+            print("[loader][main mode] micrOS start failed: {}".format(e))
+            print("[loader][main mode] -> [recovery mode]")
+            __recovery_mode()
             __auto_restart_event()
     else:
         # Recovery mode
+        print("[loader][recovery mode] - manually selected in .if_mode file")
         __recovery_mode()
         __auto_restart_event()
 

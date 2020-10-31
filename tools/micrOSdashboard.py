@@ -177,17 +177,17 @@ class micrOSGUI(QWidget):
         height = 35
         width = 200
         yoffset = 3
-        buttons = {'Deploy (USB)': ['Install "empty" device.\nDeploy micropython and micrOS Framework',
+        buttons = {'Deploy (USB)': ['[BOARD] [MICROPYTHON]\nInstall "empty" device.\nDeploy micropython and micrOS Framework',
                                        20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
-                   'Update (OTA)': ['OTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
+                   'Update (OTA)': ['[DEVICE]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
                                     20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
-                   'LM Update (OTA)': ['Update LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
+                   'LM Update (OTA)': ['[DEVICE]\nUpdate LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
                                     20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan'],
-                   'Update (USB)': ['Update micrOS over USB\nIt will redeploy micropython as well)',
+                   'Update (USB)': ['[BOARD] [MICROPYTHON]\nUpdate micrOS over USB\nIt will redeploy micropython as well)',
                                       20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'darkCyan'],
                    'Search device': ['Search online micrOS devices\nOn local wifi network.',
                                      20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices, 'darkCyan'],
-                   'Simulator': [' Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
+                   'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
                                       20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen']
                    }
 
@@ -472,7 +472,7 @@ class micrOSGUI(QWidget):
 
         # creating a combo box widget
         combo_box = QComboBox(self)
-        combo_box.setToolTip("Select micropython for selected board.")
+        combo_box.setToolTip("Select micropython binary for the selected board.")
 
         # setting geometry of combo box
         combo_box.setGeometry(290, 60, 200, 30)
@@ -515,7 +515,7 @@ class micrOSGUI(QWidget):
 
         # creating a combo box widget
         combo_box = QComboBox(self)
-        combo_box.setToolTip("Select device for OTA operations.")
+        combo_box.setToolTip("Select device for OTA operations or APP execution.")
 
 
         # setting geometry of combo box
@@ -570,7 +570,7 @@ class micrOSGUI(QWidget):
 
         # creating a combo box widget
         combo_box = QComboBox(self)
-        combo_box.setToolTip("Select python application")
+        combo_box.setToolTip("[DEVICE] Select python application to execute")
 
         # setting geometry of combo box
         combo_box.setGeometry(start_x, y_offset+60, 150, 30)
@@ -617,7 +617,7 @@ class micrOSGUI(QWidget):
 
         # Set execution button
         button = QPushButton("Execute", self)
-        button.setToolTip("Execute selected application on selected device")
+        button.setToolTip("[DEVICE] Execute selected application on the selected device")
         button.setGeometry(start_x, y_offset+90, 150, 20)
         button.setStyleSheet("QPushButton{background-color: darkCyan;}QPushButton::pressed{background-color : green;}")
         button.clicked.connect(self.__on_click_exec_app)
@@ -689,14 +689,14 @@ class micrOSGUI(QWidget):
         checkbox = QCheckBox('Ignore version check', self)
         checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: yellow;}")
         checkbox.move(20, self.height-50)
-        checkbox.setToolTip("Ignore version check,\nYou can force resource update on same version.")
+        checkbox.setToolTip("[OTA][USB]\nIgnore version check.\nYou can force resource update on the same software version.")
         checkbox.toggled.connect(self.__on_click_ignore_version_check)
 
     def unsafe_core_update_ota_check_checkbox(self):
         checkbox = QCheckBox('FSCO', self)      # ForceSystemCoreOta update
         checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: red;}")
         checkbox.move(self.width-240, self.height-50)
-        checkbox.setToolTip("[!!!] ForceSystemCoreOta update.\nIn case of failure it may require redeploy over USB")
+        checkbox.setToolTip("[!!!][OTA] ForceSystemCoreOta update.\nIn case of failure, USB re-deployment required!")
         checkbox.toggled.connect(self.__on_click_unsafe_core_update_ota)
 
     @pyqtSlot()

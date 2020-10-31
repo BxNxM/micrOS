@@ -9,17 +9,22 @@ sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
 
 DEVICE = 'ImpiGame'
-BASE_CMD = ['--dev', DEVICE]
 CMD_PIPE_SEP = '<a>'
 SERVO_CENTER_VAL = 77
 
 
-def app(iteration=30):
-    global DEVICE, BASE_CMD, CMD_PIPE_SEP
+def base_cmd():
+    return ['--dev', DEVICE]
+
+
+def app(iteration=30, devfid=None):
+    global DEVICE, CMD_PIPE_SEP
+    if devfid is not None:
+        DEVICE = devfid
     for _ in range(iteration):
         piped_commands = []
 
-        args = BASE_CMD + ['servo', 'Servo({})'.format(SERVO_CENTER_VAL)]
+        args = base_cmd() + ['servo', 'Servo({})'.format(SERVO_CENTER_VAL)]
         print("CMD: {}".format(args))
         args.append(CMD_PIPE_SEP)
         piped_commands += args
@@ -42,7 +47,7 @@ def app(iteration=30):
 
 
 def deinit_servo():
-    args = [BASE_CMD, ['servo', 'Servo({})'.format(SERVO_CENTER_VAL)], ['servo', 'Servo_deinit']]
+    args = [base_cmd(), ['servo', 'Servo({})'.format(SERVO_CENTER_VAL)], ['servo', 'Servo_deinit']]
     print("DEINIT SERVO, SET TO {} and DEINIT".format(SERVO_CENTER_VAL))
     socketClient.run(args)
 

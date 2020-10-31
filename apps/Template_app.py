@@ -8,14 +8,19 @@ sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
 
 # FILL OUT
-DEVICE = 'slim01'
-BASE_CMD = ['--dev', DEVICE]
+DEVICE = 'node01'
 
 
-def app():
-    global DEVICE, BASE_CMD
+def base_cmd():
+    return ['--dev', DEVICE]
+
+
+def app(devfid=None):
+    global DEVICE
+    if devfid is not None:
+        DEVICE = devfid
     # EDIT YOUR COMMAND
-    args = BASE_CMD + ['help']
+    args = base_cmd() + ['help']
     socketClient.run(args)
 
 

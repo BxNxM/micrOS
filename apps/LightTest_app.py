@@ -10,7 +10,10 @@ import socketClient
 
 # FILL OUT
 DEVICE = 'Lamp'
-BASE_CMD = ['--dev', DEVICE]
+
+
+def base_cmd():
+    return ['--dev', DEVICE]
 
 
 class TestData:
@@ -33,8 +36,10 @@ def evaluate_test_data(answer_msg, test_cycle=None):
     print("Progress: {} err / {} / [{}]".format(TestData.ERR_CNT, TestData.EXEC_CNT, test_cycle))
 
 
-def app(test_cycle=64):
-    global BASE_CMD
+def app(test_cycle=64, devfid=None):
+    global DEVICE
+    if devfid is not None:
+        DEVICE = devfid
     for _ in range(0, test_cycle):
         red = random.randint(0, 255)
         green = random.randint(0, 255)
@@ -42,7 +47,7 @@ def app(test_cycle=64):
 
         print("===========================")
         print("R: {}, G: {} B: {}".format(red, green, blue))
-        command = BASE_CMD + ['neopixel', 'neopixel({}, {}, {})'.format(red, green, blue)]
+        command = base_cmd() + ['neopixel', 'neopixel({}, {}, {})'.format(red, green, blue)]
         print("CMD: {}".format(command))
         status, answer = socketClient.run(command)
         evaluate_test_data(answer, test_cycle)

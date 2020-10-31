@@ -15,9 +15,13 @@ from PyQt5.QtGui import QFont
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, 'MicrOSDevEnv'))
 import MicrOSDevEnv
+import LocalMachine
 import socketClient
 sys.path.append(os.path.dirname(os.path.dirname(MYPATH)))
 import devToolKit
+APP_DIR = os.path.join(MYPATH, '../apps')
+sys.path.append(APP_DIR)
+
 
 DUMMY_EXEC = False
 
@@ -60,7 +64,7 @@ class micrOSGUI(QWidget):
         self.title = 'micrOS devToolKit GUI dashboard'
         self.left = 10
         self.top = 10
-        self.width = 700
+        self.width = 850
         self.height = 400
         self.buttons_list = []
         self.pbar = None
@@ -120,6 +124,7 @@ class micrOSGUI(QWidget):
         self.dropdown_board()
         self.dropdown_micropythonbin()
         self.dropdown_device()
+        self.dropdown_application()
         self.ignore_version_check_checkbox()
         self.unsafe_core_update_ota_check_checkbox()
 
@@ -152,10 +157,10 @@ class micrOSGUI(QWidget):
             \nsource venv/bin/activate\npip install -r micrOS/tools/requirements.txt")
 
     def version_label(self):
-        width = 100
+        width = 110
         repo_version, _ = self.devtool_obj.get_micrOS_version()
         label = QLabel("Version: {}".format(repo_version), self)
-        label.setGeometry(self.width-width-30, 5, width, 20)
+        label.setGeometry(self.width-width-20, 5, width, 20)
         label.setStyleSheet("background-color : gray; color: {}; border: 1px solid black;".format(micrOSGUI.TEXTCOLOR))
 
     def __validate_selected_device_with_micropython(self):
@@ -556,6 +561,108 @@ class micrOSGUI(QWidget):
         self.dropdown_objects_list['device'] = combo_box
         combo_box.activated.connect(self.__on_click_device_dropdown)
 
+    def dropdown_application(self):
+        start_x = 682
+        y_offset = 80
+        dropdown_label = QLabel(self)
+        dropdown_label.setText("Select app".upper())
+        dropdown_label.setGeometry(start_x, y_offset+35, 150, 20)
+
+        # creating a combo box widget
+        combo_box = QComboBox(self)
+        combo_box.setToolTip("Select python application")
+
+        # setting geometry of combo box
+        combo_box.setGeometry(start_x, y_offset+60, 150, 30)
+
+        # Get stored devices
+        conn_data = self.socketcli_obj
+        conn_data.read_MicrOS_device_cache()
+        self.device_conn_struct = []
+        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
+            devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
+            fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+            tmp = (fuid, devip, uid)
+            self.device_conn_struct.append(tmp)
+            print("\t{}".format(tmp))
+
+        # Get devices friendly unique identifier
+        app_list = [app.replace('.py', '') for app in LocalMachine.FileHandler.list_dir(APP_DIR) if app.endswith('.py') and not app.startswith('Template')]
+        self.ui_state_machine['app'] = app_list[0]
+
+        # making it editable
+        combo_box.setEditable(False)
+
+        # adding list of items to combo box
+        combo_box.addItems(app_list)
+
+        combo_box.setStyleSheet("QComboBox"
+                                "{"
+                                "border : 3px solid blue;"
+                                "}"
+                                "QComboBox::on"
+                                "{"
+                                "border : 4px solid;"
+                                "border-color : orange orange orange orange;"
+                                "}")
+
+        # getting view part of combo box
+        view = combo_box.view()
+
+        # making view box hidden
+        view.setHidden(False)
+
+        self.dropdown_objects_list['app'] = combo_box
+        combo_box.activated.connect(self.__on_click_app_dropdown)
+
+        # Set execution button
+        button = QPushButton("Execute", self)
+        button.setToolTip("Execute selected application on selected device")
+        button.setGeometry(start_x, y_offset+90, 150, 20)
+        button.setStyleSheet("QPushButton{background-color: darkCyan;}QPushButton::pressed{background-color : green;}")
+        button.clicked.connect(self.__on_click_exec_app)
+
+    def __on_click_exec_app(self):
+        """
+        Execute application with selected device here
+        """
+        def __execute_app(app_name, dev_name, app_postfix='_app'):
+            app_name = "{}{}".format(app_name, app_postfix)
+            print("[APP] import {}".format(app_name))
+            exec("import {}".format(app_name))
+            print("[APP] {}.app(devfid='{}')".format(app_name, dev_name))
+            return_value = eval("{}.app(devfid='{}')".format(app_name, dev_name))
+            if return_value is not None:
+                print(return_value)
+
+        selected_app = self.ui_state_machine['app']
+        selected_device = self.ui_state_machine['device']
+        process_key = "{}_{}".format(selected_app, selected_device)
+
+        if process_key in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict[process_key].is_alive():
+                self.console.append_output('[{}][SKIP] already running.'.format(process_key))
+                return
+
+        print("Execute: {} on {}".format(selected_app, selected_device))
+        try:
+            app_name = selected_app.replace('_app', '')
+            th = threading.Thread(target=__execute_app,
+                                  args=(app_name, selected_device),
+                                  daemon=True)
+            th.start()
+            self.bgjob_thread_obj_dict[process_key] = th
+            self.console.append_output('[{}] |- application was started'.format(process_key))
+        except Exception as e:
+            print("Application error: {}".format(e))
+
+    def __on_click_app_dropdown(self, index):
+        """
+            Update dataset with selected application
+        """
+        self.ui_state_machine['app'] = self.dropdown_objects_list['app'].itemText(index)
+        self.get_widget_values()
+
     def get_widget_values(self):
         self.__show_gui_state_on_console()
         return self.ui_state_machine
@@ -566,7 +673,6 @@ class micrOSGUI(QWidget):
 
     def __on_click_micropython_dropdown(self, index):
         micropython = self.dropdown_objects_list['micropython'].itemText(index)
-        #self.ui_state_machine['micropython'] = micropython
         self.ui_state_machine['micropython'] = [path for path in self.micropython_bin_pathes if micropython in path][0]
         self.get_widget_values()
 
@@ -589,7 +695,7 @@ class micrOSGUI(QWidget):
     def unsafe_core_update_ota_check_checkbox(self):
         checkbox = QCheckBox('FSCO', self)      # ForceSystemCoreOta update
         checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: red;}")
-        checkbox.move(self.width-90, self.height-50)
+        checkbox.move(self.width-240, self.height-50)
         checkbox.setToolTip("[!!!] ForceSystemCoreOta update.\nIn case of failure it may require redeploy over USB")
         checkbox.toggled.connect(self.__on_click_unsafe_core_update_ota)
 

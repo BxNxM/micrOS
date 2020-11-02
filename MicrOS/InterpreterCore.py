@@ -25,6 +25,12 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
     2. param. - function call with parameters, i.e. a()
     NOTE: SocketServerObj is None from Interrupts and Hooks - shared functionality
     """
+    json_mode = False
+    # Check json mode for LM execution
+    if argument_list[-1] == '>json':
+        del argument_list[-1]
+        json_mode = True
+
     # health - True [no action] - False [system soft recovery]
     health = True
     if len(argument_list) >= 2:
@@ -43,10 +49,15 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
             # [1] LOAD MODULE
             exec("from {} import {}".format(LM_name, LM_function))
             # [2] EXECUTE FUNCTION FROM MODULE - over SocketServerObj or /dev/null
-            if SocketServerObj is None:
-                eval("{}".format(LM_function_call))
-            else:
-                SocketServerObj.reply_message(str(eval("{}".format(LM_function_call))))
+            lm_output = eval("{}".format(LM_function_call))
+            if SocketServerObj is not None:
+                if not json_mode and isinstance(lm_output, dict):
+                    # human readable format (not json mode) but dict
+                    lm_output = '\n'.join(["{}: {}".format(key, value) for key, value in lm_output.items()])
+                    SocketServerObj.reply_message(str(lm_output))
+                else:
+                    # native return value (not dict) OR json mode raw dict output
+                    SocketServerObj.reply_message(str(lm_output))
             # ------------------------- #
         except Exception as e:
             # ERROR MSG: - over SocketServerObj or stdout

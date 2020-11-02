@@ -7,7 +7,7 @@ def memfree():
     except:
         from _gc import mem_free    # simulator mode
     from machine import freq
-    return "CPU[Hz]: {}\nGC MemFree[byte]: {}".format(freq(), mem_free())
+    return {'CPU[Hz]': freq(), 'GC MemFree[byte]': mem_free()}
 
 
 def gcollect():
@@ -16,7 +16,7 @@ def gcollect():
     except:
         from _gc import collect, mem_free    # simulator mode
     collect()
-    return "GC MemFree[byte]: {}".format(mem_free())
+    return {'GC MemFree[byte]': mem_free()}
 
 
 @progress_led_toggle_adaptor
@@ -63,20 +63,19 @@ def module(unload=None):
 
 def cachedump():
     from os import listdir
-    return_str = ""
+    cache = {}
     for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
-        return_str += "{}: ".format(pds)
         with open(pds, 'r') as f:
-            return_str += "{}\n".format(f.read())
-    return return_str
+            cache[pds] = f.read()
+    return cache
 
 
 def ifmode():
     try:
         with open('.if_mode', 'r') as f:
-            return f.read()
+            return {'if_mode': f.read()}
     except:
-        return 'micros'
+        return {'if_mode': 'micros'}
 
 
 def help():

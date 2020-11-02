@@ -114,6 +114,17 @@ class micrOSGUI(QWidget):
         self.version_label()
         self.main_ui()
 
+    def close_application(self, text="Please verify data before continue:", verify_data_dict={}):
+        _text = '{}\n'.format(text)
+        for key, value in verify_data_dict.items():
+            _text += '  {}: {}\n'.format(key, value)
+        choice = QMessageBox.question(self, "Quetion", _text,
+                                            QMessageBox.Yes | QMessageBox.No)
+        if choice == QMessageBox.Yes:
+            return True
+        else:
+            return False
+
     def main_ui(self):
         self.__create_console()
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
@@ -215,6 +226,11 @@ class micrOSGUI(QWidget):
         if not self.__validate_selected_device_with_micropython():
             self.console.append_output("[usb_deploy][WARN] Selected device is not compatible with selected micropython.")
             return False
+        # Verify data
+        if not self.close_application(text="Deploy new device?", verify_data_dict={'board': self.ui_state_machine['board'],
+                                                                                  'micropython': os.path.basename(self.ui_state_machine['micropython']),
+                                                                                  'force': self.ui_state_machine['ignore_version_check']}):
+            return
 
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
@@ -243,6 +259,11 @@ class micrOSGUI(QWidget):
             if self.bgjob_thread_obj_dict['ota_update'].is_alive():
                 self.console.append_output('[ota_update][SKIP] already running.')
                 return
+        # Verify data
+        if not self.close_application(text="OTA update?", verify_data_dict={'device': self.ui_state_machine['device'],
+                                                                            'force': self.ui_state_machine['ignore_version_check'],
+                                                                            'unsafe_ota': self.ui_state_machine['unsafe_ota']}):
+            return
 
         self.console.append_output('[ota_update] Upload micrOS resources to selected device.')
         # Start init_progressbar
@@ -280,6 +301,11 @@ class micrOSGUI(QWidget):
         if not self.__validate_selected_device_with_micropython():
             self.console.append_output("[usb_update] [WARN] Selected device is not compatible with selected micropython.")
             return False
+        # Verify data
+        if not self.close_application(text="Start USB update?", verify_data_dict={'board': self.ui_state_machine['board'],
+                                                                                  'micropython': os.path.basename(self.ui_state_machine['micropython']),
+                                                                                  'force': self.ui_state_machine['ignore_version_check']}):
+            return
 
         self.console.append_output('[usb_update] (Re)Install micropython and upload micrOS resources')
         # Start init_progressbar
@@ -309,6 +335,10 @@ class micrOSGUI(QWidget):
                 self.console.append_output('[search_devices][SKIP] already running.')
                 return
 
+        # Verify data
+        if not self.close_application(text="Search devices? Press Yes to continue!"):
+            return
+
         self.console.append_output('[search_devices] Search online devices on local network')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
@@ -333,6 +363,10 @@ class micrOSGUI(QWidget):
                 self.console.append_output('[search_devices][SKIP] already running.')
                 return
 
+        # Verify data
+        if not self.close_application(text="Start micrOS on host?"):
+            return
+
         self.console.append_output('[search_devices] Start micrOS on host (local machine)')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
@@ -356,6 +390,11 @@ class micrOSGUI(QWidget):
             if self.bgjob_thread_obj_dict['lm_update'].is_alive():
                 self.console.append_output('[lm_update][SKIP] already running.')
                 return
+
+        # Verify data
+        if not self.close_application(text="Update load modules?", verify_data_dict={'device': self.ui_state_machine['device'],
+                                                                                     'force': self.ui_state_machine['ignore_version_check']}):
+            return
 
         self.console.append_output('[lm_update] Update Load Modules over wifi')
         # Start init_progressbar

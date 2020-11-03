@@ -15,6 +15,7 @@ from os import listdir
 from ConfigHandler import cfgget, cfgput, cfgget_all
 from InterpreterCore import execute_LM_function_Core
 
+
 #################################################################
 #                  SHELL Interpreter FUNCTIONS                  #
 #################################################################
@@ -26,7 +27,7 @@ def shell(msg, SocketServerObj):
     """
     try:
         state = __shell(msg, SocketServerObj)
-        return state, 'Okay'                   # True - good, False execute soft reboot
+        return state, 'Okay'  # True - good, False execute soft reboot
     except Exception as e:
         SocketServerObj.reply_message("[SHELL] Runtime error: {}".format(e))
         return False, str(e)
@@ -35,27 +36,29 @@ def shell(msg, SocketServerObj):
 def __shell(msg, SocketServerObj):
     """
     Socket server - interpreter shell
+    RETURN STATE:
+        True: OK/HEALTHY
+        False: ERROR/FAULTY
     """
-    return_state = True
 
+    # PARSE RAW STR MSG
     if msg is None or len(msg.strip()) == 0:
-        return return_state
+        # No msg to work with
+        return True
     msg_list = msg.strip().split()
 
-    # CONFIGURE MODE: ACCESS FOR NODE_CONFIG.JSON
+    # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
     if msg_list[0] == "configure" or msg_list[0] == "conf":
-        if len(msg_list) == 1:
-            SocketServerObj.CONFIGURE_MODE = True
-            SocketServerObj.pre_prompt = "[configure] "
-        msg_list = []
+        SocketServerObj.CONFIGURE_MODE = True
+        SocketServerObj.pre_prompt = "[configure] "
+        return True
     elif msg_list[0] == "noconfigure" or msg_list[0] == "noconf":
-        if len(msg_list) == 1:
-            SocketServerObj.CONFIGURE_MODE = False
-            SocketServerObj.pre_prompt = ""
-        msg_list = []
+        SocketServerObj.CONFIGURE_MODE = False
+        SocketServerObj.pre_prompt = ""
+        return True
 
     # HELP MSG
-    if "help" in msg_list and msg_list[0] == 'help':
+    if msg_list[0] == 'help':
         SocketServerObj.reply_message("[MICROS]   - commands (built-in)")
         SocketServerObj.reply_message("   hello   - default hello msg - identify device (SocketServer)")
         SocketServerObj.reply_message("   version - shows MicrOS version")
@@ -70,12 +73,12 @@ def __shell(msg, SocketServerObj):
         SocketServerObj.reply_message("   noconfigure|noconf - Exit conf mod")
         SocketServerObj.reply_message("[EXEC] Command mode (LMs):")
         show_LMs_functions(SocketServerObj)
-        msg_list = []
+        return True
 
     # EXECUTE:
     # @1 Configure mode
     if SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
-        return_state = configure(msg_list, SocketServerObj)
+        return configure(msg_list, SocketServerObj)
     # @2 Command mode
     elif not SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
         """
@@ -85,13 +88,12 @@ def __shell(msg, SocketServerObj):
         """
         try:
             # Execute command via InterpreterCore
-            return_state = execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
+            return execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
         except Exception as e:
             SocketServerObj.reply_message("[ERROR] execute_LM_function_Core \
                                           internal error: {}".format(e))
-            return_state = False
-    # RETURN STATE: True:OK or False:ERROR
-    return return_state
+            return False
+
 
 #################################################################
 #                     CONFIGURE MODE HANDLER                    #
@@ -99,28 +101,30 @@ def __shell(msg, SocketServerObj):
 
 
 def configure(attributes, SocketServerObj):
-    # DISABLE BG INTERRUPTS
+    # [CONFIG] Get value
     if len(attributes) == 1:
         if attributes[0] == "dump":
-            val_spacer = 10
+            # DUMP DATA
             for key, value in cfgget_all().items():
-                spcr = (int(val_spacer/3) - int(val_spacer/5))
-                spcr2 = (val_spacer - len(key))
-                SocketServerObj.reply_message("  {}{}:{} {}"
-                                              .format(key, " "*spcr2, " "*spcr, value))
+                spcr = (int(10 / 3) - int(10 / 5))
+                spcr2 = (10 - len(key))
+                SocketServerObj.reply_message("  {}{}:{} {}".format(key, " " * spcr2, " " * spcr, value))
         else:
-            key = attributes[0]
-            SocketServerObj.reply_message(cfgget(key))
+            # GET SINGLE PARAMETER VALUE
+            SocketServerObj.reply_message(cfgget(attributes[0]))
+        return True
     # [CONFIG] Set value
-    elif len(attributes) >= 2:
+    if len(attributes) >= 2:
         key = attributes[0]
         value = " ".join(attributes[1:])
         try:
-            SocketServerObj.reply_message(cfgput(key, value, type_check=True))
+            output = cfgput(key, value, type_check=True)
         except Exception as e:
-            SocketServerObj.reply_message("Set config error: {}".format(e))
-    # ENABLE BG INTERRUPTS
+            SocketServerObj.reply_message("node_config write error: {}".format(e))
+            output = False
+        SocketServerObj.reply_message('Saved' if output else 'Failed to save')
     return True
+
 
 #################################################################
 #                   COMMAND MODE & LMS HANDLER                  #
@@ -140,7 +144,7 @@ def show_LMs_functions(SocketServerObj):
         try:
             SocketServerObj.reply_message("   {}".format(LM.replace('LM_', '')))
             if LMpath.endswith('.mpy'):
-                SocketServerObj.reply_message("   {}help".format(" "*len(LM.replace('LM_', ''))))
+                SocketServerObj.reply_message("   {}help".format(" " * len(LM.replace('LM_', ''))))
             else:
                 with open(LMpath, 'r') as f:
                     while True:
@@ -149,7 +153,7 @@ def show_LMs_functions(SocketServerObj):
                             break
                         if "def" in line and "def __" not in line:
                             SocketServerObj.reply_message("   {}{}"
-                                                          .format(" "*len(LM.replace('LM_', '')),
+                                                          .format(" " * len(LM.replace('LM_', '')),
                                                                   line.split('(')[0].split(' ')[1]))
         except Exception as e:
             SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LM, e))

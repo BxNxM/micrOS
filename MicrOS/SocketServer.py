@@ -46,7 +46,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.2.1-0'
+    __socket_interpreter_version = '0.2.2-0'
 
     def __new__(cls):
         """
@@ -140,6 +140,10 @@ class SocketServer:
         except Exception:
             data_str = "ctrl-c"
         self.server_console("[ socket server ] RAW INPUT |{}|".format(data_str))
+        # CALL LOW LEVEL COMMANDS -  server built-ins
+        return self.__server_level_cmds(data_str)
+
+    def __server_level_cmds(self, data_str):
         if data_str == 'exit':
             # For low level exit handling
             data_str = ""

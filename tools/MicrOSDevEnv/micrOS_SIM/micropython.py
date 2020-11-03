@@ -17,7 +17,10 @@ def mem_info(*args, **kwargs):
     else:
         usage = resource.getrusage(resource.RUSAGE_SELF)
         max_mem = usage.ru_maxrss / 1024 / 1024        # bytes by default
-    console("Max RAM usage: {:.2f} Mb".format(max_mem))
+    if isinstance(max_mem, float):
+        console("Max RAM usage: {:.2f} Mb".format(max_mem))
+    else:
+        console("Max RAM usage: {} Mb".format(max_mem))
     return max_mem
 
 

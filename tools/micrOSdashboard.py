@@ -99,8 +99,9 @@ class micrOSGUI(QWidget):
                     self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
             if remove_from_key is not None:
                 self.bgjob_thread_obj_dict.pop(remove_from_key, None)
-                self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
-                self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
+                if remove_from_key in self.bgjon_progress_monitor_thread_obj_dict:
+                    self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
+                    self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
             time.sleep(2)
 
     def initUI(self):
@@ -114,7 +115,7 @@ class micrOSGUI(QWidget):
         self.version_label()
         self.main_ui()
 
-    def close_application(self, text="Please verify data before continue:", verify_data_dict={}):
+    def start_bg_application_popup(self, text="Please verify data before continue:", verify_data_dict={}):
         _text = '{}\n'.format(text)
         for key, value in verify_data_dict.items():
             _text += '  {}: {}\n'.format(key, value)
@@ -227,7 +228,7 @@ class micrOSGUI(QWidget):
             self.console.append_output("[usb_deploy][WARN] Selected device is not compatible with selected micropython.")
             return False
         # Verify data
-        if not self.close_application(text="Deploy new device?", verify_data_dict={'board': self.ui_state_machine['board'],
+        if not self.start_bg_application_popup(text="Deploy new device?", verify_data_dict={'board': self.ui_state_machine['board'],
                                                                                   'micropython': os.path.basename(self.ui_state_machine['micropython']),
                                                                                   'force': self.ui_state_machine['ignore_version_check']}):
             return
@@ -260,7 +261,7 @@ class micrOSGUI(QWidget):
                 self.console.append_output('[ota_update][SKIP] already running.')
                 return
         # Verify data
-        if not self.close_application(text="OTA update?", verify_data_dict={'device': self.ui_state_machine['device'],
+        if not self.start_bg_application_popup(text="OTA update?", verify_data_dict={'device': self.ui_state_machine['device'],
                                                                             'force': self.ui_state_machine['ignore_version_check'],
                                                                             'unsafe_ota': self.ui_state_machine['unsafe_ota']}):
             return
@@ -302,7 +303,7 @@ class micrOSGUI(QWidget):
             self.console.append_output("[usb_update] [WARN] Selected device is not compatible with selected micropython.")
             return False
         # Verify data
-        if not self.close_application(text="Start USB update?", verify_data_dict={'board': self.ui_state_machine['board'],
+        if not self.start_bg_application_popup(text="Start USB update?", verify_data_dict={'board': self.ui_state_machine['board'],
                                                                                   'micropython': os.path.basename(self.ui_state_machine['micropython']),
                                                                                   'force': self.ui_state_machine['ignore_version_check']}):
             return
@@ -336,7 +337,7 @@ class micrOSGUI(QWidget):
                 return
 
         # Verify data
-        if not self.close_application(text="Search devices? Press Yes to continue!"):
+        if not self.start_bg_application_popup(text="Search devices? Press Yes to continue!"):
             return
 
         self.console.append_output('[search_devices] Search online devices on local network')
@@ -364,7 +365,7 @@ class micrOSGUI(QWidget):
                 return
 
         # Verify data
-        if not self.close_application(text="Start micrOS on host?"):
+        if not self.start_bg_application_popup(text="Start micrOS on host?"):
             return
 
         self.console.append_output('[search_devices] Start micrOS on host (local machine)')
@@ -392,7 +393,7 @@ class micrOSGUI(QWidget):
                 return
 
         # Verify data
-        if not self.close_application(text="Update load modules?", verify_data_dict={'device': self.ui_state_machine['device'],
+        if not self.start_bg_application_popup(text="Update load modules?", verify_data_dict={'device': self.ui_state_machine['device'],
                                                                                      'force': self.ui_state_machine['ignore_version_check']}):
             return
 

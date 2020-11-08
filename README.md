@@ -30,13 +30,13 @@ git clone https://github.com/BxNxM/micrOs.git
 
 - For Windows
 
-- ```
+```
 micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
 ```
 
 - For macOS
 
-- ```
+```
 micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
 ```
 
@@ -60,17 +60,18 @@ python3 micrOS/devToolKit.py
 
 ## micrOS Framework Features
 
-- **OTA Update** - push update over wifi (webrepl automation)
-- **Config handling** - node_config.json
+- **micrOS loader** - micrOS / WEBREPL (update / recovery)
+	- **OTA update** - push update over wifi (webrepl automation) with auto restart node
+- **Config handling(*)** - node_config.json [socket access]
 - **Boot phase** handling - preload modules - I/O initialization from node_config
 - **Network handling** - based on node_config 
-	- STA / AP 
+	- STA / AP
 	- NTP setup
 	- static IP configuration
 - **Socket interpreter** - wireless communication interface with the devices/nodes
 	- **System commands**: `help, version, reboot, webrepl, etc.`
 		- webrepl <--> micrOS interface switch  
-	- **Config** SET/GET/DUMP
+	- **Config(*)** SET/GET/DUMP
 	- **LM** - Load Module function execution (application modules)
 - **Scheduling / External events** - Interrupt callback - based on node_config 
 	- Time based

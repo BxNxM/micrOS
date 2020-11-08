@@ -32,7 +32,7 @@ class ProgressbarTimers:
     usb_update = usb_deploy + 10
     serach_devices = 180
     simulator = 3
-    lm_update = int(ota_update/2)
+    lm_update = int(ota_update*0.7)
 
 
 class ProgressbarUpdateThread(QThread):

@@ -116,13 +116,12 @@ def cfgget_all():
 
 
 def __read_cfg_file(nosafe=False):
-    global __CONFIG_CACHE
     while True:
         try:
             if len(__CONFIG_CACHE) == 0:
                 # READ JSON CONFIG
                 with open(__CONFIG_PATH, 'r') as f:
-                    __CONFIG_CACHE = load(f)
+                    __CONFIG_CACHE.update(load(f))
             break
         except Exception as e:
             console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(__CONFIG_PATH, e))
@@ -134,9 +133,8 @@ def __read_cfg_file(nosafe=False):
 
 
 def __write_cfg_file(dictionary):
-    global __CONFIG_CACHE
     # WRITE CACHE
-    __CONFIG_CACHE = dictionary
+    __CONFIG_CACHE.update(dictionary)
     while True:
         try:
             # WRITE JSON CONFIG
@@ -144,8 +142,7 @@ def __write_cfg_file(dictionary):
                 dump(dictionary, f)
             break
         except Exception as e:
-            console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}"
-                          .format(__CONFIG_PATH, e))
+            console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(__CONFIG_PATH, e))
         sleep(0.2)
     return True
 
@@ -157,12 +154,11 @@ def __inject_default_conf():
     if default_config_dict['dbg']:
         console_write("[CONFIGHANDLER] inject config:\n{}".format(default_config_dict))
     try:
-        if __write_cfg_file(default_config_dict):
-            console_write("[CONFIGHANDLER] Inject default data struct successful")
-        else:
-            console_write("[CONFIGHANDLER] Inject default data struct failed")
+        # [LOOP] Only returns True
+        __write_cfg_file(default_config_dict)
+        console_write("[CONFIGHANDLER] Inject default data struct successful")
     except Exception as e:
-        console_write(e)
+        console_write("[CONFIGHANDLER] Inject default data struct failed: {}".format(e))
     finally:
         del default_config_dict
 
@@ -186,7 +182,7 @@ def __value_type_handler(key, value):
         if isinstance(value_in_cfg, float):
             del value_in_cfg
             return float(value)
-    except Exception:
+    except Exception as e:
         console_write("Input value type error! {}".format(e))
     return None
 
@@ -199,6 +195,7 @@ if "ConfigHandler" in __name__:
     __inject_default_conf()                     # Validate / update / create user config
     __DEBUG_PRINT = cfgget('dbg')               # Inject from user conf
     if not cfgget('pled'):
+        # TODO: deinit default pled object
         PLED = None                             # Turn off progressled if necessary
 
 if __name__ == "__main__":

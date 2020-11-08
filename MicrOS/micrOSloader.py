@@ -17,7 +17,7 @@ def __interface_mode():
     """
     Recovery mode for OTA update in case of connection/transfer failure
         .if_mode can have 2 possible values: webrepl or micros (strings)
-    If the system is healhty / OTA update was successful
+    If the system is healthy / OTA update was successful
         .if_mode should contain: micros [return True]
     In other cases .if_mode should contain: webrepl [return False]
 
@@ -92,8 +92,8 @@ def __auto_restart_event():
         # Check value if trigger active
         if if_mode is not None and trigger_is_active and if_mode == 'micros':
             print("[loader][ota auto-rebooter][micros][trigger: True] OTA was finished - reboot")
-            import machine
-            machine.reset()
+            from machine import reset
+            reset()
         sleep(2)
 
 

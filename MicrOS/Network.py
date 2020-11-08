@@ -24,11 +24,6 @@ from ConfigHandler import console_write, cfgget, cfgput
 
 
 def setNTP_RTC():
-    for _ in range(4):
-        if WLAN(STA_IF).isconnected():
-            break
-        sleep(0.5)
-
     if WLAN(STA_IF).isconnected():
         for _ in range(4):
             try:
@@ -99,7 +94,7 @@ def set_wifi(essid, pwd, timeout=60):
                 timeout -= 1
                 sleep(0.5)
             # Set static IP - here because some data comes from connection.
-            if __set_wifi_dev_static_ip(sta_if):
+            if sta_if.isconnected() and __set_wifi_dev_static_ip(sta_if):
                 sta_if.disconnect()
                 del sta_if
                 return set_wifi(essid, pwd)
@@ -134,7 +129,7 @@ def __set_wifi_dev_static_ip(sta_if):
             except Exception as e:
                 console_write("\t\t| [NW: STA] StaticIP conf. failed: {}".format(e))
         else:
-            console_write("[NW: STA] StaticIP was already set: {}".format(stored_ip))
+            console_write("[NW: STA][SKIP] StaticIP conf.: {} ? {}".format(stored_ip, conn_ips[0]))
     else:
         console_write("[NW: STA] IP was not stored: {}".format(stored_ip))
     return reconfigured
@@ -172,11 +167,8 @@ def set_access_point(_essid, _pwd, _authmode=3):
 #################################################################
 
 
-def auto_network_configuration(_authmode=3, retry=3):
+def auto_network_configuration(retry=3):
     for _ in range(0, retry):
-        # Reset dev (static)ip if previous nw setup was AP
-        if cfgget("nwmd") == "AP":
-            cfgput("devip", "n/a")
         # SET WIFI (STA) MODE
         state = set_wifi(cfgget("staessid"), cfgget("stapwd"))
         if state:
@@ -187,7 +179,7 @@ def auto_network_configuration(_authmode=3, retry=3):
             # BREAK - STA mode successfully  configures
             break
         # SET AP MODE
-        state = set_access_point(cfgget("devfid"), cfgget("appwd"), _authmode)
+        state = set_access_point(cfgget("devfid"), cfgget("appwd"))
         if state:
             # Save AP NW mode
             cfgput("nwmd", "AP")

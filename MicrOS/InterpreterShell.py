@@ -24,13 +24,16 @@ from InterpreterCore import execute_LM_function_Core
 def shell(msg, SocketServerObj):
     """
     Socket server - interpreter shell wrapper
+    return state:
+        True - OK, no actions
+        False - ISSUE, recovery actions triggered in upper logic
     """
     try:
         state = __shell(msg, SocketServerObj)
-        return state, 'Okay'  # True - good, False execute soft reboot
+        return state
     except Exception as e:
         SocketServerObj.reply_message("[SHELL] Runtime error: {}".format(e))
-        return False, str(e)
+        return False
 
 
 def __shell(msg, SocketServerObj):

@@ -71,11 +71,14 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
                 if LM_name in modules.keys():
                     del modules[LM_name]
                 health = False
+        # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
+        return health
+
+    # Syntax error show help msg
+    if SocketServerObj is None:
+        print("SHELL: Missing argument: [1](LM_)module [2]function[3](optional params.)")
     else:
-        if SocketServerObj is not None:
-            SocketServerObj.reply_message("SHELL: type help for single word commands (built-in)")
-            SocketServerObj.reply_message("SHELL: for LM exec: [1](LM_)module [2]function[3](optional params.)")
-        else:
-            print("SHELL: Missing argument: [1](LM_)module [2]function[3](optional params.)")
+        SocketServerObj.reply_message("SHELL: type help for single word commands (built-in)")
+        SocketServerObj.reply_message("SHELL: for LM exec: [1](LM_)module [2]function[3](optional params.)")
     # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
     return health

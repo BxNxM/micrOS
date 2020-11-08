@@ -11,10 +11,8 @@ import esp
 from gc import enable
 from micrOSloader import main
 
+# Turn off esp debug msg-s over usb (UART)
 esp.osdebug(None)
-
-# disable REPL on UART(0)
-# uos.dupterm(None, 1)
 
 # Enable GC
 enable()

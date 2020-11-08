@@ -51,7 +51,7 @@ def micrOS():
     profiling_info(label='[2] AFTER SAFE BOOT HOOK')
 
     # NETWORK setup
-    if auto_network_configuration is not None: auto_network_configuration()
+    auto_network_configuration()
     profiling_info(label='[3] AFTER NETWORK CONFIGURATION')
 
     # LOAD Singleton SocketServer [1]
@@ -69,5 +69,5 @@ def micrOS():
     # RUN Singleton SocketServer - main loop [2]
     SocketServer().run()
 
-    # micrOS RECOVERY file recovery over webrepl - normally never executes
+    # micrOS file recovery over webrepl - normally never executes
     SocketServer().start_micropython_webrepl()

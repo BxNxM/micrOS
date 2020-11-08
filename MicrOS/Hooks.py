@@ -59,5 +59,3 @@ def profiling_info(label=""):
         console_write("{} [PROFILING INFO] - {} {}".format('~'*5, label, '~'*5))
         mem_info()
         console_write("~"*30)
-    else:
-        console_write("[PROFILING INFO] SKIP dbg:{}".format(cfgget('dbg')))

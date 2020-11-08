@@ -46,7 +46,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.2.2-0'
+    __socket_interpreter_version = '0.3.0-0'
 
     def __new__(cls):
         """
@@ -214,9 +214,9 @@ class SocketServer:
         while True:
             try:
                 # Evaluate incoming msg via InterpreterShell -> InterpreterCore "Console prompt"
-                is_healthy, msg = InterpreterShell_shell(self.__wait_for_message(), SocketServerObj=self)
+                is_healthy = InterpreterShell_shell(self.__wait_for_message(), SocketServerObj=self)
                 if not is_healthy:
-                    console_write("[EXEC-WARNING] InterpreterShell internal error: {}".format(msg))
+                    console_write("[EXEC-WARNING] InterpreterShell internal error.")
                     self.__recovery(errlvl=0)
             except OSError:
                 # BrokenPipeError
@@ -267,15 +267,3 @@ class SocketServer:
             self.__del__()
         except Exception as e:
             self.reply_message("Error while starting webrepl: {}".format(e))
-
-#########################################################
-#                 MAIN (FOR TEST REASONS)               #
-#########################################################
-
-
-if __name__ == "__main__":
-    try:
-        server = SocketServer()
-        server.run()
-    except KeyboardInterrupt:
-        console_write("Keyboard interrupt in SocketServer.")

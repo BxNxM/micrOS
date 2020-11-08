@@ -47,7 +47,7 @@ def set_emergency_buffer():
 #################################################################
 
 #############################################
-#      [TIMER] TIMIRQ CBF - LM executor     #
+#     [TIMER] TIMIRQ CBFs - LM executor     #
 #############################################
 
 
@@ -139,10 +139,9 @@ def secureEventInterruptHandler(pin=None):
     EVENT INTERRUPT CALLBACK FUNCTION WRAPPER
     """
     try:
-        if CFG_EVIRQCBF.lower() != 'n/a':
-            state = execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
-            if not state:
-                console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_EVIRQCBF))
+        state = execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
+        if not state:
+            console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_EVIRQCBF))
     except Exception as e:
         console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(CFG_EVIRQCBF, e))
 

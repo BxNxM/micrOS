@@ -12,11 +12,14 @@ import time
 import nwscan
 import json
 from TerminalColors import Colors
+import threading
 
 #########################################################
 #                 Device data handling                  #
 #########################################################
-class ConnectionData():
+
+
+class ConnectionData:
     HOST = 'localhost'
     PORT = 9008
     MICROS_DEV_IP_DICT = {}
@@ -32,32 +35,52 @@ class ConnectionData():
                                                 "device_localhost"
                                                ] }
 
+
+    @staticmethod
+    def __worker_filter_MicrOS_device(device, thread_name):
+        socket_obj = None
+        if '.' in device[0]:
+            try:
+                if not (device[0].startswith('10.') or device[0].startswith('192.')):
+                    print("[{}]Invalid device IP:{} - skip".format(thread_name, device[0]))
+                    return
+                print("Device Query on {} ...".format(device[0]))
+                socket_obj = SocketDictClient(host=device[0], port=ConnectionData.PORT)
+                reply = socket_obj.non_interactive('hello')
+                if "hello" in reply:
+                    print("[{}][MicrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
+                    fuid = reply.split(':')[1]
+                    uid = reply.split(':')[2]
+                    # Add device to known list
+                    ConnectionData.MICROS_DEV_IP_DICT[uid] = [device[0], device[1], fuid]
+                else:
+                    print("[{}][Non MicrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
+            except Exception as e:
+                print("[{}] {} scan warning: {}".format(thread_name, device, e))
+            finally:
+                if socket_obj is not None and socket_obj.conn is not None:
+                    socket_obj.conn.close()
+                del socket_obj
+
     @staticmethod
     def filter_MicrOS_devices():
-        filtered_devices = nwscan.filter_by_open_port(device_ip_list=nwscan.map_wlan_devices(), port=ConnectionData.PORT)
-        for device in filtered_devices:
-            socket = None
-            if '.' in device[0]:
-                try:
-                    if not (device[0].startswith('10.') or device[0].startswith('192.')):
-                        print("Invalid device IP:{} - skip".format(device[0]))
-                        continue
-                    print("Device Query on {} ...".format(device[0]))
-                    socket = SocketDictClient(host=device[0], port=ConnectionData.PORT)
-                    reply = socket.non_interactive('hello')
-                    if "hello" in reply:
-                        print("[MicrOS] Device: {} reply: {}".format(device[0], reply))
-                        fuid = reply.split(':')[1]
-                        uid = reply.split(':')[2]
-                        ConnectionData.MICROS_DEV_IP_DICT[uid] = [device[0], device[1], fuid]
-                    else:
-                        print("[Non MicrOS] Device: {} reply: {}".format(device[0], reply))
-                except Exception as e:
-                    print("{} scan warning: {}".format(device, e))
-                finally:
-                    if socket is not None and socket.conn is not None:
-                        socket.conn.close()
-                    del socket
+        start_time = time.time()
+        filtered_devices = nwscan.map_wlan_devices(service_port=9008)
+        thread_instance_list = []
+        for index, device in enumerate(filtered_devices):
+            thread_name = "thread-{} check: {}".format(index, device)
+            thread_instance_list.append(
+                threading.Thread(target=ConnectionData.__worker_filter_MicrOS_device, args=(device, thread_name,))
+            )
+
+        for mythread in thread_instance_list:
+            mythread.start()
+
+        for mythread in thread_instance_list:
+            mythread.join()
+
+        end_time = time.time()
+        print("SEARCH TOTAL ELAPSED TIME: {} sec".format(end_time - start_time))
         ConnectionData.write_MicrOS_device_cache(ConnectionData.MICROS_DEV_IP_DICT)
         print("AVAILABLE MICROS DEVICES:\n{}".format(json.dumps(ConnectionData.MICROS_DEV_IP_DICT, indent=4, sort_keys=True)))
 
@@ -178,7 +201,7 @@ class ConnectionData():
                 if 'ONLINE' in is_online:
                     # get mem_data
                     try:
-                        mem_data = SocketDictClient(\
+                        mem_data = SocketDictClient(
                             host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['system memfree'])
                         mem_data = "{} byte".format(str(str(mem_data.split('\n')[1]).split(':')[-1]).strip())
                     except:
@@ -226,31 +249,30 @@ class SocketDictClient():
             sys.exit(0)
         return data
 
-    def receive_data(self, wait_before_msg=1):
+    def receive_data(self, wait_before_msg=0.1):
         data = ""
+        prompt_postfix = ' $'
         data_list = []
         if select.select([self.conn], [], [], 3)[0]:
-            if self.is_interactive:
+            while True:
                 time.sleep(wait_before_msg)
-                data = self.conn.recv(self.bufsize).decode('utf-8')
-                data_list = data.split('\n')
-            else:
-                while data == "":
-                    time.sleep(wait_before_msg)
-                    data += self.conn.recv(self.bufsize).decode('utf-8')
-                data_list = data.split('\n')
+                last_data = self.conn.recv(self.bufsize).decode('utf-8')
+                data += last_data
+                # Msg reply wait criteria (get the prompt back or special cases)
+                if prompt_postfix in last_data or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data:
+                    break
+            data_list = data.split('\n')
         return data, data_list
 
     def interactive(self):
         self.is_interactive = True
         self.console(self.receive_data(), end='')
         while True:
-            cmd = input()
-            if cmd != "":
-                self.console(self.run_command(cmd), end='')
-                if cmd.rstrip() == "exit":
-                    self.close_connection()
-                    sys.exit(0)
+            cmd = input().strip()
+            self.console(self.run_command(cmd), end='')
+            if cmd.rstrip() == "exit":
+                self.close_connection()
+                sys.exit(0)
 
     def non_interactive(self, cmd_list):
         self.is_interactive = False

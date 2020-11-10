@@ -55,14 +55,14 @@ def guess_net_address(gateway_ip, subnet=24):
     return ip.network
 
 
-def filter_online_devices(host_list, thname="main"):
+def __worker_filter_online_devices(host_list, port, thname="main"):
     """
     Get online devices from network range
     """
     global AVAILABLE_DEVICES_LIST
     for host in host_list:
         host = str(host)
-        exitcode, stdout, stderr = CommandHandler.run_command("ping -c 1 {}".format(host), shell=True)
+        exitcode, stdout, stderr = CommandHandler.run_command("ping -c 1 -p {port} {ip}".format(port=port, ip=host), shell=True)
         if exitcode == 0:
             print("[{}] ONLINE: {}".format(thname, host))
             add_element_to_list(host)
@@ -70,7 +70,7 @@ def filter_online_devices(host_list, thname="main"):
             print("[{}] OFFLINE: {}".format(thname, host))
 
 
-def filter_threads(host_list, threads=40):
+def filter_threads(host_list, port, threads=50):
     """
     Use threads for parallel network scanning
     """
@@ -83,7 +83,7 @@ def filter_threads(host_list, threads=40):
         host_range = host_list[start_index:end_index]
         thread_name = "thread-{}-[{}-{}]".format(cnt, start_index, end_index)
         thread_instance_list.append(
-            threading.Thread(target=filter_online_devices, args=(host_range, thread_name,))
+            threading.Thread(target=__worker_filter_online_devices, args=(host_range, port, thread_name,))
         )
 
     for mythread in thread_instance_list:
@@ -96,14 +96,13 @@ def filter_threads(host_list, threads=40):
     return AVAILABLE_DEVICES_LIST
 
 
-def online_device_scanner():
+def online_device_scanner(service_port=9008):
     start_time = time.time()
 
     gw_ip = gateway_ip()
     net_ip = guess_net_address(gw_ip)
     all_hosts_in_net_list = get_all_hosts(net_ip)
-    #filter_online_devices(all_hosts_in_net_list)
-    online_devices = filter_threads(all_hosts_in_net_list)
+    online_devices = filter_threads(all_hosts_in_net_list, port=service_port)
 
     end_time = time.time()
     print("Elapsed time: {}".format(end_time - start_time))

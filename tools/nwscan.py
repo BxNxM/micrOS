@@ -7,9 +7,9 @@ import LocalMachine
 import SearchDevices
 
 
-def map_wlan_devices():
+def map_wlan_devices(service_port=9008):
     devices = []
-    host_address_list = SearchDevices.online_device_scanner()
+    host_address_list = SearchDevices.online_device_scanner(service_port=service_port)
     for device in host_address_list:
         devip = device
         macaddr = "n/a"
@@ -24,6 +24,7 @@ def map_wlan_devices():
 
 
 def filter_by_open_port(device_ip_list, port=9008):
+    """Obsolete"""
     print("Filter devices by (MicrOS) open port...  [ping -c 2 -p {port} <ip>]".format(port=port))
     devices = []
     cmd_base = 'ping -c 2 -p {port} {ip}'

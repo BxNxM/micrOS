@@ -48,7 +48,7 @@ def default_config():
                                       "crontasks": 'n/a',
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
-                                      "irqmembuf": 1300,
+                                      "irqmembuf": 1000,
                                       "extirq": False,
                                       "extirqcbf": "n/a",
                                       "boothook": "n/a",

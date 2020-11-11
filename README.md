@@ -575,6 +575,29 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - Build micropython with frozen resources: https://github.com/micropython/micropython/tree/master/ports/esp8266
 
+- micrOS source code lines of code:
+
+```bash
+
+micrOS_resources=($(ls -1 | grep -v 'LM_' | grep '\.py'))
+overall=0; for file in ${micrOS_resources[@]}; do data=($(wc -l $file)); echo -e "${data[*]}"; overall=$((overall+data)); done; echo -e "micrOS Core ovarall lines: $overall"
+
+202 ConfigHandler.py
+61 Hooks.py
+84 InterpreterCore.py
+163 InterpreterShell.py
+170 InterruptHandler.py
+49 LogicalPins.py
+187 Network.py
+44 Network.pyc
+157 Scheduler.py
+269 SocketServer.py
+21 boot.py
+73 micrOS.py
+123 micrOSloader.py
+3 reset.py
+micrOS Core ovarall lines: 1606
+```
 
 GIT:
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`

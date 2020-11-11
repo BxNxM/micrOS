@@ -337,7 +337,7 @@ class micrOSGUI(QWidget):
                 return
 
         # Verify data
-        if not self.start_bg_application_popup(text="Search devices? Press Yes to continue!"):
+        if not self.start_bg_application_popup(text="Search devices? Press Yes to continue!\n\nIt will take around 2 minutes.\nWhen it was finished please restart the GUI."):
             return
 
         self.console.append_output('[search_devices] Search online devices on local network')
@@ -574,7 +574,10 @@ class micrOSGUI(QWidget):
 
         # Get devices friendly unique identifier
         geek_list = [fuid[0] for fuid in self.device_conn_struct]
-        self.ui_state_machine['device'] = geek_list[0]
+        try:
+            self.ui_state_machine['device'] = geek_list[0]
+        except Exception:
+            pass
 
         # making it editable
         combo_box.setEditable(False)

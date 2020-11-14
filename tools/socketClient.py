@@ -249,7 +249,7 @@ class SocketDictClient():
             sys.exit(0)
         return data
 
-    def receive_data(self, wait_before_msg=0.1):
+    def receive_data(self, wait_before_msg=0.3):
         data = ""
         prompt_postfix = ' $'
         data_list = []

@@ -42,6 +42,7 @@ class MicrOSDevTool:
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
+        self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
         self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", "LM_air.py", "LM_servo.py", "LM_neopixel.py", "LM_switch.py", "LM_dimmer.py"]
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
@@ -611,6 +612,18 @@ class MicrOSDevTool:
         else:
             self.console("MicrOS node content list error:\n{}".format(stderr), state='err')
 
+    def micrOS_sim_default_conf_create(self):
+        self.console("Create default micrOS node_config.json")
+        mypath_bak = MYPATH
+        os.chdir(self.MicrOS_dir_path)
+        print(self.micros_sim_resources)
+        sys.path.append(self.micros_sim_resources)
+        try:
+            import ConfigHandler
+        except Exception as e:
+            self.console("[ERROR] micrOS SIM\n{}".format(e))
+        os.chdir(mypath_bak)
+
     def inject_profile(self, target_path):
         profile_list = [ profile for profile in LocalMachine.FileHandler.list_dir(self.node_config_profiles_path) if profile.endswith('.json') ]
         for index, profile in enumerate(profile_list):
@@ -623,6 +636,8 @@ class MicrOSDevTool:
             self.console("Profile was selected: {}{}{}".format(Colors.OK, profile_list[int(profile)], Colors.NC))
         # Read default conf
         default_conf_path = os.path.join(self.MicrOS_dir_path, 'node_config.json')
+        if not os.path.isfile(default_conf_path):
+            self.micrOS_sim_default_conf_create()
         with open(default_conf_path, 'r') as f:
             default_conf_dict = json.load(f)
         # Read profile

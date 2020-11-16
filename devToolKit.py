@@ -139,8 +139,8 @@ def arg_parse():
 
 
 def list_devs_n_bins(api_obj):
-    dev_list = api_obj.micros_devices
-    bin_list = api_obj.micropython_bins_list
+    dev_list = api_obj.get_devices()
+    bin_list = api_obj.get_micropython_binaries()
     print("Devices:")
     for dev in dev_list:
         print("\t{}".format(dev))

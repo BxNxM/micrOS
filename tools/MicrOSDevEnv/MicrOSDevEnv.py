@@ -20,7 +20,7 @@ class MicrOSDevTool:
         self.gui_console = gui_console
         self.cmdgui = cmdgui
         self.deployment_app_dependences = ['ampy', 'esptool.py']
-        self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0']
+        self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial-0001']
         self.dev_types_and_cmds = \
                 {'esp8266':
                    {'erase': 'esptool.py --port {dev} erase_flash',
@@ -43,7 +43,9 @@ class MicrOSDevTool:
         self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
         self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
-        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", "LM_air.py", "LM_servo.py", "LM_neopixel.py", "LM_switch.py", "LM_dimmer.py"]
+        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", \
+                                         "LM_air.py", "LM_servo.py", "LM_neopixel.py", "LM_switch.py", "LM_dimmer.py", \
+                                         "LM_bme280.py"]
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 
@@ -132,6 +134,7 @@ class MicrOSDevTool:
         self.console("------------------------------------------")
 
         dep_ok = True
+        '''
         for appdep in self.deployment_app_dependences:
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command("{} --help".format(appdep), shell=True)
             if exitcode == 0:
@@ -140,6 +143,7 @@ class MicrOSDevTool:
                 self.console("[DEPENDENCY] {} NOT available.".format(appdep), state='err')
                 dep_ok = False
                 # TODO: install?
+        '''
         return dep_ok
 
     def get_devices(self):

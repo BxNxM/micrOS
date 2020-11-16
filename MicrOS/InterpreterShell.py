@@ -62,17 +62,17 @@ def __shell(msg, SocketServerObj):
 
     # HELP MSG
     if msg_list[0] == 'help':
-        SocketServerObj.reply_message("[MICROS]   - commands (built-in)")
-        SocketServerObj.reply_message("   hello   - default hello msg - identify device (SocketServer)")
-        SocketServerObj.reply_message("   version - shows MicrOS version")
-        SocketServerObj.reply_message("   exit    - exit from shell socket prompt (SocketServer)")
+        SocketServerObj.reply_message("[MICROS]   - commands (SocketServer built-in)")
+        SocketServerObj.reply_message("   hello   - default hello msg - identify device")
+        SocketServerObj.reply_message("   version - shows micrOS version")
+        SocketServerObj.reply_message("   exit    - exit from shell socket prompt")
+        SocketServerObj.reply_message("   reboot  - system safe reboot")
         SocketServerObj.reply_message("   webrepl - start web repl for file transfers - update")
-        SocketServerObj.reply_message("   reboot  - system safe reboot (SocketServer)")
-        SocketServerObj.reply_message("[CONF] Configure mode (built-in):")
+        SocketServerObj.reply_message("[CONF] Configure mode (InterpreterShell built-in):")
         SocketServerObj.reply_message("   configure|conf     - Enter conf mode")
-        SocketServerObj.reply_message("         Key          - Get value")
-        SocketServerObj.reply_message("         Key:Value    - Set value")
         SocketServerObj.reply_message("         dump         - Dump all data")
+        SocketServerObj.reply_message("         Key          - Get value")
+        SocketServerObj.reply_message("         Key Value    - Set value")
         SocketServerObj.reply_message("   noconfigure|noconf - Exit conf mod")
         SocketServerObj.reply_message("[EXEC] Command mode (LMs):")
         show_LMs_functions(SocketServerObj)
@@ -125,7 +125,8 @@ def configure(attributes, SocketServerObj):
         except Exception as e:
             SocketServerObj.reply_message("node_config write error: {}".format(e))
             output = False
-        SocketServerObj.reply_message('Saved' if output else 'Failed to save')
+        issue_msg = 'Invalid key' if cfgget(key) is None else 'Failed to save'
+        SocketServerObj.reply_message('Saved' if output else issue_msg)
     return True
 
 

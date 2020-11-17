@@ -1,14 +1,22 @@
-# micrOS - IoT communication platform and so more...
+# micrOS - micropython IoT communication platform and so more...
 
 ![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true)
 
-[1. micrOS Client Application](https://github.com/BxNxM/micrOS#ios--android-application)
+### KEY PRINCIPLES:
+✉️ Generic communication API -> Human / Machine interface <br/>
+📲 💻 Custom built-in socket shell for configuration and execution <br/>
+⚙️ Automatic device initialization from user config ;) <br/>
+⚠️ No external server / service required <br/>
+🛡 Privacy in focus <br/>
+🛠 Easy to add custom modules named as Load Modules <br/>
+🧩 Codeless end user experiance <br/>
 
-[2. micrOS installer](https://github.com/BxNxM/micrOS#micros-toolkit-for-pc)
-
-[3. micrOS system and features](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
-
-[4. micrOS node configuration](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
+### QUICK LINKS:
+1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#ios--android-application)
+2. micrOS Installer [link](https://github.com/BxNxM/micrOS#micros-toolkit-for-pc)
+3. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
+4. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
+5. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-tutorial)
 
 ----------------------------------------
 
@@ -28,19 +36,23 @@ git clone https://github.com/BxNxM/micrOs.git
 
 2. Install serial driver for board connection
 
-- For Windows
+	- For Windows
+	
+	```
+	micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
+	```
+	
+	- For macOS
+	
+	```
+	micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
+	```
 
-```
-micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
-```
+3. Install python3 interpreter
 
-- For macOS
+	[Download python3](https://www.python.org/downloads/)
 
-```
-micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
-```
-
-3. Execute **devToolKit**
+4. Execute **devToolKit** GUI
 
 ```
 python3 micrOS/devToolKit.py
@@ -48,6 +60,7 @@ python3 micrOS/devToolKit.py
 
 - Verified OS list for development and deployment:
 	- macOS
+	- Wondows (soming soon)
 
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOSToolkit.gif?raw=true)
 
@@ -58,7 +71,7 @@ python3 micrOS/devToolKit.py
 >Note: **Python Socket Client** for application development also available besides smartphone application (example below).
 
 
-## micrOS Framework Features
+## micrOS Framework Features💡
 
 - **micrOS loader** - micrOS / WEBREPL (update / recovery)
 	- **OTA update** - push update over wifi (webrepl automation) with auto restart node
@@ -82,13 +95,19 @@ python3 micrOS/devToolKit.py
 	- Lot of built-in functions
 	- Create your own module with 2 easy steps
 		- Create a file in `MicrOS` folder like: `LM_<your_app_name>.py`
-		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy`	  
-- Socket client - interactive - non interactive mode 
+		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy
+
+		
+DevToolKit CLI feature:
+
+- Socket client python plugin - interactive - non interactive mode
 
 
-## System Architecture
+## System Architecture 
 
 ![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
+
+> Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
 
 ## Device Pinout
 
@@ -125,22 +144,22 @@ python3 micrOS/devToolKit.py
 
 | Parameters names |   Default value and type    | Reboot required |          Description            |
 | ---------------- | :-------------------------: | :-------------: | ------------------------------- |
-| staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi station name
-| stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi station password
-| devfid           |    `node01`  `<str>`        |       No        | Device friendly name / AP name  - access point mode
-| appwd            |   `ADmin123`  `<str>`       |       Yes       | AP password - access point mode
-| pled             |     `True`    `<bool>`      |      Yes        | Progress led - heart beat
-| dbg	           |     `True`    `<bool>`      |       Yes       | Debug mode - enable system printout
-| soctout          |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (because single user | handling)
-| socport          |    `9008`  `<int>`          |       Yes       | Socket / Web server service port
-| timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - "subprocess"
-| timirqcbf        |      `n/a`   `<str>`        |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c show_debug_page`
-| cron             |     `False`  `<bool>`       |       Yes       | Cron time based task scheduling enabler in timer irq
-| crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
-| timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period / sequence in ms, default: 3000 ms
-| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt - "subprocess", e.g.: button press
-| extirqcbf        |     `n/a`  `<str>`          |      Yes        | Callback function (LM) from config, example: `oled_128x64i2c invert`
-| boothook         |    `n/a` `<str>`            |      Yes        | Hook init functions from LMs, to be executed right after system boot up [before network setup!]
+| staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name
+| stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password
+| devfid           |    `node01`  `<str>`        |       No        | Device friendly "unique" name - also used for AccessPoint nw mode
+| appwd            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
+| pled             |     `True`    `<bool>`      |      Yes        | Progress led - "heart beat" LED light pulse under processing
+| dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout
+| soctout          |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (single process socket interface)
+| socport          |    `9008`  `<int>`          |       Yes       | Socket / Web server service port (should not change due to client and API inconpatibility)
+| timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - background while loop "subprocess" for LM execution
+| timirqcbf        |      `n/a`   `<str>`        |      Yes        | `timirq` callback function, call Load Module
+| cron             |     `False`  `<bool>`       |       Yes       | Cron, time based task scheduler. `timirq` activation required for hw function enabling
+| crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
+| timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms - 3 sec
+| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enable - Trigger when "signal upper edge" - button press happens
+| extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq` callback function, call Load Module
+| boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) for priority Load Modules in boot sequence. Add LM(s) here, separator `;`.  [before network setup!] Example: Set LED colors / Init custom module / etc.
 | irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer configuration in case of `timirq` or `exitirq` is/are enabled: default 1000 byte.
 | gmttime          |     `+1`   `<int>`          |        Yes      | NTP - RTC - timezone setup
 | nwmd             |     `n/a`  `<str>`          |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
@@ -173,14 +192,11 @@ python3 micrOS/devToolKit.py
 
 ----------------------------------------
 
-### Development toolkit in details
-
-
-## Quick guide
+## Developer Quick guide
 
 ### Setup development environment
 
-- Clone MicrOS repo:
+- Clone micrOS repo:
 
 ```
 git clone https://github.com/BxNxM/MicrOs.git
@@ -198,12 +214,12 @@ git clone https://github.com/BxNxM/MicrOs.git
 		- arp -a (device scanner)
 		- ping (device scanner)
 
-#### Erase device & Deploy micropython & Install MicrOS 
+#### Erase device & Deploy micropython & Install micrOS 
 
 Go to micrOS repo, where the `devToolKit.py` located.
 
 ```
-cd MicrOs 
+cd micrOs 
 ./devToolKit.py --make
 ```
 > Note: Follow the steps :)
@@ -580,35 +596,35 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - micrOS source code lines of code:
 
-```bash
-
-micrOS_resources=($(ls -1 | grep -v 'LM_' | grep '\.py'))
-overall=0; for file in ${micrOS_resources[@]}; do data=($(wc -l $file)); echo -e "${data[*]}"; overall=$((overall+data)); done; echo -e "micrOS Core ovarall lines: $overall"
-
-202 ConfigHandler.py
-61 Hooks.py
-84 InterpreterCore.py
-163 InterpreterShell.py
-170 InterruptHandler.py
-49 LogicalPins.py
-187 Network.py
-44 Network.pyc
-157 Scheduler.py
-269 SocketServer.py
-21 boot.py
-73 micrOS.py
-123 micrOSloader.py
-3 reset.py
-micrOS Core ovarall lines: 1606
-```
+	```bash
+	
+	micrOS_resources=($(ls -1 | grep -v 'LM_' | grep '\.py'))
+	overall=0; for file in ${micrOS_resources[@]}; do data=($(wc -l $file)); echo -e "${data[*]}"; overall=$((overall+data)); done; echo -e "micrOS Core ovarall lines: $overall"
+	
+	202 ConfigHandler.py
+	61 Hooks.py
+	84 InterpreterCore.py
+	163 InterpreterShell.py
+	170 InterruptHandler.py
+	49 LogicalPins.py
+	187 Network.py
+	44 Network.pyc
+	157 Scheduler.py
+	269 SocketServer.py
+	21 boot.py
+	73 micrOS.py
+	123 micrOSloader.py
+	3 reset.py
+	micrOS Core ovarall lines: 1606
+	```
 
 GIT:
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
-
+	
 - Publish tags: `git push origin --tags`
-
+	
 - Pretty git view: `git log --pretty=oneline`
-
+	
 - File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'`
 
 git push -u origin master

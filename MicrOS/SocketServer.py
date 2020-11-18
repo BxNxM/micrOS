@@ -27,8 +27,8 @@ from InterpreterShell import shell as InterpreterShell_shell
 try:
     from gc import collect, mem_free
 except:
-    console_write("[SIMULATOR MODE IMPORT]")
-    from _gc import collect, mem_free
+    console_write("[SIMULATOR MODE GC IMPORT]")
+    from simgc import collect, mem_free
 
 #########################################################
 #                    SOCKET SERVER CLASS                #
@@ -46,7 +46,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.4.0-1'
+    __socket_interpreter_version = '0.4.0-2'
 
     def __new__(cls):
         """

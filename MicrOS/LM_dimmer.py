@@ -63,7 +63,7 @@ def dimmer_cache_load_n_init(cache=None):
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
-        __PERSISTENT_CACHE = True if platform == 'esp32' else False
+        __PERSISTENT_CACHE = False if platform == 'esp8266' else True
     else:
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')

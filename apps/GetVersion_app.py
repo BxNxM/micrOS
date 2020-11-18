@@ -20,8 +20,9 @@ def app(devfid=None):
     if devfid is not None:
         DEVICE = devfid
     # EDIT YOUR COMMAND
-    args = base_cmd() + ['help', 'version']
+    args = base_cmd() + ['version']
     status, answer = socketClient.run(args)
+    print("[micrOS] {}: {}".format(DEVICE, answer).upper())
 
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ def measure():
     Measure ADC value
     """
     value = __init_ADC().read()
-    return "Vibration intensity: {}".format(value)
+    return "ADC value: {}".format(value)
 
 
 def action_fltr(limit=20, threshold=1):

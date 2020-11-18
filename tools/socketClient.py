@@ -27,12 +27,12 @@ class ConnectionData:
     DEFAULT_CONFIG_FRAGMNENT = { "__devuid__": [ \
                                                 "192.168.4.1", \
                                                 "__dev_mac_addr__", \
-                                                "__default_device_on_AP__" \
+                                                "__device_on_AP__" \
                                                 ],
                                   "__localhost__": [ \
                                                 "127.0.0.1", \
                                                 "__local_mac_addr__", \
-                                                "device_localhost"
+                                                "__simulator__"
                                                ] }
 
 

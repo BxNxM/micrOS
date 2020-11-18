@@ -60,6 +60,7 @@ class MicrOSDevTool:
             self.console("Please install the dependences: {}".format(self.deployment_app_dependences), state='err')
             sys.exit(1)
         self.execution_verdict = []
+        self.LM_functions_static_dump_gen()
 
     #####################################################
     #               BASE / INTERNAL METHODS             #
@@ -739,7 +740,6 @@ class MicrOSDevTool:
                 time.sleep(2)
                 if self.precompile_micros():
                     time.sleep(2)
-                    self.LM_functions_static_dump_gen()
                     self.put_micros_to_dev()
                     self.archive_node_config()
                 else:
@@ -809,15 +809,16 @@ class MicrOSDevTool:
         else:
             self.console("Webrepl CMD: {}".format(command))
             try:
-                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-                if exitcode == 0:
-                    return True
+                for _ in range(0, 2):
+                    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                    if exitcode == 0:
+                        return True
                 return False
             except Exception as e:
                 self.console("Create lock/unlock failed: {}".format(e))
                 return False
 
-    def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False):
+    def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False, ota_password='ADmin123'):
         """
         OTA UPDATE
             git clone https://github.com/micropython/webrepl.git
@@ -857,7 +858,7 @@ class MicrOSDevTool:
         webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
 
         if not self.cmdgui and not status and answer_msg is None:
-            webrepl_password = 'ADmin123'
+            webrepl_password = ota_password
         elif not status and answer_msg is None:
             # In case of update failure and retry (micrOS interface won't be active)
             webrepl_password = input("Please write your webrepl password (appwd - default ADmin123): ").strip()

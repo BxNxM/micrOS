@@ -259,12 +259,14 @@ class SocketDictClient():
                 last_data = self.conn.recv(self.bufsize).decode('utf-8')
                 data += last_data
                 # Msg reply wait criteria (get the prompt back or special cases)
-                if len(data.split('\n')) > 1:
+                if not self.is_interactive and len(data.split('\n')) > 1:
+                    # wait for all msg in non-interactive mode until expected msg or prompt return
                     if prompt_postfix in data.split('\n')[-1] or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data:
-                        #print("--- RAW DATA ---")
-                        #print(data)
-                        #print("----------------")
                         break
+                elif self.is_interactive and (prompt_postfix in data.split('\n')[-1] or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data):
+                    # handle interactive mode: return msg when the prompt or expected output returns
+                    break
+            # Split raw data list
             data_list = data.split('\n')
         return data, data_list
 

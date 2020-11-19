@@ -259,8 +259,12 @@ class SocketDictClient():
                 last_data = self.conn.recv(self.bufsize).decode('utf-8')
                 data += last_data
                 # Msg reply wait criteria (get the prompt back or special cases)
-                if prompt_postfix in last_data or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data:
-                    break
+                if len(data.split('\n')) > 1:
+                    if prompt_postfix in data.split('\n')[-1] or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data:
+                        #print("--- RAW DATA ---")
+                        #print(data)
+                        #print("----------------")
+                        break
             data_list = data.split('\n')
         return data, data_list
 

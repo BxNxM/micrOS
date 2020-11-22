@@ -69,5 +69,3 @@ def micrOS():
     # RUN Singleton SocketServer - main loop [2]
     SocketServer().run()
 
-    # micrOS file recovery over webrepl - normally never executes
-    SocketServer().start_micropython_webrepl()

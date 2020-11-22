@@ -249,7 +249,7 @@ class SocketDictClient():
             sys.exit(0)
         return data
 
-    def receive_data(self, wait_before_msg=0.3):
+    def receive_data(self, wait_before_msg=0.4):
         data = ""
         prompt_postfix = ' $'
         data_list = []
@@ -259,7 +259,7 @@ class SocketDictClient():
                 last_data = self.conn.recv(self.bufsize).decode('utf-8')
                 data += last_data
                 # Msg reply wait criteria (get the prompt back or special cases)
-                if not self.is_interactive and len(data.split('\n')) > 1:
+                if not self.is_interactive and len(data.split('\n')) >= 1:
                     # wait for all msg in non-interactive mode until expected msg or prompt return
                     if prompt_postfix in data.split('\n')[-1] or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data:
                         break

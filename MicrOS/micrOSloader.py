@@ -57,8 +57,7 @@ def __recovery_mode():
     auto_network_configuration()
     # Start webrepl
     import webrepl
-    appwd = 'ADmin123' if cfgget is None else cfgget('appwd')
-    print(webrepl.start(password=appwd))
+    print(webrepl.start(password = 'ADmin123' if cfgget is None else cfgget('appwd')))
 
 
 def __auto_restart_event():
@@ -73,24 +72,23 @@ def __auto_restart_event():
     trigger_is_active = False
     wait_iteration_for_update_start = 5
     # Wait after webrepl started for possible ota updates (~10 sec)
-    while wait_iteration_for_update_start >= 0:
+    while wait_iteration_for_update_start > 0:
         # Parse .if_mode - interface selector
         try:
             with open('.if_mode', 'r') as f:
                 if_mode = f.read().strip().lower()
         except Exception:
             if_mode = None
-        if if_mode is None or if_mode == 'webrepl':
-            print("[loader][ota auto-rebooter][webrepl/None][{}] Update status: InProgress".format(wait_iteration_for_update_start))
-        else:
+        # Wait for micros turns to  webrepl until timeout
+        if if_mode is None or if_mode == 'micros':
             print("[loader][ota auto-rebooter][micros][{}] Wait for OTA update possible start".format(wait_iteration_for_update_start))
             wait_iteration_for_update_start -= 1
-        # Get trigger  - if_mode changed to webrepl - ota update started - trigger wait
-        if not trigger_is_active and if_mode is not None and if_mode == 'webrepl':
+        else:
+            print("[loader][ota auto-rebooter][webrepl/None][{}] Update status: InProgress".format(wait_iteration_for_update_start))
+            # Set trigger  - if_mode changed to webrepl - ota update started - trigger wait
             trigger_is_active = True
-            print("\t[loader][ota auto-rebooter] Trigger activated for wait ota finish")
-        # Check value if trigger active
-        if if_mode is not None and trigger_is_active and if_mode == 'micros':
+        # Restart if trigger was activated
+        if trigger_is_active and if_mode is not None and if_mode == 'micros':
             print("[loader][ota auto-rebooter][micros][trigger: True] OTA was finished - reboot")
             from machine import reset
             reset()
@@ -109,13 +107,10 @@ def main():
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
             print("[loader][main mode] micrOS start failed: {}".format(e))
             print("[loader][main mode] -> [recovery mode]")
-            __recovery_mode()
-            __auto_restart_event()
-    else:
-        # Recovery mode
-        print("[loader][recovery mode] - manually selected in .if_mode file")
-        __recovery_mode()
-        __auto_restart_event()
+    # Recovery mode
+    print("[loader][recovery mode] - manually selected in .if_mode file")
+    __recovery_mode()
+    __auto_restart_event()
 
 
 if __name__ == '__main__':

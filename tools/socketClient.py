@@ -184,28 +184,20 @@ class ConnectionData:
         spr_offset1 = 30
         nodes_dict = ConnectionData.read_MicrOS_device_cache()
         spacer1 = " " * (spr_offset1-14)
-        print("{cols}       [ UID ]{spr1}[ FUID ]\t[ IP ]\t\t[ STATUS ]\t[ MEMFREE ]\t[ VERSION ]{cole}"\
+        print("{cols}       [ UID ]{spr1}[ FUID ]\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]{cole}"\
               .format(spr1=spacer1, cols=Colors.OKBLUE+Colors.BOLD, cole=Colors.NC))
         for uid, data in nodes_dict.items():
             ip = data[0]
             fuid = "{}{}{}".format(Colors.HEADER, data[2], Colors.NC)
-            if uid not in ['__devuid__', '__localhost__']:
+            if uid not in ['__devuid__']:
                 spacer1 = " "*(spr_offset1 - len(uid))
 
                 # print status msgs
                 is_online = "{}ONLINE{}".format(Colors.OK, Colors.NC) if nwscan.node_is_online(ip, port=ConnectionData.PORT) else "{}OFFLINE{}".format(Colors.WARN, Colors.NC)
-                mem_data = '<memfree>'
                 version_data = '<n/a>'
 
                 # is online
                 if 'ONLINE' in is_online:
-                    # get mem_data
-                    try:
-                        mem_data = SocketDictClient(
-                            host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['system memfree'])
-                        mem_data = "{} byte".format(str(str(mem_data.split('\n')[1]).split(':')[-1]).strip())
-                    except:
-                        pass
                     # get version data
                     try:
                         version_data = SocketDictClient(host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['version'])
@@ -213,9 +205,9 @@ class ConnectionData:
                         pass
 
                 # Generate line printout
-                data_line_str = "{uid}{spr1}{fuid}\t{ip}\t{stat}\t\t{mem}\t{version}" \
+                data_line_str = "{uid}{spr1}{fuid}\t{ip}\t{stat}\t\t{version}" \
                     .format(uid=uid, spr1=spacer1, fuid=fuid, ip=ip,\
-                            stat=is_online, mem=mem_data, version=version_data)
+                            stat=is_online, version=version_data)
                 # Print line
                 print(data_line_str)
 
@@ -259,11 +251,11 @@ class SocketDictClient():
                 last_data = self.conn.recv(self.bufsize).decode('utf-8')
                 data += last_data
                 # Msg reply wait criteria (get the prompt back or special cases)
-                if not self.is_interactive and len(data.split('\n')) >= 1:
+                if not self.is_interactive and (len(data.split('\n')) > 1 or '[configure]' in data):
                     # wait for all msg in non-interactive mode until expected msg or prompt return
-                    if prompt_postfix in data.split('\n')[-1] or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data:
+                    if prompt_postfix in data.split('\n')[-1] or "Bye!" in last_data:
                         break
-                elif self.is_interactive and (prompt_postfix in data.split('\n')[-1] or "System is rebooting" in last_data or "Bye" in last_data or "See you soon!" in last_data):
+                elif self.is_interactive and (prompt_postfix in data.split('\n')[-1] or "Bye!" in last_data):
                     # handle interactive mode: return msg when the prompt or expected output returns
                     break
             # Split raw data list

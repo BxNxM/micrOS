@@ -46,7 +46,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.4.1-0'
+    __socket_interpreter_version = '0.4.2-0'
 
     def __new__(cls):
         """
@@ -168,7 +168,7 @@ class SocketServer:
 
     def __safe_reboot_system(self):
         self.server_console("Execute safe reboot: __safe_reboot_system()")
-        self.reply_message("System is rebooting now, bye :)")
+        self.reply_message("Bye!")
         self.conn.close()
         if 'esp' in platform:
             sleep(1)
@@ -260,7 +260,7 @@ class SocketServer:
         self.reply_message("  \trestart machine shortcut: import reset")
         self.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(cfgget("devip")))
         self.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
-        self.reply_message(" See you soon! :)")
+        self.reply_message(" Bye!")
         try:
             import webrepl
             self.reply_message(webrepl.start(password=cfgget('appwd')))

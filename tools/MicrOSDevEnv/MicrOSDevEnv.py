@@ -6,6 +6,7 @@ import re
 import json
 import pprint
 import time
+import serial.tools.list_ports as serial_port_list
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 import LocalMachine
 from TerminalColors import Colors
@@ -156,15 +157,22 @@ class MicrOSDevTool:
         if self.dummy_exec:
             return ['dummy_device']
 
-        dev_path = '/dev/'
-        content_list = [ dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev ]
-        for present_dev in content_list:
-            for dev_identifier in self.nodemcu_device_subnames:
-                if dev_identifier in present_dev:
-                    dev_abs_path = os.path.join(dev_path, present_dev)
-                    micros_devices.append(dev_abs_path)
-                    self.console("Device was found: {}".format(dev_abs_path), state="imp")
-                    break
+        if not sys.platform.startswith('win'):
+            dev_path = '/dev/'
+            content_list = [ dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev ]
+            for present_dev in content_list:
+                for dev_identifier in self.nodemcu_device_subnames:
+                    if dev_identifier in present_dev:
+                        dev_abs_path = os.path.join(dev_path, present_dev)
+                        micros_devices.append(dev_abs_path)
+                        self.console("Device was found: {}".format(dev_abs_path), state="imp")
+                        break
+        else:
+            ports = list(serial_port_list.comports())
+            for item in ports:
+                if "CP210" in str(item.description):
+                    micros_devices.append(item.device)
+                    self.console("Device was found: {}".format(item.device, state="imp"))
         if len(micros_devices) > 0:
             self.console("Device was found. :)", state="ok")
         else:

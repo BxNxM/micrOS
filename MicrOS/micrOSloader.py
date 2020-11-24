@@ -70,8 +70,8 @@ def __auto_restart_event():
     """
     from time import sleep
     trigger_is_active = False
-    wait_iteration_for_update_start = 5
-    # Wait after webrepl started for possible ota updates (~10 sec)
+    wait_iteration_for_update_start = 7
+    # Wait after webrepl started for possible ota updates (~2*7= 14sec)
     while wait_iteration_for_update_start > 0:
         # Parse .if_mode - interface selector
         try:

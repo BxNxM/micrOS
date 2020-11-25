@@ -17,7 +17,30 @@ def debug_print(msg, debug=False):
     if debug:
         print(msg)
 
-class FileHandler():
+
+class SimplePopPushd:
+
+    def __init__(self):
+        self.original_path = None
+
+    def pushd(self, target_path):
+        # Save actual path
+        self.original_path = os.getcwd()
+        if os.path.isdir(target_path):
+            print("[PUSHD] change dir {} -> {}".format(self.original_path, target_path))
+            os.chdir(target_path)
+            return True
+        return False
+
+    def popd(self):
+        if self.original_path is not None:
+            os.chdir(self.original_path)
+            print("[POPD] restore original path: {}".format(self.original_path))
+            return True
+        return False
+
+
+class FileHandler:
     '''
     Filehandler class contains file and dir related
     functionalities, like:
@@ -476,26 +499,20 @@ if __name__ == "__main__":
     exitcode, stdout, stderr = CommandHandler.run_command("ls")
     debug_print("exitcode: {}\nstdout: {}\nstderr: {}".format(exitcode, stdout, stderr))
 
-    exitcode, stdout, stderr = CommandHandler.run_command("ls", forceshell="/bin/tcsh")
+    exitcode, stdout, stderr = CommandHandler.run_command("ls", forceshell="/bin/bash")
     debug_print("exitcode: {}\nstdout: {}\nstderr: {}".format(exitcode, stdout, stderr))
-
-    path = "./JsonHandler/test.json"
-    exists, type_ = FileHandler.path_is_exists(path)
-    debug_print("{} path, exists: {} type: {}".format(path, exists, type_))
-
-    debug_print(FileHandler.chmod(path, '0755'))
-    debug_print(FileHandler.get_path_permission(path))
-    debug_print(FileHandler.get_path_ownership(path))
-
-    path = "./venv"
-    debug_print(FileHandler.list_dir(path))
 
     debug_print(SystemHandler.ifconfig())
 
     SystemHandler.python_info()
 
     debug_print(SystemHandler.disk_usage())
-    debug_print(SystemHandler.ram_usage())
+    #debug_print(SystemHandler.ram_usage())
     debug_print(SystemHandler.get_hostname())
     debug_print(SystemHandler.get_local_user())
+
+    testworkdir = SimplePopPushd()
+    testworkdir.pushd('/')
+    print(CommandHandler.run_command("ls"))
+    testworkdir.popd()
 

@@ -248,15 +248,22 @@ class MicrOSDevTool:
             return True
         # Download micropython repo if necessary
         if not os.path.isdir(self.micropython_repo_path):
-            command = 'pushd {pushd}; git clone {url} {name}; popd'.format(pushd=os.path.dirname(self.micropython_repo_path),\
-                                                                           name=os.path.basename(self.micropython_repo_path),\
-                                                                           url=self.micropython_git_repo_url)
+            # Change workdir
+            workdir_handler = LocalMachine.SimplePopPushd()
+            workdir_handler.pushd(os.path.dirname(self.micropython_repo_path))
+
+            command = 'git clone {url} {name}'.format(name=os.path.basename(self.micropython_repo_path),
+                                                      url=self.micropython_git_repo_url)
             self.console("Clone micropython repo: {}".format(command))
             if not self.dummy_exec:
                 exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
             else:
                 exitcode = 0
                 stderr = ''
+
+            # Restore workdir
+            workdir_handler.popd()
+
             if exitcode == 0 and len(stderr) == 0:
                 self.console("\tClone {}DONE{}".format(Colors.OK, Colors.NC))
             else:
@@ -264,13 +271,20 @@ class MicrOSDevTool:
                 return False
         # Compile mpy-cross for precompiling
         if not os.path.isfile(self.mpy_cross_compiler_path):
-            command = 'pushd {pushd}; make; popd'.format(pushd=os.path.dirname(self.mpy_cross_compiler_path))
+            # Change workdir
+            workdir_handler = LocalMachine.SimplePopPushd()
+            workdir_handler.pushd(os.path.dirname(self.mpy_cross_compiler_path))
+
+            command = 'make'
             self.console("Compile mpy-cross: {}".format(command))
             if not self.dummy_exec:
                 exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
             else:
                 exitcode = 0
                 stderr = ''
+            # Restore workdir
+            workdir_handler.popd()
+
             if exitcode == 0 and len(stderr) == 0:
                 self.console("\tCompile mpy-cross {}DONE{}".format(Colors.OK, Colors.NC))
             else:
@@ -312,16 +326,19 @@ class MicrOSDevTool:
                 tmp_skip_compile_set.add(source)
             else:
                 tmp_precompile_set.add(source)
+
+        # Change workdir
+        workdir_handler = LocalMachine.SimplePopPushd()
+        workdir_handler.pushd(self.MicrOS_dir_path)
+
         # Execute based on filetered sets
         # |-> PRECOMPILE
         for to_compile in tmp_precompile_set:
             #source_path = os.path.join(self.MicrOS_dir_path, to_compile)
             precompiled_target_name = to_compile.replace('.py', '.mpy')
-            command = "pushd {pushd}; {mpy_cross} {to_compile} -o {target_path}/{target_name} -v; popd".format( \
-                                                                                          pushd=self.MicrOS_dir_path, \
-                                                                                          mpy_cross=self.mpy_cross_compiler_path, \
-                                                                                          to_compile=to_compile, \
-                                                                                          target_path=self.precompiled_MicrOS_dir_path, \
+            command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path,
+                                                                                          to_compile=to_compile,
+                                                                                          target_path=self.precompiled_MicrOS_dir_path,
                                                                                           target_name=precompiled_target_name)
             self.console("Precomile: {}\n|->CMD: {}".format(to_compile, command), state='imp')
             if not self.dummy_exec:
@@ -334,6 +351,9 @@ class MicrOSDevTool:
             else:
                 self.console("|---> ERROR: {} - {}".format(stdout, stderr), state='err')
                 error_cnt+=1
+
+        # Restore original workdir
+        workdir_handler.popd()
 
         # |-> COPY
         for skip_compile in tmp_skip_compile_set:
@@ -378,14 +398,21 @@ class MicrOSDevTool:
         source_to_put_device = LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
         # Set source order - main, boot
         source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('boot.py')))
+
+        # Change workdir
+        workdir_handler = LocalMachine.SimplePopPushd()
+        workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
+
         for source in source_to_put_device:
             ampy_args = 'put {from_}'.format(from_=source)
             command = ampy_cmd.format(dev=device, args=ampy_args)
-            command = '{pushd}; {cmd}; popd'.format(pushd='pushd {}'.format(self.precompiled_MicrOS_dir_path), cmd=command)
+            command = '{cmd}'.format(cmd=command)
             status &= self.__safe_execute_ampy_cmd(command, source)
             if not status:
                 self.console("MICROS INSTALL FAILED", state='err')
                 sys.exit(5)
+        # Restore original workdir
+        workdir_handler.popd()
         return True
 
     def __safe_execute_ampy_cmd(self, command, source, retry=8):
@@ -495,7 +522,12 @@ class MicrOSDevTool:
 
     def __generate_default_config(self):
         self.console("GENERATE DEFAULT NODE_CONFIG.JSON")
-        create_default_config_command = "pushd {pushd}; python3 ConfigHandler.py; popd".format(pushd=self.MicrOS_dir_path)
+
+        # Change workdir
+        workdir_handler = LocalMachine.SimplePopPushd()
+        workdir_handler.pushd(self.MicrOS_dir_path)
+
+        create_default_config_command = "python3 ConfigHandler.py"
         if not self.dummy_exec:
             # Remove actual defualt config
             LocalMachine.FileHandler.remove(os.path.join(self.MicrOS_dir_path, 'node_config.json'))
@@ -503,6 +535,8 @@ class MicrOSDevTool:
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(create_default_config_command, shell=True)
         else:
             exitcode = 0
+        # Restore workdir
+        workdir_handler.popd()
         if exitcode == 0:
             return True
         return False
@@ -765,8 +799,11 @@ class MicrOSDevTool:
             return True
         # Download webrepl repo if necessary
         if not os.path.isfile(self.webreplcli_repo_path):
-            command = 'pushd {pushd}; git clone {url} {name}; popd'.format(
-                pushd=os.path.dirname(os.path.dirname(self.webreplcli_repo_path)),
+            # Change workdir
+            workdir_handler = LocalMachine.SimplePopPushd()
+            workdir_handler.pushd(os.path.dirname(os.path.dirname(self.webreplcli_repo_path)))
+
+            command = 'git clone {url} {name}'.format(
                 name='webrepl',
                 url='https://github.com/micropython/webrepl.git')
             self.console("Clone webrepl repo: {}".format(command))
@@ -775,6 +812,9 @@ class MicrOSDevTool:
             else:
                 exitcode = 0
                 stderr = ''
+
+            # Restore workdir
+            workdir_handler.popd()
             if exitcode == 0:
                 self.console("\tClone {}DONE{}".format(Colors.OK, Colors.NC))
             else:
@@ -931,6 +971,11 @@ class MicrOSDevTool:
         # Parse files and upload
         resource_list_to_upload = [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
                         if pysource.endswith('.py') or pysource.endswith('.mpy')]
+
+        # Change workdir
+        workdir_handler = LocalMachine.SimplePopPushd()
+        workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
+
         for index, source in enumerate(resource_list_to_upload):
             # calculate progress
             progress = round(((index + 1) / len(resource_list_to_upload)) * 100)
@@ -952,12 +997,10 @@ class MicrOSDevTool:
             # Copy retry mechanism
             exitcode = -1
             for _ in range(0, 3):
-
-                source_absolute_path = os.path.join(self.precompiled_MicrOS_dir_path, source)
                 source_name = os.path.basename(source)
-                self.console("[{}%] {} copy over webrepl {}:{}".format(progress, source_absolute_path, device_ip, source_name))
+                self.console("[{}%] {} copy over webrepl {}:{}".format(progress, source_name, device_ip, source_name))
                 command = '{api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path, pwd=webrepl_password,
-                                                                                    input_file=source_absolute_path, host=device_ip,
+                                                                                    input_file=source_name, host=device_ip,
                                                                                     target_path=source_name)
                 if self.dummy_exec:
                     self.console("[{}%][UPLOAD] Webrepl CMD: {}".format(progress, command))
@@ -974,7 +1017,12 @@ class MicrOSDevTool:
             if exitcode != 0:
                 self.console("|-- ERR: Update file failed, please try again.", state='ERR')
                 self.execution_verdict.append("[ERR] ota_update - Update files are failed, pls try again.")
+                # Restore workdir path
+                workdir_handler.popd()
                 return False
+
+        # Restore workdir path
+        workdir_handler.popd()
 
         self.console("\t[!] Delete update lock (webrepl bootup) under OTA update", state='IMP')
         if self.__lock_update_with_webrepl(host=device_ip, lock=False, pwd=webrepl_password):

@@ -83,7 +83,7 @@ def __shell(msg, SocketServerObj):
     if SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
         return configure(msg_list, SocketServerObj)
     # @2 Command mode
-    elif not SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
+    elif len(msg_list) != 0:
         """
         INPUT MSG STRUCTURE
         1. param. - LM name, i.e. LM_commands
@@ -140,15 +140,11 @@ def show_LMs_functions(SocketServerObj):
     Dump LM modules with functions - in case of [py] files
     Dump LM module with help function call - in case of [mpy] files
     """
-    for LM in (i.split('.')[0] for i in listdir()
-               if i.startswith('LM_') and (i.endswith('.py') or i.endswith('.mpy'))):
-        LMpath = '{}.py'.format(LM)
-        if LMpath not in listdir():
-            LMpath = '{}.mpy'.format(LM)
+    for LMpath in (i for i in listdir() if i.startswith('LM_') and (i.endswith('py'))):
         try:
-            SocketServerObj.reply_message("   {}".format(LM.replace('LM_', '')))
+            SocketServerObj.reply_message("   {}".format(LMpath.replace('LM_', '').split('.')[0]))
             if LMpath.endswith('.mpy'):
-                SocketServerObj.reply_message("   {}help".format(" " * len(LM.replace('LM_', ''))))
+                SocketServerObj.reply_message("   {}help".format(" " * len(LMpath.replace('LM_', '').split('.')[0])))
             else:
                 with open(LMpath, 'r') as f:
                     while True:
@@ -157,8 +153,8 @@ def show_LMs_functions(SocketServerObj):
                             break
                         if "def" in line and "def __" not in line:
                             SocketServerObj.reply_message("   {}{}"
-                                                          .format(" " * len(LM.replace('LM_', '')),
+                                                          .format(" " * len(LMpath.replace('LM_', '').split('.')[0]),
                                                                   line.split('(')[0].split(' ')[1]))
         except Exception as e:
-            SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LM, e))
-            raise Exception("show_LMs_functions [{}] exception: {}".format(LM, e))
+            SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LMpath, e))
+            raise Exception("show_LMs_functions [{}] exception: {}".format(LMpath, e))

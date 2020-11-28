@@ -51,9 +51,7 @@ def setNTP_RTC():
 def set_uid_macaddr_hex(interface=None):
     uid = "n/a"
     if interface is not None:
-        uid = ""
-        for ot in list(interface.config('mac')):
-            uid += hex(ot)
+        uid = ''.join([hex(ot) for ot in list(interface.config('mac'))])
     cfgput("hwuid", uid)
 
 
@@ -102,18 +100,15 @@ def set_wifi(essid, pwd, timeout=60):
             console_write("\t| [NW: STA] Wifi network was NOT found: {}".format(essid))
             return False
         console_write("\t|\t| [NW: STA] network config: " + str(sta_if.ifconfig()))
-        cfgput("devip", str(sta_if.ifconfig()[0]))
-        set_uid_macaddr_hex(sta_if)
         console_write("\t|\t| [NW: STA] CONNECTED: " + str(sta_if.isconnected()))
     else:
         console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
-        cfgput("devip", str(sta_if.ifconfig()[0]))
-        set_uid_macaddr_hex(sta_if)
+    cfgput("devip", str(sta_if.ifconfig()[0]))
+    set_uid_macaddr_hex(sta_if)
     return sta_if.isconnected()
 
 
 def __set_wifi_dev_static_ip(sta_if):
-    reconfigured = False
     console_write("[NW: STA] Set device static IP.")
     stored_ip = cfgget('devip')
     if 'n/a' not in stored_ip.lower() and '.' in stored_ip:
@@ -125,14 +120,14 @@ def __set_wifi_dev_static_ip(sta_if):
             try:
                 # IP address, subnet mask, gateway and DNS server
                 sta_if.ifconfig(tuple(conn_ips))
-                reconfigured = True
+                return True     # was reconfigured
             except Exception as e:
                 console_write("\t\t| [NW: STA] StaticIP conf. failed: {}".format(e))
         else:
             console_write("[NW: STA][SKIP] StaticIP conf.: {} ? {}".format(stored_ip, conn_ips[0]))
     else:
         console_write("[NW: STA] IP was not stored: {}".format(stored_ip))
-    return reconfigured
+    return False   # was not reconfigured
 
 
 #################################################################

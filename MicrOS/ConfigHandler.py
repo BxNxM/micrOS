@@ -31,6 +31,10 @@ __CONFIG_PATH = "node_config.json"
 
 
 def default_config():
+    '''
+    micrOS "code" config.
+    n/a default empty value (str)
+    '''
     default_configuration_template = {"version": "n/a",
                                       "staessid": "your_wifi_name",
                                       "stapwd": "your_wifi_passwd",

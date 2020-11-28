@@ -13,7 +13,7 @@ except:
     traceback = None
 
 
-def __interface_mode():
+def __is_micrOS():
     """
     Recovery mode for OTA update in case of connection/transfer failure
         .if_mode can have 2 possible values: webrepl or micros (strings)
@@ -70,25 +70,20 @@ def __auto_restart_event():
     """
     from time import sleep
     trigger_is_active = False
-    wait_iteration_for_update_start = 7
+    wait_for_update_start_timeoutcnt = 7
     # Wait after webrepl started for possible ota updates (~2*7= 14sec)
-    while wait_iteration_for_update_start > 0:
-        # Parse .if_mode - interface selector
-        try:
-            with open('.if_mode', 'r') as f:
-                if_mode = f.read().strip().lower()
-        except Exception:
-            if_mode = None
+    while wait_for_update_start_timeoutcnt > 0:
         # Wait for micros turns to  webrepl until timeout
-        if if_mode is None or if_mode == 'micros':
-            print("[loader][ota auto-rebooter][micros][{}] Wait for OTA update possible start".format(wait_iteration_for_update_start))
-            wait_iteration_for_update_start -= 1
+        if __is_micrOS():
+            # micrOS mode
+            print("[loader][ota auto-rebooter][micros][{}] Wait for OTA update possible start".format(wait_for_update_start_timeoutcnt))
+            wait_for_update_start_timeoutcnt -= 1
         else:
-            print("[loader][ota auto-rebooter][webrepl/None][{}] Update status: InProgress".format(wait_iteration_for_update_start))
+            print("[loader][ota auto-rebooter][webrepl/None][{}] Update status: InProgress".format(wait_for_update_start_timeoutcnt))
             # Set trigger  - if_mode changed to webrepl - ota update started - trigger wait
             trigger_is_active = True
         # Restart if trigger was activated
-        if trigger_is_active and if_mode is not None and if_mode == 'micros':
+        if trigger_is_active and __is_micrOS():
             print("[loader][ota auto-rebooter][micros][trigger: True] OTA was finished - reboot")
             from machine import reset
             reset()
@@ -96,7 +91,7 @@ def __auto_restart_event():
 
 
 def main():
-    if __interface_mode():
+    if __is_micrOS():
         # Main mode
         try:
             print("[loader][main mode] Start micrOS (default)")

@@ -1,9 +1,11 @@
-from time import sleep
+"""
+Source: https://how2electronics.com/temt6000-ambient-light-sensor-arduino-measure-light-intensity/
+"""
 from sys import platform
 __ADC = None
 
 
-def __init_ADC():
+def __init_tempt6000():
     """
     Setup ADC
     """
@@ -22,25 +24,26 @@ def __init_ADC():
     return __ADC
 
 
-def measure():
+def light_intensity():
     """
-    Measure ADC value
+    Measure light intensity in %
     """
-    value = __init_ADC().read()
-    return "ADC value: {}".format(value)
+    value = __init_tempt6000().read()
+    light = value * 0.0976 #percentage calculation
+    return {'light intensity [%]': light}
 
 
-def action_fltr(limit=20, threshold=1):
+def measure_illuminance():
     """
-    Evaluate input trigger action
-    return: bool
+    Measure light illuminance in flux
     """
-    if __init_ADC().read() > limit:
-        sleep(threshold)
-        return True
-    return False
+    volts = __init_tempt6000().read() * 5.0 / 1024.0
+    amps = volts / 10000.0      # across 10,000 Ohms
+    microamps = amps * 1000000
+    lux = microamps * 2.0
+    return {'illuminance [lux]': lux}
 
 
 def help():
-    return 'measure', '(bool)action_fltr(limit=<0-1000>, threshold=<sec>'
+    return 'intensity', 'illuminance', 'INFO sensor:TEMP600'
 

@@ -20,6 +20,10 @@
     "ifmode()",
     "help()"
   ],
+  "co2": [
+    "measure_mq135(temperature=None, humidity=None)",
+    "help()"
+  ],
   "light": [
     "rgb_cache_load_n_init(cache=None)",
     "rgb(r=None, g=None, b=None)",
@@ -27,32 +31,10 @@
     "help()"
   ],
   "bme280": [
-    "# BME280 ault address.\n)",
-    "writeRaw8(self, value)",
-    "write8(self, register, value)",
-    "write16(self, register, value)",
-    "readRaw8(self)",
-    "readU8(self, register)",
-    "readS8(self, register)",
-    "readU16(self, register, little_endian=True)",
-    "specified endianness (ault little endian, or least significant byte\n)",
-    "readS16(self, register, little_endian=True)",
-    "specified endianness (ault little endian, or least significant byte\n)",
-    "readU16LE(self, register)",
-    "readU16BE(self, register)",
-    "readS16LE(self, register)",
-    "readS16BE(self, register)",
-    "_load_calibration(self)",
-    "read_raw_temp(self)",
-    "read_raw_pressure(self)",
-    "read_raw_humidity(self)",
-    "read_temperature(self)",
-    "read_pressure(self)",
-    "read_humidity(self)",
-    "temperature(self)",
-    "pressure(self)",
-    "humidity(self)",
-    "init_bme280_i2c()",
+    "measure()",
+    "help()"
+  ],
+  "ph_sensor": [
     "measure()",
     "help()"
   ],
@@ -77,10 +59,20 @@
     "toggle()",
     "help()"
   ],
+  "dht22": [
+    "measure()",
+    "measure_w_co2()",
+    "help()"
+  ],
   "esp32": [
     "hall()",
     "intemp()",
     "touchpin14()",
+    "help()"
+  ],
+  "dht11": [
+    "measure()",
+    "measure_w_co2()",
     "help()"
   ],
   "oled_widgets": [
@@ -89,21 +81,15 @@
     "toggle_invert()",
     "help()"
   ],
-  "air": [
-    "dht_measure()",
-    "getMQ135GasPPM(temperature=None, humidity=None)",
-    "measure()",
+  "light_sensor": [
+    "light_intensity()",
+    "measure_illuminance()",
     "help()"
   ],
   "dimmer": [
     "set_value(value=None)",
     "dimmer_cache_load_n_init(cache=None)",
     "toggle()",
-    "help()"
-  ],
-  "adc": [
-    "measure()",
-    "action_fltr(limit=20, threshold=1)",
     "help()"
   ],
   "distance_HCSR04": [

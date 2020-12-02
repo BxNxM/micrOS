@@ -1,32 +1,6 @@
 from math import pow
 
 #########################################
-#  DHT22 temperature & humidity sensor  #
-#########################################
-__DHT_OBJ = None
-
-
-def __init_DHT22():
-    global __DHT_OBJ
-    if __DHT_OBJ is None:
-        from dht import DHT22
-        from machine import Pin
-        from LogicalPins import get_pin_on_platform_by_key
-        __DHT_OBJ = DHT22(Pin(get_pin_on_platform_by_key('simple_1')))
-    return __DHT_OBJ
-
-
-def __temp_hum():
-    __init_DHT22().measure()
-    return __DHT_OBJ.temperature(), __DHT_OBJ.humidity()
-
-
-def dht_measure():
-    temp_, hum_ = __temp_hum()
-    return "\n{} ºC\n{} %".format(temp_, hum_)
-
-
-#########################################
 #            MQ135 GAS SENSOR           #
 #########################################
 __ADC = None
@@ -84,7 +58,7 @@ def __get_corrected_ppm(temperature, humidity):
                                            / 76.63), -2.769034857)
 
 
-def getMQ135GasPPM(temperature=None, humidity=None):
+def measure_mq135(temperature=None, humidity=None):
     """
     CO2 Gas Concentration - Parts-per-million - PPM
     -> 1ppm = 0.0001% gas.
@@ -97,7 +71,8 @@ def getMQ135GasPPM(temperature=None, humidity=None):
         >40,000 ppm     Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
     """
     if temperature is None or humidity is None:
-        temperature, humidity = __temp_hum()
+        print("Missing mandatory parameters: temperature and/or humidity")
+        return
 
     try:
         status = 'n/a'
@@ -110,16 +85,11 @@ def getMQ135GasPPM(temperature=None, humidity=None):
             status = "WARNING"
         elif ppm > 4000:
             status = "CRITICAL"
-        return "\n{} PPM - {}".format(ppm, status)
+        return "{} - {}".format(ppm, status)
     except Exception as e:
-        return "\ngetMQ135GasPPM ERROR: {}".format(e)
-
-
-def measure():
-    _temp, _hum = __temp_hum()
-    return "\n{} ºC\n{} %{}".format(_temp, _hum, getMQ135GasPPM(_temp, _hum))
+        return "measure_mq135 ERROR: {}".format(e)
 
 
 def help():
-    return 'measure', 'dht_measure', 'getMQ135GasPPM(temp, hum)'
+    return 'measure_mq135(temp, hum)'
 

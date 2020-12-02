@@ -294,7 +294,7 @@ class BME280:
         return "{}.{:02d} %".format(hi, hd)
 
 
-def init_bme280_i2c():
+def __init_bme280_i2c():
     global BME280_OBJ
     if BME280_OBJ is None:
         i2c = I2C(scl=Pin(get_pin_on_platform_by_key('i2c_scl')), sda=Pin(get_pin_on_platform_by_key('i2c_sda')), freq=10000)
@@ -302,7 +302,7 @@ def init_bme280_i2c():
     return BME280_OBJ
 
 def measure():
-    bme = init_bme280_i2c()
+    bme = __init_bme280_i2c()
     return {'Temperature': bme.temperature, 'Humidity': bme.humidity, 'Pressure': bme.pressure}
 
 

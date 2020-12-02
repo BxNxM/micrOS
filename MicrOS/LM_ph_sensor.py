@@ -1,4 +1,3 @@
-from time import sleep
 from sys import platform
 __ADC = None
 
@@ -24,23 +23,12 @@ def __init_ADC():
 
 def measure():
     """
-    Measure ADC value
+    TODO: Measure ADC value
     """
     value = __init_ADC().read()
     return "ADC value: {}".format(value)
 
 
-def action_fltr(limit=20, threshold=1):
-    """
-    Evaluate input trigger action
-    return: bool
-    """
-    if __init_ADC().read() > limit:
-        sleep(threshold)
-        return True
-    return False
-
-
 def help():
-    return 'measure', '(bool)action_fltr(limit=<0-1000>, threshold=<sec>'
+    return 'measure'
 

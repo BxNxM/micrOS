@@ -782,7 +782,9 @@ class MicrOSDevTool:
             time.sleep(2)
             if self.deploy_micropython_dev():
                 time.sleep(2)
-                if self.precompile_micros():
+                if self.precompile_micros() or os.name == "nt":
+                    if os.name == "nt":
+                        self.console("Cannot recompile micrOS on Windows")
                     time.sleep(2)
                     self.put_micros_to_dev()
                     self.archive_node_config()

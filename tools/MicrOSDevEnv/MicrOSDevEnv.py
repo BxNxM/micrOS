@@ -646,10 +646,12 @@ class MicrOSDevTool:
         return version, version_on_node
 
     def list_micros_filesystem(self):
+        self.__initialize_dev_env_for_deployment_vis_usb()
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.get_devices()[0]
         command = ampy_cmd.format(dev=device, args='ls')
         if not self.dummy_exec:
+            self.console("CMD: {}".format(command))
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
         else:
             exitcode = 0

@@ -27,10 +27,10 @@ DUMMY_EXEC = False
 
 
 class ProgressbarTimers:
-    usb_deploy = 180
-    ota_update = 100
-    usb_update = usb_deploy + 10
-    serach_devices = 180
+    usb_deploy = 60*3
+    ota_update = 60*2
+    usb_update = usb_deploy + 30
+    serach_devices = 60*2
     simulator = 3
     lm_update = int(ota_update*0.7)
 

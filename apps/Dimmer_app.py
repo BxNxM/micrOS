@@ -2,8 +2,6 @@
 
 import os
 import sys
-import time
-import random
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
@@ -16,21 +14,21 @@ def base_cmd():
     return ['--dev', DEVICE]
 
 
-def app(devfid=None, itr=60):
+def app(devfid=None, itr=80):
     global DEVICE
     if devfid is not None:
         DEVICE = devfid
     # EDIT YOUR COMMAND
     cmd_list = []
-    for k in range(0, itr, 5):
-        cmd_list += ['dimmer', 'set_value({})'.format(k), '<a>']
+    for k in range(0, itr, 2):
+        cmd_list += ['dimmer', 'set_value {}'.format(k), '<a>']
     if cmd_list[-1] == '<a>':
         del cmd_list[-1]
     execute(cmd_list)
 
     cmd_list = []
-    for k in range(itr, 0, -5):
-        cmd_list += ['dimmer', 'set_value({})'.format(k), '<a>']
+    for k in range(itr, 0, -2):
+        cmd_list += ['dimmer', 'set_value {}'.format(k), '<a>']
     if cmd_list[-1] == '<a>':
         del cmd_list[-1]
     execute(cmd_list)

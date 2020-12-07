@@ -182,9 +182,10 @@ class ConnectionData:
     @staticmethod
     def nodes_status():
         spr_offset1 = 30
+        spr_offset2 = 57
         nodes_dict = ConnectionData.read_MicrOS_device_cache()
         spacer1 = " " * (spr_offset1-14)
-        print("{cols}       [ UID ]{spr1}[ FUID ]\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]{cole}"\
+        print("{cols}       [ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]{cole}"\
               .format(spr1=spacer1, cols=Colors.OKBLUE+Colors.BOLD, cole=Colors.NC))
         for uid, data in nodes_dict.items():
             ip = data[0]
@@ -205,8 +206,10 @@ class ConnectionData:
                         pass
 
                 # Generate line printout
-                data_line_str = "{uid}{spr1}{fuid}\t{ip}\t{stat}\t\t{version}" \
-                    .format(uid=uid, spr1=spacer1, fuid=fuid, ip=ip,\
+                base_info = "{uid}{spr1}{fuid}".format(uid=uid, spr1=spacer1, fuid=fuid)
+                spacer1 = " " * (spr_offset2 - len(base_info))
+                data_line_str = "{base}{spr2}{ip}\t{stat}\t\t{version}" \
+                    .format(base=base_info, spr2=spacer1, ip=ip,
                             stat=is_online, version=version_data)
                 # Print line
                 print(data_line_str)

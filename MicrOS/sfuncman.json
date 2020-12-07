@@ -10,7 +10,7 @@
     "help()"
   ],
   "system": [
-    "memfree()",
+    "info()",
     "gcollect()",
     "heartbeat()",
     "clock()",

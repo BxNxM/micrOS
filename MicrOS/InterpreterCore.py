@@ -21,8 +21,9 @@ from sys import modules
 
 def execute_LM_function_Core(argument_list, SocketServerObj=None):
     """
-    1. param. - LM name, i.e. LM_commands
-    2. param. - function call with parameters, i.e. a()
+    [1] module name (LM)
+    [2] function
+    [3...] parameters (separator: space)
     NOTE: SocketServerObj is None from Interrupts and Hooks - shared functionality
     """
     json_mode = False
@@ -34,22 +35,13 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
     # health - True [no action] - False [system soft recovery]
     health = True
     if len(argument_list) >= 2:
-        LM_name, LM_function, LM_function_call = "LM_{}".format(argument_list[0]), \
-                                                 argument_list[1].split('(')[0], \
-                                                 "".join(argument_list[1:])
-        if not LM_function_call.endswith(')'):
-            # Auto complete brackets "(" ")" with arguments
-            # ARG 0: LM_function
-            # ARG 1: LM function arguments (without '(' and/or ')')
-            LM_function_call = "{}({})".format(LM_function,
-                                               str(" ".join(" ".join(argument_list[1:])
-                                                            .split('(')[1:])).replace(')', ''))
+        LM_name, LM_function, LM_function_params = "LM_{}".format(argument_list[0]), argument_list[1], ', '.join(argument_list[2:])
         try:
             # --- LM LOAD & EXECUTE --- #
             # [1] LOAD MODULE
             exec("from {} import {}".format(LM_name, LM_function))
             # [2] EXECUTE FUNCTION FROM MODULE - over SocketServerObj or /dev/null
-            lm_output = eval("{}".format(LM_function_call))
+            lm_output = eval("{}({})".format(LM_function, LM_function_params))
             if SocketServerObj is not None:
                 if not json_mode and isinstance(lm_output, dict):
                     # human readable format (not json mode) but dict
@@ -76,9 +68,9 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
 
     # Syntax error show help msg
     if SocketServerObj is None:
-        print("SHELL: Missing argument: [1](LM_)module [2]function[3](optional params.)")
+        print("SHELL: Missing argument: [1](LM)module [2]function [3...]optional params")
     else:
         SocketServerObj.reply_message("SHELL: type help for single word commands (built-in)")
-        SocketServerObj.reply_message("SHELL: for LM exec: [1](LM_)module [2]function[3](optional params.)")
+        SocketServerObj.reply_message("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
     # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
     return health

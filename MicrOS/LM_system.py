@@ -1,13 +1,17 @@
 from ConfigHandler import progress_led_toggle_adaptor
 
 
-def memfree():
+def info():
     try:
         from gc import mem_free
     except:
-        from _gc import mem_free    # simulator mode
+        from simgc import mem_free    # simulator mode
+    from os import statvfs, getcwd
     from machine import freq
-    return {'CPU[Hz]': freq(), 'GC MemFree[byte]': mem_free()}
+    fs_stat = statvfs(getcwd())
+    fs_size = fs_stat[0] * fs_stat[2]
+    fs_free = fs_stat[0] * fs_stat[3]
+    return {'CPU[Hz]': freq(), 'GC MemFree[byte]': mem_free(), 'FS FREE [%]': int((fs_free/fs_size)*100)}
 
 
 def gcollect():
@@ -79,4 +83,4 @@ def ifmode():
 
 
 def help():
-    return 'memfree', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump', 'ifmode'
+    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump', 'ifmode'

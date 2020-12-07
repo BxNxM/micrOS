@@ -9,7 +9,7 @@ sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
 
 # FILL OUT
-DEVICE = 'Lamp'
+DEVICE = 'node01'
 
 
 def base_cmd():
@@ -47,7 +47,7 @@ def app(test_cycle=64, devfid=None):
 
         print("===========================")
         print("R: {}, G: {} B: {}".format(red, green, blue))
-        command = base_cmd() + ['neopixel', 'neopixel({}, {}, {})'.format(red, green, blue)]
+        command = base_cmd() + ['neopixel', 'neopixel {} {} {}'.format(red, green, blue)]
         print("CMD: {}".format(command))
         status, answer = socketClient.run(command)
         evaluate_test_data(answer, test_cycle)

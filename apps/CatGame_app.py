@@ -24,19 +24,19 @@ def app(iteration=30, devfid=None):
     for _ in range(iteration):
         piped_commands = []
 
-        args = base_cmd() + ['servo', 'Servo({})'.format(SERVO_CENTER_VAL)]
+        args = base_cmd() + ['servo', 'Servo {} '.format(SERVO_CENTER_VAL)]
         print("CMD: {}".format(args))
         args.append(CMD_PIPE_SEP)
         piped_commands += args
 
         for _ in range(randint(1, 6)):
             duty = randint(55, 100)
-            args = ['servo', 'Servo({duty})'.format(duty=duty)]
+            args = ['servo', 'Servo {duty} '.format(duty=duty)]
             print("\tCMD: {}".format(args))
             args.append(CMD_PIPE_SEP)
             piped_commands += args
 
-        args += ['servo', 'Servo({})'.format(SERVO_CENTER_VAL)]
+        args += ['servo', 'Servo {}'.format(SERVO_CENTER_VAL)]
         print("CMD: {}".format(args))
         piped_commands += args
 
@@ -47,7 +47,7 @@ def app(iteration=30, devfid=None):
 
 
 def deinit_servo():
-    args = [base_cmd(), ['servo', 'Servo({})'.format(SERVO_CENTER_VAL)], ['servo', 'Servo_deinit']]
+    args = [base_cmd(), ['servo', 'Servo {}'.format(SERVO_CENTER_VAL)], ['servo', 'Servo_deinit']]
     print("DEINIT SERVO, SET TO {} and DEINIT".format(SERVO_CENTER_VAL))
     socketClient.run(args)
 

@@ -82,8 +82,8 @@
     "help()"
   ],
   "light_sensor": [
-    "light_intensity()",
-    "measure_illuminance()",
+    "intensity()",
+    "illuminance()",
     "help()"
   ],
   "dimmer": [

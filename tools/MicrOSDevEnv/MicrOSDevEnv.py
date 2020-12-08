@@ -46,7 +46,7 @@ class MicrOSDevTool:
         self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
         self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", \
                                          "LM_dht22.py", "LM_servo.py", "LM_neopixel.py", "LM_switch.py", "LM_dimmer.py", \
-                                         "LM_bme280.py", "LM_co2.py", "LM_dht11.py"]
+                                         "LM_bme280.py", "LM_co2.py", "LM_dht11.py", "LM_light_sensor.py"]
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 

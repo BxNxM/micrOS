@@ -8,6 +8,8 @@ __ADC = None
 def __init_tempt6000():
     """
     Setup ADC
+    read        0(0V)-1024(1V) MAX 1V input
+    read_u16    0 - 65535 range
     """
     global __ADC
     if __ADC is None:
@@ -17,30 +19,27 @@ def __init_tempt6000():
             __ADC = ADC(get_pin_on_platform_by_key('adc_0'))
         else:
             __ADC = ADC(Pin(get_pin_on_platform_by_key('adc_0')))
-            # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
-            __ADC.atten(ADC.ATTN_11DB)
-            # set 9 bit return values (returned range 0-511)
-            __ADC.width(ADC.WIDTH_9BIT)
     return __ADC
 
 
-def light_intensity():
+def intensity():
     """
     Measure light intensity in %
+    max value: 65535
     """
-    value = __init_tempt6000().read()
-    light = value * 0.0976 #percentage calculation
-    return {'light intensity [%]': light}
+    value = __init_tempt6000().read_u16()
+    percent = '{:.2f}'.format((value / 65535) * 100)
+    return {'light intensity [%]': percent}
 
 
-def measure_illuminance():
+def illuminance():
     """
     Measure light illuminance in flux
     """
-    volts = __init_tempt6000().read() * 5.0 / 1024.0
-    amps = volts / 10000.0      # across 10,000 Ohms
+    volts = __init_tempt6000().read() * 5.0 / 1024.0    # read a raw analog value in the range 0-1024
+    amps = volts / 10000.0                              # across 10,000 Ohms
     microamps = amps * 1000000
-    lux = microamps * 2.0
+    lux = '{:.2f}'.format(microamps * 2.0)
     return {'illuminance [lux]': lux}
 
 

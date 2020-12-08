@@ -39,9 +39,10 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
         try:
             # --- LM LOAD & EXECUTE --- #
             # [1] LOAD MODULE
-            exec("from {} import {}".format(LM_name, LM_function))
+            if LM_name not in modules.keys():
+                exec("import {}".format(LM_name))
             # [2] EXECUTE FUNCTION FROM MODULE - over SocketServerObj or /dev/null
-            lm_output = eval("{}({})".format(LM_function, LM_function_params))
+            lm_output = eval("{}.{}({})".format(LM_name, LM_function, LM_function_params))
             if SocketServerObj is not None:
                 if not json_mode and isinstance(lm_output, dict):
                     # human readable format (not json mode) but dict
@@ -53,11 +54,9 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
             # ------------------------- #
         except Exception as e:
             # ERROR MSG: - over SocketServerObj or stdout
-            if SocketServerObj is None:
-                print("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
-            else:
-                SocketServerObj.reply_message("execute_LM_function {}->{}: {}"
-                                              .format(LM_name, LM_function, e))
+            print("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
+            if SocketServerObj is not None:
+                SocketServerObj.reply_message("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
             if "memory allocation failed" in str(e):
                 # UNLOAD MODULE IF MEMORY ERROR HAPPENED
                 if LM_name in modules.keys():
@@ -67,9 +66,8 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
         return health
 
     # Syntax error show help msg
-    if SocketServerObj is None:
-        print("SHELL: Missing argument: [1](LM)module [2]function [3...]optional params")
-    else:
+    print("SHELL: Missing argument: [1](LM)module [2]function [3...]optional params")
+    if SocketServerObj is not None:
         SocketServerObj.reply_message("SHELL: type help for single word commands (built-in)")
         SocketServerObj.reply_message("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
     # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION

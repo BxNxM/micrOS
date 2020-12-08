@@ -98,10 +98,12 @@ def segment(s=0, r=None, g=None, b=None):
     return "NEOPIXEL s={} SEGMENT OVERLOAD".format(s)
 
 
-def toggle():
+def toggle(state=None):
     """
     ON - OFF NeoPixel
     """
+    if state is not None:
+        __DCACHE[3] = 0 if state else 1
     if __DCACHE[3] == 1:
         neopixel(r=0, g=0, b=0)
         return "OFF"
@@ -114,6 +116,6 @@ def toggle():
 
 
 def help():
-    return 'neopixel(r=<0-255>, g, b, n=8', 'toggle', \
+    return 'neopixel(r=<0-255>, g, b, n=8', 'toggle(state=None)', \
            'neopixel_cache_load_n_init(cache=None<True/False>', \
            'segment(s=<0-n>, r, g, b', '[!]PersistentStateCacheDisabledOn:esp8266'

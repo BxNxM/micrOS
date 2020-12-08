@@ -57,7 +57,7 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
             print("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
             if SocketServerObj is not None:
                 SocketServerObj.reply_message("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
-            if "memory allocation failed" in str(e):
+            if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
                 # UNLOAD MODULE IF MEMORY ERROR HAPPENED
                 if LM_name in modules.keys():
                     del modules[LM_name]

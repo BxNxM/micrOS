@@ -74,10 +74,12 @@ def dimmer_cache_load_n_init(cache=None):
     return "CACHE: {}".format(__PERSISTENT_CACHE)
 
 
-def toggle():
+def toggle(state=None):
     """
     Toggle led state based on the stored one
     """
+    if state is not None:
+        __DIMMER_CACHE[0] = 0 if state else 1
     if __DIMMER_CACHE[0] == 1:
         return set_value(0)         # Set value to 0 - OFF
     return set_value()              # Set value to the cached - ON
@@ -86,7 +88,8 @@ def toggle():
 #                   HELP                #
 #########################################
 
+
 def help():
-    return 'set_value(value=<0-1000>)', 'toggle',\
+    return 'set_value(value=<0-1000>)', 'toggle(state=None)',\
            'dimmer_cache_load_n_init(cache=True)', \
            '[!]PersistentStateCacheDisabledOn:esp8266'

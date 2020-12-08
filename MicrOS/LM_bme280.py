@@ -301,6 +301,7 @@ def __init_bme280_i2c():
         BME280_OBJ = BME280(i2c=i2c)
     return BME280_OBJ
 
+
 def measure():
     bme = __init_bme280_i2c()
     return {'Temperature': bme.temperature, 'Humidity': bme.humidity, 'Pressure': bme.pressure}

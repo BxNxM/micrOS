@@ -8,7 +8,7 @@ sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
 
 # FILL OUT
-DEVICE = 'airquality'
+DEVICE = 'AirQualityPro'
 
 
 def base_cmd():
@@ -19,10 +19,14 @@ def app(devfid=None):
     global DEVICE
     if devfid is not None:
         DEVICE = devfid
-    while True:
-        args = base_cmd() + ['air measure']
+    for k in range(0, 20):
+        args = base_cmd() + ['bme280 measure']
         try:
-            socketClient.run(args)
+            status, answer = socketClient.run(args)
+            if status:
+                print("|- [{}/20] OK".format(k+1))
+            else:
+                print("|- [{}/20] ERR".format(k+1))
             time.sleep(3)
         except KeyboardInterrupt:
             break

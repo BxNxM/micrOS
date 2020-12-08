@@ -68,10 +68,12 @@ def set_state(state=None):
     return "SET STATE: {}".format(state)
 
 
-def toggle():
+def toggle(state=None):
     """
     Toggle led state based on the stored one
     """
+    if state is not None:
+        __SWITCH_STATE[0] = 0 if state else 1
     new_state = 1 if __SWITCH_STATE[0] == 0 else 0
     return set_state(new_state)
 
@@ -81,6 +83,6 @@ def toggle():
 #########################################
 
 def help():
-    return 'set_state(state=<0,1>)', 'toggle',\
+    return 'set_state(state=<0,1>)', 'toggle(state=None)',\
            'switch_cache_load_n_init(cache=None<True/False>',\
            '[!]PersistentStateCacheDisabledOn:esp8266'

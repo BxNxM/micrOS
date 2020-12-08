@@ -83,10 +83,12 @@ def rgb(r=None, g=None, b=None):
     return "SET rgb: R{}G{}B{}".format(r, g, b)
 
 
-def toggle():
+def toggle(state=None):
     """
     Toggle led state based on the stored one
     """
+    if state is not None:
+        __RGB_CACHE[3] = 0 if state else 1
     if __RGB_CACHE[3]:
         rgb(0, 0, 0)
         return "OFF"
@@ -100,6 +102,6 @@ def toggle():
 
 def help():
     return 'rgb(r=<0-1000>, g=<0-1000>, b=<0,1000>)',\
-           'toggle', \
+           'toggle(state=None)', \
            'rgb_cache_load_n_init(cache=None<True/False>)',\
            '[!]PersistentStateCacheDisabledOn:esp8266'

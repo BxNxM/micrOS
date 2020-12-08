@@ -185,7 +185,7 @@ class ConnectionData:
         spr_offset2 = 57
         nodes_dict = ConnectionData.read_MicrOS_device_cache()
         spacer1 = " " * (spr_offset1-14)
-        print("{cols}       [ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]{cole}"\
+        print("{cols}       [ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]\t[COMM SEC]{cole}"
               .format(spr1=spacer1, cols=Colors.OKBLUE+Colors.BOLD, cole=Colors.NC))
         for uid, data in nodes_dict.items():
             ip = data[0]
@@ -201,16 +201,18 @@ class ConnectionData:
                 if 'ONLINE' in is_online:
                     # get version data
                     try:
+                        start_comm = time.time()
                         version_data = SocketDictClient(host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['version'])
+                        elapsed_time = "{:.3f}".format(time.time() - start_comm)
                     except:
-                        pass
+                        elapsed_time = 'n/a'
 
                 # Generate line printout
                 base_info = "{uid}{spr1}{fuid}".format(uid=uid, spr1=spacer1, fuid=fuid)
                 spacer1 = " " * (spr_offset2 - len(base_info))
-                data_line_str = "{base}{spr2}{ip}\t{stat}\t\t{version}" \
+                data_line_str = "{base}{spr2}{ip}\t{stat}\t\t{version}\t\t{elapt}" \
                     .format(base=base_info, spr2=spacer1, ip=ip,
-                            stat=is_online, version=version_data)
+                            stat=is_online, version=version_data, elapt=elapsed_time)
                 # Print line
                 print(data_line_str)
 
@@ -219,7 +221,7 @@ class ConnectionData:
 #########################################################
 
 
-class SocketDictClient():
+class SocketDictClient:
 
     def __init__(self, host='localhost', port=9008, bufsize=4096, silent_mode=False):
         self.silent_mode = silent_mode

@@ -863,10 +863,14 @@ class MicrOSDevTool:
         else:
             self.console("Webrepl CMD: {}".format(command))
             try:
+                exitcode = 0
+                stdout = ''
+                stderr = ''
                 for _ in range(0, 2):
                     exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
                     if exitcode == 0:
                         return True
+                self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
                 return False
             except Exception as e:
                 self.console("Create lock/unlock failed: {}".format(e))

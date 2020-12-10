@@ -18,7 +18,6 @@ Designed by Marcell Ban aka BxNxM
 #                         IMPORTS                       #
 #########################################################
 
-from sys import platform
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from time import sleep
 from ConfigHandler import console_write, cfgget, cfgput
@@ -46,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.6.3-2'
+    __socket_interpreter_version = '0.7.0-0'
 
     def __new__(cls):
         """
@@ -170,12 +169,10 @@ class SocketServer:
         self.server_console("Execute safe reboot: __safe_reboot_system()")
         self.reply_message("Bye!")
         self.conn.close()
-        if 'esp' in platform:
-            sleep(1)
-            from machine import reset
-            reset()
-        else:
-            self.__reconnect()
+        sleep(1)
+        from machine import reset
+        reset()
+        self.__reconnect()      # In case of simulator - dummy reset
 
     def reply_message(self, msg):
         if isinstance(msg, bytes):
@@ -232,17 +229,14 @@ class SocketServer:
         Handle memory errors here
         """
         self.reply_message("[HA] system recovery ...")
-        if 'esp' in platform:
-            collect()
-            self.reply_message("[HA] gc-collect-memfree: {}".format(mem_free()))
-            if errlvl == 1:
-                try:
-                    self.reply_message("[HA] Critical error - disconnect & hard reset")
-                    self.__safe_reboot_system()
-                except Exception as e:
-                    console_write("==> [!!!][HA] Recovery error: {}".format(e))
-        else:
-            console_write("[HA] recovery only available on esp - nodemcu")
+        collect()
+        self.reply_message("[HA] gc-collect-memfree: {}".format(mem_free()))
+        if errlvl == 1:
+            try:
+                self.reply_message("[HA] Critical error - disconnect & hard reset")
+                self.__safe_reboot_system()
+            except Exception as e:
+                console_write("==> [!!!][HA] Recovery error: {}".format(e))
 
     def server_console(self, msg):
         console_write("|" + "-" * self.server_console_indent + msg)

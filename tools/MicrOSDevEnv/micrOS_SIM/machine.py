@@ -105,3 +105,8 @@ class ADC:
 
 def freq(*args, **kwargs):
     pass
+
+
+def reset():
+    print("[SIM] Dummy machine.reset")
+    return True

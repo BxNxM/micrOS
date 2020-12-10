@@ -15,22 +15,19 @@ from os import listdir
 from ConfigHandler import cfgget, cfgput, cfgget_all
 from InterpreterCore import execute_LM_function_Core
 
+try:
+    from gc import collect, mem_free
+except:
+    from simgc import collect, mem_free  # simulator mode
+
 
 #################################################################
 #                  SHELL Interpreter FUNCTIONS                  #
 #################################################################
 
-
 def shell(msg, SocketServerObj):
-    """
-    Socket server - interpreter shell wrapper
-    return state:
-        True - OK, no actions
-        False - ISSUE, recovery actions triggered in upper logic
-    """
     try:
-        state = __shell(msg, SocketServerObj)
-        return state
+        return __shell(msg, SocketServerObj)
     except Exception as e:
         SocketServerObj.reply_message("[SHELL] Runtime error: {}".format(e))
         return False
@@ -39,6 +36,8 @@ def shell(msg, SocketServerObj):
 def __shell(msg, SocketServerObj):
     """
     Socket server - interpreter shell
+    INPUT:
+        msg - str
     RETURN STATE:
         True: OK/HEALTHY
         False: ERROR/FAULTY
@@ -51,11 +50,11 @@ def __shell(msg, SocketServerObj):
     msg_list = msg.strip().split()
 
     # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
-    if msg_list[0] == "configure" or msg_list[0] == "conf":
+    if msg_list[0].startswith('conf'):
         SocketServerObj.CONFIGURE_MODE = True
         SocketServerObj.pre_prompt = "[configure] "
         return True
-    elif msg_list[0] == "noconfigure" or msg_list[0] == "noconf":
+    elif msg_list[0].startswith('noconf'):
         SocketServerObj.CONFIGURE_MODE = False
         SocketServerObj.pre_prompt = ""
         return True
@@ -69,11 +68,11 @@ def __shell(msg, SocketServerObj):
         SocketServerObj.reply_message("   reboot  - system safe reboot")
         SocketServerObj.reply_message("   webrepl - start web repl for file transfers - update")
         SocketServerObj.reply_message("[CONF] Configure mode (InterpreterShell built-in):")
-        SocketServerObj.reply_message("   configure|conf     - Enter conf mode")
-        SocketServerObj.reply_message("         dump         - Dump all data")
-        SocketServerObj.reply_message("         Key          - Get value")
-        SocketServerObj.reply_message("         Key Value    - Set value")
-        SocketServerObj.reply_message("   noconfigure|noconf - Exit conf mod")
+        SocketServerObj.reply_message("  conf       - Enter conf mode")
+        SocketServerObj.reply_message("    dump       - Dump all data")
+        SocketServerObj.reply_message("    key        - Get value")
+        SocketServerObj.reply_message("    key value  - Set value")
+        SocketServerObj.reply_message("  noconf     - Exit conf mode")
         SocketServerObj.reply_message("[EXEC] Command mode (LMs):")
         show_LMs_functions(SocketServerObj)
         return True
@@ -93,8 +92,7 @@ def __shell(msg, SocketServerObj):
             # Execute command via InterpreterCore
             return execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
         except Exception as e:
-            SocketServerObj.reply_message("[ERROR] execute_LM_function_Core \
-                                          internal error: {}".format(e))
+            SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
             return False
 
 
@@ -106,28 +104,46 @@ def __shell(msg, SocketServerObj):
 def configure(attributes, SocketServerObj):
     # [CONFIG] Get value
     if len(attributes) == 1:
-        if attributes[0] == "dump":
+        if attributes[0] == 'dump':
             # DUMP DATA
             for key, value in cfgget_all().items():
-                spcr = (int(10 / 3) - int(10 / 5))
-                spcr2 = (10 - len(key))
-                SocketServerObj.reply_message("  {}{}:{} {}".format(key, " " * spcr2, " " * spcr, value))
+                spcr = (10 - len(key))
+                SocketServerObj.reply_message("  {}{}:{} {}".format(key, " " * spcr, " " * 7, value))
         else:
             # GET SINGLE PARAMETER VALUE
             SocketServerObj.reply_message(cfgget(attributes[0]))
         return True
     # [CONFIG] Set value
     if len(attributes) >= 2:
+        # Deserialize params
         key = attributes[0]
         value = " ".join(attributes[1:])
+        # Check irq required memory
+        if 'irq' in key and attributes[1].lower() == 'true':
+            isOK, avmem = __irq_mem_requirement_check(key)
+            if not isOK:
+                SocketServerObj.reply_message("Skip ... feature requires more memory then {} byte".format(avmem))
+                return True
+        # Set new parameter(s)
         try:
             output = cfgput(key, value, type_check=True)
         except Exception as e:
             SocketServerObj.reply_message("node_config write error: {}".format(e))
             output = False
+        # Evaluation and reply
         issue_msg = 'Invalid key' if cfgget(key) is None else 'Failed to save'
         SocketServerObj.reply_message('Saved' if output else issue_msg)
     return True
+
+
+def __irq_mem_requirement_check(key):
+    collect()
+    memavail = mem_free()
+    if 'timirq' == key and memavail < cfgget('irqmreq'):
+        return False, memavail
+    if 'extirq' == key and memavail < int(cfgget('irqmreq') * 0.7):
+        return False, memavail
+    return True, memavail
 
 
 #################################################################
@@ -140,21 +156,21 @@ def show_LMs_functions(SocketServerObj):
     Dump LM modules with functions - in case of [py] files
     Dump LM module with help function call - in case of [mpy] files
     """
-    for LMpath in (i for i in listdir() if i.startswith('LM_') and (i.endswith('py'))):
+    for lm_path in (i for i in listdir() if i.startswith('LM_') and (i.endswith('py'))):
+        lm_name = lm_path.replace('LM_', '').split('.')[0]
         try:
-            SocketServerObj.reply_message("   {}".format(LMpath.replace('LM_', '').split('.')[0]))
-            if LMpath.endswith('.mpy'):
-                SocketServerObj.reply_message("   {}help".format(" " * len(LMpath.replace('LM_', '').split('.')[0])))
-            else:
-                with open(LMpath, 'r') as f:
-                    while True:
-                        line = f.readline()
-                        if not line:
-                            break
-                        if "def" in line and "def __" not in line:
-                            SocketServerObj.reply_message("   {}{}"
-                                                          .format(" " * len(LMpath.replace('LM_', '').split('.')[0]),
-                                                                  line.split('(')[0].split(' ')[1]))
+            SocketServerObj.reply_message("   {}".format(lm_name))
+            if lm_path.endswith('.mpy'):
+                SocketServerObj.reply_message("   {}help".format(" " * len(lm_path.replace('LM_', '').split('.')[0])))
+                continue
+            with open(lm_path, 'r') as f:
+                line = "micrOSisTheBest"
+                while line:
+                    line = f.readline()
+                    if "def" in line and "def __" not in line:
+                        SocketServerObj.reply_message("   {}{}"
+                                                      .format(" " * len(lm_name),
+                                                              line.split('(')[0].split(' ')[1]))
         except Exception as e:
-            SocketServerObj.reply_message("LM [{}] PARSER WARNING: {}".format(LMpath, e))
-            raise Exception("show_LMs_functions [{}] exception: {}".format(LMpath, e))
+            SocketServerObj.reply_message("[{}] LM PARSER WARNING: {}".format(lm_path, e))
+            raise Exception("show_LMs_functions exception {}: {}".format(lm_path, e))

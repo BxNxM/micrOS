@@ -57,7 +57,8 @@ def default_config():
                                       "extirqcbf": "n/a",
                                       "boothook": "n/a",
                                       "gmttime": +1,
-                                      "boostmd": True}
+                                      "boostmd": True,
+                                      "irqmreq": 6000}
     return default_configuration_template
 
 #################################################################

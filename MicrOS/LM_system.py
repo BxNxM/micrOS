@@ -18,7 +18,7 @@ def gcollect():
     try:
         from gc import collect, mem_free
     except:
-        from _gc import collect, mem_free    # simulator mode
+        from simgc import collect, mem_free    # simulator mode
     collect()
     return {'GC MemFree[byte]': mem_free()}
 

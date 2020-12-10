@@ -110,3 +110,7 @@ def freq(*args, **kwargs):
 def reset():
     print("[SIM] Dummy machine.reset")
     return True
+
+
+def reset_cause():
+    return 0

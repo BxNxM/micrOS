@@ -31,10 +31,10 @@ __CONFIG_PATH = "node_config.json"
 
 
 def default_config():
-    '''
+    """
     micrOS "code" config.
     n/a default empty value (str)
-    '''
+    """
     default_configuration_template = {"version": "n/a",
                                       "staessid": "your_wifi_name",
                                       "stapwd": "your_wifi_passwd",
@@ -88,7 +88,7 @@ def console_write(msg):
 
 def cfgget(key):
     try:
-        return __read_cfg_file().get(key, None)
+        return read_cfg_file().get(key, None)
     except Exception as e:
         console_write("[CONFIGHANDLER] Get config value error: {}".format(e))
     return None
@@ -101,7 +101,7 @@ def cfgput(key, value, type_check=False):
         if type_check:
             value = __value_type_handler(key, value)
         if value is not None:
-            cfg_dict_buffer = __read_cfg_file()
+            cfg_dict_buffer = read_cfg_file()
             cfg_dict_buffer[key] = value
             __write_cfg_file(cfg_dict_buffer)
             del cfg_dict_buffer, value
@@ -110,17 +110,12 @@ def cfgput(key, value, type_check=False):
         pass
     return False
 
-
-def cfgget_all():
-    return __read_cfg_file()
-
-
 #################################################################
 #             CONFIGHANDLER  INTERNAL FUNCTIONS                 #
 #################################################################
 
 
-def __read_cfg_file(nosafe=False):
+def read_cfg_file(nosafe=False):
     while True:
         try:
             if len(__CONFIG_CACHE) == 0:
@@ -129,7 +124,7 @@ def __read_cfg_file(nosafe=False):
                     __CONFIG_CACHE.update(load(f))
             break
         except Exception as e:
-            console_write("[CONFIGHANDLER] __read_cfg_file error {} (json): {}".format(__CONFIG_PATH, e))
+            console_write("[CONFIGHANDLER] read_cfg_file error {} (json): {}".format(__CONFIG_PATH, e))
             # Write out initial config, if no config exists.
             if nosafe:
                 break
@@ -154,7 +149,7 @@ def __write_cfg_file(dictionary):
 
 def __inject_default_conf():
     default_config_dict = default_config()
-    live_config = __read_cfg_file(nosafe=True)
+    live_config = read_cfg_file(nosafe=True)
     default_config_dict.update(live_config)
     if default_config_dict['dbg']:
         console_write("[CONFIGHANDLER] inject config:\n{}".format(default_config_dict))

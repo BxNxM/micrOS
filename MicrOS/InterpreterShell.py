@@ -12,7 +12,7 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from os import listdir
-from ConfigHandler import cfgget, cfgput, cfgget_all
+from ConfigHandler import cfgget, cfgput, read_cfg_file
 from InterpreterCore import execute_LM_function_Core
 
 try:
@@ -74,15 +74,15 @@ def __shell(msg, SocketServerObj):
         SocketServerObj.reply_message("    key value  - Set value")
         SocketServerObj.reply_message("  noconf     - Exit conf mode")
         SocketServerObj.reply_message("[EXEC] Command mode (LMs):")
-        show_LMs_functions(SocketServerObj)
+        __show_LMs_functions(SocketServerObj)
         return True
 
     # EXECUTE:
     # @1 Configure mode
     if SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
-        return configure(msg_list, SocketServerObj)
+        return __configure(msg_list, SocketServerObj)
     # @2 Command mode
-    elif len(msg_list) != 0:
+    if len(msg_list) > 1:
         """
         INPUT MSG STRUCTURE
         1. param. - LM name, i.e. LM_commands
@@ -95,23 +95,22 @@ def __shell(msg, SocketServerObj):
             SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
             return False
 
-
 #################################################################
 #                     CONFIGURE MODE HANDLER                    #
 #################################################################
 
 
-def configure(attributes, SocketServerObj):
+def __configure(attributes, SocketServerObj):
     # [CONFIG] Get value
     if len(attributes) == 1:
         if attributes[0] == 'dump':
             # DUMP DATA
-            for key, value in cfgget_all().items():
+            for key, value in read_cfg_file().items():
                 spcr = (10 - len(key))
                 SocketServerObj.reply_message("  {}{}:{} {}".format(key, " " * spcr, " " * 7, value))
-        else:
-            # GET SINGLE PARAMETER VALUE
-            SocketServerObj.reply_message(cfgget(attributes[0]))
+            return True
+        # GET SINGLE PARAMETER VALUE
+        SocketServerObj.reply_message(cfgget(attributes[0]))
         return True
     # [CONFIG] Set value
     if len(attributes) >= 2:
@@ -151,7 +150,7 @@ def __irq_mem_requirement_check(key):
 #################################################################
 
 
-def show_LMs_functions(SocketServerObj):
+def __show_LMs_functions(SocketServerObj):
     """
     Dump LM modules with functions - in case of [py] files
     Dump LM module with help function call - in case of [mpy] files
@@ -173,4 +172,4 @@ def show_LMs_functions(SocketServerObj):
                                                               line.split('(')[0].split(' ')[1]))
         except Exception as e:
             SocketServerObj.reply_message("[{}] LM PARSER WARNING: {}".format(lm_path, e))
-            raise Exception("show_LMs_functions exception {}: {}".format(lm_path, e))
+            raise Exception("__show_LMs_functions exception {}: {}".format(lm_path, e))

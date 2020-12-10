@@ -43,6 +43,7 @@ def __is_micrOS():
         return True
     # start webrepl
     print("[loader][if_mode:False] .if_mode:{} -> webrepl interface".format(if_mode))
+    print("[loader][recovery mode] - manually selected in .if_mode file")
     return False
 
 
@@ -57,7 +58,7 @@ def __recovery_mode():
     auto_network_configuration()
     # Start webrepl
     import webrepl
-    print(webrepl.start(password = 'ADmin123' if cfgget is None else cfgget('appwd')))
+    webrepl.start(password = 'ADmin123' if cfgget is None else cfgget('appwd'))
 
 
 def __auto_restart_event():
@@ -102,8 +103,7 @@ def main():
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
             print("[loader][main mode] micrOS start failed: {}".format(e))
             print("[loader][main mode] -> [recovery mode]")
-    # Recovery mode
-    print("[loader][recovery mode] - manually selected in .if_mode file")
+    # Recovery aka webrepl mode
     __recovery_mode()
     __auto_restart_event()
 

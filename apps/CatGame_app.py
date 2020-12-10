@@ -16,8 +16,7 @@ SERVO_CENTER_VAL = 77
 def base_cmd():
     return ['--dev', DEVICE]
 
-
-def app(iteration=30, devfid=None):
+def play_game(iteration=30, devfid=None):
     global DEVICE, CMD_PIPE_SEP
     if devfid is not None:
         DEVICE = devfid
@@ -43,16 +42,18 @@ def app(iteration=30, devfid=None):
         print("CMD PIPE: {}".format(piped_commands))
         socketClient.run(piped_commands)
 
-    deinit_servo()
-
 
 def deinit_servo():
-    args = [base_cmd(), ['servo', 'Servo {}'.format(SERVO_CENTER_VAL)], ['servo', 'Servo_deinit']]
     print("DEINIT SERVO, SET TO {} and DEINIT".format(SERVO_CENTER_VAL))
+    args = base_cmd() + ['servo', 'Servo {}'.format(SERVO_CENTER_VAL), '<a>', 'servo', 'Servo_deinit']
     socketClient.run(args)
 
 
-atexit.register(deinit_servo)
+def app():
+    atexit.register(deinit_servo)
+    play_game()
+    deinit_servo()
+
 
 if __name__ == "__main__":
     app()

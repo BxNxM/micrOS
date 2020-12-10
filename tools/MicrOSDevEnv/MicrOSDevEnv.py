@@ -892,7 +892,7 @@ class MicrOSDevTool:
 
         force_mode = False
         # Skip the following modules in OTA update (safe mode) to have recovery mode
-        safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy', 'Network.mpy', 'ConfigHandler.mpy']
+        safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy', 'Network.mpy']
         # Get specific device from device list
         self.console("Select device to update ...", state='IMP')
         socketClient.ConnectionData.read_MicrOS_device_cache()

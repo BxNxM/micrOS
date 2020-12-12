@@ -17,9 +17,7 @@ def base_cmd():
     return ['--dev', DEVICE]
 
 def play_game(iteration=30, devfid=None):
-    global DEVICE, CMD_PIPE_SEP
-    if devfid is not None:
-        DEVICE = devfid
+    global CMD_PIPE_SEP
     for _ in range(iteration):
         piped_commands = []
 
@@ -49,7 +47,10 @@ def deinit_servo():
     socketClient.run(args)
 
 
-def app():
+def app(devfid=None):
+    global DEVICE
+    if devfid is not None:
+        DEVICE = devfid
     atexit.register(deinit_servo)
     play_game()
     deinit_servo()

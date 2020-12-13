@@ -597,25 +597,22 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 - micrOS source code lines of code:
 
 	```bash
-	
-	micrOS_resources=($(ls -1 | grep -v 'LM_' | grep '\.py'))
-	overall=0; for file in ${micrOS_resources[@]}; do data=($(wc -l $file)); echo -e "${data[*]}"; overall=$((overall+data)); done; echo -e "micrOS Core ovarall lines: $overall"
-	
-	202 ConfigHandler.py
-	61 Hooks.py
-	84 InterpreterCore.py
-	163 InterpreterShell.py
-	170 InterruptHandler.py
-	49 LogicalPins.py
-	187 Network.py
-	44 Network.pyc
-	157 Scheduler.py
-	269 SocketServer.py
-	21 boot.py
-	73 micrOS.py
-	123 micrOSloader.py
-	3 reset.py
-	micrOS Core ovarall lines: 1606
+bnm@Bans-MBP:MicrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
+     172	ConfigHandler.py
+      51	Hooks.py
+      41	InterConnect.py
+      66	InterpreterCore.py
+     155	InterpreterShell.py
+     138	InterruptHandler.py
+      45	LogicalPins.py
+     158	Network.py
+     126	Scheduler.py
+     237	SocketServer.py
+      16	boot.py
+      53	micrOS.py
+      97	micrOSloader.py
+       5	reset.py
+SUM OF CODE LINES: 1360
 	```
 
 GIT:

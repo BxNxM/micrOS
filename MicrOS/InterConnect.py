@@ -32,7 +32,7 @@ def __receive_data(conn, wait_before_msg=0.4):
     data = ""
     prompt_postfix = ' $'
     data_list = []
-    if select.select([conn], [], [], 3)[0]:
+    if select.select([conn], [], [], 1)[0]:
         while True:
             sleep(wait_before_msg)
             last_data = conn.recv(512).decode('utf-8')

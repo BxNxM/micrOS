@@ -22,7 +22,7 @@ from Scheduler import scheduler
 
 # TIMER IRQ AND CRON VALUES PERSISTENT CACHE
 # timirqcbf (simple), crontasks, timirqseq
-CFG_TIMER_IRQ = ['n/a', 'n/a', 3]
+CFG_TIMER_IRQ = ['n/a', 3]
 
 # EVENT IRQ VALUE PERSISTENT CACHE
 CFG_EVIRQCBF = 'n/a'
@@ -63,9 +63,9 @@ def secureInterruptHandlerSimple(timer=None):
 def secureInterruptHandlerScheduler(timer=None):
     try:
         # Execute CBF LIST from local cached config with timirqseq in sec
-        scheduler(CFG_TIMER_IRQ[1], CFG_TIMER_IRQ[2])
+        scheduler(CFG_TIMER_IRQ[0], CFG_TIMER_IRQ[1])
     except Exception as e:
-        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(CFG_TIMER_IRQ[1], e))
+        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(CFG_TIMER_IRQ[0], e))
 
 
 #############################################
@@ -100,8 +100,8 @@ def __enableInterruptScheduler():
     # MUST BE CHECK BEFORE CALL: cfgget("timirq") and cfgget('cron') and cfgget('crontasks')
     """
     # CACHE TASKS FOR CBF
-    CFG_TIMER_IRQ[1] = cfgget('crontasks')
-    CFG_TIMER_IRQ[2] = int(cfgget("timirqseq") / 1000)
+    CFG_TIMER_IRQ[0] = cfgget('crontasks')
+    CFG_TIMER_IRQ[1] = int(cfgget("timirqseq") / 1000)
     from machine import Timer
     # INIT TIMER IRQ with callback function wrapper
     timer = Timer(0)

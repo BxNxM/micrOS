@@ -45,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.7.1-0'
+    __socket_interpreter_version = '0.7.2-0'
 
     def __new__(cls):
         """
@@ -110,7 +110,7 @@ class SocketServer:
                 self.server_console('[ socket server ] Bind failed. Error Code : ' + str(msg))
                 sleep(1)
         self.server_console('[ socket server ] Socket bind complete')
-        self.s.listen(10)
+        self.s.listen(5)
         self.server_console('[ socket server ] Socket now listening')
         self.__accept()
 
@@ -127,7 +127,7 @@ class SocketServer:
             data_byte = self.conn.recv(512)
         except Exception as e:
             data_byte = b''
-            if "TIMEDOUT" in str(e) or "timoeout" in str(e):
+            if 'timoeout' in str(e).lower():
                 self.server_console(
                     "[ socket server ] socket recv - connection with user - timeout {} sec".format(self.timeout_user))
                 self.reply_message("Session timeout {} sec".format(self.timeout_user))
@@ -172,31 +172,27 @@ class SocketServer:
         sleep(1)
         from machine import reset
         reset()
-        self.__reconnect()      # In case of simulator - dummy reset
+        self.__reconnect()          # In case of simulator - dummy reset
 
     def reply_message(self, msg):
         if isinstance(msg, bytes):
             self.conn.sendall(msg)  # conn sendall
-        else:
-            try:
-                msg = "{}\n".format(msg)
-                msg = msg.encode("utf-8")
-                self.conn.sendall(msg)  # conn sendall
-            except Exception as e:
-                self.server_console("[ socket server ] REPLY ERROR: {}".format(e))
+            return
+        try:
+            self.conn.sendall("{}\n".format(msg).encode("utf-8"))  # conn sendall
+        except Exception as e:
+            self.server_console("[ socket server ] REPLY ERROR: {}".format(e))
+        return
 
     def __reconnect(self):
-        # Close session
-        self.server_console("[ socket server ] exit and close connection from " + str(self.addr))
-        try:
-            self.reply_message("exit and close connection from " + str(self.addr))
-        except Exception: pass
-        self.conn.close()
         # Reset Shell & prompt
         self.CONFIGURE_MODE = False
-        collect()
         self.pre_prompt = ""
         self.server_console_indent = 0
+        # Close session
+        self.server_console("[ socket server ] exit and close connection from " + str(self.addr))
+        self.conn.close()
+        collect()
         # Accept new connection
         self.__accept()
 
@@ -214,24 +210,24 @@ class SocketServer:
                 is_healthy = InterpreterShell_shell(self.__wait_for_message(), SocketServerObj=self)
                 if not is_healthy:
                     console_write("[EXEC-WARNING] InterpreterShell internal error.")
-                    self.__recovery(errlvl=0)
+                    self.__recovery(is_critic=False)
             except OSError:
                 # BrokenPipeError
                 self.__reconnect()
             except Exception as e:
                 console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
-                self.__recovery(errlvl=1)
+                self.__recovery(is_critic=True)
             # Memory dimensioning dump
             self.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
 
-    def __recovery(self, errlvl=0):
+    def __recovery(self, is_critic=False):
         """
         Handle memory errors here
         """
         self.reply_message("[HA] system recovery ...")
         collect()
         self.reply_message("[HA] gc-collect-memfree: {}".format(mem_free()))
-        if errlvl == 1:
+        if is_critic:
             try:
                 self.reply_message("[HA] Critical error - disconnect & hard reset")
                 self.__safe_reboot_system()
@@ -243,10 +239,6 @@ class SocketServer:
         if self.server_console_indent < 50:
             # if less then max indent
             self.server_console_indent += 1
-
-    def __del__(self):
-        console_write("[ socket server ] <<destructor>>")
-        self.__deinit_socket()
 
     def start_micropython_webrepl(self):
         self.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
@@ -261,3 +253,7 @@ class SocketServer:
             self.__del__()
         except Exception as e:
             self.reply_message("Error while starting webrepl: {}".format(e))
+
+    def __del__(self):
+        console_write("[ socket server ] <<destructor>>")
+        self.__deinit_socket()

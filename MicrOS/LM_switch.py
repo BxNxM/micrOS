@@ -2,7 +2,7 @@
 #           DIGITAL IO SWITCH           #
 #########################################
 __SWITCH_OBJ = [None, None]
-__PERSISTENT_CACHE = True
+__PERSISTENT_CACHE = False
 __SWITCH_STATE = [0, 0]
 
 #########################################

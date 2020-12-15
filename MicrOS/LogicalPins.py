@@ -26,9 +26,9 @@ def get_pin_on_platform_by_key(key):
                 'i2c_scl': 22,      # D21 - OLED
                 'pwm_4': 4,         # D4  - extirqpin
                 'simple_0': 26,     # D26 - dist_trigger / switch
-                'pwm_5': 35,        # D35 - dist_echo / dimmer
+                'pwm_5': 33,        # D35 - dist_echo / dimmer
                 'simple_1': 32,     # D32 - dht_pin
-                'adc_0': 33,        # D33 - CO2
+                'adc_0': 35,        # D33 - CO2
                 'adc_1': 36,        # VP  - light sensor TEMP6000
                 'adc_2': 39,        # VN  - PH sensor
                 'adc_3': 34,        # D34 - water level (barometric)

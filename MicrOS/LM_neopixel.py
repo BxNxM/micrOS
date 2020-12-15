@@ -5,7 +5,7 @@ from sys import platform
 # Values: R, G, B, STATE_ON_OFF, IS_INITIALIZED
 __DCACHE = [100, 100, 100, 0]
 __NEOPIXEL_OBJ = None
-__PERSISTENT_CACHE = None
+__PERSISTENT_CACHE = False
 
 
 #########################################

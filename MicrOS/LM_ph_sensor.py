@@ -11,9 +11,9 @@ def __init_ADC():
         from machine import ADC, Pin
         from LogicalPins import get_pin_on_platform_by_key
         if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('adc_0'))
+            __ADC = ADC(get_pin_on_platform_by_key('adc_2'))
         else:
-            __ADC = ADC(Pin(get_pin_on_platform_by_key('adc_0')))
+            __ADC = ADC(Pin(get_pin_on_platform_by_key('adc_2')))
             # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
             __ADC.atten(ADC.ATTN_11DB)
             # set 9 bit return values (returned range 0-511)

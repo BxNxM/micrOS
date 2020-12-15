@@ -596,7 +596,8 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - micrOS source code lines of code:
 
-	```bash
+```bash
+
 bnm@Bans-MBP:MicrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
      172	ConfigHandler.py
       51	Hooks.py
@@ -613,7 +614,8 @@ bnm@Bans-MBP:MicrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_lin
       97	micrOSloader.py
        5	reset.py
 SUM OF CODE LINES: 1360
-	```
+
+```
 
 GIT:
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`

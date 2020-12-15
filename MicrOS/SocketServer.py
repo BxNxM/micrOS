@@ -45,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.7.2-0'
+    __socket_interpreter_version = '0.7.2-1'
 
     def __new__(cls):
         """

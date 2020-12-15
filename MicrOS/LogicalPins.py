@@ -29,7 +29,9 @@ def get_pin_on_platform_by_key(key):
                 'pwm_5': 35,        # D35 - dist_echo / dimmer
                 'simple_1': 32,     # D32 - dht_pin
                 'adc_0': 33,        # D33 - CO2
-                'simple_2': None    # D - PIR
+                'adc_1': 36,        # VP - light sensor TEMP6000
+                'adc_2': 39,        # VN - PH sensor
+                'touch_0': 13,      # D13 - touch sensor
                 }.get(key, None)
     if 'esp8266' in platform:
         return {'builtin': 16,    # BUILT IN LED - progress_led
@@ -44,6 +46,8 @@ def get_pin_on_platform_by_key(key):
                 'pwm_5': 14,      # D5 - dist_echo / dimmer
                 'simple_1': 10,   # SD3 - dht_pin
                 'adc_0': 0,       # ADC0 - CO2
+                'adc_1': 0,       # ADC0 - light sensor TEMP6000
+                'adc_2': 0,       # ADC0 - PH sensor
                 'simple_2': 9     # SD2 - PIR
                 }.get(key, None)
     return None

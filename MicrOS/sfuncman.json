@@ -67,7 +67,7 @@
   "esp32": [
     "hall()",
     "intemp()",
-    "touchpin14()",
+    "touch(triglvl=300)",
     "help()"
   ],
   "dht11": [

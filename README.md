@@ -9,7 +9,7 @@
 🚪 No external server / service required <br/>
 ⚠️ 🛡 Privacy in focus, works on Local Private Network <br/>
 🧩  Codeless end user experiance via phone client <br/>
-🛠🦾 Easy to customize aka create Load Modules, copy **LM**_your_app**.py** or **.mpy** to the device and call any function from your module.
+🛠🦾 Easy to customize aka create Load Modules, copy **LM**_your_app**.py** or **.mpy** to the device and call any function from your module.<br/>
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
 ### QUICK LINKS:
@@ -39,19 +39,19 @@ That repo not only contains the micrOS core codes provide several tools like
 
 > Note: The main purpose to install micropython on the board and put all micrOS resources from micrOS/mpy-MicrOS to the board.
 
-1. Clone **micrOS** repo:
+### 1. Clone **micrOS** repo:
 
-Conations code for the supported boards for installation, the development, deployment and server tools, all written in python.
+Contains code for the supported boards for installation, the development, deployment and server tools, all written in python.
 
 ```
 git clone https://github.com/BxNxM/micrOs.git
 ```
 
-2. Download python 3.8
+### 2. Download python 3.8
 
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
-3. Install serial driver for board connection via USB
+### 3. Install serial driver for board connection via USB
 
 	- For Windows (find in the cloned repo, micrOS folder)
 	
@@ -64,7 +64,8 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 	```
 	micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
 	```
-4. ONLY ON WINDOWNS: Special dependencies
+
+### 4. ONLY ON WINDOWNS: Special dependencies
 
 	You will need C++ compiler to able to install all python pip dependencies (defined in the tool/requirements.txt)
 	
@@ -72,7 +73,7 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 	Link for download: TODO
 	```
 
-5. Execute **devToolKit** GUI
+### 5. Execute **devToolKit** GUI
 
 It will open a graphical interface for micrOS management.
 

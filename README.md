@@ -3,13 +3,14 @@
 ![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true)
 
 ### KEY PRINCIPLES:
-✉️ Generic communication API -> Human / Machine interface <br/>
+✉️ 📡 Generic communication API -> Human / Machine interface <br/>
 📲 💻 Custom built-in socket shell for configuration and execution <br/>
-⚙️ Automatic device initialization from user config ;) <br/>
-⚠️ No external server / service required <br/>
-🛡 Privacy in focus <br/>
-🛠 Easy to add custom modules named as Load Modules <br/>
-🧩 Codeless end user experiance <br/>
+⚙️ 📝 Automatic device initialization from user config ;) <br/>
+🚪 No external server / service required <br/>
+⚠️ 🛡 Privacy in focus, works on Local Private Network <br/>
+🧩  Codeless end user experiance via phone client <br/>
+🛠🦾 Easy to customize aka create Load Modules, copy **LM**_your_app**.py** or **.mpy** to the device and call any function from your module.
+🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
 ### QUICK LINKS:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#ios--android-application)
@@ -28,15 +29,31 @@
 
 ## micrOS Toolkit for PC
 
+That repo not only contains the micrOS core codes provide several tools like
+
+- Install new device via USB
+- Device scan
+- OTA updates (over wifi)
+- Host side python app execution with device communication
+- etc.
+
+> Note: The main purpose to install micropython on the board and put all micrOS resources from micrOS/mpy-MicrOS to the board.
+
 1. Clone **micrOS** repo:
+
+Conations code for the supported boards for installation, the development, deployment and server tools, all written in python.
 
 ```
 git clone https://github.com/BxNxM/micrOs.git
 ```
 
-2. Install serial driver for board connection
+2. Download python 3.8
 
-	- For Windows
+Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
+
+3. Install serial driver for board connection via USB
+
+	- For Windows (find in the cloned repo, micrOS folder)
 	
 	```
 	micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
@@ -47,12 +64,17 @@ git clone https://github.com/BxNxM/micrOs.git
 	```
 	micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
 	```
+4. ONLY ON WINDOWNS: Special dependencies
 
-3. Install python3 interpreter
+	You will need C++ compiler to able to install all python pip dependencies (defined in the tool/requirements.txt)
+	
+	```
+	Link for download: TODO
+	```
 
-	[Download python3](https://www.python.org/downloads/)
+5. Execute **devToolKit** GUI
 
-4. Execute **devToolKit** GUI
+It will open a graphical interface for micrOS management.
 
 ```
 python3 micrOS/devToolKit.py
@@ -60,7 +82,8 @@ python3 micrOS/devToolKit.py
 
 - Verified OS list for development and deployment:
 	- macOS
-	- Wondows (soming soon)
+	- Raspbian (pyQT5 limitation)
+	- Wondows (Precompiled code install on new devices okay, other features coming soon)
 
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOSToolkit.gif?raw=true)
 
@@ -126,15 +149,23 @@ DevToolKit CLI feature:
 
 ## MicrOS Tutorial
 
-> **Coming soon**
+> **Coming soon - youtube channel**
 
-- How to deploy to device
-- Configuration
-- Built in function + Load Modules
-- Client examples - terminal
-- Client examples - smartphone app
-- Backup config - cluster monitoring
-- Create custom Load Modules (LMs)
+- [1] How to deploy device
+	- Windows / Mac tutorial
+- [2] How to OTA update device
+	- Windows / Mac tutorial
+- [3] Widgets and Load Modules via micrOS Client  
+	- How to get available module list
+	- Overview of micrOS Client UI
+- [4] Configuration via micrOS Client
+	- Idea behind: network, time, boothook, irqs, cron
+	- Set some stuff in config ...
+- [5] Get familier with micrOS shell
+	- micrOS terminal
+	- built-in commands, Load Modules
+- [6] How to develop with micrOS
+	- Create custom Load Modules (LMs)
 
 > **Coming soon**
 
@@ -144,31 +175,32 @@ DevToolKit CLI feature:
 
 | Parameters names |   Default value and type    | Reboot required |          Description            |
 | ---------------- | :-------------------------: | :-------------: | ------------------------------- |
-| staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name
-| stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password
-| devfid           |    `node01`  `<str>`        |       No        | Device friendly "unique" name - also used for AccessPoint nw mode
+| staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name (for default connection mode)
+| stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)
+| devfid           |    `node01`  `<str>`        |       No        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
 | appwd            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
 | pled             |     `True`    `<bool>`      |      Yes        | Progress led - "heart beat" LED light pulse under processing
-| dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout
+| dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
 | soctout          |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (single process socket interface)
-| socport          |    `9008`  `<int>`          |       Yes       | Socket / Web server service port (should not change due to client and API inconpatibility)
-| timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - background while loop "subprocess" for LM execution
+| socport          |    `9008`  `<int>`          |       Yes       | Socket / Web server service port (should not be changed due to client and API inconpatibility)
+| timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - background "subprocess" emulation, event based while loop for the given LM execution
 | timirqcbf        |      `n/a`   `<str>`        |      Yes        | `timirq` callback function, call Load Module
 | cron             |     `False`  `<bool>`       |       Yes       | Cron, time based task scheduler. `timirq` activation required for hw function enabling
 | crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
 | timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms - 3 sec
-| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enable - Trigger when "signal upper edge" - button press happens
+| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enable - Trigger when "signal upper edge detected" - button press happens
 | extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq` callback function, call Load Module
-| boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) for priority Load Modules in boot sequence. Add LM(s) here, separator `;`.  [before network setup!] Example: Set LED colors / Init custom module / etc.
+| boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) for priority Load Modules in boot sequence. Add LM(s) here, separator `;`.  [before network setup!] Example: Set LED colors / Init custom module(s) / etc.
 | irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer configuration in case of `timirq` or `exitirq` is/are enabled: default 1000 byte.
 | gmttime          |     `+1`   `<int>`          |        Yes      | NTP - RTC - timezone setup
 | nwmd             |     `n/a`  `<str>`          |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
 | hwuid            |      `n/a`  `<str>`         |       N/A       | STATE STORAGE - hardware address - dev uid
-| devip            |      `n/a`  `<str>`         |      N/A        | first stored IP in STA mode will be the device static IP on the network or set static IP manually here
-| boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high
+| devip            |      `n/a`  `<str>`         |      N/A        | first stored IP in STA mode will be the device static IP on the network or set custom static IP manually here.
+| boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
+| irqmreq          |      `6000`  `<int>`        |      No         | Controlls memory overload avoidance. `timirq` requires that given memory for activation. `extirq`*0.7 is the memory limit for external irq enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
 
 
-> Note: To enabling `cron` scheuler - hardware interrupt must be enabled `timirq` (for cron logic sampling), perid will be `timirqseq`
+> **Note**: To enabling `cron` scheduler - hardware interrupt must be enabled `timirq` (for cron logic sampling), perid will be `timirqseq`
 
 ## Logical pin association
 
@@ -193,26 +225,6 @@ DevToolKit CLI feature:
 ----------------------------------------
 
 ## Developer Quick guide
-
-### Setup development environment
-
-- Clone micrOS repo:
-
-```
-git clone https://github.com/BxNxM/MicrOs.git
-```
-
-#### External Dependences
-
-- **Deploy** dependences
-	- esptool.py
-	- ampy
-
-- **Connection** dependences
-	- screen (serial port connection)
-	- tools/socketClient.py (devToolKit.py -c)
-		- arp -a (device scanner)
-		- ping (device scanner)
 
 #### Erase device & Deploy micropython & Install micrOS 
 
@@ -245,6 +257,7 @@ Base commands:
   -m, --make            Erase & Deploy & Precompile (MicrOS) & Install (MicrOS)
   -r, --update          Update/redeploy connected (usb) MicrOS. - node config will be restored
   -c, --connect         Connect via socketclinet
+  -o, --OTA				 OTA update, over wifi (webrepl)
   -p CONNECT_PARAMETERS, --connect_parameters CONNECT_PARAMETERS
                         Parameters for connection in non-interactivve mode.
 ```
@@ -262,7 +275,7 @@ or
 **List discovered devices with status updates**
 
 ```
-./devToolKit.py-stat
+./devToolKit.py -stat
 
 or
 
@@ -475,14 +488,18 @@ exit and close connection from ('10.0.1.7', 51733)
 ├── MicrOS
 │   ├── ConfigHandler.py
 │   ├── Hooks.py
+│   ├── InterConnect.py
 │   ├── InterpreterCore.py
 │   ├── InterpreterShell.py
+│   ├── InterruptHandler.py
 │   ├── LogicalPins.py
 │   ├── Network.py
+│   ├── Scheduler.py
 │   ├── SocketServer.py
-│   ├── InterruptHandler.py
 │   ├── boot.py
-│   ├── main.py
+│   ├── micrOS.py
+│   ├── micrOSloader.py
+│   ├── reset.py
 ```
 > Note: Core MicrOS components
 
@@ -494,6 +511,7 @@ exit and close connection from ('10.0.1.7', 51733)
 │   ├── LM_oled_widgets.py
 │   ├── LM_servo.py
 │   ├── LM_system.py
+│   ├── etc...
 ```
 > LM (Load Modules) - Application logic - accessable over socket server as a command
 
@@ -533,22 +551,38 @@ Precompiled components with the actual user configured config location
 ├── mpy-MicrOS
 │   ├── ConfigHandler.mpy
 │   ├── Hooks.mpy
+│   ├── InterConnect.mpy
 │   ├── InterpreterCore.mpy
 │   ├── InterpreterShell.mpy
 │   ├── InterruptHandler.mpy
+│   ├── LM_bme280.mpy
+│   ├── LM_co2.mpy
+│   ├── LM_dht11.mpy
+│   ├── LM_dht22.mpy
+│   ├── LM_dimmer.mpy
 │   ├── LM_distance_HCSR04.py
+│   ├── LM_esp32.py
+│   ├── LM_intercon.py
 │   ├── LM_light.mpy
+│   ├── LM_light_sensor.mpy
 │   ├── LM_motion_sensor.py
+│   ├── LM_neopixel.mpy
 │   ├── LM_oled_128x64i2c.mpy
 │   ├── LM_oled_widgets.mpy
-│   ├── LM_servo.py
+│   ├── LM_ph_sensor.py
+│   ├── LM_servo.mpy
+│   ├── LM_switch.mpy
 │   ├── LM_system.mpy
+│   ├── LM_water_level.py
 │   ├── LogicalPins.mpy
 │   ├── Network.mpy
+│   ├── Scheduler.mpy
 │   ├── SocketServer.mpy
 │   ├── boot.py
-│   ├── main.py
-│   └── node_config.json
+│   ├── micrOS.mpy
+│   ├── micrOSloader.mpy
+│   ├── node_config.json
+│   └── reset.mpy
 ```
 
 > Note: These resources will be copy to the micropython base.
@@ -557,9 +591,28 @@ Precompiled components with the actual user configured config location
 
 ```
 ├── release_info
-│   ├── MicrOS_Release_Info-0.1.0-0
+│   ├── micrOS_ReleaseInfo
+│   │   ├── release_0.1.0-0_note.md
+│   │   ├── release_0.4.0-0_note_esp32.md
+│   │   ├── release_0.4.0-0_note_esp8266.md
+│   │   ├── release_sfuncman_0.1.0-0.json
+│   │   └── release_sfuncman_0.4.0-0.json
 │   └── node_config_profiles
+│       ├── README.md
+│       ├── catgame_profile-node_config.json
+│       ├── catgame_profile_command_examples.txt
+│       ├── default_profile-node_config.json
+│       ├── default_profile_command_examples.txt
+│       ├── dimmer_profile-node_config.json
+│       ├── dimmer_profile_command_examples.txt
+│       ├── heartbeat_profile-node_config.json
+│       ├── heartbeat_profile_command_examples.txt
+│       ├── lamp_profile-node_config.json
+│       ├── lamp_profile_command_examples.txt
+│       ├── neopixel_profile-node_config.json
+│       └── neopixel_profile_command_examples.txt
 ```
+
 > Note:  Under node_config_profiles you can find **configuration temaples**, named **profiles** (devenv automatically able to inject these under deployment) - there are also **command examples** for each application.
 
 > **MicrOS_Release_Info** folder(s) conatins system verification logs like:
@@ -572,13 +625,15 @@ Precompiled components with the actual user configured config location
 
 ```
 ├── apps
+│   ├── AirQualityBME280_app.py
+│   ├── AirQualityDHT22_CO2_app.py
+│   ├── AnanlogLED_app.py
 │   ├── CatGame_app.py
-│   ├── Template.app.py
-├── driver_cp210x
-│   ├── Mac_OSX_VCP_Driver
-│   └── SiLabsUSBDriverDisk.dmg
-├── framework
-│   └── esp8266-20191220-v1.12.bin
+│   ├── Dimmer_app.py
+│   ├── GetVersion_app.py
+│   ├── NeopixelTest_app.py
+│   ├── Template_app.py
+├── etc...
 ```
 
 ----------------------------------------

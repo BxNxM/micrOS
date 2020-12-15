@@ -6,8 +6,6 @@ from sys import platform
 __DCACHE = [100, 100, 100, 0]
 __NEOPIXEL_OBJ = None
 __PERSISTENT_CACHE = None
-if __PERSISTENT_CACHE is None:
-    __PERSISTENT_CACHE = True if platform == 'esp32' else False
 
 
 #########################################
@@ -56,7 +54,9 @@ def __persistent_cache_manager(mode):
 
 def neopixel_cache_load_n_init(cache=None):
     global __PERSISTENT_CACHE
-    if cache is not None:
+    if cache is None:
+        __PERSISTENT_CACHE = False if platform == 'esp8266' else True
+    else:
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')        # recover data cache
     if __PERSISTENT_CACHE and __DCACHE[3] == 1:

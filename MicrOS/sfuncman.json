@@ -9,6 +9,10 @@
     "poweroff()",
     "help()"
   ],
+  "water_level": [
+    "measure()",
+    "help()"
+  ],
   "system": [
     "info()",
     "gcollect()",
@@ -41,7 +45,10 @@
   "switch": [
     "switch_cache_load_n_init(cache=None)",
     "set_state(state=None)",
-    "toggle(state=None)",
+    "toggle()",
+    "switch2_cache_load_n_init(cache=None)",
+    "set_state2(state=None)",
+    "toggle2()",
     "help()"
   ],
   "servo": [

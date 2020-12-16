@@ -1,6 +1,6 @@
-# micrOS - micropython IoT communication platform and so more...
+# ![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true) micrOS
 
-![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true)
+### micropython based IoT framework for wifi capable arm based microcontrollers and much more...
 
 ### KEY PRINCIPLES:
 ✉️ 📡 Generic communication API -> Human / Machine interface <br/>
@@ -8,8 +8,8 @@
 ⚙️ 📝 Automatic device initialization from user config ;) <br/>
 🚪 No external server / service required <br/>
 ⚠️ 🛡 Privacy in focus, works on Local Private Network <br/>
-🧩  Codeless end user experiance via phone client <br/>
-🛠🦾 Easy to customize aka create Load Modules, copy **LM**_your_app**.py** or **.mpy** to the device and call any function from your module.<br/>
+🧩  Codeless end user experience via phone client <br/>
+🛠🦾 Easy to customize aka create Load Modules, copy **LM**\_your_app**.py** or **.mpy** to the device and call any function from your module.<br/>
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
 ### QUICK LINKS:
@@ -27,7 +27,9 @@
 
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/appGUI.gif?raw=true)
 
-## micrOS Toolkit for PC
+----------------------------------------
+
+## Installing micrOS with DevToolKit from macOS / Windows / Linux
 
 That repo not only contains the micrOS core codes provide several tools like
 
@@ -43,6 +45,8 @@ That repo not only contains the micrOS core codes provide several tools like
 
 Contains code for the supported boards for installation, the development, deployment and server tools, all written in python.
 
+> Note: Install git manually for Windows before this step
+
 ```
 git clone https://github.com/BxNxM/micrOs.git
 ```
@@ -51,19 +55,23 @@ git clone https://github.com/BxNxM/micrOs.git
 
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
+> Note: Allow extend system path with that python version (installatiuon parameter)
+
 ### 3. Install serial driver for board connection via USB
 
-	- For Windows (find in the cloned repo, micrOS folder)
+Find the required driver in the cloned repo.
+
+- For Windows
 	
-	```
-	micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
-	```
+```
+micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
+```
 	
-	- For macOS
+- For macOS
 	
-	```
-	micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
-	```
+```
+micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
+```
 
 ### 4. ONLY ON WINDOWNS: Special dependencies
 
@@ -75,7 +83,7 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 ### 5. Execute **devToolKit** GUI
 
-It will open a graphical interface for micrOS management.
+It will open a graphical user interface for micrOS device management.
 
 ```
 python3 micrOS/devToolKit.py
@@ -84,9 +92,11 @@ python3 micrOS/devToolKit.py
 - Verified OS list for development and deployment:
 	- macOS
 	- Raspbian (pyQT5 limitation)
-	- Wondows (Precompiled code install on new devices okay, other features coming soon)
+	- Windows (Precompiled code install on new devices okay, other features coming soon)
 
 ![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOSToolkit.gif?raw=true)
+
+----------------------------------------
 
 ## micrOS System, message-function visualization 
 
@@ -94,6 +104,8 @@ python3 micrOS/devToolKit.py
 
 >Note: **Python Socket Client** for application development also available besides smartphone application (example below).
 
+
+----------------------------------------
 
 ## micrOS Framework Features💡
 
@@ -126,6 +138,7 @@ DevToolKit CLI feature:
 
 - Socket client python plugin - interactive - non interactive mode
 
+----------------------------------------
 
 ## System Architecture 
 
@@ -147,6 +160,7 @@ DevToolKit CLI feature:
 |  **v0.4.0-0** | [release_Info-0.4.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp8266.md)| 26 - 53 % (2512-5072byte) | esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and so more. OTA update feature.
 |  **v0.4.0-0** | [release_Info-0.4.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| 23 - 28 % (17250-20976byte) | esp32 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.
 
+----------------------------------------
 
 ## MicrOS Tutorial
 
@@ -176,32 +190,33 @@ DevToolKit CLI feature:
 
 | Parameters names |   Default value and type    | Reboot required |          Description            |
 | ---------------- | :-------------------------: | :-------------: | ------------------------------- |
+| devfid           |    `node01`  `<str>`        |       No        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
+| boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
 | staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name (for default connection mode)
 | stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)
-| devfid           |    `node01`  `<str>`        |       No        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
 | appwd            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
-| pled             |     `True`    `<bool>`      |      Yes        | Progress led - "heart beat" LED light pulse under processing
-| dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
-| soctout          |   `100`      `<int>`        |       Yes       | Socket / Web server connection timeout (single process socket interface)
-| socport          |    `9008`  `<int>`          |       Yes       | Socket / Web server service port (should not be changed due to client and API inconpatibility)
-| timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enable - background "subprocess" emulation, event based while loop for the given LM execution
-| timirqcbf        |      `n/a`   `<str>`        |      Yes        | `timirq` callback function, call Load Module
-| cron             |     `False`  `<bool>`       |       Yes       | Cron, time based task scheduler. `timirq` activation required for hw function enabling
+| gmttime          |     `1`   `<int>`          |        Yes       | NTP - RTC - timezone setup (GMT)
+| boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) list for priority Load Module(s) execution in boot sequence [before network setup!]. Add LoadModule(s) here, separator `;`. Example: Set LED colors / Init custom module(s) / etc.
+| timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enabler - background "subprocess" emulation, timer based infinite loop for the LoadModule execution
+| timirqcbf        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
+| timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
+| cron             |     `False`  `<bool>`       |       Yes       | Cron enabler, time based task scheduler. (Requires enabled `timirq`)
 | crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
-| timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms - 3 sec
-| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enable - Trigger when "signal upper edge detected" - button press happens
-| extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq` callback function, call Load Module
-| boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) for priority Load Modules in boot sequence. Add LM(s) here, separator `;`.  [before network setup!] Example: Set LED colors / Init custom module(s) / etc.
-| irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer configuration in case of `timirq` or `exitirq` is/are enabled: default 1000 byte.
-| gmttime          |     `+1`   `<int>`          |        Yes      | NTP - RTC - timezone setup
-| nwmd             |     `n/a`  `<str>`          |       N/A       | STATE STORAGE - system saves nw mode here - AP / STA
-| hwuid            |      `n/a`  `<str>`         |       N/A       | STATE STORAGE - hardware address - dev uid
-| devip            |      `n/a`  `<str>`         |      N/A        | first stored IP in STA mode will be the device static IP on the network or set custom static IP manually here.
-| boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
-| irqmreq          |      `6000`  `<int>`        |      No         | Controlls memory overload avoidance. `timirq` requires that given memory for activation. `extirq`*0.7 is the memory limit for external irq enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
+| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when "input signal upper edge detected" - button press happens
+| extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
+| pled             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"
+| dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
+| soctout          |   `100`      `<int>`        |       Yes       | Socket server connection timeout (because single process socket interface)
+| socport          |    `9008`  `<int>`          |       Yes       | Socket server service port (should not be changed due to client and API inconpatibility)
+| irqmreq          |      `6000`  `<int>`        |      No         | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
+| irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer allocation (in byte) when `timirq` or `exitirq` enabled.
+| devip            |      `n/a`  `<str>`         |       N/A       | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
+| nwmd             |     `n/a`  `<str>`          |       N/A       | USED BY SYSTEM (state storage) - system saves network mode here - `AP` or `STA`
+| hwuid            |      `n/a`  `<str>`         |       N/A       | USED BY SYSTEM (state storage) - hardware address - dev uid
 
 
 > **Note**: To enabling `cron` scheduler - hardware interrupt must be enabled `timirq` (for cron logic sampling), perid will be `timirqseq`
+> Note: Default empty value: n/a in case of string parameter.
 
 ## Logical pin association
 
@@ -680,6 +695,6 @@ GIT:
 	
 - Pretty git view: `git log --pretty=oneline`
 	
-- File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'`
+- File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'` 
 
 git push -u origin master

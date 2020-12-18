@@ -17,7 +17,9 @@ Designed by Marcell Ban aka BxNxM
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execute_LM_function_Core
 from LogicalPins import get_pin_on_platform_by_key
-from Scheduler import scheduler
+if cfgget('cron'):
+    # Only import when enabled - memory usage optimization
+    from Scheduler import scheduler
 
 
 # TIMER IRQ AND CRON VALUES PERSISTENT CACHE

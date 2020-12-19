@@ -138,6 +138,9 @@ DevToolKit CLI feature:
 
 - Socket client python plugin - interactive - non interactive mode
 
+
+![micrOS project Pheriphery Support](./media/micrOSprojectPheriphery.png)</br>
+
 ----------------------------------------
 
 ## System Architecture 

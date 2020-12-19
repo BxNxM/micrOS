@@ -25,7 +25,7 @@
 
 > Coming soon
 
-![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/appGUI.gif?raw=true)
+![MICROSVISUALIZATION](./media/appGUI.gif?raw=true)
 
 ----------------------------------------
 
@@ -94,13 +94,24 @@ python3 micrOS/devToolKit.py
 	- Raspbian (pyQT5 limitation)
 	- Windows (Precompiled code install on new devices okay, other features coming soon)
 
-![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOSToolkit.gif?raw=true)
+	
+- Example
+
+```
+1. Select BOLAD TYPE
+2. Select MICROPYTHON VERSION
+3. Click on [Deploy (USB)] button
+```
+
+It will install your board via USB with default settings. Continue with your mobile app...  
+
+![MICROSVISUALIZATION](./media/micrOSToolkit.gif?raw=true)
 
 ----------------------------------------
 
 ## micrOS System, message-function visualization 
 
-![MICROSVISUALIZATION](https://github.com/BxNxM/MicrOs/blob/master/media/micrOS.gif?raw=true)
+![MICROSVISUALIZATION](./media/micrOS.gif?raw=true)
 
 >Note: **Python Socket Client** for application development also available besides smartphone application (example below).
 

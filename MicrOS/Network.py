@@ -144,7 +144,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
 
     ap_if = WLAN(AP_IF)
     ap_if.active(True)
-    # Set WiFi access point name (formally known as ESSID) and WiFi authmode (2): WPA2
+    # Set WiFi access point name (formally known as ESSID) and WiFi authmode (3): WPA2-PSK
     try:
         console_write("[NW: AP] Configure")
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode)

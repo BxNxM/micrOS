@@ -154,7 +154,7 @@ DevToolKit CLI feature:
 
 ----------------------------------------
 
-## Device Pinout
+## Device Pinouts for wiring
 
 ![MicrOSESP8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/NodeMCUPinOutESP8266.png?raw=true)
 
@@ -166,12 +166,11 @@ DevToolKit CLI feature:
 
 ![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
 
+> Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
 
-### Networking - network modes
+### Networking - automatic network modes
 
 ![MICROSNWMODES](./media/micrOSNetworking.png?raw=true)
-
-> Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
 
 ### RELESE NOTE
 
@@ -211,7 +210,7 @@ DevToolKit CLI feature:
 
 | Parameters names |   Default value and type    | Reboot required |          Description            |
 | ---------------- | :-------------------------: | :-------------: | ------------------------------- |
-| devfid           |    `node01`  `<str>`        |       No        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
+| devfid           |    `node01`  `<str>`        |       Yes        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
 | boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
 | staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name (for default connection mode)
 | stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)

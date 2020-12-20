@@ -154,17 +154,24 @@ DevToolKit CLI feature:
 
 ----------------------------------------
 
-## System Architecture 
-
-![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
-
-> Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
-
 ## Device Pinout
 
 ![MicrOSESP8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/NodeMCUPinOutESP8266.png?raw=true)
 
 ![MicrOSESP8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/NodeMCUPinOutESP32.png?raw=true)
+
+----------------------------------------
+
+## System Architecture 
+
+![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
+
+
+### Networking - network modes
+
+![MICROSNWMODES](./media/micrOSNetworking.png?raw=true)
+
+> Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
 
 ### RELESE NOTE
 

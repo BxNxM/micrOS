@@ -49,7 +49,7 @@ def default_config():
                                       "devip": "n/a",
                                       "timirq": False,
                                       "cron": False,
-                                      "crontasks": 'n/a',
+                                      "crontasks": "n/a",
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
                                       "irqmembuf": 1000,
@@ -58,7 +58,8 @@ def default_config():
                                       "boothook": "n/a",
                                       "gmttime": +1,
                                       "boostmd": True,
-                                      "irqmreq": 6000}
+                                      "irqmreq": 6000,
+                                      "guimeta": "n/a"}
     return default_configuration_template
 
 #################################################################

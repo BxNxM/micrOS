@@ -87,7 +87,7 @@ def neopixel(r=None, g=None, b=None):
     return "NEOPIXEL SET TO R{}G{}B{}".format(r, g, b)
 
 
-def segment(s=0, r=None, g=None, b=None):
+def segment(r=None, g=None, b=None, s=0):
     r = __DCACHE[0] if r is None else r
     g = __DCACHE[1] if g is None else g
     b = __DCACHE[2] if b is None else b

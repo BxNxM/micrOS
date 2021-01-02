@@ -62,7 +62,7 @@
   "neopixel": [
     "neopixel_cache_load_n_init(cache=None)",
     "neopixel(r=None, g=None, b=None)",
-    "segment(s=0, r=None, g=None, b=None)",
+    "segment(r=None, g=None, b=None, s=0)",
     "toggle(state=None)",
     "help()"
   ],

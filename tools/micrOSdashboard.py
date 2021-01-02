@@ -70,7 +70,7 @@ class micrOSGUI(QWidget):
         self.pbar = None
         self.pbar_status = 0
         self.dropdown_objects_list = {}
-        self.ui_state_machine = {'ignore_version_check': False, 'unsafe_ota': False}
+        self.ui_state_machine = {'ignore_version_check': False, 'unsafe_ota': False, 'appwd': 'ADmin123'}
         self.console = None
         self.device_conn_struct = []
         self.micropython_bin_pathes = []
@@ -78,6 +78,7 @@ class micrOSGUI(QWidget):
         self.socketcli_obj = socketClient.ConnectionData()
         self.bgjob_thread_obj_dict = {}
         self.bgjon_progress_monitor_thread_obj_dict = {}
+        self.appwd_textbox = None
         # Init UI elements
         self.initUI()
         self.__thread_progress_monitor()
@@ -137,6 +138,7 @@ class micrOSGUI(QWidget):
         self.dropdown_micropythonbin()
         self.dropdown_device()
         self.dropdown_application()
+        self.appwd_input()
         self.ignore_version_check_checkbox()
         self.unsafe_core_update_ota_check_checkbox()
 
@@ -260,10 +262,14 @@ class micrOSGUI(QWidget):
             if self.bgjob_thread_obj_dict['ota_update'].is_alive():
                 self.console.append_output('[ota_update][SKIP] already running.')
                 return
+
+        # Get appwd from ui field
+        self.ui_state_machine['appwd'] = self.appwd_textbox.text()
+
         # Verify data
         if not self.start_bg_application_popup(text="OTA update?", verify_data_dict={'device': self.ui_state_machine['device'],
                                                                             'force': self.ui_state_machine['ignore_version_check'],
-                                                                            'unsafe_ota': self.ui_state_machine['unsafe_ota']}):
+                                                                            'unsafe_ota': self.ui_state_machine['unsafe_ota'], 'ota_pwd': self.ui_state_machine['appwd']}):
             return
 
         self.console.append_output('[ota_update] Upload micrOS resources to selected device.')
@@ -288,7 +294,10 @@ class micrOSGUI(QWidget):
         self.console.append_output("[ota_update] Start OTA update on {}:{}".format(fuid, devip))
         # create a thread with a function without any arguments
         self.console.append_output('[ota_update] |- start ota_update job')
-        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'unsafe': unsafe_ota_update}, daemon=True)
+        th = threading.Thread(target=self.devtool_obj.update_with_webrepl,
+                              kwargs={'device': (fuid, devip), 'force': ignore_version_check,\
+                                      'unsafe': unsafe_ota_update, 'ota_password': self.ui_state_machine['appwd']},\
+                              daemon=True)
         th.start()
         self.bgjob_thread_obj_dict['ota_update'] = th
         self.console.append_output('[ota_update] |- ota_update job was started')
@@ -392,9 +401,13 @@ class micrOSGUI(QWidget):
                 self.console.append_output('[lm_update][SKIP] already running.')
                 return
 
+        # Get appwd from ui field
+        self.ui_state_machine['appwd'] = self.appwd_textbox.text()
+
         # Verify data
         if not self.start_bg_application_popup(text="Update load modules?", verify_data_dict={'device': self.ui_state_machine['device'],
-                                                                                     'force': self.ui_state_machine['ignore_version_check']}):
+                                                                                     'force': self.ui_state_machine['ignore_version_check'],
+                                                                                     'ota_pwd': self.ui_state_machine['appwd']}):
             return
 
         self.console.append_output('[lm_update] Update Load Modules over wifi')
@@ -418,7 +431,9 @@ class micrOSGUI(QWidget):
         self.console.append_output("[lm_update] Start OTA lm_update on {}:{}".format(fuid, devip))
         self.console.append_output('[lm_update] |- start lm_update job')
         self.progressbar_update()
-        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'lm_only': True}, daemon=True)
+        th = threading.Thread(target=self.devtool_obj.update_with_webrepl,\
+                              kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'lm_only': True,\
+                                      'ota_password': self.ui_state_machine['appwd']}, daemon=True)
         th.start()
         self.bgjob_thread_obj_dict['lm_update'] = th
         self.console.append_output('[lm_update] |- lm_update job was started')
@@ -664,6 +679,17 @@ class micrOSGUI(QWidget):
         button.setGeometry(start_x, y_offset+90, 150, 20)
         button.setStyleSheet("QPushButton{background-color: darkCyan;}QPushButton::pressed{background-color : green;}")
         button.clicked.connect(self.__on_click_exec_app)
+
+    def appwd_input(self):
+        appwd_label = QLabel(self)
+        appwd_label.setText("Fill OTA password")
+        appwd_label.setGeometry(680, 40, 120, 15)
+
+        self.appwd_textbox = QLineEdit(self)
+        self.appwd_textbox.move(680, 60)
+        self.appwd_textbox.resize(150, 30)
+        self.appwd_textbox.insert("ADmin123")
+        self.appwd_textbox.setToolTip("[appwd] Fill password for OTA update.")
 
     def __on_click_exec_app(self):
         """

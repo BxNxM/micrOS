@@ -196,6 +196,7 @@ class ConnectionData:
                 # print status msgs
                 is_online = "{}ONLINE{}".format(Colors.OK, Colors.NC) if nwscan.node_is_online(ip, port=ConnectionData.PORT) else "{}OFFLINE{}".format(Colors.WARN, Colors.NC)
                 version_data = '<n/a>'
+                elapsed_time = 'n/a'
 
                 # is online
                 if 'ONLINE' in is_online:
@@ -205,7 +206,7 @@ class ConnectionData:
                         version_data = SocketDictClient(host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['version'])
                         elapsed_time = "{:.3f}".format(time.time() - start_comm)
                     except:
-                        elapsed_time = 'n/a'
+                        pass
 
                 # Generate line printout
                 base_info = "{uid}{spr1}{fuid}".format(uid=uid, spr1=spacer1, fuid=fuid)

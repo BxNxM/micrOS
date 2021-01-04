@@ -9,10 +9,6 @@
     "poweroff()",
     "help()"
   ],
-  "water_level": [
-    "measure()",
-    "help()"
-  ],
   "system": [
     "info()",
     "gcollect()",
@@ -86,6 +82,10 @@
     "simple_page()",
     "show_debug_page()",
     "toggle_invert()",
+    "help()"
+  ],
+  "VL53L0X": [
+    "measure()",
     "help()"
   ],
   "light_sensor": [

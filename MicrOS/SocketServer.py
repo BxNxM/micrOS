@@ -45,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.8.1-0'
+    __socket_interpreter_version = '0.8.2-0'
 
     def __new__(cls):
         """
@@ -127,10 +127,10 @@ class SocketServer:
             data_byte = self.conn.recv(512)
         except Exception as e:
             data_byte = b''
-            if 'timoeout' in str(e).lower():
+            if 'time' in str(e).lower() and 'out' in str(e).lower():
                 self.server_console(
                     "[ socket server ] socket recv - connection with user - timeout {} sec".format(self.timeout_user))
-                self.reply_message("Session timeout {} sec".format(self.timeout_user))
+                self.reply_message("\n__@_/' Session timeout {} sec\nBye!".format(self.timeout_user))
                 self.__reconnect()
             else:
                 raise Exception(e)

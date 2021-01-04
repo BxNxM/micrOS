@@ -116,6 +116,6 @@ def toggle(state=None):
 
 
 def help():
-    return 'neopixel(r=<0-255>, g, b, n=8', 'toggle(state=None)', \
+    return 'neopixel(r=<0-255>, g, b, n=24', 'toggle(state=None)', \
            'neopixel_cache_load_n_init(cache=None<True/False>', \
-           'segment(s=<0-n>, r, g, b', '[!]PersistentStateCacheDisabledOn:esp8266'
+           'segment(r, g, b, s=<0-n>', '[!]PersistentStateCacheDisabledOn:esp8266'

@@ -74,8 +74,7 @@ def __shell(msg, SocketServerObj):
         SocketServerObj.reply_message("    key value  - Set value")
         SocketServerObj.reply_message("  noconf     - Exit conf mode")
         SocketServerObj.reply_message("[EXEC] Command mode (LMs):")
-        __show_LMs_functions(SocketServerObj)
-        return True
+        return __show_LMs_functions(SocketServerObj)
 
     # EXECUTE:
     # @1 Configure mode
@@ -94,6 +93,8 @@ def __shell(msg, SocketServerObj):
         except Exception as e:
             SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
             return False
+    SocketServerObj.reply_message("[WARN] Invalid command {}\n[INFO] Write help for more info.".format(msg))
+    return True
 
 #################################################################
 #                     CONFIGURE MODE HANDLER                    #
@@ -171,5 +172,6 @@ def __show_LMs_functions(SocketServerObj):
                                                       .format(" " * len(lm_name),
                                                               line.split('(')[0].split(' ')[1]))
         except Exception as e:
-            SocketServerObj.reply_message("[{}] LM PARSER WARNING: {}".format(lm_path, e))
-            raise Exception("__show_LMs_functions exception {}: {}".format(lm_path, e))
+            SocketServerObj.reply_message("[{}] SHOW LM PARSER WARNING: {}".format(lm_path, e))
+            return False
+    return True

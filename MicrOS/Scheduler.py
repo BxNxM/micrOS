@@ -59,7 +59,7 @@ def __convert_sec_to_time(seconds):
     return hour, minutes, seconds
 
 
-def __cron_task_cache_manager(now_in_sec, sec_tolarent):
+def __cron_task_cache_manager(now_in_sec, sec_tolerant):
     """
     Cron tasks execution cache by task id
         - to avoid unwanted re-executions
@@ -68,7 +68,7 @@ def __cron_task_cache_manager(now_in_sec, sec_tolarent):
     for index, taskid in enumerate(LAST_CRON_TASKS):
         # Get H,M,S in sec from task id
         tasktime_in_sec = int(str(taskid.split('|')[0]).split(':')[1])
-        sec_diff = tasktime_in_sec - (now_in_sec - sec_tolarent)
+        sec_diff = tasktime_in_sec - (now_in_sec - sec_tolerant)
         # Remove outdated cache registration
         if sec_diff < 0 or sec_diff > 20:
             LAST_CRON_TASKS.remove(LAST_CRON_TASKS[index])

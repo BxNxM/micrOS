@@ -58,11 +58,25 @@ def set_uid_macaddr_hex(interface=None):
 #################################################################
 #                       SET WIFI STA MODE                       #
 #################################################################
+def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
+    """
+    raw_essid: essid parameter, in case of multiple values separator is ;
+    raw_pwd: essid pwd parameter,  in case of multiple values separator is ;
+    return detected essid with corresponding password
+    """
+    for idx, essid in enumerate(raw_essid.split(';')):
+        essid = essid.strip()
+        # Scan wifi network - retry workaround
+        for _ in range(0, 2):
+            if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
+                console_write('\t| - [NW: STA] ESSID WAS FOUND: {}'.format(essid))
+                return essid, str(raw_pwd.split(';')[idx]).strip()
+            sleep(1)
+    return None, ''
 
 
 def set_wifi(essid, pwd, timeout=60):
-    console_write('[NW: STA] SET WIFI: {}'.format(essid))
-    essid_found = False
+    console_write('[NW: STA] SET WIFI STA NW {}'.format(essid))
 
     # Disable AP mode
     ap_if = WLAN(AP_IF)
@@ -74,16 +88,12 @@ def set_wifi(essid, pwd, timeout=60):
     sta_if = WLAN(STA_IF)
     sta_if.active(True)
     if not sta_if.isconnected():
-        console_write('\t| [NW: STA] CONNECT TO NETWORK {}'.format(essid))
-        # Scan wifi network - retry workaround
-        for _ in range(0, 2):
-            if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
-                essid_found = True
-                console_write('\t| - [NW: STA] ESSID WAS FOUND {}'.format(essid_found))
-                break
-            sleep(1)
+        # Multiple essid and pwd handling with retry mechanism
+        essid, pwd = __select_available_wifi_nw(sta_if, essid, pwd)
+
         # Connect to the located wifi network
-        if essid_found:
+        if essid is not None:
+            console_write('\t| [NW: STA] CONNECT TO NETWORK {}'.format(essid))
             # connect to network
             sta_if.connect(essid, pwd)
             # wait for connection, with timeout set

@@ -16,6 +16,7 @@ from time import sleep, localtime, time
 from network import AP_IF, STA_IF, WLAN
 from ntptime import settime
 from machine import RTC
+from binascii import hexlify
 from ConfigHandler import console_write, cfgget, cfgput
 
 #################################################################
@@ -48,16 +49,17 @@ def setNTP_RTC():
 #################################################################
 
 
-def set_uid_macaddr_hex(interface=None):
-    uid = "n/a"
-    if interface is not None:
-        uid = ''.join([hex(ot) for ot in list(interface.config('mac'))])
-    cfgput("hwuid", uid)
-
+def set_uid_macaddr_hex(interface):
+    try:
+        cfgput('hwuid', 'micr{}OS'.format(hexlify(interface.config('mac'), 'x').decode()))
+    except Exception:
+        pass
 
 #################################################################
 #                       SET WIFI STA MODE                       #
 #################################################################
+
+
 def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
     """
     raw_essid: essid parameter, in case of multiple values separator is ;

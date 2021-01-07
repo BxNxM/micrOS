@@ -96,6 +96,7 @@ def __shell(msg, SocketServerObj):
     SocketServerObj.reply_message("[WARN] Invalid command {}\n[INFO] Write help for more info.".format(msg))
     return True
 
+
 #################################################################
 #                     CONFIGURE MODE HANDLER                    #
 #################################################################
@@ -167,10 +168,9 @@ def __show_LMs_functions(SocketServerObj):
                 line = "micrOSisTheBest"
                 while line:
                     line = f.readline()
-                    if "def" in line and "def __" not in line:
-                        SocketServerObj.reply_message("   {}{}"
-                                                      .format(" " * len(lm_name),
-                                                              line.split('(')[0].split(' ')[1]))
+                    if line.strip().startswith('def') and '__' not in line and 'self' not in line:
+                        SocketServerObj.reply_message("   {}{}".format(" " * len(lm_name),
+                                                                       line.replace('def ', '').split('(')[0]))
         except Exception as e:
             SocketServerObj.reply_message("[{}] SHOW LM PARSER WARNING: {}".format(lm_path, e))
             return False

@@ -39,7 +39,7 @@ def bootup_hook():
                 state = execute_LM_function_Core(shell_cmd.split())
                 console_write("|-[BOOT HOOKS] state: {}".format(state))
             except Exception as e:
-                console_write("|--[BOOT HOOKS] error: {}".format(e))
+                console_write("|--[BOOT HOOK] error: {}".format(e))
 
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:

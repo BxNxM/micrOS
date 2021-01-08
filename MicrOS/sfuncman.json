@@ -17,7 +17,7 @@
     "ntp()",
     "module(unload=None)",
     "cachedump()",
-    "ifmode()",
+    "rssi()",
     "help()"
   ],
   "co2": [

@@ -238,6 +238,7 @@ class MicrOSDevTool:
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
         if exitcode == 0:
             self.console("Deployment done.\n{}".format(stdout), state='ok')
+            time.sleep(1)
             return True
         else:
             self.console("Deployment failed.\n{} - {}".format(stdout, stderr), state='err')

@@ -58,11 +58,10 @@ def module(unload=None):
     from sys import modules
     if unload is None:
         return modules.keys()
-    try:
+    if unload in modules.keys():
         del modules[unload]
         return "Module unload {} done.".format(unload)
-    except Exception as e:
-        return "Module unload failed: {}".format(e)
+    return "Module unload {} failed.".format(unload)
 
 
 def cachedump():
@@ -74,13 +73,20 @@ def cachedump():
     return cache
 
 
-def ifmode():
-    try:
-        with open('.if_mode', 'r') as f:
-            return {'if_mode': f.read()}
-    except:
-        return {'if_mode': 'micros'}
+def rssi():
+    from network import WLAN, STA_IF
+    value = WLAN(STA_IF).status('rssi')
+    if value > -67:
+        return {'Amazing': value}
+    elif value > -70:
+        return {'VeryGood': value}
+    elif value > -80:
+        return {'Okay': value}
+    elif value > -90:
+        return {'NotGood': value}
+    else:
+        return {'Unusable': value}
 
 
 def help():
-    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'cachedump', 'ifmode'
+    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'rssi', 'cachedump'

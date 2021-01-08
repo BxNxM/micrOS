@@ -45,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.9.0-0'
+    __socket_interpreter_version = '0.9.2-0'
 
     def __new__(cls):
         """
@@ -115,7 +115,7 @@ class SocketServer:
         self.__accept()
 
     def __accept(self):
-        self.server_console("[ socket server ] wait to accept a connection - blocking call...")
+        self.server_console("[ socket server ] wait to accept a connection")
         self.conn, self.addr = self.s.accept()
         self.server_console('[ socket server ] Connected with {}:{}'.format(self.addr[0], self.addr[1]))
 

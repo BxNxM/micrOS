@@ -1,5 +1,6 @@
 from time import localtime
 from InterpreterCore import execute_LM_function_Core
+from ConfigHandler import console_write
 
 '''
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
@@ -101,7 +102,7 @@ def __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, scheduler_fragm
             if check_time[3] == '*' or task_id not in LAST_CRON_TASKS:
                 lm_state = execute_LM_function_Core(scheduler_fragment[1].split())
                 if not lm_state:
-                    print("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
+                    console_write("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
                                                                                                __convert_sec_to_time(tolerance_min_sec),
                                                                                                __convert_sec_to_time(tolerance_max_sec),
                                                                                                scheduler_fragment[0],
@@ -121,7 +122,7 @@ def deserialize_raw_input(raw_cron_input):
     try:
         datastruct = [tuple(cron.split('!')) for cron in raw_cron_input.split(';')]
     except Exception as e:
-        print("deserialize_raw_input: input syntax error: {}".format(e))
+        console_write("deserialize_raw_input: input syntax error: {}".format(e))
     return datastruct
 
 

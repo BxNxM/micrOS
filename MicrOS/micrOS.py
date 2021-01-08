@@ -20,7 +20,7 @@ def safe_boot_hook():
     try:
         bootup_hook()
     except Exception as e:
-        print("=> [MAIN DEBUG] Hooks.bootup_hook() error: {}".format(e))
+        print("[micrOS main] Hooks.bootup_hook() error: {}".format(e))
 
 
 def interrupt_handler():
@@ -28,7 +28,7 @@ def interrupt_handler():
         from InterruptHandler import enableInterrupt
         enableInterrupt()
     except Exception as e:
-        print("=> [MAIN DEBUG] InterruptHandler.enableInterrupt error: {}".format(e))
+        print("[micrOS main] InterruptHandler.enableInterrupt error: {}".format(e))
 
 
 def external_interrupt_handler():
@@ -36,7 +36,7 @@ def external_interrupt_handler():
         from InterruptHandler import init_eventPIN
         init_eventPIN()
     except Exception as e:
-        print("=> [MAIN DEBUG] InterruptHandler.init_eventPIN error: {}".format(e))
+        print("[micrOS main] InterruptHandler.init_eventPIN error: {}".format(e))
 
 
 #################################################################

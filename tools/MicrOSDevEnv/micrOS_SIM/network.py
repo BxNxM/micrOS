@@ -69,6 +69,11 @@ class WLAN:
         self.__isconnected = True
         return True
 
+    def status(self, key=None):
+        if key == 'rssi':
+            return -50
+        return True
+
 
 if __name__ == "__main__":
     w = WLAN('asd')

@@ -42,6 +42,10 @@ def setNTP_RTC():
             sleep(0.5)
     else:
         console_write("NTP setup errer: STA not connected!")
+    # Recursion to get actual time for cron execution
+    if cfgget('cron'):
+        console_write("[!] NTP setup retry due to cron is {}".format(cfgget('cron')))
+        return setNTP_RTC()
     return False
 
 #################################################################

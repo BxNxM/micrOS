@@ -194,9 +194,9 @@ def __value_type_handler(key, value):
 
 if "ConfigHandler" in __name__:
     __inject_default_conf()                     # Validate / update / create user config
+    if not cfgget('dbg'): console_write("[micrOS] debug print was turned off")
     __DEBUG_PRINT = cfgget('dbg')               # Inject from user conf
     if not cfgget('pled'):
-        # TODO: deinit default pled object
         PLED = None                             # Turn off progressled if necessary
 
 if __name__ == "__main__":

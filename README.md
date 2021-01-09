@@ -215,7 +215,8 @@ DevToolKit CLI feature:
 | staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name (for default connection mode)
 | stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)
 | appwd            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
-| gmttime          |     `1`   `<int>`          |        Yes       | NTP - RTC - timezone setup (GMT)
+| auth             |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. **WARNING** OTA upade not supported in this mode.
+| gmttime          |     `1`   `<int>`           |       Yes       | NTP - RTC - timezone setup (GMT)
 | boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) list for priority Load Module(s) execution in boot sequence [before network setup!]. Add LoadModule(s) here, separator `;`. Example: Set LED colors / Init custom module(s) / etc.
 | timirq           |     `False`  `<bool>`       |       Yes       | Timer interrupt enabler - background "subprocess" emulation, timer based infinite loop for the LoadModule execution
 | timirqcbf        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
@@ -230,9 +231,10 @@ DevToolKit CLI feature:
 | socport          |    `9008`  `<int>`          |       Yes       | Socket server service port (should not be changed due to client and API inconpatibility)
 | irqmreq          |      `6000`  `<int>`        |      No         | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
 | irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer allocation (in byte) when `timirq` or `exitirq` enabled.
-| devip            |      `n/a`  `<str>`         |       N/A       | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
-| nwmd             |     `n/a`  `<str>`          |       N/A       | USED BY SYSTEM (state storage) - system saves network mode here - `AP` or `STA`
-| hwuid            |      `n/a`  `<str>`         |       N/A       | USED BY SYSTEM (state storage) - hardware address - dev uid
+| devip            |      `n/a`  `<str>`         |    Yes/N/A      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
+| nwmd             |     `n/a`  `<str>`          |      N/A        | USED BY SYSTEM (state storage) - system saves network mode here - `AP` or `STA`
+| hwuid            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
+| guimeta          |      `n/a`  `str`           |      No         | USED BY micrOS Client (state storage) - stores clinet widget meta data
 
 
 > **Note**: To enabling `cron` scheduler - hardware interrupt must be enabled `timirq` (for cron logic sampling), perid will be `timirqseq`
@@ -689,22 +691,22 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 ```bash
 
-bnm@Bans-MBP:MicrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
-     172	ConfigHandler.py
+bnm@Bans-MacBook-Pro:MicrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
+     174	ConfigHandler.py
       51	Hooks.py
       41	InterConnect.py
       66	InterpreterCore.py
-     155	InterpreterShell.py
-     138	InterruptHandler.py
-      45	LogicalPins.py
-     158	Network.py
-     126	Scheduler.py
-     237	SocketServer.py
+     156	InterpreterShell.py
+     140	InterruptHandler.py
+      51	LogicalPins.py
+     172	Network.py
+     127	Scheduler.py
+     257	SocketServer.py
       16	boot.py
       53	micrOS.py
       97	micrOSloader.py
        5	reset.py
-SUM OF CODE LINES: 1360
+SUM OF CODE LINES: 1406
 
 ```
 

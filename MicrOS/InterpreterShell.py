@@ -51,11 +51,11 @@ def __shell(msg, SocketServerObj):
 
     # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
     if msg_list[0].startswith('conf'):
-        SocketServerObj.CONFIGURE_MODE = True
+        SocketServerObj.configure_mode = True
         SocketServerObj.pre_prompt = "[configure] "
         return True
     elif msg_list[0].startswith('noconf'):
-        SocketServerObj.CONFIGURE_MODE = False
+        SocketServerObj.configure_mode = False
         SocketServerObj.pre_prompt = ""
         return True
 
@@ -78,7 +78,7 @@ def __shell(msg, SocketServerObj):
 
     # EXECUTE:
     # @1 Configure mode
-    if SocketServerObj.CONFIGURE_MODE and len(msg_list) != 0:
+    if SocketServerObj.configure_mode and len(msg_list) != 0:
         return __configure(msg_list, SocketServerObj)
     # @2 Command mode
     if len(msg_list) > 1:

@@ -951,6 +951,10 @@ class MicrOSDevTool:
             return False
         else:
             status, answer_msg = socketClient.run(['--dev', fuid, 'help'])
+            if answer_msg is None and 'fail' not in str(device_version):
+                # micrOS auth:True not supported under ota update
+                self.console("AuthFailed", state='ERR')
+                return
             if not status and answer_msg is None:
                 # In case of update failure and retry (micrOS interface won't be active)
                 status, answer_msg = True, 'webrepl'

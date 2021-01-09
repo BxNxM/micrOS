@@ -36,6 +36,7 @@ def default_config():
     n/a default empty value (str)
     """
     default_configuration_template = {"version": "n/a",
+                                      "auth": False,
                                       "staessid": "your_wifi_name",
                                       "stapwd": "your_wifi_passwd",
                                       "devfid": "node01",

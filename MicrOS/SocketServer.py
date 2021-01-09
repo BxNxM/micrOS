@@ -45,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.9.2-1'
+    __socket_interpreter_version = '0.9.3-0'
 
     def __new__(cls):
         """
@@ -61,18 +61,20 @@ class SocketServer:
 
     def __init__(self, host='', port=None, uid=None, user_timeout_sec=None):
         # Socket server initial parameters
-        self.server_console_indent = 0
-        self.CONFIGURE_MODE = False
-        self.pre_prompt = ""
         self.host = host
         self.s = None
         self.conn = None
         self.addr = None
+        self.__server_console_indent = 0
+        self.__auth_ok = False
+        self.configure_mode = False
         # ---- Config ---
-        self.prompt = "{} $ ".format(cfgget('devfid'))
-        self.port = port if port is not None else cfgget("socport")
-        self.timeout_user = user_timeout_sec if user_timeout_sec is not None else int(cfgget("soctout"))
-        self.uid = uid if uid is not None else str(cfgget("hwuid"))
+        self.pre_prompt = ""
+        self.__auth_mode = cfgget('auth')
+        self.__prompt = "{} $ ".format(cfgget('devfid'))
+        self.__port = port if port is not None else cfgget("socport")
+        self.__timeout_user = user_timeout_sec if user_timeout_sec is not None else int(cfgget("soctout"))
+        self.__hwuid = uid if uid is not None else str(cfgget("hwuid"))
         # ---         ----
         self.server_console("[ socket server ] <<constructor>>")
 
@@ -104,7 +106,7 @@ class SocketServer:
     def __bind_and_accept(self):
         while True:
             try:
-                self.s.bind((self.host, self.port))
+                self.s.bind((self.host, self.__port))
                 break
             except Exception as msg:
                 self.server_console('[ socket server ] Bind failed. Error Code : ' + str(msg))
@@ -115,22 +117,24 @@ class SocketServer:
         self.__accept()
 
     def __accept(self):
+        # Reset pre prompt
+        self.pre_prompt = "[password] " if self.__auth_mode else ""
         self.server_console("[ socket server ] wait to accept a connection")
         self.conn, self.addr = self.s.accept()
         self.server_console('[ socket server ] Connected with {}:{}'.format(self.addr[0], self.addr[1]))
 
     def __wait_for_message(self):
-        prompt = "{}{} ".format(self.pre_prompt, self.prompt).encode('utf-8')
+        prompt = "{}{} ".format(self.pre_prompt, self.__prompt).encode('utf-8')
         self.reply_message(prompt)
-        self.conn.settimeout(self.timeout_user)
+        self.conn.settimeout(self.__timeout_user)
         try:
             data_byte = self.conn.recv(512)
         except Exception as e:
             data_byte = b''
             if 'time' in str(e).lower() and 'out' in str(e).lower():
                 self.server_console(
-                    "[ socket server ] socket recv - connection with user - timeout {} sec".format(self.timeout_user))
-                self.reply_message("\n__@_/' Session timeout {} sec\nBye!".format(self.timeout_user))
+                    "[ socket server ] socket recv - connection with user - timeout {} sec".format(self.__timeout_user))
+                self.reply_message("\n__@_/' Session timeout {} sec\nBye!".format(self.__timeout_user))
                 self.__reconnect()
             else:
                 raise Exception(e)
@@ -143,27 +147,31 @@ class SocketServer:
         return self.__server_level_cmds(data_str)
 
     def __server_level_cmds(self, data_str):
+        # globally available micrOS functions
         if data_str == 'exit':
             # For low level exit handling
-            data_str = ""
             self.reply_message("Bye!")
             self.__reconnect()
+            return ""
         if data_str == 'hello':
             # For low level device identification - hello msg
-            data_str = ""
-            self.reply_message("hello:{}:{}".format(cfgget('devfid'), self.uid))
+            self.reply_message("hello:{}:{}".format(cfgget('devfid'), self.__hwuid))
+            return ""
         if data_str == 'version':
             # For micrOS system version info
-            data_str = ""
             self.reply_message("{}".format(self.__socket_interpreter_version))
+            return ""
+        # Authentication handling
+        data_str = self.__connection_authentication(data_str) if self.__auth_mode else data_str
+        # Authenticated user functions ... shell, etc
         if data_str == 'reboot':
-            data_str = ""
             self.reply_message("Reboot micrOS system.")
             self.__safe_reboot_system()
+            return ""
         if data_str == 'webrepl':
-            data_str = ""
             self.start_micropython_webrepl()
-        return str(data_str)
+            return ""
+        return data_str
 
     def __safe_reboot_system(self):
         self.server_console("Execute safe reboot: __safe_reboot_system()")
@@ -185,10 +193,10 @@ class SocketServer:
         return
 
     def __reconnect(self):
-        # Reset Shell & prompt
-        self.CONFIGURE_MODE = False
-        self.pre_prompt = ""
-        self.server_console_indent = 0
+        # Reset Shell
+        self.configure_mode = False
+        self.__server_console_indent = 0
+        self.__auth_ok = False
         # Close session
         self.server_console("[ socket server ] exit and close connection from " + str(self.addr))
         self.conn.close()
@@ -197,7 +205,7 @@ class SocketServer:
         self.__accept()
 
     def run(self):
-        self.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), self.port))
+        self.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), self.__port))
         try:
             cfgput('version', self.__socket_interpreter_version)
         except Exception as e:
@@ -235,10 +243,10 @@ class SocketServer:
                 console_write("==> [!!!][HA] Recovery error: {}".format(e))
 
     def server_console(self, msg):
-        console_write("|" + "-" * self.server_console_indent + msg)
-        if self.server_console_indent < 50:
+        console_write("|" + "-" * self.__server_console_indent + msg)
+        if self.__server_console_indent < 50:
             # if less then max indent
-            self.server_console_indent += 1
+            self.__server_console_indent += 1
 
     def start_micropython_webrepl(self):
         self.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
@@ -253,6 +261,19 @@ class SocketServer:
             self.__del__()
         except Exception as e:
             self.reply_message("Error while starting webrepl: {}".format(e))
+
+    def __connection_authentication(self, data_str):
+        if not self.__auth_ok and data_str:
+            # check password
+            if cfgget('appwd') == data_str:
+                self.__auth_ok = True
+                self.reply_message("AuthOk")
+                self.pre_prompt = ""
+                return ""
+            self.reply_message("AuthFailed\nBye!")
+            self.__reconnect()
+            return ""
+        return data_str
 
     def __del__(self):
         console_write("[ socket server ] <<destructor>>")

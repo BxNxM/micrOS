@@ -18,6 +18,7 @@
     "module(unload=None)",
     "cachedump()",
     "rssi()",
+    "lmpacman(lm_del=None)",
     "help()"
   ],
   "co2": [
@@ -85,8 +86,7 @@
     "help()"
   ],
   "VL53L0X": [
-    "measure()",
-    "help()"
+    "measure()"
   ],
   "light_sensor": [
     "intensity()",

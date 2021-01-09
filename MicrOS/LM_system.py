@@ -1,4 +1,4 @@
-from ConfigHandler import progress_led_toggle_adaptor
+from ConfigHandler import progress_led_toggle_adaptor, read_cfg_file
 
 
 def info():
@@ -88,5 +88,17 @@ def rssi():
         return {'Unusable': value}
 
 
+def lmpacman(lm_del=None):
+    from os import listdir, remove
+    if lm_del is not None and lm_del.endswith('py'):
+        # Check LM is in use
+        if 'system.' in lm_del or len([lminconf for lminconf in read_cfg_file().values() if lm_del in str(lminconf)]) > 0:
+            return 'Load module {} is in use, skip delete.'.format(lm_del)
+        remove('LM_{}'.format(lm_del))
+        return 'Delete module: {}'.format(lm_del)
+    # Dump available LMs
+    return '\n'.join(('   {}'.format(res.replace('LM_', '')) for res in listdir() if 'LM_' in res))
+
+
 def help():
-    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'rssi', 'cachedump'
+    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'rssi', 'cachedump', 'lmpacman'

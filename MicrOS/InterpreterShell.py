@@ -89,7 +89,11 @@ def __shell(msg, SocketServerObj):
         """
         try:
             # Execute command via InterpreterCore
-            return execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
+            status = execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
+            if not status:
+                # Run retry mechanism in case of InterprtereCore module load failed (simulator workaround)
+                return execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
+            return status
         except Exception as e:
             SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
             return False

@@ -89,10 +89,14 @@ def rssi():
 
 
 def lmpacman(lm_del=None):
+    """
+    lm_del: LM_<loadmodulename.py/.mpy>
+        Add name without LM_ but with extension
+    """
     from os import listdir, remove
     if lm_del is not None and lm_del.endswith('py'):
         # Check LM is in use
-        if 'system.' in lm_del or len([lminconf for lminconf in read_cfg_file().values() if lm_del in str(lminconf)]) > 0:
+        if 'system.' in lm_del or len([lminconf for lminconf in read_cfg_file().values() if lm_del.split('.')[0] in str(lminconf)]) > 0:
             return 'Load module {} is in use, skip delete.'.format(lm_del)
         remove('LM_{}'.format(lm_del))
         return 'Delete module: {}'.format(lm_del)

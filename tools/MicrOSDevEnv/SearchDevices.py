@@ -4,6 +4,7 @@ import netifaces
 import netaddr
 import threading
 import time
+import platform
 from LocalMachine import CommandHandler
 
 AVAILABLE_DEVICES_LIST = []
@@ -62,8 +63,9 @@ def __worker_filter_online_devices(host_list, port, thname="main"):
     global AVAILABLE_DEVICES_LIST
     for host in host_list:
         host = str(host)
-        exitcode, stdout, stderr = CommandHandler.run_command("ping -c 1 -p {port} {ip}".format(port=port, ip=host), shell=True)
-        if exitcode == 0:
+        command = "ping {ip} -n 1".format(ip=host) if platform.system().lower()=='windows' else "ping -c 1 -p {port} {ip}".format( port=port, ip=host)
+        exitcode, stdout, stderr = CommandHandler.run_command(command, shell=True)
+        if exitcode == 0 and 'unreachable' not in stdout.lower():
             print("[{}] ONLINE: {}".format(thname, host))
             add_element_to_list(host)
         else:

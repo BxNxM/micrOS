@@ -836,11 +836,11 @@ class MicrOSDevTool:
             lock: False -> value: micros
         [2] Copy file to device
         """
-        source_absolute_path = os.path.join(self.precompiled_MicrOS_dir_path, '.if_mode')
-        source_name = os.path.basename(source_absolute_path)
+        workdir_handler = LocalMachine.SimplePopPushd()
+        workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
 
         if clean:
-            os.remove(source_absolute_path)
+            os.remove('.if_mode')
             return True
 
         # Set lock file value
@@ -849,15 +849,13 @@ class MicrOSDevTool:
             lock_value = 'webrepl'
 
         # Create / modify file
-        with open(source_absolute_path, 'w') as f:
+        with open(".if_mode", 'w') as f:
             f.write(lock_value)
 
         # Create copy command
-        command = '{api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path,
+        command = '{api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
                                                                             pwd=pwd,
-                                                                            input_file=source_absolute_path,
-                                                                            host=host,
-                                                                            target_path=source_name)
+                                                                            host=host)
         if self.dummy_exec:
             self.console("Webrepl CMD: {}".format(command))
             return True
@@ -869,12 +867,15 @@ class MicrOSDevTool:
                 stderr = ''
                 for _ in range(0, 2):
                     exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                    workdir_handler.popd()
                     if exitcode == 0:
                         return True
                 self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
+                workdir_handler.popd()
                 return False
             except Exception as e:
                 self.console("Create lock/unlock failed: {}".format(e))
+                workdir_handler.popd()
                 return False
 
     def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False, ota_password='ADmin123'):

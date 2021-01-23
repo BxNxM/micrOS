@@ -8,10 +8,11 @@ def info():
         from simgc import mem_free    # simulator mode
     from os import statvfs, getcwd
     from machine import freq
+    from sys import platform
     fs_stat = statvfs(getcwd())
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
-    return {'CPU[Hz]': freq(), 'GC MemFree[byte]': mem_free(), 'FS FREE [%]': int((fs_free/fs_size)*100)}
+    return {'CPU[Hz]': freq(), 'MemFree[byte]': mem_free(), 'FS FREE [%]': int((fs_free/fs_size)*100), 'Plaform': platform}
 
 
 def gcollect():
@@ -104,5 +105,10 @@ def lmpacman(lm_del=None):
     return '\n'.join(('   {}'.format(res.replace('LM_', '')) for res in listdir() if 'LM_' in res))
 
 
+def getpinnum(key='builtin'):
+    from LogicalPins import get_pin_on_platform_by_key
+    return {key: get_pin_on_platform_by_key(key)}
+
+
 def help():
-    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'rssi', 'cachedump', 'lmpacman'
+    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'rssi', 'cachedump', 'lmpacman', 'getpinnum'

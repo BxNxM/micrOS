@@ -24,5 +24,9 @@ def mem_info(*args, **kwargs):
     return max_mem
 
 
+def const(*args):
+    return args
+
+
 if __name__ == "__main__":
     mem_info()

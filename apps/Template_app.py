@@ -16,11 +16,16 @@ def base_cmd():
 
 
 def app(devfid=None):
+    """
+    devfid: selected device input
+        send command(s) over socket connection [socketClient.run(args)]
+        <a> command separator in single connection
+    """
     global DEVICE
     if devfid is not None:
         DEVICE = devfid
     # EDIT YOUR COMMAND
-    args = base_cmd() + ['help', 'version']
+    args = base_cmd() + ['help', '<a>', 'version']
     status, answer = socketClient.run(args)
 
 

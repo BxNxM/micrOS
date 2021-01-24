@@ -69,6 +69,13 @@
     "measure_w_co2()",
     "help()"
   ],
+  "L298N_DCmotor": [
+    "m1_control(direc=None, speed=None)",
+    "set_speed(speed=100)",
+    "stop()",
+    "set_direction(direc=0)",
+    "help()"
+  ],
   "esp32": [
     "hall()",
     "intemp()",

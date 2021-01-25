@@ -225,6 +225,7 @@ DevToolKit CLI feature:
 | crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
 | extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when "input signal upper edge detected" - button press happens
 | extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
+| cstmpmap         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as a parameter.
 | pled             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"
 | dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
 | soctout          |   `100`      `<int>`        |       Yes       | Socket server connection timeout (because single process socket interface)
@@ -240,25 +241,18 @@ DevToolKit CLI feature:
 > **Note**: To enabling `cron` scheduler - hardware interrupt must be enabled `timirq` (for cron logic sampling), perid will be `timirqseq`
 > Note: Default empty value: n/a in case of string parameter.
 
-## Logical pin association
+## Logical pin association handling
 
 [MicrOS/LogicalPins.py](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LogicalPins.py)
 
+LogicalPin lookup tables:
+
 ```
-'builtin': 16,    # BUILT IN LED - progress_led
-'pwm_0': 15,      # D8 - servo
-'pwm_1': 13,      # D7 - pwm_red
-'pwm_2': 2,       # D4 - pwm_green / servo2
-'pwm_3': 0,       # D3 - pwm_blue / neopixel
-'i2c_sda': 4,     # D2 - OLED
-'i2c_scl': 5,     # D1 - OLED
-'pwm_4': 12,      # D6 - extirqpin
-'simple_0': 16,   # D0 - dist_trigger
-'pwm_5': 14,      # D5 - dist_echo
-'simple_1': 10,   # SD3 - dht_pin
-'adc_0': 0,       # ADC0 - CO2
-'simple_2': 9     # SD2 - PIR
+LP_esp8266.py
+LP_esp32.py
 ```
+
+> Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
 ----------------------------------------
 

@@ -19,7 +19,7 @@
     "cachedump()",
     "rssi()",
     "lmpacman(lm_del=None)",
-    "getpinnum(key='builtin')",
+    "getpin(key='builtin')",
     "help()"
   ],
   "co2": [

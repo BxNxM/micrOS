@@ -34,12 +34,11 @@ def show_debug_page():
         __OLED.show()
         # Print info
         ltime = localtime()
-        __OLED.text("{}:{}:{}".format(ltime[-5], ltime[-4], ltime[-3]), 30, 0)
-        __OLED.text("NW_MODE: {}".format(cfgget("nwmd")), 0, 10)
-        __OLED.text("IP: {}".format(cfgget("devip")), 0, 20)
-        __OLED.text("FreeMem: {}".format(mem_free()), 0, 30)
-        __OLED.text("PORT: {}".format(cfgget("socport")), 0, 40)
-        __OLED.text("NAME: {}".format(cfgget("devfid")), 0, 50)
+        __OLED.text("{}  {}:{}:{}".format(cfgget("nwmd"), ltime[-5], ltime[-4], ltime[-3]), 0, 0)
+        __OLED.text("FUID: {}".format(cfgget("devfid")), 0, 15)
+        __OLED.text("IP: {}".format(cfgget("devip")), 0, 25)
+        __OLED.text("FreeMem: {}".format(mem_free()), 0, 35)
+        __OLED.text("V: {}".format(cfgget("version")), 0, 45)
         # Show page buffer - send to display
         __OLED.show()
     except Exception as e:

@@ -14,14 +14,13 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from time import sleep
 from json import load, dump
-
 from machine import Pin
 from LogicalPins import get_pin_on_platform_by_key
-PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
 
 # SET IT LATER FROM CONFIG
 __DEBUG_PRINT = True
 __CONFIG_CACHE = {}
+__PLED = None
 # - MicrOS config
 __CONFIG_PATH = "node_config.json"
 
@@ -60,7 +59,8 @@ def default_config():
                                       "gmttime": +1,
                                       "boostmd": True,
                                       "irqmreq": 6000,
-                                      "guimeta": "n/a"}
+                                      "guimeta": "n/a",
+                                      "cstmpmap": "n/a"}
     return default_configuration_template
 
 #################################################################
@@ -70,9 +70,9 @@ def default_config():
 
 def progress_led_toggle_adaptor(func):
     def wrapper(*args, **kwargs):
-        if PLED is not None: PLED.value(not PLED.value())
+        if __PLED is not None: __PLED.value(not __PLED.value())
         output = func(*args, **kwargs)
-        if PLED is not None: PLED.value(not PLED.value())
+        if __PLED is not None: __PLED.value(not __PLED.value())
         return output
     return wrapper
 
@@ -165,6 +165,7 @@ def __inject_default_conf():
         del default_config_dict
 
 
+
 def __value_type_handler(key, value):
     value_in_cfg = cfgget(key)
     try:
@@ -194,11 +195,15 @@ def __value_type_handler(key, value):
 
 
 if "ConfigHandler" in __name__:
-    __inject_default_conf()                     # Validate / update / create user config
+    # [!!!] Validate / update / create user config
+    __inject_default_conf()
     if not cfgget('dbg'): console_write("[micrOS] debug print was turned off")
-    __DEBUG_PRINT = cfgget('dbg')               # Inject from user conf
-    if not cfgget('pled'):
-        PLED = None                             # Turn off progressled if necessary
+    # [!!!] Init selected pinmap ('builtin' is the default key, 'cstmpmap' user LP data)
+    if cfgget('cstmpmap') != 'n/a': get_pin_on_platform_by_key('builtin', cfgget('cstmpmap'))
+    # DEACTIVATE plead and dbg based on config settings (inject user conf)
+    if cfgget('pled') and get_pin_on_platform_by_key('builtin') is not None:
+        __PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
+    __DEBUG_PRINT = cfgget('dbg')
 
 if __name__ == "__main__":
     __inject_default_conf()

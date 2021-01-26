@@ -1,5 +1,8 @@
+import sys
+
+
 class Colors():
-    is_active = True
+    is_active = False if sys.platform.startswith('win') else True
     if is_active is True:
         NC = '\033[0m'
         OK = '\033[92m'
@@ -20,6 +23,7 @@ class Colors():
         OKGREEN = ''
         HEADER = ''
         UNDERLINE = ''
+
 
 if __name__ == "__main__":
     #TEST COLORS:

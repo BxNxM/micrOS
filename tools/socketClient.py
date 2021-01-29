@@ -48,13 +48,13 @@ class ConnectionData:
                 socket_obj = SocketDictClient(host=device[0], port=ConnectionData.PORT)
                 reply = socket_obj.non_interactive('hello')
                 if "hello" in reply:
-                    print("[{}][MicrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
+                    print("[{}][micrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
                     fuid = reply.split(':')[1]
                     uid = reply.split(':')[2]
                     # Add device to known list
                     ConnectionData.MICROS_DEV_IP_DICT[uid] = [device[0], device[1], fuid]
                 else:
-                    print("[{}][Non MicrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
+                    print("[{}][Non micrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
             except Exception as e:
                 print("[{}] {} scan warning: {}".format(thread_name, device, e))
             finally:
@@ -88,7 +88,7 @@ class ConnectionData:
     def write_MicrOS_device_cache(device_dict):
         ConnectionData.read_MicrOS_device_cache()
         cache_path = ConnectionData.DEVICE_CACHE_PATH
-        print("Write MicrOS device cache: {}".format(cache_path))
+        print("Write micrOS device cache: {}".format(cache_path))
         with open(cache_path, 'w') as f:
             ConnectionData.MICROS_DEV_IP_DICT.update(ConnectionData.DEFAULT_CONFIG_FRAGMNENT)
             ConnectionData.MICROS_DEV_IP_DICT.update(device_dict)
@@ -98,13 +98,13 @@ class ConnectionData:
     def read_MicrOS_device_cache():
         cache_path = ConnectionData.DEVICE_CACHE_PATH
         if os.path.isfile(cache_path):
-            print("Load MicrOS device cache: {}".format(cache_path))
+            print("Load micrOS device cache: {}".format(cache_path))
             with open(cache_path, 'r') as f:
                 cache_content = json.load(f)
                 cache_content.update(ConnectionData.MICROS_DEV_IP_DICT)
                 ConnectionData.MICROS_DEV_IP_DICT = cache_content
         else:
-            print("Load MicrOS device cache not found: {}".format(cache_path))
+            print("Load micrOS device cache not found: {}".format(cache_path))
         return ConnectionData.MICROS_DEV_IP_DICT
 
     @staticmethod
@@ -114,7 +114,7 @@ class ConnectionData:
         device_was_found = False
         device_fid = None
         if dev is None:
-            print("Activate MicrOS device connection address")
+            print("Activate micrOS device connection address")
         if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:
             key = list(ConnectionData.MICROS_DEV_IP_DICT.keys())[0]
             ConnectionData.HOST = ConnectionData.MICROS_DEV_IP_DICT[key][0]
@@ -165,7 +165,7 @@ class ConnectionData:
 
     @staticmethod
     def read_port_from_nodeconf():
-        base_path = MYDIR + os.sep + ".." + os.sep + "MicrOS" + os.sep
+        base_path = MYDIR + os.sep + ".." + os.sep + "micrOS" + os.sep
         config_path = base_path + "node_config.json"
         confighandler_path = base_path + "ConfigHandler.py"
         port_data = ""
@@ -177,7 +177,7 @@ class ConnectionData:
             except:
                 print("PORT: {} from {} invalid, must be integer".format(port_data, config_path))
         else:
-            print("PORT INFORMATION COMES FROM: {}, but not exists!\n\t[HINT] Run {} script to generate default MicrOS config.".format(config_path, confighandler_path))
+            print("PORT INFORMATION COMES FROM: {}, but not exists!\n\t[HINT] Run {} script to generate default micrOS config.".format(config_path, confighandler_path))
 
     @staticmethod
     def nodes_status():

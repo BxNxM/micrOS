@@ -36,9 +36,9 @@ class MicrOSDevTool:
                  }
 
         # DevEnv base pathes
-        self.MicrOS_dir_path = os.path.join(MYPATH, "../../MicrOS")
+        self.MicrOS_dir_path = os.path.join(MYPATH, "../../micrOS")
         self.MicrOS_node_config_archive = os.path.join(MYPATH, "../../user_data/node_config_archive")
-        self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "../../mpy-MicrOS")
+        self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "../../mpy-micrOS")
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
@@ -74,7 +74,7 @@ class MicrOSDevTool:
         else:
             # Find micropython binaries
             self.get_micropython_binaries()
-            # Find MicrOS devices
+            # Find micrOS devices
             self.__select_devicetype_and_micropython()
             self.devenv_usb_deployment_is_active = True
 
@@ -592,11 +592,11 @@ class MicrOSDevTool:
             target_path = os.path.join(self.precompiled_MicrOS_dir_path, selected_config.split('-')[1])
             source_path = os.path.join(self.MicrOS_node_config_archive, selected_config)
         elif selected_index == len(conf_list) -1:
-            # SKIP restore config - use the local version in mpy-MicrOS folder
+            # SKIP restore config - use the local version in mpy-micrOS folder
             target_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
             source_path = None
         else:
-            # Create new config - from MicrOS folder path -> mpy-MicrOS folder
+            # Create new config - from micrOS folder path -> mpy-micrOS folder
             target_path = os.path.join(self.precompiled_MicrOS_dir_path, selected_config)
             source_path = os.path.join(self.MicrOS_dir_path, selected_config)
         self.console("Restore config: {} -> {}".format(source_path, target_path))
@@ -629,7 +629,7 @@ class MicrOSDevTool:
         return True
 
     def get_micrOS_version(self, config_string=None):
-        # Get MicrOS local repo version
+        # Get micrOS local repo version
         micros_version_module = os.path.join(self.MicrOS_dir_path, 'SocketServer.py')
         with open(micros_version_module, 'r') as f:
             code_lines_string = f.read()
@@ -658,9 +658,9 @@ class MicrOSDevTool:
             exitcode = 0
             stdout = 'Dummy stdout'
         if exitcode == 0:
-            self.console("MicrOS node content:\n{}".format(stdout), state='ok')
+            self.console("micrOS node content:\n{}".format(stdout), state='ok')
         else:
-            self.console("MicrOS node content list error:\n{}".format(stderr), state='err')
+            self.console("micrOS node content list error:\n{}".format(stderr), state='err')
 
     def micrOS_sim_default_conf_create(self):
         self.console("Create default micrOS node_config.json")
@@ -792,8 +792,8 @@ class MicrOSDevTool:
                     self.put_micros_to_dev()
                     self.archive_node_config()
                 else:
-                    self.console("MicrOS install error", state='err')
-                    self.execution_verdict.append("[ERROR] usb_deploy - MicrOS install failed")
+                    self.console("micrOS install error", state='err')
+                    self.execution_verdict.append("[ERROR] usb_deploy - micrOS install failed")
             else:
                 self.console("Deploy micropython error", state='err')
                 self.execution_verdict.append("[ERROR] usb_deploy - micropython install failed")

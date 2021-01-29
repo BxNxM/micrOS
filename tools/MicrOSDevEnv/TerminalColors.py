@@ -1,7 +1,7 @@
 import sys
 
 
-class Colors():
+class Colors:
     is_active = False if sys.platform.startswith('win') else True
     if is_active is True:
         NC = '\033[0m'

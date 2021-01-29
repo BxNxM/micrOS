@@ -89,7 +89,7 @@ activate_venv()
 SOCKET_CLIENT_DIR_PATH = os.path.join(MYPATH, 'tools/')
 API_DIR_PATH = os.path.join(MYPATH, 'tools/MicrOSDevEnv/')
 APP_DIR = os.path.join(MYPATH, 'apps')
-MICROS_DIR = os.path.join(MYPATH, 'MicrOS')
+MICROS_DIR = os.path.join(MYPATH, 'micrOS')
 MICROS_SIM_RESOURCES_DIR = os.path.join(MYPATH, 'tools/MicrOSDevEnv/micrOS_SIM')
 sys.path.append(API_DIR_PATH)
 sys.path.append(SOCKET_CLIENT_DIR_PATH)
@@ -102,27 +102,27 @@ import LocalMachine
 
 
 def arg_parse():
-    parser = argparse.ArgumentParser(prog="MicrOS dev toolkit - deploy, connect, update, etc.", \
+    parser = argparse.ArgumentParser(prog="micrOS dev toolkit - deploy, connect, update, etc.", \
                                             description="CMDline wrapper for {}\n and for {}".format( \
                                             os.path.join(API_DIR_PATH, 'MicrOSDevEnv.py'), \
                                             os.path.join(SOCKET_CLIENT_DIR_PATH, 'socketClient.py')))
 
     base_group = parser.add_argument_group("Base commands")
-    base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (MicrOS) & Install (MicrOS)")
+    base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (micrOS) & Install (micrOS)")
     base_group.add_argument("-o", "--OTA", action="store_true", help="OTA (OverTheArir update with webrepl)")
-    base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) MicrOS. \
+    base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) micrOS. \
                                                                     - node config will be restored")
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
     base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactivve mode.")
     base_group.add_argument("-a", "--applications", type=str, help="List/Execute frontend applications. [list]")
-    base_group.add_argument("-stat", "--node_status", action="store_true", help="Show all available MicrOS devices status data.")
+    base_group.add_argument("-stat", "--node_status", action="store_true", help="Show all available micrOS devices status data.")
 
     dev_group = parser.add_argument_group("Development & Deployment & Connection")
     dev_group.add_argument("-e", "--erase", action="store_true", help="Erase device")
     dev_group.add_argument("-d", "--deploy", action="store_true", help="Deploy micropython")
-    dev_group.add_argument("-i", "--install", action="store_true", help="Install MicrOS on micropython")
+    dev_group.add_argument("-i", "--install", action="store_true", help="Install micrOS on micropython")
     dev_group.add_argument("-l", "--list_devs_n_bins", action="store_true", help="List connected devices & micropython binaries.")
-    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile MicrOS system [py -> mpy]")
+    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy]")
     dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
     dev_group.add_argument("-ls", "--node_ls", action="store_true", help="List micrOS node filesystem content.")
     dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")

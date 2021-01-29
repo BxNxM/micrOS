@@ -21,7 +21,7 @@ from LogicalPins import get_pin_on_platform_by_key
 __DEBUG_PRINT = True
 __CONFIG_CACHE = {}
 __PLED = None
-# - MicrOS config
+# - micrOS config
 __CONFIG_PATH = "node_config.json"
 
 #################################################################

@@ -5,6 +5,6 @@ MicrOS/*.mpy
 **.DS_Store
 **.idea/
 **__pycache__
-MicrOS/node_config.json
-mpy-MicrOS/node_config.json
+micrOS/node_config.json
+mpy-micrOS/node_config.json
 tools/venv/

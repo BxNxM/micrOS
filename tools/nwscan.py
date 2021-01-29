@@ -25,7 +25,7 @@ def map_wlan_devices(service_port=9008):
 
 def filter_by_open_port(device_ip_list, port=9008):
     """Obsolete"""
-    print("Filter devices by (MicrOS) open port...  [ping -c 2 -p {port} <ip>]".format(port=port))
+    print("Filter devices by (micrOS) open port...  [ping -c 2 -p {port} <ip>]".format(port=port))
     devices = []
     cmd_base = 'ping -c 2 -p {port} {ip}'
     for device in device_ip_list:

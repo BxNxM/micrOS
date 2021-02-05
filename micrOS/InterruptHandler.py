@@ -155,10 +155,18 @@ def init_eventPIN():
     if cfgget('extirq') and cfgget('extirqcbf').lower() != 'n/a':
         CFG_EVIRQCBF = cfgget('extirqcbf')
         pin = get_pin_on_platform_by_key('pwm_4')
+        trig = cfgget('extirqtrig').strip().lower()
         console_write("[IRQ] EVENTIRQ ENABLED PIN: {} CBF: {}".format(pin, CFG_EVIRQCBF))
         # Init event irq with callback function wrapper
         from machine import Pin
         pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
+        console_write("[IRQ] - event setup: {}".format(trig))
+        if trig == 'down':
+            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=secureEventInterruptHandler)
+            return
+        if trig == 'both':
+            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=secureEventInterruptHandler)
+            return
         pin_obj.irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
     else:
         console_write("[IRQ] EVENTIRQ: isenable: {} callback: {}".format(cfgget('extirq'), CFG_EVIRQCBF))

@@ -225,6 +225,7 @@ DevToolKit CLI feature:
 | crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
 | extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when "input signal upper edge detected" - button press happens
 | extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
+| extirqtrig       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
 | cstmpmap         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as a parameter.
 | pled             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"
 | dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.

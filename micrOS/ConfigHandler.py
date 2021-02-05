@@ -55,6 +55,7 @@ def default_config():
                                       "irqmembuf": 1000,
                                       "extirq": False,
                                       "extirqcbf": "n/a",
+                                      "extirqtrig": "n/a",
                                       "boothook": "n/a",
                                       "gmttime": +1,
                                       "boostmd": True,

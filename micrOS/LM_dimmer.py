@@ -45,7 +45,7 @@ def __persistent_cache_manager(mode='r'):
 
 def set_value(value=None):
     global __DIMMER_CACHE
-    # restore data from cache if was not provided
+    # restore data from cache if it was not provided
     value = int(__DIMMER_CACHE[1] if value is None else value)
     if 0 <= value <= 1000:
         __dimmer_init().duty(value)

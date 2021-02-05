@@ -26,7 +26,7 @@ from ConfigHandler import console_write, cfgget, cfgput
 
 def setNTP_RTC():
     if WLAN(STA_IF).isconnected():
-        for _ in range(4):
+        for _ in range(14 if cfgget('cron') else 4):
             try:
                 # Sync with NTP server
                 settime()
@@ -42,10 +42,6 @@ def setNTP_RTC():
             sleep(0.5)
     else:
         console_write("NTP setup errer: STA not connected!")
-    # Recursion to get actual time for cron execution
-    if cfgget('cron'):
-        console_write("[!] NTP setup retry due to cron is {}".format(cfgget('cron')))
-        return setNTP_RTC()
     return False
 
 #################################################################

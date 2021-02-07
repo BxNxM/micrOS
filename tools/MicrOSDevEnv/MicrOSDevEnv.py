@@ -44,9 +44,7 @@ class MicrOSDevTool:
         self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
         self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
-        self.precompile_LM_wihitelist = ["LM_system.py", "LM_oled_128x64i2c.py", "LM_light.py", "LM_oled_widgets.py", \
-                                         "LM_dht22.py", "LM_servo.py", "LM_neopixel.py", "LM_switch.py", "LM_dimmer.py", \
-                                         "LM_bme280.py", "LM_co2.py", "LM_dht11.py", "LM_light_sensor.py", "LM_L298N_DCmotor.py"]
+        self.precompile_LM_wihitelist = self.read_LMs_whitelist()
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 
@@ -66,6 +64,14 @@ class MicrOSDevTool:
     #####################################################
     #               BASE / INTERNAL METHODS             #
     #####################################################
+    def read_LMs_whitelist(self):
+        lm_to_compile_conf_path = os.path.join(MYPATH, "LM_to_compile.dat")
+        whitelist = []
+        if os.path.isfile(lm_to_compile_conf_path):
+            with open(lm_to_compile_conf_path, 'r') as f:
+                whitelist = [str(k.strip()) for k in f.read().strip().split() if k.strip().startswith('LM_') and k.strip().endswith('.py')]
+        return whitelist
+
     def __initialize_dev_env_for_deployment_vis_usb(self):
         if self.devenv_usb_deployment_is_active:
             self.console("Devide and micropython was already selected")

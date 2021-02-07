@@ -12,6 +12,7 @@ from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QApplication, QPlainTextEdit
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QFont
+from PyQt5 import QtGui
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, 'MicrOSDevEnv'))
 import MicrOSDevEnv
@@ -831,6 +832,7 @@ class MyConsole(QPlainTextEdit):
 
 def main():
     app = QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon(os.path.join(MYPATH, '../media/logo.png')))
     ex = micrOSGUI()
     ex.draw()
     sys.exit(app.exec_())

@@ -22,14 +22,15 @@
     "getpin(key='builtin')",
     "help()"
   ],
-  "co2": [
-    "measure_mq135(temperature=None, humidity=None)",
+  "rgbfader": [
+    "fader_cache_load_n_init(cache=None)",
+    "fade(r, g, b, sec=0)",
+    "transition()",
+    "toggle(state=None)",
     "help()"
   ],
-  "light": [
-    "rgb_cache_load_n_init(cache=None)",
-    "rgb(r=None, g=None, b=None)",
-    "toggle(state=None)",
+  "co2": [
+    "measure_mq135(temperature=None, humidity=None)",
     "help()"
   ],
   "bme280": [
@@ -91,6 +92,12 @@
     "simple_page()",
     "show_debug_page()",
     "toggle_invert()",
+    "help()"
+  ],
+  "rgb": [
+    "rgb_cache_load_n_init(cache=None)",
+    "rgb(r=None, g=None, b=None)",
+    "toggle(state=None)",
     "help()"
   ],
   "VL53L0X": [

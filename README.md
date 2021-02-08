@@ -230,16 +230,17 @@ DevToolKit CLI feature:
 | cstmpmap         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as a parameter.
 | pled             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"
 | dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
-| soctout          |   `100`      `<int>`        |       Yes       | Socket server connection timeout (because single process socket interface)
-| socport          |    `9008`  `<int>`          |       Yes       | Socket server service port (should not be changed due to client and API inconpatibility)
-| irqmreq          |      `6000`  `<int>`        |      No         | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
+| soctout          |   `100`      `<int>`        |      Yes        | Socket server connection timeout (because single process socket interface)
+| socport          |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility)
+| irqmreq          |      `6000`  `<int>`        |       No        | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
 | irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer allocation (in byte) when `timirq` or `exitirq` enabled.
 | devip            |      `n/a`  `<str>`         |    Yes/N/A      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
 | nwmd             |     `n/a`  `<str>`          |      N/A        | USED BY SYSTEM (state storage) - system saves network mode here - `AP` or `STA`
 | hwuid            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
-| guimeta          |      `n/a`  `str`           |      No         | USED BY micrOS Client (state storage) - stores clinet widget meta data
+| guimeta          |      `n/a`  `str`           |     No/N/A      | USED BY micrOS Client (state storage) - stores clinet widget meta data
 
-> Note: Default empty value: n/a in case of string parameter.
+> Note: Default empty value: `n/a` in case of string parameter.
+> Note: Cron is only available on devices with Timer(**1**): esp32
 
 ## Logical pin association handling
 

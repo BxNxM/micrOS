@@ -1,4 +1,4 @@
-from ConfigHandler import progress_led_toggle_adaptor, read_cfg_file
+from ConfigHandler import progress_led_toggle_adaptor
 
 
 def info():
@@ -98,8 +98,7 @@ def lmpacman(lm_del=None):
     from os import listdir, remove
     if lm_del is not None and lm_del.endswith('py'):
         # Check LM is in use
-        if 'system.' in lm_del or len(
-                [lminconf for lminconf in read_cfg_file().values() if lm_del.split('.')[0] in str(lminconf)]) > 0:
+        if 'system.' in lm_del:
             return 'Load module {} is in use, skip delete.'.format(lm_del)
         remove('LM_{}'.format(lm_del))
         return 'Delete module: {}'.format(lm_del)
@@ -115,4 +114,5 @@ def getpin(key='builtin'):
 
 
 def help():
-    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module', 'rssi', 'cachedump', 'lmpacman', 'getpin'
+    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module',\
+           'rssi', 'cachedump', 'lmpacman', 'getpin'

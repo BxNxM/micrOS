@@ -859,7 +859,7 @@ class MicrOSDevTool:
             f.write(lock_value)
 
         # Create copy command
-        command = '{api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
+        command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
                                                                             pwd=pwd,
                                                                             host=host)
         if self.dummy_exec:
@@ -1021,7 +1021,7 @@ class MicrOSDevTool:
             for _ in range(0, 3):
                 source_name = os.path.basename(source)
                 self.console("[{}%] {} copy over webrepl {}:{}".format(progress, source_name, device_ip, source_name))
-                command = '{api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path, pwd=webrepl_password,
+                command = 'python {api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path, pwd=webrepl_password,
                                                                                     input_file=source_name, host=device_ip,
                                                                                     target_path=source_name)
                 if self.dummy_exec:

@@ -5,9 +5,9 @@ handling dedicated to micrOS framework.
 - Configure time based and external interrupts
 
 - Time based IRQ:
-    - Simple with fix period callback
-    - Advanced - time stump ! LM function;
-    -            0-6:0-24:0-59:0-59!system heartbeat; etc.
+    - Simple (timer0) with fix period callback
+    - Advanced (timer1) - time stump ! LM function;
+            0-6:0-24:0-59:0-59!system heartbeat; etc.
 
 Designed by Marcell Ban aka BxNxM
 """
@@ -21,20 +21,12 @@ if cfgget('cron'):
     # Only import when enabled - memory usage optimization
     from Scheduler import scheduler
 
-
-# TIMER IRQ AND CRON VALUES PERSISTENT CACHE
-# timirqcbf (simple), crontasks, timirqseq
-CFG_TIMER_IRQ = ['n/a', 3]
-
-# EVENT IRQ VALUE PERSISTENT CACHE
-CFG_EVIRQCBF = 'n/a'
-
 #################################################################
 #            CONFIGURE INTERRUPT MEMORY BUFFER                  #
 #################################################################
 
 
-def set_emergency_buffer():
+def emergency_mbuff():
     emergency_buff_kb = cfgget('irqmembuf')
     if cfgget('extirq') or cfgget("timirq"):
         from micropython import alloc_emergency_exception_buf
@@ -48,82 +40,64 @@ def set_emergency_buffer():
 #################################################################
 
 #############################################
-#     [TIMER] TIMIRQ CBFs - LM executor     #
+#    [TIMER 0] TIMIRQ CBFs - LM executor    #
 #############################################
 
 
-def secureInterruptHandlerSimple(timer=None):
+def timirq_cbfs(tasks):
+    """
+    LM tasks executor callback function
+    """
     try:
         # Execute CBF from cached config
-        state = execute_LM_function_Core(CFG_TIMER_IRQ[0].split(' '))
-        if not state:
-            console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(CFG_TIMER_IRQ[0]))
+        for cmd in (cmd.strip().split(' ') for cmd in tasks.split(';')):
+            state = execute_LM_function_Core(cmd)
+            if not state:
+                console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(tasks))
     except Exception as e:
-        console_write("[IRQ] TIMIRQ callback: {} error: {}".format(CFG_TIMER_IRQ[0], e))
-
-
-def secureInterruptHandlerScheduler(timer=None):
-    try:
-        # Execute CBF LIST from local cached config with timirqseq in sec
-        scheduler(CFG_TIMER_IRQ[0], CFG_TIMER_IRQ[1])
-    except Exception as e:
-        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(CFG_TIMER_IRQ[0], e))
-
-
-#############################################
-#         [TIMER] INIT TIMIRQ SET CBF       #
-#############################################
+        console_write("[IRQ] TIMIRQ callback: {} error: {}".format(tasks, e))
 
 
 def enableInterrupt():
     """
-    TIMER INTERRUPT CALLBACK FUNCTION CONFIG. WRAPPER
-    - FIRST PRIORITY: SCHEDULER
-    - SECOND PRIORITY: SIMPLE PERIODIC CALLBACK
+    Set task pool executor in interrupt timer0
+    Input: timirq(bool), timirqseq(ms), timirqcbf(str)
     """
-    console_write("[IRQ] TIMIRQ SETUP - TIMIRQ: {} SEQ: {}".format(cfgget("timirq"), cfgget("timirqseq")))
-    console_write("|- [IRQ] CRON:{} CBF:{}".format(cfgget('cron'), cfgget('crontasks')))
-    console_write("|- [IRQ] SIMPLE CBF:{}".format(cfgget('timirqcbf')))
-    if cfgget("timirq"):
-        # Configure advanced scheduler OR simple repeater
-        if cfgget('cron') and cfgget('crontasks').lower() != 'n/a':
-            console_write("|-- TIMER IRQ MODE: SCHEDULER")
-            # ENABLE ADVANCED SCHEDULER (BASED ON SIMPLE TIMIRQ)
-            __enableInterruptScheduler()
-            return
-        # ENABLE SIMPLE PERIODIC INTERRUPT
-        console_write("|-- TIMER IRQ MODE: SIMPLE")
-        __enableInterruptSimple()
-
-
-def __enableInterruptScheduler():
-    """
-    SMART TIMER INTERRUPT CONFIGURATION
-    # MUST BE CHECK BEFORE CALL: cfgget("timirq") and cfgget('cron') and cfgget('crontasks')
-    """
-    # CACHE TASKS FOR CBF
-    CFG_TIMER_IRQ[0] = cfgget('crontasks')
-    CFG_TIMER_IRQ[1] = int(cfgget("timirqseq") / 1000)
-    from machine import Timer
-    # INIT TIMER IRQ with callback function wrapper
-    timer = Timer(0)
-    timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC, callback=secureInterruptHandlerScheduler)
-
-
-def __enableInterruptSimple():
-    """
-    SIMPLE TIMER INTERRUPT CONFIGURATION
-    """
-    # LOAD DATA FOR TIMER IRQ: cfgget("timirq")
-    # CACHE TASK FOR CBF
-    CFG_TIMER_IRQ[0] = cfgget('timirqcbf')
-    if CFG_TIMER_IRQ[0].lower() != 'n/a':
+    console_write("[IRQ] TIMIRQ SETUP: {} SEQ: {}".format(cfgget("timirq"), cfgget("timirqseq")))
+    console_write("|- [IRQ] TIMIRQ CBF:{}".format(cfgget('timirqcbf')))
+    if cfgget("timirq") and cfgget('timirqcbf').lower() != 'n/a':
         from machine import Timer
         # INIT TIMER IRQ with callback function wrapper
         timer = Timer(0)
-        timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC, callback=secureInterruptHandlerSimple)
-    else:
-        console_write("[IRQ] TIMIRQ: isenable: {} callback: {}".format(cfgget("timirq"), cfgget('timirqcbf')))
+        timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC,
+                   callback=lambda timer: timirq_cbfs(cfgget('timirqcbf')))
+
+
+#############################################
+#    [TIMER 1] TIMIRQ CRON - LM executor    #
+#############################################
+
+def timirq_cbf_sched(task, seq):
+    try:
+        # Execute CBF LIST from local cached config with timirqseq in sec
+        scheduler(task, seq)
+    except Exception as e:
+        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(task, e))
+
+
+def enableCron():
+    """
+    Set time stump based scheduler aka cron in timer1
+    Input: cron(bool), cronseq(ms), crontasks(str)
+    """
+    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget(cfgget('cron')), cfgget("cronseq")))
+    console_write("|- [IRQ] CRON CBF:{}".format(cfgget('crontasks')))
+    if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
+        from machine import Timer
+        # INIT TIMER 1 IRQ with callback function wrapper
+        timer = Timer(1)
+        timer.init(period=int(cfgget("cronseq")), mode=Timer.PERIODIC,
+                   callback=lambda timer: timirq_cbf_sched(cfgget('crontasks'), int(cfgget("cronseq")/1000)))
 
 
 #################################################################
@@ -131,49 +105,46 @@ def __enableInterruptSimple():
 #################################################################
 # trigger=Pin.IRQ_FALLING   signal HIGH to LOW
 # trigger=Pin.IRQ_RISING    signal LOW to HIGH
-# trigger=3                 both
 #################################################################
 
 
-def secureEventInterruptHandler(pin=None):
+def extirq_cbf(task):
     """
     EVENT INTERRUPT CALLBACK FUNCTION WRAPPER
     """
     try:
-        state = execute_LM_function_Core(CFG_EVIRQCBF.split(' '))
+        state = execute_LM_function_Core(task.split(' '))
         if not state:
-            console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(CFG_EVIRQCBF))
+            console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(task))
     except Exception as e:
-        console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(CFG_EVIRQCBF, e))
+        console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(task, e))
 
 
 def init_eventPIN():
     """
     EVENT INTERRUPT CONFIGURATION
     """
-    global CFG_EVIRQCBF
+    console_write("[IRQ] EXTIRQ SETUP - EXTIRQ: {} TRIG: {}".format(cfgget("extirq"), cfgget("extirqtrig")))
+    console_write("|- [IRQ] EXTIRQ CBF: {}".format(cfgget('extirqcbf')))
     if cfgget('extirq') and cfgget('extirqcbf').lower() != 'n/a':
-        CFG_EVIRQCBF = cfgget('extirqcbf')
         pin = get_pin_on_platform_by_key('pwm_4')
         trig = cfgget('extirqtrig').strip().lower()
-        console_write("[IRQ] EVENTIRQ ENABLED PIN: {} CBF: {}".format(pin, CFG_EVIRQCBF))
         # Init event irq with callback function wrapper
         from machine import Pin
         pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
         console_write("[IRQ] - event setup: {}".format(trig))
         if trig == 'down':
-            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=secureEventInterruptHandler)
+            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=extirq_cbf)
             return
         if trig == 'both':
-            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=secureEventInterruptHandler)
+            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=extirq_cbf)
             return
-        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=secureEventInterruptHandler)
-    else:
-        console_write("[IRQ] EVENTIRQ: isenable: {} callback: {}".format(cfgget('extirq'), CFG_EVIRQCBF))
+        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: extirq_cbf(cfgget('extirqcbf')))
+
 
 #################################################################
 #                         INIT MODULE                           #
 #################################################################
 
 
-set_emergency_buffer()
+emergency_mbuff()

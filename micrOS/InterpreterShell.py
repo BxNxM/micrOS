@@ -146,6 +146,8 @@ def __irq_mem_requirement_check(key):
     memavail = mem_free()
     if 'timirq' == key and memavail < cfgget('irqmreq'):
         return False, memavail
+    if 'cron' == key and memavail < cfgget('irqmreq') * 2:
+        return False, memavail
     if 'extirq' == key and memavail < int(cfgget('irqmreq') * 0.7):
         return False, memavail
     return True, memavail

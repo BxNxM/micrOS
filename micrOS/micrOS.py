@@ -25,10 +25,11 @@ def safe_boot_hook():
 
 def interrupt_handler():
     try:
-        from InterruptHandler import enableInterrupt
+        from InterruptHandler import enableInterrupt, enableCron
         enableInterrupt()
+        enableCron()
     except Exception as e:
-        print("[micrOS main] InterruptHandler.enableInterrupt error: {}".format(e))
+        print("[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {}".format(e))
 
 
 def external_interrupt_handler():
@@ -42,6 +43,7 @@ def external_interrupt_handler():
 #################################################################
 #                      MAIN FUNCTION CALLS                      #
 #################################################################
+
 
 def micrOS():
     profiling_info(label='[1] MAIN BASELOAD')

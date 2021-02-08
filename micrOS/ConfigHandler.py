@@ -47,9 +47,10 @@ def default_config():
                                       "soctout": 100,
                                       "socport": 9008,
                                       "devip": "n/a",
-                                      "timirq": False,
                                       "cron": False,
                                       "crontasks": "n/a",
+                                      "cronseq": 3000,
+                                      "timirq": False,
                                       "timirqcbf": "n/a",
                                       "timirqseq": 3000,
                                       "irqmembuf": 1000,
@@ -151,9 +152,15 @@ def __write_cfg_file(dictionary):
 
 
 def __inject_default_conf():
+    # Load config and template
     default_config_dict = default_config()
     live_config = read_cfg_file(nosafe=True)
+    # Remove obsolete keys from conf
+    for key in (key for key in live_config.keys() if key not in default_config_dict.keys()):
+        live_config.pop(key, None)
+    # Merge template to live conf
     default_config_dict.update(live_config)
+    # Run data injection and store
     if default_config_dict['dbg']:
         console_write("[CONFIGHANDLER] inject config:\n{}".format(default_config_dict))
     try:
@@ -164,7 +171,6 @@ def __inject_default_conf():
         console_write("[CONFIGHANDLER] Inject default data struct failed: {}".format(e))
     finally:
         del default_config_dict
-
 
 
 def __value_type_handler(key, value):

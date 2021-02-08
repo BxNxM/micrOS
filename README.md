@@ -3,13 +3,14 @@
 ### micropython based IoT framework for wifi capable arm based microcontrollers and much more...
 
 ### KEY PRINCIPLES:
-✉️ 📡 Generic communication API -> Human / Machine interface <br/>
+✉️ 📡 Generic communication API (expose module functions) <br/>
 📲 💻 Custom built-in socket shell for configuration and execution <br/>
 ⚙️ 📝 Automatic device initialization from user config ;) <br/>
-🚪 No external server / service required <br/>
+🚪 No external server or service required <br/>
 ⚠️ 🛡 Privacy in focus, works on Local Private Network <br/>
 🧩  Codeless end user experience via phone client <br/>
-🛠🦾 Easy to customize aka create Load Modules, copy **LM**\_your_app**.py** or **.mpy** to the device and call any function from your module.<br/>
+🛠 Easy to customize aka create Load Modules, copy **LM**\_your_app**.py** or **.mpy** to the device and call any function from your module. <br/>
+🦾 Built-in smart background (IRQ) task scheduling: time stump / periodic <br/>
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
 ### QUICK LINKS:
@@ -123,11 +124,12 @@ It will install your board via USB with default settings. Continue with your mob
 - **micrOS loader** - micrOS / WEBREPL (update / recovery)
 	- **OTA update** - push update over wifi (webrepl automation) with auto restart node
 - **Config handling(*)** - node_config.json [socket access]
+	- System data handler stucture: read/write/inject template/cleanup (based on template) 
 - **Boot phase** handling - preload modules - I/O initialization from node_config
 - **Network handling** - based on node_config 
 	- STA / AP
 	- NTP setup
-	- static IP configuration
+	- Static IP configuration
 - **Socket interpreter** - wireless communication interface with the devices/nodes
 	- **System commands**: `help, version, reboot, webrepl, etc.`
 		- webrepl <--> micrOS interface switch  
@@ -135,15 +137,18 @@ It will install your board via USB with default settings. Continue with your mob
 	- **LM** - Load Module function execution (application modules)
 - **Scheduling / External events** - Interrupt callback - based on node_config 
 	- Time based
-		- simple time "shot" trigger
-		- cron "timeboxed" task pool logic
+		- simple LM task pool execution
+		- cron [time stump:LM task] pool execution 
 	- Event based
-- Load Module **application** handling
+		-  Set trigger event up/down/both with LM callback function 
+- **[L]oad [M]odule** aka **application** handling
 	- Lot of built-in functions
 	- Create your own module with 2 easy steps
 		- Create a file in `MicrOS` folder like: `LM_<your_app_name>.py`
 		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy
-
+- **[L]ogical [P]inout** handling - lookuptables / board or custom
+	- Predefined pinout modules for esp32 and esp8266
+	- Create your pinout based on `LP_esp32.py`	
 		
 DevToolKit CLI feature:
 

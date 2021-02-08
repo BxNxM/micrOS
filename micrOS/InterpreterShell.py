@@ -124,7 +124,7 @@ def __configure(attributes, SocketServerObj):
         key = attributes[0]
         value = " ".join(attributes[1:])
         # Check irq required memory
-        if 'irq' in key and attributes[1].lower() == 'true':
+        if key in ('timirq', 'extirq', 'cron') and attributes[1].lower() == 'true':
             isOK, avmem = __irq_mem_requirement_check(key)
             if not isOK:
                 SocketServerObj.reply_message("Skip ... feature requires more memory then {} byte".format(avmem))

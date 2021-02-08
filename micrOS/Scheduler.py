@@ -75,39 +75,39 @@ def __cron_task_cache_manager(now_in_sec, sec_tolerant):
             LAST_CRON_TASKS.remove(LAST_CRON_TASKS[index])
 
 
-def __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, scheduler_fragment, sec_tolerance=2):
+def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
     """
     SchedulerCore logic
         cron time now format: WD, H, M, S
     """
-    check_time = tuple(int(t.strip()) if t.strip() != '*' else t.strip() for t in scheduler_fragment[0].split(':'))
+    check_time = tuple(int(t.strip()) if t.strip() != '*' else t.strip() for t in crontask[0].split(':'))
     # Cron actual time (now) parts summary in sec
-    check_time_now_sec = check_time_now_sec_tuple[0] + check_time_now_sec_tuple[1] + check_time_now_sec_tuple[2]
+    check_time_now_sec = now_sec_tuple[0] + now_sec_tuple[1] + now_sec_tuple[2]
     # Cron overall requested time in sec - hour in sec, minute in sec, sec
-    check_time_scheduler_sec = int(check_time_now_sec_tuple[0] if check_time[1] == '*' else check_time[1] * 3600) \
-                               + int(check_time_now_sec_tuple[1] if check_time[2] == '*' else check_time[2] * 60) \
-                               + int(check_time_now_sec_tuple[2] if check_time[3] == '*' else check_time[3])
+    check_time_scheduler_sec = int(now_sec_tuple[0] if check_time[1] == '*' else check_time[1] * 3600) \
+                               + int(now_sec_tuple[1] if check_time[2] == '*' else check_time[2] * 60) \
+                               + int(now_sec_tuple[2] if check_time[3] == '*' else check_time[3])
 
     # Time frame +/- corrections
-    tolerance_min_sec = 0 if check_time_now_sec - sec_tolerance < 0 else check_time_now_sec - sec_tolerance
-    tolerance_max_sec = check_time_now_sec + sec_tolerance
+    tolerance_min_sec = 0 if check_time_now_sec - deltasec < 0 else check_time_now_sec - deltasec
+    tolerance_max_sec = check_time_now_sec + deltasec
 
-    task_id = "{}:{}|{}".format(check_time[0], check_time_scheduler_sec, scheduler_fragment[1].replace(' ', ''))
+    task_id = "{}:{}|{}".format(check_time[0], check_time_scheduler_sec, crontask[1].replace(' ', ''))
 
     # Check WD - WEEK DAY
     if check_time[0] == '*' or check_time[0] == cron_time_now[0]:
         # Check H, M, S in sec format between tolerance range
         if tolerance_min_sec <= check_time_scheduler_sec <= tolerance_max_sec:
-            __cron_task_cache_manager(check_time_now_sec, sec_tolerance)
+            __cron_task_cache_manager(check_time_now_sec, deltasec)
             if check_time[3] == '*' or task_id not in LAST_CRON_TASKS:
-                lm_state = execute_LM_function_Core(scheduler_fragment[1].split())
+                lm_state = execute_LM_function_Core(crontask[1].split())
                 if not lm_state:
                     console_write("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
-                                                                                               __convert_sec_to_time(tolerance_min_sec),
-                                                                                               __convert_sec_to_time(tolerance_max_sec),
-                                                                                               scheduler_fragment[0],
-                                                                                               lm_state,
-                                                                                               scheduler_fragment[1]))
+                                                                                                       __convert_sec_to_time(tolerance_min_sec),
+                                                                                                       __convert_sec_to_time(tolerance_max_sec),
+                                                                                                       crontask[0],
+                                                                                                       lm_state,
+                                                                                                       crontask[1]))
 
                 # SAVE TASK TO CACHE
                 if check_time[3] != '*':
@@ -118,15 +118,14 @@ def __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, scheduler_fragm
 
 
 def deserialize_raw_input(raw_cron_input):
-    datastruct = []
     try:
-        datastruct = [tuple(cron.split('!')) for cron in raw_cron_input.split(';')]
+        return tuple(tuple(cron.split('!')) for cron in raw_cron_input.split(';'))
     except Exception as e:
         console_write("deserialize_raw_input: input syntax error: {}".format(e))
-    return datastruct
+    return tuple()
 
 
-def scheduler(raw_cron_input, irqperiod):
+def scheduler(scheduler_input, irqperiod):
     """
     irqperiod - in sec
     RAW INPUT SYNTAX:
@@ -134,20 +133,18 @@ def scheduler(raw_cron_input, irqperiod):
     ! - execute
     ; - cron task separator
     """
-    scheduler_input = deserialize_raw_input(raw_cron_input)
-    return_state = False
+    state = False
     time_now = localtime()[0:8]
     # time_now = GEN.__next__()   # TODO: remove after test
 
     # Actual time - WD, H, M, S
     cron_time_now = (time_now[-2], time_now[-5], time_now[-4], time_now[-3])
     # Cron overall time now in sec - hour in sec, minute in sec, sec
-    check_time_now_sec_tuple = (cron_time_now[1] * 3600, cron_time_now[2] * 60, cron_time_now[3])
+    now_sec_tuple = (cron_time_now[1] * 3600, cron_time_now[2] * 60, cron_time_now[3])
 
-    for cron in scheduler_input:
-        state = __scheduler_trigger(cron_time_now, check_time_now_sec_tuple, cron, sec_tolerance=irqperiod)
-        return_state |= state
-    return return_state
+    for cron in deserialize_raw_input(scheduler_input):
+        state |= __scheduler_trigger(cron_time_now, now_sec_tuple, cron, deltasec=irqperiod)
+    return state
 
 
 '''

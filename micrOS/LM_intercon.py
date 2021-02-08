@@ -9,4 +9,4 @@ def sendcmd(*args, **kwargs):
 
 
 def help():
-    return 'sendcmd(cmd, host=<IP>, port=9008)'
+    return 'sendcmd <cmd> host=<IP>, port=9008)', 'example: intercon sendcmd "dimmer" "toggle" "True" host="10.0.1.84"'

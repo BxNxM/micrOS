@@ -47,12 +47,13 @@ def emergency_mbuff():
 def timirq_cbfs(tasks):
     """
     LM tasks executor callback function
+    Input:
+        tasks: str
     """
     try:
         # Execute CBF from cached config
-        for cmd in (cmd.strip().split(' ') for cmd in tasks.split(';')):
-            state = execute_LM_function_Core(cmd)
-            if not state:
+        for cmd in (cmd.split(' ') for cmd in tasks.split(';')):
+            if not execute_LM_function_Core(cmd):
                 console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(tasks))
     except Exception as e:
         console_write("[IRQ] TIMIRQ callback: {} error: {}".format(tasks, e))
@@ -77,12 +78,17 @@ def enableInterrupt():
 #    [TIMER 1] TIMIRQ CRON - LM executor    #
 #############################################
 
-def timirq_cbf_sched(task, seq):
+def timirq_cbf_sched(tasks, seq):
+    """
+    Input:
+        tasks: str
+        seq: sec (int)
+    """
     try:
         # Execute CBF LIST from local cached config with timirqseq in sec
-        scheduler(task, seq)
+        scheduler(tasks, seq)
     except Exception as e:
-        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(task, e))
+        console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(tasks, e))
 
 
 def enableCron():
@@ -113,8 +119,7 @@ def extirq_cbf(task):
     EVENT INTERRUPT CALLBACK FUNCTION WRAPPER
     """
     try:
-        state = execute_LM_function_Core(task.split(' '))
-        if not state:
+        if not execute_LM_function_Core(task.split(' ')):
             console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(task))
     except Exception as e:
         console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(task, e))

@@ -57,6 +57,9 @@ def __inv_lerp(a, b, v):
 
 
 def fader_cache_load_n_init(cache=None):
+    """
+    Fader init: create owm objects and load cache
+    """
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
@@ -64,11 +67,15 @@ def fader_cache_load_n_init(cache=None):
     else:
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')  # recover data cache
-    transition()
+    for ix, obj in enumerate(__fader_init()):
+        obj.duty(__FADER_CACHE[ix+8])
     return "CACHE: {}".format(__PERSISTENT_CACHE)
 
 
 def fade(r, g, b, sec=0):
+    """
+    Set RGB parameters to change under the given sec
+    """
     global __FADER_CACHE
     if __FADER_CACHE[11] == 0:
         return "Fading is turned off, use Toggle to turn on"
@@ -81,10 +88,13 @@ def fade(r, g, b, sec=0):
 
 
 def transition():
+    """
+    Runs the transition: color change
+    """
     global __FADER_CACHE
     ctime = time()
     if __FADER_CACHE[11] == 0 or __FADER_CACHE[8:11] == __FADER_CACHE[3:6]:
-        return "Skipped (Turned off)"
+        return "Skipped (no change) / Manually turned off)"
     # COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10), state: 0False 1True (11)
     state = __inv_lerp(__FADER_CACHE[6], __FADER_CACHE[7], ctime)
     for i, obj in enumerate(__fader_init()):
@@ -101,23 +111,26 @@ def transition():
 
 def toggle(state=None):
     """
-    Toggle led state based on the stored one
+    Toggle led state based on the stored state or based on explicit input
     """
     # COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10), state: 0False 1True (11)
     global __FADER_CACHE
     # Input handling
     nst = 1 if state else 0
     if state is None:
+        # Toggle stored state
         nst = 0 if __FADER_CACHE[11] == 1 else 1
     # Set required state
     if nst == 0:
         for obj in __fader_init():
             obj.duty(0)
         __FADER_CACHE[11] = 0
+        __persistent_cache_manager('s')
         return "RGB OFF"
     for ix, obj in enumerate(__fader_init()):
         obj.duty(__FADER_CACHE[ix+8])
     __FADER_CACHE[11] = 1
+    __persistent_cache_manager('s')
     return "RGB ON"
 
 
@@ -127,4 +140,4 @@ def toggle(state=None):
 
 
 def help():
-    return 'transition', 'fade r g b sec=0', 'toggle'
+    return 'transition', 'fade r g b sec=0', 'toggle', 'fader_cache_load_n_init'

@@ -27,7 +27,7 @@ def app(devfid=None, test_cycle=64):
         green = random.randint(0, 1000)
         blue = random.randint(0, 1000)
         # EDIT YOUR COMMAND
-        args = base_cmd() + ['light', 'rgb {} {} {}'.format(red, green, blue)]
+        args = base_cmd() + ['rgb', 'rgb {} {} {}'.format(red, green, blue)]
         status, answer = socketClient.run(args)
         if status == 0 or 'R{}G{}B{}'.format(red, green, blue) in answer:
             print("[OK][{}/{}][{}] {}".format(cycle, test_cycle, err_cnt, answer))

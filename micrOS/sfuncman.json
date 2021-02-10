@@ -58,10 +58,6 @@
     "Servo2_deinit()",
     "help()"
   ],
-  "test": [
-    "run(name='ault')",
-    "help()"
-  ],
   "neopixel": [
     "neopixel_cache_load_n_init(cache=None)",
     "neopixel(r=None, g=None, b=None)",
@@ -126,11 +122,6 @@
     "distance_mm()",
     "distance_cm()",
     "deinit()",
-    "help()"
-  ],
-  "motion_sensor": [
-    "get_PIR_state()",
-    "PIR_deinit()",
     "help()"
   ]
 }

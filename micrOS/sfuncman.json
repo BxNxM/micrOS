@@ -58,6 +58,10 @@
     "Servo2_deinit()",
     "help()"
   ],
+  "test": [
+    "run(name='ault')",
+    "help()"
+  ],
   "neopixel": [
     "neopixel_cache_load_n_init(cache=None)",
     "neopixel(r=None, g=None, b=None)",

@@ -33,10 +33,10 @@ def bootup_hook():
     # Execute LMs from boothook config parameter
     console_write("[BOOT HOOKS] EXECUTION...")
     if cfgget('boothook') is not None and cfgget('boothook').lower() != 'n/a':
-        for shell_cmd in (cmd.strip() for cmd in tuple(cfgget('boothook').split(';')) if len(cmd.split()) > 1):
+        for shell_cmd in (cmd.strip().split() for cmd in str(cfgget('boothook')).split(';')):
             console_write("|-[BOOT HOOKS] SHELL EXEC: {}".format(shell_cmd))
             try:
-                state = execute_LM_function_Core(shell_cmd.split())
+                state = execute_LM_function_Core(shell_cmd)
                 console_write("|-[BOOT HOOKS] state: {}".format(state))
             except Exception as e:
                 console_write("|--[BOOT HOOK] error: {}".format(e))

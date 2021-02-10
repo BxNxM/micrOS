@@ -74,7 +74,7 @@ def __shell(msg, SocketServerObj):
         SocketServerObj.reply_message("    key value  - Set value")
         SocketServerObj.reply_message("  noconf     - Exit conf mode")
         SocketServerObj.reply_message("[EXEC] Command mode (LMs):")
-        return __show_LMs_functions(SocketServerObj)
+        return __show_LM_functions(SocketServerObj)
 
     # EXECUTE:
     # @1 Configure mode
@@ -125,7 +125,7 @@ def __configure(attributes, SocketServerObj):
         value = " ".join(attributes[1:])
         # Check irq required memory
         if key in ('timirq', 'extirq', 'cron') and attributes[1].lower() == 'true':
-            isOK, avmem = __irq_mem_requirement_check(key)
+            isOK, avmem = __irq_mem_req_check(key)
             if not isOK:
                 SocketServerObj.reply_message("Skip ... feature requires more memory then {} byte".format(avmem))
                 return True
@@ -141,7 +141,7 @@ def __configure(attributes, SocketServerObj):
     return True
 
 
-def __irq_mem_requirement_check(key):
+def __irq_mem_req_check(key):
     collect()
     memavail = mem_free()
     if 'timirq' == key and memavail < cfgget('irqmreq'):
@@ -158,7 +158,7 @@ def __irq_mem_requirement_check(key):
 #################################################################
 
 
-def __show_LMs_functions(SocketServerObj):
+def __show_LM_functions(SocketServerObj):
     """
     Dump LM modules with functions - in case of [py] files
     Dump LM module with help function call - in case of [mpy] files

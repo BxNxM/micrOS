@@ -103,7 +103,7 @@ def cfgput(key, value, type_check=False):
         return True
     try:
         if type_check:
-            value = __value_type_handler(key, value)
+            value = __type_handler(key, value)
         if value is not None:
             cfg_dict_buffer = read_cfg_file()
             cfg_dict_buffer[key] = value
@@ -153,27 +153,27 @@ def __write_cfg_file(dictionary):
 
 def __inject_default_conf():
     # Load config and template
-    default_config_dict = default_config()
-    live_config = read_cfg_file(nosafe=True)
+    data = default_config()
+    liveconf = read_cfg_file(nosafe=True)
     # Remove obsolete keys from conf
-    for key in (key for key in live_config.keys() if key not in default_config_dict.keys()):
-        live_config.pop(key, None)
+    for key in (key for key in liveconf.keys() if key not in data.keys()):
+        liveconf.pop(key, None)
     # Merge template to live conf
-    default_config_dict.update(live_config)
+    data.update(liveconf)
     # Run data injection and store
-    if default_config_dict['dbg']:
-        console_write("[CONFIGHANDLER] inject config:\n{}".format(default_config_dict))
+    if data['dbg']:
+        console_write("[CONFIGHANDLER] inject config:\n{}".format(data))
     try:
         # [LOOP] Only returns True
-        __write_cfg_file(default_config_dict)
+        __write_cfg_file(data)
         console_write("[CONFIGHANDLER] Inject default data struct successful")
     except Exception as e:
         console_write("[CONFIGHANDLER] Inject default data struct failed: {}".format(e))
     finally:
-        del default_config_dict
+        del data
 
 
-def __value_type_handler(key, value):
+def __type_handler(key, value):
     value_in_cfg = cfgget(key)
     try:
         if isinstance(value_in_cfg, bool):
@@ -182,7 +182,7 @@ def __value_type_handler(key, value):
                 return True
             if str(value).lower() == 'false':
                 return False
-            raise Exception("__value_type_handler type handling error")
+            raise Exception("__type_handler type handling error")
         if isinstance(value_in_cfg, str):
             del value_in_cfg
             return str(value)

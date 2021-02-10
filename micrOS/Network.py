@@ -26,7 +26,7 @@ from ConfigHandler import console_write, cfgget, cfgput
 
 def setNTP_RTC():
     if WLAN(STA_IF).isconnected():
-        for _ in range(14 if cfgget('cron') else 4):
+        for _ in range(8 if cfgget('cron') else 4):
             try:
                 # Sync with NTP server
                 settime()

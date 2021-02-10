@@ -835,7 +835,7 @@ class MicrOSDevTool:
                 return False
         return True
 
-    def __lock_update_with_webrepl(self, host, lock=False, pwd='ADmin123', clean=False):
+    def __lock_update_with_webrepl(self, host, lock=False, pwd='ADmin123'):
         """
         [1] Create .if_mode file (local file system)
             lock: True -> value: webrepl
@@ -844,10 +844,6 @@ class MicrOSDevTool:
         """
         workdir_handler = LocalMachine.SimplePopPushd()
         workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
-
-        if clean:
-            os.remove('.if_mode')
-            return True
 
         # Set lock file value
         lock_value = 'micros'
@@ -873,14 +869,17 @@ class MicrOSDevTool:
                 stderr = ''
                 for _ in range(0, 2):
                     exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                    LocalMachine.FileHandler.remove('.if_mode')
                     workdir_handler.popd()
                     if exitcode == 0:
                         return True
                 self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
+                LocalMachine.FileHandler.remove('.if_mode', ignore=True)
                 workdir_handler.popd()
                 return False
             except Exception as e:
                 self.console("Create lock/unlock failed: {}".format(e))
+                LocalMachine.FileHandler.remove('.if_mode', ignore=True)
                 workdir_handler.popd()
                 return False
 
@@ -1049,7 +1048,6 @@ class MicrOSDevTool:
         self.console("\t[!] Delete update lock (webrepl bootup) under OTA update", state='IMP')
         if self.__lock_update_with_webrepl(host=device_ip, lock=False, pwd=webrepl_password):
             self.console("\tOTA UPDATE WAS SUCCESSFUL", state='OK')
-            self.__lock_update_with_webrepl(device_ip, clean=True)
         else:
             self.console("\tOTA UPDATE WAS FAILED, PLEASE TRY AGAIN.", state='ERR')
             self.execution_verdict.append("[WARN] ota_update - failed to remove OTA update lock")

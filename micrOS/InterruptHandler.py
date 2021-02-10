@@ -52,7 +52,7 @@ def timirq_cbfs(tasks):
     """
     try:
         # Execute CBF from cached config
-        for cmd in (cmd.split(' ') for cmd in tasks.split(';')):
+        for cmd in (cmd.strip().split(' ') for cmd in tasks.split(';')):
             if not execute_LM_function_Core(cmd):
                 console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(tasks))
     except Exception as e:

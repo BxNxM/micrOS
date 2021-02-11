@@ -3,8 +3,8 @@ appdirs==1.4.4
 astroid==2.4.2
 click==7.1.2
 distlib==0.3.1
-ecdsa==0.15
-esptool==2.8
+ecdsa==0.16
+esptool==3.0
 filelock==3.0.12
 ipaddress==1.0.23
 isort==4.3.21

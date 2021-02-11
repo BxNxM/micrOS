@@ -43,6 +43,9 @@ def __persistent_cache_manager(mode):
 
 
 def __lerp(a, b, t):
+    """
+    Linear interpolation
+    """
     # Check ranges here
     t = 1 if t > 1 else t
     t = 0 if t < 0 else t
@@ -51,9 +54,24 @@ def __lerp(a, b, t):
 
 
 def __inv_lerp(a, b, v):
+    """
+    a: from value
+    b: to value
+    v: inter value
+    0-1 relative distance between a and b
+    """
     if (b - a) == 0:
-        return a
+        return 1
     return (v - a) / (b - a)
+
+
+def __gen_exp_color(ctim):
+    """
+    Generate expected color (based on ctim) with pwm object
+        ctim: sec now
+    """
+    state = __inv_lerp(__FADER_CACHE[6], __FADER_CACHE[7], ctim)
+    return ((obj, int(__lerp(__FADER_CACHE[i], __FADER_CACHE[i+3], state))) for i, obj in enumerate(__fader_init()))
 
 
 def fader_cache_load_n_init(cache=None):
@@ -81,31 +99,34 @@ def fade(r, g, b, sec=0):
         return "Fading is turned off, use Toggle to turn on"
     tim_now = time()
     # COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10), state: 0False 1True (11)
-    __FADER_CACHE[0:8] = __FADER_CACHE[8], __FADER_CACHE[9], __FADER_CACHE[10], r, g, b, tim_now, tim_now + sec
+    # Set from_color based on expected color (time calculated)
+    for i, c in enumerate(k[1] for k in __gen_exp_color(tim_now)):
+        __FADER_CACHE[i] = c
+    # Save other cache states
+    __FADER_CACHE[3:8] = r, g, b, tim_now, tim_now + sec
     transition()
     __persistent_cache_manager('s')
     return "Fading: {} -> {} -> {} ".format(__FADER_CACHE[0:3], __FADER_CACHE[8:11], __FADER_CACHE[3:6])
 
 
-def transition():
+def transition(f=False):
     """
     Runs the transition: color change
     """
     global __FADER_CACHE
-    ctime = time()
-    if __FADER_CACHE[11] == 0 or __FADER_CACHE[8:11] == __FADER_CACHE[3:6]:
-        return "Skipped (no change) / Manually turned off)"
     # COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10), state: 0False 1True (11)
-    state = __inv_lerp(__FADER_CACHE[6], __FADER_CACHE[7], ctime)
-    for i, obj in enumerate(__fader_init()):
-        # diff / color
-        color = int(__lerp(__FADER_CACHE[i], __FADER_CACHE[i+3], state))
-        if color == __FADER_CACHE[i+8]:
+    if not (__FADER_CACHE[11] == 1 and (f or __FADER_CACHE[8:11] != __FADER_CACHE[3:6])):
+        return "Skipped (no change) / Manually turned off)"
+    ctime = time()
+    for i, dat in enumerate(__gen_exp_color(ctime)):
+        # dat[0] - pwm obj
+        # dat[1] - expected color
+        if dat[1] == __FADER_CACHE[i+8]:
             continue
         # Set dimmer obj duty / channel
-        obj.duty(color)
+        dat[0].duty(dat[1])
         # Store new from (actual) param / channel
-        __FADER_CACHE[i+8] = color
+        __FADER_CACHE[i+8] = dat[1]
     return "RGB: {} -> {} -> {} ".format(__FADER_CACHE[0:3], __FADER_CACHE[8:11], __FADER_CACHE[3:6])
 
 
@@ -121,17 +142,10 @@ def toggle(state=None):
         # Toggle stored state
         nst = 0 if __FADER_CACHE[11] == 1 else 1
     # Set required state
-    if nst == 0:
-        for obj in __fader_init():
-            obj.duty(0)
-        __FADER_CACHE[11] = 0
-        __persistent_cache_manager('s')
-        return "RGB OFF"
-    for ix, obj in enumerate(__fader_init()):
-        obj.duty(__FADER_CACHE[ix+8])
-    __FADER_CACHE[11] = 1
+    __FADER_CACHE[11] = nst
     __persistent_cache_manager('s')
-    return "RGB ON"
+    transition(True)
+    return "Fading ON" if nst == 1 else "Fading OFF"
 
 
 #########################################

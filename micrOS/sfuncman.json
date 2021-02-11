@@ -25,7 +25,7 @@
   "rgbfader": [
     "fader_cache_load_n_init(cache=None)",
     "fade(r, g, b, sec=0)",
-    "transition()",
+    "transition(f=False)",
     "toggle(state=None)",
     "help()"
   ],

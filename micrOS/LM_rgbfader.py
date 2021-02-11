@@ -85,9 +85,8 @@ def fader_cache_load_n_init(cache=None):
     else:
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')  # recover data cache
-    for ix, obj in enumerate(__fader_init()):
-        obj.duty(__FADER_CACHE[ix+8])
-    return "CACHE: {}".format(__PERSISTENT_CACHE)
+    transition(True)
+    return 'Fader init done'
 
 
 def fade(r, g, b, sec=0):
@@ -95,8 +94,6 @@ def fade(r, g, b, sec=0):
     Set RGB parameters to change under the given sec
     """
     global __FADER_CACHE
-    if __FADER_CACHE[11] == 0:
-        return "Fading is turned off, use Toggle to turn on"
     tim_now = time()
     # COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10), state: 0False 1True (11)
     # Set from_color based on expected color (time calculated)
@@ -104,8 +101,10 @@ def fade(r, g, b, sec=0):
         __FADER_CACHE[i] = c
     # Save other cache states
     __FADER_CACHE[3:8] = r, g, b, tim_now, tim_now + sec
-    transition()
     __persistent_cache_manager('s')
+    if __FADER_CACHE[11] == 0:
+        return "Fading is turned off, use Toggle to turn on"
+    transition()
     return "Fading: {} -> {} -> {} ".format(__FADER_CACHE[0:3], __FADER_CACHE[8:11], __FADER_CACHE[3:6])
 
 
@@ -121,7 +120,7 @@ def transition(f=False):
     for i, dat in enumerate(__gen_exp_color(ctime)):
         # dat[0] - pwm obj
         # dat[1] - expected color
-        if dat[1] == __FADER_CACHE[i+8]:
+        if not f and dat[1] == __FADER_CACHE[i+8]:
             continue
         # Set dimmer obj duty / channel
         dat[0].duty(dat[1])

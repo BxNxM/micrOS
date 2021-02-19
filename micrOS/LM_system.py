@@ -16,7 +16,7 @@ def info():
             'Plaform': platform}
 
 
-def gcollect():
+def gclean():
     try:
         from gc import collect, mem_free
     except:
@@ -38,6 +38,9 @@ def clock():
 
 
 def ntp():
+    """
+    Set NTP manually
+    """
     try:
         from time import localtime, time
         from ntptime import settime
@@ -57,6 +60,9 @@ def ntp():
 
 
 def module(unload=None):
+    """
+    List and unload LM modules
+    """
     from sys import modules
     if unload is None:
         return modules.keys()
@@ -67,6 +73,9 @@ def module(unload=None):
 
 
 def cachedump():
+    """
+    Cache system persistent data storage files (.pds)
+    """
     from os import listdir
     cache = {}
     for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
@@ -107,12 +116,30 @@ def lmpacman(lm_del=None):
 
 
 def getpin(key='builtin'):
+    """
+    Get Logical pin by key runtime
+    """
     from sys import modules
     from LogicalPins import get_pin_on_platform_by_key
     return {key: get_pin_on_platform_by_key(key), 'pinmap':
         ', '.join((mdl.replace('LP_', '').split('.')[0] for mdl in modules.keys() if mdl.startswith('LP_')))}
 
 
+def ha_sta():
+    """
+    Check and repair STA network mode
+    """
+    from ConfigHandler import cfgget
+    if cfgget('nwmd') == 'STA':
+        from network import STA_IF, WLAN
+        # Set STA and Connect
+        if not WLAN(STA_IF).isconnected():
+            # Soft reset micropython VM - fast recovery
+            from machine import soft_reset
+            soft_reset()
+    return '{} mode, OK'.format(cfgget('nwmd'))
+
+
 def help():
-    return 'info', 'gcollect', 'heartbeat', 'clock', 'ntp', 'module',\
-           'rssi', 'cachedump', 'lmpacman', 'getpin'
+    return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module', \
+           'rssi', 'cachedump', 'lmpacman', 'getpin', 'ha_sta'

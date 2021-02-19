@@ -11,7 +11,7 @@
   ],
   "system": [
     "info()",
-    "gcollect()",
+    "gclean()",
     "heartbeat()",
     "clock()",
     "ntp()",
@@ -20,6 +20,7 @@
     "rssi()",
     "lmpacman(lm_del=None)",
     "getpin(key='builtin')",
+    "ha_sta()",
     "help()"
   ],
   "rgbfader": [

@@ -12,7 +12,7 @@ def __init_DHT22():
         from dht import DHT22
         from machine import Pin
         from LogicalPins import get_pin_on_platform_by_key
-        __DHT_OBJ = DHT22(Pin(get_pin_on_platform_by_key('simple_1')))
+        __DHT_OBJ = DHT22(Pin(get_pin_on_platform_by_key('dhtpin')))
     return __DHT_OBJ
 
 

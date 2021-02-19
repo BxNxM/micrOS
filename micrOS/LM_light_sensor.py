@@ -16,9 +16,9 @@ def __init_tempt6000():
         from machine import ADC, Pin
         from LogicalPins import get_pin_on_platform_by_key
         if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('adc_1'))
+            __ADC = ADC(get_pin_on_platform_by_key('temp6000'))
         else:
-            __ADC = ADC(Pin(get_pin_on_platform_by_key('adc_1')))
+            __ADC = ADC(Pin(get_pin_on_platform_by_key('temp6000')))
     return __ADC
 
 

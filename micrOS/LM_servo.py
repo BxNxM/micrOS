@@ -13,7 +13,7 @@ def __SERVO_init():
     global __SERVO
     if __SERVO is None:
         try:
-            pin = Pin(get_pin_on_platform_by_key('pwm_0'))
+            pin = Pin(get_pin_on_platform_by_key('servo_1'))
             __SERVO = PWM(pin, freq=50)
             del pin
         except Exception as e:
@@ -61,7 +61,7 @@ def __SERVO2_init():
     global __SERVO2
     if __SERVO2 is None:
         try:
-            pin = Pin(get_pin_on_platform_by_key('pwm_2'))     # Alternative wiring
+            pin = Pin(get_pin_on_platform_by_key('servo_2'))     # Alternative wiring
             __SERVO2 = PWM(pin, freq=50)
             del pin
         except Exception as e:

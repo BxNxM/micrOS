@@ -14,9 +14,9 @@ def __l298n_init():
     if len(__L298N_OBJS) == 0:
         from machine import Pin, PWM
         from LogicalPins import get_pin_on_platform_by_key
-        __L298N_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('pwm_6')), freq=1024))
-        __L298N_OBJS.append(Pin(get_pin_on_platform_by_key('pwm_5'), Pin.OUT))
-        __L298N_OBJS.append(Pin(get_pin_on_platform_by_key('pwm_7'), Pin.OUT))
+        __L298N_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('l298speed')), freq=1024))
+        __L298N_OBJS.append(Pin(get_pin_on_platform_by_key('l298dir_1'), Pin.OUT))
+        __L298N_OBJS.append(Pin(get_pin_on_platform_by_key('l298dir_2'), Pin.OUT))
         __L298N_OBJS[0].duty(0)     # Set default speed (PWM)
         __L298N_OBJS[1].value(0)    # Set default direction for dc motor1
         __L298N_OBJS[2].value(1)    # Set default direction for dc motor1

@@ -13,9 +13,9 @@ def __init_ADC():
         from machine import ADC, Pin
         from LogicalPins import get_pin_on_platform_by_key
         if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('adc_2'))
+            __ADC = ADC(get_pin_on_platform_by_key('ph'))
         else:
-            __ADC = ADC(Pin(get_pin_on_platform_by_key('adc_2')))
+            __ADC = ADC(Pin(get_pin_on_platform_by_key('ph')))
     return __ADC
 
 

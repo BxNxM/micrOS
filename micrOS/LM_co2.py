@@ -34,7 +34,7 @@ def __get_resistance():
     if __ADC is None:
         from machine import ADC
         from LogicalPins import get_pin_on_platform_by_key
-        __ADC = ADC(get_pin_on_platform_by_key('adc_0'))
+        __ADC = ADC(get_pin_on_platform_by_key('co2'))
     value = __ADC.read()
     if value == 0:
         return -1

@@ -15,9 +15,9 @@ def __RGB_init():
     if __RGB_OBJS[0] is None or __RGB_OBJS[1] is None or __RGB_OBJS[2] is None:
         from machine import Pin, PWM
         from LogicalPins import get_pin_on_platform_by_key
-        red = Pin(get_pin_on_platform_by_key('pwm_1'))
-        green = Pin(get_pin_on_platform_by_key('pwm_2'))
-        blue = Pin(get_pin_on_platform_by_key('pwm_3'))
+        red = Pin(get_pin_on_platform_by_key('redgb'))
+        green = Pin(get_pin_on_platform_by_key('rgreenb'))
+        blue = Pin(get_pin_on_platform_by_key('rgbue'))
         __RGB_OBJS = (PWM(red, freq=1024),
                       PWM(green, freq=1024),
                       PWM(blue, freq=1024))

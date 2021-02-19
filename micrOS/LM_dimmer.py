@@ -16,7 +16,7 @@ def __dimmer_init():
     if __DIMMER_OBJ is None:
         from machine import Pin, PWM
         from LogicalPins import get_pin_on_platform_by_key
-        dimmer_pin = Pin(get_pin_on_platform_by_key('pwm_5'))
+        dimmer_pin = Pin(get_pin_on_platform_by_key('dim_1'))
         __DIMMER_OBJ = PWM(dimmer_pin, freq=1024)
     return __DIMMER_OBJ
 

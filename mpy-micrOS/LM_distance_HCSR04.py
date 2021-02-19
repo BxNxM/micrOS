@@ -9,8 +9,8 @@ def __init_HCSR04():
     if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
         from LogicalPins import get_pin_on_platform_by_key
 
-        trigger_pin = get_pin_on_platform_by_key('simple_0')
-        echo_pin = get_pin_on_platform_by_key('pwm_5')
+        trigger_pin = get_pin_on_platform_by_key('hcsrtrig')
+        echo_pin = get_pin_on_platform_by_key('hcsrecho')
         # Init trigger pin (out)
         __TRIGGER_OBJ = Pin(trigger_pin, mode=Pin.OUT, pull=None)
         __TRIGGER_OBJ.value(0)

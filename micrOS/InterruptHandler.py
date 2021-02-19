@@ -132,7 +132,7 @@ def init_eventPIN():
     console_write("[IRQ] EXTIRQ SETUP - EXTIRQ: {} TRIG: {}".format(cfgget("extirq"), cfgget("extirqtrig")))
     console_write("|- [IRQ] EXTIRQ CBF: {}".format(cfgget('extirqcbf')))
     if cfgget('extirq') and cfgget('extirqcbf').lower() != 'n/a':
-        pin = get_pin_on_platform_by_key('pwm_4')
+        pin = get_pin_on_platform_by_key('extirq')
         trig = cfgget('extirqtrig').strip().lower()
         # Init event irq with callback function wrapper
         from machine import Pin

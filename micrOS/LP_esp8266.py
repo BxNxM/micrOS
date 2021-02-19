@@ -1,18 +1,21 @@
 from micropython import const
 
 builtin = const(16)    # BUILT IN LED - progress_led
-pwm_0 = const(15)      # D8 - servo
-pwm_1 = const(13)      # D7 - pwm_red / switch2
-pwm_2 = const(2)       # D4 - pwm_green / servo2
-pwm_3 = const(0)       # D3 - pwm_blue / neopixel
-i2c_sda = const(4)     # D2 - OLED
-i2c_scl = const(5)     # D1 - OLED
-pwm_4 = const(12)      # D6 - extirqpin
-simple_0 = const(15)   # D0 - dist_trigger / switch
-pwm_5 = const(14)      # D5 - dist_echo / dimmer
-simple_1 = const(10)   # SD3 - dht_pin
-adc_0 = const(0)       # ADC0 - CO2
-adc_1 = const(0)       # ADC0 - light sensor TEMP6000
-adc_2 = const(0)       # ADC0 - PH sensor
-adc_3 = const(0)       # ADC0 - water lvl
-simple_2 = const(9)    # SD2 - PIR
+servo_1 = const(15)    # D8 - servo
+servo_2 = const(2)     # D4 - servo(2) [PWM]
+rgreenb = const(2)     # D4 - rgb green [PWM]
+redgb = const(14)      # D7 - rgb red channel [PWM]
+switch_1 = const(15)   # D0 - switch(1) [simple]
+switch_2 = const(13)   # D7 - switch(2) [simple]
+rgbue = const(0)       # D3 - rgb blue channel [PWM]
+neop = const(0)        # D3 - neopixel OneWire bus [PWM]
+i2c_sda = const(4)     # D2 - oled - data
+i2c_scl = const(5)     # D1 - oled - clock
+extirq = const(12)     # D6 - extirq pin
+hcsrtrig = const(15)   # D0 - distance HCSR04 trigger pin
+hcsrecho = const(14)   # D5 - istance HCSR04 echo pin [PWM]
+dim_1 = const(14)      # D5 - dimmer(1) [PWM]
+dhtpin = const(10)     # SD3 - dht_pin 11 and 22
+co2 = const(0)         # ADC0 - CO2
+temp6000 = const(0)    # ADC0 - light sensor TEMP6000
+ph = const(0)          # ADC0 - PH sensor

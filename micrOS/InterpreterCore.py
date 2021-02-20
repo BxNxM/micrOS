@@ -19,12 +19,12 @@ from sys import modules
 #################################################################
 
 
-def execute_LM_function_Core(argument_list, SocketServerObj=None):
+def execute_LM_function_Core(argument_list, msgobj=None):
     """
     [1] module name (LM)
     [2] function
     [3...] parameters (separator: space)
-    NOTE: SocketServerObj is None from Interrupts and Hooks - shared functionality
+    NOTE: msgobj is None from Interrupts and Hooks - shared functionality
     """
     json_mode = False
     # Check json mode for LM execution
@@ -39,22 +39,22 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
             # [1] LOAD MODULE
             if LM_name not in modules.keys():
                 exec("import {}".format(LM_name))
-            # [2] EXECUTE FUNCTION FROM MODULE - over SocketServerObj or /dev/null
+            # [2] EXECUTE FUNCTION FROM MODULE - over msgobj or /dev/null
             lm_output = eval("{}.{}({})".format(LM_name, LM_function, LM_function_params))
-            if SocketServerObj is not None:
+            if msgobj is not None:
                 if not json_mode and isinstance(lm_output, dict):
                     # human readable format (not json mode) but dict
                     lm_output = '\n'.join(["{}: {}".format(key, value) for key, value in lm_output.items()])
-                    SocketServerObj.reply_message(str(lm_output))
+                    msgobj(str(lm_output))
                 else:
                     # native return value (not dict) OR json mode raw dict output
-                    SocketServerObj.reply_message(str(lm_output))
+                    msgobj(str(lm_output))
             # ------------------------- #
         except Exception as e:
-            # ERROR MSG: - over SocketServerObj or stdout
+            # ERROR MSG: - over msgobj or stdout
             print("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
-            if SocketServerObj is not None:
-                SocketServerObj.reply_message("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
+            if msgobj is not None:
+                msgobj("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
             if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
                 # UNLOAD MODULE IF MEMORY ERROR HAPPENED
                 if LM_name in modules.keys():
@@ -65,8 +65,8 @@ def execute_LM_function_Core(argument_list, SocketServerObj=None):
 
     # Syntax error show help msg
     print("SHELL: Missing argument: [1](LM)module [2]function [3...]optional params")
-    if SocketServerObj is not None:
-        SocketServerObj.reply_message("SHELL: type help for single word commands (built-in)")
-        SocketServerObj.reply_message("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
+    if msgobj is not None:
+        msgobj("SHELL: type help for single word commands (built-in)")
+        msgobj("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
     # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
     return True

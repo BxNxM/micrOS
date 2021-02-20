@@ -81,25 +81,21 @@ def __shell(msg, SocketServerObj):
     if SocketServerObj.configure_mode and len(msg_list) != 0:
         return __configure(msg_list, SocketServerObj)
     # @2 Command mode
-    if len(msg_list) > 1:
-        """
-        INPUT MSG STRUCTURE
-        1. param. - LM name, i.e. LM_commands
-        2. param. - function call with parameters, i.e. a()
-        """
-        try:
-            # Execute command via InterpreterCore
-            status = execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
-            if not status:
-                # Run retry mechanism in case of InterprtereCore module load failed (simulator workaround)
-                return execute_LM_function_Core(argument_list=msg_list, SocketServerObj=SocketServerObj)
-            return status
-        except Exception as e:
-            SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
-            return False
-    SocketServerObj.reply_message("[WARN] Invalid command {}\n[INFO] Write help for more info.".format(msg))
-    return True
-
+    """
+    INPUT MSG STRUCTURE
+    1. param. - LM name, i.e. LM_commands
+    2. param. - function call with parameters, i.e. a()
+    """
+    try:
+        # Execute command via InterpreterCore
+        status = execute_LM_function_Core(argument_list=msg_list, msgobj=SocketServerObj.reply_message)
+        if not status:
+            # Run retry mechanism in case of InterprtereCore module load failed (simulator workaround)
+            return execute_LM_function_Core(argument_list=msg_list, msgobj=SocketServerObj.reply_message)
+        return status
+    except Exception as e:
+        SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
+        return False
 
 #################################################################
 #                     CONFIGURE MODE HANDLER                    #

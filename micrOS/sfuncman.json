@@ -116,7 +116,7 @@
     "help()"
   ],
   "intercon": [
-    "sendcmd(*args, **kwargs)",
+    "sendcmd(*_args, **kwargs)",
     "help()"
   ],
   "distance_HCSR04": [

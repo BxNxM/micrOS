@@ -4,6 +4,7 @@ from math import pow
 #            MQ135 GAS SENSOR           #
 #########################################
 __ADC = None
+__ADC_RES = 1023
 
 
 def __get_correction_factor(temperature, humidity):
@@ -30,11 +31,17 @@ def __get_resistance():
     Returns the resistance of the sensor in kOhms // -1 if not value got in pin
     10.0 - 'RLOAD' The load resistance on the board
     """
-    global __ADC
+    global __ADC, __ADC_RES
     if __ADC is None:
         from machine import ADC
         from LogicalPins import get_pin_on_platform_by_key
-        __ADC = ADC(get_pin_on_platform_by_key('co2'))
+        if 'esp8266' in platform:
+            __ADC = ADC(get_pin_on_platform_by_key('co2'))       # 1V measure range
+            __ADC_RES = 1023
+        else:
+            __ADC = ADC(Pin(get_pin_on_platform_by_key('co2')))
+            __ADC.atten(ADC.ATTN_11DB)                          # 3.3V measure range
+            __ADC_RES = 4095
     value = __ADC.read()
     if value == 0:
         return -1

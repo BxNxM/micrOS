@@ -8,3 +8,9 @@ MicrOS/*.mpy
 micrOS/node_config.json
 mpy-micrOS/node_config.json
 tools/venv/
+
+framework/esp-open-sdk/
+media/micrOSDoc/
+media/micrOS_GIF_PNGs/
+proto/
+*.txt

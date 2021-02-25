@@ -84,6 +84,13 @@
     "touch(triglvl=300)",
     "help()"
   ],
+  "bledns": [
+    "advert()",
+    "scan()",
+    "list()",
+    "make()",
+    "help()"
+  ],
   "dht11": [
     "measure()",
     "measure_w_co2()",

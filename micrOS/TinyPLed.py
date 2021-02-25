@@ -26,6 +26,6 @@ def step():
     # Get the R,G,B values of the next colour
     r, g, b = TinyPICO.dotstar_color_wheel(COLOR_INDEX*5)
     # Set the colour on the DOTSTAR
-    DOTSTAR[0] = (r, g, b, 0.2)
+    DOTSTAR[0] = (int(r*0.5), g, b, 0.2)
     # Increase the wheel index
     COLOR_INDEX = 0 if COLOR_INDEX > 100 else COLOR_INDEX + 1

@@ -1,4 +1,5 @@
 from math import pow
+from sys import platform
 
 #########################################
 #            MQ135 GAS SENSOR           #

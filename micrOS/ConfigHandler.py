@@ -16,6 +16,12 @@ from time import sleep
 from json import load, dump
 from machine import Pin
 from LogicalPins import get_pin_on_platform_by_key
+from os import remove
+try:
+    # TinyPICO progress led plugin
+    import TinyPLed
+except Exception as e:
+    TinyPLed = None
 
 # SET IT LATER FROM CONFIG
 __DEBUG_PRINT = True
@@ -72,10 +78,14 @@ def default_config():
 
 def progress_led_toggle_adaptor(func):
     def wrapper(*args, **kwargs):
-        if __PLED is not None: __PLED.value(not __PLED.value())
-        output = func(*args, **kwargs)
-        if __PLED is not None: __PLED.value(not __PLED.value())
-        return output
+        if TinyPLed is None:
+            if __PLED is not None: __PLED.value(not __PLED.value())
+            output = func(*args, **kwargs)
+            if __PLED is not None: __PLED.value(not __PLED.value())
+            return output
+        # TinyPICO progress led update
+        if __PLED is not None: TinyPLed.step()
+        return func(*args, **kwargs)
     return wrapper
 
 
@@ -156,8 +166,13 @@ def __inject_default_conf():
     data = default_config()
     liveconf = read_cfg_file(nosafe=True)
     # Remove obsolete keys from conf
-    for key in (key for key in liveconf.keys() if key not in data.keys()):
-        liveconf.pop(key, None)
+    try:
+        remove('cleanup.pds')       # Try to remove cleanup.pds (cleanup indicator by micrOSloader)
+        console_write("[CONFIGHANDLER] Purge obsolete keys")
+        for key in (key for key in liveconf.keys() if key not in data.keys()):
+            liveconf.pop(key, None)
+    except:
+        console_write("[CONFIGHANDLER] SKIP obsolete keys check (no cleanup.pds)")
     # Merge template to live conf
     data.update(liveconf)
     # Run data injection and store
@@ -207,9 +222,15 @@ if "ConfigHandler" in __name__:
     if not cfgget('dbg'): console_write("[micrOS] debug print was turned off")
     # [!!!] Init selected pinmap ('builtin' is the default key, 'cstmpmap' user LP data)
     if cfgget('cstmpmap') != 'n/a': get_pin_on_platform_by_key('builtin', cfgget('cstmpmap'))
-    # DEACTIVATE plead and dbg based on config settings (inject user conf)
-    if cfgget('pled') and get_pin_on_platform_by_key('builtin') is not None:
-        __PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
+    # SET plead and dbg based on config settings (inject user conf)
+    if cfgget('pled'):
+        if TinyPLed is None:
+            # Progress led for esp8266/esp32/etc
+            if get_pin_on_platform_by_key('builtin') is not None:
+                __PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
+        else:
+            # Progress led for TinyPico
+            __PLED = TinyPLed.init_APA102()
     __DEBUG_PRINT = cfgget('dbg')
 
 if __name__ == "__main__":

@@ -14,3 +14,4 @@ LM_light_sensor.py
 LM_L298N_DCmotor.py
 LM_rgbfader.py
 LM_intercon.py
+LM_tinyrgb.py

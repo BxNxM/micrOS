@@ -58,7 +58,7 @@ def __recovery_mode():
     auto_network_configuration()
     # Start webrepl
     import webrepl
-    webrepl.start(password = 'ADmin123' if cfgget is None else cfgget('appwd'))
+    webrepl.start(password='ADmin123' if cfgget is None else cfgget('appwd'))
 
 
 def __auto_restart_event():
@@ -114,4 +114,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

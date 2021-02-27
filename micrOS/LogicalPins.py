@@ -14,6 +14,7 @@ from sys import platform
 #                        GPI/O ON DEVICE                        #
 #################################################################
 
+# Set automatically at the first time from ConfigHandler or sys.platform
 __ACTIVE_PIN_MAPPING = None
 
 

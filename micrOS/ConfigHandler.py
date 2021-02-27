@@ -79,12 +79,14 @@ def default_config():
 def progress_led_toggle_adaptor(func):
     def wrapper(*args, **kwargs):
         if TinyPLed is None:
+            # Simple (built-in) progress led update
             if __PLED is not None: __PLED.value(not __PLED.value())
             output = func(*args, **kwargs)
             if __PLED is not None: __PLED.value(not __PLED.value())
             return output
-        # TinyPICO progress led update
+        # TinyPICO (built-in) progress led update
         if __PLED is not None: TinyPLed.step()
+        # Run function
         return func(*args, **kwargs)
     return wrapper
 
@@ -143,6 +145,7 @@ def read_cfg_file(nosafe=False):
             if nosafe:
                 break
             sleep(0.2)
+    # Return config cache
     return __CONFIG_CACHE
 
 
@@ -163,29 +166,29 @@ def __write_cfg_file(dictionary):
 
 def __inject_default_conf():
     # Load config and template
-    data = default_config()
+    conf = default_config()
     liveconf = read_cfg_file(nosafe=True)
     # Remove obsolete keys from conf
     try:
         remove('cleanup.pds')       # Try to remove cleanup.pds (cleanup indicator by micrOSloader)
         console_write("[CONFIGHANDLER] Purge obsolete keys")
-        for key in (key for key in liveconf.keys() if key not in data.keys()):
+        for key in (key for key in liveconf.keys() if key not in conf.keys()):
             liveconf.pop(key, None)
-    except:
+    except Exception:
         console_write("[CONFIGHANDLER] SKIP obsolete keys check (no cleanup.pds)")
     # Merge template to live conf
-    data.update(liveconf)
-    # Run data injection and store
-    if data['dbg']:
-        console_write("[CONFIGHANDLER] inject config:\n{}".format(data))
+    conf.update(liveconf)
+    # Run conf injection and store
+    if conf['dbg']:
+        console_write("[CONFIGHANDLER] inject config:\n{}".format(conf))
     try:
         # [LOOP] Only returns True
-        __write_cfg_file(data)
-        console_write("[CONFIGHANDLER] Inject default data struct successful")
+        __write_cfg_file(conf)
+        console_write("[CONFIGHANDLER] Inject default conf struct successful")
     except Exception as e:
-        console_write("[CONFIGHANDLER] Inject default data struct failed: {}".format(e))
+        console_write("[CONFIGHANDLER] Inject default conf struct failed: {}".format(e))
     finally:
-        del data
+        del conf
 
 
 def __type_handler(key, value):

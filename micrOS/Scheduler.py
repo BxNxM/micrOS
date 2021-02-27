@@ -2,7 +2,7 @@ from time import localtime
 from InterpreterCore import execLMCore
 from ConfigHandler import console_write
 
-'''
+"""
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
 # SCHEDULER TIME FORMAT: WD, H, M, S
 WD: 1-7
@@ -10,7 +10,7 @@ H: 0-23
 M: 0-59
 S: 0-59
 * - means in every place - every time
-'''
+"""
 
 LAST_CRON_TASKS = []
 

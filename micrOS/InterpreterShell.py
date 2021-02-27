@@ -138,13 +138,13 @@ def __configure(attributes, SocketServerObj):
 
 
 def __irq_mem_req_check(key):
-    collect()
-    memavail = mem_free()
-    if 'timirq' == key and memavail < cfgget('irqmreq'):
+    collect()                   # gc collect
+    memavail = mem_free()       # get free memory
+    if key == 'timirq' and memavail < cfgget('irqmreq'):
         return False, memavail
-    if 'cron' == key and memavail < cfgget('irqmreq') * 2:
+    if key == 'cron' and memavail < cfgget('irqmreq') * 2:
         return False, memavail
-    if 'extirq' == key and memavail < int(cfgget('irqmreq') * 0.7):
+    if key == 'extirq' and memavail < int(cfgget('irqmreq') * 0.7):
         return False, memavail
     return True, memavail
 

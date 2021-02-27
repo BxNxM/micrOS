@@ -7,9 +7,12 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from Network import auto_network_configuration
 from SocketServer import SocketServer
+from Network import auto_network_configuration
 from Hooks import bootup_hook, profiling_info
+from InterruptHandler import enableInterrupt, enableCron
+from InterruptHandler import init_eventPIN
+
 
 #################################################################
 #            INTERRUPT HANDLER INTERFACES / WRAPPERS            #
@@ -25,7 +28,6 @@ def safe_boot_hook():
 
 def interrupt_handler():
     try:
-        from InterruptHandler import enableInterrupt, enableCron
         enableInterrupt()
         enableCron()
     except Exception as e:
@@ -34,7 +36,6 @@ def interrupt_handler():
 
 def external_interrupt_handler():
     try:
-        from InterruptHandler import init_eventPIN
         init_eventPIN()
     except Exception as e:
         print("[micrOS main] InterruptHandler.init_eventPIN error: {}".format(e))
@@ -70,4 +71,3 @@ def micrOS():
 
     # RUN Singleton SocketServer - main loop [2]
     SocketServer().run()
-

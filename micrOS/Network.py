@@ -13,10 +13,10 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from time import sleep, localtime, time
+from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from ntptime import settime
 from machine import RTC
-from binascii import hexlify
 from ConfigHandler import console_write, cfgget, cfgput
 
 #################################################################

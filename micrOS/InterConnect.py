@@ -48,4 +48,3 @@ def __receive_data(conn, wait_before_msg=0.2):
         data = data.replace(full_prompt, '').strip()
         data_list = data.split('\n')
     return data_list
-

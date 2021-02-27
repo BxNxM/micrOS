@@ -17,7 +17,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from sys import platform
 from ConfigHandler import cfgget, console_write
-from InterpreterCore import execute_LM_function_Core
+from InterpreterCore import execLMPipe
 from micropython import mem_info
 from machine import freq
 
@@ -31,15 +31,14 @@ def bootup_hook():
     Executes when system boots up.
     """
     # Execute LMs from boothook config parameter
-    console_write("[BOOT HOOKS] EXECUTION...")
-    if cfgget('boothook') is not None and cfgget('boothook').lower() != 'n/a':
-        for shell_cmd in (cmd.strip().split() for cmd in str(cfgget('boothook')).split(';')):
-            console_write("|-[BOOT HOOKS] SHELL EXEC: {}".format(shell_cmd))
-            try:
-                state = execute_LM_function_Core(shell_cmd)
-                console_write("|-[BOOT HOOKS] state: {}".format(state))
-            except Exception as e:
-                console_write("|--[BOOT HOOK] error: {}".format(e))
+    console_write("[BOOT HOOKS] EXECUTION ...")
+    bootasks = cfgget('boothook')
+    if bootasks is not None and bootasks.lower() != 'n/a':
+        console_write("|-[BOOT HOOKS] TASKS: {}".format(bootasks))
+        if execLMPipe(bootasks):
+            console_write("|-[BOOT HOOKS] DONE")
+        else:
+            console_write("|-[BOOT HOOKS] ERROR")
 
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:

@@ -13,7 +13,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from os import listdir
 from ConfigHandler import cfgget, cfgput, read_cfg_file
-from InterpreterCore import execute_LM_function_Core
+from InterpreterCore import execLMCore
 
 try:
     from gc import collect, mem_free
@@ -88,13 +88,13 @@ def __shell(msg, SocketServerObj):
     """
     try:
         # Execute command via InterpreterCore
-        status = execute_LM_function_Core(argument_list=msg_list, msgobj=SocketServerObj.reply_message)
+        status = execLMCore(argument_list=msg_list, msgobj=SocketServerObj.reply_message)
         if not status:
             # Run retry mechanism in case of InterprtereCore module load failed (simulator workaround)
-            return execute_LM_function_Core(argument_list=msg_list, msgobj=SocketServerObj.reply_message)
+            return execLMCore(argument_list=msg_list, msgobj=SocketServerObj.reply_message)
         return status
     except Exception as e:
-        SocketServerObj.reply_message("[ERROR] execute_LM_function_Core internal error: {}".format(e))
+        SocketServerObj.reply_message("[ERROR] execLMCore internal error: {}".format(e))
         return False
 
 #################################################################

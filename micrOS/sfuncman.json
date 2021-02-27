@@ -87,8 +87,9 @@
   ],
   "esp32": [
     "hall()",
-    "intemp()",
+    "temp()",
     "touch(triglvl=300)",
+    "battery()",
     "help()"
   ],
   "bledns": [

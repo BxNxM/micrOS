@@ -15,7 +15,7 @@ Designed by Marcell Ban aka BxNxM
 #                            IMPORTS                            #
 #################################################################
 from ConfigHandler import cfgget, console_write
-from InterpreterCore import execute_LM_function_Core
+from InterpreterCore import execLMPipe
 from LogicalPins import get_pin_on_platform_by_key
 if cfgget('cron'):
     # Only import when enabled - memory usage optimization
@@ -50,13 +50,9 @@ def timirq_cbfs(tasks):
     Input:
         tasks: str
     """
-    try:
-        # Execute CBF from cached config
-        for cmd in (cmd.strip().split(' ') for cmd in tasks.split(';')):
-            if not execute_LM_function_Core(cmd):
-                console_write("[IRQ] TIMIRQ execute_LM_function_Core error: {}".format(tasks))
-    except Exception as e:
-        console_write("[IRQ] TIMIRQ callback: {} error: {}".format(tasks, e))
+    # Execute CBF from cached config
+    if not execLMPipe(tasks):
+        console_write("[IRQ] TIMIRQ execLMPipe error: {}".format(tasks))
 
 
 def enableInterrupt():
@@ -114,15 +110,12 @@ def enableCron():
 #################################################################
 
 
-def extirq_cbf(task):
+def extirq_cbf(tasks):
     """
     EVENT INTERRUPT CALLBACK FUNCTION WRAPPER
     """
-    try:
-        if not execute_LM_function_Core(task.split(' ')):
-            console_write("[IRQ] EXTIRQ execute_LM_function_Core error: {}".format(task))
-    except Exception as e:
-        console_write("[IRQ] EVENTIRQ callback: {} error: {}".format(task, e))
+    if not execLMPipe(tasks):
+        console_write("[IRQ] EXTIRQ execLMPipe error: {}".format(tasks))
 
 
 def init_eventPIN():

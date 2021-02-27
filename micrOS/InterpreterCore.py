@@ -13,25 +13,43 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from sys import modules
+from ConfigHandler import console_write
 
 #################################################################
 #               Interpreter shell CORE executor                 #
 #################################################################
 
 
-def execute_LM_function_Core(argument_list, msgobj=None):
+def execLMPipe(taskstr):
+    """
+    Input: taskstr contains LM calls separated by ;
+    """
+    st = True
+    try:
+        for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
+            buf = execLMCore(cmd)
+            st &= buf
+            if not buf: console_write("|-[LM-PIPE] task error: {}".format(cmd))
+    except Exception as e:
+        console_write("[LM-PIPE] pipe error: {}\n{}".format(taskstr, e))
+        st &= False
+    return st
+
+
+def execLMCore(argument_list, msgobj=None):
     """
     [1] module name (LM)
     [2] function
     [3...] parameters (separator: space)
     NOTE: msgobj is None from Interrupts and Hooks - shared functionality
     """
-    json_mode = False
+    # Cache message obj
+    cwr = console_write if msgobj is None else msgobj
     # Check json mode for LM execution
-    if argument_list[-1] == '>json':
+    json_mode = True if argument_list[-1] == '>json' else False
+    if json_mode:
         del argument_list[-1]
-        json_mode = True
-
+    # LoadModule execution
     if len(argument_list) >= 2:
         LM_name, LM_function, LM_function_params = "LM_{}".format(argument_list[0]), argument_list[1], ', '.join(argument_list[2:])
         try:
@@ -51,22 +69,16 @@ def execute_LM_function_Core(argument_list, msgobj=None):
                     msgobj(str(lm_output))
             # ------------------------- #
         except Exception as e:
-            # ERROR MSG: - over msgobj or stdout
-            print("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
-            if msgobj is not None:
-                msgobj("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
+            cwr("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
             if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
                 # UNLOAD MODULE IF MEMORY ERROR HAPPENED
                 if LM_name in modules.keys():
                     del modules[LM_name]
+                # Exec FAIL -> recovery action in SocketServer
                 return False
-        # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
+        # Exec OK
         return True
-
-    # Syntax error show help msg
-    print("SHELL: Missing argument: [1](LM)module [2]function [3...]optional params")
-    if msgobj is not None:
-        msgobj("SHELL: type help for single word commands (built-in)")
-        msgobj("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
-    # RETURN WITH HEALTH STATE - TRUE :) -> NO ACTION -or- FALSE :( -> RECOVERY ACTION
+    cwr("SHELL: type help for single word commands (built-in)")
+    cwr("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
+    # Exec OK
     return True

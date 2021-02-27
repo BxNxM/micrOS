@@ -6,7 +6,7 @@ def hall():
     return esp32.hall_sensor()
 
 
-def intemp():
+def temp():
     # read the internal temperature of the MCU, in Farenheit
     return (esp32.raw_temperature() - 32) / 1.8
 
@@ -22,5 +22,10 @@ def touch(triglvl=300):
     return {'isTouched': True if value < triglvl else False, 'value': value}
 
 
+def battery():
+    from tinypico import get_battery_voltage, get_battery_charging
+    return {'volt': get_battery_voltage(), 'state': get_battery_charging()}
+
+
 def help():
-    return 'hall', 'intemp', 'touch' 'Dedicated functions for esp32.'
+    return 'hall', 'temp', 'touch' 'Dedicated functions for esp32.', 'battery', 'NOTE: only available on tinypico'

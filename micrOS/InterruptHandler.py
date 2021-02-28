@@ -132,10 +132,10 @@ def init_eventPIN():
         pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
         console_write("[IRQ] - event setup: {}".format(trig))
         if trig == 'down':
-            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=extirq_cbf)
+            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(cfgget('extirqcbf')))
             return
         if trig == 'both':
-            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=extirq_cbf)
+            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(cfgget('extirqcbf')))
             return
         pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: extirq_cbf(cfgget('extirqcbf')))
 

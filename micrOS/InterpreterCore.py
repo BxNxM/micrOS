@@ -46,7 +46,7 @@ def execLMCore(argument_list, msgobj=None):
     # Cache message obj
     cwr = console_write if msgobj is None else msgobj
     # Check json mode for LM execution
-    json_mode = True and argument_list[-1] == '>json'
+    json_mode = argument_list[-1] == '>json'
     if json_mode:
         del argument_list[-1]
     # LoadModule execution

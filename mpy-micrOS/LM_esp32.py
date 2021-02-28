@@ -8,7 +8,7 @@ def hall():
 
 def temp():
     # read the internal temperature of the MCU, in Farenheit
-    return (esp32.raw_temperature() - 32) / 1.8
+    return {'CPU temp [ºC]': '{:.1f}'.format((esp32.raw_temperature() - 32) / 1.8)}
 
 
 def touch(triglvl=300):

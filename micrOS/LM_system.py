@@ -12,7 +12,10 @@ def info():
     fs_stat = statvfs(getcwd())
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
-    return {'CPU[Hz]': freq(), 'MemFree[byte]': mem_free(), 'FS FREE [%]': int((fs_free / fs_size) * 100),
+    mem = mem_free()
+    return {'CPU[MHz]': int(freq() * 0.0000001),
+            'MemFree[byte]': '{} kB {} byte'.format(int(mem / 1024), int(mem % 1024)),
+            'FSFREE[%]': int((fs_free / fs_size) * 100),
             'Plaform': platform}
 
 
@@ -65,7 +68,7 @@ def module(unload=None):
     """
     from sys import modules
     if unload is None:
-        return modules.keys()
+        return list(modules.keys())
     if unload in modules.keys():
         del modules[unload]
         return "Module unload {} done.".format(unload)

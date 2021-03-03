@@ -23,12 +23,14 @@ try:
 except Exception as e:
     TinyPLed = None
 
-# SET IT LATER FROM CONFIG
-__DEBUG_PRINT = True
-__CONFIG_CACHE = {}
-__PLED = None
-# - micrOS config
-__CONFIG_PATH = "node_config.json"
+
+class Data:
+    # SET IT LATER FROM CONFIG
+    DEBUG_PRINT = True
+    CONFIG_CACHE = {}
+    PLED = None
+    # - micrOS config
+    CONFIG_PATH = "node_config.json"
 
 #################################################################
 #                       MODULE CONFIG
@@ -80,12 +82,12 @@ def progress_led_toggle_adaptor(func):
     def wrapper(*args, **kwargs):
         if TinyPLed is None:
             # Simple (built-in) progress led update
-            if __PLED is not None: __PLED.value(not __PLED.value())
+            if Data.PLED is not None: Data.PLED.value(not Data.PLED.value())
             output = func(*args, **kwargs)
-            if __PLED is not None: __PLED.value(not __PLED.value())
+            if Data.PLED is not None: Data.PLED.value(not Data.PLED.value())
             return output
         # TinyPICO (built-in) progress led update
-        if __PLED is not None: TinyPLed.step()
+        if Data.PLED is not None: TinyPLed.step()
         # Run function
         return func(*args, **kwargs)
     return wrapper
@@ -93,7 +95,7 @@ def progress_led_toggle_adaptor(func):
 
 @progress_led_toggle_adaptor
 def console_write(msg):
-    if __DEBUG_PRINT:
+    if Data.DEBUG_PRINT:
         print(msg)
 
 
@@ -134,32 +136,32 @@ def cfgput(key, value, type_check=False):
 def read_cfg_file(nosafe=False):
     while True:
         try:
-            if len(__CONFIG_CACHE) == 0:
+            if len(Data.CONFIG_CACHE) == 0:
                 # READ JSON CONFIG
-                with open(__CONFIG_PATH, 'r') as f:
-                    __CONFIG_CACHE.update(load(f))
+                with open(Data.CONFIG_PATH, 'r') as f:
+                    Data.CONFIG_CACHE.update(load(f))
             break
         except Exception as e:
-            console_write("[CONFIGHANDLER] read_cfg_file error {} (json): {}".format(__CONFIG_PATH, e))
+            console_write("[CONFIGHANDLER] read_cfg_file error {} (json): {}".format(Data.CONFIG_PATH, e))
             # Write out initial config, if no config exists.
             if nosafe:
                 break
             sleep(0.2)
     # Return config cache
-    return __CONFIG_CACHE
+    return Data.CONFIG_CACHE
 
 
 def __write_cfg_file(dictionary):
     # WRITE CACHE
-    __CONFIG_CACHE.update(dictionary)
+    Data.CONFIG_CACHE.update(dictionary)
     while True:
         try:
             # WRITE JSON CONFIG
-            with open(__CONFIG_PATH, 'w') as f:
+            with open(Data.CONFIG_PATH, 'w') as f:
                 dump(dictionary, f)
             break
         except Exception as e:
-            console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(__CONFIG_PATH, e))
+            console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(Data.CONFIG_PATH, e))
         sleep(0.2)
     return True
 
@@ -230,11 +232,11 @@ if "ConfigHandler" in __name__:
         if TinyPLed is None:
             # Progress led for esp8266/esp32/etc
             if get_pin_on_platform_by_key('builtin') is not None:
-                __PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
+                Data.PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
         else:
             # Progress led for TinyPico
-            __PLED = TinyPLed.init_APA102()
-    __DEBUG_PRINT = cfgget('dbg')
+            Data.PLED = TinyPLed.init_APA102()
+    Data.DEBUG_PRINT = cfgget('dbg')
 
 if __name__ == "__main__":
     __inject_default_conf()

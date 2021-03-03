@@ -979,7 +979,7 @@ class MicrOSDevTool:
                     else:
                         status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
                     self.console(answer_msg)
-                    time.sleep(1)
+                    time.sleep(2)
                 else:
                     self.console("Webrepl not available on device, update over USB.")
                     self.execution_verdict.append("[ERR] ota_update - webrepl not availabl on node")

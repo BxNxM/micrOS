@@ -247,13 +247,12 @@ class SocketDictClient:
             sys.exit(0)
         return data
 
-    def receive_data(self, wait_before_msg=0.4):
+    def receive_data(self):
         data = ""
         prompt_postfix = ' $'
         data_list = []
         if select.select([self.conn], [], [], 3)[0]:
             while True:
-                time.sleep(wait_before_msg)
                 last_data = self.conn.recv(self.bufsize).decode('utf-8')
                 data += last_data
                 # Msg reply wait criteria (get the prompt back or special cases)

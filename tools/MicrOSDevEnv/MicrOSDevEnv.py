@@ -774,8 +774,11 @@ class MicrOSDevTool:
                         if 'def ' in line and 'def __' not in line:
                             if '(self' in line:
                                 continue
-                            function_name = '{})'.format(line.split(')')[0]).replace("def", '').strip()
-                            module_function_dict[module_int_name].append(function_name)
+                            # Gen proper func name
+                            function_name = '{}'.format(line.split(')')[0]).replace("def", '').strip()
+                            function_name = function_name.replace('(', ' ').replace(',', '').replace('msgobj', '<msgobj>')
+                            # Save record
+                            module_function_dict[module_int_name].append(function_name.strip())
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
         self.console("Dump micrOS static manual: {}".format(static_help_json_path))
@@ -976,7 +979,7 @@ class MicrOSDevTool:
                     else:
                         status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
                     self.console(answer_msg)
-                    time.sleep(2)
+                    time.sleep(1)
                 else:
                     self.console("Webrepl not available on device, update over USB.")
                     self.execution_verdict.append("[ERR] ota_update - webrepl not availabl on node")

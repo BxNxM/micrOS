@@ -1,143 +1,143 @@
 {
   "oled_128x64i2c": [
-    "text(intext=\"<text>\", posx=0, posy=0, show=True)",
-    "invert(state=None)",
-    "clean(state=0, show=True)",
-    "draw_line(sx, sy, ex, ey, state=1, show=True)",
-    "draw_rect(sx, sy, ex, ey, state=1, show=True)",
-    "poweron()",
-    "poweroff()",
-    "help()"
+    "text intext=\"<text>\" posx=0 posy=0 show=True",
+    "invert state=None",
+    "clean state=0 show=True",
+    "draw_line sx sy ex ey state=1 show=True",
+    "draw_rect sx sy ex ey state=1 show=True",
+    "poweron",
+    "poweroff",
+    "help"
   ],
   "system": [
-    "info(msgobj)",
-    "gclean()",
-    "heartbeat()",
-    "clock()",
-    "ntp()",
-    "module(unload=None)",
-    "cachedump(msgobj)",
-    "rssi()",
-    "lmpacman(lm_del=None, msgobj=None)",
-    "getpin(key='builtin')",
-    "ha_sta()",
-    "help()"
+    "info <msgobj>",
+    "gclean",
+    "heartbeat",
+    "clock",
+    "ntp",
+    "module unload=None",
+    "cachedump <msgobj>",
+    "rssi",
+    "lmpacman lm_del=None <msgobj>=None",
+    "getpin key='builtin'",
+    "ha_sta",
+    "help"
   ],
   "rgbfader": [
-    "fader_cache_load_n_init(cache=None)",
-    "fade(r, g, b, sec=0)",
-    "transition(f=False)",
-    "toggle(state=None)",
-    "help()"
+    "fader_cache_load_n_init cache=None",
+    "fade r g b sec=0",
+    "transition f=False",
+    "toggle state=None",
+    "help"
   ],
   "co2": [
-    "measure_mq135(temperature=None, humidity=None)",
-    "help()"
+    "measure_mq135 temperature=None humidity=None",
+    "help"
   ],
   "tinyrgb": [
-    "setrgb(r=None, g=None, b=None, br=None)",
-    "getstate()",
-    "toggle(state=None)",
-    "wheel(br=None)",
-    "help()"
+    "setrgb r=None g=None b=None br=None",
+    "getstate",
+    "toggle state=None",
+    "wheel br=None",
+    "help"
   ],
   "bme280": [
-    "measure()",
-    "help()"
+    "measure",
+    "help"
   ],
   "ph_sensor": [
-    "measure()",
-    "help()"
+    "measure",
+    "help"
   ],
   "switch": [
-    "switch_cache_load_n_init(cache=None)",
-    "set_state(state=None)",
-    "toggle()",
-    "switch2_cache_load_n_init(cache=None)",
-    "set_state2(state=None)",
-    "toggle2()",
-    "help()"
+    "switch_cache_load_n_init cache=None",
+    "set_state state=None",
+    "toggle",
+    "switch2_cache_load_n_init cache=None",
+    "set_state2 state=None",
+    "toggle2",
+    "help"
   ],
   "servo": [
-    "Servo(duty=100)",
-    "Servo_demo()",
-    "Servo_deinit()",
-    "Servo2(duty=100)",
-    "Servo2_deinit()",
-    "help()"
+    "Servo duty=100",
+    "Servo_demo",
+    "Servo_deinit",
+    "Servo2 duty=100",
+    "Servo2_deinit",
+    "help"
   ],
   "neopixel": [
-    "neopixel_cache_load_n_init(cache=None)",
-    "neopixel(r=None, g=None, b=None)",
-    "segment(r=None, g=None, b=None, s=0)",
-    "toggle(state=None)",
-    "help()"
+    "neopixel_cache_load_n_init cache=None",
+    "neopixel r=None g=None b=None",
+    "segment r=None g=None b=None s=0",
+    "toggle state=None",
+    "help"
   ],
   "dht22": [
-    "measure()",
-    "measure_w_co2()",
-    "help()"
+    "measure",
+    "measure_w_co2",
+    "help"
   ],
   "L298N_DCmotor": [
-    "m1_control(direc=None, speed=None)",
-    "set_speed(speed=100)",
-    "stop()",
-    "set_direction(direc=0)",
-    "help()"
+    "m1_control direc=None speed=None",
+    "set_speed speed=100",
+    "stop",
+    "set_direction direc=0",
+    "help"
   ],
   "esp32": [
-    "hall()",
-    "temp()",
-    "touch(triglvl=300)",
-    "battery()",
-    "help()"
+    "hall",
+    "temp",
+    "touch triglvl=300",
+    "battery",
+    "help"
   ],
   "bledns": [
-    "advert()",
-    "scan()",
-    "list()",
-    "make()",
-    "help()"
+    "advert",
+    "scan",
+    "list",
+    "make",
+    "help"
   ],
   "dht11": [
-    "measure()",
-    "measure_w_co2()",
-    "help()"
+    "measure",
+    "measure_w_co2",
+    "help"
   ],
   "oled_widgets": [
-    "simple_page()",
-    "show_debug_page()",
-    "toggle_invert()",
-    "help()"
+    "simple_page",
+    "show_debug_page",
+    "toggle_invert",
+    "help"
   ],
   "rgb": [
-    "rgb_cache_load_n_init(cache=None)",
-    "rgb(r=None, g=None, b=None)",
-    "toggle(state=None)",
-    "help()"
+    "rgb_cache_load_n_init cache=None",
+    "rgb r=None g=None b=None",
+    "toggle state=None",
+    "help"
   ],
   "VL53L0X": [
-    "measure()"
+    "measure"
   ],
   "light_sensor": [
-    "intensity()",
-    "illuminance()",
-    "help()"
+    "intensity",
+    "illuminance",
+    "help"
   ],
   "dimmer": [
-    "set_value(value=None)",
-    "dimmer_cache_load_n_init(cache=None)",
-    "toggle(state=None)",
-    "help()"
+    "set_value value=None",
+    "dimmer_cache_load_n_init cache=None",
+    "toggle state=None",
+    "help"
   ],
   "intercon": [
-    "sendcmd(*_args, **kwargs)",
-    "help()"
+    "sendcmd *_args **kwargs",
+    "help"
   ],
   "distance_HCSR04": [
-    "distance_mm()",
-    "distance_cm()",
-    "deinit()",
-    "help()"
+    "distance_mm",
+    "distance_cm",
+    "deinit",
+    "help"
   ]
 }

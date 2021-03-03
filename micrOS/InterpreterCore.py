@@ -26,13 +26,17 @@ def execLMPipe(taskstr):
     """
     st = True
     try:
+        # Handle config default empty value (do nothing)
+        if taskstr.startswith('n/a'):
+            return st
+        # Execute individual commands
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
             buf = execLMCore(cmd)
             st &= buf
             if not buf: console_write("|-[LM-PIPE] task error: {}".format(cmd))
     except Exception as e:
         console_write("[LM-PIPE] pipe error: {}\n{}".format(taskstr, e))
-        st &= False
+        st = False
     return st
 
 

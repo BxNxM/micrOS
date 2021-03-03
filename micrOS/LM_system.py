@@ -1,7 +1,9 @@
 from ConfigHandler import progress_led_toggle_adaptor
+from Common import socket_stream
 
 
-def info():
+@socket_stream
+def info(msgobj):
     try:
         from gc import mem_free
     except:
@@ -13,10 +15,11 @@ def info():
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
     mem = mem_free()
-    return {'CPU[MHz]': int(freq() * 0.0000001),
-            'MemFree[byte]': '{} kB {} byte'.format(int(mem / 1024), int(mem % 1024)),
-            'FSFREE[%]': int((fs_free / fs_size) * 100),
-            'Plaform': platform}
+    msgobj('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
+    msgobj('MemFree: {} kB {} byte'.format(int(mem / 1024), int(mem % 1024)))
+    msgobj('FSFREE: {} %'.format(int((fs_free / fs_size) * 100)))
+    msgobj('Plaform: {}'.format(platform))
+    return ''
 
 
 def gclean():
@@ -75,16 +78,16 @@ def module(unload=None):
     return "Module unload {} failed.".format(unload)
 
 
-def cachedump():
+@socket_stream
+def cachedump(msgobj):
     """
     Cache system persistent data storage files (.pds)
     """
     from os import listdir
-    cache = {}
     for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
         with open(pds, 'r') as f:
-            cache[pds] = f.read()
-    return cache
+            msgobj('{}: {}'.format(pds, f.read()))
+    return ''
 
 
 def rssi():
@@ -102,7 +105,8 @@ def rssi():
         return {'Unusable': value}
 
 
-def lmpacman(lm_del=None):
+@socket_stream
+def lmpacman(lm_del=None, msgobj=None):
     """
     lm_del: LM_<loadmodulename.py/.mpy>
         Add name without LM_ but with extension
@@ -115,7 +119,9 @@ def lmpacman(lm_del=None):
         remove('LM_{}'.format(lm_del))
         return 'Delete module: {}'.format(lm_del)
     # Dump available LMs
-    return '\n'.join(('   {}'.format(res.replace('LM_', '')) for res in listdir() if 'LM_' in res))
+    for k in (res.replace('LM_', '') for res in listdir() if 'LM_' in res):
+        msgobj('   {}'.format(k))
+    return ''
 
 
 def getpin(key='builtin'):

@@ -10,15 +10,15 @@
     "help()"
   ],
   "system": [
-    "info()",
+    "info(msgobj)",
     "gclean()",
     "heartbeat()",
     "clock()",
     "ntp()",
     "module(unload=None)",
-    "cachedump()",
+    "cachedump(msgobj)",
     "rssi()",
-    "lmpacman(lm_del=None)",
+    "lmpacman(lm_del=None, msgobj=None)",
     "getpin(key='builtin')",
     "ha_sta()",
     "help()"

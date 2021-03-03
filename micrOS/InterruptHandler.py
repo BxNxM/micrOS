@@ -62,7 +62,7 @@ def enableInterrupt():
     """
     console_write("[IRQ] TIMIRQ SETUP: {} SEQ: {}".format(cfgget("timirq"), cfgget("timirqseq")))
     console_write("|- [IRQ] TIMIRQ CBF:{}".format(cfgget('timirqcbf')))
-    if cfgget("timirq") and cfgget('timirqcbf').lower() != 'n/a':
+    if cfgget("timirq"):
         from machine import Timer
         # INIT TIMER IRQ with callback function wrapper
         timer = Timer(0)
@@ -124,7 +124,7 @@ def init_eventPIN():
     """
     console_write("[IRQ] EXTIRQ SETUP - EXTIRQ: {} TRIG: {}".format(cfgget("extirq"), cfgget("extirqtrig")))
     console_write("|- [IRQ] EXTIRQ CBF: {}".format(cfgget('extirqcbf')))
-    if cfgget('extirq') and cfgget('extirqcbf').lower() != 'n/a':
+    if cfgget('extirq'):
         pin = get_pin_on_platform_by_key('extirq')
         trig = cfgget('extirqtrig').strip().lower()
         # Init event irq with callback function wrapper

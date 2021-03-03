@@ -1,4 +1,6 @@
 """
+This module loads before Network setup!
+
 Module is responsible for collect the additional
 feature definition dedicated to micrOS framework.
 

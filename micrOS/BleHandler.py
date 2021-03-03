@@ -39,19 +39,23 @@ _ADV_DIRECT_IND = const(0x01)
 
 
 class BleHandler:
+    __instance = None
 
-    def __init__(self):
-        print("[AdvH] Create BLE object, and advertise node...")
-        self._ble = bluetooth.BLE()
-        # Activate bluetooth
-        self._ble.active(True)
-        # Bluetooth irq callback handling
-        self._ble.irq(self._irq)
-        ((self._handle_tx, self._handle_rx),) = self._ble.gatts_register_services((_UART_SERVICE,))
-        # Create connection set
-        self._connections = set()
-        self._payload = None
-        self.local_devs_data = {}
+    def __new__(cls):
+        if BleHandler.__instance is None:
+            print("[AdvH] Create BLE object, and advertise node...")
+            BleHandler.__instance = super().__new__(cls)
+            BleHandler.__instance._ble = bluetooth.BLE()
+            # Activate bluetooth
+            BleHandler.__instance._ble.active(True)
+            # Bluetooth irq callback handling
+            BleHandler.__instance._ble.irq(cls._irq)
+            ((BleHandler.__instance._handle_tx, BleHandler.__instance._handle_rx),) = BleHandler.__instance._ble.gatts_register_services((_UART_SERVICE,))
+            # Create connection set
+            BleHandler.__instance._connections = set()
+            BleHandler.__instance._payload = None
+            BleHandler.__instance.local_devs_data = {}
+        return BleHandler.__instance
 
     @staticmethod
     def adv_payload_data(limited_disc=False, br_edr=False, name=None, services=None, appearance=0):
@@ -117,15 +121,15 @@ class BleHandler:
             return '{}|{}'.format(subfid, stasubip)
         return 'micrOS'
 
-    def advertise(self, name=None, appearance=0, interval_us=1500000):
+    def advertise(cls, name=None, appearance=0, interval_us=1500000):
         print("[AdvH] Starting advertising")
         if name is None:
             name = BleHandler._gen_adv_info()
         # Advertise node
-        self._payload = BleHandler.adv_payload_data(name=name, services=[_UART_UUID], appearance=appearance)
-        self._ble.gap_advertise(interval_us, adv_data=self._payload)
+        cls._payload = BleHandler.adv_payload_data(name=name, services=[_UART_UUID], appearance=appearance)
+        cls._ble.gap_advertise(interval_us, adv_data=cls._payload)
 
-    def _irq(self, event, data):
+    def _irq(cls, event, data):
         """
         Handle Advertise server lifecycle
         """
@@ -133,22 +137,22 @@ class BleHandler:
         if event == _IRQ_CENTRAL_CONNECT:
             conn_handle, _, _ = data
             print("[AdvH] New connection", conn_handle)
-            self._connections.add(conn_handle)
+            cls._connections.add(conn_handle)
         elif event == _IRQ_CENTRAL_DISCONNECT:
             conn_handle, _, _ = data
             print("[AdvH] Disconnected", conn_handle)
-            self._connections.remove(conn_handle)
+            cls._connections.remove(conn_handle)
             # Start advertising again to allow a new connection.
-            self.advertise()
+            cls.advertise()
         elif event == _IRQ_GATTS_WRITE:
             conn_handle, value_handle = data
-            value = self._ble.gatts_read(value_handle)
+            value = cls._ble.gatts_read(value_handle)
             print("[AdvH] GATTS input data: ", value)
-            if value_handle == self._handle_rx:
+            if value_handle == cls._handle_rx:
                 print("|- [AdvH] GATTS input data: ", value)
         # Scan IRQ callbacks
         elif event == _IRQ_SCAN_DONE:
-            print("[AdvH] Scan finished:\n {}".format(self.local_devs_data))
+            print("[AdvH] Scan finished:\n {}".format(cls.local_devs_data))
         if event == _IRQ_SCAN_RESULT:
             print("Scan Raw result: {}".format(data))           # TODO: remove
             addr_type, addr, adv_type, rssi, adv_data = data
@@ -159,13 +163,13 @@ class BleHandler:
                 if addr_type is not None:
                     print("[AdvH] Scan result: {}:{}:{}".format(name, addr, addr_type))
                     decoded_addr = hexlify(addr).decode('utf-8')
-                    self.local_devs_data[decoded_addr] = (name, addr_type)
+                    cls.local_devs_data[decoded_addr] = (name, addr_type)
 
-    def scan(self, duration_ms=6000, interval_us=30000, window_us=30000):
+    def scan(cls, duration_ms=6000, interval_us=30000, window_us=30000):
         # Find a device advertising the environmental sensor service.
         # Set duration_ms to None for stop scanning
         # Set duration_ms = 0 -> scan indefinitely
-        self._ble.gap_scan(duration_ms, interval_us, window_us)
+        cls._ble.gap_scan(duration_ms, interval_us, window_us)
 
-    def dns(self):
-        return self.local_devs_data
+    def dns(cls):
+        return cls.local_devs_data

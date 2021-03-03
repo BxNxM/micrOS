@@ -21,7 +21,7 @@ Designed by Marcell Ban aka BxNxM
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from time import sleep
 from ConfigHandler import console_write, cfgget, cfgput
-from InterpreterShell import shell as InterpreterShell_shell
+from InterpreterShell import shell
 
 try:
     from gc import collect, mem_free
@@ -45,236 +45,252 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.9.9-17'
+    __socket_interpreter_version = '0.9.10-0'
 
-    def __new__(cls):
+    def __new__(cls, host='', port=None, uid=None, user_timeout_sec=None):
         """
         Singleton design pattern
         __new__ - Customize the instance creation
         cls     - class
         """
-        if cls.__instance is None:
+        if SocketServer.__instance is None:
             # SocketServer singleton properties
-            cls.__instance = super().__new__(cls)
-            cls.__instance.name = 'SocketServer'
-        return cls.__instance
-
-    def __init__(self, host='', port=None, uid=None, user_timeout_sec=None):
-        # Socket server initial parameters
-        self.host = host
-        self.s = None
-        self.conn = None
-        self.addr = None
-        self.__server_console_indent = 0
-        self.__auth_ok = False
-        self.configure_mode = False
-        # ---- Config ---
-        self.pre_prompt = ""
-        self.__auth_mode = cfgget('auth')
-        self.__prompt = "{} $ ".format(cfgget('devfid'))
-        self.__port = port if port is not None else cfgget("socport")
-        self.__timeout_user = user_timeout_sec if user_timeout_sec is not None else int(cfgget("soctout"))
-        self.__hwuid = uid if uid is not None else str(cfgget("hwuid"))
-        # ---         ----
-        self.server_console("[ socket server ] <<constructor>>")
+            SocketServer.__instance = super().__new__(cls)
+            # Socket server initial parameters
+            SocketServer.__instance.__host = host
+            SocketServer.__instance.__s = None
+            SocketServer.__instance.__conn = None
+            SocketServer.__instance.__addr = None
+            SocketServer.__instance.__server_console_indent = 0
+            SocketServer.__instance.__auth = False
+            SocketServer.__instance.__isconn = False
+            SocketServer.__instance.configure_mode = False
+            # ---- Config ---
+            SocketServer.__instance.pre_prompt = ""
+            SocketServer.__instance.__auth_mode = cfgget('auth')
+            SocketServer.__instance.__prompt = "{} $ ".format(cfgget('devfid'))
+            SocketServer.__instance.__port = port if port is not None else cfgget("socport")
+            SocketServer.__instance.__timeout_user = user_timeout_sec if user_timeout_sec is not None else int(cfgget("soctout"))
+            SocketServer.__instance.__hwuid = uid if uid is not None else str(cfgget("hwuid"))
+            # ---         ----
+            SocketServer.__instance.server_console("[ socket server ] <<constructor>>")
+        return SocketServer.__instance
 
     #####################################
     #       Socket Server Methods       #
     #####################################
-    def __init_socket(self):
+    def __init_socket(cls):
         """
         Socket init:
-            socket create + setup as reusable (for rebind)
+        - socket create + setup as reusable (for rebind)
+        - listen on socket connections
         """
-        self.s = socket(AF_INET, SOCK_STREAM)
-        self.s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        # Create and Configure socket instance
+        cls.__s = socket(AF_INET, SOCK_STREAM)
+        cls.__s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+        # Listen up clients
+        while True:
+            try:
+                cls.__s.bind((cls.__host, cls.__port))
+                break
+            except Exception as msg:
+                cls.server_console('[ socket server ] Bind failed. Error Code : ' + str(msg))
+                sleep(1)
+        cls.server_console('[ socket server ] Socket bind complete')
+        cls.__s.listen(5)
+        cls.server_console('[ socket server ] Socket now listening')
+        cls.__accept()
 
-    def __deinit_socket(self):
+    def __close(cls):
         """
-        Socket deinit:
-            close connection - close socket - reset console print indentation
+        Safe close of socket
         """
+        cls.__isconn = False
         try:
-            self.conn.close()
+            cls.__conn.close()
         except Exception:
-            pass
-        self.s.close()
+            cls.server_console('[ socket server ] Socket was already closed.')
+
+    def __reconnect(cls):
+        # Reset shell parameters
+        cls.configure_mode = False
+        cls.__server_console_indent = 0
+        cls.__auth = False
+        # Close session
+        cls.server_console("[ socket server ] exit and close connection from " + str(cls.__addr))
+        cls.__close()
+        # Cleanup GC Collect
+        collect()
+        # Accept new connection again
+        cls.__accept()
+
+    def __accept(cls):
+        # Set prompt
+        cls.pre_prompt = "[password] " if cls.__auth_mode else ""
+        # Accept connection
+        cls.server_console("[ socket server ] wait to accept a connection")
+        cls.__conn, cls.__addr = cls.__s.accept()
+        cls.server_console('[ socket server ] Connected with {}:{}'.format(cls.__addr[0], cls.__addr[1]))
+        cls.__isconn = True
 
     #####################################
     #      Socket Connection Methods    #
     #####################################
-    def __bind_and_accept(self):
-        while True:
-            try:
-                self.s.bind((self.host, self.__port))
-                break
-            except Exception as msg:
-                self.server_console('[ socket server ] Bind failed. Error Code : ' + str(msg))
-                sleep(1)
-        self.server_console('[ socket server ] Socket bind complete')
-        self.s.listen(5)
-        self.server_console('[ socket server ] Socket now listening')
-        self.__accept()
 
-    def __accept(self):
-        # Reset pre prompt
-        self.pre_prompt = "[password] " if self.__auth_mode else ""
-        self.server_console("[ socket server ] wait to accept a connection")
-        self.conn, self.addr = self.s.accept()
-        self.server_console('[ socket server ] Connected with {}:{}'.format(self.addr[0], self.addr[1]))
+    def __send_prompt(cls):
+        cls.reply_message("{}{} ".format(cls.pre_prompt, cls.__prompt).encode('utf-8'))
 
-    def __wait_for_message(self):
-        prompt = "{}{} ".format(self.pre_prompt, self.__prompt).encode('utf-8')
-        self.reply_message(prompt)
-        self.conn.settimeout(self.__timeout_user)
+    def __wait_for_msg(cls):
+        # Check for open connection
+        if cls.__conn is None: return ''
+        # Reply on open connection
+        cls.__send_prompt()
+        cls.__conn.settimeout(cls.__timeout_user)
+        # Receive msg and handle timeout
         try:
-            data_byte = self.conn.recv(512)
+            data_byte = cls.__conn.recv(512)
         except Exception as e:
             data_byte = b''
-            if 'time' in str(e).lower() and 'out' in str(e).lower():
-                self.server_console(
-                    "[ socket server ] socket recv - connection with user - timeout {} sec".format(self.__timeout_user))
-                self.reply_message("\n__@_/' Session timeout {} sec\nBye!".format(self.__timeout_user))
-                self.__reconnect()
+            if 'ETIMEDOUT' in str(e).upper():
+                cls.server_console(
+                    "[ socket server ] socket recv - connection with user - timeout {} sec".format(cls.__timeout_user))
+                cls.reply_message("\n__@_/' Session timeout {} sec\nBye!".format(cls.__timeout_user))
+                cls.__reconnect()
             else:
                 raise Exception(e)
+        # Convert msg to str
         try:
             data_str = data_byte.decode("utf-8").strip()
         except Exception:
-            data_str = "ctrl-c"
-        self.server_console("[ socket server ] RAW INPUT |{}|".format(data_str))
+            data_str = 'ctrl-c'
+        cls.server_console("[ socket server ] RAW INPUT |{}|".format(data_str))
         # CALL LOW LEVEL COMMANDS -  server built-ins
-        return self.__server_level_cmds(data_str)
+        return cls.__server_level_cmds(data_str)
 
-    def __server_level_cmds(self, data_str):
+    def __server_level_cmds(cls, data_str):
         # globally available micrOS functions
         if data_str == 'exit':
             # For low level exit handling
-            self.reply_message("Bye!")
-            self.__reconnect()
+            cls.reply_message("Bye!")
+            cls.__reconnect()
             return ""
         if data_str == 'hello':
             # For low level device identification - hello msg
-            self.reply_message("hello:{}:{}".format(cfgget('devfid'), self.__hwuid))
+            cls.reply_message("hello:{}:{}".format(cfgget('devfid'), cls.__hwuid))
             return ""
         if data_str == 'version':
             # For micrOS system version info
-            self.reply_message("{}".format(self.__socket_interpreter_version))
+            cls.reply_message("{}".format(cls.__socket_interpreter_version))
             return ""
         # Authentication handling
-        data_str = self.__connection_authentication(data_str) if self.__auth_mode else data_str
+        data_str = cls.__authentication(data_str) if cls.__auth_mode else data_str
         # Authenticated user functions ... shell, etc
         if data_str == 'reboot':
-            self.reply_message("Reboot micrOS system.")
-            self.__safe_reboot_system()
+            cls.reply_message("Reboot micrOS system.")
+            cls.__safe_reboot()
             return ""
         if data_str == 'webrepl':
-            self.start_micropython_webrepl()
+            cls.start_micropython_webrepl()
             return ""
         return data_str
 
-    def __safe_reboot_system(self):
-        self.server_console("Execute safe reboot: __safe_reboot_system()")
-        self.reply_message("Bye!")
-        self.conn.close()
+    def __safe_reboot(cls):
+        cls.server_console("Execute safe reboot: __safe_reboot()")
+        cls.reply_message("Bye!")
+        cls.__close()
         sleep(1)
         from machine import reset
         reset()
-        self.__reconnect()          # In case of simulator - dummy reset
+        cls.__reconnect()          # In case of simulator - dummy reset
 
-    def reply_message(self, msg):
-        if isinstance(msg, bytes):
-            self.conn.sendall(msg)  # conn sendall
+    def reply_message(cls, msg):
+        # Skip reply if no open connection
+        if not cls.__isconn:
             return
+        # Reply on active connection
         try:
-            self.conn.sendall("{}\n".format(msg).encode("utf-8"))  # conn sendall
+            if not isinstance(msg, bytes):
+                msg = "{}\n".format(msg).encode("utf-8")
+            cls.__conn.sendall(msg)           # conn sendall
         except Exception as e:
-            self.server_console("[ socket server ] REPLY ERROR: {}".format(e))
+            cls.server_console("[ socket server ] reply error: {} -> RECONNECT".format(e))
+            cls.__reconnect()
+            # Send prompt after reconnect (normally runs in __wait_for_msg method)
+            cls.__send_prompt()
         return
 
-    def __reconnect(self):
-        # Reset Shell
-        self.configure_mode = False
-        self.__server_console_indent = 0
-        self.__auth_ok = False
-        # Close session
-        self.server_console("[ socket server ] exit and close connection from " + str(self.addr))
-        self.conn.close()
-        collect()
-        # Accept new connection
-        self.__accept()
-
-    def run(self):
-        self.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), self.__port))
+    def run(cls):
+        """
+        Main method, runs socket server with interpreter shell
+        """
+        cls.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), cls.__port))
         try:
-            cfgput('version', self.__socket_interpreter_version)
+            cfgput('version', cls.__socket_interpreter_version)
         except Exception as e:
             console_write("Export system version to config failed: {}".format(e))
-        self.__init_socket()
-        self.__bind_and_accept()
-        while True:
+        cls.__init_socket()
+        while True and cls.__isconn:
             try:
                 # Evaluate incoming msg via InterpreterShell -> InterpreterCore "Console prompt"
-                is_healthy = InterpreterShell_shell(self.__wait_for_message(), SocketServerObj=self)
+                is_healthy = shell(cls.__wait_for_msg(), SocketServerObj=cls)
                 if not is_healthy:
                     console_write("[EXEC-WARNING] InterpreterShell internal error.")
-                    self.__recovery(is_critic=False)
+                    cls.__recovery(is_critic=False)
             except OSError:
-                # BrokenPipeError
-                self.__reconnect()
+                # Broken pipe error handling
+                cls.__reconnect()
             except Exception as e:
                 console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
-                self.__recovery(is_critic=True)
+                cls.__recovery(is_critic=True)
             # Memory dimensioning dump
-            self.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
+            cls.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
 
-    def __recovery(self, is_critic=False):
+    def __recovery(cls, is_critic=False):
         """
         Handle memory errors here
         """
-        self.reply_message("[HA] system recovery ...")
+        cls.reply_message("[HA] system recovery ...")
         collect()
-        self.reply_message("[HA] gc-collect-memfree: {}".format(mem_free()))
+        cls.reply_message("[HA] gc-collect-memfree: {}".format(mem_free()))
         if is_critic:
-            try:
-                self.reply_message("[HA] Critical error - disconnect & hard reset")
-                self.__safe_reboot_system()
-            except Exception as e:
-                console_write("==> [!!!][HA] Recovery error: {}".format(e))
+            cls.reply_message("[HA] Critical error - disconnect & hard reset")
+            cls.__safe_reboot()
 
-    def server_console(self, msg):
-        console_write("|" + "-" * self.__server_console_indent + msg)
-        if self.__server_console_indent < 50:
+    def server_console(cls, msg):
+        console_write("|" + "-" * cls.__server_console_indent + msg)
+        if cls.__server_console_indent < 50:
             # if less then max indent
-            self.__server_console_indent += 1
+            cls.__server_console_indent += 1
 
-    def start_micropython_webrepl(self):
-        self.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
-        self.reply_message("  [!] micrOS socket shell will be available again after reboot.")
-        self.reply_message("  \trestart machine shortcut: import reset")
-        self.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(cfgget("devip")))
-        self.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
-        self.reply_message(" Bye!")
+    def start_micropython_webrepl(cls):
+        cls.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
+        cls.reply_message("  [!] micrOS socket shell will be available again after reboot.")
+        cls.reply_message("  \trestart machine shortcut: import reset")
+        cls.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(cfgget("devip")))
+        cls.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
+        cls.reply_message(" Bye!")
         try:
             import webrepl
-            self.reply_message(webrepl.start(password=cfgget('appwd')))
-            self.__del__()
+            cls.reply_message(webrepl.start(password=cfgget('appwd')))
+            # Deinit socket obj to make webrepl available
+            cls.__del__()
         except Exception as e:
-            self.reply_message("Error while starting webrepl: {}".format(e))
+            cls.reply_message("Error while starting webrepl: {}".format(e))
 
-    def __connection_authentication(self, data_str):
-        if not self.__auth_ok and data_str:
+    def __authentication(cls, data_str):
+        if not cls.__auth and data_str:
             # check password
             if cfgget('appwd') == data_str:
-                self.__auth_ok = True
-                self.reply_message("AuthOk")
-                self.pre_prompt = ""
+                cls.__auth = True
+                cls.reply_message("AuthOk")
+                cls.pre_prompt = ""
                 return ""
-            self.reply_message("AuthFailed\nBye!")
-            self.__reconnect()
+            cls.reply_message("AuthFailed\nBye!")
+            cls.__reconnect()
             return ""
         return data_str
 
-    def __del__(self):
+    def __del__(cls):
         console_write("[ socket server ] <<destructor>>")
-        self.__deinit_socket()
+        cls.__close()
+        cls.__s.close()

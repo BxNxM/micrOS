@@ -28,21 +28,18 @@ def __is_micrOS():
         True -> micrOS
         False -> webrepl
     """
-
     try:
         with open('.if_mode', 'r') as f:
-            if_mode = f.read().strip().lower()
+            if f.read().strip().lower() == 'micros':
+                # start micrOS
+                print("[loader][if_mode:True] .if_mode:micros -> micros interface")
+                return True
     except Exception:
         # start micrOS
         print("[loader][if_mode:True] .if_mode file not exists -> micros interface")
         return True
-
-    if if_mode == 'micros':
-        # start micrOS
-        print("[loader][if_mode:True] .if_mode:{} -> micros interface".format(if_mode))
-        return True
     # start webrepl
-    print("[loader][if_mode:False] .if_mode:{} -> webrepl interface".format(if_mode))
+    print("[loader][if_mode:False] .if_mode:webrepl -> webrepl interface")
     print("[loader][recovery mode] - manually selected in .if_mode file")
     return False
 
@@ -52,13 +49,14 @@ def __recovery_mode():
     from Network import auto_network_configuration
     try:
         from ConfigHandler import cfgget
+        pwd = cfgget('appwd')
     except:
-        cfgget = None
+        pwd = 'ADmin123'
     # Set up network
     auto_network_configuration()
     # Start webrepl
     import webrepl
-    webrepl.start(password='ADmin123' if cfgget is None else cfgget('appwd'))
+    webrepl.start(password=pwd)
 
 
 def __auto_restart_event():
@@ -74,7 +72,7 @@ def __auto_restart_event():
     wait_update_tout = 7
     # Wait after webrepl started for possible ota updates (~2*7= 14sec)
     while wait_update_tout > 0:
-        # Wait for micros turns to  webrepl until timeout
+        # Wait for micros turns to webrepl until timeout
         if __is_micrOS():
             # micrOS mode
             print("[loader][ota auto-rebooter][micros][{}] Wait for OTA update possible start".format(wait_update_tout))

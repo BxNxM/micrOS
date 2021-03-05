@@ -45,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.10.0-0'
+    __socket_interpreter_version = '0.10.1-0'
 
     def __new__(cls, host='', port=None, uid=None, user_timeout_sec=None):
         """
@@ -232,7 +232,7 @@ class SocketServer:
         while True and cls.__isconn:
             try:
                 # Evaluate incoming msg via InterpreterShell -> InterpreterCore "Console prompt"
-                is_healthy = shell(cls.__wait_for_msg(), SocketServerObj=cls)
+                is_healthy = shell(cls.__wait_for_msg(), sso=cls)
                 if not is_healthy:
                     console_write("[EXEC-WARNING] InterpreterShell internal error.")
                     cls.__recovery(is_critic=False)

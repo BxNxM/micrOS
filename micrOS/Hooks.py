@@ -45,8 +45,10 @@ def bootup_hook():
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:
         console_write("[BOOT HOOKS] Set up CPU 16MHz/24MHz - boostmd: {}".format(cfgget('boostmd')))
-        if platform == 'esp8266': freq(160000000)
-        if platform == 'esp32': freq(240000000)
+        if platform == 'esp8266':
+            freq(160000000)
+        if platform == 'esp32':
+            freq(240000000)
     else:
         console_write("[BOOT HOOKS] Set up CPU 8MHz - boostmd: {}".format(cfgget('boostmd')))
         freq(80000000)

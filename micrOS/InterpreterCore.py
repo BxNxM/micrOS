@@ -24,20 +24,20 @@ def execLMPipe(taskstr):
     """
     Input: taskstr contains LM calls separated by ;
     """
-    st = True
+    ok = True
     try:
         # Handle config default empty value (do nothing)
         if taskstr.startswith('n/a'):
-            return st
+            return True
         # Execute individual commands
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
-            buf = execLMCore(cmd)
-            st &= buf
-            if not buf: console_write("|-[LM-PIPE] task error: {}".format(cmd))
+            if not execLMCore(cmd):
+                console_write("|-[LM-PIPE] task error: {}".format(cmd))
+                ok = False
     except Exception as e:
         console_write("[LM-PIPE] pipe error: {}\n{}".format(taskstr, e))
-        st = False
-    return st
+        return False
+    return ok
 
 
 def execLMCore(argument_list, msgobj=None):
@@ -61,7 +61,7 @@ def execLMCore(argument_list, msgobj=None):
             # [1] LOAD MODULE
             if LM_name not in modules.keys():
                 exec("import {}".format(LM_name))
-            # [2] EXECUTE FUNCTION FROM MODULE - over msgobj or /dev/null
+            # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
             lm_output = eval("{}.{}({})".format(LM_name, LM_function, LM_function_params))
             if msgobj is not None:
                 if not json_mode and isinstance(lm_output, dict):

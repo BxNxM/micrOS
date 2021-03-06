@@ -21,31 +21,31 @@ def __SERVO_init():
     return __SERVO
 
 
-def Servo(duty=100):
+def sduty(duty=75):
     s = __SERVO_init()
     if duty > 115:
         duty = 115
     elif duty < 40:
         duty = 40
     try:
-        # duty for servo is between 40 - 115
+        # duty for sduty is between 40 - 115
         s.duty(duty)
         return "SET SERVO: duty: {}".format(duty)
     except Exception as e:
         return str(e)
 
 
-def Servo_demo():
+def sdemo():
     from time import sleep
-    Servo(40)
+    sduty(40)
     sleep(1)
-    Servo(120)
+    sduty(115)
     sleep(1)
-    Servo(70)
-    return "Servo DEMO"
+    sduty(75)
+    return "sduty DEMO"
 
 
-def Servo_deinit():
+def sdeinit():
     try:
         __SERVO_init().deinit()
         return "DEINIT SERVO"
@@ -69,21 +69,21 @@ def __SERVO2_init():
     return __SERVO2
 
 
-def Servo2(duty=100):
+def s2duty(duty=75):
     s = __SERVO2_init()
     if duty > 115:
         duty = 115
     elif duty < 40:
         duty = 40
     try:
-        # duty for servo is between 40 - 115
+        # duty for sduty is between 40 - 115
         s.duty(duty)
         return "SET SERVO: duty: {}".format(duty)
     except Exception as e:
         return str(e)
 
 
-def Servo2_deinit():
+def s2deinit():
     try:
         __SERVO2_init().deinit()
         return "DEINIT SERVO2"
@@ -96,4 +96,4 @@ def Servo2_deinit():
 #########################################
 
 def help():
-    return 'Servo(duty=<int>40-115)', 'Servo_demo', 'Servo_deinit', 'Servo2', 'Servo2_deinit'
+    return 'sduty(duty=<int>40-115)', 'sdemo', 'sdeinit', 's2duty', 's2deinit'

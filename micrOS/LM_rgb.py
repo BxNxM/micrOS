@@ -1,6 +1,7 @@
 #########################################
 #       ANALOG rgb CONTROLLER PARAMS    #
 #########################################
+from sys import platform
 __RGB_OBJS = (None, None, None)
 __RGB_CACHE = [600, 600, 600, 0]           # R, G, B, RGB state
 __PERSISTENT_CACHE = False
@@ -18,9 +19,14 @@ def __RGB_init():
         red = Pin(get_pin_on_platform_by_key('redgb'))
         green = Pin(get_pin_on_platform_by_key('rgreenb'))
         blue = Pin(get_pin_on_platform_by_key('rgbue'))
-        __RGB_OBJS = (PWM(red, freq=1024),
-                      PWM(green, freq=1024),
-                      PWM(blue, freq=1024))
+        if platform == 'esp8266':
+            __RGB_OBJS = (PWM(red, freq=1024),
+                          PWM(green, freq=1024),
+                          PWM(blue, freq=1024))
+        else:
+            __RGB_OBJS = (PWM(red, freq=20480),
+                          PWM(green, freq=20480),
+                          PWM(blue, freq=20480))
     return __RGB_OBJS
 
 

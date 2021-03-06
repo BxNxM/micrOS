@@ -1,3 +1,4 @@
+from sys import platform
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
 #########################################
@@ -14,7 +15,10 @@ def __l298n_init():
     if len(__L298N_OBJS) == 0:
         from machine import Pin, PWM
         from LogicalPins import get_pin_on_platform_by_key
-        __L298N_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('l298speed')), freq=20480))
+        if platform == 'esp8266':
+            __L298N_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('l298speed')), freq=1024))
+        else:
+            __L298N_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('l298speed')), freq=20480))
         __L298N_OBJS.append(Pin(get_pin_on_platform_by_key('l298dir_1'), Pin.OUT))
         __L298N_OBJS.append(Pin(get_pin_on_platform_by_key('l298dir_2'), Pin.OUT))
         __L298N_OBJS[0].duty(0)     # Set default speed (PWM)
@@ -67,4 +71,4 @@ def set_direction(direc=0):
 
 
 def help():
-    return 'm1_control', 'set_speed', 'set_direction', 'stop'
+    return 'm1_control direc=<0-1>, speed=<0-1023>', 'set_speed <0-1023>', 'set_direction <0-1>', 'stop'

@@ -1,3 +1,4 @@
+from sys import platform
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
 #########################################
@@ -17,7 +18,10 @@ def __dimmer_init():
         from machine import Pin, PWM
         from LogicalPins import get_pin_on_platform_by_key
         dimmer_pin = Pin(get_pin_on_platform_by_key('dim_1'))
-        __DIMMER_OBJ = PWM(dimmer_pin, freq=1024)
+        if platform == 'esp8266':
+            __DIMMER_OBJ = PWM(dimmer_pin, freq=1024)
+        else:
+            __DIMMER_OBJ = PWM(dimmer_pin, freq=20480)
     return __DIMMER_OBJ
 
 

@@ -59,11 +59,11 @@
     "help"
   ],
   "servo": [
-    "Servo duty=100",
-    "Servo_demo",
-    "Servo_deinit",
-    "Servo2 duty=100",
-    "Servo2_deinit",
+    "sduty duty=75",
+    "sdemo",
+    "sdeinit",
+    "s2duty duty=75",
+    "s2deinit",
     "help"
   ],
   "neopixel": [

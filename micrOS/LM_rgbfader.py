@@ -1,4 +1,5 @@
 from time import time
+from sys import platform
 # RGB (3x PWM) Channels
 __FADER_OBJ = (None, None, None)
 # COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10), state: 0False 1True (11)
@@ -14,9 +15,15 @@ def __fader_init():
         red = Pin(get_pin_on_platform_by_key('redgb'))
         green = Pin(get_pin_on_platform_by_key('rgreenb'))
         blue = Pin(get_pin_on_platform_by_key('rgbue'))
-        __FADER_OBJ = (PWM(red, freq=1024),
-                       PWM(green, freq=1024),
-                       PWM(blue, freq=1024))
+        if platform == 'esp8266':
+            __FADER_OBJ = (PWM(red, freq=1024),
+                           PWM(green, freq=1024),
+                           PWM(blue, freq=1024))
+        else:
+            __FADER_OBJ = (PWM(red, freq=20480),
+                           PWM(green, freq=20480),
+                           PWM(blue, freq=20480))
+
     return __FADER_OBJ
 
 

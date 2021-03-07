@@ -415,7 +415,8 @@ class MicrOSDevTool:
         workdir_handler = LocalMachine.SimplePopPushd()
         workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
 
-        for source in source_to_put_device:
+        for index, source in enumerate(source_to_put_device):
+            self.console("[{}%] micrOS deploy via USB".format(int((index+1)/len(source_to_put_device)*100)))
             ampy_args = 'put {from_}'.format(from_=source)
             command = ampy_cmd.format(dev=device, args=ampy_args)
             command = '{cmd}'.format(cmd=command)
@@ -439,12 +440,12 @@ class MicrOSDevTool:
                 exitcode = 0
                 stderr = ''
             if exitcode == 0 and stderr == '':
-                self.console("[ OK ][{}/{}] PUT {}".format(retry, retry_orig, source), state='ok')
+                self.console("[ OK ] PUT {}".format(source), state='ok')
                 self.console(" |-> CMD: {}".format(command))
                 status = True
                 break
             else:
-                self.console("[ ERROR ][{}/{}] PUT {}\n{}".format(retry, retry_orig, source, stderr), state='err')
+                self.console("[ ERROR/RETRY ][{}/{}] PUT {}\n{}".format(retry, retry_orig, source, stderr), state='err')
                 self.console(" |-> CMD: {}".format(command))
                 status = False
         return status

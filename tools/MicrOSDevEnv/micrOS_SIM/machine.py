@@ -114,3 +114,7 @@ def reset():
 
 def reset_cause():
     return 0
+
+
+def unique_id():
+    return hex(1234)

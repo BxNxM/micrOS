@@ -16,7 +16,7 @@ from time import sleep, localtime, time
 from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from ntptime import settime
-from machine import RTC
+from machine import RTC, unique_id
 from ConfigHandler import console_write, cfgget, cfgput
 
 #################################################################
@@ -49,9 +49,9 @@ def setNTP_RTC():
 #################################################################
 
 
-def set_uid_macaddr_hex(interface):
+def set_dev_uid():
     try:
-        cfgput('hwuid', 'micr{}OS'.format(hexlify(interface.config('mac'), 'x').decode()))
+        cfgput('hwuid', 'micr{}OS'.format(hexlify(unique_id()).decode('utf-8')))
     except Exception:
         pass
 
@@ -116,7 +116,7 @@ def set_wifi(essid, pwd, timeout=60):
     else:
         console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
     cfgput("devip", str(sta_if.ifconfig()[0]))
-    set_uid_macaddr_hex(sta_if)
+    set_dev_uid()
     return sta_if.isconnected()
 
 
@@ -165,7 +165,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
     if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
         cfgput("devip", ap_if.ifconfig()[0])
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
-    set_uid_macaddr_hex(ap_if)
+    set_dev_uid()
     return ap_if.active()
 
 #################################################################

@@ -17,4 +17,4 @@ def guimeta_fix_0_10_3_0():
 
 
 def help():
-    return 'guimeta_fix_0_10_3_0' 'NOTE: Enable new method for guimeta value storage'
+    return 'guimeta_fix_0_10_3_0', 'NOTE: Enable new method for guimeta value storage'

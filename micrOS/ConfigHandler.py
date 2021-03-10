@@ -69,7 +69,7 @@ def default_config():
                                       "gmttime": +1,
                                       "boostmd": True,
                                       "irqmreq": 6000,
-                                      "guimeta": "n/a",
+                                      "guimeta": "...",     # special "offloaded" key indicator
                                       "cstmpmap": "n/a"}
     return default_configuration_template
 
@@ -106,27 +106,36 @@ def console_write(msg):
 
 def cfgget(key):
     try:
-        return read_cfg_file().get(key, None)
+        val = read_cfg_file().get(key, None)
+        if val == '...':
+            # Handle special "offloaded" keys
+            return __disk_keys(key)
+        return val
     except Exception as e:
         console_write("[CONFIGHANDLER] Get config value error: {}".format(e))
     return None
 
 
 def cfgput(key, value, type_check=False):
+    # Handle special "offloaded" keys
+    if str(read_cfg_file().get(key, None)) == '...':
+        return __disk_keys(key, value)
+    # Handle regular keys
     if cfgget(key) == value:
         return True
     try:
         if type_check:
             value = __type_handler(key, value)
-        if value is not None:
-            cfg_dict_buffer = read_cfg_file()
-            cfg_dict_buffer[key] = value
-            __write_cfg_file(cfg_dict_buffer)
-            del cfg_dict_buffer, value
-            return True
+        # value type error or deny "offloaded" key's value ...
+        if value is None or str(value) == '...':
+            return False
+        cfg_dict_buffer = read_cfg_file()
+        cfg_dict_buffer[key] = value
+        __write_cfg_file(cfg_dict_buffer)
+        del cfg_dict_buffer, value
+        return True
     except Exception:
-        pass
-    return False
+        return False
 
 #################################################################
 #             CONFIGHANDLER  INTERNAL FUNCTIONS                 #
@@ -215,6 +224,27 @@ def __type_handler(key, value):
     except Exception as e:
         console_write("Input value type error! {}".format(e))
     return None
+
+
+def __disk_keys(key, value=None):
+    """
+    Store/Restore (long) str value in/from separate file based on key
+    These kind of parameters are not cached in memory
+    """
+    # Write str value to file
+    if isinstance(value, str) and key in Data.CONFIG_CACHE.keys():
+        try:
+            with open('.{}.key'.format(key), 'w') as f:
+                f.write(value)
+            return True
+        except Exception:
+            return False
+    # Read str value from file
+    try:
+        with open('.{}.key'.format(key), 'r') as f:
+            return f.read().strip()
+    except Exception:
+        return None
 
 #################################################################
 #                       MODULE AUTO INIT                        #

@@ -45,7 +45,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '0.10.2-0'
+    __socket_interpreter_version = '0.10.3-0'
 
     def __new__(cls, host='', port=None, uid=None, user_timeout_sec=None):
         """
@@ -148,7 +148,8 @@ class SocketServer:
         cls.__conn.settimeout(cls.__timeout_user)
         # Receive msg and handle timeout
         try:
-            data_byte = cls.__conn.recv(512)
+            # message size 1024 byte
+            data_byte = cls.__conn.recv(1024)
         except Exception as e:
             data_byte = b''
             if 'ETIMEDOUT' in str(e).upper():

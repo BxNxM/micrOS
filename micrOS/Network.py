@@ -174,8 +174,8 @@ def set_access_point(_essid, _pwd, _authmode=3):
 #################################################################
 
 
-def auto_network_configuration(retry=3):
-    for _ in range(0, retry):
+def auto_network_configuration():
+    for _ in range(0, 3):
         # SET WIFI (STA) MODE
         state = set_wifi(cfgget("staessid"), cfgget("stapwd"))
         if state:

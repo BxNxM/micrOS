@@ -25,6 +25,7 @@ sys.path.append(APP_DIR)
 
 
 DUMMY_EXEC = False
+DAEMON = False
 
 
 class ProgressbarTimers:
@@ -455,7 +456,7 @@ class micrOSGUI(QWidget):
         self.modifiers_obj.create()
 
     def __thread_progress_monitor(self):
-        th = threading.Thread(target=self.__thread_monitor_logic, daemon=True)
+        th = threading.Thread(target=self.__thread_monitor_logic, daemon=DAEMON)
         th.start()
 
     def __thread_monitor_logic(self):
@@ -566,7 +567,7 @@ class micrOSGUI(QWidget):
             app_name = selected_app.replace('_app', '')
             th = threading.Thread(target=__execute_app,
                                   args=(app_name, selected_device),
-                                  daemon=True)
+                                  daemon=DAEMON)
             th.start()
             self.bgjob_thread_obj_dict[process_key] = th
             self.console.append_output('[{}] |- application was started'.format(process_key))
@@ -604,7 +605,7 @@ class micrOSGUI(QWidget):
         self.devenv_usb_deployment_is_active = True
         # Create a Thread with a function without any arguments
         self.console.append_output('[usb_deploy] |- start usb_deploy job')
-        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore': False, 'purge_conf': True}, daemon=True)
+        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore': False, 'purge_conf': True}, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['usb_deploy'] = th
         self.console.append_output('[usb_deploy] |- usb_deploy job was started')
@@ -649,7 +650,7 @@ class micrOSGUI(QWidget):
         th = threading.Thread(target=self.devtool_obj.update_with_webrepl,
                               kwargs={'device': (fuid, devip), 'force': ignore_version_check,
                                       'unsafe': unsafe_ota_update, 'ota_password': self.appwd_textbox.get()},
-                              daemon=True)
+                              daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['ota_update'] = th
         self.console.append_output('[ota_update] |- ota_update job was started')
@@ -690,7 +691,7 @@ class micrOSGUI(QWidget):
         self.progressbar.progressbar_update()
         th = threading.Thread(target=self.devtool_obj.update_with_webrepl, \
                               kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'lm_only': True, \
-                                      'ota_password': self.appwd_textbox.get()}, daemon=True)
+                                      'ota_password': self.appwd_textbox.get()}, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['lm_update'] = th
         self.console.append_output('[lm_update] |- lm_update job was started')
@@ -727,7 +728,7 @@ class micrOSGUI(QWidget):
         self.devenv_usb_deployment_is_active = True
         # create a thread with a function without any arguments
         self.console.append_output('[usb_update] |- start usb_update job')
-        th = threading.Thread(target=self.devtool_obj.update_micros_via_usb, kwargs={'force': self.modifiers_obj.ignore_version_check}, daemon=True)
+        th = threading.Thread(target=self.devtool_obj.update_micros_via_usb, kwargs={'force': self.modifiers_obj.ignore_version_check}, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['usb_update'] = th
         self.console.append_output('[usb_update] |- usb_update job was started')
@@ -756,7 +757,7 @@ class micrOSGUI(QWidget):
         # Start job
         self.console.append_output('[search_devices] |- start serach_devices job')
         # Create a Thread with a function without any arguments
-        th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=True)
+        th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['serach_devices'] = th
         self.console.append_output('[search_devices] |- serach_devices job was started')
@@ -784,7 +785,7 @@ class micrOSGUI(QWidget):
         # Start job
         self.console.append_output('[search_devices] |- start simulator job')
         self.progressbar.progressbar_update()
-        th = threading.Thread(target=devToolKit.simulate_micrOS, daemon=True)
+        th = threading.Thread(target=devToolKit.simulate_micrOS, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['simulator'] = th
         self.console.append_output('[search_devices] |- simulator job was started')
@@ -813,3 +814,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    sys.exit(0)

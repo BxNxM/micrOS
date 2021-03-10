@@ -9,6 +9,10 @@
     "poweroff",
     "help"
   ],
+  "repair": [
+    "guimeta_fix_0_10_3_0",
+    "help"
+  ],
   "system": [
     "info <msgobj>",
     "gclean",
@@ -73,6 +77,10 @@
     "toggle state=None",
     "help"
   ],
+  "i2c": [
+    "scan",
+    "help"
+  ],
   "dht22": [
     "measure",
     "measure_w_co2",
@@ -117,7 +125,8 @@
     "help"
   ],
   "VL53L0X": [
-    "measure"
+    "measure",
+    "help"
   ],
   "light_sensor": [
     "intensity",

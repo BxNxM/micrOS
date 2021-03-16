@@ -184,6 +184,7 @@ DevToolKit CLI feature:
 |  **v0.1.0-0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) | esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.1.0-0.json)| Stable Core with applications - first release
 |  **v0.4.0-0** | [release_Info-0.4.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp8266.md)| 26 - 53 % (2512-5072byte) | esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and so more. OTA update feature.
 |  **v0.4.0-0** | [release_Info-0.4.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| 23 - 28 % (17250-20976byte) | esp32 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.
+|  **v1.0.0-0** | [release_Info-1.0.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| 15 - 23 % (10394-15488byte) | esp32 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc. 
 
 ----------------------------------------
 
@@ -253,10 +254,9 @@ DevToolKit CLI feature:
 
 LogicalPin lookup tables:
 
-```
-LP_esp8266.py
-LP_esp32.py
-```
+- [tinypico](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LM_tinypico.py)
+- [esp32](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LM_esp32.py)
+- [esp8266](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LM_esp8266.py)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 

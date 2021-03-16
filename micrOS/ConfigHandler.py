@@ -244,7 +244,8 @@ def __disk_keys(key, value=None):
         with open('.{}.key'.format(key), 'r') as f:
             return f.read().strip()
     except Exception:
-        return None
+        # Return default value if key not exists
+        return 'n/a'
 
 #################################################################
 #                       MODULE AUTO INIT                        #

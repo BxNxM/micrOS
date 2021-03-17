@@ -812,13 +812,13 @@ bnm@Bans-MBP:micrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_lin
       20	LP_esp8266.py
       38	LP_tinypico.py
       28	LogicalPins.py
-     168	Network.py			-> FSCO (ForceCoreOTA update)
+     168	Network.py          -> FSCO (ForceCoreOTA update)
      124	Scheduler.py
      274	SocketServer.py
       24	TinyPLed.py
-      16	boot.py				-> FSCO
+      16	boot.py             -> FSCO
       54	micrOS.py
-     101	micrOSloader.py		-> FSCO
+     101	micrOSloader.py     -> FSCO
        5	reset.py
 SUM OF CODE LINES: 1737
 

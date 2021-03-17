@@ -20,8 +20,13 @@ class MicrOSDevTool:
         self.dummy_exec = dummy_exec
         self.gui_console = gui_console
         self.cmdgui = cmdgui
+        # Skip the following modules in OTA update (safe mode) to have recovery mode
+        self.safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy', 'Network.mpy']
+        # DevToolKit external dependency list
         self.deployment_app_dependences = ['ampy', 'esptool.py']
+        # USB serial (sub)names to recognize in /dev/tty...
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial']
+        # Commands for devices
         self.dev_types_and_cmds = \
                 {'esp8266':
                    {'erase': 'esptool.py --port {dev} erase_flash',
@@ -907,8 +912,6 @@ class MicrOSDevTool:
         self.precompile_micros()
 
         force_mode = False
-        # Skip the following modules in OTA update (safe mode) to have recovery mode
-        safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy', 'Network.mpy']
         # Get specific device from device list
         self.console("Select device to update ...", state='IMP')
         socketClient.ConnectionData.read_MicrOS_device_cache()
@@ -1011,7 +1014,7 @@ class MicrOSDevTool:
             progress = round(((index + 1) / len(resource_list_to_upload)) * 100)
 
             # Handle force mode + file exception list (skip)
-            if not force_mode and source in safe_mode_file_exception_list:
+            if not force_mode and source in self.safe_mode_file_exception_list:
                 self.console(
                     "\t[{}%][SKIP UPLOAD] updating {} - only available over USB update".format(progress, source),
                     state='WARN')

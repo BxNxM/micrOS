@@ -1,4 +1,4 @@
-# ![LOGO](https://github.com/BxNxM/MicrOs/blob/master/media/logo_mini.png?raw=true) micrOS
+# ![LOGO](./media/logo_mini.png?raw=true) micrOS
 
 ### micropython based IoT framework for wifi capable arm based microcontrollers and much more...
 
@@ -161,15 +161,15 @@ DevToolKit CLI feature:
 
 ## Device Pinouts for wiring
 
-![MicrOSESP8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/NodeMCUPinOutESP8266.png?raw=true)
+![MicrOSESP8266pinout](./media/NodeMCUPinOutESP8266.png?raw=true)
 
-![MicrOSESP8266pinout](https://github.com/BxNxM/MicrOs/blob/master/media/NodeMCUPinOutESP32.png?raw=true)
+![MicrOSESP8266pinout](./media/NodeMCUPinOutESP32.png?raw=true)
 
 ----------------------------------------
 
 ## System Architecture 
 
-![MICROSARCHITECTURE](https://github.com/BxNxM/MicrOs/blob/master/media/MicrOSArchitecture.png?raw=true)
+![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
 
 > Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
 
@@ -181,10 +181,10 @@ DevToolKit CLI feature:
 
 |  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |  SUPPORTED DEVICE(S) | APP PROFILES | Load Modules  |     NOTE       |
 | :----------: | :----------------: | :------------------------:   |  :-----------------: | :------------: | :------------:| -------------- |
-|  **v0.1.0-0** | [release_Info-0.1.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) | esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.1.0-0.json)| Stable Core with applications - first release
-|  **v0.4.0-0** | [release_Info-0.4.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp8266.md)| 26 - 53 % (2512-5072byte) | esp8266 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and so more. OTA update feature.
-|  **v0.4.0-0** | [release_Info-0.4.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| 23 - 28 % (17250-20976byte) | esp32 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.
-|  **v1.0.0-0** | [release_Info-1.0.0-0](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| 15 - 23 % (10394-15488byte) | esp32 | [App Profiles](https://github.com/BxNxM/MicrOs/tree/master/release_info/node_config_profiles) | [LM manual](https://github.com/BxNxM/MicrOs/tree/master/release_info/micrOS_ReleaseInfo/release_sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc. 
+|  **v0.1.0-0** | [release_Info-0.1.0-0](./release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| 13 - 28 % (1216-2544byte) | esp8266 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_0.1.0-0.json)| Stable Core with applications - first release
+|  **v0.4.0-0** | [release_Info-0.4.0-0](./release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp8266.md)| 26 - 53 % (2512-5072byte) | esp8266 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and so more. OTA update feature.
+|  **v0.4.0-0** | [release_Info-0.4.0-0](./release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| 23 - 28 % (17250-20976byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.
+|  **v1.0.0-0** | [release_Info-1.0.0-0](./release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| 15 - 23 % (10394-15488byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc. 
 
 ----------------------------------------
 
@@ -250,13 +250,13 @@ DevToolKit CLI feature:
 
 ## Logical pin association handling
 
-[MicrOS/LogicalPins.py](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LogicalPins.py)
+[MicrOS/LogicalPins.py](./micrOS/LogicalPins.py)
 
 LogicalPin lookup tables:
 
-- [tinypico](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LM_tinypico.py)
-- [esp32](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LM_esp32.py)
-- [esp8266](https://github.com/BxNxM/MicrOs/blob/master/MicrOS/LM_esp8266.py)
+- [tinypico](./micrOS/LM_tinypico.py)
+- [esp32](./micrOS/LM_esp32.py)
+- [esp8266](./micrOS/LM_esp8266.py)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
@@ -323,10 +323,15 @@ or
 Output:
 
 ```
-       [ UID ]                [ FUID ]	[ IP ]		[ STATUS ]	[ MEMFREE ]	[ VERSION ]
-420c0xf40x420x440xc420d6      Lamp	     10.0.1.12	ONLINE		4864 byte	0.1.0-0
-420e00x980420x910xb420a2      airquality 10.0.1.50	ONLINE		3792 byte	0.0.9-27
-420x500x204200x680x420f7      slim01	 10.0.1.157	ONLINE		890 byte    0.0.9-27	
+       [ UID ]                [ FUID ]		[ IP ]		[ STATUS ]	[ VERSION ]	[COMM SEC]
+micr123c8456OS            RingLamp          10.0.1.75	ONLINE		1.0.1-0		0.319
+micr123456OS            BigRGB            10.0.1.119	ONLINE		1.0.1-0		0.418
+micr12345c860OS                CamLed            10.0.1.84	ONLINE		1.0.1-0		0.498
+micr12c83456OS                airquality        10.0.1.50	ONLINE		1.0.1-0		0.495
+micr5123456OS            tinyPico          10.0.1.189	ONLINE		<n/a>		n/a
+micr212345670OS            nodepro           10.0.1.140	OFFLINE		<n/a>		n/a
+micrf1234562a0OS            BedLamp           10.0.1.45	ONLINE		1.0.1-0		0.317
+micr212345661xOS            CatGamePro       10.0.1.23	ONLINE		1.0.1-0		0.393
 ```
 
 **Developer commands**
@@ -366,84 +371,160 @@ hello:slim01:0x500x20x910x680xc0xf7
 ### Get help
 
 ```
-./devToolKit.py -c -p '--dev slim01 help'
+./devToolKit.py -c -p '--dev node01 help'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
-[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
-Device was found: slim01
-hello - default hello msg - identify device (SocketServer)
-exit  - exit from shell socket prompt (SocketServer)
-[CONF] Configure mode:
-   configure|conf     - Enter conf mode
-         Key          - Get value
-         Key:Value    - Set value
-         dump         - Dump all data
-   noconfigure|noconf - Exit conf mod
-[EXEC] Command mode:
+[0] Device: node01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+Device was found: node01
+node01 $  help
+[MICROS]   - commands (SocketServer built-in)
+   hello   - default hello msg - identify device
+   version - shows micrOS version
+   exit    - exit from shell socket prompt
+   reboot  - system safe reboot
+   webrepl - start web repl for file transfers - update
+[CONF] Configure mode (InterpreterShell built-in):
+  conf       - Enter conf mode
+    dump       - Dump all data
+    key        - Get value
+    key value  - Set value
+  noconf     - Exit conf mode
+[EXEC] Command mode (LMs):
+   L298N_DCmotor
+                help
+   VL53L0X
+          measure
+          help
+   adc
+      measure
+      action_fltr
+      help
+   air
+      help
+   bledns
+         advert
+         scan
+         list
+         make
+         help
+   bme280
+         help
+   co2
+      help
+   dht11
+        help
+   dht22
+        help
+   dimmer
+         help
+   distance_HCSR04
+                  distance_mm
+                  distance_cm
+                  deinit
+                  help
+   esp32
+        hall
+        temp
+        touch
+        battery
+        help
+   i2c
+      scan
+      help
+   intercon
+           help
+   light_sensor
+               help
+   motion_sensor
+                get_PIR_state
+                PIR_deinit
+                help
+   neopixel
+           help
    oled_128x64i2c
-                 text
-                 invert
-                 clean
-                 draw_line
-                 draw_rect
-                 show_debug_page
-                 wakeup_oled_debug_page_execute
-                 poweron
-                 poweroff
+                 help
+   oled_widgets
+               help
+   ph_sensor
+            measure
+            help
+   repair
+         help
+   rgb
+      help
+   rgbfader
+           help
+   servo
+        help
+   switch
+         help
    system
-         memfree
-         gccollect
-         reboot
-         wifirssi
-         heartbeat
-         time
-   gpio
-       RGB
-       RGB_deinit
-       Servo
-       Servo_deinit
+         help
+   test
+       run
+       help
+   tinyrgb
+          help
+   tinyrgb
+          setrgb
+          getstate
+          toggle
+          wheel
+          help
 ```
  
 ### Embedded config handler
  
 ```  
-./devToolKit.py -c -p '--dev slim01 conf <a> dump'
+./devToolKit.py -c -p '--dev node01 conf <a> dump'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
-[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
-Device was found: slim01
-[configure] slim01
-  stapwd    :  <your_wifi_password>
-  gmttime   :  1
-  nwmd      :  STA
-  soctout   :  100
-  timirq    :  True
-  appwd     :  Admin123
-  devfid    :  slim01
-  extirq    :  True
-  dbg       :  True
-  timirqcbf :  oled_128x64i2c show_debug_page
-  hwuid     :  0x500x20x910x680xc0xf7
-  staessid  :  <your_wifi_name>
-  devip     :  10.0.1.73
-  extirqcbf :  oled_128x64i2c invert
-  socport   :  9008
-  pled      :  True
+[0] Device: node01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+Device was found: node01
+[configure] node01
+  gmttime   :        1
+  irqmreq   :        6000
+  pled      :        True
+  crontasks :        *:19:2:0!rgbfader fade 0 107 6 120;*:19:4:0!rgbfader fade 0 92 2 120;*:19:6:0!rgbfader fade 128 0 7 120;*:19:8:0!rgbfader fade 107 7 0 120;*:19:10:0!rgbfader fade 0 31 9 120;*:19:12:0!rgbfader fade 310 1 2 120;*:19:14:0!rgbfader fade 11 1 0 120;*:23:0:0!rgbfader fade 0 0 0 3600;*:7:0:0!rgbfader fade 0 107 6 3600
+  soctout   :        100
+  devip     :        10.0.1.119
+  version   :        1.0.1-0
+  auth      :        False
+  cronseq   :        3000
+  guimeta   :        ...
+  cron      :        True
+  timirqcbf :        rgbfader transition
+  devfid    :        BigRGB
+  cstmpmap  :        n/a
+  boostmd   :        True
+  socport   :        9008
+  dbg       :        True
+  irqmembuf :        1000
+  timirqseq :        1000
+  extirq    :        False
+  staessid  :        <your-wifi-name>; <your-wifi-name2>
+  appwd     :        ADmin123
+  stapwd    :        <your-wifi-pwd>; <your-wifi-pwd2>
+  timirq    :        True
+  hwuid     :        micr8caab594d4c4OS
+  extirqcbf :        n/a
+  nwmd      :        STA
+  extirqtrig:        n/a
+  boothook  :        rgbfader fader_cache_load_n_init
 ```
 
 ### Load Modules - User defined functions
 
 ```
-./devToolKit.py -c -p '--dev slim01 system memfree'
+./devToolKit.py -c -p '--dev node01 system info'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
-Activate MicrOS device connection address
-[i]         FUID        IP               UID
-[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
-Device was found: slim01
-CPU[Hz]: 160000000
-GC MemFree[byte]: 5552
+Device was found: node01
+CPU clock: 24 [MHz]
+MemFree: 25 kB 80 byte
+FSFREE: 88 %
+Plaform: esp32
 ```
 
 ## SocketClient
@@ -476,46 +557,38 @@ or
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
-[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
+[0] Device: node01 - 10.0.1.119 - 0x500x20x910x680xc0xf7
 Choose a device index: 0
-Device IP was set: 10.0.1.73
-slim01 $  help
-hello - default hello msg - identify device (SocketServer)
-exit  - exit from shell socket prompt (SocketServer)
-[CONF] Configure mode:
-   configure|conf     - Enter conf mode
-         Key          - Get value
-         Key:Value    - Set value
-         dump         - Dump all data
-   noconfigure|noconf - Exit conf mod
-[EXEC] Command mode:
-   oled_128x64i2c
-                 text
-                 invert
-                 clean
-                 draw_line
-                 draw_rect
-                 show_debug_page
-                 wakeup_oled_debug_page_execute
-                 poweron
-                 poweroff
-   system
-         memfree
-         gccollect
-         reboot
-         wifirssi
-         heartbeat
-         time
-   gpio
-       RGB
-       RGB_deinit
-       Servo
-       Servo_deinit
-slim01 $  gpio RGB(0,0,0)
-SET RGB
-slim01 $  exit
+Device IP was set: 10.0.1.119
+node01 $  help
+[MICROS]   - commands (SocketServer built-in)
+   hello   - default hello msg - identify device
+   version - shows micrOS version
+   exit    - exit from shell socket prompt
+   reboot  - system safe reboot
+   webrepl - start web repl for file transfers - update
+[CONF] Configure mode (InterpreterShell built-in):
+  conf       - Enter conf mode
+    dump       - Dump all data
+    key        - Get value
+    key value  - Set value
+  noconf     - Exit conf mode
+[EXEC] Command mode (LMs):
+   L298N_DCmotor
+                help
+   VL53L0X
+          measure
+          help
+   adc
+      measure
+      action_fltr
+      help
+   air
+      help
+   ...
+node01 $  exit
 Bye!
-exit and close connection from ('10.0.1.7', 51733)
+
 ```
 
 ## Project structure
@@ -523,38 +596,63 @@ exit and close connection from ('10.0.1.7', 51733)
 ### MicrOS resources library
 
 ```
-├── MicrOS
-│   ├── ConfigHandler.py
-│   ├── Hooks.py
-│   ├── InterConnect.py
-│   ├── InterpreterCore.py
-│   ├── InterpreterShell.py
-│   ├── InterruptHandler.py
-│   ├── LogicalPins.py
-│   ├── Network.py
-│   ├── Scheduler.py
-│   ├── SocketServer.py
-│   ├── boot.py
-│   ├── micrOS.py
-│   ├── micrOSloader.py
-│   ├── reset.py
+micrOS/
+├── BleHandler.py
+├── Common.py
+├── ConfigHandler.py
+├── Hooks.py
+├── InterConnect.py
+├── InterpreterCore.py
+├── InterpreterShell.py
+├── InterruptHandler.py
+├── LP_esp32.py
+├── LP_esp8266.py
+├── LP_tinypico.py
+├── LogicalPins.py
+├── Network.py
+├── Scheduler.py
+├── SocketServer.py
+├── TinyPLed.py
+├── boot.py
+├── micrOS.py
+├── micrOSloader.py
+├── node_config.json
+├── reset.py
 ```
 > Note: Core MicrOS components
 
 ```
-│   ├── LM_distance_HCSR04.py
-│   ├── LM_light.py
-│   ├── LM_motion_sensor.py
-│   ├── LM_oled_128x64i2c.py
-│   ├── LM_oled_widgets.py
-│   ├── LM_servo.py
-│   ├── LM_system.py
-│   ├── etc...
+micrOS/
+├── LM_L298N_DCmotor.py
+├── LM_VL53L0X.py
+├── LM_bledns.py
+├── LM_bme280.py
+├── LM_co2.py
+├── LM_dht11.py
+├── LM_dht22.py
+├── LM_dimmer.py
+├── LM_distance_HCSR04.py
+├── LM_esp32.py
+├── LM_i2c.py
+├── LM_intercon.py
+├── LM_light_sensor.py
+├── LM_neopixel.py
+├── LM_oled_128x64i2c.py
+├── LM_oled_widgets.py
+├── LM_ph_sensor.py
+├── LM_repair.py
+├── LM_rgb.py
+├── LM_rgbfader.py
+├── LM_servo.py
+├── LM_switch.py
+├── LM_system.py
+├── LM_tinyrgb.py
 ```
 > LM (Load Modules) - Application logic - accessable over socket server as a command
 
 ```
-│   └── node_config.json
+micrOS/
+├── node_config.json
 ```
 > Note: System description config
 
@@ -586,44 +684,55 @@ exit and close connection from ('10.0.1.7', 51733)
 Precompiled components with the actual user configured config location
 
 ```
-├── mpy-MicrOS
-│   ├── ConfigHandler.mpy
-│   ├── Hooks.mpy
-│   ├── InterConnect.mpy
-│   ├── InterpreterCore.mpy
-│   ├── InterpreterShell.mpy
-│   ├── InterruptHandler.mpy
-│   ├── LM_bme280.mpy
-│   ├── LM_co2.mpy
-│   ├── LM_dht11.mpy
-│   ├── LM_dht22.mpy
-│   ├── LM_dimmer.mpy
-│   ├── LM_distance_HCSR04.py
-│   ├── LM_esp32.py
-│   ├── LM_intercon.py
-│   ├── LM_light.mpy
-│   ├── LM_light_sensor.mpy
-│   ├── LM_motion_sensor.py
-│   ├── LM_neopixel.mpy
-│   ├── LM_oled_128x64i2c.mpy
-│   ├── LM_oled_widgets.mpy
-│   ├── LM_ph_sensor.py
-│   ├── LM_servo.mpy
-│   ├── LM_switch.mpy
-│   ├── LM_system.mpy
-│   ├── LM_water_level.py
-│   ├── LogicalPins.mpy
-│   ├── Network.mpy
-│   ├── Scheduler.mpy
-│   ├── SocketServer.mpy
-│   ├── boot.py
-│   ├── micrOS.mpy
-│   ├── micrOSloader.mpy
-│   ├── node_config.json
-│   └── reset.mpy
+mpy-micrOS/
+├── BleHandler.mpy
+├── Common.mpy
+├── ConfigHandler.mpy
+├── Hooks.mpy
+├── InterConnect.mpy
+├── InterpreterCore.mpy
+├── InterpreterShell.mpy
+├── InterruptHandler.mpy
+├── LM_L298N_DCmotor.mpy
+├── LM_VL53L0X.py
+├── LM_bledns.py
+├── LM_bme280.mpy
+├── LM_co2.mpy
+├── LM_dht11.mpy
+├── LM_dht22.mpy
+├── LM_dimmer.mpy
+├── LM_distance_HCSR04.py
+├── LM_esp32.py
+├── LM_i2c.py
+├── LM_intercon.mpy
+├── LM_light_sensor.mpy
+├── LM_neopixel.mpy
+├── LM_oled_128x64i2c.mpy
+├── LM_oled_widgets.mpy
+├── LM_ph_sensor.py
+├── LM_repair.mpy
+├── LM_rgb.mpy
+├── LM_rgbfader.mpy
+├── LM_servo.mpy
+├── LM_switch.mpy
+├── LM_system.mpy
+├── LM_tinyrgb.mpy
+├── LP_esp32.mpy
+├── LP_esp8266.mpy
+├── LP_tinypico.mpy
+├── LogicalPins.mpy
+├── Network.mpy
+├── Scheduler.mpy
+├── SocketServer.mpy
+├── TinyPLed.mpy
+├── boot.py
+├── micrOS.mpy
+├── micrOSloader.mpy
+└── reset.mpy
+44 files
 ```
 
-> Note: These resources will be copy to the micropython base.
+> Note: These resources will be copy to the micropython base image, all `LM_`s are optional.
 
 ### Release info and Application Profiles
 
@@ -662,16 +771,15 @@ Precompiled components with the actual user configured config location
 ### Other project resoures 
 
 ```
-├── apps
-│   ├── AirQualityBME280_app.py
-│   ├── AirQualityDHT22_CO2_app.py
-│   ├── AnanlogLED_app.py
-│   ├── CatGame_app.py
-│   ├── Dimmer_app.py
-│   ├── GetVersion_app.py
-│   ├── NeopixelTest_app.py
-│   ├── Template_app.py
-├── etc...
+apps/
+├── AirQualityBME280_app.py
+├── AirQualityDHT22_CO2_app.py
+├── AnanlogLED_app.py
+├── CatGame_app.py
+├── Dimmer_app.py
+├── GetVersion_app.py
+├── NeopixelTest_app.py
+├── Template_app.py
 ```
 
 ----------------------------------------
@@ -691,22 +799,28 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 ```bash
 
-bnm@Bans-MacBook-Pro:micrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
-     174	ConfigHandler.py
-      51	Hooks.py
-      41	InterConnect.py
-      66	InterpreterCore.py
-     156	InterpreterShell.py
-     140	InterruptHandler.py
-      51	LogicalPins.py
-     172	Network.py
-     127	Scheduler.py
-     257	SocketServer.py
-      16	boot.py
-      53	micrOS.py
-      97	micrOSloader.py
+bnm@Bans-MBP:micrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
+     154	BleHandler.py
+      17	Common.py
+     232	ConfigHandler.py
+      53	Hooks.py
+      42	InterConnect.py
+      82	InterpreterCore.py
+     159	InterpreterShell.py
+     122	InterruptHandler.py
+      24	LP_esp32.py
+      20	LP_esp8266.py
+      38	LP_tinypico.py
+      28	LogicalPins.py
+     168	Network.py			-> FSCO (ForceCoreOTA update)
+     124	Scheduler.py
+     274	SocketServer.py
+      24	TinyPLed.py
+      16	boot.py				-> FSCO
+      54	micrOS.py
+     101	micrOSloader.py		-> FSCO
        5	reset.py
-SUM OF CODE LINES: 1406
+SUM OF CODE LINES: 1737
 
 ```
 

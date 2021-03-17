@@ -228,8 +228,8 @@ DevToolKit CLI feature:
 | timirqcbf        |      `n/a`   `<str>`        |      No        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
 | timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
 | cron             |     `False`  `<bool>`       |       Yes       | Cron enabler, Timer(1) interrupt enabler - time based task scheduler.
-| cronseq          |    `3000`   `<int>`         |      Yes        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value)
-| crontasks        |     `n/a`  `<str>`          |       Yes       | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`
+| cronseq          |    `3000`   `<int>`         |       No        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value) 
+| crontasks        |     `n/a`  `<str>`          |       No        | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*` **Note**: If the value was `n/a` default, then reboot required.
 | extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when "input signal upper edge detected" - button press happens
 | extirqcbf        |     `n/a`  `<str>`          |      No        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
 | extirqtrig       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
@@ -240,10 +240,10 @@ DevToolKit CLI feature:
 | socport          |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility)
 | irqmreq          |      `6000`  `<int>`        |       No        | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
 | irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer allocation (in byte) when `timirq` or `exitirq` enabled.
-| devip            |      `n/a`  `<str>`         |    Yes/N/A      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
+| devip            |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
 | nwmd             |     `n/a`  `<str>`          |      N/A        | USED BY SYSTEM (state storage) - system saves network mode here - `AP` or `STA`
 | hwuid            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
-| guimeta          |      `n/a`  `str`           |     No/N/A      | USED BY micrOS Client (state storage) - stores clinet widget meta data
+| guimeta          |      `n/a`  `str`           |      No        | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
 
 > Note: Default empty value: `n/a` in case of string parameter.
 > Note: Cron is only available on devices with Timer(**1**): esp32

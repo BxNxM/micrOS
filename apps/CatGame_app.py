@@ -8,7 +8,7 @@ MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
 
-DEVICE = 'ImpiGame'
+DEVICE = 'ImpiGamePro'
 CMD_PIPE_SEP = '<a>'
 SERVO_CENTER_VAL = 77
 
@@ -44,7 +44,7 @@ def play_game(iteration=30, devfid=None):
 
 def deinit_servo():
     print("DEINIT SERVO, SET TO {} and DEINIT".format(SERVO_CENTER_VAL))
-    args = base_cmd() + ['servo', 'sduty {}'.format(SERVO_CENTER_VAL), '<a>', 'servo', 'sdeinit']
+    args = base_cmd() + ['servo', 'sduty {}'.format(SERVO_CENTER_VAL)]
     socketClient.run(args)
 
 

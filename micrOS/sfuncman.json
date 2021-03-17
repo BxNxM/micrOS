@@ -65,9 +65,7 @@
   "servo": [
     "sduty duty=75",
     "sdemo",
-    "sdeinit",
     "s2duty duty=75",
-    "s2deinit",
     "help"
   ],
   "neopixel": [

@@ -21,7 +21,7 @@ class MicrOSDevTool:
         self.gui_console = gui_console
         self.cmdgui = cmdgui
         self.deployment_app_dependences = ['ampy', 'esptool.py']
-        self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial-0001', 'usbserial-020AB47C']
+        self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial']
         self.dev_types_and_cmds = \
                 {'esp8266':
                    {'erase': 'esptool.py --port {dev} erase_flash',

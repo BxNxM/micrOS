@@ -12,7 +12,7 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from os import listdir
-from ConfigHandler import cfgget, cfgput, read_cfg_file
+from ConfigHandler import cfgget, cfgput
 from InterpreterCore import execLMCore
 
 try:
@@ -107,7 +107,7 @@ def __configure(attributes, sso):
     if len(attributes) == 1:
         if attributes[0] == 'dump':
             # DUMP DATA
-            for key, value in read_cfg_file().items():
+            for key, value in cfgget().items():
                 spcr = (10 - len(key))
                 sso.reply_message("  {}{}:{} {}".format(key, " " * spcr, " " * 7, value))
             return True

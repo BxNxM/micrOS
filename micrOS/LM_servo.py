@@ -44,14 +44,6 @@ def sdemo():
     sduty(75)
     return "sduty DEMO"
 
-
-def sdeinit():
-    try:
-        __SERVO_init().deinit()
-        return "DEINIT SERVO"
-    except Exception as e:
-        return str(e)
-
 #########################################
 #             SERVO CONTROL [2]         #
 #########################################
@@ -83,17 +75,9 @@ def s2duty(duty=75):
         return str(e)
 
 
-def s2deinit():
-    try:
-        __SERVO2_init().deinit()
-        return "DEINIT SERVO2"
-    except Exception as e:
-        return str(e)
-
-
 #########################################
 #                 HELP                  #
 #########################################
 
 def help():
-    return 'sduty(duty=<int>40-115)', 'sdemo', 'sdeinit', 's2duty', 's2deinit'
+    return 'sduty(duty=<int>40-115)', 'sdemo', 's2duty'

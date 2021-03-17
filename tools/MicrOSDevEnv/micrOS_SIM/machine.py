@@ -30,7 +30,7 @@ class Timer:
     def __thread(self):
         while True:
             console("\t| thread --[{}s] {}".format(self.period_sec, self.callback))
-            output = self.callback()
+            output = self.callback(None)
             console("\t|--> {}\n".format(output), end='\r')
             micropython.mem_info()
             time.sleep(self.period_sec)

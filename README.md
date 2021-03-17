@@ -254,9 +254,9 @@ DevToolKit CLI feature:
 
 LogicalPin lookup tables:
 
-- [tinypico](./micrOS/LM_tinypico.py)
-- [esp32](./micrOS/LM_esp32.py)
-- [esp8266](./micrOS/LM_esp8266.py)
+- [tinypico](./micrOS/LP_tinypico.py)
+- [esp32](./micrOS/LP_esp32.py)
+- [esp8266](./micrOS/LP_esp8266.py)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 

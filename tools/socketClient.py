@@ -105,6 +105,7 @@ class ConnectionData:
                 ConnectionData.MICROS_DEV_IP_DICT = cache_content
         else:
             print("Load micrOS device cache not found: {}".format(cache_path))
+            ConnectionData.MICROS_DEV_IP_DICT = ConnectionData.DEFAULT_CONFIG_FRAGMNENT
         return ConnectionData.MICROS_DEV_IP_DICT
 
     @staticmethod

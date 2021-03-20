@@ -75,6 +75,10 @@
     "toggle state=None",
     "help"
   ],
+  "L9110_DCmotor": [
+    "motor_control direc=None speed=None",
+    "help"
+  ],
   "i2c": [
     "scan",
     "help"

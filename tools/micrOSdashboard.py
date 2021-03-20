@@ -2,6 +2,7 @@ import sys
 import os
 import threading
 import subprocess
+import atexit
 import time
 from PyQt5.QtWidgets import QPushButton
 import PyQt5.QtCore as QtCore
@@ -23,7 +24,6 @@ import devToolKit
 APP_DIR = os.path.join(MYPATH, '../apps')
 sys.path.append(APP_DIR)
 
-
 DUMMY_EXEC = False
 DAEMON = False
 
@@ -32,7 +32,7 @@ class ProgressbarTimers:
     usb_deploy = 60*3
     ota_update = 60*2
     usb_update = usb_deploy + 30
-    serach_devices = 60*2
+    search_devices = 60*2
     simulator = 3
     lm_update = int(ota_update*0.7)
 
@@ -79,6 +79,7 @@ class ProgressMonitor:
 #              GUI Base classes                 #
 #################################################
 
+
 class DropDownBase:
 
     def __init__(self, parent_obj):
@@ -87,7 +88,9 @@ class DropDownBase:
         self.selected_list_item = None
         self.dowpdown_obj = None
 
-    def create_dropdown(self, items_list=[], title="Select", geometry_tuple=(120, 30, 160, 30), tooltip="Help...", style=None):
+    def create_dropdown(self, items_list=None, title="Select", geometry_tuple=(120, 30, 160, 30), tooltip="Help...", style=None):
+        if items_list is None:
+            items_list = []
         dropdown_label = QLabel(self.parent_obj)
         dropdown_label.setText(title.upper())
         dropdown_label.setGeometry(geometry_tuple[0], geometry_tuple[1], geometry_tuple[2], geometry_tuple[3])
@@ -126,6 +129,9 @@ class DropDownBase:
     def get(self):
         return self.selected_list_item
 
+    def update(self, elements):
+        self.dowpdown_obj.addItems(elements)
+        self.dowpdown_obj.view()
 
 #################################################
 #            GUI Custom classes                 #
@@ -194,6 +200,21 @@ class MicrOSDeviceSelector(DropDownBase):
         micrOS_devices = [fuid[0] for fuid in self.device_conn_struct]
         self.create_dropdown(items_list=micrOS_devices, title=title, geometry_tuple=geometry, tooltip=help_msg, style=style)
         return self.device_conn_struct
+
+    def update_elements(self):
+        conn_data = self.socketcli_obj
+        conn_data.read_MicrOS_device_cache()
+        dev_fid_list = []
+        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
+            if uid not in [s[2] for s in self.device_conn_struct]:
+                devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
+                fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+                if not (fuid.startswith('__') and fuid.endswith('__')):
+                    dev_fid_list.append(fuid)
+                    tmp = (fuid, devip, uid)
+                    self.device_conn_struct.append(tmp)
+        if len(dev_fid_list) > 0:
+            self.update(dev_fid_list)
 
 
 class LocalAppSelector(DropDownBase):
@@ -390,6 +411,7 @@ class InputField:
 
     def get(self):
         return self.appwd_textbox.text()
+
 #################################################
 #                  MAIN WINDOW                  #
 #################################################
@@ -455,11 +477,18 @@ class micrOSGUI(QWidget):
         self.modifiers_obj = DevelopmentModifiers(parent_obj=self)
         self.modifiers_obj.create()
 
+    def __recreate_MicrOSDeviceSelector(self):
+        self.micrOS_devide_dropdown.update_elements()
+        self.draw()
+
     def __thread_progress_monitor(self):
-        th = threading.Thread(target=self.__thread_monitor_logic, daemon=DAEMON)
+        th = threading.Thread(target=self.__thread_monitor_logic, daemon=True)
         th.start()
 
     def __thread_monitor_logic(self):
+        def close_action(tag):
+            if tag == 'search_devices':
+                self.__recreate_MicrOSDeviceSelector()
         while True:
             remove_from_key = None
             for bgprog, bgjob in self.bgjob_thread_obj_dict.items():
@@ -475,7 +504,8 @@ class micrOSGUI(QWidget):
                 if remove_from_key in self.bgjon_progress_monitor_thread_obj_dict:
                     self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
                     self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
-            time.sleep(2)
+                close_action(remove_from_key)
+            time.sleep(1)
 
     def __create_console(self):
         dropdown_label = QLabel(self)
@@ -736,8 +766,8 @@ class micrOSGUI(QWidget):
 
     @pyqtSlot()
     def __on_click_search_devices(self):
-        if 'serach_devices' in self.bgjob_thread_obj_dict.keys():
-            if self.bgjob_thread_obj_dict['serach_devices'].is_alive():
+        if 'search_devices' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['search_devices'].is_alive():
                 self.console.append_output('[search_devices][SKIP] already running.')
                 return
 
@@ -748,19 +778,19 @@ class micrOSGUI(QWidget):
         self.console.append_output('[search_devices] Search online devices on local network')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
-        pth.eta_sec = ProgressbarTimers.serach_devices
+        pth.eta_sec = ProgressbarTimers.search_devices
         pth.callback.connect(self.progressbar.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_dict['serach_devices'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['search_devices'] = pth
 
         # Start job
-        self.console.append_output('[search_devices] |- start serach_devices job')
+        self.console.append_output('[search_devices] |- start search_devices job')
         # Create a Thread with a function without any arguments
         th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=DAEMON)
         th.start()
-        self.bgjob_thread_obj_dict['serach_devices'] = th
-        self.console.append_output('[search_devices] |- serach_devices job was started')
+        self.bgjob_thread_obj_dict['search_devices'] = th
+        self.console.append_output('[search_devices] |- search_devices job was started')
 
     @pyqtSlot()
     def __on_click_simulator(self):

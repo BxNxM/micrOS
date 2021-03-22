@@ -53,6 +53,12 @@
     "measure",
     "help"
   ],
+  "buzzer": [
+    "bipp repeat=1 freq=None",
+    "play rtttlstr='d=4o=5b=250:e8p8f8g8p1c68p.d8p8e1fp.' <msgobj>=None",
+    "buzzer_cache_load_n_init cache=None",
+    "help"
+  ],
   "switch": [
     "switch_cache_load_n_init cache=None",
     "set_state state=None",

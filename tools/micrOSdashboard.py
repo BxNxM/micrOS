@@ -495,14 +495,20 @@ class micrOSGUI(QWidget):
                 if not bgjob.is_alive():
                     remove_from_key = bgprog
                     # Get job (execution) verdicts
-                    job_verdict = '\n'.join(self.devtool_obj.execution_verdict)
-                    self.devtool_obj.execution_verdict = []
+                    try:
+                        job_verdict = '\n'.join(self.devtool_obj.execution_verdict)
+                        self.devtool_obj.execution_verdict = []
+                    except Exception as e:
+                        self.console("Obj {} thread verdict read error: {}".format(bgprog, e))
                     # Print to console GUI
                     self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
             if remove_from_key is not None:
                 self.bgjob_thread_obj_dict.pop(remove_from_key, None)
                 if remove_from_key in self.bgjon_progress_monitor_thread_obj_dict:
-                    self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
+                    try:
+                        self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
+                    except Exception as e:
+                        self.console("Process terminate error: {}".format(e))
                     self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
                 close_action(remove_from_key)
             time.sleep(1)

@@ -77,13 +77,20 @@ class PWM:
     def __init__(self, dimmer_pin=None, freq=480):
         self.dimmer_pin = dimmer_pin
         self.__duty = 0
-        console("[PWM - {}] {} Hz constructor".format(self.dimmer_pin, freq))
+        self.__freq = freq
+        console("[PWM - {}] {} Hz constructor".format(self.dimmer_pin, self.__freq))
 
     def duty(self, value=None):
         if value is not None:
             self.__duty = value
-        console("[PWM - {}] SET value: {}".format(self.dimmer_pin, self.__duty))
+        console("[PWM - {}] SET duty: {}".format(self.dimmer_pin, self.__duty))
         return self.__duty
+
+    def freq(self, value=None):
+        if value is not None:
+            self.__freq = value
+        console("[PWM - {}] set freq: {}".format(self.dimmer_pin, self.__freq))
+        return self.__freq
 
 
 class ADC:

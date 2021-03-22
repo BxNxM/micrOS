@@ -24,6 +24,7 @@ ph = const(19)         # D19 - (SPI-MISO) PH sensor
 touch_0 = const(33)    # D33 - touch sensor
 bat_volt = const(35)   # Battery
 bat_stat = const(34)   # Battery
+buzzer = const(33)     # D33 - Buzzer pin - sound generator
 
 """
 # TinyPICO - APA102 Dotstar pins for production boards

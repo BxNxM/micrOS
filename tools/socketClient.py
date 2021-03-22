@@ -254,7 +254,7 @@ class SocketDictClient:
         data_list = []
         if select.select([self.conn], [], [], 3)[0]:
             while True:
-                time.sleep(0.1)
+                time.sleep(0.2)
                 last_data = self.conn.recv(self.bufsize).decode('utf-8')
                 data += last_data
                 # Msg reply wait criteria (get the prompt back or special cases)

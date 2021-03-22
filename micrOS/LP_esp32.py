@@ -23,3 +23,4 @@ co2 = const(35)        # D35 - CO2
 temp6000 = const(36)   # VP - light sensor TEMP6000
 ph = const(39)         # VN - PH sensor
 touch_0 = const(13)    # D13 - touch sensor
+buzzer = const(33)     # D33 - Buzzer pin - sound generator

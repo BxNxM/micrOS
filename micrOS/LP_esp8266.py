@@ -19,3 +19,4 @@ dhtpin = const(10)     # SD3 - dht_pin 11 and 22
 co2 = const(0)         # ADC0 - CO2
 temp6000 = const(0)    # ADC0 - light sensor TEMP6000
 ph = const(0)          # ADC0 - PH sensor
+buzzer = const(14)     # D5 - Buzzer pin - sound generator

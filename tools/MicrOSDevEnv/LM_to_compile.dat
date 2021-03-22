@@ -16,4 +16,5 @@ LM_rgbfader.py
 LM_intercon.py
 LM_tinyrgb.py
 LM_repair.py
+LM_buzzer.py
 

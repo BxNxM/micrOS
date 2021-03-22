@@ -7,13 +7,12 @@ from Common import socket_stream
 #########################################
 __BUZZER_OBJ = None
 # DATA: state:ON/OFF, freq:0-1000
-__BUZZER_CACHE = [455]
+__BUZZER_CACHE = [600]
 __PERSISTENT_CACHE = False
 
 #########################################
 #              BUZZER RTTL              #
 #########################################
-# https://github.com/dhylands/upy-rtttl/blob/master/rtttl.py
 
 NOTE = [
     440.0,  # A
@@ -68,27 +67,6 @@ class RTTTL:
         self.bpm = defaults['b']
         # 240000 = 60 sec/min * 4 beats/whole-note * 1000 msec/sec
         self.msec_per_whole_note = 240000.0 / self.bpm
-
-        """
-        val = 0
-        id = ' '
-        for char in defaults:
-            char = char.lower()
-            if char.isdigit():
-                val *= 10
-                val += ord(char) - ord('0')
-                if id == 'o':
-                    self.default_octave = val
-                elif id == 'd':
-                    self.default_duration = val
-                elif id == 'b':
-                    self.bpm = val
-            elif char.isalpha():
-                id = char
-                val = 0 
-        # 240000 = 60 sec/min * 4 beats/whole-note * 1000 msec/sec
-        self.msec_per_whole_note = 240000.0 / self.bpm
-        """
 
     def next_char(self):
         if self.tune_idx < len(self.tune):
@@ -151,11 +129,6 @@ class RTTTL:
                 char = self.next_char()
             else:
                 octave = self.default_octave
-
-            # Check for duration modifier after octave
-            #if char == '.':
-            #    duration_multiplier = 1.5
-            #    char = self.next_char()
 
             freq = NOTE[note_idx] * (1 << (octave - 4))
             msec = (self.msec_per_whole_note / duration) * duration_multiplier
@@ -226,6 +199,7 @@ def bipp(repeat=1, freq=None):
 
 @socket_stream
 def play(rtttlstr='d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.', msgobj=None):
+    # https://github.com/dhylands/upy-rtttl/blob/master/songs.py
     tune = RTTTL(rtttlstr)
     for freq, msec in tune.notes():
         msgobj("play: {} Hz".format(freq))

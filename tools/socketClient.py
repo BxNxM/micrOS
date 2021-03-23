@@ -232,6 +232,7 @@ class SocketDictClient:
         self.host = host
         self.port = port
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.conn.settimeout(0.4)
         self.conn.connect((host, port))
 
     def run_command(self, cmd, info=False):

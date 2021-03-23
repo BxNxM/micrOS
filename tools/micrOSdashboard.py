@@ -2,7 +2,6 @@ import sys
 import os
 import threading
 import subprocess
-import atexit
 import time
 from PyQt5.QtWidgets import QPushButton
 import PyQt5.QtCore as QtCore
@@ -27,14 +26,18 @@ sys.path.append(APP_DIR)
 DUMMY_EXEC = False
 DAEMON = False
 
+#################################################
+#          GUI Process visualization            #
+#################################################
 
 class ProgressbarTimers:
-    usb_deploy = 60*3
-    ota_update = 60*2
-    usb_update = usb_deploy + 30
-    search_devices = 60*2
-    simulator = 3
-    lm_update = int(ota_update*0.7)
+    mminute = 60
+    usb_deploy = int(mminute * 3)              # min estimation
+    usb_update = int(mminute * 4)              # min estimation
+    ota_update = int(mminute * 1.5)            # min estimation
+    lm_update = int(mminute * 1)               # min estimation
+    search_devices = int(mminute * 3)          # min estimation
+    simulator = 4                              # sec estimation
 
 
 class ProgressbarUpdateThread(QThread):
@@ -45,7 +48,7 @@ class ProgressbarUpdateThread(QThread):
     def run(self):
         step_in_sec = self.eta_sec / 100
         cnt = 0
-        while cnt < 100:
+        while cnt < 97:
             cnt += 1
             time.sleep(step_in_sec)
             self.callback.emit(cnt)
@@ -57,7 +60,7 @@ class ProgressbarUpdateThread(QThread):
         super().terminate()
 
 
-class ProgressMonitor:
+class ProgressBar:
 
     def __init__(self, parent_obj):
         self.parent_obj = parent_obj
@@ -292,16 +295,18 @@ class MyConsole(QPlainTextEdit):
     console = None
     lock = False
 
-    def __init__(self, parent_obj=None):
+    def __init__(self, parent_obj=None, line_limit=120):
         super().__init__(parent=parent_obj)
+        self.line_limit = line_limit
         self.setReadOnly(True)
-        self.setMaximumBlockCount(20000)  # limit console to 20000 lines
+        self.setMaximumBlockCount(self.line_limit)  # limit console lines
         self._cursor_output = self.textCursor()
         self.setGeometry(250, 132, 420, 210)
         MyConsole.console = self
 
     @pyqtSlot(str)
     def append_output(self, text, end='\n'):
+        self.clear_console()
         if not MyConsole.lock:
             MyConsole.lock = True
             try:
@@ -310,6 +315,10 @@ class MyConsole(QPlainTextEdit):
             except Exception as e:
                 print("MyConsole.append_output failure: {}".format(e))
             MyConsole.lock = False
+
+    def clear_console(self, force=False):
+        if force or self.blockCount() >= self.line_limit:
+            self.clear()
 
     def scroll_to_last_line(self):
         cursor = self.textCursor()
@@ -323,6 +332,7 @@ class HeaderInfo:
     def __init__(self, parent_obj):
         self.parent_obj = parent_obj
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
+        self.url = 'https://github.com/BxNxM/micrOS'
 
     def draw_header(self):
         self.draw_logo()
@@ -346,22 +356,21 @@ class HeaderInfo:
         button.setIcon(QIcon(logo_path))
         button.setIconSize(QtCore.QSize(80, 80))
         button.setGeometry(20, 30, 80, 80)
-        button.setToolTip("Open micrOS repo documentation")
+        button.setToolTip(f"Open micrOS repo documentation\n{self.url}")
         button.setStyleSheet('border: 0px solid black;')
         button.clicked.connect(self.__open_micrOS_URL)
 
     def __open_micrOS_URL(self):
         self.parent_obj.console.append_output("Open micrOS repo documentation")
-        url = 'https://github.com/BxNxM/micrOS'
         if sys.platform == 'win32':
-            os.startfile(url)
+            os.startfile(self.url)
         elif sys.platform == 'darwin':
-            subprocess.Popen(['open', url])
+            subprocess.Popen(['open', self.url])
         else:
             try:
-                subprocess.Popen(['xdg-open', url])
+                subprocess.Popen(['xdg-open', self.url])
             except OSError:
-                print('Please open a browser on: {}'.format(url))
+                print('Please open a browser on: {}'.format(self.url))
 
     def version_label(self):
         width = 110
@@ -412,6 +421,40 @@ class InputField:
     def get(self):
         return self.appwd_textbox.text()
 
+
+class ClusterStatus:
+
+    def __init__(self, parent_obj):
+        self.parent_obj = parent_obj
+        self.socket_data_obj = socketClient.ConnectionData()
+        self.device_conn_struct = []
+
+    def create_micrOS_status_button(self):
+        button = QPushButton('Node(s) status', self.parent_obj)
+        button.setToolTip('Get micrOS nodes status')
+        button.setGeometry(682, 320, 150, 20)
+        button.setStyleSheet("QPushButton{background-color: Gray;} QPushButton::pressed{background-color : green;}")
+        button.clicked.connect(self.get_status_callback)
+
+    def get_status_callback(self):
+        # Get stored devices
+        conn_data = self.socket_data_obj
+        conn_data.read_MicrOS_device_cache()
+        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
+            devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
+            fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+            if fuid.startswith('__') or fuid.endswith('__'):
+                continue
+            status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
+            status = '🟢' if status else '🔴'
+
+            devip_sep = 15
+            devip_sep -= len(devip)
+            devip_sep = ' ' * devip_sep
+
+            msg = "{} {}{}🏷 {}\tv:️{}".format(status, devip, devip_sep, fuid, version)
+            self.parent_obj.console.append_output(msg)
+
 #################################################
 #                  MAIN WINDOW                  #
 #################################################
@@ -433,6 +476,7 @@ class micrOSGUI(QWidget):
         self.application_dropdown = None
         self.modifiers_obj = None
         self.progressbar = None
+        self.nodes_status_button_obj = None
 
         self.console = None
         self.device_conn_struct = []
@@ -456,9 +500,12 @@ class micrOSGUI(QWidget):
 
         HeaderInfo(self).draw_header()
         self.__create_console()
-        self.progressbar = ProgressMonitor(self)
+        self.progressbar = ProgressBar(self)
 
         self.create_main_buttons()
+
+        self.nodes_status_button_obj = ClusterStatus(parent_obj=self)
+        self.nodes_status_button_obj.create_micrOS_status_button()
 
         self.board_dropdown = BoardTypeSelector(parent_obj=self)
         self.board_dropdown.dropdown_board()
@@ -500,6 +547,7 @@ class micrOSGUI(QWidget):
                         self.devtool_obj.execution_verdict = []
                     except Exception as e:
                         self.console("Obj {} thread verdict read error: {}".format(bgprog, e))
+                        job_verdict = 'ERROR'
                     # Print to console GUI
                     self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
             if remove_from_key is not None:
@@ -529,12 +577,13 @@ class micrOSGUI(QWidget):
             return True
         return False
 
-    def start_bg_application_popup(self, text="Please verify data before continue:", verify_data_dict={}):
+    def start_bg_application_popup(self, text="Please verify data before continue:", verify_data_dict=None):
+        if verify_data_dict is None:
+            verify_data_dict = {}
         _text = '{}\n'.format(text)
         for key, value in verify_data_dict.items():
             _text += '  {}: {}\n'.format(key, value)
-        choice = QMessageBox.question(self, "Quetion", _text,
-                                            QMessageBox.Yes | QMessageBox.No)
+        choice = QMessageBox.question(self, "Quetion", _text, QMessageBox.Yes | QMessageBox.No)
         if choice == QMessageBox.Yes:
             return True
         else:

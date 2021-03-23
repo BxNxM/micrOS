@@ -6,8 +6,8 @@ from time import sleep
 def send_cmd(host, port, cmd):
     print("[INTERCON] {} -> {}:{}".format(cmd, host, port))
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    conn.connect((host, port))
     conn.settimeout(0.2)
+    conn.connect((host, port))
     output = __run_command(conn, cmd)
     __close_connection(conn)
     return output

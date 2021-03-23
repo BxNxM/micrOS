@@ -37,6 +37,7 @@ class ProgressbarTimers:
     ota_update = int(mminute * 1.5)            # min estimation
     lm_update = int(mminute * 1)               # min estimation
     search_devices = int(mminute * 3)          # min estimation
+    general_app = int(mminute * 3)             # min estimation
     simulator = 4                              # sec estimation
 
 
@@ -448,7 +449,7 @@ class ClusterStatus:
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
             status = '🟢' if status else '🔴'
 
-            devip_sep = 15
+            devip_sep = 20
             devip_sep -= len(devip)
             devip_sep = ' ' * devip_sep
 
@@ -550,6 +551,7 @@ class micrOSGUI(QWidget):
                         job_verdict = 'ERROR'
                     # Print to console GUI
                     self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
+            time.sleep(0.5)
             if remove_from_key is not None:
                 self.bgjob_thread_obj_dict.pop(remove_from_key, None)
                 if remove_from_key in self.bgjon_progress_monitor_thread_obj_dict:
@@ -630,6 +632,7 @@ class micrOSGUI(QWidget):
         Execute application with selected device here
         """
         def __execute_app(app_name, dev_name, app_postfix='_app'):
+            # Start app
             app_name = "{}{}".format(app_name, app_postfix)
             print("[APP] import {}".format(app_name))
             exec("import {}".format(app_name))
@@ -656,6 +659,13 @@ class micrOSGUI(QWidget):
             th.start()
             self.bgjob_thread_obj_dict[process_key] = th
             self.console.append_output('[{}] |- application was started'.format(process_key))
+            # Start init_progressbar
+            pth = ProgressbarUpdateThread()
+            pth.eta_sec = ProgressbarTimers.general_app
+            pth.callback.connect(self.progressbar.progressbar_update)
+            pth.start()
+            pth.setTerminationEnabled(True)
+            self.bgjon_progress_monitor_thread_obj_dict[process_key] = pth
         except Exception as e:
             print("Application error: {}".format(e))
 

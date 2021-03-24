@@ -784,8 +784,8 @@ class micrOSGUI(QWidget):
         self.console.append_output("[lm_update] Start OTA lm_update on {}:{}".format(fuid, devip))
         self.console.append_output('[lm_update] |- start lm_update job')
         self.progressbar.progressbar_update()
-        th = threading.Thread(target=self.devtool_obj.update_with_webrepl, \
-                              kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'lm_only': True, \
+        th = threading.Thread(target=self.devtool_obj.update_with_webrepl,
+                              kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'lm_only': True,
                                       'ota_password': self.appwd_textbox.get()}, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['lm_update'] = th

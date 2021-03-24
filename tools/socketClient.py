@@ -225,14 +225,15 @@ class ConnectionData:
 
 class SocketDictClient:
 
-    def __init__(self, host='localhost', port=9008, bufsize=4096, silent_mode=False):
+    def __init__(self, host='localhost', port=9008, bufsize=4096, silent_mode=False, tout=2):
         self.silent_mode = silent_mode
         self.is_interactive = False
         self.bufsize = bufsize
         self.host = host
         self.port = port
+        self.tout = tout
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.settimeout(1)
+        self.conn.settimeout(self.tout)
         self.conn.connect((host, port))
 
     def run_command(self, cmd, info=False):

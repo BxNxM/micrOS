@@ -161,9 +161,12 @@ DevToolKit CLI feature:
 
 ## Device Pinouts for wiring
 
-![MicrOSESP8266pinout](./media/NodeMCUPinOutESP8266.png?raw=true)
+![MicrOSESP8266pinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
 
 ![MicrOSESP8266pinout](./media/NodeMCUPinOutESP32.png?raw=true)
+
+![MicrOSESP8266pinout](./media/NodeMCUPinOutESP8266.png?raw=true)
+
 
 ----------------------------------------
 

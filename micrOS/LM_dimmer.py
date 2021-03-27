@@ -94,6 +94,6 @@ def toggle(state=None):
 
 
 def help():
-    return 'set_value(value=<0-1000>)', 'toggle(state=None)',\
-           'dimmer_cache_load_n_init(cache=True)', \
+    return 'set_value value=<0-1000>', 'toggle state=None',\
+           'dimmer_cache_load_n_init cache=None', \
            '[!]PersistentStateCacheDisabledOn:esp8266'

@@ -70,7 +70,7 @@ def s2duty(duty=75):
     try:
         # duty for sduty is between 40 - 115
         s.duty(duty)
-        return "SET SERVO: duty: {}".format(duty)
+        return "SET SERVO2: duty: {}".format(duty)
     except Exception as e:
         return str(e)
 
@@ -80,4 +80,4 @@ def s2duty(duty=75):
 #########################################
 
 def help():
-    return 'sduty(duty=<int>40-115)', 'sdemo', 's2duty'
+    return 'sduty duty=<int>40-115', 'sdemo', 's2duty'

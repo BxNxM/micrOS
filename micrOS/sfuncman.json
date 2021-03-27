@@ -9,6 +9,13 @@
     "poweroff",
     "help"
   ],
+  "genIO": [
+    "set_pwm pin freq=1024 duty=500",
+    "set_out pin state",
+    "get_adc pin",
+    "get_in pin",
+    "help"
+  ],
   "repair": [
     "guimeta_fix_0_10_3_0",
     "help"

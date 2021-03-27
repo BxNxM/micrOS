@@ -107,7 +107,7 @@ def toggle(state=None):
 #########################################
 
 def help():
-    return 'rgb(r=<0-1000>, g=<0-1000>, b=<0,1000>)',\
-           'toggle(state=None)', \
-           'rgb_cache_load_n_init(cache=None<True/False>)',\
+    return 'rgb r=<0-1000> g=<0-1000> b=<0,1000>',\
+           'toggle state=None', \
+           'rgb_cache_load_n_init cache=None<True/False>',\
            '[!]PersistentStateCacheDisabledOn:esp8266'

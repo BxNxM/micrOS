@@ -99,5 +99,5 @@ def measure_mq135(temperature=None, humidity=None):
 
 
 def help():
-    return 'measure_mq135(temp, hum)'
+    return 'measure_mq135 temp=<int> hum=<int>'
 

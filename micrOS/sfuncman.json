@@ -158,6 +158,10 @@
     "sendcmd *_args **kwargs",
     "help"
   ],
+  "ds18": [
+    "measure",
+    "help"
+  ],
   "distance_HCSR04": [
     "distance_mm",
     "distance_cm",

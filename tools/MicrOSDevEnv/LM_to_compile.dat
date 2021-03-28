@@ -18,3 +18,4 @@ LM_tinyrgb.py
 LM_repair.py
 LM_buzzer.py
 LM_genIO.py
+LM_ds18.py

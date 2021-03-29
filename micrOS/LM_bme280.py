@@ -6,6 +6,7 @@ https://randomnerdtutorials.com/micropython-bme280-esp32-esp8266/
 
 import time
 from machine import Pin, I2C
+from LM_co2 import measure_mq135
 from LogicalPins import get_pin_on_platform_by_key
 
 # BME280 default address.
@@ -275,7 +276,7 @@ class BME280:
         t = self.read_temperature()
         ti = t // 100
         td = t - ti * 100
-        return "{}.{:02d} ºC".format(ti, td)
+        return float("{}.{:02d}".format(ti, td))   # ºC
 
     @property
     def pressure(self):
@@ -283,15 +284,15 @@ class BME280:
         p = self.read_pressure() // 256
         pi = p // 100
         pd = p - pi * 100
-        return "{}.{:02d} hPa".format(pi, pd)
+        return float("{}.{:02d}".format(pi, pd))   # hPa
 
     @property
     def humidity(self):
-        "Return the humidity in percent."
+        """Return the humidity in percent."""
         h = self.read_humidity()
         hi = h // 1024
         hd = h * 100 // 1024 - hi * 100
-        return "{}.{:02d} %".format(hi, hd)
+        return float("{}.{:02d}".format(hi, hd))   # %
 
 
 def __init_bme280_i2c():
@@ -304,8 +305,14 @@ def __init_bme280_i2c():
 
 def measure():
     bme = __init_bme280_i2c()
-    return {'Temperature': bme.temperature, 'Humidity': bme.humidity, 'Pressure': bme.pressure}
+    return {'temp [ºC]': bme.temperature, 'hum [%]': bme.humidity, 'pressure [hPa]': bme.pressure}
+
+
+def measure_w_co2():
+    data = measure()
+    data['co2 [ppm]'] = measure_mq135(data['temp [ºC]'], data['hum [%]'])
+    return data
 
 
 def help():
-    return 'measure'
+    return 'measure', 'measure_w_co2'

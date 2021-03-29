@@ -54,6 +54,7 @@
   ],
   "bme280": [
     "measure",
+    "measure_w_co2",
     "help"
   ],
   "ph_sensor": [

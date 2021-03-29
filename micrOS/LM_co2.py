@@ -34,7 +34,7 @@ def __get_resistance():
     """
     global __ADC, __ADC_RES
     if __ADC is None:
-        from machine import ADC
+        from machine import ADC, Pin
         from LogicalPins import get_pin_on_platform_by_key
         if 'esp8266' in platform:
             __ADC = ADC(get_pin_on_platform_by_key('co2'))       # 1V measure range

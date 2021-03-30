@@ -1,11 +1,33 @@
 from math import pow
 from sys import platform
+from machine import ADC, Pin
+from LogicalPins import get_pin_on_platform_by_key
 
 #########################################
 #            MQ135 GAS SENSOR           #
 #########################################
 __ADC = None
 __ADC_RES = 1023
+
+
+def __get_resistance():
+    """
+    Returns the resistance of the sensor in kOhms // -1 if not value got in pin
+    10.0 - 'RLOAD' The load resistance on the board
+    """
+    global __ADC, __ADC_RES
+    if __ADC is None:
+        if 'esp8266' in platform:
+            __ADC = ADC(get_pin_on_platform_by_key('co2'))       # 1V measure range
+            __ADC_RES = 1023
+        else:
+            __ADC = ADC(Pin(get_pin_on_platform_by_key('co2')))
+            __ADC.atten(ADC.ATTN_11DB)                          # 3.3V measure range
+            __ADC_RES = 4095
+    value = __ADC.read()
+    if value == 0:
+        return -1
+    return (float(__ADC_RES)/value - 1.) * 10.0
 
 
 def __get_correction_factor(temperature, humidity):
@@ -22,31 +44,9 @@ def __get_correction_factor(temperature, humidity):
     1.130128205   - 'CORG'
     """
     if temperature < 20:
-        return 0.00035 * temperature * temperature - 0.02718\
+        return 0.00035 * temperature * temperature - 0.02718 \
                * temperature + 1.39538 - (humidity - 33.) * 0.0018
     return -0.003333333 * temperature + -0.001923077 * humidity + 1.130128205
-
-
-def __get_resistance():
-    """
-    Returns the resistance of the sensor in kOhms // -1 if not value got in pin
-    10.0 - 'RLOAD' The load resistance on the board
-    """
-    global __ADC, __ADC_RES
-    if __ADC is None:
-        from machine import ADC, Pin
-        from LogicalPins import get_pin_on_platform_by_key
-        if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('co2'))       # 1V measure range
-            __ADC_RES = 1023
-        else:
-            __ADC = ADC(Pin(get_pin_on_platform_by_key('co2')))
-            __ADC.atten(ADC.ATTN_11DB)                          # 3.3V measure range
-            __ADC_RES = 4095
-    value = __ADC.read()
-    if value == 0:
-        return -1
-    return (1023./value - 1.) * 10.0
 
 
 def __get_corrected_resistance(temperature, humidity):
@@ -62,8 +62,30 @@ def __get_corrected_ppm(temperature, humidity):
     116.6020682 - 'PARA' parameters for calculating ppm of CO2 from sensor resistance
     2.769034857 - 'PARB'
     """
-    return 116.6020682 * pow((__get_corrected_resistance(temperature, humidity)\
-                                           / 76.63), -2.769034857)
+    return round(116.6020682 * pow((__get_corrected_resistance(temperature, humidity)/76.63), -2.769034857), 2)
+
+
+def __get_ppm():
+    """Returns the ppm of CO2 sensed (assuming only CO2 in the air)"""
+    return round(116.6020682 * pow((__get_resistance() / 76.63), -2.769034857), 2)
+
+
+def __ppm_verdict(ppm):
+    status = 'n/a'
+    if ppm <= 1000:
+        status = 'PERFECT'
+    elif ppm <= 2000:
+        status = 'POOR'
+    elif ppm <= 4000:
+        status = "WARNING"
+    elif ppm > 4000:
+        status = "CRITICAL"
+    return status
+
+
+def raw_measure_mq135():
+    ppm = __get_ppm()
+    return "{} - {}".format(ppm, __ppm_verdict(ppm))
 
 
 def measure_mq135(temperature=None, humidity=None):
@@ -83,21 +105,12 @@ def measure_mq135(temperature=None, humidity=None):
         return
 
     try:
-        status = 'n/a'
         ppm = __get_corrected_ppm(temperature, humidity)
-        if ppm <= 1000:
-            status = 'PERFECT'
-        elif ppm <= 2000:
-            status = 'POOR'
-        elif ppm <= 4000:
-            status = "WARNING"
-        elif ppm > 4000:
-            status = "CRITICAL"
-        return "{} - {}".format(ppm, status)
+        return "{} - {}".format(ppm, __ppm_verdict(ppm))
     except Exception as e:
         return "measure_mq135 ERROR: {}".format(e)
 
 
 def help():
-    return 'measure_mq135 temp=<int> hum=<int>'
+    return 'measure_mq135 temp=<int> hum=<int>', 'raw_measure_mq135'
 

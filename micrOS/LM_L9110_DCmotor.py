@@ -14,10 +14,10 @@ def __l9110_init():
     if len(__L9110_OBJS) == 0:
         from machine import Pin, PWM
         from LogicalPins import get_pin_on_platform_by_key
-        __L9110_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('pwm_6')), freq=1024))
-        __L9110_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('pwm_5')), freq=1024))
+        __L9110_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('l9110dir_1')), freq=1024))
+        __L9110_OBJS.append(PWM(Pin(get_pin_on_platform_by_key('l9110dir_2')), freq=1024))
         __L9110_OBJS[0].duty(0)     # Set default speed (PWM)
-        __L9110_OBJS[1].duty(0)  # Set default speed (PWM)
+        __L9110_OBJS[1].duty(0)     # Set default speed (PWM)
     return __L9110_OBJS
 
 

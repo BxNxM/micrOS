@@ -30,6 +30,9 @@ l298speed = const(5)   # D5 - DC motor pwm control [PWM]
 l298dir_1 = const(18)  # D18 - DC motor direction (1)
 l298dir_2 = const(19)  # D19 - DC motor direction (2)
 
+l9110dir_1 = const(18) # D33 - DC motor direction (1)
+l9110dir_2 = const(19) # D25 - DC motor direction (2)
+
 buzzer = const(18)     # D18 - Buzzer pin - sound generator
 
 
@@ -50,7 +53,7 @@ dhtpin = const(32)     # D32 - dht_pin 11 and 22
 co2 = const(33)        # D33 - CO2 / BATTERY CONFLICT
 temp6000 = const(32)   # D32  - light sensor TEMP6000
 ph = const(4)          # D4 - PH sensor
-ds18 = const(19)       # D19 - DS18B20 - temp. sensor TODO
+ds18 = const(19)       # D19 - DS18B20 - temp. sensor
 
 
 # TinyPico Built-in

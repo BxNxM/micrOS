@@ -1,6 +1,6 @@
 from micropython import const
 
-# ANANLOG RGB
+# ANALOG RGB
 redgb = const(25)       # D25 - rgb red channel [PWM CH1]
 rgreenb = const(26)     # D26 - rgb green channel [PWM CH2]
 rgbue = const(27)       # D27 - rgb blue channel [PWM CH3]

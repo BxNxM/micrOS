@@ -79,15 +79,24 @@ def module(unload=None):
 
 
 @socket_stream
-def cachedump(msgobj):
+def cachedump(cdel=None, msgobj=None):
     """
     Cache system persistent data storage files (.pds)
     """
-    from os import listdir
-    for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
-        with open(pds, 'r') as f:
-            msgobj('{}: {}'.format(pds, f.read()))
-    return ''
+    if cdel is None:
+        # List pds files aka application cache
+        from os import listdir
+        for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
+            with open(pds, 'r') as f:
+                msgobj('{}: {}'.format(pds, f.read()))
+        return ''
+    # Remove given pds file
+    from os import remove
+    try:
+        remove('{}.pds'.format(cdel))
+        return '{}.pds delete done.'.format(cdel)
+    except:
+        return '{}.pds not exists'.format(cdel)
 
 
 def rssi():
@@ -150,5 +159,5 @@ def ha_sta():
 
 
 def help():
-    return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module', \
-           'rssi', 'cachedump', 'lmpacman', 'getpin', 'ha_sta'
+    return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module unload=<LM_.py/.mpy>', \
+           'rssi', 'cachedump cdel=<pds name>', 'lmpacman lm_del=<LM_>', 'getpin', 'ha_sta'

@@ -27,7 +27,7 @@
     "clock",
     "ntp",
     "module unload=None",
-    "cachedump <msgobj>",
+    "cachedump cdel=None <msgobj>=None",
     "rssi",
     "lmpacman lm_del=None <msgobj>=None",
     "getpin key='builtin'",
@@ -69,12 +69,15 @@
     "help"
   ],
   "switch": [
-    "switch_cache_load_n_init cache=None",
+    "switch_cache_load_n_init cache=None ch_init=None",
     "set_state state=None",
     "toggle",
-    "switch2_cache_load_n_init cache=None",
     "set_state2 state=None",
     "toggle2",
+    "set_state3 state=None",
+    "toggle3",
+    "set_state4 state=None",
+    "toggle4",
     "help"
   ],
   "servo": [

@@ -447,14 +447,16 @@ class ClusterStatus:
             if fuid.startswith('__') or fuid.endswith('__'):
                 continue
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
+            if status:
+                _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
+                hwuid = 'None'
+                if _status:
+                    hwuid = hello.strip().split(':')[2]
             status = '🟢' if status else '🔴'
 
-            devip_sep = 20
-            devip_sep -= len(devip)
-            devip_sep = ' ' * devip_sep
-
-            msg = "{} {}{}🏷 {}\tv:️{}".format(status, devip, devip_sep, fuid, version)
+            msg = f"{status}{hwuid}📍{devip}🏷{fuid} v:️{version}"
             self.parent_obj.console.append_output(msg)
+        self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEV_IP_DICT.keys())}')
 
 #################################################
 #                  MAIN WINDOW                  #

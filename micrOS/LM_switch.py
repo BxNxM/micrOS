@@ -79,7 +79,7 @@ def __switch_init():
 
 
 def set_state(state=None):
-    state = __SWITCH_STATE[0] if state is None else state
+    state = __SWITCH_STATE[0] if state is None else int(state)
     if state in (0, 1):
         __switch_init().value(state)
         __SWITCH_STATE[0] = state
@@ -109,7 +109,7 @@ def __switch2_init():
 
 
 def set_state2(state=None):
-    state = __SWITCH_STATE[1] if state is None else state
+    state = __SWITCH_STATE[1] if state is None else int(state)
     if state in (0, 1):
         __switch2_init().value(state)
         __SWITCH_STATE[1] = state
@@ -138,7 +138,7 @@ def __switch3_init():
 
 
 def set_state3(state=None):
-    state = __SWITCH_STATE[2] if state is None else state
+    state = __SWITCH_STATE[2] if state is None else int(state)
     if state in (0, 1):
         __switch3_init().value(state)
         __SWITCH_STATE[2] = state
@@ -167,7 +167,7 @@ def __switch4_init():
 
 
 def set_state4(state=None):
-    state = __SWITCH_STATE[3] if state is None else state
+    state = __SWITCH_STATE[3] if state is None else int(state)
     if state in (0, 1):
         __switch4_init().value(state)
         __SWITCH_STATE[3] = state

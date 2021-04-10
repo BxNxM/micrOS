@@ -7,7 +7,8 @@ from LogicalPins import get_pin_on_platform_by_key
 #            MQ135 GAS SENSOR           #
 #########################################
 __ADC = None
-__ADC_RES = 1023
+# [0] ADC RESOLUTION, [1] ADC VOLTAGE MEASURE RANGE
+__ADC_PROP = (1023, 1.0)
 
 
 def __get_resistance():
@@ -15,19 +16,20 @@ def __get_resistance():
     Returns the resistance of the sensor in kOhms // -1 if not value got in pin
     10.0 - 'RLOAD' The load resistance on the board
     """
-    global __ADC, __ADC_RES
+    global __ADC, __ADC_PROP
     if __ADC is None:
         if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('co2'))       # 1V measure range
-            __ADC_RES = 1023
+            __ADC = ADC(get_pin_on_platform_by_key('co2'))      # 1V measure range
+            __ADC_PROP = (1023, 1.0)
         else:
             __ADC = ADC(Pin(get_pin_on_platform_by_key('co2')))
-            __ADC.atten(ADC.ATTN_11DB)                          # 3.3V measure range
-            __ADC_RES = 4095
+            __ADC.atten(ADC.ATTN_11DB)                          # 3.6V measure range
+            __ADC.width(ADC.WIDTH_10BIT)                        # Default 10 bit ADC
+            __ADC_PROP = (1023, 3.6)
     value = __ADC.read()
     if value == 0:
         return -1
-    return (float(__ADC_RES)/value - 1.) * 10.0
+    return (float(__ADC_PROP[0]) / value - 1.) * 10.0
 
 
 def __get_correction_factor(temperature, humidity):
@@ -85,7 +87,8 @@ def __ppm_verdict(ppm):
 
 def raw_measure_mq135():
     ppm = __get_ppm()
-    return "{} - {}".format(ppm, __ppm_verdict(ppm))
+    raw = __get_resistance()
+    return "{} - {}".format(ppm, __ppm_verdict(ppm)), "{}/{}".format(raw, __ADC_PROP)
 
 
 def measure_mq135(temperature=None, humidity=None):

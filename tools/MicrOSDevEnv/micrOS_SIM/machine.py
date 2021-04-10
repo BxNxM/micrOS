@@ -96,6 +96,7 @@ class PWM:
 class ADC:
     ATTN_11DB = 'dummy'
     WIDTH_9BIT = 'dummy'
+    WIDTH_10BIT = 'dummy'
 
     def __init__(self, pin=None):
         pass

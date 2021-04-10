@@ -1,7 +1,14 @@
 from machine import Pin, PWM, ADC
 from sys import platform
 from LogicalPins import get_pin_on_platform_by_key
-__ADC_RES = 1023
+__ADC_PROP = (1023, 1.0)
+
+"""
+ADC.ATTN_0DB: 0dB attenuation, gives a maximum input voltage of 1.00v - this is the default configuration
+ADC.ATTN_2_5DB: 2.5dB attenuation, gives a maximum input voltage of approximately 1.34v
+ADC.ATTN_6DB: 6dB attenuation, gives a maximum input voltage of approximately 2.00v
+ADC.ATTN_11DB: 11dB attenuation, gives a maximum input voltage of approximately 3.6v
+"""
 
 
 def __digital_out_init(pin):
@@ -37,16 +44,16 @@ def __init_adc(pin):
     """
     Init ADC
     """
-    global __ADC_RES
+    global __ADC_PROP
     if not isinstance(pin, int):
         pin = get_pin_on_platform_by_key(pin)
     if 'esp8266' in platform:
-        adc = ADC(pin)       # 1V measure range
-        __ADC_RES = 1023
+        adc = ADC(pin)          # 1V measure range
+        __ADC_PROP = (1023, 1.0)
     else:
         adc = ADC(Pin(pin))
         adc.atten(ADC.ATTN_11DB)                          # 3.3V measure range
-        __ADC_RES = 4095
+        __ADC_PROP = (4095, 3.6)
     return adc
 
 

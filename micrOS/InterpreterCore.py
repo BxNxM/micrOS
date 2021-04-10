@@ -59,8 +59,7 @@ def execLMCore(argument_list, msgobj=None):
         try:
             # --- LM LOAD & EXECUTE --- #
             # [1] LOAD MODULE
-            if LM_name not in modules.keys():
-                exec("import {}".format(LM_name))
+            exec("import {}".format(LM_name))
             # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
             lm_output = eval("{}.{}({})".format(LM_name, LM_function, LM_function_params))
             if msgobj is not None:

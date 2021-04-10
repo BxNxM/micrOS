@@ -89,10 +89,7 @@ def __shell(msg, sso):
     """
     try:
         # Execute command via InterpreterCore
-        if not execLMCore(argument_list=msg_list, msgobj=sso.reply_message):
-            # Run retry mechanism in case of InterprtereCore module load failed (simulator workaround)
-            return execLMCore(argument_list=msg_list, msgobj=sso.reply_message)
-        return True
+        return execLMCore(argument_list=msg_list, msgobj=sso.reply_message)
     except Exception as e:
         sso.reply_message("[ERROR] execLMCore internal error: {}".format(e))
         return False

@@ -86,9 +86,8 @@ def __ppm_verdict(ppm):
 
 
 def raw_measure_mq135():
-    ppm = __get_ppm()
     raw = __get_resistance()
-    return "{} - {}".format(ppm, __ppm_verdict(ppm)), "{}/{}".format(raw, __ADC_PROP)
+    return "{}/{}".format(raw, __ADC_PROP)
 
 
 def measure_mq135(temperature=None, humidity=None):

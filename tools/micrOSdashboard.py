@@ -447,9 +447,9 @@ class ClusterStatus:
             if fuid.startswith('__') or fuid.endswith('__'):
                 continue
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
+            hwuid = 'None'
             if status:
                 _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
-                hwuid = 'None'
                 if _status:
                     hwuid = hello.strip().split(':')[2]
             status = '🟢' if status else '🔴'

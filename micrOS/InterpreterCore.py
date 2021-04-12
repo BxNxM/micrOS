@@ -14,10 +14,20 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from sys import modules
 from ConfigHandler import console_write
+from BgJob import BgTask
 
 #################################################################
 #               Interpreter shell CORE executor                 #
 #################################################################
+
+
+def startBgJob(ecallbck, loop, wait, msg):
+    stat, tid = BgTask().run(callback=ecallbck, loop=loop, delay=wait)
+    if stat:
+        msg("[BgJob][{}] Start successful".format(tid))
+        return True
+    msg("[BgJob][{}] Busy".format(tid))
+    return True
 
 
 def execLMPipe(taskstr):
@@ -40,7 +50,7 @@ def execLMPipe(taskstr):
     return ok
 
 
-def execLMCore(argument_list, msgobj=None):
+def __exec_lm_core(argument_list, msgobj=None):
     """
     [1] module name (LM)
     [2] function
@@ -85,3 +95,25 @@ def execLMCore(argument_list, msgobj=None):
     cwr("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
     # Exec OK
     return True
+
+
+def execLMCore(argument_list, msgobj=None):
+    # Cache message obj
+    cwr = console_write if msgobj is None else msgobj
+    is_thrd = argument_list[-1].strip()
+    if '&' in is_thrd:
+        # delete from argument list - handled argument ...
+        del argument_list[-1]
+        # Get thread wait
+        wait = int(is_thrd.replace('&', '')) if is_thrd.replace('&', '').isdigit() else 1
+        if is_thrd.startswith('&&'):
+            """Run task in background loop with custom sleep in period &&X"""
+            callback = lambda tmsg: __exec_lm_core(argument_list, msgobj=tmsg)
+            return startBgJob(ecallbck=callback, loop=True, wait=wait, msg=cwr)
+        """One shot background task execution with custom sleep &X"""
+        callback = lambda tmsg: __exec_lm_core(argument_list, msgobj=tmsg)
+        return startBgJob(ecallbck=callback, loop=False, wait=wait, msg=cwr)
+    """Run simple task (Lock thread)"""
+    with BgTask():
+        state = __exec_lm_core(argument_list, msgobj)
+    return state

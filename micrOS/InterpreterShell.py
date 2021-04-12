@@ -14,6 +14,7 @@ Designed by Marcell Ban aka BxNxM
 from os import listdir
 from ConfigHandler import cfgget, cfgput
 from InterpreterCore import execLMCore
+from BgJob import BgTask
 
 try:
     from gc import collect, mem_free
@@ -74,6 +75,9 @@ def __shell(msg, sso):
         sso.reply_message("    key        - Get value")
         sso.reply_message("    key value  - Set value")
         sso.reply_message("  noconf     - Exit conf mode")
+        sso.reply_message("[BGJOB] Background LM execution")
+        sso.reply_message("    show     - Show running job data")
+        sso.reply_message("    stop     - Stop running job")
         sso.reply_message("[EXEC] Command mode (LMs):")
         return __show_LM_functions(sso)
 
@@ -81,7 +85,15 @@ def __shell(msg, sso):
     # @1 Configure mode
     if sso.configure_mode and len(msg_list) > 0:
         return __configure(msg_list, sso)
-    # @2 Command mode
+    # @2 Background job shell commands
+    if msg_list[0] == 'bgjob' and len(msg_list) > 1:
+        if msg_list[1] == 'stop':
+            sso.reply_message(BgTask().stop())
+            return True
+        if msg_list[1] == 'show':
+            sso.reply_message(BgTask().info())
+            return True
+    # @3 Command mode
     """
     INPUT MSG STRUCTURE
     1. param. - LM name, i.e. LM_commands

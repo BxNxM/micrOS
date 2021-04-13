@@ -64,7 +64,7 @@
   ],
   "buzzer": [
     "bipp repeat=1 freq=None",
-    "play rtttlstr='d=4o=5b=250:e8p8f8g8p1c68p.d8p8e1fp.' <msgobj>=None",
+    "play rtttlstr='d=4o=5b=250:e8p8f8g8p1c68p.d8p8e1fp.'",
     "buzzer_cache_load_n_init cache=None",
     "help"
   ],

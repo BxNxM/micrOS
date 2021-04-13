@@ -36,16 +36,13 @@ class BgTask:
         cls.__isbusy = True
         while True:
             # Set delay
-            sleep(delay) if delay > 0 else sleep(0.0001)
+            sleep(delay) if delay > 0 else sleep(0.1)
             # Check thread lock - wait until release
             if cls.__lock.locked():
                 continue
             cls.isactive = True
-
-            # RUN COMMAND
-            print("[INT::Thread] RUN: {}".format(callback))
+            # RUN CALLBACK
             cls.__call_ret = callback(tmsg=cls.msg)
-
             cls.isactive = False
             # Exit thread
             if not cls.__loop:
@@ -53,6 +50,9 @@ class BgTask:
         cls.__isbusy = False
 
     def msg(cls, msg):
+        if len(msg) > 100:
+            cls.__ret = msg[0:100]
+            return
         cls.__ret = msg
 
     def run(cls, callback=None, loop=None, delay=None):

@@ -197,12 +197,10 @@ def bipp(repeat=1, freq=None):
     return "Bi{} on {} Hz".format('p'*repeat, freq)
 
 
-@socket_stream
-def play(rtttlstr='d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.', msgobj=None):
+def play(rtttlstr='d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'):
     # https://github.com/dhylands/upy-rtttl/blob/master/songs.py
     tune = RTTTL(rtttlstr)
     for freq, msec in tune.notes():
-        msgobj("play: {} Hz".format(freq))
         __play_tone(freq, msec)
         sleep(0.05)
     del tune

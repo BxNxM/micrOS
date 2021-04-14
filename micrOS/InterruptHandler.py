@@ -65,9 +65,10 @@ def enableInterrupt():
     if cfgget("timirq"):
         from machine import Timer
         # INIT TIMER IRQ with callback function wrapper
+        lm_str = cfgget('timirqcbf')
         timer = Timer(0)
         timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC,
-                   callback=lambda timer: timirq_cbfs(cfgget('timirqcbf')))
+                   callback=lambda timer: timirq_cbfs(lm_str))
 
 
 #############################################
@@ -97,9 +98,11 @@ def enableCron():
     if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
         from machine import Timer
         # INIT TIMER 1 IRQ with callback function wrapper
+        lm_str = cfgget('crontasks')
+        sample = int(cfgget("cronseq")/1000)
         timer = Timer(1)
         timer.init(period=int(cfgget("cronseq")), mode=Timer.PERIODIC,
-                   callback=lambda timer: timirq_cbf_sched(cfgget('crontasks'), int(cfgget("cronseq")/1000)))
+                   callback=lambda timer: timirq_cbf_sched(lm_str, sample))
 
 
 #################################################################
@@ -131,13 +134,14 @@ def init_eventPIN():
         from machine import Pin
         pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
         console_write("[IRQ] - event setup: {}".format(trig))
+        lm_str = cfgget('extirqcbf')
         if trig == 'down':
-            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(cfgget('extirqcbf')))
+            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(lm_str))
             return
         if trig == 'both':
-            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(cfgget('extirqcbf')))
+            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(lm_str))
             return
-        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: extirq_cbf(cfgget('extirqcbf')))
+        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: extirq_cbf(lm_str))
 
 
 #################################################################

@@ -39,12 +39,11 @@ def startBgJob(argument_list, msg):
         # Get thread wait
         wait = int(is_thrd.replace('&', '')) if is_thrd.replace('&', '').isdigit() else 0
         # Create callback
-        callback = lambda tmsg: __exec_lm_core(argument_list, msgobj=tmsg)
         if is_thrd.startswith('&&'):
             # Run task in background loop with custom sleep in period &&X
             loop = True
         # Start background thread based on user input
-        stat, tid = BgTask().run(callback=callback, loop=loop, delay=wait)
+        stat, tid = BgTask().run(lm_core=__exec_lm_core, arglist=argument_list, loop=loop, delay=wait)
         if stat:
             msg("[BgJob][{}] Start loop:{} successful".format(tid, loop))
             return True
@@ -64,7 +63,7 @@ def execLMPipe(taskstr):
             return True
         # Execute individual commands
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
-            if not execLMCore(cmd):
+            if not __exec_lm_core(cmd, msgobj=console_write):
                 console_write("|-[LM-PIPE] task error: {}".format(cmd))
                 ok = False
     except Exception as e:

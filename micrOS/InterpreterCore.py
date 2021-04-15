@@ -12,7 +12,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from sys import modules
+from LmExecCore import exec_lm_core
 from ConfigHandler import console_write
 try:
     from BgJob import BgTask
@@ -29,7 +29,6 @@ def startBgJob(argument_list, msg):
     # Handle Thread &/&& arguments [-1]
     is_thrd = argument_list[-1].strip()
     # Run OneShot job by default
-    loop = False
     if '&' in is_thrd:
         if BgTask is None:
             msg('[BgJob] Inactive...')
@@ -41,13 +40,14 @@ def startBgJob(argument_list, msg):
         # Create callback
         if is_thrd.startswith('&&'):
             # Run task in background loop with custom sleep in period &&X
-            loop = True
-        # Start background thread based on user input
-        stat, tid = BgTask().run(lm_core=__exec_lm_core, arglist=argument_list, loop=loop, delay=wait)
+            stat, tid = BgTask().run(arglist=argument_list, loop=True, delay=wait)
+        else:
+            # Start background thread based on user input
+            stat, tid = BgTask().run(arglist=argument_list, loop=False, delay=wait)
         if stat:
-            msg("[BgJob][{}] Start loop:{} successful".format(tid, loop))
+            msg("[BgJob][{}] Start {}".format(tid[0], tid[1]))
             return True
-        msg("[BgJob][{}] Busy".format(tid))
+        msg("[BgJob][{}] {} is Busy".format(tid[0], tid[1]))
         return True
     return False
 
@@ -55,80 +55,37 @@ def startBgJob(argument_list, msg):
 def execLMPipe(taskstr):
     """
     Input: taskstr contains LM calls separated by ;
+    Used for execute config callback parameters (Boothook & IRQs)
     """
-    ok = True
     try:
         # Handle config default empty value (do nothing)
         if taskstr.startswith('n/a'):
             return True
-        # Execute individual commands
+            # Execute individual commands
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
-            if not __exec_lm_core(cmd, msgobj=console_write):
+            if not exec_lm_core(cmd, msgobj=console_write):
                 console_write("|-[LM-PIPE] task error: {}".format(cmd))
-                ok = False
     except Exception as e:
         console_write("[LM-PIPE] pipe error: {}\n{}".format(taskstr, e))
         return False
-    return ok
-
-
-def __exec_lm_core(argument_list, msgobj=None):
-    """
-    [1] module name (LM)
-    [2] function
-    [3...] parameters (separator: space)
-    NOTE: msgobj is None from Interrupts and Hooks - shared functionality
-    """
-    # Check json mode for LM execution
-    json_mode = argument_list[-1] == '>json'
-    if json_mode:
-        del argument_list[-1]
-    # LoadModule execution
-    if len(argument_list) >= 2:
-        LM_name, LM_function, LM_function_params = "LM_{}".format(argument_list[0]), argument_list[1], ', '.join(argument_list[2:])
-        try:
-            # --- LM LOAD & EXECUTE --- #
-            # [1] LOAD MODULE
-            exec("import {}".format(LM_name))
-            # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
-            lm_output = eval("{}.{}({})".format(LM_name, LM_function, LM_function_params))
-            # Handle output data stream
-            if not json_mode and isinstance(lm_output, dict):
-                # Format dict output - human readable
-                lm_output = '\n'.join(["{}: {}".format(key, value) for key, value in lm_output.items()])
-                msgobj(str(lm_output))
-            else:
-                # Raw output if json
-                msgobj(str(lm_output))
-            # ------------------------- #
-        except Exception as e:
-            msgobj("execute_LM_function {}->{}: {}".format(LM_name, LM_function, e))
-            if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
-                # UNLOAD MODULE IF MEMORY ERROR HAPPENED
-                if LM_name in modules.keys():
-                    del modules[LM_name]
-                # Exec FAIL -> recovery action in SocketServer
-                return False
-        # Exec OK
-        return True
-    msgobj("SHELL: type help for single word commands (built-in)")
-    msgobj("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
-    # Exec OK
     return True
 
 
 def execLMCore(argument_list, msgobj=None):
+    """
+    Used for LM execution from socket console
+    """
     # @1 Run Thread if requested and enable
     # Cache message obj in cwr
     cwr = console_write if msgobj is None else msgobj
     state = startBgJob(argument_list=argument_list, msg=cwr)
     if state:
         return True
-    # @2 Run simple task
+    # @2 Run simple task / main option from console
     # |- Thread locking NOT available
     if BgTask is None:
-        return __exec_lm_core(argument_list, msgobj=cwr)
+        return exec_lm_core(argument_list, msgobj=cwr)
     # |- Thread locking available
     with BgTask():
-        state = __exec_lm_core(argument_list, msgobj=cwr)
+        state = exec_lm_core(argument_list, msgobj=cwr)
     return state

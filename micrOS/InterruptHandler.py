@@ -44,17 +44,6 @@ def emergency_mbuff():
 #############################################
 
 
-def timirq_cbfs(tasks):
-    """
-    LM tasks executor callback function
-    Input:
-        tasks: str
-    """
-    # Execute CBF from cached config
-    if not execLMPipe(tasks):
-        console_write("[IRQ] TIMIRQ execLMPipe error: {}".format(tasks))
-
-
 def enableInterrupt():
     """
     Set task pool executor in interrupt timer0
@@ -68,7 +57,7 @@ def enableInterrupt():
         lm_str = cfgget('timirqcbf')
         timer = Timer(0)
         timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC,
-                   callback=lambda timer: timirq_cbfs(lm_str))
+                   callback=lambda timer: execLMPipe(lm_str))
 
 
 #############################################
@@ -113,14 +102,6 @@ def enableCron():
 #################################################################
 
 
-def extirq_cbf(tasks):
-    """
-    EVENT INTERRUPT CALLBACK FUNCTION WRAPPER
-    """
-    if not execLMPipe(tasks):
-        console_write("[IRQ] EXTIRQ execLMPipe error: {}".format(tasks))
-
-
 def init_eventPIN():
     """
     EVENT INTERRUPT CONFIGURATION
@@ -136,12 +117,12 @@ def init_eventPIN():
         console_write("[IRQ] - event setup: {}".format(trig))
         lm_str = cfgget('extirqcbf')
         if trig == 'down':
-            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(lm_str))
+            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(lm_str))
             return
         if trig == 'both':
-            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: extirq_cbf(lm_str))
+            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(lm_str))
             return
-        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: extirq_cbf(lm_str))
+        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: execLMPipe(lm_str))
 
 
 #################################################################

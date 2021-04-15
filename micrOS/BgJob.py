@@ -1,5 +1,6 @@
 import _thread
 from time import sleep
+from LmExecCore import exec_lm_core
 
 
 class BgTask:
@@ -14,22 +15,23 @@ class BgTask:
         if cls.__instance is None:
             # SocketServer singleton properties
             cls.__instance = super().__new__(cls)
-            cls.__loop = loop
-            cls.__lock = None
-            cls.__isbusy = False
             cls.__lock = _thread.allocate_lock()
+            cls.__loop = loop
+            cls.__isbusy = False
             cls.__ret = ''
-            cls.__call_ret = None
-            cls.__taskid = 0
+            cls.__taskid = (0, 'none')
         return cls.__instance
 
     def __enter__(cls):
+        if cls.__lock.locked():
+            return
         cls.__lock.acquire()
 
     def __exit__(cls, exc_type, exc_val, exc_tb):
-        cls.__lock.release()
+        if cls.__lock.locked():
+            cls.__lock.release()
 
-    def __th_task(cls, lm_core, arglist, delay=1):
+    def __th_task(cls, arglist, delay=1):
         cls.__isbusy = True
         while True:
             # Set delay
@@ -38,29 +40,29 @@ class BgTask:
             if cls.__lock.locked():
                 continue
             # RUN CALLBACK
-            cls.__call_ret = lm_core(arglist, msgobj=cls.msg)
+            call_return = exec_lm_core(arglist, msgobj=cls.msg)
+            cls.__ret = '{} [{}]'.format(cls.__ret, call_return)
             # Exit thread
             if not cls.__loop:
                 break
         cls.__isbusy = False
 
     def msg(cls, msg):
-        if len(msg) > 80:
-            cls.__ret = msg[0:80]
-            return
-        cls.__ret = msg
+        cls.__ret += msg
+        if len(cls.__ret) > 80:
+            cls.__ret = cls.__ret[-80:]
 
-    def run(cls, lm_core, arglist, loop=None, delay=None):
+    def run(cls, arglist, loop=None, delay=None):
         # Return if busy - single job support
         if cls.__isbusy:
             return False, cls.__taskid
         # Set thread params
         cls.__ret = ''
-        cls.__call_ret = None
-        cls.__taskid += -50 if cls.__taskid > 50 else 1
+        id_num = 0 if cls.__taskid[0] > 19 else cls.__taskid[0]+1
+        cls.__taskid = (id_num, '{}.{}'.format(arglist[0], arglist[1]))
         cls.__loop = cls.__loop if loop is None else loop
         # Start thread
-        _thread.start_new_thread(cls.__th_task, (lm_core, arglist, delay))
+        _thread.start_new_thread(cls.__th_task, (arglist, delay))
         return True, cls.__taskid
 
     def stop(cls):
@@ -70,6 +72,5 @@ class BgTask:
         return '[BgJob] Already stopped {}'.format(cls.__taskid)
 
     def info(cls):
-        return {'isbusy': cls.__isbusy, 'state': cls.__call_ret,
-                'taskid': cls.__taskid, 'out': cls.__ret}
+        return {'isbusy': cls.__isbusy, 'taskid': cls.__taskid, 'out': cls.__ret}
 

@@ -45,9 +45,9 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.1.0-3'
+    __socket_interpreter_version = '1.1.0-4'
 
-    def __new__(cls, host='', port=None, uid=None, user_timeout_sec=None):
+    def __new__(cls, host=''):
         """
         Singleton design pattern
         __new__ - Customize the instance creation
@@ -69,9 +69,9 @@ class SocketServer:
             SocketServer.__instance.pre_prompt = ""
             SocketServer.__instance.__auth_mode = cfgget('auth')
             SocketServer.__instance.__prompt = "{} $ ".format(cfgget('devfid'))
-            SocketServer.__instance.__port = port if port is not None else cfgget("socport")
-            SocketServer.__instance.__timeout_user = user_timeout_sec if user_timeout_sec is not None else int(cfgget("soctout"))
-            SocketServer.__instance.__hwuid = uid if uid is not None else str(cfgget("hwuid"))
+            SocketServer.__instance.__port = cfgget("socport")
+            SocketServer.__instance.__timeout_user = int(cfgget("soctout"))
+            SocketServer.__instance.__hwuid = cfgget("hwuid")
             # ---         ----
             SocketServer.__instance.server_console("[ socket server ] <<constructor>>")
         return SocketServer.__instance
@@ -190,7 +190,9 @@ class SocketServer:
             cls.reply_message("Reboot micrOS system.")
             cls.__safe_reboot()
             return ""
-        if data_str == 'webrepl':
+        if data_str.startswith('webrepl'):
+            if '--u' in data_str:
+                cls.start_micropython_webrepl(update=True)
             cls.start_micropython_webrepl()
             return ""
         return data_str
@@ -263,13 +265,20 @@ class SocketServer:
             # if less then max indent
             cls.__server_console_indent += 1
 
-    def start_micropython_webrepl(cls):
+    def start_micropython_webrepl(cls, update=False):
         cls.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
         cls.reply_message("  [!] micrOS socket shell will be available again after reboot.")
         cls.reply_message("  \trestart machine shortcut: import reset")
         cls.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(cfgget("devip")))
         cls.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
+        if update:
+            cls.reply_message('  Restart node then start webrepl...')
         cls.reply_message(" Bye!")
+        if update:
+            from machine import reset
+            with open('.if_mode', 'w') as f:
+                f.write('webrepl')
+            reset()
         try:
             import webrepl
             cls.reply_message(webrepl.start(password=cfgget('appwd')))

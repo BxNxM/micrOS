@@ -71,7 +71,7 @@ def __shell(msg, sso):
         sso.reply_message("   version - shows micrOS version")
         sso.reply_message("   exit    - exit from shell socket prompt")
         sso.reply_message("   reboot  - system safe reboot")
-        sso.reply_message("   webrepl - start web repl for file transfers - update")
+        sso.reply_message("   webrepl - start web repl, use with --update for file transfers")
         sso.reply_message("[CONF] Configure mode (InterpreterShell built-in):")
         sso.reply_message("  conf       - Enter conf mode")
         sso.reply_message("    dump       - Dump all data")

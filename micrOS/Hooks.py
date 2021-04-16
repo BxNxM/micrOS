@@ -33,14 +33,14 @@ def bootup_hook():
     Executes when system boots up.
     """
     # Execute LMs from boothook config parameter
-    console_write("[BOOT HOOKS] EXECUTION ...")
+    console_write("[BOOTHOOK] EXECUTION ...")
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
-        console_write("|-[BOOT HOOKS] TASKS: {}".format(bootasks))
+        console_write("|-[BOOTHOOK] TASKS: {}".format(bootasks))
         if execLMPipe(bootasks):
-            console_write("|-[BOOT HOOKS] DONE")
+            console_write("|-[BOOTHOOK] DONE")
         else:
-            console_write("|-[BOOT HOOKS] ERROR")
+            console_write("|-[BOOTHOOK] ERROR")
 
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:

@@ -850,52 +850,62 @@ class MicrOSDevTool:
         return True
 
     def __lock_update_with_webrepl(self, host, lock=False, pwd='ADmin123'):
-        """
-        [1] Create .if_mode file (local file system)
-            lock: True -> value: webrepl
-            lock: False -> value: micros
-        [2] Copy file to device
-        """
-        workdir_handler = LocalMachine.SimplePopPushd()
-        workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
+        def __lock_handler(self, host, lock=False, pwd='ADmin123'):
+            """
+            [1] Create .if_mode file (local file system)
+                lock: True -> value: webrepl
+                lock: False -> value: micros
+            [2] Copy file to device
+            """
+            workdir_handler = LocalMachine.SimplePopPushd()
+            workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
 
-        # Set lock file value
-        lock_value = 'micros'
-        if lock:
-            lock_value = 'webrepl'
+            # Set lock file value
+            lock_value = 'micros'
+            if lock:
+                lock_value = 'webrepl'
 
-        # Create / modify file
-        with open(".if_mode", 'w') as f:
-            f.write(lock_value)
+            # Create / modify file
+            with open(".if_mode", 'w') as f:
+                f.write(lock_value)
 
-        # Create copy command
-        command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
-                                                                            pwd=pwd,
-                                                                            host=host)
-        if self.dummy_exec:
-            self.console("Webrepl CMD: {}".format(command))
-            return True
-        else:
-            self.console("Webrepl CMD: {}".format(command))
-            try:
-                exitcode = 0
-                stdout = ''
-                stderr = ''
-                for _ in range(0, 2):
-                    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-                    LocalMachine.FileHandler.remove('.if_mode')
+            # Create copy command
+            command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
+                                                                                pwd=pwd,
+                                                                                host=host)
+            if self.dummy_exec:
+                self.console("Webrepl CMD: {}".format(command))
+                return True
+            else:
+                self.console("Webrepl CMD: {}".format(command))
+                try:
+                    exitcode = 0
+                    stdout = ''
+                    stderr = ''
+                    for _ in range(0, 2):
+                        exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                        LocalMachine.FileHandler.remove('.if_mode')
+                        workdir_handler.popd()
+                        if exitcode == 0:
+                            return True
+                    self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
+                    LocalMachine.FileHandler.remove('.if_mode', ignore=True)
                     workdir_handler.popd()
-                    if exitcode == 0:
-                        return True
-                self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
-                LocalMachine.FileHandler.remove('.if_mode', ignore=True)
-                workdir_handler.popd()
-                return False
-            except Exception as e:
-                self.console("Create lock/unlock failed: {}".format(e))
-                LocalMachine.FileHandler.remove('.if_mode', ignore=True)
-                workdir_handler.popd()
-                return False
+                    return False
+                except Exception as e:
+                    self.console("Create lock/unlock failed: {}".format(e))
+                    LocalMachine.FileHandler.remove('.if_mode', ignore=True)
+                    workdir_handler.popd()
+                    return False
+        ret = False
+        for cnt in range(1, 10):
+            self.console("[{}/10] Connect to device ...".format(cnt))
+            ret = __lock_handler(self, host, lock=lock, pwd=pwd)
+            if ret:
+                break
+            time.sleep(1.5)
+        return ret
+
 
     def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False, ota_password='ADmin123'):
         """
@@ -981,8 +991,13 @@ class MicrOSDevTool:
                     if self.dummy_exec:
                         status, answer_msg = True, 'dummy exec'
                     else:
-                        status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
-                    self.console(answer_msg)
+                        if '--update' in answer_msg:
+                            self.console("[UPDATE] built-in restart and update monitor activation")
+                            status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl --update'])
+                        else:
+                            self.console("[UPDATE] live update - obsoleted...")
+                            status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
+                    #self.console(answer_msg)
                     time.sleep(2)
                 else:
                     self.console("Webrepl not available on device, update over USB.")

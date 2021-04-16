@@ -55,18 +55,18 @@ def startBgJob(argument_list, msg):
 def execLMPipe(taskstr):
     """
     Input: taskstr contains LM calls separated by ;
-    Used for execute config callback parameters (Boothook & IRQs)
+    Used for execute config callback parameters (IRQs and BootHook)
     """
     try:
         # Handle config default empty value (do nothing)
         if taskstr.startswith('n/a'):
             return True
-            # Execute individual commands
+        # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
-            if not exec_lm_core(cmd, msgobj=console_write):
+            if not exec_lm_core(cmd, msgobj=lambda msg: None):
                 console_write("|-[LM-PIPE] task error: {}".format(cmd))
     except Exception as e:
-        console_write("[LM-PIPE] pipe error: {}\n{}".format(taskstr, e))
+        console_write("[IRQ-PIPE] error: {}\n{}".format(taskstr, e))
         return False
     return True
 

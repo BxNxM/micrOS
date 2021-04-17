@@ -53,21 +53,21 @@ def micrOS():
     safe_boot_hook()
     profiling_info(label='[2] AFTER SAFE BOOT HOOK')
 
+    # SET external interrupt with extirqcbf from nodeconfig
+    external_interrupt_handler()
+    profiling_info(label='[3] AFTER EXTERNAL INTERRUPT SETUP')
+
     # NETWORK setup
     auto_network_configuration()
-    profiling_info(label='[3] AFTER NETWORK CONFIGURATION')
+    profiling_info(label='[4] AFTER NETWORK CONFIGURATION')
 
     # LOAD Singleton SocketServer [1]
     SocketServer()
-    profiling_info(label='[4] AFTER SOCKET SERVER CREATION')
+    profiling_info(label='[5] AFTER SOCKET SERVER CREATION')
 
     # SET interrupt with timirqcbf from nodeconfig
     interrupt_handler()
-    profiling_info(label='[5] AFTER TIMER INTERRUPT SETUP')
-
-    # SET external interrupt with extirqcbf from nodeconfig
-    external_interrupt_handler()
-    profiling_info(label='[6] AFTER EXTERNAL INTERRUPT SETUP')
+    profiling_info(label='[6] AFTER TIMER INTERRUPT SETUP')
 
     # RUN Singleton SocketServer - main loop [2]
     SocketServer().run()

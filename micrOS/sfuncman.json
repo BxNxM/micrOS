@@ -159,6 +159,11 @@
     "toggle state=None",
     "help"
   ],
+  "catgame": [
+    "game iter=10",
+    "stop",
+    "help"
+  ],
   "intercon": [
     "sendcmd *_args **kwargs",
     "help"

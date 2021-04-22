@@ -2,6 +2,8 @@
 
 ### micropython based IoT framework for wifi capable arm based microcontrollers and much more...
 
+![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
+
 ### KEY PRINCIPLES:
 ✉️ 📡 Generic communication API (expose module functions) <br/>
 📲 💻 Custom built-in socket shell for configuration and execution <br/>
@@ -15,7 +17,7 @@
 
 ### QUICK LINKS:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#ios--android-application)
-2. micrOS Installer [link](https://github.com/BxNxM/micrOS#micros-toolkit-for-pc)
+2. micrOS Installer [link](https://github.com/BxNxM/micrOS#installing-micros-with-devtoolkit-from-macos--windows--linux)
 3. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 4. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 5. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-tutorial)
@@ -99,7 +101,7 @@ python3 micrOS/devToolKit.py
 - Example
 
 ```
-1. Select BOLAD TYPE
+1. Select BOARD TYPE
 2. Select MICROPYTHON VERSION
 3. Click on [Deploy (USB)] button
 ```
@@ -138,9 +140,16 @@ It will install your board via USB with default settings. Continue with your mob
 - **Scheduling / External events** - Interrupt callback - based on node_config 
 	- Time based
 		- simple LM task pool execution
-		- cron [time stump:LM task] pool execution 
+			- `Timer(0)` 
+		- cron [time stump:LM task] pool execution
+			- `Timer(1)` 
 	- Event based
-		-  Set trigger event up/down/both with LM callback function 
+		-  Set trigger event up/down/both with LM callback function
+- **Background Job** aka **BgJob**
+		- Capacble of execute [L]oad [M]odules in a background thread
+		- WARINING, limitation: not use with IRQs and in micrOS config
+		- Invoce with single execution `&` or loop execution `&&`
+		- Example: `system heartbeat &&`
 - **[L]oad [M]odule** aka **application** handling
 	- Lot of built-in functions
 	- Create your own module with 2 easy steps
@@ -148,7 +157,8 @@ It will install your board via USB with default settings. Continue with your mob
 		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy
 - **[L]ogical [P]inout** handling - lookuptables / board or custom
 	- Predefined pinout modules for esp32 and esp8266
-	- Create your pinout based on `LP_esp32.py`	
+	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
+
 		
 DevToolKit CLI feature:
 
@@ -220,7 +230,7 @@ DevToolKit CLI feature:
 | Parameters names |   Default value and type    | Reboot required |          Description            |
 | ---------------- | :-------------------------: | :-------------: | ------------------------------- |
 | devfid           |    `node01`  `<str>`        |       Yes        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
-| boostmd          |      `True`  `<bool>`       |     Yes         | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
+| boostmd          |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
 | staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name (for default connection mode)
 | stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)
 | appwd            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
@@ -228,13 +238,13 @@ DevToolKit CLI feature:
 | gmttime          |     `1`   `<int>`           |       Yes       | NTP - RTC - timezone setup (GMT)
 | boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) list for priority Load Module(s) execution in boot sequence [before network setup!]. Add LoadModule(s) here, separator `;`. Example: Set LED colors / Init custom module(s) / etc.
 | timirq           |     `False`  `<bool>`       |       Yes       | Timer(0) interrupt enabler - background "subprocess" emulation, timer based infinite loop for the LoadModule execution
-| timirqcbf        |      `n/a`   `<str>`        |      No        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
+| timirqcbf        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
 | timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
 | cron             |     `False`  `<bool>`       |       Yes       | Cron enabler, Timer(1) interrupt enabler - time based task scheduler.
-| cronseq          |    `3000`   `<int>`         |       No        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value) 
-| crontasks        |     `n/a`  `<str>`          |       No        | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*` **Note**: If the value was `n/a` default, then reboot required.
+| cronseq          |    `3000`   `<int>`         |       Yes        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value) 
+| crontasks        |     `n/a`  `<str>`          |       Yes        | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*` **Note**: If the value was `n/a` default, then reboot required.
 | extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when "input signal upper edge detected" - button press happens
-| extirqcbf        |     `n/a`  `<str>`          |      No        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
+| extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
 | extirqtrig       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
 | cstmpmap         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as a parameter.
 | pled             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"

@@ -3,9 +3,9 @@ from LM_servo import sduty
 from time import sleep
 
 
-def game(iter=10):
+def game(repeat=10):
     sduty(75)
-    for _ in range(0, iter):
+    for _ in range(0, repeat):
         sduty(randint(55, 95))
         sleep(randint(0, 2))
     sduty(75)
@@ -16,5 +16,13 @@ def stop():
     return sduty(75)
 
 
+#######################
+# LM helper functions #
+#######################
+
+def lmdep():
+    return 'LM_servo'
+
+
 def help():
-    return 'game iter=10', 'stop', 'Dependency: LM_servo sduty'
+    return 'game repeat=10', 'stop', 'lmdep'

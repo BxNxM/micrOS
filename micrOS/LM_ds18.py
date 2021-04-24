@@ -1,5 +1,4 @@
 import machine, onewire, ds18x20, time
-from Common import socket_stream
 
 DS_OBJ = None
 
@@ -33,6 +32,10 @@ def measure():
     # Return with multiple data
     return data
 
+
+#######################
+# LM helper functions #
+#######################
 
 def help():
     return 'measure'

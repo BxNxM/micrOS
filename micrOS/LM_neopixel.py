@@ -52,7 +52,7 @@ def __persistent_cache_manager(mode):
         pass
 
 
-def neopixel_cache_load_n_init(cache=None):
+def load_n_init(cache=None):
     global __PERSISTENT_CACHE
     if cache is None:
         __PERSISTENT_CACHE = False if platform == 'esp8266' else True
@@ -110,12 +110,11 @@ def toggle(state=None):
     neopixel(__DCACHE[0], __DCACHE[1], __DCACHE[2])
     return "ON"
 
-#########################################
-#                   HELP                #
-#########################################
 
+#######################
+# LM helper functions #
+#######################
 
 def help():
-    return 'neopixel r=<0-255> g b n=24', 'toggle state=None', \
-           'neopixel_cache_load_n_init cache=None<True/False>', \
-           'segment r, g, b, s=<0-n>', '[!]PersistentStateCacheDisabledOn:esp8266'
+    return 'neopixel r=<0-255> g b n=<0-24)', 'toggle state=None', \
+           'load_n_init', 'segment r, g, b, s=<0-n>'

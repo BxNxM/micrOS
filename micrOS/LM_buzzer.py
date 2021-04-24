@@ -1,6 +1,5 @@
 from sys import platform
 from time import sleep
-from Common import socket_stream
 
 #########################################
 #      BUZZER PWM CONTROLLER PARAMS     #
@@ -207,7 +206,7 @@ def play(rtttlstr='d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'):
     return "Song played successfully"
 
 
-def buzzer_cache_load_n_init(cache=None):
+def load_n_init(cache=None):
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
@@ -218,11 +217,9 @@ def buzzer_cache_load_n_init(cache=None):
     return "CACHE: {}".format(__PERSISTENT_CACHE)
 
 
-#########################################
-#                   HELP                #
-#########################################
-
+#######################
+# LM helper functions #
+#######################
 
 def help():
-    return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr>', 'buzzer_cache_load_n_init(cache=True)', \
-           '[!]PersistentStateCacheDisabledOn:esp8266'
+    return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr>', 'load_n_init'

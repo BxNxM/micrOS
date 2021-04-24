@@ -13,5 +13,9 @@ def guimeta_fix_1_0_3_2():
     return 'Modification was already done :)'
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'guimeta_fix_1_0_3_2', 'NOTE: Enable new method for guimeta value storage'

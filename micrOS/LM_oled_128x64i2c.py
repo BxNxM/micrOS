@@ -1,7 +1,7 @@
-from time import localtime, sleep
 
 __OLED = None
 __INVERT = False
+
 
 def __init():
     global __OLED
@@ -58,6 +58,10 @@ def poweroff():
     __init().poweroff()
     return True
 
+
+#######################
+# LM helper functions #
+#######################
 
 def help():
     return 'text', 'invert', 'clean', 'draw_line', 'draw_rect', 'poweron', 'poweroff'

@@ -12,6 +12,10 @@ def sendcmd(*_args, **kwargs):
     return send_cmd(host, port, cmd)
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'sendcmd <cmd> host=<IP>, port=9008) OR sendcmd host=<IP>, port=9008 args="<cmd>")', \
            'example: intercon sendcmd "dimmer" "toggle" host="10.0.1.84" OR intercon sendcmd host="10.0.1.84" args="dimmer toggle"'

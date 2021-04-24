@@ -60,5 +60,9 @@ def deinit():
     __ECHO_OBJ = None
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'distance_mm', 'distance_cm', 'deinit'

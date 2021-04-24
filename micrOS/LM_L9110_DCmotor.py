@@ -34,10 +34,9 @@ def motor_control(direc=None, speed=None):
     return {'speed': speed, 'direc': 'backward'}
 
 
-#########################################
-#                   HELP                #
-#########################################
-
+#######################
+# LM helper functions #
+#######################
 
 def help():
-    return 'motor_control direc <0/1> speed <0-1000>'
+    return 'motor_control direc=<0/1> speed=<0-1000>'

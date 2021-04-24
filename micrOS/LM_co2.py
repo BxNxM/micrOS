@@ -113,6 +113,10 @@ def measure_mq135(temperature=None, humidity=None):
         return "measure_mq135 ERROR: {}".format(e)
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'measure_mq135 temp=<int> hum=<int>', 'raw_measure_mq135'
 

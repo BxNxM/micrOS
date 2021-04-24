@@ -33,5 +33,9 @@ def make():
     return "Advertise and scan ble nw."
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
-    return 'advert', 'scan', 'list', 'make'
+    return 'advert', 'scan', 'list', 'make', 'NOTE: BETA'

@@ -48,6 +48,10 @@ def measure():
     return "ADC value: {}/{}\nPH: {}".format(raw_value, __ADC_PROP, __measure())
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'measure'
 

@@ -314,5 +314,13 @@ def measure_w_co2():
     return data
 
 
+#######################
+# LM helper functions #
+#######################
+
+def lmdep():
+    return 'LM_co2'
+
+
 def help():
-    return 'measure', 'measure_w_co2'
+    return 'measure', 'measure_w_co2', 'lmdep'

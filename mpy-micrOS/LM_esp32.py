@@ -27,5 +27,9 @@ def battery():
     return {'volt': get_battery_voltage(), 'state': get_battery_charging()}
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
-    return 'hall', 'temp', 'touch' 'Dedicated functions for esp32.', 'battery', 'NOTE: only available on tinypico'
+    return 'hall', 'temp', 'touch', 'battery', 'NOTE: battery only available on tinypico'

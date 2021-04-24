@@ -15,5 +15,9 @@ def scan():
     return __init().scan()
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'scan'

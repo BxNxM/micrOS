@@ -31,6 +31,13 @@ def measure_w_co2():
     return {'temp [ºC]': _temp, 'hum [%]': _hum, 'co2 [ppm]': measure_mq135(_temp, _hum)}
 
 
-def help():
-    return 'measure', 'measure_w_co2'
+#######################
+# LM helper functions #
+#######################
 
+def lmdep():
+    return 'LM_co2'
+
+
+def help():
+    return 'measure', 'measure_w_co2', 'lmdep'

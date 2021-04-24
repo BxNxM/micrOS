@@ -53,6 +53,10 @@ def illuminance():
     return {'illuminance [lux]': lux}
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'intensity', 'illuminance', 'INFO sensor:TEMP600'
 

@@ -158,6 +158,10 @@ def ha_sta():
     return '{} mode, OK'.format(cfgget('nwmd'))
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module unload=<LM_.py/.mpy>', \
            'rssi', 'cachedump cdel=<pds name>', 'lmpacman lm_del=<LM_>', 'getpin', 'ha_sta'

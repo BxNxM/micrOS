@@ -2,8 +2,9 @@ from time import time
 from sys import platform
 # RGB (3x PWM) Channels
 __FADER_OBJ = (None, None, None)
-# COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10), state: 0False 1True (11)
-__FADER_CACHE = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+# COLOR_FROM (0-2), COLOR_TO (3-5), TIME_FROM_SEC(6), TIME_TO_SEC(7), COLOR_CURRENT (8-10),
+# activate state: 0False 1True (11), state: 0False 1True (12)
+__FADER_CACHE = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
 __PERSISTENT_CACHE = False
 
 
@@ -81,7 +82,7 @@ def __gen_exp_color(ctim):
     return ((obj, int(__lerp(__FADER_CACHE[i], __FADER_CACHE[i+3], state))) for i, obj in enumerate(__fader_init()))
 
 
-def fader_cache_load_n_init(cache=None):
+def load_n_init(cache=None):
     """
     Fader init: create owm objects and load cache
     """
@@ -136,7 +137,7 @@ def transition(f=False):
     return "RGB: {} -> {} -> {} ".format(__FADER_CACHE[0:3], __FADER_CACHE[8:11], __FADER_CACHE[3:6])
 
 
-def toggle(state=None):
+def transition_onoff(state=None):
     """
     Toggle led state based on the stored state or based on explicit input
     """
@@ -151,13 +152,30 @@ def toggle(state=None):
     __FADER_CACHE[11] = nst
     __persistent_cache_manager('s')
     transition(True)
-    return "Fading ON" if nst == 1 else "Fading OFF"
+    return "Fading activate" if nst == 1 else "Fading deactivate"
 
 
-#########################################
-#                   HELP                #
-#########################################
+def toggle(state=None):
+    objs = __fader_init()
+    if __FADER_CACHE[12] == 1:
+        __FADER_CACHE[12] = 0
+        __persistent_cache_manager('s')
+        objs[0].duty(0)
+        objs[1].duty(0)
+        objs[2].duty(0)
+        return 'Turn OFF'
+    __FADER_CACHE[12] = 1
+    __persistent_cache_manager('s')
+    objs[0].duty(__FADER_CACHE[8])
+    objs[1].duty(__FADER_CACHE[9])
+    objs[2].duty(__FADER_CACHE[10])
+    return 'Turn ON'
+
+
+#######################
+# LM helper functions #
+#######################
 
 
 def help():
-    return 'transition', 'fade r g b sec=0', 'toggle', 'fader_cache_load_n_init'
+    return 'transition', 'fade r g b sec=0', 'transition_onoff', 'toggle', 'load_n_init'

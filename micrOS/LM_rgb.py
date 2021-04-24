@@ -52,7 +52,7 @@ def __persistent_cache_manager(mode):
         pass
 
 
-def rgb_cache_load_n_init(cache=None):
+def load_n_init(cache=None):
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
@@ -102,12 +102,10 @@ def toggle(state=None):
     return "ON"
 
 
-#########################################
-#                   HELP                #
-#########################################
+#######################
+# LM helper functions #
+#######################
 
 def help():
     return 'rgb r=<0-1000> g=<0-1000> b=<0,1000>',\
-           'toggle state=None', \
-           'rgb_cache_load_n_init cache=None<True/False>',\
-           '[!]PersistentStateCacheDisabledOn:esp8266'
+           'toggle state=None', 'load_n_init'

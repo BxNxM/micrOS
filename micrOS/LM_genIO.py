@@ -99,5 +99,9 @@ def get_in(pin):
     return {'pin': pin, 'state': __digital_in_init(pin).value()}
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
-    return 'set_pwm pin freq duty', 'set_out pin state', 'get_adc pin', 'get_in pin'
+    return 'set_pwm pin=<int> freq=<int> duty=<0-1000>', 'set_out pin state', 'get_adc pin', 'get_in pin'

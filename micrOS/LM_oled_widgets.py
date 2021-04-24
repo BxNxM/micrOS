@@ -5,6 +5,7 @@ from time import localtime
 __OLED = None
 __INVERT = False
 
+
 def __init():
     global __OLED
     if __OLED is None:
@@ -14,6 +15,7 @@ def __init():
         i2c = I2C(-1, Pin(get_pin_on_platform_by_key('i2c_scl')), Pin(get_pin_on_platform_by_key('i2c_sda')))
         __OLED = SSD1306_I2C(128, 64, i2c)
     return __OLED
+
 
 def simple_page():
     try:
@@ -45,6 +47,7 @@ def show_debug_page():
         return str(e)
     return True
 
+
 def toggle_invert():
     global __INVERT
     __INVERT = not __INVERT
@@ -52,6 +55,9 @@ def toggle_invert():
     return 'INVERT:{}'.format(__INVERT)
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'simple_page', 'show_debug_page', 'toggle_invert'
-

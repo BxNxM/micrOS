@@ -64,11 +64,9 @@ def set_direction(direc=0):
     return {'direction': 'backward'}
 
 
-
-#########################################
-#                   HELP                #
-#########################################
-
+#######################
+# LM helper functions #
+#######################
 
 def help():
-    return 'm1_control direc=<0/1>, speed=<0-1023>', 'set_speed <0-1023>', 'set_direction <0-1>', 'stop'
+    return 'm1_control direc=<0/1> speed=<0-1023>', 'set_speed <0-1023>', 'set_direction <0-1>', 'stop'

@@ -63,7 +63,7 @@ def set_value(value=None):
     return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)
 
 
-def dimmer_cache_load_n_init(cache=None):
+def load_n_init(cache=None):
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
@@ -88,12 +88,10 @@ def toggle(state=None):
         return set_value(0)         # Set value to 0 - OFF
     return set_value()              # Set value to the cached - ON
 
-#########################################
-#                   HELP                #
-#########################################
 
+#######################
+# LM helper functions #
+#######################
 
 def help():
-    return 'set_value value=<0-1000>', 'toggle state=None',\
-           'dimmer_cache_load_n_init cache=None', \
-           '[!]PersistentStateCacheDisabledOn:esp8266'
+    return 'set_value value=<0-1000>', 'toggle state=None', 'load_n_init'

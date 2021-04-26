@@ -4,7 +4,6 @@
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
-### KEY PRINCIPLES:
 ✉️ 📡 Generic communication API (expose module functions) <br/>
 ⚙️ 📝 Device initialization from user config <br/>
 📲 💻 Communication over WiFi: application calls and configuration <br/>
@@ -19,7 +18,7 @@ Just write and copy **LM_** your_app **.py** python script to your device and ca
 
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
-## QUICK LINKS:
+##◉ Shortcuts:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#ios--android-application)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS#installing-micros-with-devtoolkit-from-macos--windows--linux)
 3. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
@@ -169,7 +168,7 @@ It will install your board via USB with default settings. Continue with your mob
 	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
 	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
 
-		
+
 DevToolKit CLI feature:
 
 - Socket client python plugin - interactive - non interactive mode

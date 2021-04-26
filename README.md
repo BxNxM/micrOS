@@ -6,22 +6,26 @@
 
 ### KEY PRINCIPLES:
 ✉️ 📡 Generic communication API (expose module functions) <br/>
-📲 💻 Custom built-in socket shell for configuration and execution <br/>
-⚙️ 📝 Automatic device initialization from user config ;) <br/>
-🚪 No external server or service required <br/>
-⚠️ 🛡 Privacy in focus, works on Local Private Network <br/>
+⚙️ 📝 Device initialization from user config <br/>
+📲 💻 Communication over WiFi: application calls and configuration <br/>
 🧩  Codeless end user experience via phone client <br/>
-🛠 Easy to customize aka create Load Modules, copy **LM**\_your_app**.py** or **.mpy** to the device and call any function from your module. <br/>
-🦾 Built-in smart background (IRQ) task scheduling: time stump / periodic <br/>
+🚪 No external server or service required <br/>
+⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
+🦾 Built-in scheduling (IRQ):<br/>
+- Time stamp based <br/>
+- Simple periodic <br/>
+🛠 Easy to customize, create your own Load Modules: <br/>
+Just write and copy **LM_** your_app **.py** python script to your device and call any function.<br/>
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
-### QUICK LINKS:
+## QUICK LINKS:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#ios--android-application)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS#installing-micros-with-devtoolkit-from-macos--windows--linux)
 3. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 4. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 5. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-tutorial)
 
+----------------------------------------
 ----------------------------------------
 
 ## iOS / Android Application
@@ -112,7 +116,7 @@ It will install your board via USB with default settings. Continue with your mob
 
 ----------------------------------------
 
-## micrOS System, message-function visualization 
+## micrOS System, message-function visualization
 
 ![MICROSVISUALIZATION](./media/micrOS.gif?raw=true)
 
@@ -123,16 +127,21 @@ It will install your board via USB with default settings. Continue with your mob
 
 ## micrOS Framework Features💡
 
-- **micrOS loader** - micrOS / WEBREPL (update / recovery)
-	- **OTA update** - push update over wifi (webrepl automation) with auto restart node
-- **Config handling(*)** - node_config.json [socket access]
-	- System data handler stucture: read/write/inject template/cleanup (based on template) 
-- **Boot phase** handling - preload modules - I/O initialization from node_config
+- **micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
+	- **OTA update** - push update over wifi (webrepl automation) / monitor update and auto restart node
+- **Config handling(*)** - user config - node_config.json
+	- Accessable over socket interface or Phone client
+- **[L]oad [M]odule** aka **application** handling
+	- Lot of built-in functions
+	- Create your own module with 2 easy steps
+		- Create a file in `MicrOS` folder like: `LM_<your_app_name>.py`
+		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy
+- **Boot phase** handling - preload Load Module(s) - pinout initialization from node_config
 - **Network handling** - based on node_config 
 	- STA / AP
 	- NTP setup
 	- Static IP configuration
-- **Socket interpreter** - wireless communication interface with the devices/nodes
+- **Socket interpreter** - wireless communication interface with the nodes
 	- **System commands**: `help, version, reboot, webrepl, etc.`
 		- webrepl <--> micrOS interface switch  
 	- **Config(*)** SET/GET/DUMP
@@ -146,18 +155,18 @@ It will install your board via USB with default settings. Continue with your mob
 	- Event based
 		-  Set trigger event up/down/both with LM callback function
 - **Background Job** aka **BgJob**
-		- Capacble of execute [L]oad [M]odules in a background thread
-		- WARINING, limitation: not use with IRQs and in micrOS config
-		- Invoce with single execution `&` or loop execution `&&`
-		- Example: `system heartbeat &&`
-- **[L]oad [M]odule** aka **application** handling
-	- Lot of built-in functions
-	- Create your own module with 2 easy steps
-		- Create a file in `MicrOS` folder like: `LM_<your_app_name>.py`
-		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy
-- **[L]ogical [P]inout** handling - lookuptables / board or custom
-	- Predefined pinout modules for esp32 and esp8266
+		- Capable of execute [L]oad [M]odules in a background thread
+		- WARNING, limitation: not use with IRQs and in micrOS config
+		- Invoke with single execution `&` or loop execution `&&`
+		- Example:
+			- In loop: `system heartbeat &&`
+			- Single call: `system heartbeat &`
+		- Stop thread: `bgjob stop`
+		- Show thread ouput and status: `bgjob show` 
+- **[L]ogical [P]inout** handling - lookuptables for each board
+	- Predefined pinout modules for esp32, tinyPico, esp8266
 	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
+	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
 
 		
 DevToolKit CLI feature:
@@ -171,6 +180,18 @@ DevToolKit CLI feature:
 
 ## Device Pinouts for wiring
 
+### Logical pin association handling
+
+[MicrOS/LogicalPins.py](./micrOS/LogicalPins.py)
+
+LogicalPin lookup tables:
+
+- [tinypico](./micrOS/LP_tinypico.py)
+- [esp32](./micrOS/LP_esp32.py)
+- [esp8266](./micrOS/LP_esp8266.py)
+
+> Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
+
 ![MicrOSESP8266pinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
 
 ![MicrOSESP8266pinout](./media/NodeMCUPinOutESP32.png?raw=true)
@@ -180,13 +201,13 @@ DevToolKit CLI feature:
 
 ----------------------------------------
 
-## System Architecture 
+# System Architecture 
 
 ![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
 
 > Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
 
-### Networking - automatic network modes
+## Networking - automatic network modes
 
 ![MICROSNWMODES](./media/micrOSNetworking.png?raw=true)
 
@@ -260,20 +281,12 @@ DevToolKit CLI feature:
 
 > Note: Default empty value: `n/a` in case of string parameter.
 > Note: Cron is only available on devices with Timer(**1**): esp32
+> 
 
-## Logical pin association handling
-
-[MicrOS/LogicalPins.py](./micrOS/LogicalPins.py)
-
-LogicalPin lookup tables:
-
-- [tinypico](./micrOS/LP_tinypico.py)
-- [esp32](./micrOS/LP_esp32.py)
-- [esp8266](./micrOS/LP_esp8266.py)
-
-> Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
 ----------------------------------------
+----------------------------------------
+
 
 ## Developer Quick guide
 

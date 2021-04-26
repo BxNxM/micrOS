@@ -11,11 +11,12 @@
 🧩  Codeless end user experience via phone client <br/>
 🚪 No external server or service required <br/>
 ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
+🛠 Easy to customize, create your own Load Modules: <br/>
+Just write and copy **LM_** your_app **.py** python script to your device and call any function.<br/>
 🦾 Built-in scheduling (IRQ):<br/>
 - Time stamp based <br/>
 - Simple periodic <br/>
-🛠 Easy to customize, create your own Load Modules: <br/>
-Just write and copy **LM_** your_app **.py** python script to your device and call any function.<br/>
+
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
 ## QUICK LINKS:

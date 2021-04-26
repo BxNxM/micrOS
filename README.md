@@ -824,39 +824,39 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 - micrOS source code lines of code:
 
 ```bash
-
-bnm@Bans-MBP:micrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
-     154	BleHandler.py
-      17	Common.py
+Ferenc@Bans-MBP:micrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
+      65	BgJob.py
+     154	BleHandler.py           -> beta code
+      17	Common.py               -> decorators for LMs
      232	ConfigHandler.py
       53	Hooks.py
       42	InterConnect.py
-      82	InterpreterCore.py
-     159	InterpreterShell.py
-     122	InterruptHandler.py
-      24	LP_esp32.py
-      20	LP_esp8266.py
-      38	LP_tinypico.py
+      83	InterpreterCore.py
+     180	InterpreterShell.py
+     111	InterruptHandler.py
+      37	LP_esp32.py
+      21	LP_esp8266.py
+      54	LP_tinypico.py
+      41	LmExecCore.py
       28	LogicalPins.py
-     168	Network.py          -> FSCO (ForceCoreOTA update)
+     168	Network.py              -> FSCO (ForceCoreOTA update)
      124	Scheduler.py
-     274	SocketServer.py
+     283	SocketServer.py
       24	TinyPLed.py
-      16	boot.py             -> FSCO
+      16	boot.py                 -> FSCO
       54	micrOS.py
-     101	micrOSloader.py     -> FSCO
-       5	reset.py
-SUM OF CODE LINES: 1737
-
+     101	micrOSloader.py         -> FSCO
+       5	reset.py                -> only used for webrepl manual reset
+SUM OF CODE LINES: 1893
 ```
 
 GIT:
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
-	
+
 - Publish tags: `git push origin --tags`
-	
+
 - Pretty git view: `git log --pretty=oneline`
-	
-- File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'` 
+
+- File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'`
 
 git push -u origin master

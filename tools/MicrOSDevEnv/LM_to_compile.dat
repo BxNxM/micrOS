@@ -19,3 +19,4 @@ LM_repair.py
 LM_buzzer.py
 LM_genIO.py
 LM_ds18.py
+LM_roboarm.py

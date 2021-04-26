@@ -1,4 +1,13 @@
 {
+  "roboarm": [
+    "control x_new y_new s=None",
+    "get_gcb a b",
+    "rawcontrol x=None y=None",
+    "boot_move s=None",
+    "load_n_init",
+    "lmdep",
+    "help"
+  ],
   "oled_128x64i2c": [
     "text intext=\"<text>\" posx=0 posy=0 show=True",
     "invert state=None",

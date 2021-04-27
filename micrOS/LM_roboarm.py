@@ -1,35 +1,70 @@
 import LM_servo as servo
 from time import sleep_ms
 
-__ACTUAL_XY = (75, 75)
-__SPEED_MS = 5
+
+class RoboArm:
+    ACTUAL_XY = [75, 75]
+    SPEED_MS = 5
+
+    @staticmethod
+    def __get_gcb(a, b):
+        """ Get greatest common divider """
+        gcd = 1
+        for i in range(1, min(a, b) + 1):
+            if a % i == 0 and b % i == 0:
+                gcd = i
+        return gcd
+
+    @staticmethod
+    def get_gcb(a, b):
+        gcd = RoboArm.__get_gcb(a, b)
+        if gcd <= 1:
+            gcd = RoboArm.__get_gcb(a+1, b)
+        if gcd <= 1:
+            gcd = RoboArm.__get_gcb(a+1, b-1)
+        # Return parallel step calculation + double for better resolution
+        return gcd * 2
 
 
 def control(x_new, y_new, s=None):
-    global __ACTUAL_XY, __SPEED_MS
-
-    def get_gcb(a, b):
-        i = 1
-        gcd = 1
-        while i <= a and i <= b:
-            if a % i == 0 and b % i == 0:
-                gcd = i
-            i = i + 1
-        return gcd
-    __SPEED_MS = s if isinstance(s, int) else __SPEED_MS
-    x_prev = __ACTUAL_XY[0]
-    y_prev = __ACTUAL_XY[1]
+    # Skip if X;Y is the same
+    if RoboArm.ACTUAL_XY[0] == x_new and RoboArm.ACTUAL_XY[1] == y_new:
+        return 'Already was moved X:{} Y:{}'.format(x_new, y_new)
+    # Set arm speed
+    RoboArm.SPEED_MS = s if isinstance(s, int) else RoboArm.SPEED_MS
+    # Get actual position
+    x_prev = RoboArm.ACTUAL_XY[0]
+    y_prev = RoboArm.ACTUAL_XY[1]
+    # Get difference between positions
     x_diff = x_new - x_prev
     y_diff = y_new - y_prev
-    gcd = get_gcb(abs(x_diff), abs(y_diff))
-    x_step = round(x_diff / gcd)
-    y_step = round(y_diff / gcd)
-    for k in range(1, gcd+1):
-        servo.sduty(x_prev + k*x_step)
-        servo.s2duty(y_prev + k*y_step)
-        sleep_ms(__SPEED_MS)
-    __ACTUAL_XY = (x_prev+x_diff, y_prev+y_diff)
-    return 'Move X{}->{} Y{}->{}'.format(x_prev, __ACTUAL_XY[0], y_prev, __ACTUAL_XY[1])
+    # Move X and Y servo parallel, threshold: 5
+    if abs(x_diff) > 5 and abs(y_diff) > 5:
+        gcd = RoboArm.get_gcb(abs(x_diff), abs(y_diff))
+        x_step = round(x_diff / gcd)
+        y_step = round(y_diff / gcd)
+        for k in range(1, gcd+1):
+            servo.sduty(x_prev + k*x_step)
+            servo.s2duty(y_prev + k*y_step)
+            sleep_ms(RoboArm.SPEED_MS*2)
+    else:
+        # Move X servo only
+        if abs(x_diff) > 0:
+            xpm = -1 if x_diff < 1 else 1
+            for k in range(1, abs(x_diff)+1):
+                servo.sduty(x_prev + (k*xpm))
+                sleep_ms(RoboArm.SPEED_MS)
+        # Move Y servo only
+        if abs(y_diff) > 0:
+            ypm = -1 if y_diff < 1 else 1
+            for k in range(1, abs(y_diff)+1):
+                servo.s2duty(y_prev + (k*ypm))
+                sleep_ms(RoboArm.SPEED_MS)
+    # Set exact position
+    servo.sduty(x_prev+x_diff)
+    servo.s2duty(y_prev+y_diff)
+    RoboArm.ACTUAL_XY = [x_prev+x_diff, y_prev+y_diff]
+    return 'Move X{}->{} Y{}->{}'.format(x_prev, RoboArm.ACTUAL_XY[0], y_prev, RoboArm.ACTUAL_XY[1])
 
 
 def rawcontrol(x=None, y=None):
@@ -37,44 +72,44 @@ def rawcontrol(x=None, y=None):
     # y - 40-115
     if x is not None:
         servo.sduty(x)
+        RoboArm.ACTUAL_XY[0] = x
     if y is not None:
         servo.s2duty(y)
+        RoboArm.ACTUAL_XY[1] = y
     return 'Move arm X:{} y:{}'.format(x, y)
 
 
 def boot_move(s=None):
-    global __SPEED_MS
-    __SPEED_MS = s if isinstance(s, int) else __SPEED_MS
+    RoboArm.SPEED_MS = s if isinstance(s, int) else RoboArm.SPEED_MS
     # Set arm to center
     load_n_init()
-    # Test X move
-    for x in range(75, 40, -1):
-        servo.sduty(x)
-        sleep_ms(__SPEED_MS)
-    for x in range(40, 115):
-        servo.sduty(x)
-        sleep_ms(__SPEED_MS)
-    for x in range(115, 75, -1):
-        servo.sduty(x)
-        sleep_ms(__SPEED_MS)
-    # Test Y move
-    for y in range(75, 40, -1):
-        servo.s2duty(y)
-        sleep_ms(__SPEED_MS)
-    for y in range(40, 96):
-        servo.s2duty(y)
-        sleep_ms(__SPEED_MS)
-    for y in range(96, 75, -1):
-        servo.s2duty(y)
-        sleep_ms(__SPEED_MS)
+    sleep_ms(RoboArm.SPEED_MS*2)
+    # Test X move (Y=65)
+    control(40, 65)
+    control(115, 65)
+    control(75, 65)
+    sleep_ms(RoboArm.SPEED_MS*2)
+    # Test Y move (X=75)
+    control(75, 40)
+    control(75, 96)
+    control(75, 65)
+    sleep_ms(RoboArm.SPEED_MS*2)
+    # Test multiple
+    control(40, 40)     # left top
+    control(115, 96)    # right bottom - ISSUE
+    control(115, 40)    # right top
+    control(40, 96)     # left bottom - ISSUE
+    sleep_ms(RoboArm.SPEED_MS*2)
+    # Enter to home
+    control(75, 65)     # Move home - ISSUE
     return 'Boot move done'
 
 
-def load_n_init():
-    servo.sduty(75)
-    sleep_ms(__SPEED_MS)
-    servo.s2duty(75)
-    sleep_ms(__SPEED_MS)
+def load_n_init(x=75, y=65):
+    servo.sduty(x)
+    RoboArm.ACTUAL_XY[0] = x
+    servo.s2duty(y)
+    RoboArm.ACTUAL_XY[1] = y
     return 'Set to zero position done'
 
 

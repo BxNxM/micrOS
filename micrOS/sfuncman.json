@@ -1,10 +1,10 @@
 {
   "roboarm": [
-    "get_gcb a b",
     "control x_new y_new s=None",
     "rawcontrol x=None y=None",
     "boot_move s=None",
-    "load_n_init x=75 y=65",
+    "standby",
+    "load_n_init x=75 y=70",
     "lmdep",
     "help"
   ],

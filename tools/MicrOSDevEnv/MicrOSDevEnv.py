@@ -53,6 +53,7 @@ class MicrOSDevTool:
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
         self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
+        self.mpy_cross_compiler_path_win = 'python -m mpy_cross'
         self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
         self.precompile_LM_wihitelist = self.read_LMs_whitelist()
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
@@ -261,6 +262,9 @@ class MicrOSDevTool:
             return False
 
     def __clone_micropython_repo(self):
+        if os.name == 'nt':
+    		# In case of windows skip micropython repo clone and compile 
+    	    return True
         if os.path.isdir(self.micropython_repo_path) and os.path.isfile(self.mpy_cross_compiler_path):
             return True
         # Download micropython repo if necessary
@@ -353,7 +357,15 @@ class MicrOSDevTool:
         for to_compile in tmp_precompile_set:
             #source_path = os.path.join(self.MicrOS_dir_path, to_compile)
             precompiled_target_name = to_compile.replace('.py', '.mpy')
-            command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path,
+            if os.name == 'nt':
+            	# Build micrOS on Windows with mpy-cross python module
+            	command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path_win,
+                                                                                          to_compile=to_compile,
+                                                                                          target_path=self.precompiled_MicrOS_dir_path,
+                                                                                          target_name=precompiled_target_name)
+            else:
+            	# Build micrOS with dynamically compiled mpy-cross
+            	command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path,
                                                                                           to_compile=to_compile,
                                                                                           target_path=self.precompiled_MicrOS_dir_path,
                                                                                           target_name=precompiled_target_name)
@@ -805,9 +817,7 @@ class MicrOSDevTool:
             time.sleep(2)
             if self.deploy_micropython_dev():
                 time.sleep(2)
-                if self.precompile_micros() or os.name == "nt":
-                    if os.name == "nt":
-                        self.console("Cannot recompile micrOS on Windows")
+                if self.precompile_micros():
                     time.sleep(2)
                     self.put_micros_to_dev()
                     self.archive_node_config()

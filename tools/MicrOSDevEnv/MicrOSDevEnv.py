@@ -11,6 +11,7 @@ MYPATH = os.path.dirname(os.path.abspath(__file__))
 import LocalMachine
 from TerminalColors import Colors
 sys.path.append(os.path.join(MYPATH, '../'))
+import mpy_cross
 import socketClient
 
 
@@ -22,8 +23,6 @@ class MicrOSDevTool:
         self.cmdgui = cmdgui
         # Skip the following modules in OTA update (safe mode) to have recovery mode
         self.safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy', 'Network.mpy']
-        # DevToolKit external dependency list
-        self.deployment_app_dependences = ['ampy', 'esptool.py']
         # USB serial (sub)names to recognize in /dev/tty...
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial']
         # Commands for devices
@@ -52,8 +51,7 @@ class MicrOSDevTool:
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
-        self.mpy_cross_compiler_path = os.path.join(MYPATH, '../../micropython_repo/micropython/mpy-cross/mpy-cross')
-        self.mpy_cross_compiler_path_win = 'python -m mpy_cross'
+        self.mpy_cross_compiler_path = mpy_cross.mpy_cross      # mpy-cross binary path for cross compilation
         self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
         self.precompile_LM_wihitelist = self.read_LMs_whitelist()
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
@@ -64,11 +62,7 @@ class MicrOSDevTool:
         self.selected_micropython_bin = None
         self.devenv_usb_deployment_is_active = False
 
-        # Check dependences method
-        state = self.deployment_dependence_handling()
-        if not state:
-            self.console("Please install the dependences: {}".format(self.deployment_app_dependences), state='err')
-            sys.exit(1)
+        # External access for exec results
         self.execution_verdict = []
         self.LM_functions_static_dump_gen()
 
@@ -147,24 +141,6 @@ class MicrOSDevTool:
     #####################################################
     #                    DevEnv METHODS                 #
     #####################################################
-    def deployment_dependence_handling(self):
-        self.console("------------------------------------------")
-        self.console("-      CHECK THE DEV ENV DEPENDENCES     -", state='imp')
-        self.console("------------------------------------------")
-
-        dep_ok = True
-        '''
-        for appdep in self.deployment_app_dependences:
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command("{} --help".format(appdep), shell=True)
-            if exitcode == 0:
-                self.console("[DEPENDENCY] {} available.".format(appdep), state='ok')
-            else:
-                self.console("[DEPENDENCY] {} NOT available.".format(appdep), state='err')
-                dep_ok = False
-                # TODO: install?
-        '''
-        return dep_ok
-
     def get_devices(self):
         self.console("------------------------------------------")
         self.console("-  LIST CONNECTED MICROS DEVICES VIA USB -", state='imp')
@@ -261,58 +237,6 @@ class MicrOSDevTool:
             self.console("Deployment failed.\n{} - {}".format(stdout, stderr), state='err')
             return False
 
-    def __clone_micropython_repo(self):
-        if os.name == 'nt':
-    		# In case of windows skip micropython repo clone and compile 
-    	    return True
-        if os.path.isdir(self.micropython_repo_path) and os.path.isfile(self.mpy_cross_compiler_path):
-            return True
-        # Download micropython repo if necessary
-        if not os.path.isdir(self.micropython_repo_path):
-            # Change workdir
-            workdir_handler = LocalMachine.SimplePopPushd()
-            workdir_handler.pushd(os.path.dirname(self.micropython_repo_path))
-
-            command = 'git clone {url} {name}'.format(name=os.path.basename(self.micropython_repo_path),
-                                                      url=self.micropython_git_repo_url)
-            self.console("Clone micropython repo: {}".format(command))
-            if not self.dummy_exec:
-                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-            else:
-                exitcode = 0
-                stderr = ''
-
-            # Restore workdir
-            workdir_handler.popd()
-
-            if exitcode == 0 and len(stderr) == 0:
-                self.console("\tClone {}DONE{}".format(Colors.OK, Colors.NC))
-            else:
-                self.console("GIT CLONE {}ERROR{}:\n{}\n{}".format(Colors.ERR, Colors.NC, stdout, stderr))
-                return False
-        # Compile mpy-cross for precompiling
-        if not os.path.isfile(self.mpy_cross_compiler_path):
-            # Change workdir
-            workdir_handler = LocalMachine.SimplePopPushd()
-            workdir_handler.pushd(os.path.dirname(self.mpy_cross_compiler_path))
-
-            command = 'make'
-            self.console("Compile mpy-cross: {}".format(command))
-            if not self.dummy_exec:
-                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-            else:
-                exitcode = 0
-                stderr = ''
-            # Restore workdir
-            workdir_handler.popd()
-
-            if exitcode == 0 and len(stderr) == 0:
-                self.console("\tCompile mpy-cross {}DONE{}".format(Colors.OK, Colors.NC))
-            else:
-                self.console("Precompile mpy-cross {}FAILED{}".format(Colors.ERR, Colors.NC))
-                return False
-        return True
-
     def __cleanup_precompiled_dir(self):
         for source in [ pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path) \
                         if pysource.endswith('.py') or pysource.endswith('.mpy') ]:
@@ -325,11 +249,6 @@ class MicrOSDevTool:
         self.console("-             PRECOMPILE MICROS          -", state='imp')
         self.console("------------------------------------------")
 
-        # Return if components for precompile not exists
-        if not self.__clone_micropython_repo():
-            self.console("Precompile - missing dependences - skip")
-            return
-
         if not self.dummy_exec:
             self.__cleanup_precompiled_dir()
 
@@ -338,7 +257,7 @@ class MicrOSDevTool:
         tmp_skip_compile_set = set()
         error_cnt = 0
         # Filter source
-        for source in [ pysource for pysource in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if pysource.endswith('.py') ]:
+        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if pysource.endswith('.py')]:
             is_blacklisted = False
             for black_prefix in file_prefix_blacklist:
                 if source.startswith(black_prefix) and source not in self.precompile_LM_wihitelist:
@@ -355,17 +274,10 @@ class MicrOSDevTool:
         # Execute based on filetered sets
         # |-> PRECOMPILE
         for to_compile in tmp_precompile_set:
-            #source_path = os.path.join(self.MicrOS_dir_path, to_compile)
             precompiled_target_name = to_compile.replace('.py', '.mpy')
-            if os.name == 'nt':
-            	# Build micrOS on Windows with mpy-cross python module
-            	command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path_win,
-                                                                                          to_compile=to_compile,
-                                                                                          target_path=self.precompiled_MicrOS_dir_path,
-                                                                                          target_name=precompiled_target_name)
-            else:
-            	# Build micrOS with dynamically compiled mpy-cross
-            	command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path,
+
+            # Build micrOS with mpy-cross binary
+            command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path,
                                                                                           to_compile=to_compile,
                                                                                           target_path=self.precompiled_MicrOS_dir_path,
                                                                                           target_name=precompiled_target_name)
@@ -379,7 +291,7 @@ class MicrOSDevTool:
                 self.console("|---> DONE", state='ok')
             else:
                 self.console("|---> ERROR: {} - {}".format(stdout, stderr), state='err')
-                error_cnt+=1
+                error_cnt += 1
 
         # Restore original workdir
         workdir_handler.popd()
@@ -915,7 +827,6 @@ class MicrOSDevTool:
                 break
             time.sleep(1.5)
         return ret
-
 
     def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False, ota_password='ADmin123'):
         """

@@ -18,7 +18,7 @@ Just write and copy **LM_** your_app **.py** python script to your device and ca
 
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
-##◉ Shortcuts:
+## ◉ Shortcuts:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#ios--android-application)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS#installing-micros-with-devtoolkit-from-macos--windows--linux)
 3. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
@@ -30,7 +30,9 @@ Just write and copy **LM_** your_app **.py** python script to your device and ca
 
 ## iOS / Android Application
 
-> Coming soon
+> **Coming soon** <br/>
+> iOS application link <br/>
+> Android application link <br/>
 
 ![MICROSVISUALIZATION](./media/appGUI.gif?raw=true)
 
@@ -99,7 +101,7 @@ python3 micrOS/devToolKit.py
 - Verified OS list for development and deployment:
 	- macOS
 	- Raspbian (pyQT5 limitation)
-	- Windows (Precompiled code install on new devices okay, other features coming soon)
+	- Windows
 
 	
 - Example
@@ -226,10 +228,9 @@ LogicalPin lookup tables:
 
 > **Coming soon - youtube channel**
 
-- [1] How to deploy device
+- [1] Prepare micrOS devToolKit for deployment
 	- Windows / Mac tutorial
 - [2] How to OTA update device
-	- Windows / Mac tutorial
 - [3] Widgets and Load Modules via micrOS Client  
 	- How to get available module list
 	- Overview of micrOS Client UI
@@ -239,7 +240,7 @@ LogicalPin lookup tables:
 - [5] Get familier with micrOS shell
 	- micrOS terminal
 	- built-in commands, Load Modules
-- [6] How to develop with micrOS
+- [6] How to customize or contribute to micrOS
 	- Create custom Load Modules (LMs)
 
 > **Coming soon**
@@ -248,36 +249,36 @@ LogicalPin lookup tables:
 
 ## micrOS **node configuration**, parameters with description
 
-| Parameters names |   Default value and type    | Reboot required |          Description            |
-| ---------------- | :-------------------------: | :-------------: | ------------------------------- |
-| devfid           |    `node01`  `<str>`        |       Yes        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
-| boostmd          |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
-| staessid         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name (for default connection mode)
-| stapwd           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)
-| appwd            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
-| auth             |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. **WARNING** OTA upade not supported in this mode.
-| gmttime          |     `1`   `<int>`           |       Yes       | NTP - RTC - timezone setup (GMT)
-| boothook         |    `n/a` `<str>`            |      Yes        | Callback function(s) list for priority Load Module(s) execution in boot sequence [before network setup!]. Add LoadModule(s) here, separator `;`. Example: Set LED colors / Init custom module(s) / etc.
-| timirq           |     `False`  `<bool>`       |       Yes       | Timer(0) interrupt enabler - background "subprocess" emulation, timer based infinite loop for the LoadModule execution
-| timirqcbf        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
-| timirqseq        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
-| cron             |     `False`  `<bool>`       |       Yes       | Cron enabler, Timer(1) interrupt enabler - time based task scheduler.
-| cronseq          |    `3000`   `<int>`         |       Yes        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value) 
-| crontasks        |     `n/a`  `<str>`          |       Yes        | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*` **Note**: If the value was `n/a` default, then reboot required.
-| extirq           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when "input signal upper edge detected" - button press happens
-| extirqcbf        |     `n/a`  `<str>`          |      Yes        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
-| extirqtrig       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
-| cstmpmap         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as a parameter.
-| pled             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"
-| dbg	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
-| soctout          |   `100`      `<int>`        |      Yes        | Socket server connection timeout (because single process socket interface)
-| socport          |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility)
-| irqmreq          |      `6000`  `<int>`        |       No        | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
-| irqmembuf        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer allocation (in byte) when `timirq` or `exitirq` enabled.
-| devip            |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
-| nwmd             |     `n/a`  `<str>`          |      N/A        | USED BY SYSTEM (state storage) - system saves network mode here - `AP` or `STA`
-| hwuid            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
-| guimeta          |      `n/a`  `str`           |      No        | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
+|        Config keys   |   Default value and type    | Reboot required |       Description       |
+| -------------------- | :-------------------------: | :-------------: | ----------------------- |
+| **devfid**           |    `node01`  `<str>`        |       Yes        | Device friendly "unique" name - also used for AccessPoint nw mode (AP name)
+| **boostmd**          |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 8MHz-16Mhz-24MHz (depends on boards)
+| **staessid**         |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name (for default connection mode)
+| **stapwd**           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)
+| **appwd**            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
+| **auth**             |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. **WARNING** OTA upade not supported in this mode.
+| **gmttime**          |     `1`   `<int>`           |       Yes       | NTP - RTC - timezone setup (GMT)
+| **boothook**         |    `n/a` `<str>`            |      Yes        | Callback function(s) list for priority Load Module(s) execution in boot sequence [before network setup!]. Add LoadModule(s) here, separator `;`. Example: Set LED colors / Init custom module(s) / etc.
+| **timirq**           |     `False`  `<bool>`       |       Yes       | Timer(0) interrupt enabler - background "subprocess" emulation, timer based infinite loop for the LoadModule execution
+| **timirqcbf**        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
+| **timirqseq**        |    `3000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
+| **cron**             |     `False`  `<bool>`       |       Yes       | Cron enabler, Timer(1) interrupt enabler - time based task scheduler.
+| **cronseq**          |    `3000`   `<int>`         |       Yes        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value) 
+| **crontasks**        |     `n/a`  `<str>`          |       Yes        | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*` **Note**: If the value was `n/a` default, then reboot required.
+| **extirq**           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when "input signal upper edge detected" - button press happens
+| **extirqcbf**        |     `n/a`  `<str>`          |      Yes        | `extirq ` enabled, calls the given Load Module, e.x.: `module function optional_parameter(s)`
+| **extirqtrig**       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
+| **cstmpmap**         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as a parameter.
+| **pled**             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"
+| **dbg**	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
+| **soctout**          |   `100`      `<int>`        |      Yes        | Socket server connection timeout (because single process socket interface)
+| **socport**          |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility)
+| **irqmreq**          |      `6000`  `<int>`        |       No        | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
+| **irqmembuf**        |    `1000` `<int>`           |       Yes       | IRQ emergency memory buffer allocation (in byte) when `timirq` or `exitirq` enabled.
+| **devip**            |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
+| **nwmd**             |     `n/a`  `<str>`          |      N/A        | USED BY SYSTEM (state storage) - system saves network mode here - `AP` or `STA`
+| **hwuid**            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
+| **guimeta**          |      `n/a`  `str`           |      No        | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
 
 > Note: Default empty value: `n/a` in case of string parameter.
 > Note: Cron is only available on devices with Timer(**1**): esp32

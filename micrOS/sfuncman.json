@@ -172,6 +172,11 @@
     "toggle state=None",
     "help"
   ],
+  "neo_effects": [
+    "meteor r g b pix=0",
+    "lmdep",
+    "help"
+  ],
   "catgame": [
     "game repeat=10",
     "stop",

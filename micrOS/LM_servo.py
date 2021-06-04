@@ -9,7 +9,7 @@ __SERVO2 = None
 #########################################
 
 
-def __SERVO_init():
+def __servo_init():
     global __SERVO
     if __SERVO is None:
         try:
@@ -22,7 +22,7 @@ def __SERVO_init():
 
 
 def sduty(duty=75):
-    s = __SERVO_init()
+    s = __servo_init()
     if duty > 115:
         duty = 115
     elif duty < 40:
@@ -49,7 +49,7 @@ def sdemo():
 #########################################
 
 
-def __SERVO2_init():
+def __servo2_init():
     global __SERVO2
     if __SERVO2 is None:
         try:
@@ -62,7 +62,7 @@ def __SERVO2_init():
 
 
 def s2duty(duty=75):
-    s = __SERVO2_init()
+    s = __servo2_init()
     if duty > 115:
         duty = 115
     elif duty < 40:
@@ -75,9 +75,19 @@ def s2duty(duty=75):
         return str(e)
 
 
+def deinit():
+    global __SERVO, __SERVO2
+    if __SERVO:
+        __SERVO.deinit()
+        __SERVO = None
+    if __SERVO2:
+        __SERVO2.deinit()
+        __SERVO2 = None
+    return 'Deinit servo 1 and 2'
+
 #######################
 # LM helper functions #
 #######################
 
 def help():
-    return 'sduty duty=<int>40-115', 'sdemo', 's2duty'
+    return 'sduty duty=<int>40-115', 'sdemo', 's2duty', 'deinit'

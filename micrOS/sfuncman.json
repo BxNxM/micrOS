@@ -95,6 +95,7 @@
     "sduty duty=75",
     "sdemo",
     "s2duty duty=75",
+    "deinit",
     "help"
   ],
   "neopixel": [

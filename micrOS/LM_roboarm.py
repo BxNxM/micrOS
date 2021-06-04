@@ -24,7 +24,7 @@ def control(x_new, y_new, s=None):
     x_abs = abs(x_diff)
     y_abs = abs(y_diff)
     # Move X and Y servo parallel, threshold: 2
-    if x_abs > 2 and y_abs > 2:
+    if x_abs > 0 and y_abs > 0:
         # x, y vector direction
         x_dir = -1 if x_diff < 0 else 1
         y_dir = -1 if y_diff < 0 else 1
@@ -104,6 +104,8 @@ def standby():
     RoboArm.ACTUAL_XY[0] = 75
     servo.s2duty(45)
     RoboArm.ACTUAL_XY[1] = 45
+    sleep_ms(200)
+    servo.deinit()
     return 'Standby mode'
 
 

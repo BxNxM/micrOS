@@ -20,7 +20,7 @@ def __init_NEOPIXEL(n=24):
     n - must be set from code! (no persistent object handling in LMs)
     """
     global __NEOPIXEL_OBJ
-    if __NEOPIXEL_OBJ is None:
+    if __NEOPIXEL_OBJ is None or __NEOPIXEL_OBJ.n != n:
         from neopixel import NeoPixel
         from machine import Pin
         from LogicalPins import get_pin_on_platform_by_key
@@ -87,13 +87,20 @@ def neopixel(r=None, g=None, b=None):
     return "NEOPIXEL SET TO R{}G{}B{}".format(r, g, b)
 
 
-def segment(r=None, g=None, b=None, s=0):
+def segment(r=None, g=None, b=None, s=0, cache=False):
+    global __DCACHE
     r = __DCACHE[0] if r is None else r
     g = __DCACHE[1] if g is None else g
     b = __DCACHE[2] if b is None else b
     if s <= __init_NEOPIXEL().n:
         __NEOPIXEL_OBJ[s] = (r, g, b)
         __NEOPIXEL_OBJ.write()
+        if cache:
+            if r > 0 or g > 0 or b > 0:
+                __DCACHE = [r, g, b, 1]
+            else:
+                __DCACHE[3] = 0
+            __persistent_cache_manager('s')  # Save cache - __DCACHE -  to file
         return "NEOPIXEL {} SEGMENT WAS SET R{}G{}B{}".format(s, r, g, b)
     return "NEOPIXEL s={} SEGMENT OVERLOAD".format(s)
 

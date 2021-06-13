@@ -101,7 +101,7 @@
   "neopixel": [
     "load_n_init cache=None",
     "neopixel r=None g=None b=None",
-    "segment r=None g=None b=None s=0",
+    "segment r=None g=None b=None s=0 cache=False",
     "toggle state=None",
     "help"
   ],
@@ -131,6 +131,11 @@
     "temp",
     "touch triglvl=300",
     "battery",
+    "help"
+  ],
+  "pet_feeder": [
+    "portion repeat=1 posmin=68 posmax=96",
+    "lmdep",
     "help"
   ],
   "bledns": [
@@ -174,7 +179,8 @@
     "help"
   ],
   "neo_effects": [
-    "meteor r g b pix=0",
+    "meteor r g b shift=False",
+    "effect r g b pixel_cnt fade_step",
     "lmdep",
     "help"
   ],

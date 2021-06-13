@@ -983,6 +983,7 @@ class MicrOSDevTool:
                     else:
                         self.console("|-- WARN: {}\n{}".format(stderr, stdout), state='WARN')
                         self.console("|--- Retry upload file ...")
+                        time.sleep(1)
             if exitcode != 0:
                 self.console("|-- ERR: Update file failed, please try again.", state='ERR')
                 self.execution_verdict.append("[ERR] ota_update - Update files are failed, pls try again.")

@@ -87,22 +87,27 @@ def neopixel(r=None, g=None, b=None):
     return "NEOPIXEL SET TO R{}G{}B{}".format(r, g, b)
 
 
-def segment(r=None, g=None, b=None, s=0, cache=False):
+def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
     global __DCACHE
     r = __DCACHE[0] if r is None else r
     g = __DCACHE[1] if g is None else g
     b = __DCACHE[2] if b is None else b
-    if s <= __init_NEOPIXEL().n:
+    neo_n = __init_NEOPIXEL().n
+    if s <= neo_n:
         __NEOPIXEL_OBJ[s] = (r, g, b)
-        __NEOPIXEL_OBJ.write()
+        # Send colors to neopixel
+        if write:
+            __NEOPIXEL_OBJ.write()
+        # Cache handling
         if cache:
             if r > 0 or g > 0 or b > 0:
                 __DCACHE = [r, g, b, 1]
             else:
                 __DCACHE[3] = 0
             __persistent_cache_manager('s')  # Save cache - __DCACHE -  to file
-        return "NEOPIXEL {} SEGMENT WAS SET R{}G{}B{}".format(s, r, g, b)
-    return "NEOPIXEL s={} SEGMENT OVERLOAD".format(s)
+
+        return "NEOPIXEL[{}] R{}G{}B{}".format(s, r, g, b)
+    return "NEOPIXEL index oor: {} > {}".format(s, neo_n)
 
 
 def toggle(state=None):

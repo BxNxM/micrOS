@@ -31,13 +31,13 @@ DAEMON = False
 #################################################
 
 class ProgressbarTimers:
-    mminute = 60
-    usb_deploy = int(mminute * 3)              # min estimation
-    usb_update = int(mminute * 4)              # min estimation
-    ota_update = int(mminute * 1.5)            # min estimation
-    lm_update = int(mminute * 1)               # min estimation
+    mminute = 90
+    usb_deploy = int(mminute * 4)              # min estimation
+    usb_update = int(mminute * 5)              # min estimation
+    ota_update = int(mminute * 2)              # min estimation
+    lm_update = int(mminute * 1.5)             # min estimation
     search_devices = int(mminute * 3)          # min estimation
-    general_app = int(mminute * 3)             # min estimation
+    general_app = int(mminute * 2)             # min estimation
     simulator = 4                              # sec estimation
 
 

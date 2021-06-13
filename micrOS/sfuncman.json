@@ -101,7 +101,7 @@
   "neopixel": [
     "load_n_init cache=None",
     "neopixel r=None g=None b=None",
-    "segment r=None g=None b=None s=0 cache=False",
+    "segment r=None g=None b=None s=0 cache=False write=True",
     "toggle state=None",
     "help"
   ],
@@ -185,7 +185,8 @@
     "help"
   ],
   "catgame": [
-    "game repeat=10",
+    "game repeat=10 delta=20",
+    "live_game chance=10",
     "stop",
     "lmdep",
     "help"

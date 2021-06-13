@@ -1,21 +1,24 @@
 from LM_neopixel import __init_NEOPIXEL, segment
-#from time import sleep_ms
 
 INDEX_OFFSET = 0
 
 
-def __draw(gen_obj, ms=20, shift=False):
+def __draw(gen_obj, shift=False):
     """
     :param gen_obj: Colors generator object
     :ms: speed / wait in ms
     :return: None
     """
+    r, g, b, i = 0, 0, 0, 0
     if shift:
+        # Rotate generator pattern
         gen_obj = __offset(gen_obj)
     for i, c in enumerate(gen_obj):
+        # Get colors for pixels
         r, g, b = c
-        segment(int(r), int(g), int(b), s=i)
-        #sleep_ms(ms)
+        segment(int(r), int(g), int(b), s=i, write=False)
+    # Send (all) and save (last) color(s)
+    segment(int(r), int(g), int(b), s=i, cache=True, write=True)
 
 
 def __offset(gen_obj):
@@ -59,4 +62,4 @@ def lmdep():
 
 
 def help():
-    return 'meteor r=<0-255> g=<0-255> b=<0-255>'
+    return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=False'

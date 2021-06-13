@@ -919,7 +919,6 @@ class MicrOSDevTool:
                             self.console("[UPDATE] live update - obsoleted...")
                             status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
                     #self.console(answer_msg)
-                    time.sleep(2)
                 else:
                     self.console("Webrepl not available on device, update over USB.")
                     self.execution_verdict.append("[ERR] ota_update - webrepl not availabl on node")
@@ -956,6 +955,11 @@ class MicrOSDevTool:
                     state='WARN')
                 continue
 
+            # macOS icloud sync workaround ...
+            if ' ' in source:
+                self.console("\t[{}%][SKIP UPLOAD] space in resource name ... {}".format(progress, source), state='WARN')
+                continue
+
             # Handle lm_only mode - skip upload for not LM_
             if lm_only:
                 if "LM_" not in source:
@@ -965,7 +969,7 @@ class MicrOSDevTool:
 
             # Copy retry mechanism
             exitcode = -1
-            for _ in range(0, 3):
+            for ret_cnt in range(0, 5):
                 source_name = os.path.basename(source)
                 self.console("[{}%] {} copy over webrepl {}:{}".format(progress, source_name, device_ip, source_name))
                 command = 'python {api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path, pwd=webrepl_password,
@@ -983,7 +987,7 @@ class MicrOSDevTool:
                     else:
                         self.console("|-- WARN: {}\n{}".format(stderr, stdout), state='WARN')
                         self.console("|--- Retry upload file ...")
-                        time.sleep(1)
+                        time.sleep(2)
             if exitcode != 0:
                 self.console("|-- ERR: Update file failed, please try again.", state='ERR')
                 self.execution_verdict.append("[ERR] ota_update - Update files are failed, pls try again.")

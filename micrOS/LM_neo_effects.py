@@ -35,7 +35,7 @@ def __offset(gen_obj):
 
 
 def meteor(r, g, b, shift=False):
-    def effect(r, g, b, pixel_cnt, fade_step):
+    def __effect(r, g, b, pixel_cnt, fade_step):
         """
         :param r: red target color
         :param g: green target color
@@ -51,7 +51,7 @@ def meteor(r, g, b, shift=False):
     pixel_cnt = __init_NEOPIXEL().n
     fade_step = float(1.0 / pixel_cnt)
     # Construct generator object
-    g = effect(r, g, b, pixel_cnt, fade_step)
+    g = __effect(r, g, b, pixel_cnt, fade_step)
     # Draw generator obj
     __draw(g, shift=shift)
     return 'Meteor R{}:G{}:B{} N:{}'.format(r, g, b, pixel_cnt)

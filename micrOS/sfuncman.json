@@ -180,7 +180,6 @@
   ],
   "neo_effects": [
     "meteor r g b shift=False",
-    "effect r g b pixel_cnt fade_step",
     "lmdep",
     "help"
   ],

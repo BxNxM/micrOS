@@ -20,3 +20,4 @@ LM_buzzer.py
 LM_genIO.py
 LM_ds18.py
 LM_roboarm.py
+LM_neo_effects.py

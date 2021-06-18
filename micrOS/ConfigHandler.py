@@ -48,7 +48,7 @@ class Data:
                     "cronseq": 3000,
                     "timirq": False,
                     "timirqcbf": "n/a",
-                    "timirqseq": 3000,
+                    "timirqseq": 1000,
                     "irqmembuf": 1000,
                     "extirq": False,
                     "extirqcbf": "n/a",

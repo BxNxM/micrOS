@@ -27,10 +27,13 @@ def __is_micrOS():
     return
         True -> micrOS
         False -> webrepl
+        * EOE (EndOfExecution) -> off
     """
+    mode = 'micros'
     try:
         with open('.if_mode', 'r') as f:
-            if f.read().strip().lower() == 'micros':
+            mode = f.read().strip().lower()
+            if mode == 'micros':
                 # start micrOS
                 print("[loader][if_mode:True] .if_mode:micros -> micros interface")
                 return True
@@ -38,6 +41,12 @@ def __is_micrOS():
         # start micrOS
         print("[loader][if_mode:True] .if_mode file not exists -> micros interface")
         return True
+    if mode == 'off':
+        # micrOS OFF mode - USB connection / reboot improvement
+        # RETURN TO MICROPYTHON - END OF EXECUTION !
+        print("[loader][if_mode] .if_mode:off -> EOE, Bye!")
+        from sys import exit
+        exit(0)
     # start webrepl
     print("[loader][if_mode:False] .if_mode:webrepl -> webrepl interface")
     print("[loader][recovery mode] - manually selected in .if_mode file")

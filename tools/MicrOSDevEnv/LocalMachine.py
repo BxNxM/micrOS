@@ -218,7 +218,7 @@ class FileHandler:
 
     @staticmethod
     def move(from_path, to_path):
-        LogHandler.logger.debug("Move " + from_path + " to " + to_path)
+        #LogHandler.logger.debug("Move " + from_path + " to " + to_path)
         if FileHandler.__path_is_file(to_path):
             os.remove(to_path)
         shutil.move(from_path, to_path)
@@ -437,10 +437,20 @@ class CommandHandler():
             command = "{} -c '{}'".format(forceshell, command)
         # Command execution
         debug_print("[DEBUG] Execute command: " + str(command))
-        proc = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=shell)
-        stdout, stderr = proc.communicate()
-        exitcode = proc.returncode
-        return exitcode, stdout, stderr
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell)
+        _stdout = ""
+        while True:
+            output = proc.stdout.readline()
+            if proc.poll() is not None and (output == b'' or output == ''):
+                break
+            if output:
+                print('\t[DEBUG] {}'.format(output.strip()))
+                if isinstance(output, bytes):
+                    output = output.decode('utf-8')
+                _stdout += output
+        _, _stderr = proc.communicate()
+        _exitcode = proc.returncode
+        return _exitcode, _stdout, _stderr
 
     @staticmethod
     def run_command(command, raise_exception=True, forceshell=None, shell=False):

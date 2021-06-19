@@ -8,17 +8,17 @@ def info(msgobj):
         from gc import mem_free
     except:
         from simgc import mem_free  # simulator mode
-    from os import statvfs, getcwd
+    from os import statvfs, getcwd, uname
     from machine import freq
-    from sys import platform
     fs_stat = statvfs(getcwd())
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
     mem = mem_free()
     msgobj('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
-    msgobj('MemFree: {} kB {} byte'.format(int(mem / 1024), int(mem % 1024)))
-    msgobj('FSFREE: {} %'.format(int((fs_free / fs_size) * 100)))
-    msgobj('Plaform: {}'.format(platform))
+    msgobj('Free RAM: {} kB {} byte'.format(int(mem / 1024), int(mem % 1024)))
+    msgobj('Free fs: {} %'.format(int((fs_free / fs_size) * 100)))
+    msgobj('upython: {}'.format(uname()[3]))
+    msgobj('board: {}'.format(uname()[4]))
     return ''
 
 

@@ -225,7 +225,7 @@ class ConnectionData:
 
 class SocketDictClient:
 
-    def __init__(self, host='localhost', port=9008, bufsize=4096, silent_mode=False, tout=2):
+    def __init__(self, host='localhost', port=9008, bufsize=4096, silent_mode=False, tout=4):
         self.silent_mode = silent_mode
         self.is_interactive = False
         self.bufsize = bufsize

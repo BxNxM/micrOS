@@ -31,17 +31,17 @@ class MicrOSDevTool:
                    {'erase': 'esptool.py --port {dev} erase_flash',
                     'deploy': 'esptool.py --port {dev} --baud 460800 write_flash --flash_size=detect -fm dio 0 {micropython}',
                     'connect': 'screen {dev} 115200',
-                    'ampy_cmd': 'ampy -p {dev} -b 115200 {args}'},
+                    'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
                  'esp32':
                      {'erase': 'esptool.py --port {dev} erase_flash',
                       'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                       'connect': 'screen {dev} 115200',
-                      'ampy_cmd': 'ampy -p {dev} -b 115200 {args}'},
+                      'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
                  'tinypico':
                      {'erase': 'esptool.py --port {dev} erase_flash',
                       'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                       'connect': 'screen {dev} 115200',
-                      'ampy_cmd': 'ampy -p {dev} -b 115200 {args}'},
+                      'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
                  }
 
         # DevEnv base pathes
@@ -106,8 +106,8 @@ class MicrOSDevTool:
                 self.console(" {} - {}".format(index, mpbin))
             if self.cmdgui:
                 selected_index = int(input("Selected index: "))
-        if not self.devenv_usb_deployment_is_active:
-            self.selected_micropython_bin = micropython_bin_for_type[selected_index]
+                if not self.devenv_usb_deployment_is_active:
+                    self.selected_micropython_bin = micropython_bin_for_type[selected_index]
 
         self.console("-"*60)
         self.console("Selected device type: {}".format(self.selected_device_type))
@@ -205,6 +205,8 @@ class MicrOSDevTool:
             exitcode = 0
             stdout = "Dummy stdout"
         else:
+            if 'esp32' in self.selected_device_type:
+                self.console("[!!!] PRESS [EN] BUTTON TO ERASE DEVICE ...", state='imp')
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
         if exitcode == 0:
             self.console("Erase done.\n{}".format(stdout), state='ok')
@@ -460,6 +462,9 @@ class MicrOSDevTool:
             exitcode = 0
             stdout = '{"key": "Dummy stdout"}'
             stderr = ''
+        if '\n' in stdout:
+            stdout = stdout.strip().splitlines()
+            stdout = str([line for line in stdout if '{' in line and '}' in line][0])
         return exitcode, stdout, stderr
 
     def __generate_default_config(self):
@@ -502,7 +507,6 @@ class MicrOSDevTool:
         self.console("ARCHIVE NODE_CONFIG.JSON")
         local_node_config = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
         if os.path.isfile(local_node_config):
-            node_devfid = ''
             with open(local_node_config, 'r') as f:
                 node_devfid = json.load(f)['devfid']
             archive_node_config = os.path.join(self.MicrOS_node_config_archive, '{}-node_config.json'.format(node_devfid))
@@ -720,6 +724,12 @@ class MicrOSDevTool:
         LocalMachine.FileHandler().remove(path, ignore=False)
 
     def deploy_micros(self, restore=True, purge_conf=False):
+        """
+        Clean board deployment with micropython + micrOS
+        :param restore: restore and create node config
+        :param purge_conf: purge node config - deletion
+        :return: None
+        """
         self.__initialize_dev_env_for_deployment_vis_usb()
         if purge_conf:
             self.purge_node_config_from_workdir()

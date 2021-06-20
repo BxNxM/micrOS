@@ -5,10 +5,24 @@ INDEX_OFFSET = 0
 
 def __draw(gen_obj, shift=False):
     """
-    :param gen_obj: Colors generator object
-    :ms: speed / wait in ms
+    DRAW GENERATED COLORS (RGB)
+    HELPER FUNCTION with auto shift (offset) sub function
+    :param gen_obj: Colors generator object / iterable
+    :ms: wait in ms / step aka speed
     :return: None
     """
+    def __offset(iterable):
+        global INDEX_OFFSET
+        pixel_cnt = __init_NEOPIXEL().n
+        pos = INDEX_OFFSET
+        buffer = [(0, 0, 0) for _ in range(0, pixel_cnt)]
+        for k in range(pos, pixel_cnt):
+            buffer[k] = iterable.__next__()
+        for k in range(0, pos):
+            buffer[k] = iterable.__next__()
+        INDEX_OFFSET = pos + 1 if INDEX_OFFSET < pixel_cnt else 0
+        return tuple(buffer)
+
     r, g, b, i = 0, 0, 0, 0
     if shift:
         # Rotate generator pattern
@@ -21,20 +35,7 @@ def __draw(gen_obj, shift=False):
     segment(int(r), int(g), int(b), s=i, cache=True, write=True)
 
 
-def __offset(gen_obj):
-    global INDEX_OFFSET
-    pixel_cnt = __init_NEOPIXEL().n
-    pos = INDEX_OFFSET
-    buffer = [(0, 0, 0) for _ in range(0, pixel_cnt)]
-    for k in range(pos, pixel_cnt):
-        buffer[k] = gen_obj.__next__()
-    for k in range(0, pos):
-        buffer[k] = gen_obj.__next__()
-    INDEX_OFFSET = pos+1 if INDEX_OFFSET < pixel_cnt else 0
-    return tuple(buffer)
-
-
-def meteor(r, g, b, shift=False):
+def meteor(r, g, b, shift=False, ledcnt=24):
     def __effect(r, g, b, pixel_cnt, fade_step):
         """
         :param r: red target color
@@ -48,7 +49,7 @@ def meteor(r, g, b, shift=False):
             fade_multi = (k+1) * fade_step
             yield int(r * fade_multi), int(g * fade_multi), int(b * fade_multi)
     # Init custom params
-    pixel_cnt = __init_NEOPIXEL().n
+    pixel_cnt = __init_NEOPIXEL(n=ledcnt).n
     fade_step = float(1.0 / pixel_cnt)
     # Construct generator object
     g = __effect(r, g, b, pixel_cnt, fade_step)

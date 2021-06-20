@@ -20,7 +20,7 @@ def __init_NEOPIXEL(n=24):
     n - must be set from code! (no persistent object handling in LMs)
     """
     global __NEOPIXEL_OBJ
-    if __NEOPIXEL_OBJ is None or __NEOPIXEL_OBJ.n != n:
+    if __NEOPIXEL_OBJ is None:
         from neopixel import NeoPixel
         from machine import Pin
         from LogicalPins import physical_pin
@@ -52,16 +52,17 @@ def __persistent_cache_manager(mode):
         pass
 
 
-def load_n_init(cache=None):
+def load_n_init(cache=None, ledcnt=24):
     global __PERSISTENT_CACHE
     if cache is None:
         __PERSISTENT_CACHE = False if platform == 'esp8266' else True
     else:
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')        # recover data cache
+    _ledcnt = __init_NEOPIXEL(n=ledcnt).n
     if __PERSISTENT_CACHE and __DCACHE[3] == 1:
         neopixel()                         # Set each LED for the same color
-    return "CACHE: {}".format(__PERSISTENT_CACHE)
+    return "CACHE: {}, LED CNT: {}".format(__PERSISTENT_CACHE, _ledcnt)
 
 
 def neopixel(r=None, g=None, b=None):
@@ -107,7 +108,7 @@ def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
             __persistent_cache_manager('s')  # Save cache - __DCACHE -  to file
 
         return "NEOPIXEL[{}] R{}G{}B{}".format(s, r, g, b)
-    return "NEOPIXEL index oor: {} > {}".format(s, neo_n)
+    return "NEOPIXEL index error: {} > {}".format(s, neo_n)
 
 
 def toggle(state=None):
@@ -129,4 +130,4 @@ def toggle(state=None):
 
 def help():
     return 'neopixel r=<0-255> g b n=<0-24)', 'toggle state=None', \
-           'load_n_init', 'segment r, g, b, s=<0-n>'
+           'load_n_init ledcnt=24', 'segment r, g, b, s=<0-n>'

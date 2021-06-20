@@ -99,7 +99,7 @@
     "help"
   ],
   "neopixel": [
-    "load_n_init cache=None",
+    "load_n_init cache=None ledcnt=24",
     "neopixel r=None g=None b=None",
     "segment r=None g=None b=None s=0 cache=False write=True",
     "toggle state=None",
@@ -179,7 +179,7 @@
     "help"
   ],
   "neo_effects": [
-    "meteor r g b shift=False",
+    "meteor r g b shift=False ledcnt=24",
     "lmdep",
     "help"
   ],

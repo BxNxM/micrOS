@@ -7,7 +7,7 @@ https://randomnerdtutorials.com/micropython-bme280-esp32-esp8266/
 import time
 from machine import Pin, I2C
 from LM_co2 import measure_mq135
-from LogicalPins import get_pin_on_platform_by_key
+from LogicalPins import physical_pin
 
 # BME280 default address.
 BME280_I2CADDR = 0x76
@@ -298,7 +298,7 @@ class BME280:
 def __init_bme280_i2c():
     global BME280_OBJ
     if BME280_OBJ is None:
-        i2c = I2C(scl=Pin(get_pin_on_platform_by_key('i2c_scl')), sda=Pin(get_pin_on_platform_by_key('i2c_sda')), freq=10000)
+        i2c = I2C(scl=Pin(physical_pin('i2c_scl')), sda=Pin(physical_pin('i2c_sda')), freq=10000)
         BME280_OBJ = BME280(i2c=i2c)
     return BME280_OBJ
 

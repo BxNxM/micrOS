@@ -11,8 +11,8 @@ def __init_DHT11():
     if __DHT_OBJ is None:
         from dht import DHT11
         from machine import Pin
-        from LogicalPins import get_pin_on_platform_by_key
-        __DHT_OBJ = DHT11(Pin(get_pin_on_platform_by_key('dhtpin')))
+        from LogicalPins import physical_pin
+        __DHT_OBJ = DHT11(Pin(physical_pin('dhtpin')))
     return __DHT_OBJ
 
 

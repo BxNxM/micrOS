@@ -28,7 +28,7 @@ def detect_platform():
 
 
 # GET MODULE VARIABLE: SELECTED LOGICAL PIN ON BOARD
-def get_pin_on_platform_by_key(key, lpsname=None):
+def physical_pin(key, lpsname=None):
     global __ACTIVE_PIN_MAPPING
     # SELECT LOOKUP TABLE BASED ON PLATFORM
     if __ACTIVE_PIN_MAPPING is None or isinstance(lpsname, str):

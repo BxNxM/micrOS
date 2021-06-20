@@ -1,5 +1,5 @@
 from machine import Pin
-from LogicalPins import get_pin_on_platform_by_key
+from LogicalPins import physical_pin
 
 #########################################
 #           DIGITAL IO SWITCH           #
@@ -74,7 +74,7 @@ def load_n_init(cache=None, ch_init=None):
 
 def __switch_init():
     if __SWITCH_OBJ[0] is None:
-        __SWITCH_OBJ[0] = Pin(get_pin_on_platform_by_key('switch_1'), Pin.OUT)
+        __SWITCH_OBJ[0] = Pin(physical_pin('switch_1'), Pin.OUT)
     return __SWITCH_OBJ[0]
 
 
@@ -104,7 +104,7 @@ def toggle():
 
 def __switch2_init():
     if __SWITCH_OBJ[1] is None:
-        __SWITCH_OBJ[1] = Pin(get_pin_on_platform_by_key('switch_2'), Pin.OUT)
+        __SWITCH_OBJ[1] = Pin(physical_pin('switch_2'), Pin.OUT)
     return __SWITCH_OBJ[1]
 
 
@@ -133,7 +133,7 @@ def toggle2():
 
 def __switch3_init():
     if __SWITCH_OBJ[2] is None:
-        __SWITCH_OBJ[2] = Pin(get_pin_on_platform_by_key('switch_3'), Pin.OUT)
+        __SWITCH_OBJ[2] = Pin(physical_pin('switch_3'), Pin.OUT)
     return __SWITCH_OBJ[2]
 
 
@@ -162,7 +162,7 @@ def toggle3():
 
 def __switch4_init():
     if __SWITCH_OBJ[3] is None:
-        __SWITCH_OBJ[3] = Pin(get_pin_on_platform_by_key('switch_4'), Pin.OUT)
+        __SWITCH_OBJ[3] = Pin(physical_pin('switch_4'), Pin.OUT)
     return __SWITCH_OBJ[3]
 
 

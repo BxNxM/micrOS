@@ -6,8 +6,8 @@ DS_OBJ = None
 def __init_DS18():
     global DS_OBJ
     if DS_OBJ is None:
-        from LogicalPins import get_pin_on_platform_by_key
-        ds_pin = machine.Pin(get_pin_on_platform_by_key('ds18'))
+        from LogicalPins import physical_pin
+        ds_pin = machine.Pin(physical_pin('ds18'))
         DS_OBJ = ds18x20.DS18X20(onewire.OneWire(ds_pin))
     return DS_OBJ
 

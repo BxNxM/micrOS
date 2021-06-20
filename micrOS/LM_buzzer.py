@@ -143,8 +143,8 @@ def __buzzer_init():
     global __BUZZER_OBJ
     if __BUZZER_OBJ is None:
         from machine import Pin, PWM
-        from LogicalPins import get_pin_on_platform_by_key
-        dimmer_pin = Pin(get_pin_on_platform_by_key('buzzer'))
+        from LogicalPins import physical_pin
+        dimmer_pin = Pin(physical_pin('buzzer'))
         if platform == 'esp8266':
             __BUZZER_OBJ = PWM(dimmer_pin, freq=600)
         else:

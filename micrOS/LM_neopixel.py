@@ -23,8 +23,8 @@ def __init_NEOPIXEL(n=24):
     if __NEOPIXEL_OBJ is None or __NEOPIXEL_OBJ.n != n:
         from neopixel import NeoPixel
         from machine import Pin
-        from LogicalPins import get_pin_on_platform_by_key
-        neopixel_pin = Pin(get_pin_on_platform_by_key('neop'))     # Get Neopixel pin from LED PIN pool
+        from LogicalPins import physical_pin
+        neopixel_pin = Pin(physical_pin('neop'))     # Get Neopixel pin from LED PIN pool
         __NEOPIXEL_OBJ = NeoPixel(neopixel_pin, n)                 # initialize for max 8 segments
         del neopixel_pin
     return __NEOPIXEL_OBJ

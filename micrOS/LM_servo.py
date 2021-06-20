@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from LogicalPins import get_pin_on_platform_by_key
+from LogicalPins import physical_pin
 
 __SERVO = None
 __SERVO2 = None
@@ -13,7 +13,7 @@ def __servo_init():
     global __SERVO
     if __SERVO is None:
         try:
-            pin = Pin(get_pin_on_platform_by_key('servo_1'))
+            pin = Pin(physical_pin('servo_1'))
             __SERVO = PWM(pin, freq=50)
             del pin
         except Exception as e:
@@ -53,7 +53,7 @@ def __servo2_init():
     global __SERVO2
     if __SERVO2 is None:
         try:
-            pin = Pin(get_pin_on_platform_by_key('servo_2'))     # Alternative wiring
+            pin = Pin(physical_pin('servo_2'))     # Alternative wiring
             __SERVO2 = PWM(pin, freq=50)
             del pin
         except Exception as e:

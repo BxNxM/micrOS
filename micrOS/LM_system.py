@@ -138,8 +138,8 @@ def getpin(key='builtin'):
     Get Logical pin by key runtime
     """
     from sys import modules
-    from LogicalPins import get_pin_on_platform_by_key
-    return {key: get_pin_on_platform_by_key(key), 'pinmap':
+    from LogicalPins import physical_pin
+    return {key: physical_pin(key), 'pinmap':
         ', '.join((mdl.replace('LP_', '').split('.')[0] for mdl in modules.keys() if mdl.startswith('LP_')))}
 
 

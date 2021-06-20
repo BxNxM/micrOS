@@ -1,6 +1,6 @@
 from machine import Pin, PWM, ADC
 from sys import platform
-from LogicalPins import get_pin_on_platform_by_key
+from LogicalPins import physical_pin
 __ADC_PROP = (1023, 1.0)
 
 """
@@ -16,7 +16,7 @@ def __digital_out_init(pin):
     Init Digital output
     """
     if not isinstance(pin, int):
-        pin = get_pin_on_platform_by_key(pin)
+        pin = physical_pin(pin)
     return Pin(pin, Pin.OUT)
 
 
@@ -25,7 +25,7 @@ def __digital_in_init(pin):
     Init Digital output
     """
     if not isinstance(pin, int):
-        pin = get_pin_on_platform_by_key(pin)
+        pin = physical_pin(pin)
     return Pin(pin, Pin.IN, Pin.PULL_UP)
 
 
@@ -34,7 +34,7 @@ def __pwm_init(pin, freq):
     Init PWM signal
     """
     if not isinstance(pin, int):
-        pin = get_pin_on_platform_by_key(pin)
+        pin = physical_pin(pin)
     if platform == 'esp8266':
         return PWM(pin, freq=freq)
     return PWM(Pin(pin), freq=freq)
@@ -46,7 +46,7 @@ def __init_adc(pin):
     """
     global __ADC_PROP
     if not isinstance(pin, int):
-        pin = get_pin_on_platform_by_key(pin)
+        pin = physical_pin(pin)
     if 'esp8266' in platform:
         adc = ADC(pin)          # 1V measure range
         __ADC_PROP = (1023, 1.0)

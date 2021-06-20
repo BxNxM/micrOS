@@ -21,12 +21,12 @@ def __init_tempt6000():
     global __ADC, __ADC_PROP
     if __ADC is None:
         from machine import ADC, Pin
-        from LogicalPins import get_pin_on_platform_by_key
+        from LogicalPins import physical_pin
         if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('temp6000'))
+            __ADC = ADC(physical_pin('temp6000'))
             __ADC_PROP = (1023, 1.0)         # Resolution on esp8266
         else:
-            __ADC = ADC(Pin(get_pin_on_platform_by_key('temp6000')))
+            __ADC = ADC(Pin(physical_pin('temp6000')))
             __ADC.atten(ADC.ATTN_11DB)       # 0 - 3,6V sampling range
             __ADC_PROP = (4095, 3.6)         # Resolution on esp32
     return __ADC

@@ -5,8 +5,8 @@ def __init():
     global __I2C
     if __I2C is None:
         from machine import Pin, I2C
-        from LogicalPins import get_pin_on_platform_by_key
-        __I2C = I2C(-1, Pin(get_pin_on_platform_by_key('i2c_scl')), Pin(get_pin_on_platform_by_key('i2c_sda')))
+        from LogicalPins import physical_pin
+        __I2C = I2C(-1, Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
     return __I2C
 
 

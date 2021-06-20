@@ -15,7 +15,7 @@ Designed by Marcell Ban aka BxNxM
 from time import sleep
 from json import load, dump
 from machine import Pin
-from LogicalPins import get_pin_on_platform_by_key
+from LogicalPins import physical_pin
 from os import remove
 try:
     # TinyPICO progress led plugin
@@ -67,13 +67,13 @@ class Data:
         # Init sidecar functions
         if not Data.CONFIG_CACHE['dbg']: console_write("[micrOS] debug print was turned off")
         # [!!!] Init selected pinmap ('builtin' is the default key, 'cstmpmap' user LP data)
-        if Data.CONFIG_CACHE['cstmpmap'] != 'n/a': get_pin_on_platform_by_key('builtin', Data.CONFIG_CACHE['cstmpmap'])
+        if Data.CONFIG_CACHE['cstmpmap'] != 'n/a': physical_pin('builtin', Data.CONFIG_CACHE['cstmpmap'])
         # SET plead and dbg based on config settings (inject user conf)
         if Data.CONFIG_CACHE['pled']:
             if TinyPLed is None:
                 # Progress led for esp8266/esp32/etc
-                if get_pin_on_platform_by_key('builtin') is not None:
-                    Data.PLED = Pin(get_pin_on_platform_by_key('builtin'), Pin.OUT)
+                if physical_pin('builtin') is not None:
+                    Data.PLED = Pin(physical_pin('builtin'), Pin.OUT)
             else:
                 # Progress led for TinyPico
                 Data.PLED = TinyPLed.init_APA102()

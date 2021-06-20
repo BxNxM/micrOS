@@ -16,8 +16,8 @@ def __dimmer_init():
     global __DIMMER_OBJ
     if __DIMMER_OBJ is None:
         from machine import Pin, PWM
-        from LogicalPins import get_pin_on_platform_by_key
-        dimmer_pin = Pin(get_pin_on_platform_by_key('dim_1'))
+        from LogicalPins import physical_pin
+        dimmer_pin = Pin(physical_pin('dim_1'))
         if platform == 'esp8266':
             __DIMMER_OBJ = PWM(dimmer_pin, freq=1024)
         else:

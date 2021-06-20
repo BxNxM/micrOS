@@ -1,7 +1,7 @@
 from math import pow
 from sys import platform
 from machine import ADC, Pin
-from LogicalPins import get_pin_on_platform_by_key
+from LogicalPins import physical_pin
 
 #########################################
 #            MQ135 GAS SENSOR           #
@@ -19,10 +19,10 @@ def __get_resistance():
     global __ADC, __ADC_PROP
     if __ADC is None:
         if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('co2'))      # 1V measure range
+            __ADC = ADC(physical_pin('co2'))      # 1V measure range
             __ADC_PROP = (1023, 1.0)
         else:
-            __ADC = ADC(Pin(get_pin_on_platform_by_key('co2')))
+            __ADC = ADC(Pin(physical_pin('co2')))
             __ADC.atten(ADC.ATTN_11DB)                          # 3.6V measure range
             __ADC.width(ADC.WIDTH_10BIT)                        # Default 10 bit ADC
             __ADC_PROP = (1023, 3.6)

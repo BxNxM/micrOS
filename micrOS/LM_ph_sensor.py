@@ -1,7 +1,7 @@
 from machine import ADC, Pin
 from sys import platform
 from time import sleep
-from LogicalPins import get_pin_on_platform_by_key
+from LogicalPins import physical_pin
 __ADC = None
 # [0] ADC RESOLUTION, [1] ADC VOLTAGE MEASURE RANGE
 __ADC_PROP = (1023, 1.0)
@@ -23,10 +23,10 @@ def __init_ADC():
     global __ADC, __ADC_PROP
     if __ADC is None:
         if 'esp8266' in platform:
-            __ADC = ADC(get_pin_on_platform_by_key('ph'))       # 1V measure range
+            __ADC = ADC(physical_pin('ph'))       # 1V measure range
             __ADC_PROP = (1023, 1.0)
         else:
-            __ADC = ADC(Pin(get_pin_on_platform_by_key('ph')))
+            __ADC = ADC(Pin(physical_pin('ph')))
             __ADC.atten(ADC.ATTN_11DB)                          # 3.6V measure range
             __ADC.width(ADC.WIDTH_10BIT)                        # Default 10 bit ADC
             __ADC_PROP = (1023, 3.6)

@@ -179,7 +179,9 @@
     "help"
   ],
   "neo_effects": [
-    "meteor r g b shift=False ledcnt=24",
+    "meteor r g b shift=False back=False ledcnt=24",
+    "rainbow step=1 ledcnt=24",
+    "cycle r g b bounce=False ledcnt=24",
     "lmdep",
     "help"
   ],

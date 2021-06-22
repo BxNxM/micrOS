@@ -128,4 +128,4 @@ def lmdep():
 
 def help():
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=False back=False ledcnt=24',\
-           'rainbow br=<0-255> step=1 ledcnt=24', 'cycle r g b bounce=False ledcnt'
+           'rainbow step=1 ledcnt=24', 'cycle r g b bounce=False ledcnt'

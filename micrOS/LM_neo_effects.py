@@ -39,7 +39,6 @@ def __draw(iterable, shift=False, back=False):
     if shift:
         # Rotate generator pattern
         iterable = __offset(iterable, back, pixcnt=len(iterable))
-    print('[{}][{}] {}'.format(StateMachine.REV_OFFSET, StateMachine.INDEX_OFFSET, list(iterable)))
     for i, c in enumerate(iterable):
         # Get colors for pixels
         r, g, b = c

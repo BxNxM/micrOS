@@ -77,7 +77,7 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
     return None, ''
 
 
-def set_wifi(essid, pwd, timeout=60):
+def set_wifi(essid, pwd, timeout=40):
     console_write('[NW: STA] SET WIFI STA NW {}'.format(essid))
 
     # Disable AP mode
@@ -100,9 +100,9 @@ def set_wifi(essid, pwd, timeout=60):
             sta_if.connect(essid, pwd)
             # wait for connection, with timeout set
             while not sta_if.isconnected() and timeout > 0:
-                console_write("\t| [NW: STA] Waiting for connection... " + str(timeout) + "/60")
+                console_write("\t| [NW: STA] Waiting for connection... {} sec".format(timeout))
                 timeout -= 1
-                sleep(0.5)
+                sleep(1)
             # Set static IP - here because some data comes from connection.
             if sta_if.isconnected() and __set_wifi_dev_static_ip(sta_if):
                 sta_if.disconnect()

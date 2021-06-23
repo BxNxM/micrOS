@@ -60,7 +60,7 @@ def __recovery_mode():
         from ConfigHandler import cfgget
         pwd = cfgget('appwd')
     except:
-        pwd = 'ADmin123'
+        pwd = 'ADmin123'        # Default pwd
     # Set up network
     auto_network_configuration()
     # Start webrepl

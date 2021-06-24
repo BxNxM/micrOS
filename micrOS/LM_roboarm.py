@@ -1,4 +1,5 @@
 from time import sleep_ms
+from random import randint
 import LM_servo as servo
 from LM_switch import set_state
 
@@ -6,6 +7,14 @@ from LM_switch import set_state
 class RoboArm:
     ACTUAL_XY = [75, 70]
     SPEED_MS = 5
+
+
+def load_n_init(x=75, y=70):
+    servo.sduty(x)
+    RoboArm.ACTUAL_XY[0] = x
+    servo.s2duty(y)
+    RoboArm.ACTUAL_XY[1] = y
+    return 'Move to home'
 
 
 def control(x_new, y_new, s=None):
@@ -109,17 +118,34 @@ def standby():
     return 'Standby mode'
 
 
-def load_n_init(x=75, y=70):
+def jiggle():
+    x, y = RoboArm.ACTUAL_XY
+    for _ in range(5):
+        jx = randint(-1, 1)
+        jy = randint(-1, 1)
+        servo.sduty(x+jx)
+        servo.s2duty(y+jy)
+        sleep_ms(RoboArm.SPEED_MS)
     servo.sduty(x)
-    RoboArm.ACTUAL_XY[0] = x
     servo.s2duty(y)
-    RoboArm.ACTUAL_XY[1] = y
-    return 'Move to home'
+    return 'JJiggle :)'
 
+
+def move_pipe(*args, s=None, deinit=True):
+    RoboArm.SPEED_MS = s if isinstance(s, int) else RoboArm.SPEED_MS
+    args = list(args)
+    while len(args) >= 2:
+        x = args.pop(0)
+        y = args.pop(0)
+        control(x, y)
+    if deinit:
+        servo.deinit()
+    return 'MovePipe Finished'
 
 #######################
 # LM helper functions #
 #######################
+
 
 def lmdep():
     return 'LM_servo', 'LM_switch'
@@ -127,4 +153,5 @@ def lmdep():
 
 def help():
     return 'control x=<40-115> y=<40-115>, s=<ms delay>', 'rawcontrol x=<40-115> y=<40-115>',\
-           'boot_move', 'load_n_init', 'standby', 'lmdep'
+           'boot_move', 'standby', 'jiggle', 'move_pipe 40 40 115 115 s=<ms> deinit=True',\
+           'load_n_init', 'lmdep'

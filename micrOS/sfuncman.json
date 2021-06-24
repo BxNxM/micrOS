@@ -1,10 +1,12 @@
 {
   "roboarm": [
+    "load_n_init x=75 y=70",
     "control x_new y_new s=None",
     "rawcontrol x=None y=None",
     "boot_move s=None",
     "standby",
-    "load_n_init x=75 y=70",
+    "jiggle",
+    "move_pipe *args s=None deinit=True",
     "lmdep",
     "help"
   ],

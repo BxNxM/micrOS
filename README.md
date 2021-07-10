@@ -32,7 +32,7 @@ Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framewo
 
 ## iOS / Android Application
 
-[![AppStoreURL](./media/Download_on_the_App_Store_Badge_US-UK.eps)](https://apps.apple.com/hu/app/micros-client/id1562342296)
+[![AppStoreURL](./media/Download_on_the_App_Store_Badge_US-UK_RGB.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
 
 > Android application **coming soon**  <br/>
 

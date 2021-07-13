@@ -136,7 +136,7 @@
     "help"
   ],
   "pet_feeder": [
-    "portion repeat=1 posmin=68 posmax=96",
+    "portion repeat=1 posmin=65 posmax=97",
     "lmdep",
     "help"
   ],

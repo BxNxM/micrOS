@@ -15,10 +15,7 @@ def __l298n_init():
     if len(__L298N_OBJS) == 0:
         from machine import Pin, PWM
         from LogicalPins import physical_pin
-        if platform == 'esp8266':
-            __L298N_OBJS.append(PWM(Pin(physical_pin('l298speed')), freq=1024))
-        else:
-            __L298N_OBJS.append(PWM(Pin(physical_pin('l298speed')), freq=20480))
+        __L298N_OBJS.append(PWM(Pin(physical_pin('l298speed')), freq=50))
         __L298N_OBJS.append(Pin(physical_pin('l298dir_1'), Pin.OUT))
         __L298N_OBJS.append(Pin(physical_pin('l298dir_2'), Pin.OUT))
         __L298N_OBJS[0].duty(0)     # Set default speed (PWM)

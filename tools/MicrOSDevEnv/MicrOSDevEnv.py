@@ -447,7 +447,7 @@ class MicrOSDevTool:
             self.console("Node config error: {} - {}".format(stdout, stderr))
             self.execution_verdict.append("[ERR] usb_update get node config error.")
             return False
-        self.execution_verdict.append("[OK] usb_update was successful")
+        self.execution_verdict.append("[OK] usb_update was finished")
         return True
 
     def __get_node_config(self):
@@ -751,7 +751,7 @@ class MicrOSDevTool:
                 self.execution_verdict.append("[ERROR] usb_deploy - micropython install failed")
         else:
             self.console("Erase device error", state='err')
-        self.execution_verdict.append("[OK] usb_deploy was successful")
+        self.execution_verdict.append("[OK] usb_deploy was finished")
 
     def __clone_webrepl_repo(self):
         if os.path.isdir(os.path.dirname(self.webreplcli_repo_path)) and os.path.isfile(self.webreplcli_repo_path):
@@ -1036,7 +1036,7 @@ class MicrOSDevTool:
             self.console("\t[2]HINT: log in and execute: import reset")
             self.console("\t[3]HINT: OR skip [2] point and reset manually")
             self.execution_verdict.append("[WARN] ota_update - device auto restart failed,\nplease reset the device manually.")
-        self.execution_verdict.append("[OK] ota_update was successful")
+        self.execution_verdict.append("[OK] ota_update was finished")
 
 
 if __name__ == "__main__":

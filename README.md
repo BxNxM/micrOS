@@ -65,6 +65,7 @@ git clone https://github.com/BxNxM/micrOs.git
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
 > Note: Allow extend system path with that python version (installatiuon parameter)
+> On **Windows**: RUN AS ADMINISTARTOR
 
 ### 3. Install serial driver for board connection via USB
 

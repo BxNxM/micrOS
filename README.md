@@ -19,7 +19,7 @@ Just write and copy **LM_** your_app **.py** python script to your device and ca
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
 ## ◉ Shortcuts:
-1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#ios--android-application)
+1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#micrOS-Client-Application)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS#installing-micros-with-devtoolkit-from-macos--windows--linux)
 3. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 4. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
@@ -30,11 +30,13 @@ Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framewo
 ----------------------------------------
 ----------------------------------------
 
-## iOS / Android Application
+## micrOS Client Application
 
+### AppStore
 [![AppStoreURL](./media/Download_on_the_App_Store_Badge_US-UK_RGB.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
 
-> Android application **coming soon**  <br/>
+### PlayStore
+[Android application](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
 
 ----------------------------------------
 

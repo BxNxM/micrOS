@@ -35,7 +35,7 @@ def startBgJob(argument_list, msg):
             return True
         # delete from argument list - handled argument ...
         del argument_list[-1]
-        # Get thread wait
+        # Get thread wait in sec
         wait = int(is_thrd.replace('&', '')) if is_thrd.replace('&', '').isdigit() else 0
         # Create callback
         if is_thrd.startswith('&&'):

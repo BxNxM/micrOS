@@ -20,6 +20,11 @@
     "poweroff",
     "help"
   ],
+  "stepper": [
+    "angle dg dr=1",
+    "step st dr=1",
+    "help"
+  ],
   "genIO": [
     "set_pwm pin freq=1024 duty=500",
     "set_out pin state",

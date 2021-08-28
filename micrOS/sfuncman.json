@@ -21,8 +21,9 @@
     "help"
   ],
   "stepper": [
-    "angle dg dr=1",
-    "step st dr=1",
+    "angle dg dr=1 speed=None",
+    "step st dr=1 speed=None",
+    "standby",
     "help"
   ],
   "genIO": [

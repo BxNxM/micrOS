@@ -1,43 +1,40 @@
-# ULN2003 driver lib: https://github.com/zhcong/ULN2003-for-ESP32
+# Based on ULN2003 driver lib: https://github.com/zhcong/ULN2003-for-ESP32
 
-import time
+from time import sleep_ms
 from machine import Pin
+from LogicalPins import physical_pin
 STEPPER_INST = None
 
 
 class StepperULN2003:
     FULL_ROTATION = int(4075.7728395061727 / 8)  # http://www.jangeox.be/2013/10/stepper-motor-28byj-48_25.html
 
-    HALF_STEP = [
-        [0, 0, 0, 1],
-        [0, 0, 1, 1],
-        [0, 0, 1, 0],
-        [0, 1, 1, 0],
-        [0, 1, 0, 0],
-        [1, 1, 0, 0],
-        [1, 0, 0, 0],
-        [1, 0, 0, 1],
-    ]
-
-    FULL_STEP = [
-        [1, 0, 1, 0],
-        [0, 1, 1, 0],
-        [0, 1, 0, 1],
-        [1, 0, 0, 1]
-    ]
-
-    def __init__(self, mode, pin1, pin2, pin3, pin4, delay):
-        if mode == 'FULL_STEP':
-            self.mode = self.FULL_STEP
+    def __init__(self, mode):
+        # Mode: FULL / HALF
+        if mode == 'FULL':
+            # FULL STEP - ~508
+            self.mode = [[1, 0, 1, 0],
+                         [0, 1, 1, 0],
+                         [0, 1, 0, 1],
+                         [1, 0, 0, 1]]
+            self.delay = 10
         else:
-            self.mode = self.HALF_STEP
-        self.pin1 = pin1
-        self.pin2 = pin2
-        self.pin3 = pin3
-        self.pin4 = pin4
-        self.delay = delay  # Recommend 10+ for FULL_STEP, 1 is OK for HALF_STEP
-
-        # Initialize all to 0
+            # HALF STEP - ~1016
+            self.mode = [[0, 0, 0, 1],
+                         [0, 0, 1, 1],
+                         [0, 0, 1, 0],
+                         [0, 1, 1, 0],
+                         [0, 1, 0, 0],
+                         [1, 1, 0, 0],
+                         [1, 0, 0, 0],
+                         [1, 0, 0, 1]]
+            self.delay = 2
+        # Init stepper pins
+        self.pin1 = Pin(physical_pin('stppr_1'), Pin.OUT)
+        self.pin2 = Pin(physical_pin('stppr_2'), Pin.OUT)
+        self.pin3 = Pin(physical_pin('stppr_3'), Pin.OUT)
+        self.pin4 = Pin(physical_pin('stppr_4'), Pin.OUT)
+        # Initialize all value to 0 - "OFF"
         self.reset()
 
     def step(self, count, direction=1):
@@ -51,7 +48,7 @@ class StepperULN2003:
                 self.pin2(bit[1])
                 self.pin3(bit[2])
                 self.pin4(bit[3])
-                time.sleep_ms(self.delay)
+                sleep_ms(self.delay)
         self.reset()
 
     def angle(self, r, direction=1):
@@ -64,23 +61,51 @@ class StepperULN2003:
         self.pin3(0)
         self.pin4(0)
 
+    @property
+    def speed_ms(self):
+        return self.delay
 
-def __init_stepper():
+    @speed_ms.setter
+    def speed_ms(self, ms):
+        # HALF STEP - delay check
+        if len(self.mode) > 4 and ms < 1:
+            ms = 1
+        # FULL STEP - delay check
+        elif ms < 10:
+            ms = 10
+        self.delay = ms
+
+
+def __init_stepper(mode='HALF'):
     global STEPPER_INST
     if STEPPER_INST is None:
-        STEPPER_INST = StepperULN2003('HALF_STEP',
-                          Pin(16, Pin.OUT), Pin(17, Pin.OUT), Pin(5, Pin.OUT), Pin(18, Pin.OUT),
-                          delay=2)
+        STEPPER_INST = StepperULN2003(mode)
     return STEPPER_INST
 
 
-def angle(dg, dr=1):
-    __init_stepper().angle(dg, dr)
+def angle(dg, dr=1, speed=None):
+    i = __init_stepper()
+    if speed:
+        i.speed_ms = speed
+    i.angle(dg, dr)
+    return "Move {} degree ({},{})".format(dg, i.speed_ms, dr)
 
 
-def step(st, dr=1):
-    __init_stepper().step(st, dr)
+def step(st, dr=1, speed=None):
+    i = __init_stepper()
+    if speed:
+        i.speed_ms = speed
+    i.step(st, dr)
+    return "Move {} step ({},{})".format(st, i.speed_ms, dr)
+
+
+def standby():
+    __init_stepper().reset()
+    return "Standby"
 
 
 def help():
-    return 'angle dg=360 dr=1', 'step st=2 dr=1', 'Info: stepper: 28byj-48 driver: ULN2003'
+    return 'angle dg=360 dr=<+/-1> speed=<ms>',\
+           'step st=2 dr=+/-1 speed=<ms>',\
+           'standby',\
+           'Info: stepper: 28byj-48 driver: ULN2003'

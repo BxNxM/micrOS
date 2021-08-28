@@ -34,10 +34,10 @@ l9110dir_2 = const(25) # D25 - DC motor direction (2)
 
 buzzer = const(33)     # D33 - Buzzer pin - sound generator
 
-stppr_1 = const(34)    # D34 - stepper motor pin
-stppr_2 = const(35)    # D35 - stepper motor pin
-stppr_3 = const(32)    # D32 - stepper motor pin
-stppr_4 = const(33)    # D33 - stepper motor pin
+stppr_1 = const(33)    # D33 - stepper motor pin
+stppr_2 = const(25)    # D25 - stepper motor pin
+stppr_3 = const(26)    # D26 - stepper motor pin
+stppr_4 = const(27)    # D27 - stepper motor pin
 
 
 # I2C BUS

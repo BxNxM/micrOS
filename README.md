@@ -178,8 +178,19 @@ DevToolKit CLI feature:
 
 - Socket client python plugin - interactive - non interactive mode
 
+## Built in pheriphery support
 
-![micrOS project Pheriphery Support](./media/micrOSprojectPheriphery.png)</br>
+### Sensors / inputes
+
+![micrOS project Pheriphery Support](./media/microsPheriphery_sensors.png)</br>
+
+### Actuators / outputs
+
+![micrOS project Pheriphery Support](./media/microsPheriphery_actuators.png)</br>
+
+### Power supply
+
+![micrOS project Pheriphery Support](./media/microsPheriphery_power.png)</br>
 
 ----------------------------------------
 

@@ -111,6 +111,8 @@
     "neopixel r=None g=None b=None",
     "segment r=None g=None b=None s=0 cache=False write=True",
     "toggle state=None",
+    "set_transition r g b sec",
+    "run_transition",
     "help"
   ],
   "L9110_DCmotor": [

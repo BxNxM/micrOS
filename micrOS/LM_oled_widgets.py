@@ -1,63 +1,55 @@
 from ConfigHandler import cfgget
 from gc import mem_free
 from time import localtime
-
-__OLED = None
-__INVERT = False
-
-
-def __init():
-    global __OLED
-    if __OLED is None:
-        from machine import Pin, I2C
-        from ssd1306 import SSD1306_I2C
-        from LogicalPins import physical_pin
-        i2c = I2C(-1, Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
-        __OLED = SSD1306_I2C(128, 64, i2c)
-    return __OLED
+from network import WLAN, STA_IF
+import LM_oled as oled
 
 
 def simple_page():
     try:
         # Clean screen
-        __init().fill(0)
+        oled.clean(show=False)
         # Draw time
-        __OLED.text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 10)
-        __OLED.show()
+        oled.text("{}:{}:{}".format(localtime()[-5], localtime()[-4], localtime()[-3]), 30, 10)
     except Exception as e:
         return str(e)
     return True
 
 
-def show_debug_page():
+def sys_page(clean=False):
+    def draw_rssi():
+        value = WLAN(STA_IF).status('rssi')
+        show_range = round(((value+91)/30)*8)    # pixel height 8
+        oled.line(118, 8, 120, 8, show=False)
+        oled.line(110, 1, 128, 1, show=False)
+        for k in range(0, show_range):
+            oled.line(118-k, 8-k, 120+k, 8-k, show=False)
+    # Clean screen
+    oled.clean(show=clean)
+    # Print info
     try:
-        # Clean screen
-        __init().fill(0)
-        __OLED.show()
-        # Print info
-        ltime = localtime()
-        __OLED.text("{}  {}:{}:{}".format(cfgget("nwmd"), ltime[-5], ltime[-4], ltime[-3]), 0, 0)
-        __OLED.text("FUID: {}".format(cfgget("devfid")), 0, 15)
-        __OLED.text("IP: {}".format(cfgget("devip")), 0, 25)
-        __OLED.text("FreeMem: {}".format(mem_free()), 0, 35)
-        __OLED.text("V: {}".format(cfgget("version")), 0, 45)
-        # Show page buffer - send to display
-        __OLED.show()
-    except Exception as e:
-        return str(e)
+        draw_rssi()
+    except:
+        pass
+    ltime = localtime()
+    oled.text("{} {}:{}:{}".format(cfgget("nwmd"), ltime[-5], ltime[-4], ltime[-3]), 0, 0, show=False)
+    oled.text("FUID: {}".format(cfgget("devfid")), 0, 15, show=False)
+    oled.text("IP: {}".format(cfgget("devip")), 0, 25, show=False)
+    fm = mem_free()
+    kb, byte = int(fm/1000), int(fm % 1000)
+    oled.text("Mem: {}kb {}b".format(kb, byte), 0, 35, show=False)
+    oled.text("V: {}".format(cfgget("version")), 0, 45)             # It will show the whole buffer as well.
     return True
-
-
-def toggle_invert():
-    global __INVERT
-    __INVERT = not __INVERT
-    __init().invert(__INVERT)
-    return 'INVERT:{}'.format(__INVERT)
-
 
 #######################
 # LM helper functions #
 #######################
 
+
+def lmdep():
+    return 'LM_oled'
+
+
 def help():
-    return 'simple_page', 'show_debug_page', 'toggle_invert'
+    return 'simple_page', 'sys_page',\
+           'INFO: OLED Module for SSD1306'

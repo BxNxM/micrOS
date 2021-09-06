@@ -1,5 +1,5 @@
 LM_system.py
-LM_oled_128x64i2c.py
+LM_oled.py
 LM_rgb.py
 LM_oled_widgets.py
 LM_dht22.py

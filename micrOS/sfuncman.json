@@ -10,16 +10,6 @@
     "lmdep",
     "help"
   ],
-  "oled_128x64i2c": [
-    "text intext=\"<text>\" posx=0 posy=0 show=True",
-    "invert state=None",
-    "clean state=0 show=True",
-    "draw_line sx sy ex ey state=1 show=True",
-    "draw_rect sx sy ex ey state=1 show=True",
-    "poweron",
-    "poweroff",
-    "help"
-  ],
   "stepper": [
     "angle dg dr=1 speed=None",
     "step st dr=1 speed=None",
@@ -62,6 +52,16 @@
   "co2": [
     "raw_measure_mq135",
     "measure_mq135 temperature=None humidity=None",
+    "help"
+  ],
+  "oled": [
+    "text string=\"text\" x=0 y=0 show=True",
+    "invert",
+    "clean state=0 show=True",
+    "line sx sy ex ey state=1 show=True",
+    "rect sx sy ex ey state=1 show=True",
+    "poweron",
+    "poweroff",
     "help"
   ],
   "tinyrgb": [
@@ -163,8 +163,9 @@
   ],
   "oled_widgets": [
     "simple_page",
-    "show_debug_page",
-    "toggle_invert",
+    "sys_page clean=False",
+    "draw_rssi",
+    "lmdep",
     "help"
   ],
   "rgb": [

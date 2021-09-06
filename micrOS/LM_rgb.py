@@ -2,9 +2,15 @@
 #       ANALOG rgb CONTROLLER PARAMS    #
 #########################################
 from sys import platform
-__RGB_OBJS = (None, None, None)
-__RGB_CACHE = [600, 600, 600, 0]           # R, G, B, RGB state
-__PERSISTENT_CACHE = False
+from Common import transition
+from ConfigHandler import cfgget
+
+
+class Data:
+    RGB_OBJS = (None, None, None)
+    RGB_CACHE = [600, 600, 600, 0]           # R, G, B, RGB state
+    PERSISTENT_CACHE = False
+    FADE_OBJS = (None, None, None)
 
 
 #########################################
@@ -12,22 +18,21 @@ __PERSISTENT_CACHE = False
 #########################################
 
 def __RGB_init():
-    global __RGB_OBJS
-    if __RGB_OBJS[0] is None or __RGB_OBJS[1] is None or __RGB_OBJS[2] is None:
+    if Data.RGB_OBJS[0] is None or Data.RGB_OBJS[1] is None or Data.RGB_OBJS[2] is None:
         from machine import Pin, PWM
         from LogicalPins import physical_pin
         red = Pin(physical_pin('redgb'))
         green = Pin(physical_pin('rgreenb'))
         blue = Pin(physical_pin('rgbue'))
         if platform == 'esp8266':
-            __RGB_OBJS = (PWM(red, freq=1024),
+            Data.RGB_OBJS = (PWM(red, freq=1024),
                           PWM(green, freq=1024),
                           PWM(blue, freq=1024))
         else:
-            __RGB_OBJS = (PWM(red, freq=20480),
+            Data.RGB_OBJS = (PWM(red, freq=20480),
                           PWM(green, freq=20480),
                           PWM(blue, freq=20480))
-    return __RGB_OBJS
+    return Data.RGB_OBJS
 
 
 def __persistent_cache_manager(mode):
@@ -36,54 +41,51 @@ def __persistent_cache_manager(mode):
     modes:
         r - recover, s - save
     """
-    if not __PERSISTENT_CACHE:
+    if not Data.PERSISTENT_CACHE:
         return
-    global __RGB_CACHE
     if mode == 's':
         # SAVE CACHE
         with open('rgb.pds', 'w') as f:
-            f.write(','.join([str(k) for k in __RGB_CACHE]))
+            f.write(','.join([str(k) for k in Data.RGB_CACHE]))
         return
     try:
         # RESTORE CACHE
         with open('rgb.pds', 'r') as f:
-            __RGB_CACHE = [int(data) for data in f.read().strip().split(',')]
+            Data.RGB_CACHE = [int(data) for data in f.read().strip().split(',')]
     except:
         pass
 
 
 def load_n_init(cache=None):
     from sys import platform
-    global __PERSISTENT_CACHE
     if cache is None:
-        __PERSISTENT_CACHE = True if platform == 'esp32' else False
+        Data.PERSISTENT_CACHE = True if platform == 'esp32' else False
     else:
-        __PERSISTENT_CACHE = cache
+        Data.PERSISTENT_CACHE = cache
     rgb(0, 0, 0)                           # Init pins at bootup
     __persistent_cache_manager('r')        # recover data cache
-    if __PERSISTENT_CACHE and __RGB_CACHE[3] == 1:
+    if Data.PERSISTENT_CACHE and Data.RGB_CACHE[3] == 1:
         rgb()                              # Recover state if ON
-    return "CACHE: {}".format(__PERSISTENT_CACHE)
+    return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
 def rgb(r=None, g=None, b=None):
-    global __RGB_CACHE
-    r = __RGB_CACHE[0] if r is None else r
-    g = __RGB_CACHE[1] if g is None else g
-    b = __RGB_CACHE[2] if b is None else b
+    r = Data.RGB_CACHE[0] if r is None else r
+    g = Data.RGB_CACHE[1] if g is None else g
+    b = Data.RGB_CACHE[2] if b is None else b
     __RGB_init()
-    __RGB_CACHE[3] = False
-    __RGB_OBJS[0].duty(r)
-    __RGB_CACHE[3] |= True if r > 0 else False
-    __RGB_OBJS[1].duty(g)
-    __RGB_CACHE[3] |= True if g > 0 else False
-    __RGB_OBJS[2].duty(b)
-    __RGB_CACHE[3] |= True if b > 0 else False
+    Data.RGB_CACHE[3] = False
+    Data.RGB_OBJS[0].duty(r)
+    Data.RGB_CACHE[3] |= True if r > 0 else False
+    Data.RGB_OBJS[1].duty(g)
+    Data.RGB_CACHE[3] |= True if g > 0 else False
+    Data.RGB_OBJS[2].duty(b)
+    Data.RGB_CACHE[3] |= True if b > 0 else False
     # Cache channel duties if ON
-    if __RGB_CACHE[3]:
-        __RGB_CACHE = [__RGB_OBJS[0].duty(), __RGB_OBJS[1].duty(), __RGB_OBJS[2].duty(), 1]
+    if Data.RGB_CACHE[3]:
+        Data.RGB_CACHE = [Data.RGB_OBJS[0].duty(), Data.RGB_OBJS[1].duty(), Data.RGB_OBJS[2].duty(), 1]
     else:
-        __RGB_CACHE[3] = 0
+        Data.RGB_CACHE[3] = 0
     # Save config
     __persistent_cache_manager('s')
     return "SET rgb: R{}G{}B{}".format(r, g, b)
@@ -94,12 +96,38 @@ def toggle(state=None):
     Toggle led state based on the stored one
     """
     if state is not None:
-        __RGB_CACHE[3] = 0 if state else 1
-    if __RGB_CACHE[3]:
+        Data.RGB_CACHE[3] = 0 if state else 1
+    if Data.RGB_CACHE[3]:
         rgb(0, 0, 0)
         return "OFF"
     rgb()
     return "ON"
+
+
+def set_transition(r, g, b, sec):
+    timirqseq = cfgget('timirqseq')
+    from_red = Data.RGB_CACHE[0]
+    from_green = Data.RGB_CACHE[1]
+    from_blue = Data.RGB_CACHE[2]
+    # Generate RGB color transition object (generator)
+    Data.FADE_OBJS = (transition(from_val=from_red, to_val=r, step_ms=timirqseq, interval_sec=sec),
+                      transition(from_val=from_green, to_val=g, step_ms=timirqseq, interval_sec=sec),
+                      transition(from_val=from_blue, to_val=b, step_ms=timirqseq, interval_sec=sec))
+    return 'Settings was applied.'
+
+
+def run_transition():
+    if None not in Data.FADE_OBJS:
+        try:
+            r = Data.FADE_OBJS[0].__next__()
+            g = Data.FADE_OBJS[1].__next__()
+            b = Data.FADE_OBJS[2].__next__()
+            rgb(int(r), int(g), int(b))
+            return 'Run R{}R{}B{}'.format(r, g, b)
+        except:
+            Data.FADE_OBJS = (None, None, None)
+            return 'GenEnd.'
+    return 'Nothing to run.'
 
 
 #######################
@@ -108,4 +136,5 @@ def toggle(state=None):
 
 def help():
     return 'rgb r=<0-1000> g=<0-1000> b=<0,1000>',\
-           'toggle state=None', 'load_n_init'
+           'toggle state=None', 'load_n_init', \
+           'set_transition r=<0-255> g b sec', 'run_transition'

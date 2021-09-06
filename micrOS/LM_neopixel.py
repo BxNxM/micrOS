@@ -11,7 +11,7 @@ class Data:
     DCACHE = [100, 100, 100, 0]
     NEOPIXEL_OBJ = None
     PERSISTENT_CACHE = False
-    TRAN_OBJS = (None, None, None)
+    FADE_OBJ = (None, None, None)
 
 
 #########################################
@@ -131,22 +131,22 @@ def set_transition(r, g, b, sec):
     from_green = Data.DCACHE[1]
     from_blue = Data.DCACHE[2]
     # Generate RGB color transition object (generator)
-    Data.TRAN_OBJS = (transition(from_val=from_red, to_val=r, step_ms=timirqseq, interval_sec=sec),
+    Data.FADE_OBJ = (transition(from_val=from_red, to_val=r, step_ms=timirqseq, interval_sec=sec),
                    transition(from_val=from_green, to_val=g, step_ms=timirqseq, interval_sec=sec),
                    transition(from_val=from_blue, to_val=b, step_ms=timirqseq, interval_sec=sec))
     return 'Settings was applied.'
 
 
 def run_transition():
-    if None not in Data.TRAN_OBJS:
+    if None not in Data.FADE_OBJ:
         try:
-            r = Data.TRAN_OBJS[0].__next__()
-            g = Data.TRAN_OBJS[1].__next__()
-            b = Data.TRAN_OBJS[2].__next__()
+            r = Data.FADE_OBJ[0].__next__()
+            g = Data.FADE_OBJ[1].__next__()
+            b = Data.FADE_OBJ[2].__next__()
             neopixel(int(r), int(g), int(b))
             return 'Run R{}R{}B{}'.format(r, g, b)
         except:
-            Data.TRAN_OBJS = (None, None, None)
+            Data.FADE_OBJ = (None, None, None)
             return 'GenEnd.'
     return 'Nothing to run.'
 

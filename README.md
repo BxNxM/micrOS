@@ -125,7 +125,7 @@ It will install your board via USB with default settings. Continue with your mob
 
 ### 1.1 Prepare micrOS devToolKit for deployment [macOS]
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/heqZMTUAWcg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![micrOSAppBasics](https://img.youtube.com/vi/heqZMTUAWcg&t=9s/0.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t=9s)
 
 ### 1.2 Prepare micrOS devToolKit for deployment [Windows]
 
@@ -133,7 +133,7 @@ It will install your board via USB with default settings. Continue with your mob
 
 ### 2. Basic setup with micrOS Client App
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/xVNwHnBs1Tw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![micrOSAppBasics](https://img.youtube.com/vi/xVNwHnBs1Tw/0.jpg)](https://www.youtube.com/watch?v=xVNwHnBs1Tw)
 
 	
 ### 3. How to OTA update device
@@ -888,5 +888,7 @@ GIT:
 - Pretty git view: `git log --pretty=oneline`
 
 - File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'`
+
+- GitHub embed youtube link: `https://github.com/itskeshav/Add-youtube-link-in-Readme.md`
 
 git push -u origin master

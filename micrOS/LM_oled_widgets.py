@@ -17,7 +17,7 @@ def simple_page():
 
 
 def sys_page(clean=False):
-    def draw_rssi():
+    def __draw_rssi():
         value = WLAN(STA_IF).status('rssi')
         show_range = round(((value+91)/30)*8)    # pixel height 8
         oled.line(118, 8, 120, 8, show=False)
@@ -28,7 +28,7 @@ def sys_page(clean=False):
     oled.clean(show=clean)
     # Print info
     try:
-        draw_rssi()
+        __draw_rssi()
     except:
         pass
     ltime = localtime()

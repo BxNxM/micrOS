@@ -164,7 +164,6 @@
   "oled_widgets": [
     "simple_page",
     "sys_page clean=False",
-    "draw_rssi",
     "lmdep",
     "help"
   ],

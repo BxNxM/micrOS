@@ -121,6 +121,43 @@ It will install your board via USB with default settings. Continue with your mob
 
 ----------------------------------------
 
+## MicrOS Tutorial
+
+### 1.1 Prepare micrOS devToolKit for deployment [macOS]
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/heqZMTUAWcg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+### 1.2 Prepare micrOS devToolKit for deployment [Windows]
+
+**Coming Soon**
+
+### 2. Basic setup with micrOS Client App
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xVNwHnBs1Tw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+	
+### 3. How to OTA update device
+### 4. Widgets and Load Modules via micrOS Client  
+
+How to get available module list
+Overview of micrOS Client UI
+
+### 5. Configuration via micrOS Client
+
+Idea behind: network, time, boothook, irqs, cron
+Set some stuff in config ...
+
+### 6. Get familier with micrOS shell
+
+micrOS terminal
+built-in commands, Load Modules
+
+### 7. How to customize or contribute to micrOS
+
+Create custom Load Modules (LMs)
+
+----------------------------------------
+
 ## micrOS System, message-function visualization
 
 ![MICROSVISUALIZATION](./media/micrOS.gif?raw=true)
@@ -236,28 +273,6 @@ LogicalPin lookup tables:
 |  **v0.4.0-0** | [release_Info-0.4.0-0](./release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| 23 - 28 % (17250-20976byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.
 |  **v1.0.0-0** | [release_Info-1.0.0-0](./release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| 15 - 23 % (10394-15488byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc. 
 
-----------------------------------------
-
-## MicrOS Tutorial
-
-> **Coming soon - youtube channel**
-
-- [1] Prepare micrOS devToolKit for deployment
-	- Windows / Mac tutorial
-- [2] How to OTA update device
-- [3] Widgets and Load Modules via micrOS Client  
-	- How to get available module list
-	- Overview of micrOS Client UI
-- [4] Configuration via micrOS Client
-	- Idea behind: network, time, boothook, irqs, cron
-	- Set some stuff in config ...
-- [5] Get familier with micrOS shell
-	- micrOS terminal
-	- built-in commands, Load Modules
-- [6] How to customize or contribute to micrOS
-	- Create custom Load Modules (LMs)
-
-> **Coming soon**
 
 ----------------------------------------
 

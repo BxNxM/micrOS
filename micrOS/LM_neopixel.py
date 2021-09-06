@@ -126,6 +126,7 @@ def toggle(state=None):
 
 
 def set_transition(r, g, b, sec):
+    Data.DCACHE[3] = 1
     timirqseq = cfgget('timirqseq')
     from_red = Data.DCACHE[0]
     from_green = Data.DCACHE[1]
@@ -143,8 +144,10 @@ def run_transition():
             r = Data.FADE_OBJ[0].__next__()
             g = Data.FADE_OBJ[1].__next__()
             b = Data.FADE_OBJ[2].__next__()
-            neopixel(int(r), int(g), int(b))
-            return 'Run R{}R{}B{}'.format(r, g, b)
+            if Data.DCACHE[3] == 1:
+                neopixel(int(r), int(g), int(b))
+                return 'Run R{}R{}B{}'.format(r, g, b)
+            return 'Run deactivated'
         except:
             Data.FADE_OBJ = (None, None, None)
             return 'GenEnd.'

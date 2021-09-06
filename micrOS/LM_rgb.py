@@ -105,6 +105,7 @@ def toggle(state=None):
 
 
 def set_transition(r, g, b, sec):
+    Data.RGB_CACHE[3] = 1
     timirqseq = cfgget('timirqseq')
     from_red = Data.RGB_CACHE[0]
     from_green = Data.RGB_CACHE[1]
@@ -122,8 +123,10 @@ def run_transition():
             r = Data.FADE_OBJS[0].__next__()
             g = Data.FADE_OBJS[1].__next__()
             b = Data.FADE_OBJS[2].__next__()
-            rgb(int(r), int(g), int(b))
-            return 'Run R{}R{}B{}'.format(r, g, b)
+            if Data.RGB_CACHE[3] == 1:
+                rgb(int(r), int(g), int(b))
+                return 'Run R{}R{}B{}'.format(r, g, b)
+            return 'Run deactivated'
         except:
             Data.FADE_OBJS = (None, None, None)
             return 'GenEnd.'

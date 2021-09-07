@@ -4,7 +4,7 @@
  "extirq": true,
  "extirqcbf": "light toggle",
  "timirqcbf": "system heartbeat",
- "boothook": "light rgb_cache_load_n_init",
+ "boothook": "light load_n_init",
  "timirq": false,
  "pled": true,
  "socport": 9008,

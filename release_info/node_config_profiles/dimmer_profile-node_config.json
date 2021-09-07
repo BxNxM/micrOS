@@ -4,7 +4,7 @@
  "extirq": false,
  "extirqcbf": "n/a",
  "timirqcbf": "system heartbeat",
- "boothook": "system heartbeat; dimmer_cache_load_n_init",
+ "boothook": "system heartbeat; load_n_init",
  "timirq": true,
  "pled": true,
  "socport": 9008,

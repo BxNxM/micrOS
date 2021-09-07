@@ -125,7 +125,7 @@ It will install your board via USB with default settings. Continue with your mob
 
 ### 1.1 Prepare micrOS devToolKit for deployment [macOS]
 
-[![micrOSAppBasics](./media/thumbnails/install_on_mac.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t=9s)
+[![micrOSAppBasics](./media/thumbnails/install_on_mac.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t)
 
 ### 1.2 Prepare micrOS devToolKit for deployment [Windows]
 

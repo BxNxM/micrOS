@@ -33,10 +33,10 @@ Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framewo
 ## micrOS Client Application
 
 ### AppStore
-[![AppStoreURL](./media/Download_on_the_App_Store_Badge_US-UK_RGB.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
+[![AppStoreURL](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
 
 ### PlayStore
-[Android application](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
+[![PlayStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
 
 ----------------------------------------
 
@@ -121,11 +121,11 @@ It will install your board via USB with default settings. Continue with your mob
 
 ----------------------------------------
 
-## MicrOS Tutorial
+## micrOS Tutorials
 
 ### 1.1 Prepare micrOS devToolKit for deployment [macOS]
 
-[![micrOSAppBasics](https://img.youtube.com/vi/heqZMTUAWcg&t=9s/0.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t=9s)
+[![micrOSAppBasics](./media/thumbnails/install_on_mac.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t=9s)
 
 ### 1.2 Prepare micrOS devToolKit for deployment [Windows]
 
@@ -133,7 +133,7 @@ It will install your board via USB with default settings. Continue with your mob
 
 ### 2. Basic setup with micrOS Client App
 
-[![micrOSAppBasics](https://img.youtube.com/vi/xVNwHnBs1Tw/0.jpg)](https://www.youtube.com/watch?v=xVNwHnBs1Tw)
+[![micrOSAppBasics](./media/thumbnails/first_configuration.jpg)](https://www.youtube.com/watch?v=xVNwHnBs1Tw)
 
 	
 ### 3. How to OTA update device

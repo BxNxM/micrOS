@@ -87,11 +87,13 @@ micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
 
 ### 4. ONLY ON WINDOWNS: Special dependencies
 
-	You will need C++ compiler to able to install all python pip dependencies (defined in the tool/requirements.txt)
-	
-	```
-	Link for download: TODO
-	```
+You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt)
+
+Link for download:
+
+```
+https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU
+```
 
 ### 5. Execute **devToolKit** GUI
 

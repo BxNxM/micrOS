@@ -83,6 +83,10 @@ def __init_stepper(mode='HALF'):
     return STEPPER_INST
 
 
+def load_n_init(mode="HALF"):
+    __init_stepper(mode=mode)
+
+
 def angle(dg, dr=1, speed=None):
     i = __init_stepper()
     if speed:
@@ -108,4 +112,5 @@ def help():
     return 'angle dg=360 dr=<+/-1> speed=<ms>',\
            'step st=2 dr=+/-1 speed=<ms>',\
            'standby',\
+           'load_n_init mode=<"HALF"/"FULL">',\
            'Info: stepper: 28byj-48 driver: ULN2003'

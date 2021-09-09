@@ -21,9 +21,9 @@ Just write and copy **LM_** your_app **.py** python script to your device and ca
 ## ◉ Shortcuts:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#micrOS-Client-Application)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS#installing-micros-with-devtoolkit-from-macos--windows--linux)
-3. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
-4. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
-5. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-tutorial)
+3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-tutorial)
+4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
+5. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 
 Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framework/designs)
 
@@ -66,7 +66,7 @@ git clone https://github.com/BxNxM/micrOs.git
 
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
-> Note: Allow extend system path with that python version (installatiuon parameter)
+> Note: Allow extend system path with that python version (installation parameter)
 > On **Windows**: RUN AS ADMINISTARTOR
 
 ### 3. Install serial driver for board connection via USB
@@ -123,7 +123,7 @@ It will install your board via USB with default settings. Continue with your mob
 
 ----------------------------------------
 
-## micrOS Tutorials
+## micrOS Video Tutorials
 
 ### 1.1 Prepare micrOS devToolKit for deployment [macOS]
 

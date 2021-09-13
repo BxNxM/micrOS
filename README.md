@@ -245,6 +245,9 @@ LogicalPin lookup tables:
 
 ![MicrOSESP8266pinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
 
+GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
+
+
 ![MicrOSESP8266pinout](./media/NodeMCUPinOutESP32.png?raw=true)
 
 ![MicrOSESP8266pinout](./media/NodeMCUPinOutESP8266.png?raw=true)

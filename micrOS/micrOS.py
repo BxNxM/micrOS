@@ -11,7 +11,7 @@ from SocketServer import SocketServer
 from Network import auto_network_configuration
 from Hooks import bootup_hook, profiling_info
 from InterruptHandler import enableInterrupt, enableCron
-from InterruptHandler import init_eventPIN
+from InterruptHandler import initEventIRQs
 
 
 #################################################################
@@ -36,9 +36,9 @@ def interrupt_handler():
 
 def external_interrupt_handler():
     try:
-        init_eventPIN()
+        initEventIRQs()
     except Exception as e:
-        print("[micrOS main] InterruptHandler.init_eventPIN error: {}".format(e))
+        print("[micrOS main] InterruptHandler.initEventIRQs error: {}".format(e))
 
 
 #################################################################

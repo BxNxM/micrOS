@@ -46,7 +46,7 @@ i2c_scl = const(22)    # D21 - oled - clock
 
 
 # EXTERNAL EVENT IRQ
-extirq = const(4)      # D4  - extirq pin
+irq1 = const(4)        # D4  - event irq pin
 touch_0 = const(13)    # D13 - touch sensor TODO
 
 

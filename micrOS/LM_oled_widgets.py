@@ -32,7 +32,10 @@ def sys_page(clean=False):
     except:
         pass
     ltime = localtime()
-    oled.text("{} {}:{}:{}".format(cfgget("nwmd"), ltime[-5], ltime[-4], ltime[-3]), 0, 0, show=False)
+    h = "0{}".format(ltime[-5]) if len(str(ltime[-5])) < 2 else ltime[-5]
+    m = "0{}".format(ltime[-4]) if len(str(ltime[-4])) < 2 else ltime[-4]
+    s = "0{}".format(ltime[-3]) if len(str(ltime[-3])) < 2 else ltime[-3]
+    oled.text("{}   {}:{}:{}".format(cfgget("nwmd")[0], h, m, s), 0, 0, show=False)
     oled.text("FUID: {}".format(cfgget("devfid")), 0, 15, show=False)
     oled.text("IP: {}".format(cfgget("devip")), 0, 25, show=False)
     fm = mem_free()

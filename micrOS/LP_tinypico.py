@@ -42,8 +42,11 @@ i2c_scl = const(22)    # D21 - clock
 
 
 # EXTERNAL EVENT IRQ
-extirq = const(5)      # D5  - extirq pin
-touch_0 = const(32)    # D32 - builtin touch sensor	TODO
+irq1 = const(5)         # D5  - event irq pin
+irq2 = const(18)        # D18 - event irq pin
+irq3 = const(19)        # D19  - event irq pin
+irq4 = const(23)        # D23  - event irq pin
+touch_0 = const(32)     # D32 - builtin touch sensor	TODO
 
 
 # SENSORS

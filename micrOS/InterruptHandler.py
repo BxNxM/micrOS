@@ -14,6 +14,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                            IMPORTS                            #
 #################################################################
+from machine import Pin
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execLMPipe
 from LogicalPins import physical_pin
@@ -102,27 +103,32 @@ def enableCron():
 #################################################################
 
 
-def init_eventPIN():
+def initEventIRQs():
     """
-    EVENT INTERRUPT CONFIGURATION
+    EVENT INTERRUPT CONFIGURATION - multiple
     """
-    console_write("[IRQ] EXTIRQ SETUP - EXTIRQ: {} TRIG: {}".format(cfgget("extirq"), cfgget("extirqtrig")))
-    console_write("|- [IRQ] EXTIRQ CBF: {}".format(cfgget('extirqcbf')))
-    if cfgget('extirq'):
-        pin = physical_pin('extirq')
-        trig = cfgget('extirqtrig').strip().lower()
-        # Init event irq with callback function wrapper
-        from machine import Pin
-        pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
-        console_write("[IRQ] - event setup: {}".format(trig))
-        lm_str = cfgget('extirqcbf')
-        if trig == 'down':
-            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(lm_str))
-            return
-        if trig == 'both':
-            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(lm_str))
-            return
-        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: execLMPipe(lm_str))
+    irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
+               (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
+               (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
+               (cfgget("irq4"), cfgget("irq4_trig"), cfgget("irq4_cbf")))
+
+    for i, data in enumerate(irqdata):
+        irq, trig, cbf = data
+        console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i+1, irq, trig))
+        console_write("|- [IRQ] EXTIRQ CBF: {}".format(cbf))
+        pin = physical_pin('irq{}'.format(i+1))       # irq1, irq2, etc.
+        if irq and pin:
+            trig = trig.strip().lower()
+            # Init event irq with callback function wrapper
+            pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
+            # [IRQ] - event type setup
+            if trig == 'down':
+                pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(cbf))
+                return
+            if trig == 'both':
+                pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(cbf))
+                return
+            pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: execLMPipe(cbf))
 
 
 #################################################################

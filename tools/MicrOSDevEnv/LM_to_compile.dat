@@ -1,7 +1,7 @@
 LM_system.py
 LM_oled.py
 LM_rgb.py
-LM_oled_widgets.py
+LM_oled_ui.py
 LM_dht22.py
 LM_servo.py
 LM_neopixel.py

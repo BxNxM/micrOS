@@ -28,6 +28,15 @@
     "guimeta_fix_1_0_3_2",
     "help"
   ],
+  "oled_ui": [
+    "simple_page",
+    "sys_page",
+    "pageui",
+    "next_page",
+    "prev_page",
+    "lmdep",
+    "help"
+  ],
   "system": [
     "info <msgobj>",
     "gclean",
@@ -56,13 +65,14 @@
     "help"
   ],
   "oled": [
-    "text string=\"text\" x=0 y=0 show=True",
+    "text string=\"text\" x=0 y=0",
     "invert",
-    "clean state=0 show=True",
-    "line sx sy ex ey state=1 show=True",
-    "rect sx sy ex ey state=1 show=True",
+    "clean state=0",
+    "line sx sy ex ey state=1",
+    "rect x y w h state=1 fill=False",
     "poweron",
     "poweroff",
+    "show",
     "help"
   ],
   "tinyrgb": [
@@ -159,12 +169,6 @@
   "dht11": [
     "measure",
     "measure_w_co2",
-    "lmdep",
-    "help"
-  ],
-  "oled_widgets": [
-    "simple_page",
-    "sys_page clean=False",
     "lmdep",
     "help"
   ],

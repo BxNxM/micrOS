@@ -142,9 +142,8 @@ def __init():
     return SSD1306_I2C.OLED_OBJ
 
 
-def text(string="text", x=0, y=0, show=True):
+def text(string="text", x=0, y=0):
     __init().text(string, x, y)
-    if show: SSD1306_I2C.OLED_OBJ.show()
     return True
 
 
@@ -156,21 +155,21 @@ def invert():
     return True
 
 
-def clean(state=0, show=True):
+def clean(state=0):
     __init().fill(state)
-    if show: SSD1306_I2C.OLED_OBJ.show()
     return True
 
 
-def line(sx, sy, ex, ey, state=1, show=True):
+def line(sx, sy, ex, ey, state=1):
     __init().line(sx, sy, ex, ey, state)
-    if show: SSD1306_I2C.OLED_OBJ.show()
     return True
 
 
-def rect(sx, sy, ex, ey, state=1, show=True):
-    __init().rect(sx, sy, ex, ey, state)
-    if show: SSD1306_I2C.OLED_OBJ.show()
+def rect(x, y, w, h, state=1, fill=False):
+    if fill:
+        __init().fill_rect(x, y, w, h, state)
+    else:
+        __init().rect(x, y, w, h, state)
     return True
 
 
@@ -184,11 +183,15 @@ def poweroff():
     return True
 
 
+def show():
+    SSD1306_I2C.OLED_OBJ.show()
+
+
 #######################
 # LM helper functions #
 #######################
 
 def help():
-    return 'text "text" x y show=True', 'invert', 'clean state=<0/1> show=True',\
-           'line sx sy ex ey state=1 show=True', 'rect',\
-           'poweron', 'poweroff', 'INFO: OLED Module for SSD1306'
+    return 'text "text" x y', 'invert', 'clean state=<0/1>',\
+           'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
+           'show', 'poweron', 'poweroff', 'INFO: OLED Module for SSD1306'

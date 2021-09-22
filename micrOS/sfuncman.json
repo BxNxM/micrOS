@@ -30,6 +30,7 @@
   ],
   "oled_ui": [
     "simple_page",
+    "adc_page",
     "sys_page",
     "pageui",
     "next_page",

@@ -3,12 +3,13 @@ from gc import mem_free
 from time import localtime
 from network import WLAN, STA_IF
 import LM_oled as oled
+from Common import SmartADC
+from LogicalPins import physical_pin
 
 
 #################################
 # PAGE MANAGER CLASS DEFINITION #
 #################################
-
 
 class PageUI:
     PAGE_UI_OBJ = None
@@ -91,6 +92,29 @@ def simple_page():
     return True
 
 
+def adc_page():
+    def __visualize(p):
+        max_w = 50
+        percent = p * 0.01
+        size = round(percent * max_w)
+        size = 1 if size < 1 else size
+        # Visualize percentage
+        oled.rect(0, 9, size, size, fill=True)
+        # Visualize percentages scale
+        steps = int(max_w/10)
+        for scale in range(steps, max_w+1, steps):
+            if scale < size:
+                oled.rect(0, 9, scale, scale, state=0)
+            else:
+                oled.rect(0, 9, scale, scale, state=1)
+
+    data = SmartADC.get_singleton(physical_pin('genadc')).get()
+    __visualize(p=data['percent'])
+    oled.text("{} %".format(data['percent']), 65, 20)
+    oled.text("{} V".format(data['volt']), 65, 40)
+    return True
+
+
 def sys_page():
     oled.text("FUID: {}".format(cfgget("devfid")), 0, 15)
     oled.text("IP: {}".format(cfgget("devip")), 0, 25)
@@ -108,7 +132,7 @@ def sys_page():
 
 def pageui():
     """ INIT PageUI - add page definitions here """
-    pages = [sys_page, simple_page]
+    pages = [sys_page, simple_page, adc_page]
     if PageUI.PAGE_UI_OBJ is None:
         PageUI(pages, 128, 64)
     PageUI.PAGE_UI_OBJ.show_page()

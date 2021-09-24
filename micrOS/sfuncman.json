@@ -52,14 +52,6 @@
     "ha_sta",
     "help"
   ],
-  "rgbfader": [
-    "load_n_init cache=None",
-    "fade r g b sec=0",
-    "transition f=False",
-    "transition_onoff state=None",
-    "toggle state=None",
-    "help"
-  ],
   "co2": [
     "raw_measure_mq135",
     "measure_mq135 temperature=None humidity=None",
@@ -222,6 +214,14 @@
     "distance_mm",
     "distance_cm",
     "deinit",
+    "help"
+  ],
+  "cwwhite": [
+    "load_n_init cache=None",
+    "white c=None w=None",
+    "toggle state=None",
+    "set_transition cw ww sec",
+    "run_transition",
     "help"
   ]
 }

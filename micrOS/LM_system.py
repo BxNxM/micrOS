@@ -164,4 +164,4 @@ def ha_sta():
 
 def help():
     return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module unload=<LM_.py/.mpy>', \
-           'rssi', 'cachedump cdel=<pds name>', 'lmpacman lm_del=<LM_>', 'getpin', 'ha_sta'
+           'rssi', 'cachedump cdel=<pds name>', 'lmpacman lm_del=<LM_>', 'getpin <logicalPin>', 'ha_sta'

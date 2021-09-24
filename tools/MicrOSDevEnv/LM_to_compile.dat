@@ -12,7 +12,6 @@ LM_co2.py
 LM_dht11.py
 LM_light_sensor.py
 LM_L298N_DCmotor.py
-LM_rgbfader.py
 LM_intercon.py
 LM_tinyrgb.py
 LM_repair.py
@@ -22,3 +21,4 @@ LM_ds18.py
 LM_roboarm.py
 LM_neo_effects.py
 LM_stepper.py
+LM_cwwhite.py

@@ -4,10 +4,13 @@ from micropython import const
 builtin = const(2)     # BUILT IN LED - progress_led
 
 
-# ANALOG RGB
+# ANALOG RGB + WW + CW
 redgb = const(14)      # D14 - rgb red channel [PWM]
 rgreenb = const(12)    # D12 - rgb green channel [PWM]
 rgbue = const(15)      # D15 - rgb blue channel [PWM]
+
+wwhite = const(27)	   # D27 - warm white [PWM]
+cwhite = const(26)	   # D26 - cold white [PWM]
 
 
 # DIGITAL LED

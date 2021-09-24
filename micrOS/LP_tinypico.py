@@ -1,17 +1,12 @@
 from micropython import const
 
-# ANALOG RGB
+# ANALOG RGB + WW + CW
 redgb = const(25)       # D25 - rgb red channel [PWM CH1]
 rgreenb = const(26)     # D26 - rgb green channel [PWM CH2]
 rgbue = const(27)       # D27 - rgb blue channel [PWM CH3]
 
-redgb2 = const(15)      # D15 - rgb2 red channel [PWM CH4]
-rgreenb2 = const(14)    # D14 - rgb2 green channel [PWM CH5]
-rgbue2 = const(4)       # D4 - rgb2 blue channel [PWM CH6]
-
-wwhite = const(15)		# D15 - warm white [PWM CH4] TODO
-cwhite = const(14)		# D14 - cold white [PWM CH5] TODO
-
+wwhite = const(15)		# D15 - warm white [PWM CH4]
+cwhite = const(14)		# D14 - cold white [PWM CH5]
 
 # DIGITAL LED
 neop = const(23)       # D23 - WS2812 - neopixel OneWire bus [PWM]

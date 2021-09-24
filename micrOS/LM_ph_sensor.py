@@ -34,6 +34,7 @@ def __init_ADC():
 
 
 def __measure(samples=10):
+    # TODO: use generic smartADC class
     mbuf = 0
     for k in range(0, samples):
         mbuf += __init_ADC().read()

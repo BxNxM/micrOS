@@ -127,7 +127,7 @@ It will install your board via USB with default settings. Continue with your mob
 
 ### 1.2 Prepare micrOS devToolKit for deployment [Windows]
 
-**Coming Soon**
+[![micrOSAppBasics](./media/thumbnails/install_on_windows.jpg)](https://www.youtube.com/watch?v=8e_YCjFVZng)
 
 ### 2. Basic setup with micrOS Client App
 

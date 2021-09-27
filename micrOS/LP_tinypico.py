@@ -13,8 +13,8 @@ neop = const(23)       # D23 - WS2812 - neopixel OneWire bus [PWM]
 
 
 # ACTUATORS
-servo_1 = const(15)    # D15 - servo 1 [PWM CH4]
-servo_2 = const(14)    # D14 - servo 2 [PWM CH5]
+servo_1 = const(14)    # D14 - servo 1 [PWM CH5]
+servo_2 = const(4)     # D4 - servo 2 [PWM CH6]
 
 switch_1 = const(18)   # D18 - switch 1 [simple]
 switch_2 = const(19)   # D19 - switch 2 [simple]
@@ -51,7 +51,7 @@ hcsrecho = const(26)   # D26 - distance HCSR04 echo pin
 dhtpin = const(32)     # D32 - dht_pin 11 and 22
 co2 = const(33)        # D33 - CO2 / BATTERY CONFLICT
 temp6000 = const(32)   # D32  - light sensor TEMP6000
-ph = const(4)          # D4 - PH sensor
+ph = const(32)         # D32 - PH sensor
 ds18 = const(19)       # D19 - DS18B20 - temp. sensor
 genadc = const(33)     # D33 - generic adc input
 

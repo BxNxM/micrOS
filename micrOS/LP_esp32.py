@@ -54,8 +54,8 @@ touch_0 = const(13)    # D13 - touch sensor TODO
 
 
 # SENSORS
-hcsrtrig = const(26)   # D26 - distance HCSR04 trigger pin
-hcsrecho = const(33)   # D33 - distance HCSR04 echo pin
+hcsrtrig = const(32)   # D32 - distance HCSR04 trigger pin
+hcsrecho = const(35)   # D35 - distance HCSR04 echo pin
 dhtpin = const(32)     # D32 - dht_pin 11 and 22
 co2 = const(35)        # D35 - CO2
 temp6000 = const(36)   # VP - light sensor TEMP6000

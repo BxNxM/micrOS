@@ -59,24 +59,22 @@ def load_n_init(cache=None):
         Data.PERSISTENT_CACHE = True if platform == 'esp32' else False
     else:
         Data.PERSISTENT_CACHE = cache
-    white(0, 0)                            # Init pins at bootup
     __persistent_cache_manager('r')        # recover data cache
-    if Data.PERSISTENT_CACHE and Data.CWWW_CACHE[2] == 1:
+    if Data.CWWW_CACHE[2] == 1:
         white()                            # Recover state if ON
+    else:
+        white(0, 0)                        # Init pins at bootup
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
 def white(c=None, w=None):
+    __cwww_init()
     c = Data.CWWW_CACHE[0] if c is None else c
     w = Data.CWWW_CACHE[1] if w is None else w
-    __cwww_init()
-    Data.CWWW_CACHE[2] = False
     Data.CWWW_OBJS[0].duty(c)
-    Data.CWWW_CACHE[2] |= True if c > 0 else False
     Data.CWWW_OBJS[1].duty(w)
-    Data.CWWW_CACHE[2] |= True if w > 0 else False
     # Cache channel duties if ON
-    if Data.CWWW_CACHE[2]:
+    if c > 0 or w > 0:
         Data.CWWW_CACHE = [Data.CWWW_OBJS[0].duty(), Data.CWWW_OBJS[1].duty(), 1]
     else:
         Data.CWWW_CACHE[2] = 0

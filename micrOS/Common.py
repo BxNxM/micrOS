@@ -36,13 +36,15 @@ def transition(from_val, to_val, step_ms, interval_sec):
     :param step_ms: step to reach to_val - timirq_seq
     :param interval_sec: full interval
     """
-    from_val = from_val
-    step_cnt = round((interval_sec*1000)/step_ms)
-    delta = abs((from_val-to_val)/step_cnt)
-    direc = -1 if from_val > to_val else 1
-
-    for cnt in range(0, step_cnt+1):
-        yield round(from_val + (cnt * delta) * direc)
+    if interval_sec > 0:
+        from_val = from_val
+        step_cnt = round((interval_sec*1000)/step_ms)
+        delta = abs((from_val-to_val)/step_cnt)
+        direc = -1 if from_val > to_val else 1
+        for cnt in range(0, step_cnt+1):
+            yield round(from_val + (cnt * delta) * direc)
+    else:
+        yield round(to_val)
 
 
 class SmartADC:

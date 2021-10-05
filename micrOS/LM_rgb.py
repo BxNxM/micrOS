@@ -71,19 +71,17 @@ def load_n_init(cache=None):
 
 
 def rgb(r=None, g=None, b=None):
+    __RGB_init()
+    # Dynamic input handling: user/cache
     r = Data.RGB_CACHE[0] if r is None else r
     g = Data.RGB_CACHE[1] if g is None else g
     b = Data.RGB_CACHE[2] if b is None else b
-    __RGB_init()
-    Data.RGB_CACHE[3] = False
+    # Set RGB channels
     Data.RGB_OBJS[0].duty(r)
-    Data.RGB_CACHE[3] |= True if r > 0 else False
     Data.RGB_OBJS[1].duty(g)
-    Data.RGB_CACHE[3] |= True if g > 0 else False
     Data.RGB_OBJS[2].duty(b)
-    Data.RGB_CACHE[3] |= True if b > 0 else False
-    # Cache channel duties if ON (RGB not 0)
-    if Data.RGB_CACHE[3]:
+    # Save channel duties if LED on
+    if r > 0 or g > 0 or b > 0:
         Data.RGB_CACHE = [Data.RGB_OBJS[0].duty(), Data.RGB_OBJS[1].duty(), Data.RGB_OBJS[2].duty(), 1]
     else:
         Data.RGB_CACHE[3] = 0

@@ -20,3 +20,4 @@ co2 = const(0)         # ADC0 - CO2
 temp6000 = const(0)    # ADC0 - light sensor TEMP6000
 ph = const(0)          # ADC0 - PH sensor
 buzzer = const(14)     # D5 - Buzzer pin - sound generator
+ds18 = const(9)        # SD2 - DS18B20 - temp. sensor

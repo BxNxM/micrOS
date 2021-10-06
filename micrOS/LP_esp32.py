@@ -4,10 +4,13 @@ from micropython import const
 builtin = const(2)     # BUILT IN LED - progress_led
 
 
-# ANALOG RGB
+# ANALOG RGB + WW + CW
 redgb = const(14)      # D14 - rgb red channel [PWM]
 rgreenb = const(12)    # D12 - rgb green channel [PWM]
 rgbue = const(15)      # D15 - rgb blue channel [PWM]
+
+wwhite = const(27)	   # D27 - warm white [PWM]
+cwhite = const(26)	   # D26 - cold white [PWM]
 
 
 # DIGITAL LED
@@ -46,13 +49,13 @@ i2c_scl = const(22)    # D21 - oled - clock
 
 
 # EXTERNAL EVENT IRQ
-extirq = const(4)      # D4  - extirq pin
+irq1 = const(4)        # D4  - event irq pin
 touch_0 = const(13)    # D13 - touch sensor TODO
 
 
 # SENSORS
-hcsrtrig = const(26)   # D26 - distance HCSR04 trigger pin
-hcsrecho = const(33)   # D33 - distance HCSR04 echo pin
+hcsrtrig = const(32)   # D32 - distance HCSR04 trigger pin
+hcsrecho = const(35)   # D35 - distance HCSR04 echo pin
 dhtpin = const(32)     # D32 - dht_pin 11 and 22
 co2 = const(35)        # D35 - CO2
 temp6000 = const(36)   # VP - light sensor TEMP6000

@@ -141,7 +141,7 @@ def __configure(attributes, sso):
         key = attributes[0]
         value = " ".join(attributes[1:])
         # Check irq required memory
-        if key in ('timirq', 'extirq', 'cron') and attributes[1].lower() == 'true':
+        if key in ('timirq', 'irq1', 'irq2', 'irq3', 'irq14', 'cron') and attributes[1].lower() == 'true':
             isOK, avmem = __irq_mem_req_check(key)
             if not isOK:
                 sso.reply_message("Skip ... feature requires more memory then {} byte".format(avmem))
@@ -165,7 +165,7 @@ def __irq_mem_req_check(key):
         return False, memavail
     if key == 'cron' and memavail < cfgget('irqmreq') * 2:
         return False, memavail
-    if key == 'extirq' and memavail < int(cfgget('irqmreq') * 0.7):
+    if key in ('irq1', 'irq2', 'irq3', 'irq4') and memavail < int(cfgget('irqmreq') * 0.7):
         return False, memavail
     return True, memavail
 

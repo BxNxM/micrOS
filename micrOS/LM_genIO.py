@@ -1,14 +1,7 @@
-from machine import Pin, PWM, ADC
+from machine import Pin, PWM
 from sys import platform
 from LogicalPins import physical_pin
-__ADC_PROP = (1023, 1.0)
-
-"""
-ADC.ATTN_0DB: 0dB attenuation, gives a maximum input voltage of 1.00v - this is the default configuration
-ADC.ATTN_2_5DB: 2.5dB attenuation, gives a maximum input voltage of approximately 1.34v
-ADC.ATTN_6DB: 6dB attenuation, gives a maximum input voltage of approximately 2.00v
-ADC.ATTN_11DB: 11dB attenuation, gives a maximum input voltage of approximately 3.6v
-"""
+from Common import SmartADC
 
 
 def __digital_out_init(pin):
@@ -40,23 +33,6 @@ def __pwm_init(pin, freq):
     return PWM(Pin(pin), freq=freq)
 
 
-def __init_adc(pin):
-    """
-    Init ADC
-    """
-    global __ADC_PROP
-    if not isinstance(pin, int):
-        pin = physical_pin(pin)
-    if 'esp8266' in platform:
-        adc = ADC(pin)          # 1V measure range
-        __ADC_PROP = (1023, 1.0)
-    else:
-        adc = ADC(Pin(pin))
-        adc.atten(ADC.ATTN_11DB)                          # 3.3V measure range
-        __ADC_PROP = (4095, 3.6)
-    return adc
-
-
 def set_pwm(pin, freq=1024, duty=500):
     """
     Set PWM signal output
@@ -86,8 +62,9 @@ def get_adc(pin):
     :param pin: pin number or logical pin name
     :return: verdict
     """
-    raw_value = __init_adc(pin).read()
-    return {'raw': raw_value, 'pin': pin}
+    data = SmartADC.get_singleton(pin).get()
+    data["pin"] = pin
+    return data
 
 
 def get_in(pin):

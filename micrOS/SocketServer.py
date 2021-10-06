@@ -7,6 +7,8 @@ dedicated to micrOS framework.
 - built in exposed commands
     - hello
     - version
+    - webrepl     (switch to webrepl interface)
+    - webrepl -u  (update micrOS over webrepl)
     - exit
     - reboot
 - server recovery handling
@@ -45,7 +47,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.2.2-0'
+    __socket_interpreter_version = '1.2.5-0'
 
     def __new__(cls, host=''):
         """

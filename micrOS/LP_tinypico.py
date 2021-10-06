@@ -1,25 +1,20 @@
 from micropython import const
 
-# ANALOG RGB
+# ANALOG RGB + WW + CW
 redgb = const(25)       # D25 - rgb red channel [PWM CH1]
 rgreenb = const(26)     # D26 - rgb green channel [PWM CH2]
 rgbue = const(27)       # D27 - rgb blue channel [PWM CH3]
 
-redgb2 = const(15)      # D15 - rgb2 red channel [PWM CH4]
-rgreenb2 = const(14)    # D14 - rgb2 green channel [PWM CH5]
-rgbue2 = const(4)       # D4 - rgb2 blue channel [PWM CH6]
-
-wwhite = const(15)		# D15 - warm white [PWM CH4] TODO
-cwhite = const(14)		# D14 - cold white [PWM CH5] TODO
-
+wwhite = const(15)		# D15 - warm white [PWM CH4]
+cwhite = const(14)		# D14 - cold white [PWM CH5]
 
 # DIGITAL LED
 neop = const(23)       # D23 - WS2812 - neopixel OneWire bus [PWM]
 
 
 # ACTUATORS
-servo_1 = const(15)    # D15 - servo 1 [PWM CH4]
-servo_2 = const(14)    # D14 - servo 2 [PWM CH5]
+servo_1 = const(14)    # D14 - servo 1 [PWM CH5]
+servo_2 = const(4)     # D4 - servo 2 [PWM CH6]
 
 switch_1 = const(18)   # D18 - switch 1 [simple]
 switch_2 = const(19)   # D19 - switch 2 [simple]
@@ -30,7 +25,7 @@ l298speed = const(5)   # D5 - DC motor pwm control [PWM]
 l298dir_1 = const(18)  # D18 - DC motor direction (1)
 l298dir_2 = const(19)  # D19 - DC motor direction (2)
 
-l9110dir_1 = const(18) # D33 - DC motor direction (1)
+l9110dir_1 = const(18) # D18 - DC motor direction (1)
 l9110dir_2 = const(19) # D25 - DC motor direction (2)
 
 buzzer = const(18)     # D18 - Buzzer pin - sound generator
@@ -42,8 +37,12 @@ i2c_scl = const(22)    # D21 - clock
 
 
 # EXTERNAL EVENT IRQ
-extirq = const(5)      # D5  - extirq pin
-touch_0 = const(32)    # D32 - builtin touch sensor	TODO
+irq1 = const(5)         # D5  - event irq pin
+irq2 = const(18)        # D18 - event irq pin
+irq3 = const(19)        # D19  - event irq pin
+irq4 = const(23)        # D23  - event irq pin
+
+touch_0 = const(32)     # D32 - builtin touch sensor	TODO
 
 
 # SENSORS
@@ -52,8 +51,9 @@ hcsrecho = const(26)   # D26 - distance HCSR04 echo pin
 dhtpin = const(32)     # D32 - dht_pin 11 and 22
 co2 = const(33)        # D33 - CO2 / BATTERY CONFLICT
 temp6000 = const(32)   # D32  - light sensor TEMP6000
-ph = const(4)          # D4 - PH sensor
+ph = const(32)         # D32 - PH sensor
 ds18 = const(19)       # D19 - DS18B20 - temp. sensor
+genadc = const(33)     # D33 - generic adc input
 
 
 # TinyPico Built-in

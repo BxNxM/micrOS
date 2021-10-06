@@ -1,6 +1,6 @@
 import _thread
 from time import sleep
-from LmExecCore import exec_lm_core
+from InterpreterCore import exec_lm_core
 
 
 class BgTask:

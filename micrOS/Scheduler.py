@@ -1,5 +1,5 @@
 from time import localtime
-from LmExecCore import exec_lm_core
+from InterpreterCore import exec_lm_core
 from ConfigHandler import console_write
 
 """

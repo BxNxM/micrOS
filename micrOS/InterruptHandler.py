@@ -10,10 +10,13 @@ handling dedicated to micrOS framework.
             0-6:0-24:0-59:0-59!system heartbeat; etc.
 
 Designed by Marcell Ban aka BxNxM
+
+Reference: https://docs.micropython.org/en/latest/library/machine.Pin.html
 """
 #################################################################
 #                            IMPORTS                            #
 #################################################################
+from machine import Pin
 from ConfigHandler import cfgget, console_write
 from InterpreterCore import execLMPipe
 from LogicalPins import physical_pin
@@ -102,28 +105,44 @@ def enableCron():
 #################################################################
 
 
-def init_eventPIN():
+def initEventIRQs():
     """
-    EVENT INTERRUPT CONFIGURATION
+    EVENT INTERRUPT CONFIGURATION - multiple
     """
-    console_write("[IRQ] EXTIRQ SETUP - EXTIRQ: {} TRIG: {}".format(cfgget("extirq"), cfgget("extirqtrig")))
-    console_write("|- [IRQ] EXTIRQ CBF: {}".format(cfgget('extirqcbf')))
-    if cfgget('extirq'):
-        pin = physical_pin('extirq')
-        trig = cfgget('extirqtrig').strip().lower()
-        # Init event irq with callback function wrapper
-        from machine import Pin
-        pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
-        console_write("[IRQ] - event setup: {}".format(trig))
-        lm_str = cfgget('extirqcbf')
-        if trig == 'down':
-            pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(lm_str))
-            return
-        if trig == 'both':
-            pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: execLMPipe(lm_str))
-            return
-        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: execLMPipe(lm_str))
+    irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
+               (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
+               (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
+               (cfgget("irq4"), cfgget("irq4_trig"), cfgget("irq4_cbf")))
 
+    # [*] hardcopy parameters to be able to resolve cbf-s
+    cbf_resolver = {}
+    for i, data in enumerate(irqdata):
+        irq, trig, cbf = data
+        console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i+1, irq, trig))
+        console_write("|- [IRQ] EXTIRQ CBF: {}".format(cbf))
+        pin = physical_pin('irq{}'.format(i+1))       # irq1, irq2, etc.
+        if irq and pin:
+            # [*] update cbf dict by pin number (available in irq callback)
+            cbf_resolver['Pin({})'.format(pin)] = cbf
+            trig = trig.strip().lower()
+            # Init event irq with callback function wrapper
+            # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            # TODO: expose parameter
+            pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+            # [IRQ] - event type setup
+            if trig == 'down':
+                #pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: print("[down] {}:{}".format(pin, cbf_resolver[str(pin)])))
+                pin_obj.irq(trigger=Pin.IRQ_FALLING,
+                            handler=lambda pin: execLMPipe(cbf_resolver[str(pin)]))
+                continue
+            if trig == 'both':
+                #pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: print("[both] {}:{}".format(pin, cbf_resolver[str(pin)])))
+                pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
+                            handler=lambda pin: execLMPipe(cbf_resolver[str(pin)]))
+                continue
+            # Default
+            #pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: print("[up] {}:{}".format(pin, cbf_resolver[str(pin)])))
+            pin_obj.irq(trigger=Pin.IRQ_RISING,
+                        handler=lambda pin: execLMPipe(cbf_resolver[str(pin)]))
 
 #################################################################
 #                         INIT MODULE                           #

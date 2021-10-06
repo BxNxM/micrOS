@@ -28,6 +28,16 @@
     "guimeta_fix_1_0_3_2",
     "help"
   ],
+  "oled_ui": [
+    "simple_page",
+    "adc_page",
+    "sys_page",
+    "pageui",
+    "next_page",
+    "prev_page",
+    "lmdep",
+    "help"
+  ],
   "system": [
     "info <msgobj>",
     "gclean",
@@ -42,27 +52,20 @@
     "ha_sta",
     "help"
   ],
-  "rgbfader": [
-    "load_n_init cache=None",
-    "fade r g b sec=0",
-    "transition f=False",
-    "transition_onoff state=None",
-    "toggle state=None",
-    "help"
-  ],
   "co2": [
     "raw_measure_mq135",
     "measure_mq135 temperature=None humidity=None",
     "help"
   ],
   "oled": [
-    "text string=\"text\" x=0 y=0 show=True",
+    "text string=\"text\" x=0 y=0",
     "invert",
-    "clean state=0 show=True",
-    "line sx sy ex ey state=1 show=True",
-    "rect sx sy ex ey state=1 show=True",
+    "clean state=0",
+    "line sx sy ex ey state=1",
+    "rect x y w h state=1 fill=False",
     "poweron",
     "poweroff",
+    "show",
     "help"
   ],
   "tinyrgb": [
@@ -162,12 +165,6 @@
     "lmdep",
     "help"
   ],
-  "oled_widgets": [
-    "simple_page",
-    "sys_page clean=False",
-    "lmdep",
-    "help"
-  ],
   "rgb": [
     "load_n_init cache=None",
     "rgb r=None g=None b=None",
@@ -217,6 +214,14 @@
     "distance_mm",
     "distance_cm",
     "deinit",
+    "help"
+  ],
+  "cwwhite": [
+    "load_n_init cache=None",
+    "white c=None w=None",
+    "toggle state=None",
+    "set_transition cw ww sec",
+    "run_transition",
     "help"
   ]
 }

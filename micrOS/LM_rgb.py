@@ -8,7 +8,7 @@ from ConfigHandler import cfgget
 
 class Data:
     RGB_OBJS = (None, None, None)
-    RGB_CACHE = [600, 600, 600, 0]           # R, G, B, RGB state
+    RGB_CACHE = [197, 35, 10, 0]           # R, G, B (default color) + RGB state (default: off)
     PERSISTENT_CACHE = False
     FADE_OBJS = (None, None, None)
 
@@ -62,27 +62,26 @@ def load_n_init(cache=None):
         Data.PERSISTENT_CACHE = True if platform == 'esp32' else False
     else:
         Data.PERSISTENT_CACHE = cache
-    rgb(0, 0, 0)                           # Init pins at bootup
-    __persistent_cache_manager('r')        # recover data cache
-    if Data.PERSISTENT_CACHE and Data.RGB_CACHE[3] == 1:
-        rgb()                              # Recover state if ON
+    __persistent_cache_manager('r')      # recover data cache if enabled
+    if Data.RGB_CACHE[3] == 1:
+        rgb()
+    else:
+        rgb(0, 0, 0)                     # If no persistent cache, init all pins low (OFF)
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
 def rgb(r=None, g=None, b=None):
+    __RGB_init()
+    # Dynamic input handling: user/cache
     r = Data.RGB_CACHE[0] if r is None else r
     g = Data.RGB_CACHE[1] if g is None else g
     b = Data.RGB_CACHE[2] if b is None else b
-    __RGB_init()
-    Data.RGB_CACHE[3] = False
+    # Set RGB channels
     Data.RGB_OBJS[0].duty(r)
-    Data.RGB_CACHE[3] |= True if r > 0 else False
     Data.RGB_OBJS[1].duty(g)
-    Data.RGB_CACHE[3] |= True if g > 0 else False
     Data.RGB_OBJS[2].duty(b)
-    Data.RGB_CACHE[3] |= True if b > 0 else False
-    # Cache channel duties if ON
-    if Data.RGB_CACHE[3]:
+    # Save channel duties if LED on
+    if r > 0 or g > 0 or b > 0:
         Data.RGB_CACHE = [Data.RGB_OBJS[0].duty(), Data.RGB_OBJS[1].duty(), Data.RGB_OBJS[2].duty(), 1]
     else:
         Data.RGB_CACHE[3] = 0

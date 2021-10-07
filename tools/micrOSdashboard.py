@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import QApplication, QPlainTextEdit
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtGui
+from PyQt5.QtGui import QPixmap
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, 'MicrOSDevEnv'))
 import MicrOSDevEnv
@@ -136,6 +137,7 @@ class DropDownBase:
     def update(self, elements):
         self.dowpdown_obj.addItems(elements)
         self.dowpdown_obj.view()
+
 
 #################################################
 #            GUI Custom classes                 #
@@ -458,6 +460,79 @@ class ClusterStatus:
             self.parent_obj.console.append_output(msg)
         self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEV_IP_DICT.keys())}')
 
+
+class QuickOTAUpload(QLabel):
+
+    def __init__(self, parent_obj):
+        super().__init__(parent_obj)
+        self.parent_obj = parent_obj
+        self.contents_path = []
+
+    def create_all(self):
+        label = QLabel(self.parent_obj)
+        label.setText("Quick OTA Upload")
+        label.setGeometry(682, 210, 149, 15)
+        label.setStyleSheet("background-color: white")
+
+        self.create_upload_button()
+        self.create_clean_button()
+        self.create_upload_icon()
+
+    def create_upload_button(self):
+        button = QPushButton('Upload', self.parent_obj)
+        button.setToolTip('Get micrOS nodes status')
+        button.setGeometry(682, 290, 75, 20)
+        button.setStyleSheet("QPushButton{background-color: White;} QPushButton::pressed{background-color : green;}")
+        button.clicked.connect(self.get_upload_callback)
+
+    def create_clean_button(self):
+        button = QPushButton('Clean', self.parent_obj)
+        button.setToolTip('Get micrOS nodes status')
+        button.setGeometry(757, 290, 75, 20)
+        button.setStyleSheet("QPushButton{background-color: White;} QPushButton::pressed{background-color : green;}")
+        button.clicked.connect(self.get_clean_callback)
+
+    def create_upload_icon(self):
+        self.setGeometry(682, 210, 149, 80)
+        self.setScaledContents(True)
+        logo_path = os.path.join(MYPATH, '../media/dnd.png')
+        pixmap = QPixmap(logo_path)
+        self.setPixmap(pixmap)
+        self.setToolTip("Direct file upload to micrOS board via webrepl")
+        self.setAcceptDrops(True)
+
+    def get_upload_callback(self):
+        if len(self.contents_path) == 0:
+            self.parent_obj.console.append_output(f"Empty upload list.")
+        else:
+            if not self.parent_obj.start_bg_application_popup(text="QUICK OTA UPLOAD?", verify_data_dict={'upload': self.contents_path}):
+                return
+            for f in self.contents_path:
+                self.parent_obj.console.append_output(f"Dummy upload: {f}")
+                # TODO
+
+    def get_clean_callback(self):
+        if len(self.contents_path) == 0:
+            self.parent_obj.console.append_output('Nothing to clean.')
+        else:
+            self.parent_obj.console.append_output('Cleanup upload cache list.')
+            self.contents_path = []
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        files = [u.toLocalFile() for u in event.mimeData().urls()]
+        for f in files:
+            # Save dropped file(s)
+            if f not in self.contents_path:
+                # Format check! LM_*.py/.mpy
+                self.contents_path.append(f)
+            self.parent_obj.console.append_output(f"Add file: {f}")
+
 #################################################
 #                  MAIN WINDOW                  #
 #################################################
@@ -480,6 +555,7 @@ class micrOSGUI(QWidget):
         self.modifiers_obj = None
         self.progressbar = None
         self.nodes_status_button_obj = None
+        self.quick_upload_obj = None
 
         self.console = None
         self.device_conn_struct = []
@@ -510,6 +586,10 @@ class micrOSGUI(QWidget):
         self.nodes_status_button_obj = ClusterStatus(parent_obj=self)
         self.nodes_status_button_obj.create_micrOS_status_button()
 
+        # Test:
+        self.quick_upload_obj = QuickOTAUpload(parent_obj=self)
+        self.quick_upload_obj.create_all()
+
         self.board_dropdown = BoardTypeSelector(parent_obj=self)
         self.board_dropdown.dropdown_board()
 
@@ -521,6 +601,7 @@ class micrOSGUI(QWidget):
 
         self.application_dropdown = LocalAppSelector(parent_obj=self)
         self.application_dropdown.dropdown_application()
+
 
         self.appwd_textbox = InputField(self)
 

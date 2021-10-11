@@ -804,6 +804,8 @@ class MicrOSDevTool:
             ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
         """
 
+        print("OTA UPDATE")
+
         upload_path_list = []
         force_mode = False
 
@@ -893,7 +895,7 @@ class MicrOSDevTool:
             # Add source to upload
             upload_path_list.append(source)
         # Upload files / sources
-        return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list, ota_password=ota_password)
+        return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list, ota_password=webrepl_password)
 
     def ota_webrepl_update_core(self, device=None, upload_path_list=[], ota_password='ADmin123', force_lm=False):
         """

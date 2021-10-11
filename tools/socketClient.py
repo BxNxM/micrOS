@@ -114,6 +114,9 @@ class ConnectionData:
         device_fid_in_order = []
         device_was_found = False
         device_fid = None
+        if len(ConnectionData.MICROS_DEV_IP_DICT) == 0:
+            print("Retrieve MICROS_DEV_IP_DICT")
+            ConnectionData.read_MicrOS_device_cache()
         if dev is None:
             print("Activate micrOS device connection address")
         if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:

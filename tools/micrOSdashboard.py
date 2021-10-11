@@ -542,8 +542,13 @@ class QuickOTAUpload(QLabel):
             # Save dropped file(s)
             if f not in self.contents_path:
                 # Format check! LM_*.py/.mpy
-                self.contents_path.append(f)
-            self.parent_obj.console.append_output(f"Add file: {f}")
+                if f.endswith('.py') or f.endswith('.mpy'):
+                    self.contents_path.append(f)
+                    self.parent_obj.console.append_output(f"Add file: {f}")
+                else:
+                    self.parent_obj.console.append_output("You can only upload files with .py/.mpy extension!")
+            else:
+                self.parent_obj.console.append_output(f"File was already added.")
 
 
 #################################################

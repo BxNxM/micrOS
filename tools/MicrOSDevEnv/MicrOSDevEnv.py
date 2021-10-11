@@ -828,6 +828,7 @@ class MicrOSDevTool:
         # Get data before update from device
         status, answer_msg = socketClient.run(['--dev', fuid, 'version'])
         device_version = answer_msg.strip() if status else Exception("Get device version failed")
+        # ???
         status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
         webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
 

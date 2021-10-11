@@ -7,9 +7,11 @@ import json
 import pprint
 import time
 import serial.tools.list_ports as serial_port_list
+
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 import LocalMachine
 from TerminalColors import Colors
+
 sys.path.append(os.path.join(MYPATH, '../'))
 import mpy_cross
 import socketClient
@@ -27,22 +29,22 @@ class MicrOSDevTool:
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial']
         # Commands for devices
         self.dev_types_and_cmds = \
-                {'esp8266':
-                   {'erase': 'esptool.py --port {dev} erase_flash',
-                    'deploy': 'esptool.py --port {dev} --baud 460800 write_flash --flash_size=detect -fm dio 0 {micropython}',
-                    'connect': 'screen {dev} 115200',
-                    'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
-                 'esp32':
-                     {'erase': 'esptool.py --port {dev} erase_flash',
-                      'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
-                      'connect': 'screen {dev} 115200',
-                      'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
-                 'tinypico':
-                     {'erase': 'esptool.py --port {dev} erase_flash',
-                      'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
-                      'connect': 'screen {dev} 115200',
-                      'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
-                 }
+            {'esp8266':
+                 {'erase': 'esptool.py --port {dev} erase_flash',
+                  'deploy': 'esptool.py --port {dev} --baud 460800 write_flash --flash_size=detect -fm dio 0 {micropython}',
+                  'connect': 'screen {dev} 115200',
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
+             'esp32':
+                 {'erase': 'esptool.py --port {dev} erase_flash',
+                  'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
+                  'connect': 'screen {dev} 115200',
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
+             'tinypico':
+                 {'erase': 'esptool.py --port {dev} erase_flash',
+                  'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
+                  'connect': 'screen {dev} 115200',
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
+             }
 
         # DevEnv base pathes
         self.MicrOS_dir_path = os.path.join(MYPATH, "../../micrOS")
@@ -51,7 +53,7 @@ class MicrOSDevTool:
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../../framework")
         self.micropython_repo_path = os.path.join(MYPATH, '../../micropython_repo/micropython')
         self.webreplcli_repo_path = os.path.join(MYPATH, '../../micropython_repo/webrepl/webrepl_cli.py')
-        self.mpy_cross_compiler_path = mpy_cross.mpy_cross      # mpy-cross binary path for cross compilation
+        self.mpy_cross_compiler_path = mpy_cross.mpy_cross  # mpy-cross binary path for cross compilation
         self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
         self.precompile_LM_wihitelist = self.read_LMs_whitelist()
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
@@ -74,7 +76,8 @@ class MicrOSDevTool:
         whitelist = []
         if os.path.isfile(lm_to_compile_conf_path):
             with open(lm_to_compile_conf_path, 'r') as f:
-                whitelist = [str(k.strip()) for k in f.read().strip().split() if k.strip().startswith('LM_') and k.strip().endswith('.py')]
+                whitelist = [str(k.strip()) for k in f.read().strip().split() if
+                             k.strip().startswith('LM_') and k.strip().endswith('.py')]
         return whitelist
 
     def __initialize_dev_env_for_deployment_vis_usb(self):
@@ -98,7 +101,8 @@ class MicrOSDevTool:
             if self.selected_device_type is None:
                 self.selected_device_type = list(self.dev_types_and_cmds.keys())[int(input("Select index: "))]
 
-        micropython_bin_for_type = [mbin for mbin in self.get_micropython_binaries() if self.selected_device_type.lower() in mbin]
+        micropython_bin_for_type = [mbin for mbin in self.get_micropython_binaries() if
+                                    self.selected_device_type.lower() in mbin]
         selected_index = 0
         if len(micropython_bin_for_type) > 1:
             self.console("Please select micropython for deployment")
@@ -109,10 +113,10 @@ class MicrOSDevTool:
                 if not self.devenv_usb_deployment_is_active:
                     self.selected_micropython_bin = micropython_bin_for_type[selected_index]
 
-        self.console("-"*60)
+        self.console("-" * 60)
         self.console("Selected device type: {}".format(self.selected_device_type))
         self.console("Selected micropython bin: {}".format(self.selected_micropython_bin))
-        self.console("-"*60)
+        self.console("-" * 60)
 
     def console(self, msg, state=None):
         '''
@@ -152,7 +156,7 @@ class MicrOSDevTool:
 
         if not sys.platform.startswith('win'):
             dev_path = '/dev/'
-            content_list = [ dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev ]
+            content_list = [dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev]
             for present_dev in content_list:
                 for dev_identifier in self.nodemcu_device_subnames:
                     if dev_identifier in present_dev:
@@ -178,7 +182,8 @@ class MicrOSDevTool:
         self.console("------------------------------------------")
         micropython_bins_list = []
 
-        mp_bin_list = [ binary for binary in LocalMachine.FileHandler.list_dir(self.micropython_bin_dir_path) if binary.endswith('.bin') ]
+        mp_bin_list = [binary for binary in LocalMachine.FileHandler.list_dir(self.micropython_bin_dir_path) if
+                       binary.endswith('.bin')]
         for mp_bin in mp_bin_list:
             micropython_bins_list.append(os.path.join(self.micropython_bin_dir_path, mp_bin))
         if len(micropython_bins_list) > 0:
@@ -240,8 +245,8 @@ class MicrOSDevTool:
             return False
 
     def __cleanup_precompiled_dir(self):
-        for source in [ pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path) \
-                        if pysource.endswith('.py') or pysource.endswith('.mpy') ]:
+        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path) \
+                       if pysource.endswith('.py') or pysource.endswith('.mpy')]:
             to_remove_path = os.path.join(self.precompiled_MicrOS_dir_path, source)
             self.console("Cleanup dir - remove: {}".format(to_remove_path), state='imp')
             LocalMachine.FileHandler.remove(to_remove_path)
@@ -259,7 +264,8 @@ class MicrOSDevTool:
         tmp_skip_compile_set = set()
         error_cnt = 0
         # Filter source
-        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if pysource.endswith('.py')]:
+        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if
+                       pysource.endswith('.py')]:
             is_blacklisted = False
             for black_prefix in file_prefix_blacklist:
                 if source.startswith(black_prefix) and source not in self.precompile_LM_wihitelist:
@@ -279,10 +285,11 @@ class MicrOSDevTool:
             precompiled_target_name = to_compile.replace('.py', '.mpy')
 
             # Build micrOS with mpy-cross binary
-            command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(mpy_cross=self.mpy_cross_compiler_path,
-                                                                                          to_compile=to_compile,
-                                                                                          target_path=self.precompiled_MicrOS_dir_path,
-                                                                                          target_name=precompiled_target_name)
+            command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(
+                mpy_cross=self.mpy_cross_compiler_path,
+                to_compile=to_compile,
+                target_path=self.precompiled_MicrOS_dir_path,
+                target_name=precompiled_target_name)
             self.console("Precomile: {}\n|->CMD: {}".format(to_compile, command), state='imp')
             if not self.dummy_exec:
                 exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
@@ -347,7 +354,7 @@ class MicrOSDevTool:
         workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
 
         for index, source in enumerate(source_to_put_device):
-            self.console("[{}%] micrOS deploy via USB".format(int((index+1)/len(source_to_put_device)*100)))
+            self.console("[{}%] micrOS deploy via USB".format(int((index + 1) / len(source_to_put_device) * 100)))
             ampy_args = 'put {from_}'.format(from_=source)
             command = ampy_cmd.format(dev=device, args=ampy_args)
             command = '{cmd}'.format(cmd=command)
@@ -479,7 +486,8 @@ class MicrOSDevTool:
             # Remove actual defualt config
             LocalMachine.FileHandler.remove(os.path.join(self.MicrOS_dir_path, 'node_config.json'))
             # Create default config
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(create_default_config_command, shell=True)
+            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(create_default_config_command,
+                                                                               shell=True)
         else:
             exitcode = 0
         # Restore workdir
@@ -509,7 +517,8 @@ class MicrOSDevTool:
         if os.path.isfile(local_node_config):
             with open(local_node_config, 'r') as f:
                 node_devfid = json.load(f)['devfid']
-            archive_node_config = os.path.join(self.MicrOS_node_config_archive, '{}-node_config.json'.format(node_devfid))
+            archive_node_config = os.path.join(self.MicrOS_node_config_archive,
+                                               '{}-node_config.json'.format(node_devfid))
             LocalMachine.FileHandler.create_dir(self.MicrOS_node_config_archive)
             self.console("Archive node_config... to {}".format(archive_node_config))
             if not self.dummy_exec:
@@ -521,12 +530,13 @@ class MicrOSDevTool:
         conf_list = []
         index = -1
         if os.path.isdir(self.MicrOS_node_config_archive):
-            conf_list = [ conf for conf in LocalMachine.FileHandler.list_dir(self.MicrOS_node_config_archive) if conf.endswith('json') ]
+            conf_list = [conf for conf in LocalMachine.FileHandler.list_dir(self.MicrOS_node_config_archive) if
+                         conf.endswith('json')]
         self.console("Select config file to deplay:")
         for index, conf in enumerate(conf_list):
             self.console("  [{}{}{}] {}".format(Colors.BOLD, index, Colors.NC, conf))
-        self.console("  [{}{}{}] {}".format(Colors.BOLD, index+1, Colors.NC, 'NEW'))
-        self.console("  [{}{}{}] {}".format(Colors.BOLD, index+2, Colors.NC, 'SKIP'))
+        self.console("  [{}{}{}] {}".format(Colors.BOLD, index + 1, Colors.NC, 'NEW'))
+        self.console("  [{}{}{}] {}".format(Colors.BOLD, index + 2, Colors.NC, 'SKIP'))
         conf_list.append(os.path.join('node_config.json'))
         conf_list.append(os.path.join('SKIP'))
         selected_index = int(input("Select index: "))
@@ -536,7 +546,7 @@ class MicrOSDevTool:
             # Restore saved config
             target_path = os.path.join(self.precompiled_MicrOS_dir_path, selected_config.split('-')[1])
             source_path = os.path.join(self.MicrOS_node_config_archive, selected_config)
-        elif selected_index == len(conf_list) -1:
+        elif selected_index == len(conf_list) - 1:
             # SKIP restore config - use the local version in mpy-micrOS folder
             target_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
             source_path = None
@@ -555,7 +565,8 @@ class MicrOSDevTool:
             if self.inject_profile(target_path) is None:
                 # Dump untouched config content
                 with open(target_path, 'r') as f:
-                    self.console("[ INFO ] Actual config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
+                    self.console(
+                        "[ INFO ] Actual config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
 
         # Manual config editing breakpoint
         self.console("=================== INFO =====================")
@@ -563,7 +574,8 @@ class MicrOSDevTool:
         input("[ QUESTION ] To continue, press enter.")
         # Dump config content
         with open(target_path, 'r') as f:
-            self.console("[ INFO ] Deployment with config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
+            self.console(
+                "[ INFO ] Deployment with config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
 
     def __override_local_config_from_node(self, node_config=None):
         node_config_path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')
@@ -620,7 +632,8 @@ class MicrOSDevTool:
         os.chdir(mypath_bak)
 
     def inject_profile(self, target_path):
-        profile_list = [ profile for profile in LocalMachine.FileHandler.list_dir(self.node_config_profiles_path) if profile.endswith('.json') ]
+        profile_list = [profile for profile in LocalMachine.FileHandler.list_dir(self.node_config_profiles_path) if
+                        profile.endswith('.json')]
         for index, profile in enumerate(profile_list):
             self.console("[{}]\t{}".format(index, profile))
         profile = input("[ QUESTION ] Select {}profile{} or to skip press enter: ".format(Colors.BOLD, Colors.NC))
@@ -637,7 +650,7 @@ class MicrOSDevTool:
             default_conf_dict = json.load(f)
         # Read profile
         profile_path = os.path.join(self.node_config_profiles_path, profile_list[int(profile)])
-        with open(profile_path, 'r')  as f:
+        with open(profile_path, 'r') as f:
             profile_dict = json.load(f)
         for key, value in profile_dict.items():
             if value is None:
@@ -710,7 +723,8 @@ class MicrOSDevTool:
                                 continue
                             # Gen proper func name
                             function_name = '{}'.format(line.split(')')[0]).replace("def", '').strip()
-                            function_name = function_name.replace('(', ' ').replace(',', '').replace('msgobj', '<msgobj>')
+                            function_name = function_name.replace('(', ' ').replace(',', '').replace('msgobj',
+                                                                                                     '<msgobj>')
                             # Save record
                             module_function_dict[module_int_name].append(function_name.strip())
             except Exception as e:
@@ -777,89 +791,31 @@ class MicrOSDevTool:
             if exitcode == 0:
                 self.console("\tClone {}DONE{}".format(Colors.OK, Colors.NC))
             else:
-                self.console("GIT CLONE {}ERROR{}:\nstdout: {}\nstderr: {}".format(Colors.ERR, Colors.NC, stdout, stderr))
+                self.console(
+                    "GIT CLONE {}ERROR{}:\nstdout: {}\nstderr: {}".format(Colors.ERR, Colors.NC, stdout, stderr))
                 return False
         return True
 
-    def __lock_update_with_webrepl(self, host, lock=False, pwd='ADmin123'):
-        def __lock_handler(self, host, lock=False, pwd='ADmin123'):
-            """
-            [1] Create .if_mode file (local file system)
-                lock: True -> value: webrepl
-                lock: False -> value: micros
-            [2] Copy file to device
-            """
-            workdir_handler = LocalMachine.SimplePopPushd()
-            workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
-
-            # Set lock file value
-            lock_value = 'micros'
-            if lock:
-                lock_value = 'webrepl'
-
-            # Create / modify file
-            with open(".if_mode", 'w') as f:
-                f.write(lock_value)
-
-            # Create copy command
-            command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
-                                                                                pwd=pwd,
-                                                                                host=host)
-            if self.dummy_exec:
-                self.console("Webrepl CMD: {}".format(command))
-                return True
-            else:
-                self.console("Webrepl CMD: {}".format(command))
-                try:
-                    exitcode = 0
-                    stdout = ''
-                    stderr = ''
-                    for _ in range(0, 2):
-                        exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-                        LocalMachine.FileHandler.remove('.if_mode')
-                        workdir_handler.popd()
-                        if exitcode == 0:
-                            return True
-                    self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
-                    LocalMachine.FileHandler.remove('.if_mode', ignore=True)
-                    workdir_handler.popd()
-                    return False
-                except Exception as e:
-                    self.console("Create lock/unlock failed: {}".format(e))
-                    LocalMachine.FileHandler.remove('.if_mode', ignore=True)
-                    workdir_handler.popd()
-                    return False
-        ret = False
-        for cnt in range(1, 10):
-            self.console("[{}/10] Connect to device ...".format(cnt))
-            ret = __lock_handler(self, host, lock=lock, pwd=pwd)
-            if ret:
-                break
-            time.sleep(1.5)
-        return ret
-
     def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False, ota_password='ADmin123'):
         """
-        OTA UPDATE
+        OTA UPDATE via webrepl
             git clone https://github.com/micropython/webrepl.git
             info: https://techoverflow.net/2020/02/22/how-to-upload-files-to-micropython-using-webrepl-using-webrepl_cli-py/
             ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
         """
 
-        if not self.__clone_webrepl_repo():
-            self.console("Webrepl repo not available...", state='ERR')
-            self.execution_verdict.append("[ERR] ota_update - clone webrepl repo")
-            return False
+        upload_path_list = []
+        force_mode = False
+
+        # Precompile micrOS
         self.precompile_micros()
 
-        force_mode = False
-        # Get specific device from device list
-        self.console("Select device to update ...", state='IMP')
-        socketClient.ConnectionData.read_MicrOS_device_cache()
         # Get device IP and friendly name
         if device is None:
+            # Select device dynamically - cmdline
             device_ip, fuid = socketClient.ConnectionData.select_device()
         else:
+            # Select device from code / gui
             device_ip, fuid = device[1], device[0]
         self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
 
@@ -887,12 +843,12 @@ class MicrOSDevTool:
 
         if device_version == repo_version:
             if not force:
-                self.console("\t[SKIP UPDATE] Device on same version with repo: {} == {}".format(device_version, repo_version))
+                self.console(
+                    "\t[SKIP UPDATE] Device on same version with repo: {} == {}".format(device_version, repo_version))
                 self.console("\tBye")
                 self.execution_verdict.append("[OK] ota_update - update not necessary (no new version)")
                 return False
 
-        self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE, PLEASE RESET YOUR DEVICE AFTER UPDATE.")
         if not self.cmdgui:
             user_input = 'yy' if unsafe else 'y'
         else:
@@ -908,12 +864,66 @@ class MicrOSDevTool:
         if 'n' == user_input:
             self.console("\tBye")
             return False
-        else:
+
+        # Parse files from precompiled dir
+        resource_list_to_upload = [os.path.join(self.precompiled_MicrOS_dir_path, pysource) for pysource in
+                                   LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
+                                   if pysource.endswith('.py') or pysource.endswith('.mpy')]
+        # Apply upload settings on pared resources
+        for index, source in enumerate(resource_list_to_upload):
+            source_name = os.path.basename(source)
+            # Handle force mode + file exception list (skip)
+            if not force_mode and source_name in self.safe_mode_file_exception_list:
+                self.console(
+                    "\t[SKIP UPLOAD] updating {} - only available over USB update".format(source_name), state='WARN')
+                continue
+
+            # macOS icloud sync workaround ...
+            if ' ' in source_name:
+                self.console("\t[SKIP UPLOAD] space in resource name ... {}".format(source_name), state='WARN')
+                continue
+
+            # Handle lm_only mode - skip upload for not LM_
+            if lm_only:
+                if not source_name.startswith("LM_"):
+                    self.console(
+                        "\t[SKIP UPLOAD][LM ONLY] {}".format(source_name, lm_only), state='WARN')
+                    continue
+            # Add source to upload
+            upload_path_list.append(source)
+        # Upload files / sources
+        return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list, ota_password=ota_password)
+
+    def ota_webrepl_update_core(self, device=None, upload_path_list=[], ota_password='ADmin123', force_lm=False):
+        """
+        Generic file uploader for micrOS - over webrepl
+            info: https://techoverflow.net/2020/02/22/how-to-upload-files-to-micropython-using-webrepl-using-webrepl_cli-py/
+            ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
+        device = (ip, fuid)
+        upload_path_list: file path list to upload
+        ota_password - accessing webrepl to upload files
+        force_lm - use prefix as 'LM_' for every file - for user file upload / GUI drag n drop
+        """
+
+        def enable_micros_ota_update_via_webrepl():
+            # Get specific device from device list
+            self.console("Select device to update ...", state='IMP')
+            socketClient.ConnectionData.read_MicrOS_device_cache()
+            # Get device IP and friendly name
+            if device is None:
+                # Select device dynamically - cmdline
+                device_ip, fuid = socketClient.ConnectionData.select_device()
+            else:
+                # Select device from code / gui
+                device_ip, fuid = device[1], device[0]
+            self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
+            self.console(" \tWebRepl OTA password: {}".format(ota_password), state='OK')
+
             status, answer_msg = socketClient.run(['--dev', fuid, 'help'])
-            if answer_msg is None and 'fail' not in str(device_version):
+            if answer_msg is None:
                 # micrOS auth:True not supported under ota update
-                self.console("AuthFailed", state='ERR')
-                return
+                self.console("AuthFailed - no help msg was returned...", state='ERR')
+                return False, device_ip, fuid
             if not status and answer_msg is None:
                 # In case of update failure and retry (micrOS interface won't be active)
                 status, answer_msg = True, 'webrepl'
@@ -923,73 +933,157 @@ class MicrOSDevTool:
                         status, answer_msg = True, 'dummy exec'
                     else:
                         if '--update' in answer_msg:
+                            # START OTA UPDATE MODE ON DEVICE
                             self.console("[UPDATE] built-in restart and update monitor activation")
                             status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl --update'])
                         else:
                             self.console("[UPDATE] live update - obsoleted...")
+                            # START OTA UPDATE MODE ON DEVICE
                             status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
-                    #self.console(answer_msg)
                 else:
                     self.console("Webrepl not available on device, update over USB.")
-                    self.execution_verdict.append("[ERR] ota_update - webrepl not availabl on node")
-                    return False
+                    self.execution_verdict.append("[ERR] ota_update - webrepl not available on node")
+                    return False, device_ip, fuid
             else:
                 self.console("Get help from device failed.")
                 self.execution_verdict.append("[ERR] ota_update - help command failed on device (no webrepl)")
-                return False
-        time.sleep(3)
+                return False, device_ip, fuid
+            time.sleep(3)
+            return True, device_ip, fuid
 
+        def __lock_handler(host, ota_password, lock=False):
+            """
+            [1] Create .if_mode file (local file system)
+                lock: True -> value: webrepl
+                lock: False -> value: micros
+            [2] Copy file to device
+            """
+
+            webrepl_if_mode = 'webrepl'  # micrOS system runs in webrepl mode - no micrOS interface running
+            micros_if_mode = 'micros'    # micrOS running in normal mode - micrOS interface is active
+            state = False
+            lock_value = webrepl_if_mode if lock else micros_if_mode # Select lock value
+
+            workdir_handler = LocalMachine.SimplePopPushd()
+            # TODO: workdir in every case is mpy_micrOS
+            workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
+
+            # Create / modify file
+            with open(".if_mode", 'w') as f:
+                f.write(lock_value)
+
+            # Create webrepl copy command
+            command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
+                                                                              pwd=ota_password,
+                                                                              host=host)
+            if self.dummy_exec:
+                self.console("Webrepl CMD: {}".format(command))
+                return True
+            else:
+                self.console("Webrepl CMD: {}".format(command))
+                try:
+                    for _ in range(0, 3):
+                        exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                        if exitcode == 0:
+                            LocalMachine.FileHandler.remove('.if_mode', ignore=True)
+                            workdir_handler.popd()
+                            return True
+                        else:
+                            self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
+                            time.sleep(1.5)
+                    state = False
+                except Exception as e:
+                    self.console("Create lock/unlock failed: {}".format(e))
+                    state = False
+                # Cleanup lock file: .if_mode + restore path
+                LocalMachine.FileHandler.remove('.if_mode', ignore=True)
+                workdir_handler.popd()
+            return state
+
+        def wait_for_micrOS_up_again():
+            self.console("Device will reboot automatically, please wait 4-8 seconds.")
+            time.sleep(4)
+            up_again_status = False
+            for is_up_again in range(0, 10):
+                self.console("[{}/10] Try to connect ...".format(is_up_again))
+                status, answer_msg = socketClient.run(['--dev', fuid, 'hello'])
+                if status:
+                    self.console("Device {} is up again".format(fuid), state='OK')
+                    up_again_status = True
+                    break
+                if not up_again_status:
+                    time.sleep(2)
+
+            # Print manual steps if necessary
+            if not up_again_status:
+                self.console("Auto restart timeout, please reboot device manually.", state='WARN')
+                self.console("Please reset your device.", state='IMP')
+                self.console("\t[1]HINT: open in browser: http://micropython.org/webrepl/#{}:8266/".format(device_ip))
+                self.console("\t[2]HINT: log in and execute: import reset")
+                self.console("\t[3]HINT: OR skip [2] point and reset manually")
+                self.execution_verdict.append(
+                    "[WARN] ota_update - device auto restart failed,\nplease reset the device manually.")
+            self.execution_verdict.append("[OK] ota_update was finished")
+            return up_again_status
+
+        # -------------------------- main --------------------------- #
+
+        # GET webrepl repo
+        if not self.__clone_webrepl_repo():
+            self.console("Webrepl repo not available...", state='ERR')
+            self.execution_verdict.append("[ERR] ota_update - clone webrepl repo")
+            return False
+
+        self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE.")
+
+        # Enable micrOS OTA mode
+        status, device_ip, fuid = enable_micros_ota_update_via_webrepl()
+
+        # Create lock file for ota update
         self.console("[UPLOAD] Copy files to device...", state='IMP')
         self.console("\t[!] Create update lock (webrepl bootup) under OTA update", state='IMP')
-        if not self.__lock_update_with_webrepl(host=device_ip, lock=True, pwd=webrepl_password):
+        if not __lock_handler(host=device_ip, ota_password=ota_password, lock=True):
             self.console("OTA lock creation failed", state='ERR')
             self.execution_verdict.append("[ERR] ota_update - OTA update locked creation failed")
-            return
+            return False
 
-        # Parse files and upload
-        resource_list_to_upload = [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
-                        if pysource.endswith('.py') or pysource.endswith('.mpy')]
-
-        # Change workdir
-        workdir_handler = LocalMachine.SimplePopPushd()
-        workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
-
-        for index, source in enumerate(resource_list_to_upload):
+        # Upload path list
+        for index, source in enumerate(upload_path_list):
             # calculate progress
-            progress = round(((index + 1) / len(resource_list_to_upload)) * 100)
+            progress = round(((index + 1) / len(upload_path_list)) * 100)
 
-            # Handle force mode + file exception list (skip)
-            if not force_mode and source in self.safe_mode_file_exception_list:
-                self.console(
-                    "\t[{}%][SKIP UPLOAD] updating {} - only available over USB update".format(progress, source),
-                    state='WARN')
-                continue
-
-            # macOS icloud sync workaround ...
+            # Check no space in the file name
             if ' ' in source:
-                self.console("\t[{}%][SKIP UPLOAD] space in resource name ... {}".format(progress, source), state='WARN')
+                self.console("\t[{}%][SKIP UPLOAD] space in resource name ... {}".format(progress, source),
+                             state='WARN')
                 continue
 
-            # Handle lm_only mode - skip upload for not LM_
-            if lm_only:
-                if "LM_" not in source:
-                    self.console(
-                        "\t[{}%][SKIP UPLOAD] updating {} - lm_only".format(progress, source, lm_only),
-                        state='WARN')
+            # Change workdir
+            workdir_handler = LocalMachine.SimplePopPushd()
+            workdir_handler.pushd(os.path.dirname(source))
 
             # Copy retry mechanism
             exitcode = -1
+            source_name = os.path.basename(source)
+            source_name_target = source_name
+
+            # Force LM update - user load modules - drag n drop files
+            if force_lm and not source_name.startswith('LM_'):
+                source_name_target = 'LM_{}'.format(source_name)
+
+            command = 'python {api} -p {pwd} {input_file} {host}:{target_path}'.format(
+                api=self.webreplcli_repo_path, pwd=ota_password,
+                input_file=source_name, host=device_ip,
+                target_path=source_name_target)
+
             for ret_cnt in range(0, 5):
-                source_name = os.path.basename(source)
-                self.console("[{}%] {} copy over webrepl {}:{}".format(progress, source_name, device_ip, source_name))
-                command = 'python {api} -p {pwd} {input_file} {host}:{target_path}'.format(api=self.webreplcli_repo_path, pwd=webrepl_password,
-                                                                                    input_file=source_name, host=device_ip,
-                                                                                    target_path=source_name)
+                self.console("[{}%] {} copy over webrepl {}:{}".format(progress, source_name, device_ip, source_name_target))
                 if self.dummy_exec:
                     self.console("[{}%][UPLOAD] Webrepl CMD: {}".format(progress, command))
                     exitcode = 0
                 else:
                     self.console("|- CMD: {}".format(command))
+                    # --- UPLOAD ---
                     exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
                     if exitcode == 0:
                         self.console("|-- OK", state='OK')
@@ -1004,39 +1098,16 @@ class MicrOSDevTool:
                 # Restore workdir path
                 workdir_handler.popd()
                 return False
-
-        # Restore workdir path
-        workdir_handler.popd()
+            # Restore workdir path
+            workdir_handler.popd()
 
         self.console("\t[!] Delete update lock (webrepl bootup) under OTA update", state='IMP')
-        if self.__lock_update_with_webrepl(host=device_ip, lock=False, pwd=webrepl_password):
+        if __lock_handler(host=device_ip, ota_password=ota_password, lock=False):
             self.console("\tOTA UPDATE WAS SUCCESSFUL", state='OK')
         else:
             self.console("\tOTA UPDATE WAS FAILED, PLEASE TRY AGAIN.", state='ERR')
             self.execution_verdict.append("[WARN] ota_update - failed to remove OTA update lock")
-
-        self.console("Device will reboot automatically, please wait 4-8 seconds.")
-        time.sleep(4)
-        up_again_status = False
-        for is_up_again in range(0, 10):
-            self.console("[{}/10] Try to connect ...".format(is_up_again))
-            status, answer_msg = socketClient.run(['--dev', fuid, 'hello'])
-            if status:
-                self.console("Device {} is up again".format(fuid), state='OK')
-                up_again_status = True
-                break
-            if not up_again_status:
-                time.sleep(2)
-
-        # Print manual steps if necessary
-        if not up_again_status:
-            self.console("Auto restart timeout, please reboot device manually.", state='WARN')
-            self.console("Please reset your device.", state='IMP')
-            self.console("\t[1]HINT: open in browser: http://micropython.org/webrepl/#{}:8266/".format(device_ip))
-            self.console("\t[2]HINT: log in and execute: import reset")
-            self.console("\t[3]HINT: OR skip [2] point and reset manually")
-            self.execution_verdict.append("[WARN] ota_update - device auto restart failed,\nplease reset the device manually.")
-        self.execution_verdict.append("[OK] ota_update was finished")
+        return wait_for_micrOS_up_again()
 
 
 if __name__ == "__main__":

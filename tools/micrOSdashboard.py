@@ -14,18 +14,22 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap
+
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, 'MicrOSDevEnv'))
 import MicrOSDevEnv
 import LocalMachine
 import socketClient
+
 sys.path.append(os.path.dirname(os.path.dirname(MYPATH)))
 import devToolKit
+
 APP_DIR = os.path.join(MYPATH, '../apps')
 sys.path.append(APP_DIR)
 
 DUMMY_EXEC = False
 DAEMON = False
+
 
 #################################################
 #          GUI Process visualization            #
@@ -33,13 +37,14 @@ DAEMON = False
 
 class ProgressbarTimers:
     mminute = 90
-    usb_deploy = int(mminute * 4)              # min estimation
-    usb_update = int(mminute * 5)              # min estimation
-    ota_update = int(mminute * 2)              # min estimation
-    lm_update = int(mminute * 1.5)             # min estimation
-    search_devices = int(mminute * 3)          # min estimation
-    general_app = int(mminute * 2)             # min estimation
-    simulator = 4                              # sec estimation
+    usb_deploy = int(mminute * 4)  # min estimation
+    usb_update = int(mminute * 5)  # min estimation
+    ota_update = int(mminute * 2)  # min estimation
+    lm_update = int(mminute * 1.5)  # min estimation
+    search_devices = int(mminute * 3)  # min estimation
+    general_app = int(mminute * 2)  # min estimation
+    simulator = 4  # sec estimation
+    quick_ota = int(mminute * 1)  # min estimation
 
 
 class ProgressbarUpdateThread(QThread):
@@ -69,7 +74,7 @@ class ProgressBar:
         # creating progress bar
         self.pbar = QProgressBar(self.parent_obj)
         # setting its geometry
-        self.pbar.setGeometry(20, self.parent_obj.height-30, self.parent_obj.width-50, 30)
+        self.pbar.setGeometry(20, self.parent_obj.height - 30, self.parent_obj.width - 50, 30)
         self.pbar_status = 0
 
     def progressbar_update(self, value=None, reset=False):
@@ -79,6 +84,7 @@ class ProgressBar:
             self.pbar_status = value
         self.pbar_status = self.pbar_status + 1 if self.pbar_status < 100 else 0
         self.pbar.setValue(self.pbar_status)
+
 
 #################################################
 #              GUI Base classes                 #
@@ -93,7 +99,8 @@ class DropDownBase:
         self.selected_list_item = None
         self.dowpdown_obj = None
 
-    def create_dropdown(self, items_list=None, title="Select", geometry_tuple=(120, 30, 160, 30), tooltip="Help...", style=None):
+    def create_dropdown(self, items_list=None, title="Select", geometry_tuple=(120, 30, 160, 30), tooltip="Help...",
+                        style=None):
         if items_list is None:
             items_list = []
         dropdown_label = QLabel(self.parent_obj)
@@ -105,7 +112,7 @@ class DropDownBase:
         self.dowpdown_obj.setToolTip(tooltip)
 
         # setting geometry of combo box
-        self.dowpdown_obj.setGeometry(geometry_tuple[0], geometry_tuple[1]+30, geometry_tuple[2], geometry_tuple[3])
+        self.dowpdown_obj.setGeometry(geometry_tuple[0], geometry_tuple[1] + 30, geometry_tuple[2], geometry_tuple[3])
 
         # GET DEVICE TYPES
         self.selected_list_item = list(items_list)[0]
@@ -154,7 +161,8 @@ class BoardTypeSelector(DropDownBase):
         help_msg = "Select board type for USB deployment."
         style = "QComboBox{border : 3px solid purple;}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
         supported_board_list = self.devtool_obj.dev_types_and_cmds.keys()
-        self.create_dropdown(items_list=supported_board_list, title=title, geometry_tuple=geometry, tooltip=help_msg, style=style)
+        self.create_dropdown(items_list=supported_board_list, title=title, geometry_tuple=geometry, tooltip=help_msg,
+                             style=style)
 
 
 class MicropythonSelector(DropDownBase):
@@ -172,7 +180,8 @@ class MicropythonSelector(DropDownBase):
         micropython_bin_pathes = self.devtool_obj.get_micropython_binaries()
         self.micropython_bin_dirpath = os.path.dirname(micropython_bin_pathes[0])
         micropython_bin_names = [os.path.basename(path) for path in micropython_bin_pathes]
-        self.create_dropdown(items_list=micropython_bin_names, title=title, geometry_tuple=geometry, tooltip=help_msg, style=style)
+        self.create_dropdown(items_list=micropython_bin_names, title=title, geometry_tuple=geometry, tooltip=help_msg,
+                             style=style)
 
     def get(self):
         return os.path.join(self.micropython_bin_dirpath, super(MicropythonSelector, self).get())
@@ -204,7 +213,8 @@ class MicrOSDeviceSelector(DropDownBase):
 
         # Get devices friendly unique identifier
         micrOS_devices = [fuid[0] for fuid in self.device_conn_struct]
-        self.create_dropdown(items_list=micrOS_devices, title=title, geometry_tuple=geometry, tooltip=help_msg, style=style)
+        self.create_dropdown(items_list=micrOS_devices, title=title, geometry_tuple=geometry, tooltip=help_msg,
+                             style=style)
         return self.device_conn_struct
 
     def update_elements(self):
@@ -232,7 +242,7 @@ class LocalAppSelector(DropDownBase):
 
     def dropdown_application(self):
         title = "Select app"
-        geometry = (682, 80+35, 150, 30)
+        geometry = (682, 80 + 35, 150, 30)
         help_msg = "[DEVICE] Select python application to execute"
         style = "QComboBox{border : 3px solid purple;}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
 
@@ -248,7 +258,8 @@ class LocalAppSelector(DropDownBase):
             print("\t{}".format(tmp))
 
         # Get devices friendly unique identifier
-        app_list = [app.replace('.py', '') for app in LocalMachine.FileHandler.list_dir(APP_DIR) if app.endswith('.py') and not app.startswith('Template')]
+        app_list = [app.replace('.py', '') for app in LocalMachine.FileHandler.list_dir(APP_DIR) if
+                    app.endswith('.py') and not app.startswith('Template')]
         self.create_dropdown(items_list=app_list, title=title, geometry_tuple=geometry, tooltip=help_msg, style=style)
 
 
@@ -266,15 +277,16 @@ class DevelopmentModifiers:
     def ignore_version_check_checkbox(self):
         checkbox = QCheckBox('Ignore version check', self.parent_obj)
         checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: yellow;}")
-        checkbox.move(20, self.parent_obj.height-50)
-        checkbox.setToolTip("[OTA][USB]\nIgnore version check.\nYou can force resource update on the same software version.")
+        checkbox.move(20, self.parent_obj.height - 50)
+        checkbox.setToolTip(
+            "[OTA][USB]\nIgnore version check.\nYou can force resource update on the same software version.")
         checkbox.toggled.connect(self.__on_click_ignore_version_check)
 
     def unsafe_core_update_ota_check_checkbox(self):
-        checkbox = QCheckBox('FSCO', self.parent_obj)      # ForceSystemCoreOta update
+        checkbox = QCheckBox('FSCO+', self.parent_obj)  # ForceSystemCoreOta update
         checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: red;}")
-        checkbox.move(self.parent_obj.width-240, self.parent_obj.height-50)
-        checkbox.setToolTip("[!!!][OTA] ForceSystemCoreOta update.\nIn case of failure, USB re-deployment required!")
+        checkbox.move(self.parent_obj.width - 240, self.parent_obj.height - 50)
+        checkbox.setToolTip("[!!!][OTA] ForceSystemCoreOta update.\nIn case of failure, USB re-deployment required!\n+ LM_ prefix ignore for Quick OTA LM update.")
         checkbox.toggled.connect(self.__on_click_unsafe_core_update_ota)
 
     def __on_click_ignore_version_check(self):
@@ -379,7 +391,7 @@ class HeaderInfo:
         width = 110
         repo_version, _ = self.devtool_obj.get_micrOS_version()
         label = QLabel("Version: {}".format(repo_version), self.parent_obj)
-        label.setGeometry(self.parent_obj.width-width-20, 5, width, 20)
+        label.setGeometry(self.parent_obj.width - width - 20, 5, width, 20)
         label.setStyleSheet("background-color : gray; color: {}; border: 1px solid black;".format(micrOSGUI.TEXTCOLOR))
 
     def __detect_virtualenv(self):
@@ -389,16 +401,17 @@ class HeaderInfo:
 
         def in_virtualenv():
             return get_base_prefix_compat() != sys.prefix
+
         return in_virtualenv()
 
     def venv_indicator(self):
         if self.__detect_virtualenv():
             label = QLabel(' [devEnv] virtualenv active', self.parent_obj)
-            label.setGeometry(20, 5, self.parent_obj.width-150, 20)
+            label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
             label.setStyleSheet("background-color : green; color: {};".format(micrOSGUI.TEXTCOLOR))
         else:
             label = QLabel(' [devEnv] virtualenv inactive', self.parent_obj)
-            label.setGeometry(20, 5, self.parent_obj.width-150, 20)
+            label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
             label.setStyleSheet("background-color : yellow; color: {};".format(micrOSGUI.TEXTCOLOR))
             label.setToolTip("Please create your dependency environment:\nvirtualenv -p python3 venv\
             \nsource venv/bin/activate\npip install -r micrOS/tools/requirements.txt")
@@ -470,7 +483,7 @@ class QuickOTAUpload(QLabel):
 
     def create_all(self):
         label = QLabel(self.parent_obj)
-        label.setText("Quick OTA Upload")
+        label.setText("Quick LM OTA Upload")
         label.setGeometry(682, 210, 149, 15)
         label.setStyleSheet("background-color: white")
 
@@ -480,14 +493,14 @@ class QuickOTAUpload(QLabel):
 
     def create_upload_button(self):
         button = QPushButton('Upload', self.parent_obj)
-        button.setToolTip('Get micrOS nodes status')
+        button.setToolTip('Upload dropped files to the selected micrOS board.')
         button.setGeometry(682, 290, 75, 20)
         button.setStyleSheet("QPushButton{background-color: White;} QPushButton::pressed{background-color : green;}")
         button.clicked.connect(self.get_upload_callback)
 
     def create_clean_button(self):
         button = QPushButton('Clean', self.parent_obj)
-        button.setToolTip('Get micrOS nodes status')
+        button.setToolTip('Clean dropped file list.')
         button.setGeometry(757, 290, 75, 20)
         button.setStyleSheet("QPushButton{background-color: White;} QPushButton::pressed{background-color : green;}")
         button.clicked.connect(self.get_clean_callback)
@@ -498,18 +511,17 @@ class QuickOTAUpload(QLabel):
         logo_path = os.path.join(MYPATH, '../media/dnd.png')
         pixmap = QPixmap(logo_path)
         self.setPixmap(pixmap)
-        self.setToolTip("Direct file upload to micrOS board via webrepl")
+        self.setToolTip("Direct LM module upload to micrOS board via webrepl")
         self.setAcceptDrops(True)
 
     def get_upload_callback(self):
         if len(self.contents_path) == 0:
             self.parent_obj.console.append_output(f"Empty upload list.")
         else:
-            if not self.parent_obj.start_bg_application_popup(text="QUICK OTA UPLOAD?", verify_data_dict={'upload': self.contents_path}):
+            if not self.parent_obj.start_bg_application_popup(text="QUICK LM OTA UPLOAD?",
+                                                              verify_data_dict={i+1: path for i, path in enumerate(self.contents_path)}):
                 return
-            for f in self.contents_path:
-                self.parent_obj.console.append_output(f"Dummy upload: {f}")
-                # TODO
+            self.parent_obj.on_click_lm_quick_update(upload_path_list=self.contents_path)
 
     def get_clean_callback(self):
         if len(self.contents_path) == 0:
@@ -532,6 +544,7 @@ class QuickOTAUpload(QLabel):
                 # Format check! LM_*.py/.mpy
                 self.contents_path.append(f)
             self.parent_obj.console.append_output(f"Add file: {f}")
+
 
 #################################################
 #                  MAIN WINDOW                  #
@@ -602,7 +615,6 @@ class micrOSGUI(QWidget):
         self.application_dropdown = LocalAppSelector(parent_obj=self)
         self.application_dropdown.dropdown_application()
 
-
         self.appwd_textbox = InputField(self)
 
         self.modifiers_obj = DevelopmentModifiers(parent_obj=self)
@@ -620,6 +632,7 @@ class micrOSGUI(QWidget):
         def close_action(tag):
             if tag == 'search_devices':
                 self.__recreate_MicrOSDeviceSelector()
+
         while True:
             remove_from_key = None
             for bgprog, bgjob in self.bgjob_thread_obj_dict.items():
@@ -657,7 +670,8 @@ class micrOSGUI(QWidget):
         selected_micropython_bin = self.micropython_dropdown.get()
         selected_device_type = self.board_dropdown.get()
         if selected_micropython_bin is None or selected_device_type is None:
-            print("Selected\ndevice {} and/or\nmicropython {} was not selected properly,incompatibilityty.".format(selected_micropython_bin, selected_device_type))
+            print("Selected\ndevice {} and/or\nmicropython {} was not selected properly,incompatibilityty.".format(
+                selected_micropython_bin, selected_device_type))
         if selected_device_type in selected_micropython_bin:
             return True
         return False
@@ -678,21 +692,23 @@ class micrOSGUI(QWidget):
         height = 35
         width = 200
         yoffset = 3
-        buttons = {'Deploy (USB)': ['[BOARD] [MICROPYTHON]\nInstall "empty" device.\nDeploy micropython and micrOS Framework',
-                                       20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
-                   'Update (OTA)': ['[DEVICE]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
-                                    20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
-                   'LM Update (OTA)': ['[DEVICE]\nUpdate LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
-                                    20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan'],
-                   'Update (USB)': ['[BOARD] [MICROPYTHON]\nUpdate micrOS over USB\nIt will redeploy micropython as well)',
-                                      20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'darkCyan'],
-                   'Search device': ['Search online micrOS devices\nOn local wifi network.',
-                                     20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices, 'darkCyan'],
-                   'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
-                                      20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen'],
-                   'Execute': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
-                                 682, 180, 150, 20, self.__on_click_exec_app, 'Green']
-                   }
+        buttons = {
+            'Deploy (USB)': ['[BOARD] [MICROPYTHON]\nInstall "empty" device.\nDeploy micropython and micrOS Framework',
+                             20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan'],
+            'Update (OTA)': ['[DEVICE]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
+                             20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan'],
+            'LM Update (OTA)': ['[DEVICE]\nUpdate LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
+                                20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan'],
+            'Update (USB)': ['[BOARD] [MICROPYTHON]\nUpdate micrOS over USB\nIt will redeploy micropython as well)',
+                             20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'darkCyan'],
+            'Search device': ['Search online micrOS devices\nOn local wifi network.',
+                              20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices,
+                              'darkCyan'],
+            'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
+                          20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen'],
+            'Execute': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
+                        682, 180, 150, 20, self.__on_click_exec_app, 'Green']
+            }
 
         for key, data_struct in buttons.items():
             tool_tip = data_struct[0]
@@ -706,7 +722,8 @@ class micrOSGUI(QWidget):
             button = QPushButton(key, self)
             button.setToolTip(tool_tip)
             button.setGeometry(x, y, w, h)
-            button.setStyleSheet("QPushButton{background-color: " + bg + ";}QPushButton::pressed{background-color : green;}")
+            button.setStyleSheet(
+                "QPushButton{background-color: " + bg + ";}QPushButton::pressed{background-color : green;}")
             button.clicked.connect(event_cbf)
 
     @pyqtSlot()
@@ -714,6 +731,7 @@ class micrOSGUI(QWidget):
         """
         Execute application with selected device here
         """
+
         def __execute_app(app_name, dev_name, app_postfix='_app'):
             # Start app
             app_name = "{}{}".format(app_name, app_postfix)
@@ -760,12 +778,15 @@ class micrOSGUI(QWidget):
                 self.console.append_output('[usb_deploy]SKIP] already running.')
                 return False
         if not self.__validate_selected_device_with_micropython():
-            self.console.append_output("[usb_deploy][WARN] Selected device is not compatible with selected micropython.")
+            self.console.append_output(
+                "[usb_deploy][WARN] Selected device is not compatible with selected micropython.")
             return False
         # Verify data
-        if not self.start_bg_application_popup(text="Deploy new device?", verify_data_dict={'board': self.board_dropdown.get(),
-                                                                                  'micropython': os.path.basename(self.micropython_dropdown.get()),
-                                                                                  'force': self.modifiers_obj.ignore_version_check}):
+        if not self.start_bg_application_popup(text="Deploy new device?",
+                                               verify_data_dict={'board': self.board_dropdown.get(),
+                                                                 'micropython': os.path.basename(
+                                                                     self.micropython_dropdown.get()),
+                                                                 'force': self.modifiers_obj.ignore_version_check}):
             return
 
         # Start init_progressbar
@@ -783,7 +804,8 @@ class micrOSGUI(QWidget):
         self.devenv_usb_deployment_is_active = True
         # Create a Thread with a function without any arguments
         self.console.append_output('[usb_deploy] |- start usb_deploy job')
-        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore': False, 'purge_conf': True}, daemon=DAEMON)
+        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore': False, 'purge_conf': True},
+                              daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['usb_deploy'] = th
         self.console.append_output('[usb_deploy] |- usb_deploy job was started')
@@ -798,9 +820,11 @@ class micrOSGUI(QWidget):
                 return
 
         # Verify data
-        if not self.start_bg_application_popup(text="OTA update?", verify_data_dict={'device': self.micrOS_devide_dropdown.get(),
-                                                                            'force': self.modifiers_obj.ignore_version_check,
-                                                                            'unsafe_ota': self.modifiers_obj.unsafe_ota_enabled, 'ota_pwd': self.appwd_textbox.get()}):
+        if not self.start_bg_application_popup(text="OTA update?",
+                                               verify_data_dict={'device': self.micrOS_devide_dropdown.get(),
+                                                                 'force': self.modifiers_obj.ignore_version_check,
+                                                                 'unsafe_ota': self.modifiers_obj.unsafe_ota_enabled,
+                                                                 'ota_pwd': self.appwd_textbox.get()}):
             return
 
         self.console.append_output('[ota_update] Upload micrOS resources to selected device.')
@@ -841,9 +865,10 @@ class micrOSGUI(QWidget):
                 return
 
         # Verify data
-        if not self.start_bg_application_popup(text="Update load modules?", verify_data_dict={'device': self.micrOS_devide_dropdown.get(),
-                                                                                              'force': self.modifiers_obj.ignore_version_check,
-                                                                                              'ota_pwd': self.appwd_textbox.get()}):
+        if not self.start_bg_application_popup(text="Update load modules?",
+                                               verify_data_dict={'device': self.micrOS_devide_dropdown.get(),
+                                                                 'force': self.modifiers_obj.ignore_version_check,
+                                                                 'ota_pwd': self.appwd_textbox.get()}):
             return
 
         self.console.append_output('[lm_update] Update Load Modules over wifi')
@@ -875,6 +900,51 @@ class micrOSGUI(QWidget):
         self.console.append_output('[lm_update] |- lm_update job was started')
         self.progressbar.progressbar_update()
 
+    def on_click_lm_quick_update(self, upload_path_list):
+        self.__show_gui_state_on_console()
+        if 'quick_ota' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['quick_ota'].is_alive():
+                self.console.append_output('[quick_ota][SKIP] already running.')
+                return
+
+        # Verify data
+        if not self.start_bg_application_popup(text="Upload selected load modules?",
+                                               verify_data_dict={'device': self.micrOS_devide_dropdown.get(),
+                                                                 'ota_pwd': self.appwd_textbox.get(),
+                                                                 'forced LM_ prefix': not self.modifiers_obj.unsafe_ota_enabled}):
+            return
+
+        self.console.append_output('[quick_ota] Update Load Modules over wifi')
+        # Start init_progressbar
+        pth = ProgressbarUpdateThread()
+        pth.eta_sec = ProgressbarTimers.quick_ota
+        pth.callback.connect(self.progressbar.progressbar_update)
+        pth.start()
+        pth.setTerminationEnabled(True)
+        self.bgjon_progress_monitor_thread_obj_dict['quick_ota'] = pth
+
+        # Start job
+        fuid = self.micrOS_devide_dropdown.get()
+        ignore_version_check = self.modifiers_obj.ignore_version_check
+        devip = None
+        for conn_data in self.device_conn_struct:
+            if fuid == conn_data[0]:
+                devip = conn_data[1]
+        if devip is None:
+            self.console.append_output("[quick_ota][ERROR] Selecting device")
+        self.console.append_output("[quick_ota] Start OTA quick update on {}:{}".format(fuid, devip))
+        self.console.append_output('[quick_ota] |- start update job')
+        self.progressbar.progressbar_update()
+        th = threading.Thread(target=self.devtool_obj.ota_webrepl_update_core,
+                              kwargs={'device': (fuid, devip), 'upload_path_list': upload_path_list,
+                                      'ota_password': self.appwd_textbox.get(),
+                                      'force_lm': not self.modifiers_obj.unsafe_ota_enabled},
+                              daemon=DAEMON)
+        th.start()
+        self.bgjob_thread_obj_dict['quick_ota'] = th
+        self.console.append_output('[quick_ota] |- lm_update job was started')
+        self.progressbar.progressbar_update()
+
     @pyqtSlot()
     def __on_click_usb_update(self):
         self.__show_gui_state_on_console()
@@ -883,12 +953,15 @@ class micrOSGUI(QWidget):
                 self.console.append_output('[usb_update][SKIP] already running.')
                 return False
         if not self.__validate_selected_device_with_micropython():
-            self.console.append_output("[usb_update] [WARN] Selected device is not compatible with selected micropython.")
+            self.console.append_output(
+                "[usb_update] [WARN] Selected device is not compatible with selected micropython.")
             return False
         # Verify data
-        if not self.start_bg_application_popup(text="Start USB update?", verify_data_dict={'board': self.board_dropdown.get(),
-                                                                                  'micropython': os.path.basename(self.micropython_dropdown.get()),
-                                                                                  'force': self.modifiers_obj.ignore_version_check}):
+        if not self.start_bg_application_popup(text="Start USB update?",
+                                               verify_data_dict={'board': self.board_dropdown.get(),
+                                                                 'micropython': os.path.basename(
+                                                                     self.micropython_dropdown.get()),
+                                                                 'force': self.modifiers_obj.ignore_version_check}):
             return
 
         self.console.append_output('[usb_update] (Re)Install micropython and upload micrOS resources')
@@ -906,7 +979,8 @@ class micrOSGUI(QWidget):
         self.devenv_usb_deployment_is_active = True
         # create a thread with a function without any arguments
         self.console.append_output('[usb_update] |- start usb_update job')
-        th = threading.Thread(target=self.devtool_obj.update_micros_via_usb, kwargs={'force': self.modifiers_obj.ignore_version_check}, daemon=DAEMON)
+        th = threading.Thread(target=self.devtool_obj.update_micros_via_usb,
+                              kwargs={'force': self.modifiers_obj.ignore_version_check}, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['usb_update'] = th
         self.console.append_output('[usb_update] |- usb_update job was started')
@@ -920,7 +994,8 @@ class micrOSGUI(QWidget):
                 return
 
         # Verify data
-        if not self.start_bg_application_popup(text="Search devices? Press Yes to continue!\n\nIt will take around 2 minutes.\nWhen it was finished please restart the GUI."):
+        if not self.start_bg_application_popup(
+                text="Search devices? Press Yes to continue!\n\nIt will take around 2 minutes.\nWhen it was finished please restart the GUI."):
             return
 
         self.console.append_output('[search_devices] Search online devices on local network')

@@ -83,7 +83,7 @@ def execLMCore(argument_list, msgobj=None):
         return True
     # @2 Run simple task / main option from console
     # |- Thread locking NOT available
-    if BgTask.singleton() is None:
+    if BgTask is None:
         return exec_lm_core(argument_list, msgobj=cwr)
     # |- Thread locking available
     with BgTask.singleton():

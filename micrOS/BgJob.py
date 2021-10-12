@@ -4,8 +4,9 @@ from time import sleep
 
 class BgTask:
     singleton_instance = None
+    lm_exec_callback = None
 
-    def __init__(self, exec_lm_core, loop=False):
+    def __init__(self, exec_lm_core=None, loop=False):
         """
         Singleton design pattern
         __new__ - Customize the instance creation
@@ -17,12 +18,15 @@ class BgTask:
         self.__isbusy = False
         self.__ret = ''
         self.__taskid = (0, 'none')
-        self.__lm_exec = exec_lm_core
+        if exec_lm_core is not None:
+            BgTask.lm_exec_callback = exec_lm_core
 
     @staticmethod
     def singleton(exec_lm_core=None, loop=False):
         if BgTask.singleton_instance is None:
-            BgTask.singleton_instance = BgTask(exec_lm_core, loop)
+            BgTask.singleton_instance = BgTask(loop)
+        if exec_lm_core is not None:
+            BgTask.lm_exec_callback = exec_lm_core
         return BgTask.singleton_instance
 
     def __enter__(self):
@@ -43,7 +47,7 @@ class BgTask:
             if self.__lock.locked():
                 continue
             # RUN CALLBACK
-            call_return = self.__lm_exec(arglist, msgobj=self.msg)
+            call_return = BgTask.lm_exec_callback(arglist, msgobj=self.msg)
             self.__ret = '{} [{}]'.format(self.__ret, call_return)
             # Exit thread
             if not self.__loop:

@@ -74,6 +74,9 @@ class WLAN:
             return -50
         return True
 
+    def disconnect(self):
+        return True
+
 
 if __name__ == "__main__":
     w = WLAN('asd')

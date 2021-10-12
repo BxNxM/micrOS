@@ -40,10 +40,10 @@ def startBgJob(argument_list, msg):
         # Create callback
         if is_thrd.startswith('&&'):
             # Run task in background loop with custom sleep in period &&X
-            stat, tid = BgTask().run(arglist=argument_list, loop=True, delay=wait)
+            stat, tid = BgTask.singleton(exec_lm_core=exec_lm_core).run(arglist=argument_list, loop=True, delay=wait)
         else:
             # Start background thread based on user input
-            stat, tid = BgTask().run(arglist=argument_list, loop=False, delay=wait)
+            stat, tid = BgTask.singleton(exec_lm_core=exec_lm_core).run(arglist=argument_list, loop=False, delay=wait)
         if stat:
             msg("[BgJob][{}] Start {}".format(tid[0], tid[1]))
             return True
@@ -83,10 +83,10 @@ def execLMCore(argument_list, msgobj=None):
         return True
     # @2 Run simple task / main option from console
     # |- Thread locking NOT available
-    if BgTask is None:
+    if BgTask.singleton() is None:
         return exec_lm_core(argument_list, msgobj=cwr)
     # |- Thread locking available
-    with BgTask():
+    with BgTask.singleton():
         state = exec_lm_core(argument_list, msgobj=cwr)
     return state
 

@@ -1,76 +1,79 @@
 import _thread
 from time import sleep
-from InterpreterCore import exec_lm_core
 
 
 class BgTask:
-    __instance = None
+    singleton_instance = None
 
-    def __new__(cls, delay=1, loop=False):
+    def __init__(self, exec_lm_core, loop=False):
         """
         Singleton design pattern
         __new__ - Customize the instance creation
-        cls     - class
+        self     - class
         """
-        if cls.__instance is None:
-            # SocketServer singleton properties
-            cls.__instance = super().__new__(cls)
-            cls.__lock = _thread.allocate_lock()
-            cls.__loop = loop
-            cls.__isbusy = False
-            cls.__ret = ''
-            cls.__taskid = (0, 'none')
-        return cls.__instance
+        # SocketServer singleton properties
+        self.__lock = _thread.allocate_lock()
+        self.__loop = loop
+        self.__isbusy = False
+        self.__ret = ''
+        self.__taskid = (0, 'none')
+        self.__lm_exec = exec_lm_core
 
-    def __enter__(cls):
-        if cls.__lock.locked():
+    @staticmethod
+    def singleton(exec_lm_core=None, loop=False):
+        if BgTask.singleton_instance is None:
+            BgTask.singleton_instance = BgTask(exec_lm_core, loop)
+        return BgTask.singleton_instance
+
+    def __enter__(self):
+        if self.__lock.locked():
             return
-        cls.__lock.acquire()
+        self.__lock.acquire()
 
-    def __exit__(cls, exc_type, exc_val, exc_tb):
-        if cls.__lock.locked():
-            cls.__lock.release()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.__lock.locked():
+            self.__lock.release()
 
-    def __th_task(cls, arglist, delay=1):
-        cls.__isbusy = True
+    def __th_task(self, arglist, delay=1):
+        self.__isbusy = True
         while True:
             # Set delay
             sleep(delay) if delay > 0 else sleep(0.1)
             # Check thread lock - wait until release
-            if cls.__lock.locked():
+            if self.__lock.locked():
                 continue
             # RUN CALLBACK
-            call_return = exec_lm_core(arglist, msgobj=cls.msg)
-            cls.__ret = '{} [{}]'.format(cls.__ret, call_return)
+            call_return = self.__lm_exec(arglist, msgobj=self.msg)
+            self.__ret = '{} [{}]'.format(self.__ret, call_return)
             # Exit thread
-            if not cls.__loop:
+            if not self.__loop:
                 break
-        cls.__isbusy = False
+        self.__isbusy = False
 
-    def msg(cls, msg):
-        cls.__ret += msg
-        if len(cls.__ret) > 80:
-            cls.__ret = cls.__ret[-80:]
+    def msg(self, msg):
+        self.__ret += msg
+        if len(self.__ret) > 80:
+            self.__ret = self.__ret[-80:]
 
-    def run(cls, arglist, loop=None, delay=None):
+    def run(self, arglist, loop=None, delay=None):
         # Return if busy - single job support
-        if cls.__isbusy:
-            return False, cls.__taskid
+        if self.__isbusy:
+            return False, self.__taskid
         # Set thread params
-        cls.__ret = ''
-        id_num = 0 if cls.__taskid[0] > 19 else cls.__taskid[0]+1
-        cls.__taskid = (id_num, '{}.{}'.format(arglist[0], arglist[1]))
-        cls.__loop = cls.__loop if loop is None else loop
+        self.__ret = ''
+        id_num = 0 if self.__taskid[0] > 19 else self.__taskid[0]+1
+        self.__taskid = (id_num, '{}.{}'.format(arglist[0], arglist[1]))
+        self.__loop = self.__loop if loop is None else loop
         # Start thread
-        _thread.start_new_thread(cls.__th_task, (arglist, delay))
-        return True, cls.__taskid
+        _thread.start_new_thread(self.__th_task, (arglist, delay))
+        return True, self.__taskid
 
-    def stop(cls):
-        if cls.__isbusy or cls.__loop:
-            cls.__loop = False
-            return '[BgJob] Stop {}'.format(cls.__taskid)
-        return '[BgJob] Already stopped {}'.format(cls.__taskid)
+    def stop(self):
+        if self.__isbusy or self.__loop:
+            self.__loop = False
+            return '[BgJob] Stop {}'.format(self.__taskid)
+        return '[BgJob] Already stopped {}'.format(self.__taskid)
 
-    def info(cls):
-        return {'isbusy': cls.__isbusy, 'taskid': cls.__taskid, 'out': cls.__ret}
+    def info(self):
+        return {'isbusy': self.__isbusy, 'taskid': self.__taskid, 'out': self.__ret}
 

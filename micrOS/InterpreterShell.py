@@ -88,22 +88,22 @@ def __shell(msg, sso):
     # @1 Configure mode
     if sso.configure_mode and len(msg_list) > 0:
         # Config handling without thread locking
-        if BgTask is None:
+        if BgTask.singleton() is None:
             return __configure(msg_list, sso)
         # Lock thread under config handling is threads available
-        with BgTask():
+        with BgTask.singleton():
             s = __configure(msg_list, sso)
         return s
     # @2 Background job shell commands
     if msg_list[0] == 'bgjob' and len(msg_list) > 1:
-        if BgTask is None:
+        if BgTask.singleton() is None:
             sso.reply_message('[BgJob] Inactive...')
             return True
         if msg_list[1] == 'stop':
-            sso.reply_message(BgTask().stop())
+            sso.reply_message(BgTask.singleton().stop())
             return True
         if msg_list[1] == 'show':
-            sso.reply_message(BgTask().info())
+            sso.reply_message(BgTask.singleton().info())
             return True
     # @3 Command mode
     """

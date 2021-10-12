@@ -30,6 +30,12 @@ except:
 #################################################################
 
 def shell(msg, sso):
+    """
+    Main micrOS socket shell wrapper
+    :param msg: socket input string
+    :param sso: socket server object
+    :return: execution status
+    """
     try:
         return __shell(msg, sso)
     except Exception as e:
@@ -40,10 +46,14 @@ def shell(msg, sso):
 def __shell(msg, sso):
     """
     Socket server - interpreter shell
-    INPUT:
-        msg - str
-        sso - Socket Server object
-    RETURN STATE:
+    :param msg: socket input string
+    :param sso: socket server object
+        Used stateful parameters:
+            sso.configure_mode
+            sso.pre_prompt
+        Socket message method:
+            sso.reply_message(<input string>)
+    :return: execution status
         True: OK/HEALTHY
         False: ERROR/FAULTY
     """
@@ -88,7 +98,7 @@ def __shell(msg, sso):
     # @1 Configure mode
     if sso.configure_mode and len(msg_list) > 0:
         # Config handling without thread locking
-        if BgTask.singleton() is None:
+        if BgTask is None:
             return __configure(msg_list, sso)
         # Lock thread under config handling is threads available
         with BgTask.singleton():
@@ -124,6 +134,11 @@ def __shell(msg, sso):
 
 
 def __configure(attributes, sso):
+    """
+    :param attributes: socket input param list
+    :param sso: socket server object
+    :return: execution status
+    """
     # [CONFIG] Get value
     if len(attributes) == 1:
         if attributes[0] == 'dump':
@@ -141,12 +156,12 @@ def __configure(attributes, sso):
         key = attributes[0]
         value = " ".join(attributes[1:])
         # Check irq required memory
-        if key in ('timirq', 'irq1', 'irq2', 'irq3', 'irq14', 'cron') and attributes[1].lower() == 'true':
+        if attributes[1].lower() == 'true':
             isOK, avmem = __irq_mem_req_check(key)
             if not isOK:
                 sso.reply_message("Skip ... feature requires more memory then {} byte".format(avmem))
                 return True
-        # Set new parameter(s)
+        # Set the parameter value in config
         try:
             output = cfgput(key, value, type_check=True)
         except Exception as e:
@@ -159,6 +174,13 @@ def __configure(attributes, sso):
 
 
 def __irq_mem_req_check(key):
+    """
+    :param key: config param key to check
+        Checks the selected config function hw resource need before setup
+    :return: Enable(True)/Disable(False), available memory
+    """
+    if key not in ('timirq', 'irq1', 'irq2', 'irq3', 'irq14', 'cron'):
+        return True, None
     collect()                   # gc collect
     memavail = mem_free()       # get free memory
     if key == 'timirq' and memavail < cfgget('irqmreq'):

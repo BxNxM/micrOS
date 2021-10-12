@@ -93,6 +93,7 @@ def execLMCore(argument_list, msgobj=None):
 
 def exec_lm_core(arg_list, msgobj):
     """
+    MAIN FUNCTION TO RUN STRING MODULE.FUNCTION EXECUTIONS
     [1] module name (LM)
     [2] function
     [3...] parameters (separator: space)

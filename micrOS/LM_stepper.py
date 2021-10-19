@@ -52,7 +52,10 @@ class StepperULN2003:
         self.reset()
 
     def angle(self, r, direction=1):
-        self.step(int(self.FULL_ROTATION * r / 360), direction)
+        if r < 0:
+            r *= -1
+            direction = -1
+        self.step(round(self.FULL_ROTATION * r / 360), direction)
 
     def reset(self):
         # Reset to 0, no holding, these are geared, you can't move them
@@ -87,20 +90,25 @@ def load_n_init(mode="HALF"):
     __init_stepper(mode=mode)
 
 
-def angle(dg, dr=1, speed=None):
+def angle(dg, speed=None):
+    """
+    :param dg: +/- 0-360 degree
+    :param speed: wait ms
+    :return: Info
+    """
     i = __init_stepper()
     if speed:
         i.speed_ms = speed
-    i.angle(dg, dr)
-    return "Move {} degree ({},{})".format(dg, i.speed_ms, dr)
+    i.angle(dg)
+    return "Move {} degree ({} ms)".format(dg, i.speed_ms)
 
 
-def step(st, dr=1, speed=None):
+def step(st, speed=None):
     i = __init_stepper()
     if speed:
         i.speed_ms = speed
-    i.step(st, dr)
-    return "Move {} step ({},{})".format(st, i.speed_ms, dr)
+    i.step(st)
+    return "Move {} step ({} ms)".format(st, i.speed_ms)
 
 
 def standby():
@@ -109,8 +117,8 @@ def standby():
 
 
 def help():
-    return 'angle dg=360 dr=<+/-1> speed=<ms>',\
-           'step st=2 dr=+/-1 speed=<ms>',\
+    return 'angle dg=+/-360 speed=<ms>',\
+           'step st=+/-2 speed=<ms>',\
            'standby',\
            'load_n_init mode=<"HALF"/"FULL">',\
            'Info: stepper: 28byj-48 driver: ULN2003'

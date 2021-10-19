@@ -12,8 +12,8 @@
   ],
   "stepper": [
     "load_n_init mode=\"HALF\"",
-    "angle dg dr=1 speed=None",
-    "step st dr=1 speed=None",
+    "angle dg speed=None",
+    "step st speed=None",
     "standby",
     "help"
   ],
@@ -149,6 +149,7 @@
   ],
   "pet_feeder": [
     "portion repeat=1 posmin=65 posmax=97",
+    "portion_new count=1 forward=135 back=10",
     "lmdep",
     "help"
   ],

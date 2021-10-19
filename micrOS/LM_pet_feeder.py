@@ -1,4 +1,5 @@
 from LM_servo import sduty, deinit
+from LM_stepper import step, standby
 from time import sleep_ms
 
 
@@ -18,9 +19,20 @@ def portion(repeat=1, posmin=65, posmax=97):
     return 'Portion {} was served'.format(repeat)
 
 
+def portion_new(count=1, forward=135, back=10):
+    for _ in range(count):
+        # portion move
+        step(forward)
+        # Safety anti-block solution?
+        step(-back)
+        step(back)
+        step(-back)
+        step(back)
+
+
 def lmdep():
-    return 'LM_servo'
+    return 'LM_servo', 'LM_stepper'
 
 
 def help():
-    return 'portion repeat=1'
+    return 'portion repeat=1', '<-servo control',  'portion_new count=1', '<-stepper control'

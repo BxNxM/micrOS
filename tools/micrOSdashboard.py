@@ -205,7 +205,7 @@ class MicrOSDeviceSelector(DropDownBase):
 
         # Get stored devices
         conn_data = self.socketcli_obj
-        conn_data.read_MicrOS_device_cache()
+        conn_data.read_micrOS_device_cache()
         self.device_conn_struct = []
         for uid in conn_data.MICROS_DEV_IP_DICT.keys():
             devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
@@ -222,7 +222,7 @@ class MicrOSDeviceSelector(DropDownBase):
 
     def update_elements(self):
         conn_data = self.socketcli_obj
-        conn_data.read_MicrOS_device_cache()
+        conn_data.read_micrOS_device_cache()
         dev_fid_list = []
         for uid in conn_data.MICROS_DEV_IP_DICT.keys():
             if uid not in [s[2] for s in self.device_conn_struct]:
@@ -252,7 +252,7 @@ class LocalAppSelector(DropDownBase):
 
         # Get stored devices
         conn_data = self.socketcli_obj
-        conn_data.read_MicrOS_device_cache()
+        conn_data.read_micrOS_device_cache()
         self.device_conn_struct = []
         for uid in conn_data.MICROS_DEV_IP_DICT.keys():
             devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
@@ -467,7 +467,7 @@ class ClusterStatus:
     def get_status_callback(self):
         # Get stored devices
         conn_data = self.socket_data_obj
-        conn_data.read_MicrOS_device_cache()
+        conn_data.read_micrOS_device_cache()
         for uid in conn_data.MICROS_DEV_IP_DICT.keys():
             devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
             fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
@@ -1031,7 +1031,7 @@ class micrOSGUI(QWidget):
         # Start job
         self.console.append_output('[search_devices] |- start search_devices job')
         # Create a Thread with a function without any arguments
-        th = threading.Thread(target=self.socketcli_obj.filter_MicrOS_devices, daemon=DAEMON)
+        th = threading.Thread(target=self.socketcli_obj.search_micrOS_on_wlan, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['search_devices'] = th
         self.console.append_output('[search_devices] |- search_devices job was started')

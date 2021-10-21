@@ -9,12 +9,14 @@ import SearchDevices
 
 def map_wlan_devices(service_port=9008):
     devices = []
+    print("[NWSCN] Get online host list on port {}".format(service_port))
     host_address_list = SearchDevices.online_device_scanner(service_port=service_port)
+    print("[NWSCN] Get macaddress by ip ...")
     for device in host_address_list:
         devip = device
         macaddr = "n/a"
         try:
-            exitcode, stdout, stderr = LocalMachine.run_command('arp -n {}'.format(device), shell=True)
+            exitcode, stdout, stderr = LocalMachine.run_command('arp -n {}'.format(device), shell=True, debug=False)
             if exitcode == 0:
                 macaddr = stdout.split(' ')[3]
         except Exception:
@@ -27,7 +29,7 @@ def filter_by_open_port(device_ip_list, port=9008):
     """Obsolete"""
     print("Filter devices by (micrOS) open port...  [ping -c 2 -p {port} <ip>]".format(port=port))
     devices = []
-    cmd_base = 'ping -c 2 -p {port} {ip}'
+    cmd_base = 'ping -c 1 -p {port} {ip}'
     for device in device_ip_list:
         devip = device[0]
         cmd = cmd_base.format(port=port, ip=devip)
@@ -38,9 +40,9 @@ def filter_by_open_port(device_ip_list, port=9008):
 
 
 def node_is_online(ip, port=9008):
-    cmd_base = 'ping -c 2 -p {port} {ip}'
+    cmd_base = 'ping -c 1 -p {port} {ip}'
     cmd = cmd_base.format(port=port, ip=ip)
-    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(cmd, shell=True)
+    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(cmd, shell=True, debug=False)
     if exitcode == 0 and len(stderr.strip()) == 0:
         return True
     else:

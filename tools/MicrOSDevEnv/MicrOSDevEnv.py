@@ -911,7 +911,7 @@ class MicrOSDevTool:
         def enable_micros_ota_update_via_webrepl():
             # Get specific device from device list
             self.console("Select device to update ...", state='IMP')
-            socketClient.ConnectionData.read_MicrOS_device_cache()
+            socketClient.ConnectionData.read_micrOS_device_cache()
             # Get device IP and friendly name
             if device is None:
                 # Select device dynamically - cmdline

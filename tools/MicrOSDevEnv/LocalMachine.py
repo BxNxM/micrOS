@@ -431,7 +431,7 @@ class CommandHandler():
     '''
 
     @staticmethod
-    def __run_command(command, forceshell=None, shell=False):
+    def __run_command(command, forceshell=None, shell=False, debug=True):
         if forceshell is not None and type(forceshell) is str:
             if not shell: shell = True
             command = "{} -c '{}'".format(forceshell, command)
@@ -444,7 +444,8 @@ class CommandHandler():
             if proc.poll() is not None and (output == b'' or output == ''):
                 break
             if output:
-                print('\t[DEBUG] {}'.format(output.strip()))
+                if debug:
+                    print('\t[DEBUG] {}'.format(output.strip()))
                 if isinstance(output, bytes):
                     output = output.decode('utf-8')
                 _stdout += output
@@ -453,7 +454,7 @@ class CommandHandler():
         return _exitcode, _stdout, _stderr
 
     @staticmethod
-    def run_command(command, raise_exception=True, forceshell=None, shell=False):
+    def run_command(command, raise_exception=True, forceshell=None, shell=False, debug=True):
         '''
         * raise_exception: raise exception if execution raise or generate
           formal output with exitcode: 1
@@ -464,7 +465,7 @@ class CommandHandler():
         '''
         try:
             # Command execution
-            exitcode, stdout, stderr = CommandHandler.__run_command(command, forceshell, shell)
+            exitcode, stdout, stderr = CommandHandler.__run_command(command, forceshell, shell, debug)
         except Exception as e:
             errmsg = "Command execution error" + str(e)
             if raise_exception:
@@ -486,7 +487,7 @@ class CommandHandler():
     def run_command_stdout_list(command):
         exitcode, stdout, stderr = CommandHandler.run_command(command, raise_exception=True, forceshell=None, shell=True)
         stdout = stdout.split("\n").strip()
-        return exitcode, stdout, stder
+        return exitcode, stdout, stderr
 
     @staticmethod
     def run_command_wait_for_status_ok(command, forceshell=None, shell=False, retry=5, wait_sec=1, ok_exitcode=[0]):

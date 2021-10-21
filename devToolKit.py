@@ -102,9 +102,9 @@ import LocalMachine
 
 
 def arg_parse():
-    parser = argparse.ArgumentParser(prog="micrOS dev toolkit - deploy, connect, update, etc.", \
-                                            description="CMDline wrapper for {}\n and for {}".format( \
-                                            os.path.join(API_DIR_PATH, 'MicrOSDevEnv.py'), \
+    parser = argparse.ArgumentParser(prog="micrOS dev toolkit - deploy, connect, update, etc.",
+                                            description="CMDline wrapper for {}\n and for {}".format(
+                                            os.path.join(API_DIR_PATH, 'MicrOSDevEnv.py'),
                                             os.path.join(SOCKET_CLIENT_DIR_PATH, 'socketClient.py')))
 
     base_group = parser.add_argument_group("Base commands")
@@ -181,7 +181,7 @@ def node_status():
 
 
 def search_devices():
-    socketClient.ConnectionData.filter_MicrOS_devices()
+    socketClient.ConnectionData.search_micrOS_on_wlan()
 
 
 def precompile_micrOS(api_obj):

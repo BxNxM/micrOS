@@ -72,7 +72,7 @@ def __worker_filter_online_devices(host_list, port, thname="main"):
             print("[{}] OFFLINE: {}".format(thname, host))
 
 
-def filter_threads(host_list, port, threads=50):
+def filter_threads(host_list, port, threads=80):
     """
     Use threads for parallel network scanning
     """

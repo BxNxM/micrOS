@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
@@ -156,6 +157,34 @@ def micrOS_get_version():
     return False, info
 
 
+def measure_package_response_time():
+    info = "[ST] Measure response time [system heartbeat]x10"
+    print(info)
+    cmd_list = ['system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat', '<a>',
+                'system heartbeat']
+    # Start time
+    start = time.time()
+    # Command exec
+    output = execute(cmd_list)
+    # Stop time
+    end = time.time() - start
+    # Get average response time
+    delta_cmd_rep_time = round(end/10, 1)
+    # Create verdict
+    print(output)
+    if output[0] and output[1] == '<3 heartbeat <3':
+        return True, info + f' deltaT: {delta_cmd_rep_time} s'
+    return False, output + f' deltaT: {delta_cmd_rep_time} s'
+
+
 def app(devfid=None):
     global DEVICE
     if devfid is not None:
@@ -168,18 +197,26 @@ def app(devfid=None):
                'config_set': micrOS_config_set(),
                'thread_oneshot': micrOS_bgjob_one_shot_check(),
                'thread_loop': micrOS_bgjob_loop_check(),
-               'version': micrOS_get_version()
+               'version': micrOS_get_version(),
+               'reponse time': measure_package_response_time()
                }
 
     # Test Evaluation
     final_state = True
+    ok_cnt = 0
     print("\n----------------------------- micrOS System Test results -----------------------------")
     for test, state_data in verdict.items():
-        state = 'OK' if state_data[0] else 'NOK'
+        state = 'NOK'
+        if state_data[0]:
+            state = 'OK'
+            ok_cnt += 1
         print(f"\t{test}:\t{state}\t\t[i]{state_data[1]}")
         final_state &= state_data[0]
+
+    # Execution verdict
+    print(f"\nPASS RATE: {round((ok_cnt/len(verdict.keys())*100), 1)} %")
     state = 'OK' if final_state else 'NOK'
-    print(f"\nRESULT: {state}")
+    print(f"RESULT: {state}")
     print("--------------------------------------------------------------------------------------\n")
 
 

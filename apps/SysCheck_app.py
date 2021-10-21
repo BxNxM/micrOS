@@ -157,6 +157,16 @@ def micrOS_get_version():
     return False, info
 
 
+def json_format_check():
+    info = "[ST] Run micrOS raw output check aka >json [system rssi >json]"
+    print(info)
+    cmd_list = ['system rssi >json']
+    output = execute(cmd_list)
+    if output[0] and output[1].startswith("{") and output[1].endswith("}"):
+        return True, info + f" out: {output[1]}"
+    return False, info + f" out: {output[1]}"
+
+
 def measure_package_response_time():
     info = "[ST] Measure response time [system heartbeat]x10"
     print(info)
@@ -198,19 +208,21 @@ def app(devfid=None):
                'thread_oneshot': micrOS_bgjob_one_shot_check(),
                'thread_loop': micrOS_bgjob_loop_check(),
                'version': micrOS_get_version(),
+               'json_check': json_format_check(),
                'reponse time': measure_package_response_time()
                }
 
     # Test Evaluation
     final_state = True
     ok_cnt = 0
-    print("\n----------------------------- micrOS System Test results -----------------------------")
+    print("\n----------------------------------- micrOS System Test results -----------------------------------")
+    print("\tTEST NAME\t\tSTATE\t\tDescription\n")
     for test, state_data in verdict.items():
         state = 'NOK'
         if state_data[0]:
             state = 'OK'
             ok_cnt += 1
-        print(f"\t{test}:\t{state}\t\t[i]{state_data[1]}")
+        print(f"\t{test}:\t\t{state}\t\t[i]{state_data[1]}")
         final_state &= state_data[0]
 
     # Execution verdict

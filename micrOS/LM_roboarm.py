@@ -1,4 +1,4 @@
-from time import sleep_ms
+from utime import sleep_ms
 from random import randint
 import LM_servo as servo
 from LM_switch import set_state

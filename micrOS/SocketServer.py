@@ -21,7 +21,7 @@ Designed by Marcell Ban aka BxNxM
 #########################################################
 
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
-from time import sleep
+from utime import sleep
 from ConfigHandler import console_write, cfgget, cfgput
 from InterpreterShell import shell
 
@@ -47,7 +47,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.2.6-3'
+    __socket_interpreter_version = '1.2.6-4'
 
     def __new__(cls, host=''):
         """

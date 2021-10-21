@@ -1,6 +1,6 @@
 from machine import ADC, Pin
 from sys import platform
-from time import sleep
+from utime import sleep
 from LogicalPins import physical_pin
 __ADC = None
 # [0] ADC RESOLUTION, [1] ADC VOLTAGE MEASURE RANGE

@@ -33,14 +33,15 @@ def gclean():
 
 @progress_led_toggle_adaptor
 def heartbeat():
-    from time import sleep
-    sleep(0.1)
+    from utime import sleep_ms
+    sleep_ms(100)
     return "<3 heartbeat <3"
 
 
 def clock():
-    from time import localtime
-    return localtime()
+    from utime import localtime
+    buff = [str(k) for k in localtime()]
+    return "{}  {}\nWD: {} YD: {}".format('.'.join(buff[0:3]), ':'.join(buff[3:6]), buff[6], buff[7])
 
 
 def ntp():
@@ -48,7 +49,7 @@ def ntp():
     Set NTP manually
     """
     try:
-        from time import localtime, time
+        from utime import localtime, time
         from ntptime import settime
         from machine import RTC
         from ConfigHandler import cfgget

@@ -1,6 +1,6 @@
 from random import randint
 from LM_servo import sduty
-from time import sleep_ms
+from utime import sleep_ms
 
 
 def game(repeat=10, delta=20):

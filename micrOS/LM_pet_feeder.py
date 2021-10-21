@@ -1,6 +1,6 @@
 from LM_servo import sduty, deinit
 from LM_stepper import step, standby
-from time import sleep_ms
+from utime import sleep_ms
 
 
 def portion(repeat=1, posmin=65, posmax=97):

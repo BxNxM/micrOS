@@ -36,7 +36,7 @@ def sduty(duty=75):
 
 
 def sdemo():
-    from time import sleep
+    from utime import sleep
     sduty(40)
     sleep(1)
     sduty(115)

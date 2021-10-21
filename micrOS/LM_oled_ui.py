@@ -1,6 +1,6 @@
 from ConfigHandler import cfgget
 from gc import mem_free
-from time import localtime
+from utime import localtime
 from network import WLAN, STA_IF
 import LM_oled as oled
 from Common import SmartADC

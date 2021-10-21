@@ -1,6 +1,6 @@
 # Based on ULN2003 driver lib: https://github.com/zhcong/ULN2003-for-ESP32
 
-from time import sleep_ms
+from utime import sleep_ms
 from machine import Pin
 from LogicalPins import physical_pin
 STEPPER_INST = None

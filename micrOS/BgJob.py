@@ -1,5 +1,5 @@
 import _thread
-from time import sleep
+from utime import sleep
 
 
 class BgTask:

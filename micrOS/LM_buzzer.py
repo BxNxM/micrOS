@@ -1,5 +1,5 @@
 from sys import platform
-from time import sleep
+from utime import sleep
 
 #########################################
 #      BUZZER PWM CONTROLLER PARAMS     #

@@ -12,7 +12,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from time import sleep
+from utime import sleep
 from json import load, dump
 from machine import Pin
 from LogicalPins import physical_pin

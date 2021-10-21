@@ -12,7 +12,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from time import sleep, localtime, time
+from utime import sleep, localtime, time
 from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from ntptime import settime

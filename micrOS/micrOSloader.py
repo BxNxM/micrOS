@@ -76,7 +76,7 @@ def __auto_restart_event():
             - value: micros     [update was successful - reboot is necessary]
     :return:
     """
-    from time import sleep
+    from utime import sleep
     trigger_is_active = False
     wait_update_tout = 7
     # Wait after webrepl started for possible ota updates (~2*7= 14sec)

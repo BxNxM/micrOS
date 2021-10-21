@@ -1,5 +1,5 @@
 from BleHandler import BleHandler
-from time import sleep
+from utime import sleep
 
 BLE = None
 

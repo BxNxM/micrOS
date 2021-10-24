@@ -168,7 +168,7 @@
   ],
   "rgb": [
     "load_n_init cache=None",
-    "rgb r=None g=None b=None",
+    "rgb r=None g=None b=None smooth=True",
     "toggle state=None",
     "set_transition r g b sec",
     "run_transition",

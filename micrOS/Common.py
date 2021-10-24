@@ -37,7 +37,6 @@ def transition(from_val, to_val, step_ms, interval_sec):
     :param interval_sec: full interval
     """
     if interval_sec > 0:
-        from_val = from_val
         step_cnt = round((interval_sec*1000)/step_ms)
         delta = abs((from_val-to_val)/step_cnt)
         direc = -1 if from_val > to_val else 1

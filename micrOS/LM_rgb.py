@@ -4,6 +4,7 @@
 from sys import platform
 from Common import transition
 from ConfigHandler import cfgget
+from utime import sleep_ms
 
 
 class Data:
@@ -70,16 +71,31 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
-def rgb(r=None, g=None, b=None):
+def rgb(r=None, g=None, b=None, smooth=True):
+    def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
+        step_ms = 5
+        interval_sec = 0.4
+        r_gen = transition(from_val=r_from, to_val=r_to, step_ms=step_ms, interval_sec=interval_sec)
+        g_gen = transition(from_val=g_from, to_val=g_to, step_ms=step_ms, interval_sec=interval_sec)
+        b_gen = transition(from_val=b_from, to_val=b_to, step_ms=step_ms, interval_sec=interval_sec)
+        for _r in r_gen:
+            Data.RGB_OBJS[0].duty(_r)
+            Data.RGB_OBJS[1].duty(g_gen.__next__())
+            Data.RGB_OBJS[2].duty(b_gen.__next__())
+            sleep_ms(step_ms)
+
     __RGB_init()
     # Dynamic input handling: user/cache
     r = Data.RGB_CACHE[0] if r is None else r
     g = Data.RGB_CACHE[1] if g is None else g
     b = Data.RGB_CACHE[2] if b is None else b
     # Set RGB channels
-    Data.RGB_OBJS[0].duty(r)
-    Data.RGB_OBJS[1].duty(g)
-    Data.RGB_OBJS[2].duty(b)
+    if smooth:
+        __buttery(r_from=Data.RGB_CACHE[0], g_from=Data.RGB_CACHE[1], b_from=Data.RGB_CACHE[2], r_to=r, g_to=g, b_to=b)
+    else:
+        Data.RGB_OBJS[0].duty(r)
+        Data.RGB_OBJS[1].duty(g)
+        Data.RGB_OBJS[2].duty(b)
     # Save channel duties if LED on
     if r > 0 or g > 0 or b > 0:
         Data.RGB_CACHE = [Data.RGB_OBJS[0].duty(), Data.RGB_OBJS[1].duty(), Data.RGB_OBJS[2].duty(), 1]
@@ -123,7 +139,7 @@ def run_transition():
             g = Data.FADE_OBJS[1].__next__()
             b = Data.FADE_OBJS[2].__next__()
             if Data.RGB_CACHE[3] == 1:
-                rgb(int(r), int(g), int(b))
+                rgb(int(r), int(g), int(b), smooth=False)
                 return 'Run R{}R{}B{}'.format(r, g, b)
             return 'Run deactivated'
         except:
@@ -137,6 +153,6 @@ def run_transition():
 #######################
 
 def help():
-    return 'rgb r=<0-1000> g=<0-1000> b=<0,1000>',\
+    return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True',\
            'toggle state=None', 'load_n_init', \
-           'set_transition r=<0-255> g b sec', 'run_transition'
+           'set_transition r=<0-1000> g b sec', 'run_transition'

@@ -10,13 +10,14 @@ import socketClient
 
 # FILL OUT
 DEVICE = 'node01'
+SMOOTH = True
 
 
 def base_cmd():
     return ['--dev', DEVICE]
 
 
-def app(devfid=None, test_cycle=64):
+def app(devfid=None, test_cycle=32):
     global DEVICE
     if devfid is not None:
         DEVICE = devfid
@@ -27,7 +28,10 @@ def app(devfid=None, test_cycle=64):
         green = random.randint(0, 1000)
         blue = random.randint(0, 1000)
         # EDIT YOUR COMMAND
-        args = base_cmd() + ['rgb', 'rgb {} {} {}'.format(red, green, blue)]
+        if SMOOTH:
+            args = base_cmd() + ['rgb', 'rgb {} {} {} True'.format(red, green, blue)]
+        else:
+            args = base_cmd() + ['rgb', 'rgb {} {} {}'.format(red, green, blue)]
         status, answer = socketClient.run(args)
         if status == 0 or 'R{}G{}B{}'.format(red, green, blue) in answer:
             print("[OK][{}/{}][{}] {}".format(cycle, test_cycle, err_cnt, answer))

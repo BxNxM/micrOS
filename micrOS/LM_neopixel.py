@@ -24,7 +24,6 @@ def __init_NEOPIXEL(n=24):
     """
     Init NeoPixel module
     n - number of led fragments
-    n - must be set from code! (no persistent object handling in LMs)
     """
     if Data.NEOPIXEL_OBJ is None:
         from neopixel import NeoPixel
@@ -58,6 +57,14 @@ def __persistent_cache_manager(mode):
 
 
 def load_n_init(cache=None, ledcnt=24):
+    """
+    Initiate NeoPixel RGB module
+    - Load .pds file for that module
+    - restore state machine from .pds
+    :param cache: file state machine chache: True(default)/False
+    :param ledcnt: led segment count (for addressing) - should be set in boothook
+    :return: Cache state
+    """
     if cache is None:
         Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
     else:
@@ -65,16 +72,20 @@ def load_n_init(cache=None, ledcnt=24):
     __persistent_cache_manager('r')        # recover data cache
     _ledcnt = __init_NEOPIXEL(n=ledcnt).n
     if Data.PERSISTENT_CACHE and Data.DCACHE[3] == 1:
-        neopixel()                         # Set each LED for the same color
+        toggle(True)
     return "CACHE: {}, LED CNT: {}".format(Data.PERSISTENT_CACHE, _ledcnt)
 
 
 def neopixel(r=None, g=None, b=None, smooth=True):
     """
-    Simple NeoPixel wrapper
-    - Set all led fragments for the same color set
-    - Default and cached color scheme
+    Set NEOPIXEL RGB values
+    :param r: red value   0-255
+    :param g: green value 0-255
+    :param b: blue value  0-255
+    :param smooth: runs colors change with smooth effect
+    :return: verdict string
     """
+
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
         step_ms = 2
         interval_sec = 0.3
@@ -87,7 +98,7 @@ def neopixel(r=None, g=None, b=None, smooth=True):
             for lcnt in range(0, __init_NEOPIXEL().n):
                 Data.NEOPIXEL_OBJ[lcnt] = (_r, _g, _b)
             Data.NEOPIXEL_OBJ.write()
-            sleep_ms(step_ms)
+            sleep_ms(1)
 
     r = Data.DCACHE[0] if r is None else r
     g = Data.DCACHE[1] if g is None else g
@@ -130,20 +141,39 @@ def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
     return "NEOPIXEL index error: {} > {}".format(s, neo_n)
 
 
-def toggle(state=None):
+def toggle(state=None, smooth=True):
     """
-    ON - OFF NeoPixel
+    Toggle led state based on the stored state
+    :param state: True(1)/False(0)
+    :param smooth: runs colors change with smooth effect
+    :return: verdict
     """
     if state is not None:
         Data.DCACHE[3] = 0 if state else 1
     if Data.DCACHE[3] == 1:
-        neopixel(r=0, g=0, b=0)
+        neopixel(r=0, g=0, b=0, smooth=smooth)
         return "OFF"
+    # Turn ON with smooth "hack"
+    if smooth:
+        r, g, b = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]
+        Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2] = 0, 0, 0
+        neopixel(r, g, b)
+        return "ON"
+    # Turn ON without smooth
     neopixel()
     return "ON"
 
 
 def set_transition(r, g, b, sec):
+    """
+    Set transition color change for long dimming periods < 30sec
+    - creates the color dimming generators
+    :param r: red value   0-255
+    :param g: green value 0-255
+    :param b: blue value  0-255
+    :param sec: transition length in sec
+    :return: info msg string
+    """
     Data.DCACHE[3] = 1
     timirqseq = cfgget('timirqseq')
     from_red = Data.DCACHE[0]
@@ -153,10 +183,16 @@ def set_transition(r, g, b, sec):
     Data.FADE_OBJ = (transition(from_val=from_red, to_val=r, step_ms=timirqseq, interval_sec=sec),
                    transition(from_val=from_green, to_val=g, step_ms=timirqseq, interval_sec=sec),
                    transition(from_val=from_blue, to_val=b, step_ms=timirqseq, interval_sec=sec))
-    return 'Settings was applied.'
+    return 'Settings was applied... wait for: run_transition'
 
 
 def run_transition():
+    """
+    Transition execution/"stepping"
+    - run color change for long dimming periods
+        - runs the generated color dimming generators
+    :return: Execution verdict
+    """
     if None not in Data.FADE_OBJ:
         try:
             r = Data.FADE_OBJ[0].__next__()
@@ -177,6 +213,6 @@ def run_transition():
 #######################
 
 def help():
-    return 'neopixel r=<0-255> g b smooth=True', 'toggle state=None', \
+    return 'neopixel r=<0-255> g b smooth=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition'

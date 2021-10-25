@@ -1,4 +1,5 @@
 from sys import platform
+from utime import sleep_ms
 from Common import transition
 from ConfigHandler import cfgget
 
@@ -68,19 +69,36 @@ def load_n_init(cache=None, ledcnt=24):
     return "CACHE: {}, LED CNT: {}".format(Data.PERSISTENT_CACHE, _ledcnt)
 
 
-def neopixel(r=None, g=None, b=None):
+def neopixel(r=None, g=None, b=None, smooth=True):
     """
     Simple NeoPixel wrapper
     - Set all led fragments for the same color set
     - Default and cached color scheme
     """
+    def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
+        step_ms = 2
+        interval_sec = 0.3
+        r_gen = transition(from_val=r_from, to_val=r_to, step_ms=step_ms, interval_sec=interval_sec)
+        g_gen = transition(from_val=g_from, to_val=g_to, step_ms=step_ms, interval_sec=interval_sec)
+        b_gen = transition(from_val=b_from, to_val=b_to, step_ms=step_ms, interval_sec=interval_sec)
+        for _r in r_gen:
+            _g = g_gen.__next__()
+            _b = b_gen.__next__()
+            for lcnt in range(0, __init_NEOPIXEL().n):
+                Data.NEOPIXEL_OBJ[lcnt] = (_r, _g, _b)
+            Data.NEOPIXEL_OBJ.write()
+            sleep_ms(step_ms)
+
     r = Data.DCACHE[0] if r is None else r
     g = Data.DCACHE[1] if g is None else g
     b = Data.DCACHE[2] if b is None else b
     # Set each LED for the same color
-    for element in range(0, __init_NEOPIXEL().n):    # Iterate over led string elements
-        Data.NEOPIXEL_OBJ[element] = (r, g, b)             # Set LED element color
-    Data.NEOPIXEL_OBJ.write()                              # Send data to device
+    if smooth:
+        __buttery(r_from=Data.DCACHE[0], g_from=Data.DCACHE[1], b_from=Data.DCACHE[2], r_to=r, g_to=g, b_to=b)
+    else:
+        for element in range(0, __init_NEOPIXEL().n):          # Iterate over led string elements
+            Data.NEOPIXEL_OBJ[element] = (r, g, b)             # Set LED element color
+        Data.NEOPIXEL_OBJ.write()                              # Send data to device
     # Set cache
     if r > 0 or g > 0 or b > 0:
         Data.DCACHE = [r, g, b, 1]                         # Cache colors + state (True-ON)
@@ -121,7 +139,7 @@ def toggle(state=None):
     if Data.DCACHE[3] == 1:
         neopixel(r=0, g=0, b=0)
         return "OFF"
-    neopixel(Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2])
+    neopixel()
     return "ON"
 
 
@@ -145,7 +163,7 @@ def run_transition():
             g = Data.FADE_OBJ[1].__next__()
             b = Data.FADE_OBJ[2].__next__()
             if Data.DCACHE[3] == 1:
-                neopixel(int(r), int(g), int(b))
+                neopixel(int(r), int(g), int(b), smooth=False)
                 return 'Run R{}R{}B{}'.format(r, g, b)
             return 'Run deactivated'
         except:
@@ -159,6 +177,6 @@ def run_transition():
 #######################
 
 def help():
-    return 'neopixel r=<0-255> g b n=<0-24)', 'toggle state=None', \
+    return 'neopixel r=<0-255> g b smooth=True', 'toggle state=None', \
            'load_n_init ledcnt=24', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition'

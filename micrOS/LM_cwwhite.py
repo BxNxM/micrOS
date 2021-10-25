@@ -2,6 +2,7 @@
 #       ANALOG rgb CONTROLLER PARAMS    #
 #########################################
 from sys import platform
+from utime import sleep_ms
 from Common import transition
 from ConfigHandler import cfgget
 
@@ -67,12 +68,25 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
-def white(c=None, w=None):
+def white(c=None, w=None, smooth=True):
+    def __buttery(ww_from, cw_from, ww_to, cw_to):
+        step_ms = 2
+        interval_sec = 0.3
+        ww_gen = transition(from_val=ww_from, to_val=ww_to, step_ms=step_ms, interval_sec=interval_sec)
+        cw_gen = transition(from_val=cw_from, to_val=cw_to, step_ms=step_ms, interval_sec=interval_sec)
+        for _ww in ww_gen:
+            Data.CWWW_OBJS[1].duty(_ww)
+            Data.CWWW_OBJS[0].duty(cw_gen.__next__())
+            sleep_ms(step_ms)
+
     __cwww_init()
     c = Data.CWWW_CACHE[0] if c is None else c
     w = Data.CWWW_CACHE[1] if w is None else w
-    Data.CWWW_OBJS[0].duty(c)
-    Data.CWWW_OBJS[1].duty(w)
+    if smooth:
+        __buttery(ww_from=Data.CWWW_CACHE[1], cw_from=Data.CWWW_CACHE[0], ww_to=w, cw_to=c)
+    else:
+        Data.CWWW_OBJS[0].duty(c)
+        Data.CWWW_OBJS[1].duty(w)
     # Cache channel duties if ON
     if c > 0 or w > 0:
         Data.CWWW_CACHE = [Data.CWWW_OBJS[0].duty(), Data.CWWW_OBJS[1].duty(), 1]
@@ -113,7 +127,7 @@ def run_transition():
             cw = Data.FADE_OBJS[0].__next__()
             ww = Data.FADE_OBJS[1].__next__()
             if Data.CWWW_CACHE[2] == 1:
-                white(int(cw), int(ww))
+                white(int(cw), int(ww), smooth=False)
                 return "SET : CW{} WW{}".format(cw, ww)
             return 'Run deactivated'
         except:

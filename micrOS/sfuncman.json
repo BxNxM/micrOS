@@ -112,7 +112,7 @@
   ],
   "neopixel": [
     "load_n_init cache=None ledcnt=24",
-    "neopixel r=None g=None b=None",
+    "neopixel r=None g=None b=None smooth=True",
     "segment r=None g=None b=None s=0 cache=False write=True",
     "toggle state=None",
     "set_transition r g b sec",
@@ -219,7 +219,7 @@
   ],
   "cwwhite": [
     "load_n_init cache=None",
-    "white c=None w=None",
+    "white c=None w=None smooth=True",
     "toggle state=None",
     "set_transition cw ww sec",
     "run_transition",

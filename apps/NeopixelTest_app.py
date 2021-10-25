@@ -36,7 +36,7 @@ def evaluate_test_data(answer_msg, test_cycle=None):
     print("Progress: {} err / {} / [{}]".format(TestData.ERR_CNT, TestData.EXEC_CNT, test_cycle))
 
 
-def app(test_cycle=64, devfid=None):
+def app(test_cycle=32, devfid=None):
     global DEVICE
     if devfid is not None:
         DEVICE = devfid

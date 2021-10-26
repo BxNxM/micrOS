@@ -93,5 +93,10 @@ def toggle(state=None):
 # LM helper functions #
 #######################
 
+def status(lmf=None):
+    # Slider dedicated widget input - [OK]
+    return {'X': __DIMMER_CACHE[1], 'S': __DIMMER_CACHE[0]}
+
+
 def help():
-    return 'set_value value=<0-1000>', 'toggle state=None', 'load_n_init'
+    return 'set_value value=<0-1000>', 'toggle state=None', 'load_n_init', 'status'

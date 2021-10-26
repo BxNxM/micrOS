@@ -116,6 +116,10 @@ def standby():
     return "Standby"
 
 
+#######################
+# LM helper functions #
+#######################
+
 def help():
     return 'angle dg=+/-360 speed=<ms>',\
            'step st=+/-2 speed=<ms>',\

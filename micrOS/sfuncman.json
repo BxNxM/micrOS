@@ -7,6 +7,7 @@
     "standby",
     "jiggle",
     "move_pipe *args s=None deinit=True",
+    "status lmf=None",
     "lmdep",
     "help"
   ],
@@ -101,6 +102,7 @@
     "toggle3",
     "set_state4 state=None",
     "toggle4",
+    "status lmf=None",
     "help"
   ],
   "servo": [
@@ -108,6 +110,7 @@
     "sdemo",
     "s2duty duty=75",
     "deinit",
+    "status lmf=None",
     "help"
   ],
   "neopixel": [
@@ -117,6 +120,7 @@
     "toggle state=None smooth=True",
     "set_transition r g b sec",
     "run_transition",
+    "status lmf=None",
     "help"
   ],
   "L9110_DCmotor": [
@@ -172,6 +176,7 @@
     "toggle state=None smooth=True",
     "set_transition r g b sec",
     "run_transition",
+    "status lmf=None",
     "help"
   ],
   "VL53L0X": [
@@ -187,6 +192,7 @@
     "set_value value=None",
     "load_n_init cache=None",
     "toggle state=None",
+    "status lmf=None",
     "help"
   ],
   "neo_effects": [
@@ -223,6 +229,7 @@
     "toggle state=None smooth=True",
     "set_transition cw ww sec",
     "run_transition",
+    "status lmf=None",
     "help"
   ]
 }

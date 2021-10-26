@@ -142,9 +142,14 @@ def move_pipe(*args, s=None, deinit=True):
         servo.deinit()
     return 'MovePipe Finished'
 
+
 #######################
 # LM helper functions #
 #######################
+
+def status(lmf=None):
+    # Roboarm - Joystick dedicated widget input - [OK]
+    return {'X': RoboArm.ACTUAL_XY[0], 'Y': RoboArm.ACTUAL_XY[1]}
 
 
 def lmdep():
@@ -154,4 +159,4 @@ def lmdep():
 def help():
     return 'control x=<40-115> y=<40-115>, s=<ms delay>', 'rawcontrol x=<40-115> y=<40-115>',\
            'boot_move', 'standby', 'jiggle', 'move_pipe 40 40 115 115 s=<ms> deinit=True',\
-           'load_n_init', 'lmdep'
+           'load_n_init', 'status', 'lmdep'

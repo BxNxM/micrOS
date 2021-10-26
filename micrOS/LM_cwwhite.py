@@ -176,8 +176,12 @@ def run_transition():
 #######################
 # LM helper functions #
 #######################
+def status(lmf=None):
+    # Cold White / Warm White dedicated widget input - [OK]
+    return {'CW': Data.CWWW_CACHE[0], 'WW': Data.CWWW_CACHE[1], 'S': Data.CWWW_CACHE[2]}
+
 
 def help():
     return 'white c=<0-1000> w=<0-1000> smooth=True',\
            'toggle state=None smooth=True', 'load_n_init', \
-           'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition'
+           'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition', 'status'

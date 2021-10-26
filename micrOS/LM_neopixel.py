@@ -115,7 +115,7 @@ def neopixel(r=None, g=None, b=None, smooth=True):
         Data.DCACHE = [r, g, b, 1]                         # Cache colors + state (True-ON)
     else:
         Data.DCACHE[3] = 0                                 # State - False - OFF
-    __persistent_cache_manager('s')                # Save cache - Data.DCACHE -  to file
+    __persistent_cache_manager('s')                        # Save cache - Data.DCACHE -  to file
     return "NEOPIXEL SET TO R{}G{}B{}".format(r, g, b)
 
 
@@ -212,7 +212,12 @@ def run_transition():
 # LM helper functions #
 #######################
 
+def status(lmf=None):
+    # Neopixel(=RGB) dedicated widget input - [OK]
+    return {'R': Data.DCACHE[0], 'G': Data.DCACHE[1], 'B': Data.DCACHE[2], 'S': Data.DCACHE[3]}
+
+
 def help():
     return 'neopixel r=<0-255> g b smooth=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'segment r, g, b, s=<0-n>',\
-           'set_transition r=<0-255> g b sec', 'run_transition'
+           'set_transition r=<0-255> g b sec', 'run_transition', 'status'

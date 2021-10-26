@@ -198,7 +198,12 @@ def run_transition():
 # LM helper functions #
 #######################
 
+def status(lmf=None):
+    # RGB dedicated widget input - [OK]
+    return {'R': Data.RGB_CACHE[0], 'G': Data.RGB_CACHE[1], 'B': Data.RGB_CACHE[2], 'S': Data.RGB_CACHE[3]}
+
+
 def help():
     return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True',\
            'toggle state=None smooth=True', 'load_n_init', \
-           'set_transition r=<0-1000> g b sec', 'run_transition'
+           'set_transition r=<0-1000> g b sec', 'run_transition', 'status'

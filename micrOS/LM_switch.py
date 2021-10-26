@@ -189,9 +189,29 @@ def toggle4():
 # LM helper functions #
 #######################
 
+def status(lmf=None):
+    """
+    :param lmf: Load Module Function name e.x.: toggle / set_state2
+    :return: return all / selected status
+    """
+    if lmf is None:
+        return {'SW1': __SWITCH_STATE[0], 'SW2': __SWITCH_STATE[1],
+                'SW3': __SWITCH_STATE[2], 'SW4': __SWITCH_STATE[3]}
+    if lmf[-1].isdigit():
+        id = int(lmf[-1])
+        if id == 2:
+            return {'S': __SWITCH_STATE[1]}
+        if id == 3:
+            return {'S': __SWITCH_STATE[2]}
+        if id == 4:
+            return {'S': __SWITCH_STATE[3]}
+    return {'S': __SWITCH_STATE[0]}
+
+
 def help():
     return 'set_state state=<0,1>', 'toggle', \
            'set_state2 state=<0,1>', 'toggle2', \
            'set_state3 state=<0,1>', 'toggle3', \
            'set_state4 state=<0,1>', 'toggle4', \
-           'load_n_init cache=None<True/False> ch_init=[1,2,3,4]'
+           'load_n_init cache=None<True/False> ch_init=[1,2,3,4]',\
+           'status'

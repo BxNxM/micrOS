@@ -7,6 +7,27 @@ from LM_switch import set_state
 class RoboArm:
     ACTUAL_XY = [75, 70]
     SPEED_MS = 5
+    MOVE_RECORD = []
+
+
+def __persistent_cache_manager(mode):
+    """
+    pds - persistent data structure
+    modes:
+        r - recover, s - save
+    """
+
+    if mode == 's':
+        # SAVE CACHE
+        with open('rarm.pds', 'w') as f:
+            f.write(','.join([str(k) for k in RoboArm.MOVE_RECORD]))
+        return
+    try:
+        # RESTORE CACHE
+        with open('rarm.pds', 'r') as f:
+            RoboArm.MOVE_RECORD = [int(data) for data in f.read().strip().split(',')]
+    except:
+        pass
 
 
 def load_n_init(x=75, y=70):
@@ -14,6 +35,7 @@ def load_n_init(x=75, y=70):
     RoboArm.ACTUAL_XY[0] = x
     servo.s2duty(y)
     RoboArm.ACTUAL_XY[1] = y
+    __persistent_cache_manager('r')
     return 'Move to home'
 
 
@@ -131,16 +153,47 @@ def jiggle():
     return 'JJiggle :)'
 
 
-def move_pipe(*args, s=None, deinit=True):
+def play(*args, s=None, delay=None, deinit=True):
+    """
+    Runs move instructions from input or RoboArm.MOVE_RECORD
+    :param args: X Y X2 Y2 ...
+    :param s: SPEED_MS (delay)
+    :param delay: delay in ms between steps
+    :param deinit: deinit servo after execution
+    :return: verdict
+    """
     RoboArm.SPEED_MS = s if isinstance(s, int) else RoboArm.SPEED_MS
+    delay = delay if isinstance(delay, int) else 10
+    # Parse args as a list
     args = list(args)
-    while len(args) >= 2:
-        x = args.pop(0)
-        y = args.pop(0)
+    # Execute MOVE_RECORD if no input was provided
+    args = RoboArm.MOVE_RECORD if len(args) < 2 else args
+    set_state(True)
+    for i in range(0, len(args), 2):
+        x, y = args[i], args[i+1]
         control(x, y)
+        sleep_ms(delay)
     if deinit:
         servo.deinit()
-    return 'MovePipe Finished'
+    set_state(False)
+    return 'MovePipe: {} move was played.'.format(int(len(args)/2))
+
+
+def record(clean=False):
+    """
+    Record function for move automation :D
+    - Store actual X, Y
+    :return: verdict
+    """
+    if clean:
+        RoboArm.MOVE_RECORD = []
+        __persistent_cache_manager('s')
+        return 'Record was cleaned'
+    x, y = RoboArm.ACTUAL_XY
+    RoboArm.MOVE_RECORD.append(x)
+    RoboArm.MOVE_RECORD.append(y)
+    __persistent_cache_manager('s')
+    return 'Record[{}]: X:{} Y:{}'.format(int(len(RoboArm.MOVE_RECORD)/2), x, y)
 
 
 #######################
@@ -158,5 +211,5 @@ def lmdep():
 
 def help():
     return 'control x=<40-115> y=<40-115>, s=<ms delay>', 'rawcontrol x=<40-115> y=<40-115>',\
-           'boot_move', 'standby', 'jiggle', 'move_pipe 40 40 115 115 s=<ms> deinit=True',\
-           'load_n_init', 'status', 'lmdep'
+           'boot_move', 'standby', 'jiggle', 'play 40 40 115 115 s=<ms> delay=<ms>, deinit=True',\
+           'record clean=False', 'load_n_init', 'status', 'lmdep'

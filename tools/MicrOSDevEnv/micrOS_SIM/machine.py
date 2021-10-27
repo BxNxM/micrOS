@@ -92,6 +92,9 @@ class PWM:
         console("[PWM - {}] set freq: {}".format(self.dimmer_pin, self.__freq))
         return self.__freq
 
+    def deinit(self):
+        return True
+
 
 class ADC:
     ATTN_11DB = 'dummy'

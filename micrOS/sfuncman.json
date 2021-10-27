@@ -6,7 +6,8 @@
     "boot_move s=None",
     "standby",
     "jiggle",
-    "move_pipe *args s=None deinit=True",
+    "play *args s=None delay=None deinit=True",
+    "record clean=False",
     "status lmf=None",
     "lmdep",
     "help"

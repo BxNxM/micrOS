@@ -1,0 +1,235 @@
+{
+  "roboarm": [
+    "load_n_init x=75 y=70",
+    "control x_new y_new s=None smooth=True",
+    "boot_move s=None",
+    "standby",
+    "jiggle",
+    "play *args s=None delay=None deinit=True",
+    "record clean=False",
+    "status lmf=None",
+    "lmdep",
+    "help"
+  ],
+  "stepper": [
+    "load_n_init mode=\"HALF\"",
+    "angle dg speed=None",
+    "step st speed=None",
+    "standby",
+    "help"
+  ],
+  "genIO": [
+    "set_pwm pin freq=1024 duty=500",
+    "set_out pin state",
+    "get_adc pin",
+    "get_in pin",
+    "help"
+  ],
+  "repair": [
+    "guimeta_fix_1_0_3_2",
+    "help"
+  ],
+  "oled_ui": [
+    "simple_page",
+    "adc_page",
+    "sys_page",
+    "pageui",
+    "next_page",
+    "prev_page",
+    "lmdep",
+    "help"
+  ],
+  "system": [
+    "info <msgobj>",
+    "gclean",
+    "heartbeat",
+    "clock",
+    "ntp",
+    "module unload=None",
+    "cachedump cdel=None <msgobj>=None",
+    "rssi",
+    "lmpacman lm_del=None <msgobj>=None",
+    "getpin key='builtin'",
+    "ha_sta",
+    "help"
+  ],
+  "co2": [
+    "raw_measure_mq135",
+    "measure_mq135 temperature=None humidity=None",
+    "help"
+  ],
+  "oled": [
+    "text string=\"text\" x=0 y=0",
+    "invert",
+    "clean state=0",
+    "line sx sy ex ey state=1",
+    "rect x y w h state=1 fill=False",
+    "poweron",
+    "poweroff",
+    "show",
+    "help"
+  ],
+  "tinyrgb": [
+    "setrgb r=None g=None b=None br=None",
+    "getstate",
+    "toggle state=None",
+    "wheel br=None",
+    "help"
+  ],
+  "bme280": [
+    "measure",
+    "measure_w_co2",
+    "lmdep",
+    "help"
+  ],
+  "ph_sensor": [
+    "measure",
+    "help"
+  ],
+  "buzzer": [
+    "bipp repeat=1 freq=None",
+    "play rtttlstr='d=4o=5b=250:e8p8f8g8p1c68p.d8p8e1fp.'",
+    "load_n_init cache=None",
+    "help"
+  ],
+  "switch": [
+    "load_n_init cache=None ch_init=None",
+    "set_state state=None",
+    "toggle",
+    "set_state2 state=None",
+    "toggle2",
+    "set_state3 state=None",
+    "toggle3",
+    "set_state4 state=None",
+    "toggle4",
+    "status lmf=None",
+    "help"
+  ],
+  "servo": [
+    "sduty duty=75",
+    "sdemo",
+    "s2duty duty=75",
+    "deinit",
+    "status lmf=None",
+    "help"
+  ],
+  "neopixel": [
+    "load_n_init cache=None ledcnt=24",
+    "neopixel r=None g=None b=None smooth=True",
+    "segment r=None g=None b=None s=0 cache=False write=True",
+    "toggle state=None smooth=True",
+    "set_transition r g b sec",
+    "run_transition",
+    "status lmf=None",
+    "help"
+  ],
+  "L9110_DCmotor": [
+    "motor_control direc=None speed=None",
+    "help"
+  ],
+  "i2c": [
+    "scan",
+    "help"
+  ],
+  "dht22": [
+    "measure",
+    "measure_w_co2",
+    "lmdep",
+    "help"
+  ],
+  "L298N_DCmotor": [
+    "m1_control direc=None speed=None",
+    "set_speed speed=100",
+    "stop",
+    "set_direction direc=0",
+    "help"
+  ],
+  "esp32": [
+    "hall",
+    "temp",
+    "touch triglvl=300",
+    "battery",
+    "help"
+  ],
+  "pet_feeder": [
+    "portion repeat=1 posmin=65 posmax=97",
+    "portion_new count=1 forward=135 back=10",
+    "lmdep",
+    "help"
+  ],
+  "bledns": [
+    "advert",
+    "scan",
+    "list",
+    "make",
+    "help"
+  ],
+  "dht11": [
+    "measure",
+    "measure_w_co2",
+    "lmdep",
+    "help"
+  ],
+  "rgb": [
+    "load_n_init cache=None",
+    "rgb r=None g=None b=None smooth=True",
+    "toggle state=None smooth=True",
+    "set_transition r g b sec",
+    "run_transition",
+    "status lmf=None",
+    "help"
+  ],
+  "VL53L0X": [
+    "measure",
+    "help"
+  ],
+  "light_sensor": [
+    "intensity",
+    "illuminance",
+    "help"
+  ],
+  "dimmer": [
+    "set_value value=None",
+    "load_n_init cache=None",
+    "toggle state=None",
+    "status lmf=None",
+    "help"
+  ],
+  "neo_effects": [
+    "meteor r g b shift=False back=False ledcnt=24",
+    "rainbow step=1 ledcnt=24",
+    "cycle r g b bounce=False ledcnt=24",
+    "lmdep",
+    "help"
+  ],
+  "catgame": [
+    "game repeat=10 delta=20",
+    "live_game chance=10",
+    "stop",
+    "lmdep",
+    "help"
+  ],
+  "intercon": [
+    "sendcmd *_args **kwargs",
+    "help"
+  ],
+  "ds18": [
+    "measure",
+    "help"
+  ],
+  "distance_HCSR04": [
+    "distance_mm",
+    "distance_cm",
+    "deinit",
+    "help"
+  ],
+  "cwwhite": [
+    "load_n_init cache=None",
+    "white c=None w=None smooth=True",
+    "toggle state=None smooth=True",
+    "set_transition cw ww sec",
+    "run_transition",
+    "status lmf=None",
+    "help"
+  ]
+}

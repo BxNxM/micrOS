@@ -2,11 +2,12 @@ from utime import sleep_ms
 from random import randint
 import LM_servo as servo
 from LM_switch import set_state
+from Common import transition
 
 
 class RoboArm:
     ACTUAL_XY = [75, 70]
-    SPEED_MS = 5
+    SPEED_MS = 10
     MOVE_RECORD = []
 
 
@@ -39,68 +40,41 @@ def load_n_init(x=75, y=70):
     return 'Move to home'
 
 
-def control(x_new, y_new, s=None):
+def control(x_new, y_new, s=None, smooth=True):
+    def __buttery(x_from, y_from, x_to, y_to):
+        x_diff = abs(x_from-x_to)
+        y_diff = abs(y_from-y_to)
+        max_diff = y_diff if x_diff < y_diff else x_diff
+        step_ms = RoboArm.SPEED_MS                                  # resolution
+        interval_sec = float(RoboArm.SPEED_MS * 0.001 * max_diff)   # calculate travel time in sec
+        x = transition(from_val=x_from, to_val=x_to, step_ms=step_ms, interval_sec=interval_sec)
+        y = transition(from_val=y_from, to_val=y_to, step_ms=step_ms, interval_sec=interval_sec)
+        for _x in x:
+            servo.sduty(_x)
+            servo.s2duty(y.__next__())
+            sleep_ms(step_ms)
+
     # Skip if X;Y is the same
     if RoboArm.ACTUAL_XY[0] == x_new and RoboArm.ACTUAL_XY[1] == y_new:
         return 'Already was moved X:{} Y:{}'.format(x_new, y_new)
+
     # Set arm speed
     RoboArm.SPEED_MS = s if isinstance(s, int) else RoboArm.SPEED_MS
     # Get actual position
     x_prev = RoboArm.ACTUAL_XY[0]
     y_prev = RoboArm.ACTUAL_XY[1]
-    # Get difference between positions
-    x_diff = x_new - x_prev
-    y_diff = y_new - y_prev
-    # Absolut x, y diff
-    x_abs = abs(x_diff)
-    y_abs = abs(y_diff)
-    # Move X and Y servo parallel, threshold: 2
-    if x_abs > 0 and y_abs > 0:
-        # x, y vector direction
-        x_dir = -1 if x_diff < 0 else 1
-        y_dir = -1 if y_diff < 0 else 1
-        if x_abs <= y_abs:
-            y_step = float(y_abs) / x_abs
-            for x in range(1, x_abs+1):
-                servo.sduty(x_prev + x*x_dir)
-                servo.s2duty(y_prev + round(x*y_step)*y_dir)
-                sleep_ms(RoboArm.SPEED_MS)
-        else:
-            x_step = float(x_abs) / y_abs
-            for y in range(1, y_abs+1):
-                servo.sduty(x_prev + round(y*x_step)*x_dir)
-                servo.s2duty(y_prev + y*y_dir)
-                sleep_ms(RoboArm.SPEED_MS)
+
+    if smooth:
+        __buttery(x_prev, y_prev, x_new, y_new)
+        RoboArm.ACTUAL_XY = [x_new, y_new]
     else:
-        # Move X servo only
-        if abs(x_diff) > 0:
-            xpm = -1 if x_diff < 1 else 1
-            for k in range(1, abs(x_diff)+1):
-                servo.sduty(x_prev + (k*xpm))
-                sleep_ms(RoboArm.SPEED_MS)
-        # Move Y servo only
-        if abs(y_diff) > 0:
-            ypm = -1 if y_diff < 1 else 1
-            for k in range(1, abs(y_diff)+1):
-                servo.s2duty(y_prev + (k*ypm))
-                sleep_ms(RoboArm.SPEED_MS)
-    # Set exact position
-    servo.sduty(x_prev+x_diff)
-    servo.s2duty(y_prev+y_diff)
-    RoboArm.ACTUAL_XY = [x_prev+x_diff, y_prev+y_diff]
+        if x_new is not None:
+            servo.sduty(x_new)
+            RoboArm.ACTUAL_XY[0] = x_new
+        if y_new is not None:
+            servo.s2duty(y_new)
+            RoboArm.ACTUAL_XY[1] = y_new
     return 'Move X{}->{} Y{}->{}'.format(x_prev, RoboArm.ACTUAL_XY[0], y_prev, RoboArm.ACTUAL_XY[1])
-
-
-def rawcontrol(x=None, y=None):
-    # x - 40-115
-    # y - 40-115
-    if x is not None:
-        servo.sduty(x)
-        RoboArm.ACTUAL_XY[0] = x
-    if y is not None:
-        servo.s2duty(y)
-        RoboArm.ACTUAL_XY[1] = y
-    return 'Move (raw) X:{} y:{}'.format(x, y)
 
 
 def boot_move(s=None):
@@ -131,11 +105,7 @@ def boot_move(s=None):
 
 def standby():
     set_state(False)
-    servo.sduty(75)
-    RoboArm.ACTUAL_XY[0] = 75
-    servo.s2duty(45)
-    RoboArm.ACTUAL_XY[1] = 45
-    sleep_ms(200)
+    control(75, 45)
     servo.deinit()
     return 'Standby mode'
 
@@ -145,11 +115,9 @@ def jiggle():
     for _ in range(5):
         jx = randint(-1, 1)
         jy = randint(-1, 1)
-        servo.sduty(x+jx)
-        servo.s2duty(y+jy)
+        control(x+jx, y+jy)
         sleep_ms(RoboArm.SPEED_MS)
-    servo.sduty(x)
-    servo.s2duty(y)
+    control(x, y)
     return 'JJiggle :)'
 
 
@@ -210,6 +178,6 @@ def lmdep():
 
 
 def help():
-    return 'control x=<40-115> y=<40-115>, s=<ms delay>', 'rawcontrol x=<40-115> y=<40-115>',\
-           'boot_move', 'standby', 'jiggle', 'play 40 40 115 115 s=<ms> delay=<ms>, deinit=True',\
+    return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True', 'boot_move', 'standby',\
+           'jiggle', 'play 40 40 115 115 s=<ms> delay=<ms>, deinit=True',\
            'record clean=False', 'load_n_init', 'status', 'lmdep'

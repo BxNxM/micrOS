@@ -1,6 +1,6 @@
 micropython_repo/micropython/
 micropython_repo/webrepl/
-MicrOS/*.mpy
+micrOS/*.mpy
 **.pyc
 **.DS_Store
 **.idea/

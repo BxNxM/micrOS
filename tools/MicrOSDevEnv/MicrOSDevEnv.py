@@ -57,6 +57,7 @@ class MicrOSDevTool:
         self.micros_sim_resources = os.path.join(MYPATH, 'micrOS_SIM')
         self.precompile_LM_wihitelist = self.read_LMs_whitelist()
         self.node_config_profiles_path = os.path.join(MYPATH, "../../release_info/node_config_profiles/")
+        self.sfuncman_output_path = os.path.join(MYPATH, "../../release_info/sfuncman/")
         self.micropython_git_repo_url = 'https://github.com/micropython/micropython.git'
 
         # Filled by methods
@@ -586,15 +587,12 @@ class MicrOSDevTool:
         return True
 
     def get_micrOS_version(self, config_string=None):
-        # Get micrOS local repo version
-        micros_version_module = os.path.join(self.MicrOS_dir_path, 'SocketServer.py')
-        with open(micros_version_module, 'r') as f:
-            code_lines_string = f.read()
-        regex = r"\d+.\d+.\d+-\d+"
-        version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
-
+        # Get repo version
+        version = self.get_micros_version_from_repo()
+        # Get node version
         if not self.dummy_exec and config_string is not None:
             try:
+                regex = r"\d+.\d+.\d+-\d+"
                 version_on_node = re.findall(regex, config_string, re.MULTILINE)[0]
             except Exception as e:
                 self.console("Obsolete node version - node version was not defined: {}".format(e), state='warn')
@@ -705,7 +703,8 @@ class MicrOSDevTool:
         Generate static module-function provider json description: sfuncman.json
         [!] name dependency with micrOS internal manual provider
         """
-        static_help_json_path = os.path.join(self.MicrOS_dir_path, 'sfuncman.json')
+        repo_version = self.get_micros_version_from_repo()
+        static_help_json_path = os.path.join(self.sfuncman_output_path, 'sfuncman_{}.json'.format(repo_version))
         module_function_dict = {}
         for LM in (i.split('.')[0] for i in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if
                    i.startswith('LM_') and (i.endswith('.py'))):
@@ -796,6 +795,14 @@ class MicrOSDevTool:
                 return False
         return True
 
+    def get_micros_version_from_repo(self):
+        # Get repo version
+        with open(os.path.join(self.MicrOS_dir_path, 'SocketServer.py'), 'r') as f:
+            code_lines_string = f.read()
+        regex = r"\d+.\d+.\d+-\d+"
+        repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
+        return repo_version
+
     def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False, ota_password='ADmin123'):
         """
         OTA UPDATE via webrepl
@@ -821,11 +828,7 @@ class MicrOSDevTool:
             device_ip, fuid = device[1], device[0]
         self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
 
-        # Get repo version
-        with open(os.path.join(self.MicrOS_dir_path, 'SocketServer.py'), 'r') as f:
-            code_lines_string = f.read()
-        regex = r"\d+.\d+.\d+-\d+"
-        repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
+        repo_version = self.get_micros_version_from_repo()
 
         # Get data before update from device
         status, answer_msg = socketClient.run(['--dev', fuid, 'version'])

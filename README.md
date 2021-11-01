@@ -25,7 +25,9 @@ Just write and copy **LM_** your_app **.py** python script to your device and ca
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 5. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 
-Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framework/designs)
+Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framework/designs)</br>
+Youtube: [link](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)</br>
+Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/)
 
 ----------------------------------------
 ----------------------------------------

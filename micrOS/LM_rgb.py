@@ -94,6 +94,10 @@ def rgb(r=None, g=None, b=None, smooth=True, force=True):
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
         step_ms = 2
         interval_sec = 0.3
+        if Data.RGB_CACHE[3] == 0:
+            # Turn from OFF to on (to colors)
+            r_from, g_from, b_from = 0, 0, 0
+            Data.RGB_CACHE[3] = 1
         r_gen = transition(from_val=r_from, to_val=r_to, step_ms=step_ms, interval_sec=interval_sec)
         g_gen = transition(from_val=g_from, to_val=g_to, step_ms=step_ms, interval_sec=interval_sec)
         b_gen = transition(from_val=b_from, to_val=b_to, step_ms=step_ms, interval_sec=interval_sec)

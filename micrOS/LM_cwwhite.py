@@ -87,6 +87,10 @@ def white(c=None, w=None, smooth=True, force=True):
     def __buttery(ww_from, cw_from, ww_to, cw_to):
         step_ms = 2
         interval_sec = 0.3
+        if Data.CWWW_CACHE[2] == 0:
+            # Turn from OFF to on (to whites)
+            ww_from, cw_from = 0, 0
+            Data.CWWW_CACHE[2] = 1
         ww_gen = transition(from_val=ww_from, to_val=ww_to, step_ms=step_ms, interval_sec=interval_sec)
         cw_gen = transition(from_val=cw_from, to_val=cw_to, step_ms=step_ms, interval_sec=interval_sec)
         for _ww in ww_gen:

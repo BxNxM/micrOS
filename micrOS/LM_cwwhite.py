@@ -75,12 +75,13 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
-def white(c=None, w=None, smooth=True):
+def white(c=None, w=None, smooth=True, force=True):
     """
     Set RGB values with PWM signal
     :param c: cold white value   0-1000
     :param w: warm white value 0-1000
     :param smooth: runs white channels change with smooth effect
+    :param force: clean fade generators and set color
     :return: verdict string
     """
     def __buttery(ww_from, cw_from, ww_to, cw_to):
@@ -94,6 +95,8 @@ def white(c=None, w=None, smooth=True):
             sleep_ms(step_ms)
 
     __cwww_init()
+    if force and Data.FADE_OBJS[0]:
+        Data.FADE_OBJS = (None, None)
     c = Data.CWWW_CACHE[0] if c is None else c
     w = Data.CWWW_CACHE[1] if w is None else w
     if smooth:
@@ -121,16 +124,16 @@ def toggle(state=None, smooth=True):
     if state is not None:
         Data.CWWW_CACHE[2] = 0 if state else 1
     if Data.CWWW_CACHE[2]:
-        white(0, 0, smooth=smooth)
+        white(0, 0, smooth=smooth, force=False)
         return "OFF"
     # Turn ON with smooth "hack"
     if smooth:
         cw, ww = Data.CWWW_CACHE[0], Data.CWWW_CACHE[1]
         Data.CWWW_CACHE[0], Data.CWWW_CACHE[1] = 0, 0
-        white(cw, ww)
+        white(cw, ww, force=False)
         return "ON"
     # Turn ON without smooth
-    white()
+    white(force=False)
     return "ON"
 
 
@@ -164,7 +167,7 @@ def run_transition():
             cw = Data.FADE_OBJS[0].__next__()
             ww = Data.FADE_OBJS[1].__next__()
             if Data.CWWW_CACHE[2] == 1:
-                white(int(cw), int(ww), smooth=False)
+                white(int(cw), int(ww), smooth=False, force=False)
                 return "SET : CW{} WW{}".format(cw, ww)
             return 'Run deactivated'
         except:
@@ -182,6 +185,6 @@ def status(lmf=None):
 
 
 def help():
-    return 'white c=<0-1000> w=<0-1000> smooth=True',\
+    return 'white c=<0-1000> w=<0-1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
            'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition', 'status'

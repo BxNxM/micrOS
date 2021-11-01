@@ -76,13 +76,14 @@ def load_n_init(cache=None, ledcnt=24):
     return "CACHE: {}, LED CNT: {}".format(Data.PERSISTENT_CACHE, _ledcnt)
 
 
-def neopixel(r=None, g=None, b=None, smooth=True):
+def neopixel(r=None, g=None, b=None, smooth=True, force=True):
     """
     Set NEOPIXEL RGB values
     :param r: red value   0-255
     :param g: green value 0-255
     :param b: blue value  0-255
     :param smooth: runs colors change with smooth effect
+    :param force: clean fade generators and set color
     :return: verdict string
     """
 
@@ -103,6 +104,8 @@ def neopixel(r=None, g=None, b=None, smooth=True):
     r = Data.DCACHE[0] if r is None else r
     g = Data.DCACHE[1] if g is None else g
     b = Data.DCACHE[2] if b is None else b
+    if force and Data.FADE_OBJ[0]:
+        Data.FADE_OBJ = (None, None, None)
     # Set each LED for the same color
     if smooth:
         __buttery(r_from=Data.DCACHE[0], g_from=Data.DCACHE[1], b_from=Data.DCACHE[2], r_to=r, g_to=g, b_to=b)
@@ -151,16 +154,16 @@ def toggle(state=None, smooth=True):
     if state is not None:
         Data.DCACHE[3] = 0 if state else 1
     if Data.DCACHE[3] == 1:
-        neopixel(r=0, g=0, b=0, smooth=smooth)
+        neopixel(r=0, g=0, b=0, smooth=smooth, force=False)
         return "OFF"
     # Turn ON with smooth "hack"
     if smooth:
         r, g, b = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]
         Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2] = 0, 0, 0
-        neopixel(r, g, b)
+        neopixel(r, g, b, force=False)
         return "ON"
     # Turn ON without smooth
-    neopixel()
+    neopixel(force=False)
     return "ON"
 
 
@@ -181,8 +184,8 @@ def set_transition(r, g, b, sec):
     from_blue = Data.DCACHE[2]
     # Generate RGB color transition object (generator)
     Data.FADE_OBJ = (transition(from_val=from_red, to_val=r, step_ms=timirqseq, interval_sec=sec),
-                   transition(from_val=from_green, to_val=g, step_ms=timirqseq, interval_sec=sec),
-                   transition(from_val=from_blue, to_val=b, step_ms=timirqseq, interval_sec=sec))
+                     transition(from_val=from_green, to_val=g, step_ms=timirqseq, interval_sec=sec),
+                     transition(from_val=from_blue, to_val=b, step_ms=timirqseq, interval_sec=sec))
     return 'Settings was applied... wait for: run_transition'
 
 
@@ -199,7 +202,7 @@ def run_transition():
             g = Data.FADE_OBJ[1].__next__()
             b = Data.FADE_OBJ[2].__next__()
             if Data.DCACHE[3] == 1:
-                neopixel(int(r), int(g), int(b), smooth=False)
+                neopixel(int(r), int(g), int(b), smooth=False, force=False)
                 return 'Run R{}R{}B{}'.format(r, g, b)
             return 'Run deactivated'
         except:
@@ -218,6 +221,6 @@ def status(lmf=None):
 
 
 def help():
-    return 'neopixel r=<0-255> g b smooth=True', 'toggle state=None smooth=True', \
+    return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition', 'status'

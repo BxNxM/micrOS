@@ -81,13 +81,14 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
-def rgb(r=None, g=None, b=None, smooth=True):
+def rgb(r=None, g=None, b=None, smooth=True, force=True):
     """
     Set RGB values with PWM signal
     :param r: red value   0-1000
     :param g: green value 0-1000
     :param b: blue value  0-1000
     :param smooth: runs colors change with smooth effect
+    :param force: clean fade generators and set color
     :return: verdict string
     """
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
@@ -103,6 +104,8 @@ def rgb(r=None, g=None, b=None, smooth=True):
             sleep_ms(step_ms)
 
     __RGB_init()
+    if force and Data.FADE_OBJS[0]:
+        Data.FADE_OBJS = (None, None, None)
     # Dynamic input handling: user/cache
     r = Data.RGB_CACHE[0] if r is None else r
     g = Data.RGB_CACHE[1] if g is None else g
@@ -136,16 +139,16 @@ def toggle(state=None, smooth=True):
         Data.RGB_CACHE[3] = 0 if state else 1
     # Set OFF state
     if Data.RGB_CACHE[3]:
-        rgb(0, 0, 0, smooth=smooth)
+        rgb(0, 0, 0, smooth=smooth, force=False)
         return "OFF"
     # Turn ON with smooth "hack"
     if smooth:
         r, g, b = Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2]
         Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2] = 0, 0, 0
-        rgb(r, g, b)
+        rgb(r, g, b, force=False)
         return "ON"
     # Turn ON without smooth
-    rgb()
+    rgb(force=False)
     return "ON"
 
 
@@ -185,7 +188,7 @@ def run_transition():
             b = Data.FADE_OBJS[2].__next__()
             # Check output enabled - LED is ON
             if Data.RGB_CACHE[3] == 1:
-                rgb(int(r), int(g), int(b), smooth=False)
+                rgb(int(r), int(g), int(b), smooth=False, force=False)
                 return 'Transition R{}R{}B{}'.format(r, g, b)
             return 'Transition deactivated'
         except:
@@ -204,6 +207,6 @@ def status(lmf=None):
 
 
 def help():
-    return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True',\
+    return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
            'set_transition r=<0-1000> g b sec', 'run_transition', 'status'

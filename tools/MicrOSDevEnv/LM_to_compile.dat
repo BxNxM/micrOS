@@ -19,6 +19,6 @@ LM_buzzer.py
 LM_genIO.py
 LM_ds18.py
 LM_roboarm.py
-LM_neo_effects.py
+LM_neoeffects.py
 LM_stepper.py
 LM_cwwhite.py

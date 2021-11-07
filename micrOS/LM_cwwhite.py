@@ -5,6 +5,7 @@ from sys import platform
 from utime import sleep_ms
 from Common import transition
 from ConfigHandler import cfgget
+from LogicalPins import physical_pin
 
 
 class Data:
@@ -21,7 +22,6 @@ class Data:
 def __cwww_init():
     if Data.CWWW_OBJS[0] is None or Data.CWWW_OBJS[1] is None:
         from machine import Pin, PWM
-        from LogicalPins import physical_pin
         cw = Pin(physical_pin('cwhite'))
         ww = Pin(physical_pin('wwhite'))
         if platform == 'esp8266':
@@ -188,7 +188,13 @@ def status(lmf=None):
     return {'CW': Data.CWWW_CACHE[0], 'WW': Data.CWWW_CACHE[1], 'S': Data.CWWW_CACHE[2]}
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'cwhite': physical_pin('cwhite'), 'wwhite': physical_pin('wwhite')}
+
+
 def help():
     return 'white c=<0-1000> w=<0-1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
-           'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition', 'status'
+           'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition',\
+           'status', 'pinmap'

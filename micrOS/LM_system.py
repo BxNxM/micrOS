@@ -134,14 +134,12 @@ def lmpacman(lm_del=None, msgobj=None):
     return ''
 
 
-def getpin(key='builtin'):
+def pinmap(key='builtin'):
     """
     Get Logical pin by key runtime
     """
-    from sys import modules
-    from LogicalPins import physical_pin
-    return {key: physical_pin(key), 'pinmap':
-        ', '.join((mdl.replace('LP_', '').split('.')[0] for mdl in modules.keys() if mdl.startswith('LP_')))}
+    from LogicalPins import physical_pin, get_pinmap
+    return {key: physical_pin(key), 'pinmap': get_pinmap()}
 
 
 def ha_sta():
@@ -164,5 +162,6 @@ def ha_sta():
 #######################
 
 def help():
-    return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module unload=<LM_.py/.mpy>', \
-           'rssi', 'cachedump cdel=<pds name>', 'lmpacman lm_del=<LM_>', 'getpin <logicalPin>', 'ha_sta'
+    return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module unload="LM_rgb/None"', \
+           'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
+           'pinmap key="dhtpin/None"', 'ha_sta'

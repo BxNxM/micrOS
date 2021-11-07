@@ -1,5 +1,7 @@
 from machine import Pin, time_pulse_us
 from utime import sleep_us
+from LogicalPins import physical_pin
+
 __TRIGGER_OBJ = None
 __ECHO_OBJ = None
 
@@ -7,8 +9,6 @@ __ECHO_OBJ = None
 def __init_HCSR04():
     global __TRIGGER_OBJ, __ECHO_OBJ
     if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
-        from LogicalPins import physical_pin
-
         trigger_pin = physical_pin('hcsrtrig')
         echo_pin = physical_pin('hcsrecho')
         # Init trigger pin (out)
@@ -64,5 +64,10 @@ def deinit():
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'hcsrtrig': physical_pin('hcsrtrig'), 'hcsrecho': physical_pin('hcsrecho')}
+
+
 def help():
-    return 'distance_mm', 'distance_cm', 'deinit'
+    return 'distance_mm', 'distance_cm', 'deinit', 'pinmap'

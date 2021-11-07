@@ -1,4 +1,6 @@
 from sys import platform
+from LogicalPins import physical_pin
+
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
 #########################################
@@ -16,7 +18,6 @@ def __dimmer_init():
     global __DIMMER_OBJ
     if __DIMMER_OBJ is None:
         from machine import Pin, PWM
-        from LogicalPins import physical_pin
         dimmer_pin = Pin(physical_pin('dim_1'))
         if platform == 'esp8266':
             __DIMMER_OBJ = PWM(dimmer_pin, freq=1024)
@@ -98,5 +99,10 @@ def status(lmf=None):
     return {'X': __DIMMER_CACHE[1], 'S': __DIMMER_CACHE[0]}
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'dim_1': physical_pin('dim_1')}
+
+
 def help():
-    return 'set_value value=<0-1000>', 'toggle state=None', 'load_n_init', 'status'
+    return 'set_value value=<0-1000>', 'toggle state=None', 'load_n_init', 'status', 'pinmap'

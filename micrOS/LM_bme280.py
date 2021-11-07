@@ -322,5 +322,10 @@ def lmdep():
     return 'LM_co2'
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'i2c_scl': physical_pin('i2c_scl'), 'i2c_sda': physical_pin('i2c_sda')}
+
+
 def help():
-    return 'measure', 'measure_w_co2', 'lmdep'
+    return 'measure', 'measure_w_co2', 'lmdep', 'pinmap'

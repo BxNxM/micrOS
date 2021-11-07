@@ -14,8 +14,10 @@ from sys import platform
 #                        GPI/O ON DEVICE                        #
 #################################################################
 
+
 # Set automatically at the first time from ConfigHandler or sys.platform
-__ACTIVE_PIN_MAPPING = None
+class PinMap:
+    MAPPING_LUT = None
 
 
 def detect_platform():
@@ -27,16 +29,27 @@ def detect_platform():
     return platform             # esp8266 something else
 
 
-# GET MODULE VARIABLE: SELECTED LOGICAL PIN ON BOARD
-def physical_pin(key, lpsname=None):
-    global __ACTIVE_PIN_MAPPING
-    # SELECT LOOKUP TABLE BASED ON PLATFORM
-    if __ACTIVE_PIN_MAPPING is None or isinstance(lpsname, str):
-        __ACTIVE_PIN_MAPPING = detect_platform() if lpsname is None else lpsname
+def set_pinmap(lpsname=None):
+    # SELECT LOOKUP TABLE BASED ON PLATFORM / User input
+    if isinstance(lpsname, str) and lpsname != 'n/a':
+        if "LP_{}".format(lpsname) in [lp.split('.')[0] for lp in dir() if lp.startswith('LP_')]:
+            PinMap.MAPPING_LUT = lpsname
+            return PinMap.MAPPING_LUT
+    PinMap.MAPPING_LUT = detect_platform()
+    return PinMap.MAPPING_LUT
+
+
+def get_pinmap():
+    # Get active pin mapping
+    return PinMap.MAPPING_LUT
+
+
+def physical_pin(key):
+    # GET MODULE VARIABLE: SELECTED LOGICAL PIN ON BOARD
     try:
         # LOAD LOOKUP TABLE
-        exec('import LP_{}'.format(__ACTIVE_PIN_MAPPING))
+        exec('import LP_{}'.format(PinMap.MAPPING_LUT))
         # GET KEY PARAM VALUE
-        return eval('LP_{}.{}'.format(__ACTIVE_PIN_MAPPING, key))
+        return eval('LP_{}.{}'.format(PinMap.MAPPING_LUT, key))
     except Exception:
         return None

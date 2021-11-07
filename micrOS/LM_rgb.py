@@ -5,6 +5,7 @@ from sys import platform
 from Common import transition
 from ConfigHandler import cfgget
 from utime import sleep_ms
+from LogicalPins import physical_pin
 
 
 class Data:
@@ -24,7 +25,6 @@ class Data:
 def __RGB_init():
     if Data.RGB_OBJS[0] is None or Data.RGB_OBJS[1] is None or Data.RGB_OBJS[2] is None:
         from machine import Pin, PWM
-        from LogicalPins import physical_pin
         red = Pin(physical_pin('redgb'))
         green = Pin(physical_pin('rgreenb'))
         blue = Pin(physical_pin('rgbue'))
@@ -210,7 +210,13 @@ def status(lmf=None):
     return {'R': Data.RGB_CACHE[0], 'G': Data.RGB_CACHE[1], 'B': Data.RGB_CACHE[2], 'S': Data.RGB_CACHE[3]}
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'redgb': physical_pin('redgb'), 'rgreenb': physical_pin('rgreenb'), 'rgbue': physical_pin('rgbue')}
+
+
 def help():
+    # Return help msg
     return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
-           'set_transition r=<0-1000> g b sec', 'run_transition', 'status'
+           'set_transition r=<0-1000> g b sec', 'run_transition', 'status', 'pinmap'

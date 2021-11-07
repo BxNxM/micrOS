@@ -208,6 +208,12 @@ def status(lmf=None):
     return {'S': __SWITCH_STATE[0]}
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'switch_1': physical_pin('switch_1'), 'switch_2': physical_pin('switch_2'),
+            'switch_3': physical_pin('switch_3'), 'switch_4': physical_pin('switch_4')}
+
+
 def help():
     return 'set_state state=<0,1>', 'toggle', \
            'set_state2 state=<0,1>', 'toggle2', \

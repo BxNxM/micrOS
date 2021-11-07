@@ -355,5 +355,10 @@ def measure():
 # Helper LM functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'i2c_scl': physical_pin('i2c_scl'), 'i2c_sda': physical_pin('i2c_sda')}
+
+
 def help():
-    return 'measure'
+    return 'measure', 'pinmap'

@@ -1,3 +1,5 @@
+from LogicalPins import physical_pin
+
 __I2C = None
 
 
@@ -5,7 +7,6 @@ def __init():
     global __I2C
     if __I2C is None:
         from machine import Pin, I2C
-        from LogicalPins import physical_pin
         __I2C = I2C(-1, Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
     return __I2C
 
@@ -19,5 +20,10 @@ def scan():
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'i2c_scl': physical_pin('i2c_scl'), 'i2c_sda': physical_pin('i2c_sda')}
+
+
 def help():
-    return 'scan'
+    return 'scan', 'pinmap'

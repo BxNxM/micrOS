@@ -1,4 +1,5 @@
 from LM_co2 import measure_mq135
+from LogicalPins import physical_pin
 
 #########################################
 #  DHT22 temperature & humidity sensor  #
@@ -11,7 +12,6 @@ def __init_DHT11():
     if __DHT_OBJ is None:
         from dht import DHT11
         from machine import Pin
-        from LogicalPins import physical_pin
         __DHT_OBJ = DHT11(Pin(physical_pin('dhtpin')))
     return __DHT_OBJ
 
@@ -39,5 +39,10 @@ def lmdep():
     return 'LM_co2'
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'dhtpin': physical_pin('dhtpin')}
+
+
 def help():
-    return 'measure', 'measure_w_co2', 'lmdep'
+    return 'measure', 'measure_w_co2', 'lmdep', 'pinmap'

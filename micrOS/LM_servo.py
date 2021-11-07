@@ -103,5 +103,10 @@ def status(lmf=None):
         return {'X': Data.S}
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'servo_1': physical_pin('servo_1'), 'servo_2': physical_pin('servo_2')}
+
+
 def help():
-    return 'sduty duty=<int>40-115', 'sdemo', 's2duty', 'deinit', 'status'
+    return 'sduty duty=<int>40-115', 'sdemo', 's2duty', 'deinit', 'status', 'pinmap'

@@ -191,7 +191,12 @@ def show():
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'i2c_scl': physical_pin('i2c_scl'), 'i2c_sda': physical_pin('i2c_sda')}
+
+
 def help():
     return 'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
-           'show', 'poweron', 'poweroff', 'INFO: OLED Module for SSD1306'
+           'show', 'poweron', 'poweroff', 'pinmap', 'INFO: OLED Module for SSD1306'

@@ -1,3 +1,5 @@
+from LogicalPins import physical_pin
+
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
 #########################################
@@ -13,7 +15,6 @@ def __l9110_init():
     global __L9110_OBJS
     if len(__L9110_OBJS) == 0:
         from machine import Pin, PWM
-        from LogicalPins import physical_pin
         __L9110_OBJS.append(PWM(Pin(physical_pin('l9110dir_1')), freq=1024))
         __L9110_OBJS.append(PWM(Pin(physical_pin('l9110dir_2')), freq=1024))
         __L9110_OBJS[0].duty(0)     # Set default speed (PWM)
@@ -37,6 +38,10 @@ def motor_control(direc=None, speed=None):
 #######################
 # LM helper functions #
 #######################
+def pinmap():
+    # Return module used PIN mapping
+    return {'l9110dir_1': physical_pin('l9110dir_1'), 'l9110dir_2': physical_pin('l9110dir_2')}
+
 
 def help():
-    return 'motor_control direc=<0/1> speed=<0-1000>'
+    return 'motor_control direc=<0/1> speed=<0-1000>', 'pinmap'

@@ -1,4 +1,5 @@
 import machine, onewire, ds18x20, time
+from LogicalPins import physical_pin
 
 DS_OBJ = None
 
@@ -6,7 +7,6 @@ DS_OBJ = None
 def __init_DS18():
     global DS_OBJ
     if DS_OBJ is None:
-        from LogicalPins import physical_pin
         ds_pin = machine.Pin(physical_pin('ds18'))
         DS_OBJ = ds18x20.DS18X20(onewire.OneWire(ds_pin))
     return DS_OBJ
@@ -37,5 +37,10 @@ def measure():
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'ds18': physical_pin('ds18')}
+
+
 def help():
-    return 'measure'
+    return 'measure', 'pinmap'

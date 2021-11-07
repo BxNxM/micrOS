@@ -120,9 +120,15 @@ def standby():
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'stppr_1': physical_pin('stppr_1'), 'stppr_2': physical_pin('stppr_2'),
+            'stppr_3': physical_pin('stppr_3'), 'stppr_4': physical_pin('stppr_4')}
+
+
 def help():
     return 'angle dg=+/-360 speed=<ms>',\
            'step st=+/-2 speed=<ms>',\
            'standby',\
-           'load_n_init mode=<"HALF"/"FULL">',\
+           'load_n_init mode=<"HALF"/"FULL">', 'pinmap'\
            'Info: stepper: 28byj-48 driver: ULN2003'

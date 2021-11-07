@@ -2,6 +2,7 @@ from sys import platform
 from utime import sleep_ms
 from Common import transition
 from ConfigHandler import cfgget
+from LogicalPins import physical_pin
 
 
 #########################################
@@ -28,7 +29,6 @@ def __init_NEOPIXEL(n=24):
     if Data.NEOPIXEL_OBJ is None:
         from neopixel import NeoPixel
         from machine import Pin
-        from LogicalPins import physical_pin
         neopixel_pin = Pin(physical_pin('neop'))     # Get Neopixel pin from LED PIN pool
         Data.NEOPIXEL_OBJ = NeoPixel(neopixel_pin, n)                 # initialize for max 8 segments
         del neopixel_pin
@@ -224,7 +224,12 @@ def status(lmf=None):
     return {'R': Data.DCACHE[0], 'G': Data.DCACHE[1], 'B': Data.DCACHE[2], 'S': Data.DCACHE[3]}
 
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'neop': physical_pin('neop')}
+
+
 def help():
     return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'segment r, g, b, s=<0-n>',\
-           'set_transition r=<0-255> g b sec', 'run_transition', 'status'
+           'set_transition r=<0-255> g b sec', 'run_transition', 'status', 'pinmap'

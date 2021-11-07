@@ -1,5 +1,6 @@
 from sys import platform
 from utime import sleep
+from LogicalPins import physical_pin
 
 #########################################
 #      BUZZER PWM CONTROLLER PARAMS     #
@@ -143,7 +144,6 @@ def __buzzer_init():
     global __BUZZER_OBJ
     if __BUZZER_OBJ is None:
         from machine import Pin, PWM
-        from LogicalPins import physical_pin
         dimmer_pin = Pin(physical_pin('buzzer'))
         if platform == 'esp8266':
             __BUZZER_OBJ = PWM(dimmer_pin, freq=600)
@@ -221,5 +221,10 @@ def load_n_init(cache=None):
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'buzzer': physical_pin('buzzer')}
+
+
 def help():
-    return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr>', 'load_n_init'
+    return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr>', 'load_n_init', 'pinmap'

@@ -14,6 +14,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from sys import modules
 from ConfigHandler import console_write
+from json import dumps
 try:
     from BgJob import BgTask
 except Exception as e:
@@ -99,6 +100,20 @@ def exec_lm_core(arg_list, msgobj):
     [3...] parameters (separator: space)
     NOTE: msgobj - must be a function with one input param (stdout/file/stream)
     """
+    def __format_out(json_mode, lm_func, output):
+        if isinstance(output, dict):
+            if json_mode:
+                return dumps(output)
+            # Format dict output - human readable
+            return '\n'.join([" {}: {}".format(key, value) for key, value in lm_output.items()])
+        # Handle output data stream
+        if lm_func == 'help':
+            if json_mode:
+                return dumps(output)
+            # Format help msg - human readable
+            return '\n'.join([' {},'.format(out) for out in output])
+        return output
+
     # Check json mode for LM execution
     json_mode = arg_list[-1] == '>json'
     if json_mode:
@@ -113,9 +128,7 @@ def exec_lm_core(arg_list, msgobj):
             # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
             lm_output = eval("{}.{}({})".format(lm_mod, lm_func, lm_params))
             # Handle output data stream
-            if not json_mode and isinstance(lm_output, dict):
-                # Format dict output - human readable
-                lm_output = '\n'.join(["{}: {}".format(key, value) for key, value in lm_output.items()])
+            lm_output = __format_out(json_mode, lm_func, lm_output)
             # Return LM exec result via msgobj
             msgobj(str(lm_output))
             return True

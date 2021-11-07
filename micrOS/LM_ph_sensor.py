@@ -53,6 +53,11 @@ def measure():
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'ph': physical_pin('ph')}
+
+
 def help():
-    return 'measure'
+    return 'measure', 'pinmap'
 

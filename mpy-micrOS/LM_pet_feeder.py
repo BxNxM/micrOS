@@ -1,5 +1,5 @@
 from LM_servo import sduty, deinit
-from LM_stepper import step, standby
+from LM_stepper import step
 from utime import sleep_ms
 
 
@@ -35,4 +35,4 @@ def lmdep():
 
 
 def help():
-    return 'portion repeat=1', '<-servo control',  'portion_new count=1', '<-stepper control'
+    return 'portion repeat=1', '<-servo control',  'portion_new count=1', '<-stepper control', 'lmdep'

@@ -6,6 +6,8 @@ ADC.ATTN_6DB — the full range voltage: 2.0V
 ADC.ATTN_11DB — the full range voltage: 3.3V
 """
 from sys import platform
+from LogicalPins import physical_pin
+
 __ADC = None
 # [0] ADC RESOLUTION, [1] ADC VOLTAGE MEASURE RANGE
 __ADC_PROP = (1024, 1.0)
@@ -21,7 +23,6 @@ def __init_tempt6000():
     global __ADC, __ADC_PROP
     if __ADC is None:
         from machine import ADC, Pin
-        from LogicalPins import physical_pin
         if 'esp8266' in platform:
             __ADC = ADC(physical_pin('temp6000'))
             __ADC_PROP = (1023, 1.0)         # Resolution on esp8266
@@ -57,6 +58,11 @@ def illuminance():
 # LM helper functions #
 #######################
 
+def pinmap():
+    # Return module used PIN mapping
+    return {'temp6000': physical_pin('temp6000')}
+
+
 def help():
-    return 'intensity', 'illuminance', 'INFO sensor:TEMP600'
+    return 'intensity', 'illuminance', 'pinmap', 'INFO sensor:TEMP600'
 

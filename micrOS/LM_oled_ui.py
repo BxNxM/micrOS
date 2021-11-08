@@ -19,6 +19,9 @@ class PageUI:
         self.page_callback_list = page_callbacks
         self.width = w
         self.height = h
+        self.show_msg = None
+        self.msg_effect = False
+        self.oled_state = True
         PageUI.PAGE_UI_OBJ = self
 
     def __page_header(self):
@@ -29,8 +32,8 @@ class PageUI:
             show_range = round(((value + 91) / 30) * 8)  # pixel height 8
             oled.line(self.width - 10, 8, self.width - 8, 8)
             oled.line(self.width - 18, 1, self.width, 1)
-            for k in range(0, show_range):
-                oled.line(118 - k, 8 - k, 120 + k, 8 - k)
+            for _h in range(0, show_range):
+                oled.line(118 - _h, 8 - _h, 120 + _h, 8 - _h)
 
         try:
             __draw_rssi()
@@ -49,32 +52,66 @@ class PageUI:
         for p in range(0, self.width, plen):
             oled.rect(p, self.height - 4, plen - 1, 4)
         # Draw active page indicator
-        #oled.line(self.active_page * plen + 1, self.height - 2, self.active_page * plen + plen - 1, self.height - 2)
         oled.rect(self.active_page * plen + 1, self.height - 3, plen - 2, 2)
+
+    def __msgbox(self):
+        def __effect():
+            self.msg_effect = not self.msg_effect
+            oled.rect(106, 17, 9, 5, state=1, fill=self.msg_effect)
+            oled.rect(106, 24, 9, 9, state=1, fill=self.msg_effect)
+
+        msg = self.show_msg
+        if msg is None:
+            # Check input msg
+            return False
+        if not self.oled_state:
+            # Turn ON oled if msg arrives
+            oled.poweron()
+            self.oled_state = True
+
+        oled.rect(10, 15, 108, 40, state=1)
+        # oled.rect(98, 15, 20, 20, state=1)
+        __effect()
+        if len(msg) > 10:
+            oled.text(msg[0:9], 15, 25)
+            buff = msg[9:]
+            msg = buff[:11] if len(buff) > 12 else buff
+        oled.text(msg, 15, 40)
+        return True
 
     def show_page(self):
         """Re/draw active page"""
         oled.clean()
-        self.__page_header()
-        self.__page_bar()
-        self.page_callback_list[self.active_page]()
-        oled.show()
+        msg_event = self.__msgbox()
+        if self.oled_state:
+            self.__page_header()
+            self.__page_bar()
+            if not msg_event:
+                self.page_callback_list[self.active_page]()
+            oled.show()
 
-    def next_page(self):
-        """Change page - next & Draw"""
-        self.active_page += 1
-        if self.active_page > len(self.page_callback_list) - 1:
-            self.active_page = 0
-        self.show_page()
-        return self.active_page
-
-    def previous_page(self):
-        """Change page - previous & Draw"""
-        self.active_page -= 1
-        if self.active_page < 0:
-            self.active_page = len(self.page_callback_list) - 1
-        self.show_page()
-        return self.active_page
+    def control(self, cmd):
+        self.show_msg = None
+        if cmd.strip() == 'next':
+            """Change page - next & Draw"""
+            self.active_page += 1
+            if self.active_page > len(self.page_callback_list) - 1:
+                self.active_page = 0
+            self.show_page()
+            return self.active_page
+        elif cmd.strip() == 'prev':
+            """Change page - previous & Draw"""
+            self.active_page -= 1
+            if self.active_page < 0:
+                self.active_page = len(self.page_callback_list) - 1
+            self.show_page()
+            return self.active_page
+        if cmd.strip() == 'on':
+            oled.poweron()
+            self.oled_state = True
+        elif cmd.strip() == 'off':
+            oled.poweroff()
+            self.oled_state = False
 
 
 #################################
@@ -82,14 +119,6 @@ class PageUI:
 #################################
 
 """ Create "user" pages here """
-
-
-def simple_page():
-    try:
-        oled.text('Hello World', 20, 30)
-    except Exception as e:
-        return str(e)
-    return True
 
 
 def adc_page():
@@ -116,14 +145,25 @@ def adc_page():
 
 
 def sys_page():
-    oled.text("FUID: {}".format(cfgget("devfid")), 0, 15)
-    oled.text("IP: {}".format(cfgget("devip")), 0, 25)
+    oled.text(cfgget("devfid"), 0, 15)
+    oled.text("  {}".format(cfgget("devip")), 0, 25)
     fm = mem_free()
     kb, byte = int(fm / 1000), int(fm % 1000)
-    oled.text("Mem: {}kb {}b".format(kb, byte), 0, 35)
-    oled.text("V: {}".format(cfgget("version")), 0, 45)
+    oled.text("  {}kb {}b".format(kb, byte), 0, 35)
+    oled.text("  V: {}".format(cfgget("version")), 0, 45)
     return True
 
+
+def simple_page():
+    try:
+        oled.text('micrOS GUI', 20, 30)
+    except Exception as e:
+        return str(e)
+    return True
+
+
+def template():
+    return True
 
 #################################
 # PAGE GUI CONTROLLER FUNCTIONS #
@@ -132,19 +172,23 @@ def sys_page():
 
 def pageui():
     """ INIT PageUI - add page definitions here """
-    pages = [sys_page, simple_page, adc_page]
+    pages = [sys_page, simple_page, template, adc_page]
     if PageUI.PAGE_UI_OBJ is None:
         PageUI(pages, 128, 64)
     PageUI.PAGE_UI_OBJ.show_page()
 
 
-def next_page():
-    return PageUI.PAGE_UI_OBJ.next_page()
+def control(cmd='next'):
+    valid_cmd = ('next', 'prev', 'on', 'off')
+    if cmd in valid_cmd:
+        return PageUI.PAGE_UI_OBJ.control(cmd)
+    return 'Invalid command {}! Hint: {}'.format(cmd, valid_cmd)
 
 
-def prev_page():
-    return PageUI.PAGE_UI_OBJ.previous_page()
-
+def msgbox(msg='micrOS msg'):
+    PageUI.PAGE_UI_OBJ.show_msg = msg
+    PageUI.PAGE_UI_OBJ.show_page()
+    return 'Show msg'
 
 #######################
 # LM helper functions #
@@ -156,5 +200,5 @@ def lmdep():
 
 
 def help():
-    return 'pageui', 'next_page', 'prev_page',\
-           'INFO: OLED Module for SSD1306'
+    return 'pageui', 'control next/prev/on/off',\
+           'msgbox "msg"', 'INFO: OLED Module for SSD1306'

@@ -16,6 +16,7 @@ from ConfigHandler import cfgget, cfgput
 from InterpreterCore import execLMCore
 try:
     from BgJob import BgTask
+    from json import dumps
 except:
     BgTask = None
 
@@ -109,11 +110,17 @@ def __shell(msg, sso):
         if BgTask.singleton() is None:
             sso.reply_message('[BgJob] Inactive...')
             return True
+        # Handle bgjob stop
         if msg_list[1] == 'stop':
             sso.reply_message(BgTask.singleton().stop())
             return True
+        # Handle bgjob show
         if msg_list[1] == 'show':
-            sso.reply_message(BgTask.singleton().info())
+            verdict = BgTask.singleton().info()
+            if msg_list[-1] == '>json':
+                sso.reply_message(BgTask.singleton().info())
+                return True
+            sso.reply_message('\n'.join([" {}: {}".format(key, value) for key, value in verdict.items()]))
             return True
     # @3 Command mode
     """

@@ -87,7 +87,7 @@ def execLMCore(argument_list, msgobj=None):
     if BgTask is None:
         return exec_lm_core(argument_list, msgobj=cwr)
     # |- Thread locking available
-    with BgTask.singleton():
+    with BgTask.singleton(main_lm=argument_list[0]):
         state = exec_lm_core(argument_list, msgobj=cwr)
     return state
 

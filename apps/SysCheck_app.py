@@ -102,11 +102,11 @@ def micrOS_bgjob_one_shot_check():
 
 
 def micrOS_bgjob_loop_check():
-    info = "[ST] Run micrOS BgJob check [system clock &&1] + bgjob show / stop"
+    info = "[ST] Run micrOS BgJob check [system clock &&] + bgjob show / stop"
     print(info)
 
     # Start background thread loop
-    cmd_list = ['system', 'clock', '&&1']
+    cmd_list = ['system', 'clock', '&&']
     output = execute(cmd_list)
     if output[0]:
         if 'Start system.clock' not in output[1].strip():
@@ -120,7 +120,7 @@ def micrOS_bgjob_loop_check():
             return False, f'[Overload thread] {info} + not expected return: {output[1]}'
 
     # Show BgJob status - running
-    cmd_list = ['bgjob', 'show']
+    cmd_list = ['bgjob', 'show', '>json']
     output = execute(cmd_list)
     if output[0]:
         if "'isbusy': True" not in output[1].strip():
@@ -134,7 +134,7 @@ def micrOS_bgjob_loop_check():
             return False, f'[Stop thread] {info} + not expected return: {output[1]}'
 
     # Show BgJob status - stopped
-    cmd_list = ['bgjob', 'show']
+    cmd_list = ['bgjob', 'show', '>json']
     for _ in range(0, 5):
         output = execute(cmd_list)
         if output[0]:

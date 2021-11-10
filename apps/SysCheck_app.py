@@ -167,6 +167,37 @@ def json_format_check():
     return False, info + f" out: {output[1]}"
 
 
+def negative_interface_check():
+    info = "[ST] Run micrOS Negative API check [Invalid CMDs + conf]"
+    print(info)
+
+    cmd_list = ['Apple']
+    output = execute(cmd_list)
+    if output[0]:
+        if 'SHELL: type help for single word commands' not in output[1].strip():
+            return False, f'[Wrong single command] {info} + not expected return: {output[1]}'
+
+    cmd_list = ['Apple', 'test']
+    output = execute(cmd_list)
+    if output[0]:
+        if 'no module named' not in output[1].strip().lower():
+            return False, f'[Missing module] {info} + not expected return: {output[1]}'
+
+    cmd_list = ['conf', '<a>',  'gmttimaaaa']
+    output = execute(cmd_list)
+    if output[0]:
+        if output[1].strip() != 'None':
+            return False, f'[Config invalid key] {info} + not expected return: {output[1]}'
+
+    cmd_list = ['conf', '<a>', 'gmttime', '"type"']
+    output = execute(cmd_list)
+    if output[0]:
+        if output[1].strip() != 'Failed to save':
+            return False, f'[Config invalid key type] {info} + not expected return: {output[1]}'
+
+    return True, info
+
+
 def measure_package_response_time():
     info = "[ST] Measure response time [system heartbeat]x10"
     print(info)
@@ -209,7 +240,8 @@ def app(devfid=None):
                'thread_loop': micrOS_bgjob_loop_check(),
                'version': micrOS_get_version(),
                'json_check': json_format_check(),
-               'reponse time': measure_package_response_time()
+               'reponse time': measure_package_response_time(),
+               'negative_api': negative_interface_check()
                }
 
     # Test Evaluation

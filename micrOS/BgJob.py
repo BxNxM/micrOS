@@ -1,6 +1,5 @@
 import _thread
-import time
-from time import sleep
+from utime import sleep
 
 
 class BgTask:
@@ -20,7 +19,7 @@ class BgTask:
         self.__loop = False
         self.__ret = ''
         self.__taskid = (0, 'none')
-        self.main_lm = ''
+        self.main_lm = None
         if exec_lm_core is not None:
             BgTask.lm_exec_callback = exec_lm_core
 
@@ -30,7 +29,7 @@ class BgTask:
         if BgTask.singleton_instance is None:
             BgTask.singleton_instance = BgTask()
         # Store requested main load module for collision check
-        BgTask.singleton_instance.main_lm = main_lm if isinstance(main_lm, str) else ''
+        BgTask.singleton_instance.main_lm = main_lm if isinstance(main_lm, str) else None
         # Store lm executor callback
         if exec_lm_core is not None:
             BgTask.lm_exec_callback = exec_lm_core
@@ -40,23 +39,25 @@ class BgTask:
         """
         Allocate thread lock from main
         - protect execution scope
+        - if self.main_lm is None - block by default
         """
         # Module Collision Check
         #  thread execution is active: self.__exit True + matching LoadModule
-        if self.__exit.locked() and self.main_lm == self.__taskid[1].split('.')[0]:
+        if self.__exit.locked() and (self.main_lm is None or self.main_lm == self.__taskid[1].split('.')[0]):
             self.__main_mutex.acquire()
             self.__mutex.acquire()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
         Release thread lock from main
+        - if self.main_lm is None - block by default
         """
         # Release main lock on thread if it was locked and matching LoadModule
-        if self.__main_mutex.locked() and self.main_lm == self.__taskid[1].split('.')[0]:
+        if self.__main_mutex.locked() and (self.main_lm is None or self.main_lm == self.__taskid[1].split('.')[0]):
             self.__main_mutex.release()
             self.__mutex.release()
 
-    def __th_task(self, arglist, delay=1):
+    def __th_task(self, arglist, delay):
         """
         Worker thread wrapper
         :param arglist: Load module + function + params
@@ -64,12 +65,13 @@ class BgTask:
         """
         self.__exit.acquire()
         while True:
+            # Set delay
+            sleep(delay)
+
             # SKIP thread until main exec running
             if self.__main_mutex.locked():
                 continue
 
-            # Set delay
-            sleep(delay)
             # Set worker lock
             self.__mutex.acquire()
             # RUN CALLBACK
@@ -86,7 +88,7 @@ class BgTask:
         if len(self.__ret) > 80:
             self.__ret = self.__ret[-80:]
 
-    def run(self, arglist, loop=None, delay=None):
+    def run(self, arglist, loop=None, delay=0):
         # Return if busy - single user job support
         if self.__exit.locked():
             return False, self.__taskid
@@ -113,8 +115,13 @@ class BgTask:
 ################################ TEST CODE ################################
 
 import random
+import time
 
-TEST_LOOP = 20
+TEST_LOOP = 30          # Test (main) loop iteration
+
+WORKER_WAIT_MAX = 10    # ms
+MAIN_WAIT_MAX = 10      # ms
+IDLE_WAIT_MAX = 50      # ms
 
 
 class TestData:
@@ -141,7 +148,7 @@ class TestData:
         TestData.MAIN_IDLE_T = 0
 
 
-def test(arglist, msgobj=None):
+def test_worker(arglist, msgobj=None):
     TestData.THREAD_CALL += 1
     start = time.time()
     with open('thread_main_test.dat', 'a+') as f:
@@ -150,154 +157,98 @@ def test(arglist, msgobj=None):
     print('\t\t!!! {}'.format(arglist))
     if msgobj is not None:
         msgobj(str(arglist))
-    sleep(random.randint(0, 10)/100)
+    sleep(random.randint(0, WORKER_WAIT_MAX)/100)
     TestData.THREAD_EXEC_T += time.time() - start
+
+
+def test_executor(info, worker_tag, conflict=False, force=False, loop=False):
+    # Store title in file
+    with open('thread_main_test.dat', 'a+') as f:
+        f.write(f'{info}\n')
+
+    # Module parameters
+    module = 'BgJob'
+    # Modify module for testing
+    if conflict:
+        main_module = module
+    else:
+        main_module = 'NEW'
+    if force:
+        main_module = None
+
+    # Initiate background job
+    job = BgTask.singleton(exec_lm_core=test_worker)
+
+    # Start background job
+    success = False
+    while not success:
+        out = job.run(arglist=[module, worker_tag], loop=loop)
+        print(out)
+        success = out[0]
+
+    # Run main thread
+    for _ in range(TEST_LOOP):
+        TestData.MAIN_CALL += 1
+        start = time.time()
+        with BgTask.singleton(main_lm=main_module):
+            test_worker(['\tMAIN', '\t- START'])
+            sleep(random.randint(0, MAIN_WAIT_MAX)/100)
+            test_worker(['\tMAIN', '\t- STOP'])
+        TestData.MAIN_EXEC_T += time.time() - start
+        # IDLE
+        start = time.time()
+        sleep(random.randint(0, IDLE_WAIT_MAX) / 100)
+        TestData.MAIN_IDLE_T += time.time() - start
+
+    # Stop job
+    job.stop()
+    # Store test result
+    out = TestData.stat()
+    print(out)
+    with open('thread_main_test.dat', 'a+') as f:
+        f.write("------- SUM ------\n")
+        f.write(out+'\n\n')
+    # Cleanup
+    TestData.clean()
 
 
 # 1
 def test_conflicting_module_loop():
-    with open('thread_main_test.dat', 'w') as f:
-        f.write('Conflicting module test in loop...\n')
-
-    module = 'BgJob'
-    job = BgTask.singleton(exec_lm_core=test)
-
-    success = False
-    while not success:
-        out = job.run(arglist=[module, 'THREAD_CF_LOOP'], delay=0.05, loop=True)
-        print(out)
-        success = out[0]
-
-    for _ in range(TEST_LOOP):
-        TestData.MAIN_CALL += 1
-        start = time.time()
-        with BgTask.singleton(main_lm=module):
-            test(['BgJob', '\tMAIN - START'])
-            sleep(random.randint(0, 10)/100)
-            test(['BgJob', '\tMAIN - STOP'])
-        TestData.MAIN_EXEC_T += time.time() - start
-        # IDLE
-        start = time.time()
-        sleep(random.randint(1, 10) / 100)
-        TestData.MAIN_IDLE_T += time.time() - start
-
-    job.stop()
-    out = TestData.stat()
-    print(out)
-    with open('thread_main_test.dat', 'a+') as f:
-        f.write("------- SUM ------\n")
-        f.write(out+'\n')
+    info = '\nConflicting module test in loop...'
+    worker_tag = 'THREAD_CF_LOOP'
+    test_executor(info, worker_tag, conflict=True, force=False, loop=True)
 
 
 # 2
 def test_not_conflicting_module_loop():
-    TestData.clean()
-    with open('thread_main_test.dat', 'a+') as f:
-        f.write('\nNOT Conflicting module test in loop...\n')
-
-    module = 'BgJob'
-    job = BgTask.singleton(exec_lm_core=test)
-
-    success = False
-    while not success:
-        out = job.run(arglist=[module, 'THREAD_NCF_LOOP'], delay=0.05, loop=True)
-        success = out[0]
-
-    for _ in range(TEST_LOOP):
-        TestData.MAIN_CALL += 1
-        start = time.time()
-        with BgTask.singleton(main_lm='NEW'):
-            test(['BgJob', '\tMAIN - START'])
-            sleep(random.randint(0, 10)/100)
-            test(['BgJob', '\tMAIN - STOP'])
-        TestData.MAIN_EXEC_T += time.time() - start
-
-        # IDLE
-        start = time.time()
-        sleep(random.randint(1, 10) / 100)
-        TestData.MAIN_IDLE_T += time.time() - start
-
-    job.stop()
-    out = TestData.stat()
-    print(out)
-    with open('thread_main_test.dat', 'a+') as f:
-        f.write("------- SUM ------\n")
-        f.write(out+'\n')
+    info = '\nNOT Conflicting module test in loop...'
+    worker_tag = 'THREAD_NCF_LOOP'
+    test_executor(info, worker_tag, conflict=False, force=False, loop=True)
 
 
 # 3
 def test_conflicting_module_single():
-    TestData.clean()
-    with open('thread_main_test.dat', 'a+') as f:
-        f.write('\nConflicting module test single...\n')
-
-    module = 'BgJob'
-    job = BgTask.singleton(exec_lm_core=test)
-
-    success = False
-    while not success:
-        out = job.run(arglist=[module, 'THREAD_SIMPLE'], delay=0, loop=False)
-        success = out[0]
-
-    for _ in range(TEST_LOOP):
-        TestData.MAIN_CALL += 1
-        start = time.time()
-        with BgTask.singleton(main_lm=module):
-            test(['BgJob', '\t\tMAIN - START'])
-            sleep(random.randint(0, 10)/100)
-            test(['BgJob', '\t\tMAIN - STOP'])
-        TestData.MAIN_EXEC_T += time.time() - start
-
-        # IDLE
-        start = time.time()
-        sleep(random.randint(1, 20) / 100)
-        TestData.MAIN_IDLE_T += time.time() - start
-    out = TestData.stat()
-    print(out)
-    with open('thread_main_test.dat', 'a+') as f:
-        f.write("------- SUM ------\n")
-        f.write(out+'\n')
+    info = '\nConflicting module test single...'
+    worker_tag = 'THREAD_SIMPLE'
+    test_executor(info, worker_tag, conflict=True, force=False, loop=False)
 
 
 # 4
 def test_not_conflicting_module_loop_force():
-    TestData.clean()
-    with open('thread_main_test.dat', 'a+') as f:
-        f.write('\nNOT Conflicting module test in loop FORCE LOCK...\n')
-
-    module = 'BgJob'
-    job = BgTask.singleton(exec_lm_core=test)
-
-    success = False
-    while not success:
-        out = job.run(arglist=[module, 'THREAD_NCF_LOOP'], delay=0.05, loop=True)
-        success = out[0]
-
-    for _ in range(TEST_LOOP):
-        TestData.MAIN_CALL += 1
-        start = time.time()
-        with BgTask.singleton():
-            test(['BgJob', '\tMAIN - START'])
-            sleep(random.randint(0, 10)/100)
-            test(['BgJob', '\tMAIN - STOP'])
-        TestData.MAIN_EXEC_T += time.time() - start
-
-        # IDLE
-        start = time.time()
-        sleep(random.randint(1, 10) / 100)
-        TestData.MAIN_IDLE_T += time.time() - start
-
-    job.stop()
-    out = TestData.stat()
-    print(out)
-    with open('thread_main_test.dat', 'a+') as f:
-        f.write("------- SUM ------\n")
-        f.write(out+'\n')
+    info = '\nNOT Conflicting module test in loop FORCE LOCK...'
+    worker_tag = 'THREAD_FORCE_LOOP'
+    test_executor(info, worker_tag, conflict=False, force=True, loop=True)
 
 
 if __name__ == "__main__":
+    with open('thread_main_test.dat', 'w') as ff:
+        ff.write(f'THREAD TEST\n')
+
     test_conflicting_module_loop()
+    time.sleep(1)
     test_not_conflicting_module_loop()
+    time.sleep(1)
     test_conflicting_module_single()
+    time.sleep(1)
     test_not_conflicting_module_loop_force()
 """

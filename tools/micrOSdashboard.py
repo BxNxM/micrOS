@@ -507,7 +507,7 @@ class QuickOTAUpload(QLabel):
         button = QPushButton('Upload', self.parent_obj)
         button.setToolTip('Upload dropped files to the selected micrOS board.')
         button.setGeometry(682, 290, 75, 20)
-        button.setStyleSheet("QPushButton{background-color: White;} QPushButton::pressed{background-color : green;}")
+        button.setStyleSheet("QPushButton{background-color: White; border: 3px solid " + self.parent_obj.ota_color_code + "} QPushButton::pressed{background-color : green; }")
         button.clicked.connect(self.get_upload_callback)
 
     def create_clean_button(self):
@@ -708,7 +708,6 @@ class micrOSGUI(QWidget):
             return False
 
     def create_main_buttons(self):
-        # TODO: darkCyan
         height = 35
         width = 200
         yoffset = 3

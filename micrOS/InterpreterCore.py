@@ -13,8 +13,9 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from sys import modules
-from ConfigHandler import console_write
+from Debug import console_write, errlog_add
 from json import dumps
+from micropython import schedule
 try:
     from BgJob import BgTask
 except Exception as e:
@@ -64,10 +65,12 @@ def execLMPipe(taskstr):
             return True
         # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
+            # if not exec_lm_core_schedule(cmd):    # TODO
             if not exec_lm_core(cmd, msgobj=lambda msg: None):
                 console_write("|-[LM-PIPE] task error: {}".format(cmd))
     except Exception as e:
         console_write("[IRQ-PIPE] error: {}\n{}".format(taskstr, e))
+        errlog_add('execLMPipe (IRQs and BootHook) error: {}'.format(e))
         return False
     return True
 
@@ -90,6 +93,11 @@ def execLMCore(argument_list, msgobj=None):
     with BgTask.singleton(main_lm=argument_list[0]):
         state = exec_lm_core(argument_list, msgobj=cwr)
     return state
+
+
+def exec_lm_core_schedule(arg_list):
+    schedule(lambda: exec_lm_core(arg_list, msgobj=lambda msg: None))
+    return True
 
 
 def exec_lm_core(arg_list, msgobj):

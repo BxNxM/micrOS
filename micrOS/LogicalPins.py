@@ -51,5 +51,6 @@ def physical_pin(key):
         exec('import LP_{}'.format(PinMap.MAPPING_LUT))
         # GET KEY PARAM VALUE
         return eval('LP_{}.{}'.format(PinMap.MAPPING_LUT, key))
-    except Exception:
+    except Exception as e:
+        #errlog_add("physical_pin error: missing key: {}: {}".format(key, e))
         return None

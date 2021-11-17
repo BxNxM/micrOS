@@ -17,7 +17,8 @@ from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from ntptime import settime
 from machine import RTC, unique_id
-from ConfigHandler import console_write, cfgget, cfgput
+from ConfigHandler import cfgget, cfgput
+from Debug import console_write, errlog_add
 
 #################################################################
 #                      NTP & RTC TIME SETUP                     #
@@ -39,6 +40,7 @@ def setNTP_RTC():
                 return True
             except Exception as e:
                 console_write("NTP setup errer.:{}".format(e))
+                errlog_add("setNTP_RTC error: {}".format(e))
             sleep(0.5)
     else:
         console_write("NTP setup errer: STA not connected!")
@@ -52,8 +54,8 @@ def setNTP_RTC():
 def set_dev_uid():
     try:
         cfgput('hwuid', 'micr{}OS'.format(hexlify(unique_id()).decode('utf-8')))
-    except Exception:
-        pass
+    except Exception as e:
+        errlog_add("set_dev_uid error: {}".format(e))
 
 #################################################################
 #                       SET WIFI STA MODE                       #
@@ -135,6 +137,7 @@ def __set_wifi_dev_static_ip(sta_if):
                 return True     # was reconfigured
             except Exception as e:
                 console_write("\t\t| [NW: STA] StaticIP conf. failed: {}".format(e))
+                errlog_add("__set_wifi_dev_static_ip error: {}".format(e))
         else:
             console_write("[NW: STA][SKIP] StaticIP conf.: {} ? {}".format(stored_ip, conn_ips[0]))
     else:
@@ -162,6 +165,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode)
     except Exception as e:
         console_write("[NW: AP] Config Error: {}".format(e))
+        errlog_add("set_access_point error: {}".format(e))
     if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
         cfgput("devip", ap_if.ifconfig()[0])
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))

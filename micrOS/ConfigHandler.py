@@ -14,20 +14,12 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from utime import sleep
 from json import load, dump
-from machine import Pin
-from LogicalPins import set_pinmap, physical_pin
+from LogicalPins import set_pinmap
 from os import remove
-try:
-    # TinyPICO progress led plugin
-    import TinyPLed
-except Exception as e:
-    TinyPLed = None
+from Debug import DebugCfg, console_write, errlog_add
 
 
 class Data:
-    # Sidecar functions
-    DEBUG_PRINT = True
-    PLED = None
     # micrOS config path
     CONFIG_PATH = "node_config.json"
     CONFIG_CACHE = {"version": "n/a",
@@ -73,21 +65,15 @@ class Data:
     def init():
         # Inject user config into template
         Data.__inject_default_conf()
-        # Init sidecar functions
-        if not Data.CONFIG_CACHE['dbg']: console_write("[micrOS] debug print was turned off")
         # [!!!] Init selected pinmap - default pinmap calculated by platform
         pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
         console_write("PIN MAP: {}".format(pinmap))
+        # Configure dbg and pled Debug module functions
+        if not Data.CONFIG_CACHE['dbg']: console_write("[micrOS] debug print was turned off")
+        DebugCfg.DEBUG = cfgget('dbg')
         # SET pled and dbg based on config settings (inject user conf)
         if Data.CONFIG_CACHE['pled']:
-            if TinyPLed is None:
-                if physical_pin('builtin') is not None:
-                    # Progress led for esp8266/esp32/etc
-                    Data.PLED = Pin(physical_pin('builtin'), Pin.OUT)
-            else:
-                # Progress led for TinyPico
-                Data.PLED = TinyPLed.init_APA102()
-        Data.DEBUG_PRINT = cfgget('dbg')
+            DebugCfg.init_pled()
 
     @staticmethod
     def __inject_default_conf():
@@ -104,14 +90,14 @@ class Data:
         # Merge template to live conf
         Data.CONFIG_CACHE.update(liveconf)
         # Run conf injection and store
-        if Data.CONFIG_CACHE['dbg']:
-            console_write("[CONFIGHANDLER] inject config:\n{}".format(Data.CONFIG_CACHE))
+        console_write("[CONFIGHANDLER] inject config ...")  # Data.CONFIG_CACHE
         try:
             # [LOOP] Only returns True
             Data.write_cfg_file()
             console_write("[CONFIGHANDLER] Inject default conf struct successful")
         except Exception as e:
             console_write("[CONFIGHANDLER] Inject default conf struct failed: {}".format(e))
+            errlog_add('__inject_default_conf error: {}'.format(e))
         finally:
             del liveconf
 
@@ -129,6 +115,7 @@ class Data:
                 if nosafe:
                     break
                 sleep(0.2)
+                errlog_add('read_cfg_file error: {}'.format(e))
         # Return config cache
         return conf
 
@@ -142,6 +129,7 @@ class Data:
                 break
             except Exception as e:
                 console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(Data.CONFIG_PATH, e))
+                errlog_add('write_cfg_file error: {}'.format(e))
             sleep(0.2)
         return True
 
@@ -193,32 +181,6 @@ class Data:
 
 
 #################################################################
-#                     CONSOLE WRITE FUNCTIONS                   #
-#################################################################
-
-
-def progress_led_toggle_adaptor(func):
-    def wrapper(*args, **kwargs):
-        if TinyPLed is None:
-            # Simple (built-in) progress led update
-            if Data.PLED is not None: Data.PLED.value(not Data.PLED.value())
-            output = func(*args, **kwargs)
-            if Data.PLED is not None: Data.PLED.value(not Data.PLED.value())
-            return output
-        # TinyPICO (built-in) progress led update
-        if Data.PLED is not None: TinyPLed.step()
-        # Run function
-        return func(*args, **kwargs)
-    return wrapper
-
-
-@progress_led_toggle_adaptor
-def console_write(msg):
-    if Data.DEBUG_PRINT:
-        print(msg)
-
-
-#################################################################
 #                  CONFIGHANDLER  FUNCTIONS                     #
 #################################################################
 
@@ -234,6 +196,7 @@ def cfgget(key=None):
         return val
     except Exception as e:
         console_write("[CONFIGHANDLER] Get config value error: {}".format(e))
+        errlog_add('cfgget {} error: {}'.format(key, e))
     return None
 
 
@@ -254,7 +217,8 @@ def cfgput(key, value, type_check=False):
         Data.write_cfg_file()
         del value
         return True
-    except Exception:
+    except Exception as e:
+        errlog_add('cfgput {} error: {}'.format(key, e))
         return False
 
 #################################################################

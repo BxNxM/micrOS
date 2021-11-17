@@ -1,5 +1,5 @@
-from ConfigHandler import progress_led_toggle_adaptor
 from Common import socket_stream
+from Debug import progress_led_toggle_adaptor, errlog_get, errlog_add, errlog_clean
 
 
 @socket_stream
@@ -157,6 +157,16 @@ def ha_sta():
     return '{} mode, OK'.format(cfgget('nwmd'))
 
 
+@socket_stream
+def alarms(clean=False, test=False, msgobj=None):
+    if test:
+        errlog_add('TeSt ErRoR')
+    if clean:
+        errlog_clean()
+    errcnt = errlog_get(msgobj=msgobj)
+    return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
+
+
 #######################
 # LM helper functions #
 #######################
@@ -164,4 +174,4 @@ def ha_sta():
 def help():
     return 'info', 'gclean', 'heartbeat', 'clock', 'ntp', 'module unload="LM_rgb/None"', \
            'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
-           'pinmap key="dhtpin/None"', 'ha_sta'
+           'pinmap key="dhtpin/None"', 'ha_sta', 'alarms clean=False'

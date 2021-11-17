@@ -1,6 +1,6 @@
 from time import localtime
 from InterpreterCore import exec_lm_core
-from ConfigHandler import console_write
+from Debug import console_write, errlog_add
 
 """
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
@@ -122,6 +122,7 @@ def deserialize_raw_input(raw_cron_input):
         return tuple(tuple(cron.split('!')) for cron in raw_cron_input.split(';'))
     except Exception as e:
         console_write("deserialize_raw_input: input syntax error: {}".format(e))
+        errlog_add('deserialize_raw_input input syntax error: {}'.format(e))
     return tuple()
 
 

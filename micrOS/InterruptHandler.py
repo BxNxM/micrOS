@@ -17,7 +17,8 @@ Reference: https://docs.micropython.org/en/latest/library/machine.Pin.html
 #                            IMPORTS                            #
 #################################################################
 from machine import Pin
-from ConfigHandler import cfgget, console_write
+from ConfigHandler import cfgget
+from Debug import console_write, errlog_add
 from InterpreterCore import execLMPipe
 from LogicalPins import physical_pin
 if cfgget('cron'):
@@ -78,6 +79,7 @@ def timirq_cbf_sched(tasks, seq):
         scheduler(tasks, seq)
     except Exception as e:
         console_write("[IRQ] TIMIRQ (cron) callback: {} error: {}".format(tasks, e))
+        errlog_add('timirq_cbf_sched error: {}'.format(e))
 
 
 def enableCron():

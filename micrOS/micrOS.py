@@ -12,6 +12,7 @@ from Network import auto_network_configuration
 from Hooks import bootup_hook, profiling_info
 from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
+from Debug import errlog_add
 
 
 #################################################################
@@ -24,6 +25,7 @@ def safe_boot_hook():
         bootup_hook()
     except Exception as e:
         print("[micrOS main] Hooks.bootup_hook() error: {}".format(e))
+        errlog_add("safe_boot_hook error: {}".format(e))
 
 
 def interrupt_handler():
@@ -32,6 +34,7 @@ def interrupt_handler():
         enableCron()
     except Exception as e:
         print("[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {}".format(e))
+        errlog_add("interrupt_handler error: {}".format(e))
 
 
 def external_interrupt_handler():
@@ -39,6 +42,7 @@ def external_interrupt_handler():
         initEventIRQs()
     except Exception as e:
         print("[micrOS main] InterruptHandler.initEventIRQs error: {}".format(e))
+        errlog_add("external_interrupt_handler error: {}".format(e))
 
 
 #################################################################
@@ -71,3 +75,6 @@ def micrOS():
 
     # RUN Singleton SocketServer - main loop [2]
     SocketServer().run()
+
+    # UNEXPECTED RESTART ???
+    errlog_add("Unexpected micrOS restart")

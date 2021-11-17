@@ -18,7 +18,8 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from sys import platform
-from ConfigHandler import cfgget, console_write
+from ConfigHandler import cfgget
+from Debug import console_write
 from InterpreterCore import execLMPipe
 from micropython import mem_info
 from machine import freq

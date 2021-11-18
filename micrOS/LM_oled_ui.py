@@ -73,9 +73,11 @@ class PageUI:
         # oled.rect(98, 15, 20, 20, state=1)
         __effect()
         if len(msg) > 10:
-            oled.text(msg[0:9], 15, 25)
-            buff = msg[9:]
+            # First line
+            oled.text(msg[0:10], 15, 25)
+            buff = msg[10:]
             msg = buff[:11] if len(buff) > 12 else buff
+        # Second line
         oled.text(msg, 15, 40)
         return True
 

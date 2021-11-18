@@ -48,7 +48,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.2.10-0'
+    __socket_interpreter_version = '1.3.0-0'
 
     def __new__(cls, host=''):
         """
@@ -163,7 +163,7 @@ class SocketServer:
                 cls.__reconnect()
             else:
                 errlog_add('__wait_for_msg unexpected error: {}'.format(e))
-                raise Exception(e)
+                cls.__reconnect()
         # Convert msg to str
         try:
             data_str = data_byte.decode("utf-8").strip()

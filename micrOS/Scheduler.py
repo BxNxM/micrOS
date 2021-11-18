@@ -1,5 +1,5 @@
 from time import localtime
-from InterpreterCore import exec_lm_core
+from InterpreterCore import exec_lm_core_schedule
 from Debug import console_write, errlog_add
 
 """
@@ -100,8 +100,7 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
         if tolerance_min_sec <= check_time_scheduler_sec <= tolerance_max_sec:
             __cron_task_cache_manager(check_time_now_sec, deltasec)
             if check_time[3] == '*' or task_id not in LAST_CRON_TASKS:
-                # TODO: micropython.schedule
-                lm_state = exec_lm_core(crontask[1].split(), msgobj=lambda msg: None)
+                lm_state = exec_lm_core_schedule(crontask[1].split())
                 if not lm_state:
                     console_write("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
                                                                                                        __convert_sec_to_time(tolerance_min_sec),
@@ -144,9 +143,14 @@ def scheduler(scheduler_input, irqperiod):
     # Cron overall time now in sec - hour in sec, minute in sec, sec
     now_sec_tuple = (cron_time_now[1] * 3600, cron_time_now[2] * 60, cron_time_now[3])
 
-    for cron in deserialize_raw_input(scheduler_input):
-        state |= __scheduler_trigger(cron_time_now, now_sec_tuple, cron, deltasec=irqperiod)
-    return state
+    try:
+        for cron in deserialize_raw_input(scheduler_input):
+            state |= __scheduler_trigger(cron_time_now, now_sec_tuple, cron, deltasec=irqperiod)
+        return state
+    except Exception as e:
+        console_write("scheduler callback error: {}".format(e))
+        errlog_add('scheduler error: {}'.format(e))
+        return False
 
 
 '''

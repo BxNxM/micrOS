@@ -26,6 +26,7 @@ from Debug import console_write, errlog_add
 
 
 def setNTP_RTC():
+    err = ''
     if WLAN(STA_IF).isconnected():
         for _ in range(8 if cfgget('cron') else 4):
             try:
@@ -40,10 +41,12 @@ def setNTP_RTC():
                 return True
             except Exception as e:
                 console_write("NTP setup errer.:{}".format(e))
-                errlog_add("setNTP_RTC error: {}".format(e))
+                err = e
             sleep(0.5)
     else:
         console_write("NTP setup errer: STA not connected!")
+        errlog_add("setNTP_RTC errer: STA not connected!")
+    errlog_add("setNTP_RTC error: {}".format(err))
     return False
 
 #################################################################

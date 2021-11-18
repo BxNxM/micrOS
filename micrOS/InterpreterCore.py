@@ -28,6 +28,12 @@ except Exception as e:
 
 
 def startBgJob(argument_list, msg):
+    """
+    User thread query handling
+    :param argument_list: arglist for exec_lm_core
+    :param msg: msg object
+    :return: bool (exec is ok)
+    """
     # Handle Thread &/&& arguments [-1]
     is_thrd = argument_list[-1].strip()
     # Run OneShot job by default
@@ -54,7 +60,7 @@ def startBgJob(argument_list, msg):
     return False
 
 
-def execLMPipe(taskstr):
+def exec_lm_pipe(taskstr):
     """
     Input: taskstr contains LM calls separated by ;
     Used for execute config callback parameters (IRQs and BootHook)
@@ -65,42 +71,29 @@ def execLMPipe(taskstr):
             return True
         # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
-            # if not exec_lm_core_schedule(cmd):    # TODO
-            if not exec_lm_core(cmd, msgobj=lambda msg: None):
+            if not exec_lm_core_schedule(cmd):
                 console_write("|-[LM-PIPE] task error: {}".format(cmd))
     except Exception as e:
         console_write("[IRQ-PIPE] error: {}\n{}".format(taskstr, e))
-        errlog_add('execLMPipe (IRQs and BootHook) error: {}'.format(e))
+        errlog_add('exec_lm_pipe error: {}'.format(e))
         return False
     return True
 
 
-def execLMCore(argument_list, msgobj=None):
+def exec_lm_pipe_schedule(taskstr):
     """
-    Used for LM execution from socket console
+    Wrapper for exec_lm_pipe
+    - fix IRQ execution limit - magic
     """
-    # @1 Run Thread if requested and enable
-    # Cache message obj in cwr
-    cwr = console_write if msgobj is None else msgobj
-    state = startBgJob(argument_list=argument_list, msg=cwr)
-    if state:
+    try:
+        schedule(exec_lm_pipe, taskstr)
         return True
-    # @2 Run simple task / main option from console
-    # |- Thread locking NOT available
-    if BgTask is None:
-        return exec_lm_core(argument_list, msgobj=cwr)
-    # |- Thread locking available
-    with BgTask.singleton(main_lm=argument_list[0]):
-        state = exec_lm_core(argument_list, msgobj=cwr)
-    return state
+    except Exception as e:
+        errlog_add("exec_lm_pipe_schedule error: {}".format(e))
+        return False
 
 
-def exec_lm_core_schedule(arg_list):
-    schedule(lambda: exec_lm_core(arg_list, msgobj=lambda msg: None))
-    return True
-
-
-def exec_lm_core(arg_list, msgobj):
+def exec_lm_core(arg_list, msgobj=None):
     """
     MAIN FUNCTION TO RUN STRING MODULE.FUNCTION EXECUTIONS
     [1] module name (LM)
@@ -108,6 +101,11 @@ def exec_lm_core(arg_list, msgobj):
     [3...] parameters (separator: space)
     NOTE: msgobj - must be a function with one input param (stdout/file/stream)
     """
+    # Handle default msgobj >dev/null
+    if msgobj is None:
+        msgobj = lambda msg: None
+
+    # Dict output user format / jsonify
     def __format_out(json_mode, lm_func, output):
         if isinstance(output, dict):
             if json_mode:
@@ -153,3 +151,39 @@ def exec_lm_core(arg_list, msgobj):
     msgobj("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
     # Exec OK
     return True
+
+
+def exec_lm_shell(argument_list, msgobj=None):
+    """
+    Used for LM execution from [Socket Console]
+    - Thread lock / unlock
+    - BgTask request handling
+    """
+    # @1 Run Thread if requested and enable
+    # Cache message obj in cwr
+    cwr = console_write if msgobj is None else msgobj
+    state = startBgJob(argument_list=argument_list, msg=cwr)
+    if state:
+        return True
+    # @2 Run simple task / main option from console
+    # |- Thread locking NOT available
+    if BgTask is None:
+        return exec_lm_core(argument_list, msgobj=cwr)
+    # |- Thread locking available
+    with BgTask.singleton(main_lm=argument_list[0]):
+        state = exec_lm_core(argument_list, msgobj=cwr)
+    return state
+
+
+def exec_lm_core_schedule(arg_list):
+    """
+    Wrapper for exec_lm_core
+    - scheduling - exec protection for [IRQ callbacks]
+        - fix IRQ execution limitation magic
+    """
+    try:
+        schedule(exec_lm_core, arg_list)
+        return True
+    except Exception as e:
+        errlog_add("schedule_lm_exec {} error: {}".format(arg_list, e))
+        return False

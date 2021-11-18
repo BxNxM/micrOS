@@ -223,7 +223,33 @@ def measure_package_response_time():
     print(output)
     if output[0] and output[1] == '<3 heartbeat <3':
         return True, info + f' deltaT: {delta_cmd_rep_time} s'
-    return False, output + f' deltaT: {delta_cmd_rep_time} s'
+    return False, info + f' {output[0]}:{output[1]} deltaT: {delta_cmd_rep_time} s'
+
+
+def micros_alarm_check():
+    info = "[ST] Test alarm state - system alarms should be null"
+    print(info)
+    cmd_list = ['system alarms']
+    output = execute(cmd_list)
+    alarm_cnt = 0
+    if output[0]:
+        try:
+            alarm_cnt = output[1].split(':')[-1]
+            alarm_cnt = int(alarm_cnt.strip())
+        except Exception as e:
+            alarm_cnt = 404
+            print(e)
+        if alarm_cnt > 0:
+            return True, info + f" -1 !!!WARN!!! [{alarm_cnt}] out: {output[1]}"
+    return True, info + f" [{alarm_cnt}] out: {output[1]}"
+
+
+def oled_msg_end_result(result):
+    cmd_list = ['system module >json']
+    output = execute(cmd_list)
+    if output[0] and 'LM_oled_ui' in output[1]:
+        cmd_list = [f'oled_ui msgbox "{result} %"']
+        print(execute(cmd_list))
 
 
 def app(devfid=None):
@@ -241,7 +267,8 @@ def app(devfid=None):
                'version': micrOS_get_version(),
                'json_check': json_format_check(),
                'reponse time': measure_package_response_time(),
-               'negative_api': negative_interface_check()
+               'negative_api': negative_interface_check(),
+               'micros_alarms': micros_alarm_check()
                }
 
     # Test Evaluation
@@ -258,10 +285,12 @@ def app(devfid=None):
         final_state &= state_data[0]
 
     # Execution verdict
-    print(f"\nPASS RATE: {round((ok_cnt/len(verdict.keys())*100), 1)} %")
+    pass_rate = round((ok_cnt/len(verdict.keys())*100), 1)
+    print(f"\nPASS RATE: {pass_rate} %")
     state = 'OK' if final_state else 'NOK'
     print(f"RESULT: {state}")
     print("--------------------------------------------------------------------------------------\n")
+    oled_msg_end_result(f"System[{state}] {pass_rate}")
 
 
 def execute(cmd_list):

@@ -20,7 +20,7 @@ Designed by Marcell Ban aka BxNxM
 from sys import platform
 from ConfigHandler import cfgget
 from Debug import console_write
-from InterpreterCore import execLMPipe
+from InterpreterCore import exec_lm_pipe
 from micropython import mem_info
 from machine import freq
 
@@ -38,7 +38,7 @@ def bootup_hook():
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
         console_write("|-[BOOTHOOK] TASKS: {}".format(bootasks))
-        if execLMPipe(bootasks):
+        if exec_lm_pipe(bootasks):
             console_write("|-[BOOTHOOK] DONE")
         else:
             console_write("|-[BOOTHOOK] ERROR")

@@ -1,5 +1,5 @@
 from Common import socket_stream
-from Debug import progress_led_toggle_adaptor, errlog_get, errlog_add, errlog_clean
+from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 
 @socket_stream
@@ -31,10 +31,8 @@ def gclean():
     return {'GC MemFree[byte]': mem_free()}
 
 
-@progress_led_toggle_adaptor
 def heartbeat():
-    from utime import sleep_ms
-    sleep_ms(100)
+    console_write("<3 heartbeat <3")
     return "<3 heartbeat <3"
 
 

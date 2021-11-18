@@ -3,6 +3,7 @@ from time import localtime
 from machine import Pin
 from LogicalPins import physical_pin
 
+
 try:
     # TinyPICO progress led plugin
     import TinyPLed
@@ -31,31 +32,20 @@ class DebugCfg:
             DebugCfg.PLED = TinyPLed.init_APA102()
 
 
-def progress_led_toggle_adaptor(func):
-    def wrapper(*args, **kwargs):
-        if DebugCfg.PLED is None:
-            return func(*args, **kwargs)
+def console_write(msg):
+    if DebugCfg.PLED is not None:
         if TinyPLed is None:
             # Simple (built-in) progress led update
             DebugCfg.PLED.value(not DebugCfg.PLED.value())
-            output = func(*args, **kwargs)
+            if DebugCfg.DEBUG:
+                print(msg)
             DebugCfg.PLED.value(not DebugCfg.PLED.value())
-            return output
+            return
         # TinyPICO (built-in) progress led update
         TinyPLed.step()
-        # Run function
-        return func(*args, **kwargs)
-    return wrapper
-
-
-@progress_led_toggle_adaptor
-def console_write(msg):
-    """
-    :param msg: stdio printout (usb logging)
-    :return: None
-    """
     if DebugCfg.DEBUG:
         print(msg)
+    return
 
 
 #############################################

@@ -13,7 +13,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from os import listdir
 from ConfigHandler import cfgget, cfgput
-from InterpreterCore import execLMCore
+from InterpreterCore import exec_lm_shell
 try:
     from BgJob import BgTask
     from json import dumps
@@ -130,9 +130,9 @@ def __shell(msg, sso):
     """
     try:
         # Execute command via InterpreterCore
-        return execLMCore(argument_list=msg_list, msgobj=sso.reply_message)
+        return exec_lm_shell(argument_list=msg_list, msgobj=sso.reply_message)
     except Exception as e:
-        sso.reply_message("[ERROR] execLMCore internal error: {}".format(e))
+        sso.reply_message("[ERROR] exec_lm_shell internal error: {}".format(e))
         return False
 
 #################################################################

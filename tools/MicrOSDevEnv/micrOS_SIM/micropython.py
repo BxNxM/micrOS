@@ -28,5 +28,9 @@ def const(*args):
     return args
 
 
+def schedule(callback, arg):
+    return callback(arg)
+
+
 if __name__ == "__main__":
     mem_info()

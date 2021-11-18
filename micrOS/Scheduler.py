@@ -100,6 +100,7 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
         if tolerance_min_sec <= check_time_scheduler_sec <= tolerance_max_sec:
             __cron_task_cache_manager(check_time_now_sec, deltasec)
             if check_time[3] == '*' or task_id not in LAST_CRON_TASKS:
+                # TODO: micropython.schedule
                 lm_state = exec_lm_core(crontask[1].split(), msgobj=lambda msg: None)
                 if not lm_state:
                     console_write("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,

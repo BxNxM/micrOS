@@ -21,6 +21,7 @@ from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
 from InterpreterCore import execLMPipe
 from LogicalPins import physical_pin
+from micropython import schedule
 if cfgget('cron'):
     # Only import when enabled - memory usage optimization
     from Scheduler import scheduler
@@ -53,6 +54,11 @@ def enableInterrupt():
     Set task pool executor in interrupt timer0
     Input: timirq(bool), timirqseq(ms), timirqcbf(str)
     """
+
+    def schedule_lm_exec(arg_list):
+        schedule(execLMPipe, arg_list)
+        return True
+
     console_write("[IRQ] TIMIRQ SETUP: {} SEQ: {}".format(cfgget("timirq"), cfgget("timirqseq")))
     console_write("|- [IRQ] TIMIRQ CBF:{}".format(cfgget('timirqcbf')))
     if cfgget("timirq"):
@@ -61,7 +67,7 @@ def enableInterrupt():
         lm_str = cfgget('timirqcbf')
         timer = Timer(0)
         timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC,
-                   callback=lambda timer: execLMPipe(lm_str))
+                   callback=lambda timer: schedule_lm_exec(lm_str))
 
 
 #############################################
@@ -111,6 +117,11 @@ def initEventIRQs():
     """
     EVENT INTERRUPT CONFIGURATION - multiple
     """
+
+    def schedule_lm_exec(arg_list):
+        schedule(execLMPipe, arg_list)
+        return True
+
     irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
                (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
                (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
@@ -132,19 +143,19 @@ def initEventIRQs():
             pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
             # [IRQ] - event type setup
             if trig == 'down':
-                #pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: print("[down] {}:{}".format(pin, cbf_resolver[str(pin)])))
+                # pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: print("[down] {}:{}".format(pin, cbf_resolver[str(pin)])))
                 pin_obj.irq(trigger=Pin.IRQ_FALLING,
-                            handler=lambda pin: execLMPipe(cbf_resolver[str(pin)]))
+                            handler=lambda pin: schedule_lm_exec(cbf_resolver[str(pin)]))
                 continue
             if trig == 'both':
-                #pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: print("[both] {}:{}".format(pin, cbf_resolver[str(pin)])))
+                # pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: print("[both] {}:{}".format(pin, cbf_resolver[str(pin)])))
                 pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
-                            handler=lambda pin: execLMPipe(cbf_resolver[str(pin)]))
+                            handler=lambda pin: schedule_lm_exec(cbf_resolver[str(pin)]))
                 continue
             # Default
-            #pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: print("[up] {}:{}".format(pin, cbf_resolver[str(pin)])))
+            # pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: print("[up] {}:{}".format(pin, cbf_resolver[str(pin)])))
             pin_obj.irq(trigger=Pin.IRQ_RISING,
-                        handler=lambda pin: execLMPipe(cbf_resolver[str(pin)]))
+                        handler=lambda pin: schedule_lm_exec(cbf_resolver[str(pin)]))
 
 #################################################################
 #                         INIT MODULE                           #

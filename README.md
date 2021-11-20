@@ -12,9 +12,6 @@
 ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
 🛠 Easy to customize, create your own Load Modules: <br/>
 Just write and copy **LM_** your_app **.py** python script to your device and call any function.<br/>
-🦾 Built-in scheduling (IRQ):<br/>
-- Time stamp based <br/>
-- Simple periodic <br/>
 
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
@@ -257,7 +254,7 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 ----------------------------------------
 
-# System Architecture 
+# System Architecture - full version
 
 ![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
 
@@ -278,6 +275,7 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 |  **v0.4.0-0** | [release_Info-0.4.0-0](./release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| 23 - 28 % (17250-20976byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.
 |  **v1.0.0-0** | [release_Info-1.0.0-0](./release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| 15 - 23 % (10394-15488byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc. 
 |  **v1.2.2-0** | [release_Info-1.2.2-0](./release_info/micrOS_ReleaseInfo/release_1.2.2-0_note_esp32.md)|  10-25 % | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_1.2.2-0.json)| Public Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA update, thread from socket shell (beta) etc.
+|  **v1.3.0-0 light** | [release_Info-1.3.0-0-light]()|  ? % | esp8266 | [App Profiles]() | [LM manual]()| Lightweight release for small boards like esp8266 (Socket interface + external IRQ handling)
 
 
 ----------------------------------------
@@ -292,26 +290,13 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **stapwd**           | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for default connection mode)
 | **appwd**            |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password
 | **auth**             |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. **WARNING** OTA upade not supported in this mode.
-| **gmttime**          |     `1`   `<int>`           |       Yes       | NTP - RTC - timezone setup (GMT)
 | **boothook**         |    `n/a` `<str>`            |      Yes        | Callback function(s) list for priority Load Module(s) execution in boot sequence [before network setup!]. Add LoadModule(s) here, separator `;`. Example: Set LED colors / Init custom module(s) / etc.
-| **timirq**           |     `False`  `<bool>`       |       Yes       | Timer(0) interrupt enabler - background "subprocess" emulation, timer based infinite loop for the LoadModule execution
-| **timirqcbf**        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
-| **timirqseq**        |    `1000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
-| **cron**             |     `False`  `<bool>`       |       Yes       | Cron enabler, Timer(1) interrupt enabler - time based task scheduler.
-| **cronseq**          |    `3000`   `<int>`         |       Yes        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value) 
-| **crontasks**        |     `n/a`  `<str>`          |       Yes        | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*` **Note**: If the value was `n/a` default, then reboot required.
 | **irq1**           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when desired signal state detected - button press happens / motion detection / etc
 | **irq1_cbf**        |     `n/a`  `<str>`          |      Yes        | `irq1` enabled, calls the given Load Modules, e.x.: `module function optional_parameter(s)` when external trigger happens
 | **irq1_trig**       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
 | **irq2**           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when desired signal state detected - button press happens / motion detection / etc
 | **irq2_cbf**        |     `n/a`  `<str>`          |      Yes        | `irq2` enabled, calls the given Load Modules, e.x.: `module function optional_parameter(s)` when external trigger happens
 | **irq2_trig**       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
-| **irq3**           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when desired signal state detected - button press happens / motion detection / etc
-| **irq3_cbf**        |     `n/a`  `<str>`          |      Yes        | `irq3` enabled, calls the given Load Modules, e.x.: `module function optional_parameter(s)` when external trigger happens
-| **irq3_trig**       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
-| **irq4**           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when desired signal state detected - button press happens / motion detection / etc
-| **irq4_cbf**        |     `n/a`  `<str>`          |      Yes        | `irq4` enabled, calls the given Load Modules, e.x.: `module function optional_parameter(s)` when external trigger happens
-| **irq4_trig**       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
 | **cstmpmap**         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as the parameter.
 | **pled**             |     `True`    `<bool>`      |      Yes        | Progress led enabler - light pulse under processing - "heart beat"
 | **dbg**	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc.
@@ -325,8 +310,6 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **guimeta**          |      `n/a`  `str`           |      No        | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
 
 > Note: Default empty value: `n/a` in case of string parameter.
-> Note: Cron is only available on devices with Timer(**1**): esp32
-> 
 
 
 ----------------------------------------
@@ -906,4 +889,4 @@ GIT:
 
 - GitHub embed youtube link: `https://github.com/itskeshav/Add-youtube-link-in-Readme.md`
 
-git push -u origin master
+git push -u origin lightweight

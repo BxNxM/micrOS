@@ -263,6 +263,8 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 > Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`
 
+![MICROSARCHITECTURE](./media/MicrOSNewArchitecture.png?raw=true)
+
 ## Networking - automatic network modes
 
 ![MICROSNWMODES](./media/micrOSNetworking.png?raw=true)

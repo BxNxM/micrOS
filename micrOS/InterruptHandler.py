@@ -73,7 +73,7 @@ def enableCron():
     Set time stump based scheduler aka cron in timer1
     Input: cron(bool), cronseq(ms), crontasks(str)
     """
-    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget(cfgget('cron')), cfgget("cronseq")))
+    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget('cron'), cfgget("cronseq")))
     console_write("|- [IRQ] CRON CBF:{}".format(cfgget('crontasks')))
     if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
         from machine import Timer

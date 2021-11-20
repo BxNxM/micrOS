@@ -1001,7 +1001,7 @@ class MicrOSDevTool:
                 except Exception as e:
                     self.console("Create lock/unlock failed: {}".format(e))
                     state = False
-                self.console("[ERROR] Create lock/unlock failed: {}".format(e))
+                self.console("[ERROR] Create lock/unlock failed")
                 # Cleanup lock file: .if_mode + restore path
                 LocalMachine.FileHandler.remove('.if_mode', ignore=True)
                 workdir_handler.popd()

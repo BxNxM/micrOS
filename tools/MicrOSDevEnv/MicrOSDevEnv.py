@@ -29,12 +29,7 @@ class MicrOSDevTool:
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial']
         # Commands for devices
         self.dev_types_and_cmds = \
-            {'esp8266':
-                 {'erase': 'esptool.py --port {dev} erase_flash',
-                  'deploy': 'esptool.py --port {dev} --baud 460800 write_flash --flash_size=detect -fm dio 0 {micropython}',
-                  'connect': 'screen {dev} 115200',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
-             'esp32':
+            {'esp32':
                  {'erase': 'esptool.py --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                   'connect': 'screen {dev} 115200',
@@ -113,6 +108,8 @@ class MicrOSDevTool:
                 selected_index = int(input("Selected index: "))
                 if not self.devenv_usb_deployment_is_active:
                     self.selected_micropython_bin = micropython_bin_for_type[selected_index]
+        else:
+            self.selected_micropython_bin = micropython_bin_for_type[selected_index]
 
         self.console("-" * 60)
         self.console("Selected device type: {}".format(self.selected_device_type))

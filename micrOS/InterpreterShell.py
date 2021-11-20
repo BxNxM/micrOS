@@ -13,12 +13,11 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from os import listdir
 from ConfigHandler import cfgget, cfgput
-from InterpreterCore import exec_lm_shell
+from InterpreterCore import exec_lm_core
 try:
-    from BgJob import BgTask
     from json import dumps
 except:
-    BgTask = None
+    dumps = None
 
 try:
     from gc import collect, mem_free
@@ -89,40 +88,15 @@ def __shell(msg, sso):
         sso.reply_message("    key        - Get value")
         sso.reply_message("    key value  - Set value")
         sso.reply_message("  noconf     - Exit conf mode")
-        sso.reply_message("[BGJOB] Background LM execution")
-        sso.reply_message("    show     - Show running job data")
-        sso.reply_message("    stop     - Stop running job")
         sso.reply_message("[EXEC] Command mode (LMs):")
         return __show_LM_functions(sso)
 
     # EXECUTE:
     # @1 Configure mode
     if sso.configure_mode and len(msg_list) > 0:
-        # Config handling without thread locking
-        if BgTask is None:
-            return __configure(msg_list, sso)
-        # Lock thread under config handling is threads available
-        with BgTask.singleton():
-            s = __configure(msg_list, sso)
-        return s
-    # @2 Background job shell commands
-    if msg_list[0] == 'bgjob' and len(msg_list) > 1:
-        if BgTask.singleton() is None:
-            sso.reply_message('[BgJob] Inactive...')
-            return True
-        # Handle bgjob stop
-        if msg_list[1] == 'stop':
-            sso.reply_message(BgTask.singleton().stop())
-            return True
-        # Handle bgjob show
-        if msg_list[1] == 'show':
-            verdict = BgTask.singleton().info()
-            if msg_list[-1] == '>json':
-                sso.reply_message(BgTask.singleton().info())
-                return True
-            sso.reply_message('\n'.join([" {}: {}".format(key, value) for key, value in verdict.items()]))
-            return True
-    # @3 Command mode
+        return __configure(msg_list, sso)
+
+    # @2 Command mode
     """
     INPUT MSG STRUCTURE
     1. param. - LM name, i.e. LM_commands
@@ -130,9 +104,9 @@ def __shell(msg, sso):
     """
     try:
         # Execute command via InterpreterCore
-        return exec_lm_shell(argument_list=msg_list, msgobj=sso.reply_message)
+        return exec_lm_core(arg_list=msg_list, msgobj=sso.reply_message)
     except Exception as e:
-        sso.reply_message("[ERROR] exec_lm_shell internal error: {}".format(e))
+        sso.reply_message("[ERROR] exec_lm_core internal error: {}".format(e))
         return False
 
 #################################################################
@@ -186,15 +160,11 @@ def __irq_mem_req_check(key):
         Checks the selected config function hw resource need before setup
     :return: Enable(True)/Disable(False), available memory
     """
-    if key not in ('timirq', 'irq1', 'irq2', 'irq3', 'irq14', 'cron'):
+    if key not in ('irq1', 'irq2'):
         return True, None
     collect()                   # gc collect
     memavail = mem_free()       # get free memory
-    if key == 'timirq' and memavail < cfgget('irqmreq'):
-        return False, memavail
-    if key == 'cron' and memavail < cfgget('irqmreq') * 2:
-        return False, memavail
-    if key in ('irq1', 'irq2', 'irq3', 'irq4') and memavail < int(cfgget('irqmreq') * 0.7):
+    if key in ('irq1', 'irq2') and memavail < int(cfgget('irqmreq')):
         return False, memavail
     return True, memavail
 

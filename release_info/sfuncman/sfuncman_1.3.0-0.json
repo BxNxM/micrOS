@@ -41,15 +41,10 @@
     "info <msgobj>",
     "gclean",
     "heartbeat",
-    "clock",
-    "ntp",
     "module unload=None",
-    "cachedump cdel=None <msgobj>=None",
     "rssi",
     "lmpacman lm_del=None <msgobj>=None",
     "pinmap key='builtin'",
-    "ha_sta",
-    "alarms clean=False test=False <msgobj>=None",
     "help"
   ],
   "co2": [
@@ -68,13 +63,6 @@
     "poweroff",
     "show",
     "pinmap",
-    "help"
-  ],
-  "tinyrgb": [
-    "setrgb r=None g=None b=None br=None",
-    "getstate",
-    "toggle state=None",
-    "wheel br=None",
     "help"
   ],
   "bme280": [
@@ -145,13 +133,6 @@
     "pinmap",
     "help"
   ],
-  "neoeffects": [
-    "meteor r g b shift=False ledcnt=24",
-    "cycle r g b ledcnt=24",
-    "rainbow step=15 br=100 ledcnt=24",
-    "lmdep",
-    "help"
-  ],
   "i2c": [
     "scan",
     "pinmap",
@@ -183,13 +164,6 @@
     "portion repeat=1 posmin=65 posmax=97",
     "portion_new count=1 forward=135 back=10",
     "lmdep",
-    "help"
-  ],
-  "bledns": [
-    "advert",
-    "scan",
-    "list",
-    "make",
     "help"
   ],
   "dht11": [

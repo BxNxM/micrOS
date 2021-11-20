@@ -23,7 +23,7 @@ Designed by Marcell Ban aka BxNxM
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from utime import sleep
 from ConfigHandler import cfgget, cfgput
-from Debug import console_write, errlog_add
+from Debug import console_write
 from InterpreterShell import shell
 
 try:
@@ -98,7 +98,6 @@ class SocketServer:
                 break
             except Exception as msg:
                 cls.server_console('[ socket server ] Bind failed. Error Code : {}'.format(msg))
-                errlog_add('__init_socket bind failed: {}'.format(msg))
                 sleep(1)
         cls.server_console('[ socket server ] Socket bind complete')
         cls.__s.listen(5)
@@ -162,7 +161,6 @@ class SocketServer:
                 cls.reply_message("\n__@_/' Session timeout {} sec\nBye!".format(cls.__timeout_user))
                 cls.__reconnect()
             else:
-                errlog_add('__wait_for_msg unexpected error: {}'.format(e))
                 cls.__reconnect()
         # Convert msg to str
         try:
@@ -186,7 +184,7 @@ class SocketServer:
             return ""
         if data_str == 'version':
             # For micrOS system version info
-            cls.reply_message("{}".format(cls.__socket_interpreter_version))
+            cls.reply_message("light-{}".format(cls.__socket_interpreter_version))
             return ""
         # Authentication handling
         data_str = cls.__authentication(data_str) if cls.__auth_mode else data_str
@@ -236,7 +234,6 @@ class SocketServer:
             cfgput('version', cls.__socket_interpreter_version)
         except Exception as e:
             console_write("Export system version to config failed: {}".format(e))
-            errlog_add('socket run system version export error: {}'.format(e))
         cls.__init_socket()
         while True and cls.__isconn:
             try:
@@ -250,7 +247,6 @@ class SocketServer:
                 cls.__reconnect()
             except Exception as e:
                 console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
-                errlog_add("Socket-InterpreterShell error: {}".format(e))
                 cls.__recovery(is_critic=True)
             # Memory dimensioning dump
             cls.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
@@ -293,7 +289,6 @@ class SocketServer:
             cls.__del__()
         except Exception as e:
             cls.reply_message("Error while starting webrepl: {}".format(e))
-            errlog_add('Start Webrepl error: {}'.format(e))
 
     def __authentication(cls, data_str):
         if not cls.__auth and data_str:

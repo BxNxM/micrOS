@@ -13,51 +13,14 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from sys import modules
-from Debug import console_write, errlog_add
+from Debug import console_write
 from json import dumps
 from micropython import schedule
-try:
-    from BgJob import BgTask
-except Exception as e:
-    console_write('BgJob - thread support failed: {}'.format(e))
-    BgTask = None
+
 
 #################################################################
 #               Interpreter shell CORE executor                 #
 #################################################################
-
-
-def startBgJob(argument_list, msg):
-    """
-    User thread query handling
-    :param argument_list: arglist for exec_lm_core
-    :param msg: msg object
-    :return: bool (exec is ok)
-    """
-    # Handle Thread &/&& arguments [-1]
-    is_thrd = argument_list[-1].strip()
-    # Run OneShot job by default
-    if '&' in is_thrd:
-        if BgTask is None:
-            msg('[BgJob] Inactive...')
-            return True
-        # delete from argument list - handled argument ...
-        del argument_list[-1]
-        # Get thread wait in sec
-        wait = int(is_thrd.replace('&', '')) if is_thrd.replace('&', '').isdigit() else 0
-        # Create callback
-        if is_thrd.startswith('&&'):
-            # Run task in background loop with custom sleep in period &&X
-            stat, tid = BgTask.singleton(exec_lm_core=exec_lm_core).run(arglist=argument_list, loop=True, delay=wait)
-        else:
-            # Start background thread based on user input
-            stat, tid = BgTask.singleton(exec_lm_core=exec_lm_core).run(arglist=argument_list, loop=False, delay=wait)
-        if stat:
-            msg("[BgJob][{}] Start {}".format(tid[0], tid[1]))
-            return True
-        msg("[BgJob][{}] {} is Busy".format(tid[0], tid[1]))
-        return True
-    return False
 
 
 def exec_lm_pipe(taskstr):
@@ -71,11 +34,12 @@ def exec_lm_pipe(taskstr):
             return True
         # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
-            if not exec_lm_core_schedule(cmd):
-                console_write("|-[LM-PIPE] task error: {}".format(cmd))
+            try:
+                schedule(exec_lm_core, cmd)
+            except Exception as e:
+                console_write("|-[LM-PIPE] task error: {}: {}".format(cmd, e))
     except Exception as e:
         console_write("[IRQ-PIPE] error: {}\n{}".format(taskstr, e))
-        errlog_add('exec_lm_pipe error: {}'.format(e))
         return False
     return True
 
@@ -88,8 +52,7 @@ def exec_lm_pipe_schedule(taskstr):
     try:
         schedule(exec_lm_pipe, taskstr)
         return True
-    except Exception as e:
-        errlog_add("exec_lm_pipe_schedule error: {}".format(e))
+    except:
         return False
 
 
@@ -151,39 +114,3 @@ def exec_lm_core(arg_list, msgobj=None):
     msgobj("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
     # Exec OK
     return True
-
-
-def exec_lm_shell(argument_list, msgobj=None):
-    """
-    Used for LM execution from [Socket Console]
-    - Thread lock / unlock
-    - BgTask request handling
-    """
-    # @1 Run Thread if requested and enable
-    # Cache message obj in cwr
-    cwr = console_write if msgobj is None else msgobj
-    state = startBgJob(argument_list=argument_list, msg=cwr)
-    if state:
-        return True
-    # @2 Run simple task / main option from console
-    # |- Thread locking NOT available
-    if BgTask is None:
-        return exec_lm_core(argument_list, msgobj=cwr)
-    # |- Thread locking available
-    with BgTask.singleton(main_lm=argument_list[0]):
-        state = exec_lm_core(argument_list, msgobj=cwr)
-    return state
-
-
-def exec_lm_core_schedule(arg_list):
-    """
-    Wrapper for exec_lm_core
-    - scheduling - exec protection for [IRQ callbacks]
-        - fix IRQ execution limitation magic
-    """
-    try:
-        schedule(exec_lm_core, arg_list)
-        return True
-    except Exception as e:
-        errlog_add("schedule_lm_exec {} error: {}".format(arg_list, e))
-        return False

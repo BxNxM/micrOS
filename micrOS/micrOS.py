@@ -10,9 +10,7 @@ Designed by Marcell Ban aka BxNxM
 from SocketServer import SocketServer
 from Network import auto_network_configuration
 from Hooks import bootup_hook, profiling_info
-from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
-from Debug import errlog_add
 
 
 #################################################################
@@ -25,16 +23,6 @@ def safe_boot_hook():
         bootup_hook()
     except Exception as e:
         print("[micrOS main] Hooks.bootup_hook() error: {}".format(e))
-        errlog_add("safe_boot_hook error: {}".format(e))
-
-
-def interrupt_handler():
-    try:
-        enableInterrupt()
-        enableCron()
-    except Exception as e:
-        print("[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {}".format(e))
-        errlog_add("interrupt_handler error: {}".format(e))
 
 
 def external_interrupt_handler():
@@ -42,7 +30,6 @@ def external_interrupt_handler():
         initEventIRQs()
     except Exception as e:
         print("[micrOS main] InterruptHandler.initEventIRQs error: {}".format(e))
-        errlog_add("external_interrupt_handler error: {}".format(e))
 
 
 #################################################################
@@ -69,12 +56,5 @@ def micrOS():
     SocketServer()
     profiling_info(label='[5] AFTER SOCKET SERVER CREATION')
 
-    # SET interrupt with timirqcbf from nodeconfig
-    interrupt_handler()
-    profiling_info(label='[6] AFTER TIMER INTERRUPT SETUP')
-
     # RUN Singleton SocketServer - main loop [2]
     SocketServer().run()
-
-    # UNEXPECTED RESTART ???
-    errlog_add("Unexpected micrOS restart")

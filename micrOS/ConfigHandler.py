@@ -16,7 +16,7 @@ from utime import sleep
 from json import load, dump
 from LogicalPins import set_pinmap
 from os import remove
-from Debug import DebugCfg, console_write, errlog_add
+from Debug import DebugCfg, console_write
 
 
 class Data:
@@ -35,12 +35,6 @@ class Data:
                     "soctout": 100,
                     "socport": 9008,
                     "devip": "n/a",
-                    "cron": False,
-                    "crontasks": "n/a",
-                    "cronseq": 3000,
-                    "timirq": False,
-                    "timirqcbf": "n/a",
-                    "timirqseq": 1000,
                     "irqmembuf": 1000,
                     "irq1": False,
                     "irq1_cbf": "n/a",
@@ -48,12 +42,6 @@ class Data:
                     "irq2": False,
                     "irq2_cbf": "n/a",
                     "irq2_trig": "n/a",
-                    "irq3": False,
-                    "irq3_cbf": "n/a",
-                    "irq3_trig": "n/a",
-                    "irq4": False,
-                    "irq4_cbf": "n/a",
-                    "irq4_trig": "n/a",
                     "boothook": "n/a",
                     "gmttime": +1,
                     "boostmd": True,
@@ -97,7 +85,6 @@ class Data:
             console_write("[CONFIGHANDLER] Inject default conf struct successful")
         except Exception as e:
             console_write("[CONFIGHANDLER] Inject default conf struct failed: {}".format(e))
-            errlog_add('__inject_default_conf error: {}'.format(e))
         finally:
             del liveconf
 
@@ -115,7 +102,6 @@ class Data:
                 if nosafe:
                     break
                 sleep(0.2)
-                errlog_add('read_cfg_file error: {}'.format(e))
         # Return config cache
         return conf
 
@@ -129,7 +115,6 @@ class Data:
                 break
             except Exception as e:
                 console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(Data.CONFIG_PATH, e))
-                errlog_add('write_cfg_file error: {}'.format(e))
             sleep(0.2)
         return True
 
@@ -196,7 +181,6 @@ def cfgget(key=None):
         return val
     except Exception as e:
         console_write("[CONFIGHANDLER] Get config value error: {}".format(e))
-        errlog_add('cfgget {} error: {}'.format(key, e))
     return None
 
 
@@ -218,7 +202,6 @@ def cfgput(key, value, type_check=False):
         del value
         return True
     except Exception as e:
-        errlog_add('cfgput {} error: {}'.format(key, e))
         return False
 
 #################################################################

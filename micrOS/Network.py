@@ -15,39 +15,9 @@ Designed by Marcell Ban aka BxNxM
 from utime import sleep, localtime, time
 from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
-from ntptime import settime
 from machine import RTC, unique_id
 from ConfigHandler import cfgget, cfgput
-from Debug import console_write, errlog_add
-
-#################################################################
-#                      NTP & RTC TIME SETUP                     #
-#################################################################
-
-
-def setNTP_RTC():
-    err = ''
-    if WLAN(STA_IF).isconnected():
-        for _ in range(8 if cfgget('cron') else 4):
-            try:
-                # Sync with NTP server
-                settime()
-                # Get localtime + GMT
-                (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfgget('gmttime'))*3600)
-                # Create RealTimeClock + Set RTC with time (+timezone)
-                RTC().datetime((year, month, mday, 0, hour, minute, second, 0))
-                # Print time
-                console_write("NTP setup DONE: {}".format(localtime()))
-                return True
-            except Exception as e:
-                console_write("NTP setup errer.:{}".format(e))
-                err = e
-            sleep(0.5)
-    else:
-        console_write("NTP setup errer: STA not connected!")
-        errlog_add("setNTP_RTC errer: STA not connected!")
-    errlog_add("setNTP_RTC error: {}".format(err))
-    return False
+from Debug import console_write
 
 #################################################################
 #                   GET DEVICE UID BY MAC ADDRESS               #
@@ -58,11 +28,7 @@ def set_dev_uid():
     try:
         cfgput('hwuid', 'micr{}OS'.format(hexlify(unique_id()).decode('utf-8')))
     except Exception as e:
-        errlog_add("set_dev_uid error: {}".format(e))
-
-#################################################################
-#                       SET WIFI STA MODE                       #
-#################################################################
+        console_write("set_dev_uid error: {}".format(e))
 
 
 def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
@@ -140,7 +106,6 @@ def __set_wifi_dev_static_ip(sta_if):
                 return True     # was reconfigured
             except Exception as e:
                 console_write("\t\t| [NW: STA] StaticIP conf. failed: {}".format(e))
-                errlog_add("__set_wifi_dev_static_ip error: {}".format(e))
         else:
             console_write("[NW: STA][SKIP] StaticIP conf.: {} ? {}".format(stored_ip, conn_ips[0]))
     else:
@@ -168,7 +133,6 @@ def set_access_point(_essid, _pwd, _authmode=3):
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode)
     except Exception as e:
         console_write("[NW: AP] Config Error: {}".format(e))
-        errlog_add("set_access_point error: {}".format(e))
     if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
         cfgput("devip", ap_if.ifconfig()[0])
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
@@ -188,8 +152,6 @@ def auto_network_configuration():
         if state:
             # Save STA NW mode
             cfgput("nwmd", "STA")
-            # Set NTP - RTC
-            setNTP_RTC()
             # BREAK - STA mode successfully  configures
             break
         # SET AP MODE

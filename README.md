@@ -1,4 +1,4 @@
-# ![LOGO](./media/logo_mini.png?raw=true) micrOS
+# ![LOGO](./media/logo_mini.png?raw=true) micrOS light-weight
 
 ### micropython based IoT framework for wifi capable arm based microcontrollers and much more...
 

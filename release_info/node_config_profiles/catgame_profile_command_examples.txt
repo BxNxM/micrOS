@@ -1,6 +1,6 @@
-devToolKit -h
-devToolKit -c -p '--dev <device> help'
-devToolKit -c -p '--dev <device> servo help'
-devToolKit -c -p '--dev <device> servo Servo'
-devToolKit -c -p '--dev <device> servo Servo(40)'
-devToolKit -c -p '--dev <device> servo Servo(120)'
+./devToolKit.py -h
+./devToolKit.py -c -p '--dev <device> help'
+./devToolKit.py -c -p '--dev <device> servo help'
+./devToolKit.py -c -p '--dev <device> servo sduty'
+./devToolKit.py -c -p '--dev <device> servo sduty 40'
+./devToolKit.py -c -p '--dev <device> servo sduty 120'

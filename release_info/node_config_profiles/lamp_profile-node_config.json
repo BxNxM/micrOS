@@ -1,10 +1,10 @@
 {
  "timirqseq": 2000,
  "irqmembuf": 1000,
- "extirq": true,
- "extirqcbf": "light toggle",
+ "irq1": true,
+ "irq1_cbf": "rgb toggle",
  "timirqcbf": "system heartbeat",
- "boothook": "light load_n_init",
+ "boothook": "rgb load_n_init",
  "timirq": false,
  "pled": true,
  "socport": 9008,

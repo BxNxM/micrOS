@@ -1,8 +1,8 @@
 {
  "timirqseq": 3000,
  "irqmembuf": 1000,
- "extirq": false,
- "extirqcbf": "n/a",
+ "irq1": false,
+ "irq1_cbf": "n/a",
  "timirqcbf": "system heartbeat",
  "boothook": "system heartbeat",
  "timirq": true,

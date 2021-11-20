@@ -54,7 +54,7 @@ def __is_micrOS():
 
 
 def __recovery_mode():
-    # Recovery mode (webrepl) - dependencies: Network, ConfigHandler
+    # Recovery/Update mode (webrepl) - dependencies: Network, ConfigHandler
     from Network import auto_network_configuration
     try:
         from ConfigHandler import cfgget
@@ -78,7 +78,7 @@ def __auto_restart_event():
     """
     from utime import sleep
     trigger_is_active = False
-    wait_update_tout = 7
+    wait_update_tout = 8
     # Wait after webrepl started for possible ota updates (~2*7= 14sec)
     while wait_update_tout > 0:
         # Wait for micros turns to webrepl until timeout

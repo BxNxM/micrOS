@@ -1,5 +1,5 @@
-devToolKit -h
-devtoolkit -c -p '--dev <device> help'
-devToolKit -c -p '--dev <device> set_value(0)'
-devToolKit -c -p '--dev <device> set_value(1000)'
-devToolKit -c -p '--dev <device> toggle'
+./devToolKit.py -h
+./devToolKit.py -c -p '--dev <device> help'
+./devToolKit.py -c -p '--dev <device> dimmer set_value 0'
+./devToolKit.py -c -p '--dev <device> dimmer set_value 1000'
+./devToolKit.py -c -p '--dev <device> dimmer toggle'

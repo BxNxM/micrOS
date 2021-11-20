@@ -1,8 +1,8 @@
 {
  "timirqseq": 2000,
  "irqmembuf": 1000,
- "extirq": true,
- "extirqcbf": "neopixel toggle",
+ "irq1": true,
+ "irq1_cbf": "neopixel toggle",
  "timirqcbf": "system heartbeat",
  "boothook": "neopixel load_n_init",
  "timirq": false,

@@ -7,12 +7,15 @@ Designed by Marcell Ban aka BxNxM
 """
 
 # This file is executed on every boot (including wake-boot from deepsleep)
-import esp
+try:
+    import esp
+    # Turn off esp debug msg-s over usb (UART)
+    esp.osdebug(None)
+except:
+    print("[micrOS boot] Unknown board")
+
 from gc import enable
 from micrOSloader import main
-
-# Turn off esp debug msg-s over usb (UART)
-esp.osdebug(None)
 
 # Enable GC
 enable()

@@ -988,19 +988,20 @@ class MicrOSDevTool:
             else:
                 self.console("Webrepl CMD: {}".format(command))
                 try:
-                    for _ in range(0, 3):
+                    for _ in range(0, 5):
                         exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
                         if exitcode == 0:
                             LocalMachine.FileHandler.remove('.if_mode', ignore=True)
                             workdir_handler.popd()
                             return True
                         else:
-                            self.console("ERROR [{}] {}\n{}".format(exitcode, stdout, stderr))
-                            time.sleep(1.5)
+                            self.console("[INFO] [{}] {}\n{}".format(exitcode, stdout, stderr))
+                            time.sleep(2)
                     state = False
                 except Exception as e:
                     self.console("Create lock/unlock failed: {}".format(e))
                     state = False
+                self.console("[ERROR] Create lock/unlock failed: {}".format(e))
                 # Cleanup lock file: .if_mode + restore path
                 LocalMachine.FileHandler.remove('.if_mode', ignore=True)
                 workdir_handler.popd()

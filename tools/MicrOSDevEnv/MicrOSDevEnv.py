@@ -844,6 +844,13 @@ class MicrOSDevTool:
         self.console("  Repo version: {}".format(repo_version), state='OK')
         self.console("  WebRepl password: {}".format(webrepl_password), state='OK')
 
+        # Check: Restrict micrOS update in case of light version on this branch (master) -> esp8266
+        if 'light' in str(device_version):
+            self.console("[SKIP UPDATE]\n\tmicrOS Light version detected - not supported scenario - restriction\
+                         \n\t- use git lightweight branch for update, instead of master branch ...")
+            self.console("Bye")
+            return False
+
         if device_version == repo_version:
             if not force:
                 self.console(

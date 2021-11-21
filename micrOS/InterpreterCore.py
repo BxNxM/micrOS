@@ -16,11 +16,7 @@ from sys import modules
 from Debug import console_write, errlog_add
 from json import dumps
 from micropython import schedule
-try:
-    from BgJob import BgTask
-except Exception as e:
-    console_write('BgJob - thread support failed: {}'.format(e))
-    BgTask = None
+from BgJob import BgTask
 
 #################################################################
 #               Interpreter shell CORE executor                 #
@@ -38,9 +34,6 @@ def startBgJob(argument_list, msg):
     is_thrd = argument_list[-1].strip()
     # Run OneShot job by default
     if '&' in is_thrd:
-        if BgTask is None:
-            msg('[BgJob] Inactive...')
-            return True
         # delete from argument list - handled argument ...
         del argument_list[-1]
         # Get thread wait in sec
@@ -166,11 +159,9 @@ def exec_lm_shell(argument_list, msgobj=None):
     if state:
         return True
     # @2 Run simple task / main option from console
-    # |- Thread locking NOT available
-    if BgTask is None:
-        return exec_lm_core(argument_list, msgobj=cwr)
-    # |- Thread locking available
+    # |- Thread locking
     with BgTask.singleton(main_lm=argument_list[0]):
+        # exec
         state = exec_lm_core(argument_list, msgobj=cwr)
     return state
 

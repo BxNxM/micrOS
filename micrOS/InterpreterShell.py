@@ -14,11 +14,7 @@ Designed by Marcell Ban aka BxNxM
 from os import listdir
 from ConfigHandler import cfgget, cfgput
 from InterpreterCore import exec_lm_shell
-try:
-    from BgJob import BgTask
-    from json import dumps
-except:
-    BgTask = None
+from BgJob import BgTask
 
 try:
     from gc import collect, mem_free
@@ -98,18 +94,12 @@ def __shell(msg, sso):
     # EXECUTE:
     # @1 Configure mode
     if sso.configure_mode and len(msg_list) > 0:
-        # Config handling without thread locking
-        if BgTask is None:
-            return __configure(msg_list, sso)
         # Lock thread under config handling is threads available
         with BgTask.singleton():
             s = __configure(msg_list, sso)
         return s
     # @2 Background job shell commands
     if msg_list[0] == 'bgjob' and len(msg_list) > 1:
-        if BgTask.singleton() is None:
-            sso.reply_message('[BgJob] Inactive...')
-            return True
         # Handle bgjob stop
         if msg_list[1] == 'stop':
             sso.reply_message(BgTask.singleton().stop())

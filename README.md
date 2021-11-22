@@ -206,7 +206,7 @@ Create custom Load Modules (LMs)
 		- Stop thread: `bgjob stop`
 		- Show thread ouput and status: `bgjob show` 
 - **[L]ogical [P]inout** handling - lookuptables for each board
-	- Predefined pinout modules for esp32, tinyPico, esp8266
+	- Predefined pinout modules for esp32, tinyPico
 	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
 	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
 
@@ -241,18 +241,15 @@ LogicalPin lookup tables:
 
 - [tinypico](./micrOS/LP_tinypico.py)
 - [esp32](./micrOS/LP_esp32.py)
-- [esp8266](./micrOS/LP_esp8266.py)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
-![MicrOSESP8266pinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
+![MicrOStinyPicopinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
 
 GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 
-![MicrOSESP8266pinout](./media/NodeMCUPinOutESP32.png?raw=true)
-
-![MicrOSESP8266pinout](./media/NodeMCUPinOutESP8266.png?raw=true)
+![MicrOSESP23pinout](./media/NodeMCUPinOutESP32.png?raw=true)
 
 
 ----------------------------------------
@@ -278,6 +275,9 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 |  **v0.4.0-0** | [release_Info-0.4.0-0](./release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| 23 - 28 % (17250-20976byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.
 |  **v1.0.0-0** | [release_Info-1.0.0-0](./release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| 15 - 23 % (10394-15488byte) | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc. 
 |  **v1.2.2-0** | [release_Info-1.2.2-0](./release_info/micrOS_ReleaseInfo/release_1.2.2-0_note_esp32.md)|  10-25 % | esp32 | [App Profiles](./release_info/node_config_profiles) | [LM manual](./release_info/micrOS_ReleaseInfo/release_sfuncman_1.2.2-0.json)| Public Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA update, thread from socket shell (beta) etc.
+|  **v light-1.3.0-0** | None |  % | esp8266 | [lightweight branch](https://github.com/BxNxM/micrOS/tree/lightweight)| remove esp8266 due to memory limitation - BUT still supported with limited functionalities on **`lightweight`** branch. Hint: Change branch on github and download zip file, then start micrOSDevToolKit dashboard GUI
+|  **v 1.3.0-0** | None |  % | esp32, tinyPico | None | Refactor, IRQ callback scheduling (4 input), thread invocation over socket cli, cron - timed task scheduler, etc... :)
+
 
 
 ----------------------------------------
@@ -863,8 +863,6 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 - Create callgraph: [pycallgraph](http://pycallgraph.slowchop.com/en/master/)
 
 - Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`
-
-- Build micropython with frozen resources: https://github.com/micropython/micropython/tree/master/ports/esp8266
 
 - micrOS source code lines of code:
 

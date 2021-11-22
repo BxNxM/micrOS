@@ -54,7 +54,7 @@
   ],
   "robustness": [
     "raise_error <msgobj>=None",
-    "memory_leak measure=True <msgobj>=None",
+    "memory_leak cnt=160 <msgobj>=None",
     "recursion_limit cnt=14 <msgobj>=None",
     "help"
   ],

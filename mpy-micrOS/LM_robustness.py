@@ -23,7 +23,7 @@ def memory_leak(cnt=160, msgobj=None):
             msgobj("[{}] generate data: {}".format(k, data))
         dict_test[k] = data
     mem_end = mem_free()
-    delta = mem_start - mem_end
+    delta = mem_end - mem_start
     return '[{}] RAM Allocation: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024))
 
 

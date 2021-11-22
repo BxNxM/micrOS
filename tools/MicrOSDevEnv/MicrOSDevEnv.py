@@ -847,6 +847,11 @@ class MicrOSDevTool:
         self.console("  Repo version: {}".format(repo_version), state='OK')
         self.console("  WebRepl password: {}".format(webrepl_password), state='OK')
 
+        if 'light' is device_version:
+            device_version = device_version.replace('light-', '')
+        else:
+            self.console("WARNING: updating non light version to light version!!!")
+
         if device_version == repo_version:
             if not force:
                 self.console(

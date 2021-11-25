@@ -1,20 +1,25 @@
 # ![LOGO](./media/logo_mini.png?raw=true) micrOS
 
-### micropython based IoT framework for wifi capable arm based microcontrollers and much more...
+### micropython based smart edge IoT platform
+
+`#telnet #wifi #esp32 #ota #GPIO #RTC/NTP #AP/STA #IRQ #thread #cron`
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
-✉️ 📡 Generic communication API (expose module functions) <br/>
+✉️ 📡 Generic communication API (expose module functions - telnet) <br/>
 ⚙️ 📝 Device initialization from user config <br/>
 📲 💻 Communication over WiFi: application calls and configuration <br/>
 🧩  Codeless end user experience via phone client <br/>
 🚪 No external server or service required <br/>
 ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
 🛠 Easy to customize, create your own Load Modules: <br/>
-Just write and copy **LM_** your_app **.py** python script to your device and call any function.<br/>
+	1. Write **LM_`<your_app>`.py** <br/>
+	2. Copy (OTA/USB) python script to your device <br/>
+	3. Call any function your `<your_app>` module <br/>
 🦾 Built-in scheduling (IRQ):<br/>
-- Time stamp based <br/>
-- Simple periodic <br/>
+	- Time stamp based <br/>
+	- Simple periodic <br/>
+	- Thread <br/>
 
 🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
 
@@ -41,22 +46,17 @@ Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/
 [![PlayStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
 
 ----------------------------------------
+----------------------------------------
 
 ## Installing micrOS with DevToolKit from macOS / Windows / Linux
 
-That repo not only contains the micrOS core codes provide several tools like
+End-to-End solution for deploy, update, monitor and develop micrOS boards.
 
-- Install new device via USB
-- Device scan
-- OTA updates (over wifi)
-- Host side python app execution with device communication
-- etc.
+I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you need.
 
-> Note: The main purpose to install micropython on the board and put all micrOS resources from micrOS/mpy-MicrOS to the board.
+> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources (precompiled) from micrOS/mpy-MicrOS to the board.
 
 ### 1. Clone **micrOS** repo:
-
-Contains code for the supported boards for installation, the development, deployment and server tools, all written in python.
 
 > Note: Install git manually for Windows before this step
 
@@ -87,9 +87,9 @@ micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
 micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
 ```
 
-### 4. ONLY ON WINDOWNS: Special dependencies
+### *4. ONLY ON WINDOWNS: Special dependencies*
 
-You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt)
+*You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt)*
 
 [C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)
 
@@ -97,16 +97,20 @@ You will need **C++ compiler** to able to install all python pip dependencies (d
 
 It will open a graphical user interface for micrOS device management.
 
-```
-python3 micrOS/devToolKit.py
-```
+`python3 ./micrOS/devToolKit.py`
+
+or
+
+`./micrOS/devToolKit.py`
+
 
 - Verified OS list for development and deployment:
 	- macOS
 	- Raspbian (pyQT5 limitation)
 	- Windows
 
-	
+![MICROSVISUALIZATION](./media/micrOSToolkit.gif?raw=true)
+
 - Example
 
 ```
@@ -115,9 +119,7 @@ python3 micrOS/devToolKit.py
 3. Click on [Deploy (USB)] button
 ```
 
-It will install your board via USB with default settings. Continue with your mobile app...  
-
-![MICROSVISUALIZATION](./media/micrOSToolkit.gif?raw=true)
+It will install your board via USB with default settings. **Continue with micrOS Client app...**
 
 ----------------------------------------
 
@@ -162,7 +164,29 @@ Create custom Load Modules (LMs)
 
 ![MICROSVISUALIZATION](./media/micrOS.gif?raw=true)
 
->Note: **Python Socket Client** for application development also available besides smartphone application (example below).
+>Note: micrOS development kit contains command line interface for socket communication. Example: `./devToolKit.py --connect`
+
+```
+[i]         FUID        IP               UID
+[0] Device: __device_on_AP__ - 192.168.4.1 - __devuid__
+[1] Device: __simulator__ - 127.0.0.1 - __localhost__
+[2] Device: BedLamp - 192.168.1.90 - micrf008d1d2ac30OS
+[3] Device: ImpiGamePro - 192.168.1.159 - micr240ac45861c8OS
+Choose a device index: 2
+Device IP was set: 192.168.1.90
+BedLamp $  hello
+hello:BedLamp:micrf008d1d2ac30OS
+BedLamp $  neopixel neopixel 100 10 10
+NEOPIXEL SET TO R100G10B10
+BedLamp $  neopixel help
+ neopixel r=<0-255> g b smooth=True force=True,
+ toggle state=None smooth=True,
+ load_n_init ledcnt=24,
+ segment r, g, b, s=<0-n>,
+ set_transition r=<0-255> g b sec,
+ run_transition,
+ pinmap,
+```
 
 
 ----------------------------------------
@@ -176,8 +200,7 @@ Create custom Load Modules (LMs)
 - **[L]oad [M]odule** aka **application** handling
 	- Lot of built-in functions
 	- Create your own module with 2 easy steps
-		- Create a file in `MicrOS` folder like: `LM_<your_app_name>.py`
-		- Copy your py file to the board `devToolKit.py -m` or `devToolKit.py -i` or `ampy
+		- Create a file in `micrOS` folder like: `LM_<your_app_name>.py`
 - **Boot phase** handling - preload Load Module(s) - pinout initialization from node_config
 - **Network handling** - based on node_config 
 	- STA / AP
@@ -187,6 +210,7 @@ Create custom Load Modules (LMs)
 	- **System commands**: `help, version, reboot, webrepl, etc.`
 		- webrepl <--> micrOS interface switch  
 	- **Config(*)** SET/GET/DUMP
+		- `conf` and `noconf` 
 	- **LM** - Load Module function execution (application modules)
 - **Scheduling / External events** - Interrupt callback - based on node_config 
 	- Time based

@@ -26,7 +26,7 @@
 ## ◉ Shortcuts:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#micrOS-Client-Application)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS#installing-micros-with-devtoolkit-from-macos--windows--linux)
-3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-tutorial)
+3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 5. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 

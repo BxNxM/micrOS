@@ -1,4 +1,6 @@
+from utime import localtime
 from Common import socket_stream
+from Network import set_ntp_rtc
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 
@@ -37,7 +39,6 @@ def heartbeat():
 
 
 def clock():
-    from utime import localtime
     buff = [str(k) for k in localtime()]
     return "{}  {}\nWD: {} YD: {}".format('.'.join(buff[0:3]), ':'.join(buff[3:6]), buff[6], buff[7])
 
@@ -46,22 +47,13 @@ def ntp():
     """
     Set NTP manually
     """
+    state = False
     try:
-        from utime import localtime, time
-        from ntptime import settime
-        from machine import RTC
-        from ConfigHandler import cfgget
-
-        # Sync with NTP server
-        settime()
-        # Get localtime + GMT
-        (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfgget('gmttime')) * 3600)
-        # Create RealTimeClock + Set RTC with time (+timezone)
-        RTC().datetime((year, month, mday, 0, hour, minute, second, 0))
-        # Print time
-        return localtime()
+        # Automatic setup - over wifi - ntp
+        state = set_ntp_rtc()
+        return state, localtime()
     except Exception as e:
-        return "NTP time errer.:{}".format(e)
+        return state, "ntp errer:{}".format(e)
 
 
 def module(unload=None):

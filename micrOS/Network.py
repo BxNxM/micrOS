@@ -12,7 +12,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from utime import sleep, localtime, time
+from utime import sleep_ms, localtime, time
 from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from ntptime import settime
@@ -25,7 +25,22 @@ from Debug import console_write, errlog_add
 #################################################################
 
 
-def setNTP_RTC():
+def set_ntp_rtc():
+    """
+    :param tstamp: time stamp - optional parameter:
+                                (year, month, mday, hour, minute, second)
+    :return: verdict
+    """
+
+    def __set_rtc(year, month, mday, hour, minute, second):
+        # https://docs.micropython.org/en/latest/library/machine.RTC.html
+        # Create RealTimeClock
+        rtc = RTC()
+        rtc.datetime((year, month, mday, 0, hour, minute, second, 0))
+        # Print time
+        console_write("RTC setup DONE: {} - {}".format(localtime(), rtc.datetime()))
+        return rtc
+
     err = ''
     if WLAN(STA_IF).isconnected():
         for _ in range(8 if cfgget('cron') else 4):
@@ -34,19 +49,16 @@ def setNTP_RTC():
                 settime()
                 # Get localtime + GMT
                 (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfgget('gmttime'))*3600)
-                # Create RealTimeClock + Set RTC with time (+timezone)
-                RTC().datetime((year, month, mday, 0, hour, minute, second, 0))
-                # Print time
-                console_write("NTP setup DONE: {}".format(localtime()))
+                __set_rtc(year, month, mday, hour, minute, second)
                 return True
             except Exception as e:
-                console_write("NTP setup errer.:{}".format(e))
+                console_write("set_ntp_rtc errer.:{}".format(e))
                 err = e
-            sleep(0.5)
+            sleep_ms(400)
     else:
-        console_write("NTP setup errer: STA not connected!")
-        errlog_add("setNTP_RTC errer: STA not connected!")
-    errlog_add("setNTP_RTC error: {}".format(err))
+        console_write("set_ntp_rtc warning: STA not connected!")
+        errlog_add("set_ntp_rtc errer: STA not connected!")
+    errlog_add("set_ntp_rtc error: {}".format(err))
     return False
 
 #################################################################
@@ -78,7 +90,7 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
             if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
                 console_write('\t| - [NW: STA] ESSID WAS FOUND: {}'.format(essid))
                 return essid, str(raw_pwd.split(';')[idx]).strip()
-            sleep(1)
+            sleep_ms(1000)
     return None, ''
 
 
@@ -107,7 +119,7 @@ def set_wifi(essid, pwd, timeout=40):
             while not sta_if.isconnected() and timeout > 0:
                 console_write("\t| [NW: STA] Waiting for connection... {} sec".format(timeout))
                 timeout -= 1
-                sleep(1)
+                sleep_ms(500)
             # Set static IP - here because some data comes from connection.
             if sta_if.isconnected() and __set_wifi_dev_static_ip(sta_if):
                 sta_if.disconnect()
@@ -189,7 +201,7 @@ def auto_network_configuration():
             # Save STA NW mode
             cfgput("nwmd", "STA")
             # Set NTP - RTC
-            setNTP_RTC()
+            set_ntp_rtc()
             # BREAK - STA mode successfully  configures
             break
         # SET AP MODE

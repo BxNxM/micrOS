@@ -886,33 +886,73 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`
 
-- micrOS source code lines of code:
+- **micrOS core source code** lines:
 
 ```bash
 Ferenc@Bans-MBP:micrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
-      65	BgJob.py
-     154	BleHandler.py           -> beta code
-      17	Common.py               -> decorators for LMs
-     232	ConfigHandler.py
-      53	Hooks.py
+     111	BgJob.py
+     154	BleHandler.py	       -> beta code
+      70	Common.py           -> Common functions/decorators for LMs
+     212	ConfigHandler.py
+     102	Debug.py				-> FSCO (TODO)
+      54	Hooks.py
       42	InterConnect.py
-      83	InterpreterCore.py
-     180	InterpreterShell.py
-     111	InterruptHandler.py
-      37	LP_esp32.py
-      21	LP_esp8266.py
-      54	LP_tinypico.py
-      41	LmExecCore.py
-      28	LogicalPins.py
-     168	Network.py              -> FSCO (ForceCoreOTA update)
-     124	Scheduler.py
-     283	SocketServer.py
+     164	InterpreterCore.py
+     199	InterpreterShell.py
+     119	InterruptHandler.py
+      43	LP_esp32.py
+      55	LP_tinypico.py
+      44	LogicalPins.py
+     185	Network.py          -> FSCO (ForceCoreOTA update)
+     130	Scheduler.py
+     291	SocketServer.py
       24	TinyPLed.py
-      16	boot.py                 -> FSCO
-      54	micrOS.py
-     101	micrOSloader.py         -> FSCO
-       5	reset.py                -> only used for webrepl manual reset
-SUM OF CODE LINES: 1893
+      19	boot.py             -> FSCO
+      60	micrOS.py
+     110	micrOSloader.py     -> FSCO
+       5	reset.py            -> only used for webrepl manual reset
+SUM OF CODE LINES: 2193
+```
+
+- **micrOS Load Module-s** (application-s) source code lines:
+
+
+```
+bnm@Bans-MacBook-Pro:micrOS$ core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
+      59	LM_L298N_DCmotor.py
+      37	LM_L9110_DCmotor.py
+     310	LM_VL53L0X.py
+      27	LM_bledns.py
+     273	LM_bme280.py
+     194	LM_buzzer.py
+      24	LM_catgame.py
+     176	LM_cct.py
+     103	LM_co2.py
+      32	LM_dht11.py
+      32	LM_dht22.py
+      89	LM_dimmer.py
+      57	LM_distance_HCSR04.py
+      36	LM_ds18.py
+      24	LM_esp32.py
+      67	LM_genIO.py
+      19	LM_i2c.py
+      16	LM_intercon.py
+      55	LM_light_sensor.py
+     108	LM_neoeffects.py
+     205	LM_neopixel.py
+     161	LM_oled.py
+     169	LM_oled_ui.py
+      30	LM_pet_feeder.py
+      50	LM_ph_sensor.py
+     197	LM_rgb.py
+     154	LM_roboarm.py
+      40	LM_robustness.py
+      89	LM_servo.py
+     110	LM_stepper.py
+     179	LM_switch.py
+     140	LM_system.py
+      60	LM_tinyrgb.py
+SUM OF CODE LINES: 3322
 ```
 
 GIT:

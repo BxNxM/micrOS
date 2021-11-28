@@ -106,6 +106,8 @@ def set_wifi(essid, pwd, timeout=40):
     # Set STA and Connect
     sta_if = WLAN(STA_IF)
     sta_if.active(True)
+    # Set custom DHCP hostname
+    sta_if.config(dhcp_hostname=cfgget('devfid'))
     if not sta_if.isconnected():
         # Multiple essid and pwd handling with retry mechanism
         essid, pwd = __select_available_wifi_nw(sta_if, essid, pwd)

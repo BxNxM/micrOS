@@ -67,7 +67,7 @@ class Data:
         Data.__inject_default_conf()
         # [!!!] Init selected pinmap - default pinmap calculated by platform
         pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
-        console_write("PIN MAP: {}".format(pinmap))
+        console_write("[PIN MAP] {}".format(pinmap))
         # Configure dbg and pled Debug module functions
         if not Data.CONFIG_CACHE['dbg']: console_write("[micrOS] debug print was turned off")
         DebugCfg.DEBUG = cfgget('dbg')
@@ -90,13 +90,13 @@ class Data:
         # Merge template to live conf
         Data.CONFIG_CACHE.update(liveconf)
         # Run conf injection and store
-        console_write("[CONFIGHANDLER] inject config ...")  # Data.CONFIG_CACHE
+        console_write("[CONFIGHANDLER] Inject user config ...")  # Data.CONFIG_CACHE
         try:
             # [LOOP] Only returns True
             Data.write_cfg_file()
-            console_write("[CONFIGHANDLER] Inject default conf struct successful")
+            console_write("[CONFIGHANDLER] Save conf struct successful")
         except Exception as e:
-            console_write("[CONFIGHANDLER] Inject default conf struct failed: {}".format(e))
+            console_write("[CONFIGHANDLER] Save conf struct failed: {}".format(e))
             errlog_add('__inject_default_conf error: {}'.format(e))
         finally:
             del liveconf

@@ -7,6 +7,8 @@ import socket
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
+sys.path.append(os.path.join(MYPATH, '../tools/MicrOSDevEnv'))
+from TerminalColors import Colors
 
 # FILL OUT
 DEVICE = '__simulator__'
@@ -257,7 +259,11 @@ def check_device_by_hostname(dev):
     devlocal = '{}.local'.format(dev)
     info_msg = '[ST] Check host {} and resolve IP'.format(devlocal)
     print(info_msg)
-    ip = socket.gethostbyname(devlocal)
+    try:
+        ip = socket.gethostbyname(devlocal)
+    except Exception as e:
+        ip = None
+        return False, '{}: {} error: {}'.format(info_msg, ip, e)
     if '.' in ip:
         return True, '{}: {}'.format(info_msg, ip)
     return False, '{}: {}'.format(info_msg, ip)
@@ -289,9 +295,9 @@ def app(devfid=None):
     print("\n----------------------------------- micrOS System Test results -----------------------------------")
     print("\tTEST NAME\t\tSTATE\t\tDescription\n")
     for test, state_data in verdict.items():
-        state = 'NOK'
+        state = Colors.ERR + 'NOK' + Colors.NC
         if state_data[0]:
-            state = 'OK'
+            state = Colors.OK + 'OK' + Colors.NC
             ok_cnt += 1
         print(f"\t{test}:\t\t{state}\t\t[i]{state_data[1]}")
         final_state &= state_data[0]
@@ -300,7 +306,8 @@ def app(devfid=None):
     pass_rate = round((ok_cnt/len(verdict.keys())*100), 1)
     print(f"\nPASS RATE: {pass_rate} %")
     state = 'OK' if final_state else 'NOK'
-    print(f"RESULT: {state}")
+    colorful_state = Colors.OK + state + Colors.NC if state == 'OK' else Colors.WARN + state + Colors.NC
+    print(f"RESULT: {colorful_state}")
     print("--------------------------------------------------------------------------------------\n")
     oled_msg_end_result(f"System[{state}] {pass_rate}")
 

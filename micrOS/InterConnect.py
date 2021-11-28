@@ -1,16 +1,36 @@
 import socket
 import select
+import re
 from time import sleep
+from Debug import errlog_add
+from ConfigHandler import cfgget
+from SocketServer import SocketServer
 
 
-def send_cmd(host, port, cmd):
-    print("[INTERCON] {} -> {}:{}".format(cmd, host, port))
-    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    conn.settimeout(0.2)
-    conn.connect((host, port))
-    output = __run_command(conn, cmd)
-    __close_connection(conn)
-    return output
+def validate_ipv4(str_in):
+    pattern = "^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+    if bool(re.match(pattern, str_in)):
+        return True
+    return False
+
+
+def send_cmd(host, cmd):
+    port = cfgget('socport')
+    if not validate_ipv4(host):
+        host = socket.getaddrinfo(host, port)[-1][4][0]
+    if validate_ipv4(host):
+        # Socket reply msg
+        SocketServer().reply_message("[INTERCON] {} -> {}:{}".format(cmd, host, port))
+        # Send CMD
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        conn.settimeout(5)
+        conn.connect((host, port))
+        output = __run_command(conn, cmd)
+        __close_connection(conn)
+        return output
+    else:
+        errlog_add("[INTERCON] Invalid host: {}".format(host))
+        return None
 
 
 def __run_command(conn, cmd):
@@ -18,7 +38,7 @@ def __run_command(conn, cmd):
     conn.send(cmd)
     data = __receive_data(conn)
     if data == '\0':
-        print('intercon conn exiting...')
+        # print('[INTERCON] exiting...')
         __close_connection(conn)
         return None
     return data

@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import socket
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(MYPATH, '../tools'))
 import socketClient
@@ -252,6 +253,16 @@ def oled_msg_end_result(result):
         print(execute(cmd_list))
 
 
+def check_device_by_hostname(dev):
+    devlocal = '{}.local'.format(dev)
+    info_msg = '[ST] Check host {} and resolve IP'.format(devlocal)
+    print(info_msg)
+    ip = socket.gethostbyname(devlocal)
+    if '.' in ip:
+        return True, '{}: {}'.format(info_msg, ip)
+    return False, '{}: {}'.format(info_msg, ip)
+
+
 def app(devfid=None):
     global DEVICE
     if devfid is not None:
@@ -268,6 +279,7 @@ def app(devfid=None):
                'json_check': json_format_check(),
                'reponse time': measure_package_response_time(),
                'negative_api': negative_interface_check(),
+               'dhcp_hostname': check_device_by_hostname(DEVICE),
                'micros_alarms': micros_alarm_check()
                }
 

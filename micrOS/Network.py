@@ -8,6 +8,8 @@ dedicated to micrOS framework.
 - network status expose to config
 
 Designed by Marcell Ban aka BxNxM
+
+https://docs.micropython.org/en/latest/library/network.html
 """
 #################################################################
 #                           IMPORTS                             #
@@ -42,6 +44,7 @@ def set_ntp_rtc():
         return rtc
 
     err = ''
+    # Set if micrOS in STA mode
     if WLAN(STA_IF).isconnected():
         for _ in range(8 if cfgget('cron') else 4):
             try:
@@ -108,6 +111,7 @@ def set_wifi(essid, pwd, timeout=40):
     sta_if.active(True)
     # Set custom DHCP hostname
     sta_if.config(dhcp_hostname=cfgget('devfid'))
+    # Check are we already connected
     if not sta_if.isconnected():
         # Multiple essid and pwd handling with retry mechanism
         essid, pwd = __select_available_wifi_nw(sta_if, essid, pwd)
@@ -122,7 +126,7 @@ def set_wifi(essid, pwd, timeout=40):
                 console_write("\t| [NW: STA] Waiting for connection... {} sec".format(timeout))
                 timeout -= 1
                 sleep_ms(500)
-            # Set static IP - here because some data comes from connection.
+            # Set static IP - here because some data comes from connection. (subnet, etc.)
             if sta_if.isconnected() and __set_wifi_dev_static_ip(sta_if):
                 sta_if.disconnect()
                 del sta_if
@@ -146,8 +150,8 @@ def __set_wifi_dev_static_ip(sta_if):
         conn_ips = list(sta_if.ifconfig())
         # Check ip type before change, conn_ip structure: 10.0.1.X
         if conn_ips[0] != stored_ip and conn_ips[-1].split('.')[0:3] == stored_ip.split('.')[0:3]:
+            console_write("\t| [NW: STA] micrOS dev. StaticIP request: {}".format(stored_ip))
             conn_ips[0] = stored_ip
-            console_write("\t| [NW: STA] DEV. StaticIP: {}".format(stored_ip))
             try:
                 # IP address, subnet mask, gateway and DNS server
                 sta_if.ifconfig(tuple(conn_ips))

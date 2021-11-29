@@ -137,13 +137,12 @@ def ha_sta():
     Check and repair STA network mode
     """
     from ConfigHandler import cfgget
-    if cfgget('nwmd') == 'STA':
-        from network import STA_IF, WLAN
-        # Set STA and Connect
-        if not WLAN(STA_IF).isconnected():
-            # Soft reset micropython VM - fast recovery
-            from machine import soft_reset
-            soft_reset()
+    from network import STA_IF, WLAN
+    # Set STA and Connect
+    if cfgget('nwmd') == 'AP' or not WLAN(STA_IF).isconnected():
+        # Soft reset micropython VM - fast recovery
+        from machine import soft_reset
+        soft_reset()
     return '{} mode, OK'.format(cfgget('nwmd'))
 
 

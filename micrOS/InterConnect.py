@@ -16,11 +16,13 @@ def validate_ipv4(str_in):
 
 def send_cmd(host, cmd):
     port = cfgget('socport')
+    hostname = None
     if not validate_ipv4(host):
+        hostname = host
         host = socket.getaddrinfo(host, port)[-1][4][0]
     if validate_ipv4(host):
         # Socket reply msg
-        SocketServer().reply_message("[INTERCON] {} -> {}:{}".format(cmd, host, port))
+        SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, port))
         # Send CMD
         conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         conn.settimeout(5)

@@ -97,7 +97,7 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
     return None, ''
 
 
-def set_wifi(essid, pwd, timeout=40):
+def set_wifi(essid, pwd, timeout=50):
     console_write('[NW: STA] SET WIFI STA NW {}'.format(essid))
 
     # Disable AP mode

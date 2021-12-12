@@ -174,7 +174,7 @@ def status(lmf=None):
 
 
 def lmdep():
-    return 'LM_servo', 'LM_switch'
+    return 'servo', 'switch'
 
 
 def help():

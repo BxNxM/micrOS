@@ -123,7 +123,7 @@ def rainbow(step=15, br=100, ledcnt=24):
 #######################
 
 def lmdep():
-    return 'LM_neopixel'
+    return 'neopixel'
 
 
 def help():

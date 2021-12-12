@@ -319,7 +319,7 @@ def measure_w_co2():
 #######################
 
 def lmdep():
-    return 'LM_co2'
+    return 'co2'
 
 
 def pinmap():

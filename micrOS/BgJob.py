@@ -1,12 +1,12 @@
 import _thread
 from utime import sleep
+from sys import modules
 
 
 class BgTask:
     singleton_instance = None
-    lm_exec_callback = None
 
-    def __init__(self, exec_lm_core=None):
+    def __init__(self):
         """
         Singleton design pattern
         __new__ - Customize the instance creation
@@ -20,19 +20,15 @@ class BgTask:
         self.__ret = ''
         self.__taskid = (0, 'none')
         self.main_lm = None
-        if exec_lm_core is not None:
-            BgTask.lm_exec_callback = exec_lm_core
 
     @staticmethod
-    def singleton(exec_lm_core=None, main_lm=None):
+    def singleton(main_lm=None):
         # Instantiate BgTask if not exists
         if BgTask.singleton_instance is None:
             BgTask.singleton_instance = BgTask()
         # Store requested main load module for collision check
         BgTask.singleton_instance.main_lm = main_lm if isinstance(main_lm, str) else None
         # Store lm executor callback
-        if exec_lm_core is not None:
-            BgTask.lm_exec_callback = exec_lm_core
         return BgTask.singleton_instance
 
     def __enter__(self):
@@ -75,7 +71,7 @@ class BgTask:
             # Set worker lock
             self.__mutex.acquire()
             # RUN CALLBACK
-            call_return = BgTask.lm_exec_callback(arglist, msgobj=self.msg)
+            call_return = self.exec_lm_core(arglist)
             self.__ret = '{} [{}]'.format(self.__ret, call_return)
             self.__mutex.release()
             # Exit thread
@@ -109,6 +105,44 @@ class BgTask:
 
     def info(self):
         return {'isbusy': self.__exit.locked(), 'taskid': self.__taskid, 'out': self.__ret}
+
+    def exec_lm_core(self, arg_list):
+        """
+        [DUPLICATE] simplified copy of InterpreterCore.exec_lm_core
+        MAIN FUNCTION TO RUN STRING MODULE.FUNCTION EXECUTIONS
+        [1] module name (LM)
+        [2] function
+        [3...] parameters (separator: space)
+        NOTE: msgobj - must be a function with one input param (stdout/file/stream)
+        """
+        # Check json mode for LM execution - skip mode
+        if arg_list[-1] == '>json':
+            del arg_list[-1]
+        # LoadModule execution
+        if len(arg_list) >= 2:
+            lm_mod, lm_func, lm_params = "LM_{}".format(arg_list[0]), arg_list[1], ', '.join(arg_list[2:])
+            try:
+                # --- LM LOAD & EXECUTE --- #
+                # [1] LOAD MODULE
+                exec("import {}".format(lm_mod))
+                # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
+                lm_output = eval("{}.{}({})".format(lm_mod, lm_func, lm_params))
+                # Return LM exec result via msgobj
+                self.msg(str(lm_output))
+                return True
+                # ------------------------- #
+            except Exception as e:
+                self.msg("exec_lm_core {}->{}: {}".format(lm_mod, lm_func, e))
+                if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
+                    # UNLOAD MODULE IF MEMORY ERROR HAPPENED
+                    if lm_mod in modules.keys():
+                        del modules[lm_mod]
+                    # Exec FAIL -> recovery action in SocketServer
+                    return False
+        self.msg("SHELL: type help for single word commands (built-in)")
+        self.msg("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
+        # Exec OK
+        return True
 
 
 """

@@ -198,7 +198,7 @@ def msgbox(msg='micrOS msg'):
 
 
 def lmdep():
-    return 'LM_oled'
+    return 'oled'
 
 
 def help():

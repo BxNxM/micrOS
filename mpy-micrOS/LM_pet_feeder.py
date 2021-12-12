@@ -31,7 +31,7 @@ def portion_new(count=1, forward=135, back=10):
 
 
 def lmdep():
-    return 'LM_servo', 'LM_stepper'
+    return 'servo', 'stepper'
 
 
 def help():

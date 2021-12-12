@@ -28,7 +28,7 @@ def stop():
 #######################
 
 def lmdep():
-    return 'LM_servo'
+    return 'servo'
 
 
 def help():

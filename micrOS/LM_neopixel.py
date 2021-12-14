@@ -123,7 +123,7 @@ def neopixel(r=None, g=None, b=None, smooth=True, force=True):
     else:
         Data.DCACHE[3] = 0                                 # State - False - OFF
     __persistent_cache_manager('s')                        # Save cache - Data.DCACHE -  to file
-    return "NEOPIXEL SET TO R{}G{}B{}".format(r, g, b)
+    return status()
 
 
 def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
@@ -144,7 +144,7 @@ def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
                 Data.DCACHE[3] = 0
             __persistent_cache_manager('s')  # Save cache - Data.DCACHE -  to file
 
-        return "NEOPIXEL[{}] R{}G{}B{}".format(s, r, g, b)
+        return status()
     return "NEOPIXEL index error: {} > {}".format(s, neo_n)
 
 
@@ -159,16 +159,16 @@ def toggle(state=None, smooth=True):
         Data.DCACHE[3] = 0 if state else 1
     if Data.DCACHE[3] == 1:
         neopixel(r=0, g=0, b=0, smooth=smooth, force=False)
-        return "OFF"
+        return status()
     # Turn ON with smooth "hack"
     if smooth:
         r, g, b = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]
         Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2] = 0, 0, 0
         neopixel(r, g, b, force=False)
-        return "ON"
+        return status()
     # Turn ON without smooth
     neopixel(force=False)
-    return "ON"
+    return status()
 
 
 def set_transition(r, g, b, sec):
@@ -221,7 +221,8 @@ def run_transition():
 
 def status(lmf=None):
     # Neopixel(=RGB) dedicated widget input - [OK]
-    return {'R': Data.DCACHE[0], 'G': Data.DCACHE[1], 'B': Data.DCACHE[2], 'S': Data.DCACHE[3]}
+    data = Data.DCACHE
+    return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
 
 
 def pinmap():

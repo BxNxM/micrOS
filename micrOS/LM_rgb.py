@@ -128,7 +128,7 @@ def rgb(r=None, g=None, b=None, smooth=True, force=True):
         Data.RGB_CACHE[3] = 0
     # Save state machine (cache)
     __persistent_cache_manager('s')
-    return "SET rgb: R{}G{}B{}".format(r, g, b)
+    return status()
 
 
 def toggle(state=None, smooth=True):
@@ -144,16 +144,16 @@ def toggle(state=None, smooth=True):
     # Set OFF state
     if Data.RGB_CACHE[3]:
         rgb(0, 0, 0, smooth=smooth, force=False)
-        return "OFF"
+        return status()
     # Turn ON with smooth "hack"
     if smooth:
         r, g, b = Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2]
         Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2] = 0, 0, 0
         rgb(r, g, b, force=False)
-        return "ON"
+        return status()
     # Turn ON without smooth
     rgb(force=False)
-    return "ON"
+    return status()
 
 
 def set_transition(r, g, b, sec):
@@ -207,7 +207,8 @@ def run_transition():
 
 def status(lmf=None):
     # RGB dedicated widget input - [OK]
-    return {'R': Data.RGB_CACHE[0], 'G': Data.RGB_CACHE[1], 'B': Data.RGB_CACHE[2], 'S': Data.RGB_CACHE[3]}
+    data = Data.RGB_CACHE
+    return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
 
 
 def pinmap():

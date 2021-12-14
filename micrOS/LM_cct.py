@@ -115,7 +115,7 @@ def white(c=None, w=None, smooth=True, force=True):
         Data.CWWW_CACHE[2] = 0
     # Save config
     __persistent_cache_manager('s')
-    return "SET : CW{} WW{}".format(c, w)
+    return status()
 
 
 def toggle(state=None, smooth=True):
@@ -129,16 +129,16 @@ def toggle(state=None, smooth=True):
         Data.CWWW_CACHE[2] = 0 if state else 1
     if Data.CWWW_CACHE[2]:
         white(0, 0, smooth=smooth, force=False)
-        return "OFF"
+        return status()
     # Turn ON with smooth "hack"
     if smooth:
         cw, ww = Data.CWWW_CACHE[0], Data.CWWW_CACHE[1]
         Data.CWWW_CACHE[0], Data.CWWW_CACHE[1] = 0, 0
         white(cw, ww, force=False)
-        return "ON"
+        return status()
     # Turn ON without smooth
     white(force=False)
-    return "ON"
+    return status()
 
 
 def set_transition(cw, ww, sec):
@@ -185,7 +185,8 @@ def run_transition():
 #######################
 def status(lmf=None):
     # Cold White / Warm White dedicated widget input - [OK]
-    return {'CW': Data.CWWW_CACHE[0], 'WW': Data.CWWW_CACHE[1], 'S': Data.CWWW_CACHE[2]}
+    data = Data.CWWW_CACHE
+    return {'CW': data[0], 'WW': data[1], 'S': data[2]}
 
 
 def pinmap():

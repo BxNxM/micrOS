@@ -28,11 +28,11 @@ def app(devfid=None, test_cycle=32):
         ww = random.randint(0, 1000)
         # EDIT YOUR COMMAND
         if SMOOTH:
-            args = base_cmd() + ['cwwhite', 'white {} {} True'.format(cw, ww)]
+            args = base_cmd() + ['cct', 'white {} {} True >json'.format(cw, ww)]
         else:
-            args = base_cmd() + ['cwwhite', 'white {} {}'.format(cw, ww)]
+            args = base_cmd() + ['cct', 'white {} {} False >json'.format(cw, ww)]
         status, answer = socketClient.run(args)
-        if status == 0 or 'CW{} WW{}'.format(cw, ww) in answer:
+        if status == 0 or f'"CW": {cw}' in answer and f'"WW": {ww}' in answer:
             print("[OK][{}/{}][{}] {}".format(cycle, test_cycle, err_cnt, answer))
         else:
             print("[ERROR][{}/30][{}] {}".format(cycle, test_cycle, err_cnt, answer))

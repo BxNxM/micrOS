@@ -29,11 +29,11 @@ def app(devfid=None, test_cycle=32):
         blue = random.randint(0, 1000)
         # EDIT YOUR COMMAND
         if SMOOTH:
-            args = base_cmd() + ['rgb', 'rgb {} {} {} True'.format(red, green, blue)]
+            args = base_cmd() + ['rgb', 'rgb {} {} {} True >json'.format(red, green, blue)]
         else:
-            args = base_cmd() + ['rgb', 'rgb {} {} {}'.format(red, green, blue)]
+            args = base_cmd() + ['rgb', 'rgb {} {} {} False >json'.format(red, green, blue)]
         status, answer = socketClient.run(args)
-        if status == 0 or 'R{}G{}B{}'.format(red, green, blue) in answer:
+        if status == 0 or f'"R": {red}' in answer and f'"G": {green}' in answer and f'"B": {blue}' in answer:
             print("[OK][{}/{}][{}] {}".format(cycle, test_cycle, err_cnt, answer))
         else:
             print("[ERROR][{}/30][{}] {}".format(cycle, test_cycle, err_cnt, answer))

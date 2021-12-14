@@ -60,7 +60,7 @@ def set_value(value=None):
             __DIMMER_CACHE[1] = value    # SAVE VALUE TO CACHE
             __DIMMER_CACHE[0] = 1        # SAVE STATE TO CACHE
         __persistent_cache_manager('s')
-        return "SET DIMMER: {}".format(value)
+        return status()
     return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)
 
 
@@ -96,7 +96,8 @@ def toggle(state=None):
 
 def status(lmf=None):
     # Slider dedicated widget input - [OK]
-    return {'X': __DIMMER_CACHE[1], 'S': __DIMMER_CACHE[0]}
+    data = __DIMMER_CACHE
+    return {'X': data[1], 'S': data[0]}
 
 
 def pinmap():

@@ -21,14 +21,14 @@ def app(devfid=None, itr=80):
     # EDIT YOUR COMMAND
     cmd_list = []
     for k in range(0, itr, 2):
-        cmd_list += ['dimmer', 'set_value {}'.format(k), '<a>']
+        cmd_list += ['dimmer', 'set_value {} >json'.format(k), '<a>']
     if cmd_list[-1] == '<a>':
         del cmd_list[-1]
     execute(cmd_list)
 
     cmd_list = []
     for k in range(itr, 0, -2):
-        cmd_list += ['dimmer', 'set_value {}'.format(k), '<a>']
+        cmd_list += ['dimmer', 'set_value {} >json'.format(k), '<a>']
     if cmd_list[-1] == '<a>':
         del cmd_list[-1]
     execute(cmd_list)

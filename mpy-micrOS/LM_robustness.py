@@ -20,11 +20,11 @@ def memory_leak(cnt=160, msgobj=None):
         mem = mem_free()
         data = "micrOS memory: Free RAM: {} kB {} byte".format(int(mem / 1024), int(mem % 1024))
         if msgobj is not None:
-            msgobj("[{}] generate data: {}".format(k, data))
+            msgobj("[{}] gen: {}".format(k, data))
         dict_test[k] = data
     mem_end = mem_free()
-    delta = mem_end - mem_start
-    return '[{}] RAM Allocation: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024))
+    delta = mem_start - mem_end
+    return '[{}] RAM Alloc.: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024))
 
 
 @socket_stream

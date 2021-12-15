@@ -269,6 +269,40 @@ def check_device_by_hostname(dev):
     return False, '{}: {}'.format(info_msg, ip)
 
 
+def check_robustness_exception():
+    info_msg = '[ST] Check robustness - exception [robustness raise_error]'
+    print(info_msg)
+    cmd_list = ['robustness raise_error']
+    output = execute(cmd_list)
+    if output[0] and "exec_lm_core LM_robustness->raise_error: Test exception" in output[1]:
+        return True, f'{info_msg}: Valid error msg: exec_lm_core *->raise_error: *'
+    else:
+        return False, f'{info_msg}: {output}'
+
+
+def check_robustness_memory():
+    info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 20]'
+    print(info_msg)
+    cmd_list = ['robustness memory_leak 20']
+    output = execute(cmd_list)
+    if output[0] and "[20] RAM Alloc" in output[1]:
+        end_result = output[1].split("\n")[-1]
+        return True, f'{info_msg}: Mem alloc: {end_result}'
+    else:
+        return False, f'{info_msg}: {output}'
+
+
+def check_robustness_recursion():
+    info_msg = '[ST] Check robustness - recursion [robustness recursion_limit 5]'
+    print(info_msg)
+    cmd_list = ['robustness recursion_limit 5']
+    output = execute(cmd_list)
+    if output[0] and "0" in output[1].split("\n")[-1]:
+        return True, f'{info_msg}'
+    else:
+        return False, f'{info_msg}: {output}'
+
+
 def app(devfid=None):
     global DEVICE
     if devfid is not None:
@@ -286,13 +320,16 @@ def app(devfid=None):
                'reponse time': measure_package_response_time(),
                'negative_api': negative_interface_check(),
                'dhcp_hostname': check_device_by_hostname(DEVICE),
+               'lm_exception': check_robustness_exception(),
+               'mem_alloc': check_robustness_memory(),
+               'recursion': check_robustness_recursion(),
                'micros_alarms': micros_alarm_check()
                }
 
     # Test Evaluation
     final_state = True
     ok_cnt = 0
-    print("\n----------------------------------- micrOS System Test results -----------------------------------")
+    print(f"\n----------------------------------- micrOS System Test results on {DEVICE} device -----------------------------------")
     print("\tTEST NAME\t\tSTATE\t\tDescription\n")
     for test, state_data in verdict.items():
         state = Colors.ERR + 'NOK' + Colors.NC

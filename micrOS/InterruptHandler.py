@@ -31,7 +31,7 @@ if cfgget('cron'):
 
 
 def emergency_mbuff():
-    emergency_buff_kb = cfgget('irqmembuf')
+    emergency_buff_kb = 1000
     if cfgget('extirq') or cfgget("timirq"):
         from micropython import alloc_emergency_exception_buf
         console_write("[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={}".format(emergency_buff_kb))

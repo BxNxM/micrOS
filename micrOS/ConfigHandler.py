@@ -28,7 +28,6 @@ class Data:
                     "stapwd": "your_wifi_passwd",
                     "devfid": "node01",
                     "appwd": "ADmin123",
-                    "pled": True,
                     "dbg": True,
                     "nwmd": "n/a",
                     "hwuid": "n/a",
@@ -41,7 +40,6 @@ class Data:
                     "timirq": False,
                     "timirqcbf": "n/a",
                     "timirqseq": 1000,
-                    "irqmembuf": 1000,
                     "irq1": False,
                     "irq1_cbf": "n/a",
                     "irq1_trig": "n/a",
@@ -68,12 +66,15 @@ class Data:
         # [!!!] Init selected pinmap - default pinmap calculated by platform
         pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
         console_write("[PIN MAP] {}".format(pinmap))
-        # Configure dbg and pled Debug module functions
-        if not Data.CONFIG_CACHE['dbg']: console_write("[micrOS] debug print was turned off")
+        # SET dbg based on config settings (inject user conf)
         DebugCfg.DEBUG = cfgget('dbg')
-        # SET pled and dbg based on config settings (inject user conf)
-        if Data.CONFIG_CACHE['pled']:
+        if Data.CONFIG_CACHE['dbg']:
+            # if debug ON, set progress led
             DebugCfg.init_pled()
+        else:
+            # Show info message - dbg OFF
+            console_write("[micrOS] debug print was turned off")
+
 
     @staticmethod
     def __inject_default_conf():

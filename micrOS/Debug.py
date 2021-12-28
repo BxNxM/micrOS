@@ -18,7 +18,7 @@ except Exception as e:
 
 class DebugCfg:
     DEBUG = True        # DEBUG PRINT ON/OFF - SET FROM ConfigHandler
-    PLED = None         # PROGRESS LED OBJECT - init in init_pled
+    PLED_OBJ = None         # PROGRESS LED OBJECT - init in init_pled
 
     @staticmethod
     def init_pled():
@@ -26,27 +26,25 @@ class DebugCfg:
         if TinyPLed is None:
             if physical_pin('builtin') is not None:
                 # Progress led for esp8266/esp32/etc
-                DebugCfg.PLED = Pin(physical_pin('builtin'), Pin.OUT)
+                DebugCfg.PLED_OBJ = Pin(physical_pin('builtin'), Pin.OUT)
         else:
             # Progress led for TinyPico
-            DebugCfg.PLED = TinyPLed.init_APA102()
+            DebugCfg.PLED_OBJ = TinyPLed.init_APA102()
 
 
 def console_write(msg):
-    if DebugCfg.PLED is not None:
-        if TinyPLed is None:
+    if DebugCfg.DEBUG:
+        if isinstance(DebugCfg.PLED_OBJ, Pin):
             # Simple (built-in) progress led update
-            DebugCfg.PLED.value(not DebugCfg.PLED.value())
-            if DebugCfg.DEBUG:
-                print(msg)
-            DebugCfg.PLED.value(not DebugCfg.PLED.value())
+            DebugCfg.PLED_OBJ.value(not DebugCfg.PLED_OBJ.value())
+            print(msg)
+            DebugCfg.PLED_OBJ.value(not DebugCfg.PLED_OBJ.value())
             return
         # TinyPICO (built-in) progress led update
-        TinyPLed.step()
-    if DebugCfg.DEBUG:
         print(msg)
-    return
-
+        if TinyPLed is None or DebugCfg.PLED_OBJ is None:
+            return
+        TinyPLed.step()
 
 #############################################
 #               ERROR LOGGING               #

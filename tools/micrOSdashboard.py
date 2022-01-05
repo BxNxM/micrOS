@@ -27,8 +27,13 @@ import devToolKit
 APP_DIR = os.path.join(MYPATH, '../apps')
 sys.path.append(APP_DIR)
 
+#################################################
+#             GUI Config Parameters             #
+#################################################
+
 DUMMY_EXEC = False
 DAEMON = False
+FSCO_STATE = True
 
 
 #################################################
@@ -272,7 +277,7 @@ class DevelopmentModifiers:
     def __init__(self, parent_obj):
         self.parent_obj = parent_obj
         self.ignore_version_check = False
-        self.unsafe_ota_enabled = False
+        self.unsafe_ota_enabled = FSCO_STATE
 
     def create(self):
         self.ignore_version_check_checkbox()
@@ -288,6 +293,7 @@ class DevelopmentModifiers:
 
     def unsafe_core_update_ota_check_checkbox(self):
         self.checkbox = QCheckBox('FSCO+', self.parent_obj)  # ForceSystemCoreOta update
+        self.checkbox.setChecked(FSCO_STATE)
         self.checkbox.setStyleSheet("QCheckBox::indicator:checked{background-color: red;} QCheckBox::indicator:hover{background-color: red;}")
         self.checkbox.move(self.parent_obj.width - 255, self.parent_obj.height - 50)
         self.checkbox.setToolTip("[!!!][OTA] ForceSystemCoreOta update.\nIn case of failure, USB re-deployment required!\n+ LM_ prefix ignore for Quick OTA LM update.")

@@ -1,4 +1,5 @@
 # https://www.geeksforgeeks.org/python-build-a-rest-api-using-flask/
+# https://stackoverflow.com/questions/48095713/accepting-multiple-parameters-in-flask-restful-add-resource
 # using flask_restful
 from flask import Flask, jsonify, request
 from flask_restful import Resource, Api

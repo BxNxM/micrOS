@@ -27,32 +27,34 @@ from Debug import console_write, errlog_add
 #################################################################
 
 
+def set_rtc(year, month, mday, hour, minute, second):
+    """
+    :return: tuple: rtc obj, localtime, rtc datetime
+    """
+    # https://docs.micropython.org/en/latest/library/machine.RTC.html
+    # Create RealTimeClock
+    rtc = RTC()
+    # year, month, day, weekday, hours, minutes, seconds, subseconds
+    rtc.datetime((year, month, mday, 0, hour, minute, second, 0))
+    # Print time
+    console_write("RTC setup DONE: {} - {}".format(localtime(), rtc.datetime()))
+    return localtime(), rtc.datetime()
+
+
 def set_ntp_rtc():
-    """
-    :param tstamp: time stamp - optional parameter:
-                                (year, month, mday, hour, minute, second)
-    :return: verdict
-    """
-
-    def __set_rtc(year, month, mday, hour, minute, second):
-        # https://docs.micropython.org/en/latest/library/machine.RTC.html
-        # Create RealTimeClock
-        rtc = RTC()
-        rtc.datetime((year, month, mday, 0, hour, minute, second, 0))
-        # Print time
-        console_write("RTC setup DONE: {} - {}".format(localtime(), rtc.datetime()))
-        return rtc
-
     err = ''
     # Set if micrOS in STA mode
     if WLAN(STA_IF).isconnected():
         for _ in range(8 if cfgget('cron') else 4):
             try:
-                # Sync with NTP server
+                # Sync with NTP server + Set localtime and RTC (micropython built-in)
+                # There's currently no timezone support in MicroPython:
+                #   https://github.com/micropython/micropython/blob/master/ports/esp8266/modules/ntptime.py
                 settime()
-                # Get localtime + GMT
-                (year, month, mday, hour, minute, second, weekday, yearday) = localtime(time() + int(cfgget('gmttime'))*3600)
-                __set_rtc(year, month, mday, hour, minute, second)
+                # Get localtime + GMT shift
+                year, month, mday, hour, minute, second, weekday, yearday = localtime(time() + int(cfgget('gmttime'))*3600)
+                # Set RTC clock with the corrected GMT shift
+                set_rtc(year, month, mday, hour, minute, second)
                 return True
             except Exception as e:
                 console_write("set_ntp_rtc errer.:{}".format(e))
@@ -74,6 +76,10 @@ def set_dev_uid():
         cfgput('hwuid', 'micr{}OS'.format(hexlify(unique_id()).decode('utf-8')))
     except Exception as e:
         errlog_add("set_dev_uid error: {}".format(e))
+
+
+def get_mac():
+    return hexlify(WLAN().config('mac'), ':').decode()
 
 #################################################################
 #                       SET WIFI STA MODE                       #

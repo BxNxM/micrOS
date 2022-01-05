@@ -100,6 +100,7 @@ def boot_move(s=None):
     sleep_ms(RoboArm.SPEED_MS*2)
     # Enter to home
     control(75, 70)     # Move home
+    servo.deinit()
     return 'Boot move'
 
 

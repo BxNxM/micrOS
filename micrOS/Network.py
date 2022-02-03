@@ -14,12 +14,12 @@ https://docs.micropython.org/en/latest/library/network.html
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from utime import sleep_ms, localtime, time
+from utime import sleep_ms
 from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
-from ntptime import settime
-from machine import RTC, unique_id
+from machine import unique_id
 from ConfigHandler import cfgget, cfgput
+from Time import ntptime
 from Debug import console_write, errlog_add
 
 #################################################################
@@ -27,42 +27,16 @@ from Debug import console_write, errlog_add
 #################################################################
 
 
-def set_rtc(year, month, mday, hour, minute, second):
-    """
-    :return: tuple: rtc obj, localtime, rtc datetime
-    """
-    # https://docs.micropython.org/en/latest/library/machine.RTC.html
-    # Create RealTimeClock
-    rtc = RTC()
-    # year, month, day, weekday, hours, minutes, seconds, subseconds
-    rtc.datetime((year, month, mday, 0, hour, minute, second, 0))
-    # Print time
-    console_write("RTC setup DONE: {} - {}".format(localtime(), rtc.datetime()))
-    return localtime(), rtc.datetime()
-
-
 def set_ntp_rtc():
     err = ''
-    # Set if micrOS in STA mode
-    if WLAN(STA_IF).isconnected():
-        for _ in range(8 if cfgget('cron') else 4):
-            try:
-                # Sync with NTP server + Set localtime and RTC (micropython built-in)
-                # There's currently no timezone support in MicroPython:
-                #   https://github.com/micropython/micropython/blob/master/ports/esp8266/modules/ntptime.py
-                settime()
-                # Get localtime + GMT shift
-                year, month, mday, hour, minute, second, weekday, yearday = localtime(time() + int(cfgget('gmttime'))*3600)
-                # Set RTC clock with the corrected GMT shift
-                set_rtc(year, month, mday, hour, minute, second)
-                return True
-            except Exception as e:
-                console_write("set_ntp_rtc errer.:{}".format(e))
-                err = e
-            sleep_ms(400)
-    else:
-        console_write("set_ntp_rtc warning: STA not connected!")
-        errlog_add("set_ntp_rtc errer: STA not connected!")
+    for _ in range(4 if cfgget('cron') else 2):
+        try:
+            ntptime(utc_shift=int(cfgget('gmttime')))
+            return True
+        except Exception as e:
+            console_write("set_ntp_rtc errer.:{}".format(e))
+            err = e
+        sleep_ms(100)
     errlog_add("set_ntp_rtc error: {}".format(err))
     return False
 

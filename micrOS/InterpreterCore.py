@@ -33,7 +33,7 @@ def startBgJob(argument_list, msg):
     # Handle Thread &/&& arguments [-1]
     is_thrd = argument_list[-1].strip()
     # Run OneShot job by default
-    if '&' in is_thrd:
+    if is_thrd.startswith('&'):
         # delete from argument list - handled argument ...
         del argument_list[-1]
         # Get thread wait in sec

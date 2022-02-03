@@ -31,3 +31,8 @@ def sleep_us(us):
 def time():
     return pytime.time()
 
+
+def mktime(year, month, mday, hour, min, sec, x, y):
+    # TODO: normalisan! :D
+    return hour*3600 + min*60 + sec
+

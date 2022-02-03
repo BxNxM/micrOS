@@ -10,12 +10,9 @@ Designed by Marcell Ban aka BxNxM
 """
 
 from SocketServer import SocketServer
-try:
-    from machine import Pin, ADC
-    from sys import platform
-    from LogicalPins import physical_pin
-except Exception as e:
-    print(e)
+from machine import Pin, ADC
+from sys import platform
+from LogicalPins import physical_pin
 
 
 def socket_stream(func):
@@ -80,4 +77,3 @@ class SmartADC:
             return SmartADC.OBJS[pin]
         SmartADC.OBJS[pin] = SmartADC(pin)
         return SmartADC.OBJS[pin]
-

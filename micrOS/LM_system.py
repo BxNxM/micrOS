@@ -1,6 +1,7 @@
 from utime import localtime
 from Common import socket_stream
-from Network import set_ntp_rtc, set_rtc, get_mac
+from Network import get_mac
+from Time import ntptime, settime, suntime
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 
@@ -48,28 +49,25 @@ def ntp():
     """
     Set NTP manually
     """
-    state = False
+    from ConfigHandler import cfgget
     try:
         # Automatic setup - over wifi - ntp
-        state = set_ntp_rtc()
+        state = ntptime(utc_shift=int(cfgget('gmttime')))
         return state, localtime()
     except Exception as e:
-        return state, "ntp errer:{}".format(e)
+        return False, "ntp error:{}".format(e)
+
+
+def sun():
+    return suntime()
 
 
 def setclock(year, month, mday, hour, min, sec):
     """
     Set Localtime + RTC Clock manually
     """
-    # Set localtime
-    from utime import mktime
-    # Make time from tuple to sec
-    time_sec = mktime((year, month, mday, hour, min, sec, 0, 0))
-    # Set localtime
-    localtime(time_sec)
-    # Set RTC
-    local_t, rtc_t = set_rtc(year, month, mday, hour, min, sec)
-    return {'local_time': local_t, 'rtc_time': rtc_t}
+    settime(year, month, mday, hour, min, sec)
+    return localtime()
 
 
 def module(unload=None):
@@ -181,4 +179,5 @@ def help():
            'setclock year month mday hour min sec',\
            'ntp', 'module unload="LM_rgb/None"', \
            'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
-           'pinmap key="dhtpin/None"', 'ha_sta', 'alarms clean=False'
+           'pinmap key="dhtpin/None"', 'ha_sta', 'alarms clean=False',\
+           'sun'

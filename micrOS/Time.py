@@ -1,8 +1,12 @@
-from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM
+from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM, SOCK_STREAM
 from machine import RTC
 from utime import mktime, localtime
 from network import WLAN, STA_IF
 from Debug import errlog_add
+from re import match
+from ConfigHandler import cfgput
+
+SUNTIME = {}
 
 
 def settime(year, month, mday, hour, min, sec):
@@ -56,37 +60,73 @@ def ntptime(utc_shift=0):
     return True
 
 
-def suntime(lat=51.509865, lng=-0.118092):
+def http_get(url, bsize=512, tout=3):
+    data = ''
+
+    if not WLAN(STA_IF).isconnected():
+        errlog_add("[http_get] STA not connected")
+        return data
+
+    _, _, host, path = url.split('/', 3)
+    try:
+        addr = getaddrinfo(host, 80, AF_INET, SOCK_STREAM)[0][-1]
+    except Exception as e:
+        errlog_add('[http_get] resolve error: {}'.format(e))
+        return data
+    # HTTP GET
+    s = socket()
+    try:
+        s.settimeout(tout)
+        s.connect(addr)
+        s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))
+        data = str(s.recv(bsize), 'utf8').splitlines()[-1]
+    except Exception as e:
+        errlog_add('[http_get] receive error: {}'.format(e))
+    finally:
+        s.close()
+    return data
+
+
+def suntime():
     """
     :param lat: latitude
     :param lng: longitude
     :return: raw string / query output
     """
-    if not WLAN(STA_IF).isconnected():
-        errlog_add("STA not connected: suntime")
-        return '', ''
+    global SUNTIME
 
-    url = 'https://api.sunrise-sunset.org/json?lat={lat}&lng={lng}&date=today&formatted=0'.format(lat=lat, lng=lng)
-    _, _, host, path = url.split('/', 3)
-    try:
-        addr = getaddrinfo(host, 80)[0][-1]
-    except Exception as e:
-        errlog_add('suntime: resolve failed: {}'.format(e))
-        return '', ''
-    # HTTP GET
-    s = socket()
-    try:
-        s.settimeout(3)
-        s.connect(addr)
-        s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))
-        data = s.recv(1024)
-    finally:
-        s.close()
-    # BYTE CONVERT AND PARSE
-    try:
-        data = str(data, 'utf8').splitlines()
-        data = data[2], data[-1]
-    except Exception as e:
-        errlog_add('suntime: query failed: {}'.format(e))
-        return '', ''
-    return data
+    # Get latitude, longitude, timezone by external ip
+    url = 'http://ip-api.com/json/'
+    location_keys = ('lat', 'lon', 'timezone')
+    location = http_get(url, 550)
+    parsed = {key: match('.+?{}.+?([0-9.a-zA-Z/]+)'.format(key), location).group(1) for key in location_keys}
+
+    # Get utc offset by timezone + overwrite gmttime (config parameter)
+    timezone = parsed.get('timezone', None)
+    utc_offset = 0
+    if timezone is not None:
+        url = 'http://worldtimeapi.org/api/timezone/{}'.format(timezone)
+        utc_offset = http_get(url, 980)
+        utc_offset = match('.+?utc_offset...([+-:0-9]+)', utc_offset).group(1)
+        try:
+            utc_offset = int(utc_offset.split(':')[0])
+            cfgput('gmttime', utc_offset, True)         # TODO: handle all utc values!!! (only whole utc offsets are supported now)
+        except Exception as e:
+            errlog_add('utc offset error: {}'.format(e))
+            utc_offset = 0
+
+    # Get sunrise-sunset + utc offset
+    lat = parsed.get('lat', None)
+    lon = parsed.get('lon', None)
+    if not (lat is None or lon is None):
+        url = 'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'.format(lat=lat, lon=lon)
+        sun_keys = ('sunrise', 'sunset')
+        sun = http_get(url, 660)
+        sun = {key: match('.+?results.+?{}.+?T([0-9:]+)'.format(key), sun).group(1).split(':') for key in sun_keys}
+        for key in sun_keys:
+            sun[key] = [int(v) for v in sun[key]]
+            sun[key][0] += utc_offset
+            sun[key] = tuple(sun[key])
+    # Save to global variable for later access
+    SUNTIME = sun
+    return sun

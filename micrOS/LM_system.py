@@ -1,7 +1,7 @@
 from utime import localtime
 from Common import socket_stream
 from Network import get_mac
-from Time import ntptime, settime, suntime
+from Time import ntptime, settime, suntime, SUNTIME
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 

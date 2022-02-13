@@ -52,40 +52,40 @@ def micrOS_config_get():
 
 
 def micrOS_config_set():
-    info = "[ST] Run micrOS config set [conf -> gmttime]"
-    gmttime_bak = None
+    info = "[ST] Run micrOS config set [conf -> utc]"
+    utc_bak = None
     print(info)
 
-    # [1] Get actual gmttime value
-    cmd_list = ['config', '<a>', 'gmttime']
+    # [1] Get actual utc value
+    cmd_list = ['config', '<a>', 'utc']
     output = execute(cmd_list)
     if output[0]:
         try:
-            gmttime_bak = int(output[1].strip())
+            utc_bak = int(output[1].strip())
         except:
-            return False, f"{info} + get gmttime error: {output[1]}"
+            return False, f"{info} + get utc error: {output[1]}"
 
     # [2] Set x+1 value as expected
-    gmttime_expected = gmttime_bak+1
-    cmd_list = ['config', '<a>', 'gmttime', str(gmttime_expected)]
+    utc_expected = utc_bak+1
+    cmd_list = ['config', '<a>', 'utc', str(utc_expected)]
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() != 'Saved':
-            return False, f"{info} + gmttime overwrite issue: {output[1]}"
+            return False, f"{info} + utc overwrite issue: {output[1]}"
 
-    # [3] Get modified gmttime value - veridy [2] step
-    cmd_list = ['config', '<a>', 'gmttime']
+    # [3] Get modified utc value - veridy [2] step
+    cmd_list = ['config', '<a>', 'utc']
     output = execute(cmd_list)
     if output[0]:
-        if int(output[1].strip()) != gmttime_expected:
-            return False, f"{info} + gmttime modified value error: {output[1]} != {gmttime_expected}"
+        if int(output[1].strip()) != utc_expected:
+            return False, f"{info} + utc modified value error: {output[1]} != {utc_expected}"
 
     # Restore original value
-    cmd_list = ['config', '<a>', 'gmttime', str(gmttime_bak)]
+    cmd_list = ['config', '<a>', 'utc', str(utc_bak)]
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() != 'Saved':
-            return False, f"{info} + gmttime overwrite issue: {output[1]}"
+            return False, f"{info} + utc overwrite issue: {output[1]}"
 
     # Final verdict
     return True, info
@@ -192,7 +192,7 @@ def negative_interface_check():
         if output[1].strip() != 'None':
             return False, f'[Config invalid key] {info} + not expected return: {output[1]}'
 
-    cmd_list = ['conf', '<a>', 'gmttime', '"type"']
+    cmd_list = ['conf', '<a>', 'utc', '"type"']
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() != 'Failed to save':

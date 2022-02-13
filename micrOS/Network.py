@@ -19,7 +19,7 @@ from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from machine import unique_id
 from ConfigHandler import cfgget, cfgput
-from Time import ntptime
+from Time import ntptime, suntime
 from Debug import console_write, errlog_add
 
 #################################################################
@@ -31,10 +31,11 @@ def set_ntp_rtc():
     err = ''
     for _ in range(4 if cfgget('cron') else 2):
         try:
-            ntptime(utc_shift=int(cfgget('gmttime')))
+            # Set ntp with utc offset
+            ntptime()
             return True
         except Exception as e:
-            console_write("set_ntp_rtc errer.:{}".format(e))
+            console_write("set_ntp_rtc error.:{}".format(e))
             err = e
         sleep_ms(100)
     errlog_add("set_ntp_rtc error: {}".format(err))
@@ -186,7 +187,10 @@ def auto_network_configuration():
         if state:
             # Save STA NW mode
             cfgput("nwmd", "STA")
-            # Set NTP - RTC
+            # Set UTC + SUN TIMES FROM API ENDPOINTS
+            if cfgget('cron'):
+                suntime()
+            # Set NTP - RTC + UTC shift
             set_ntp_rtc()
             # BREAK - STA mode successfully  configures
             break

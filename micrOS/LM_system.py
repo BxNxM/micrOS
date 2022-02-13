@@ -1,7 +1,7 @@
 from utime import localtime
 from Common import socket_stream
 from Network import get_mac
-from Time import ntptime, settime, suntime, SUNTIME
+from Time import ntptime, settime, suntime, Sun
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 
@@ -52,14 +52,16 @@ def ntp():
     from ConfigHandler import cfgget
     try:
         # Automatic setup - over wifi - ntp
-        state = ntptime(utc_shift=int(cfgget('gmttime')))
+        state = ntptime()
         return state, localtime()
     except Exception as e:
         return False, "ntp error:{}".format(e)
 
 
-def sun():
-    return suntime()
+def sun(refresh=False):
+    if refresh:
+        return suntime()
+    return Sun.TIME
 
 
 def setclock(year, month, mday, hour, min, sec):
@@ -180,4 +182,4 @@ def help():
            'ntp', 'module unload="LM_rgb/None"', \
            'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
            'pinmap key="dhtpin/None"', 'ha_sta', 'alarms clean=False',\
-           'sun'
+           'sun refresh=False'

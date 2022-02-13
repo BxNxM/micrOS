@@ -53,7 +53,7 @@ class Data:
                     "irq4_cbf": "n/a",
                     "irq4_trig": "n/a",
                     "boothook": "n/a",
-                    "gmttime": +1,
+                    "utc": +60,
                     "boostmd": True,
                     "irqmreq": 6000,
                     "guimeta": "...",     # special "offloaded" key indicator

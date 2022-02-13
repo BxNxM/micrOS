@@ -1,6 +1,7 @@
 from time import localtime
 from InterpreterCore import exec_lm_core_schedule
 from Debug import console_write, errlog_add
+from Time import Sun, suntime, ntptime
 
 """
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
@@ -78,9 +79,22 @@ def __cron_task_cache_manager(now_in_sec, sec_tolerant):
 def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
     """
     SchedulerCore logic
-        cron time now format: WD, H, M, S
+        actual time: cron_time_now format: (WD, H, M, S)
+        actual time in sec: now_sec_tuple: (H sec, M sec, S)
+        crontask: ("WD:H:M:S", "LM FUNC")
+        deltasec: sample time window: +/- sec: -sec--|event|--sec-
     """
-    check_time = tuple(int(t.strip()) if t.strip() != '*' else t.strip() for t in crontask[0].split(':'))
+    # Resolve "normal" time
+    check_time = tuple(int(t.strip()) if t.isdigit() else t.strip() for t in crontask[0].split(':'))
+    # Resolve "time tag" to "normal" time
+    if len(check_time) < 3:
+        tag = crontask[0].strip()
+        value = Sun.TIME.get(tag, None)
+        if value is None or len(value) < 3:
+            errlog_add('cron syntax error: {}:{}'.format(tag, value))
+            return False
+        check_time = ('*', value[0], value[1], value[2])
+
     # Cron actual time (now) parts summary in sec
     check_time_now_sec = now_sec_tuple[0] + now_sec_tuple[1] + now_sec_tuple[2]
     # Cron overall requested time in sec - hour in sec, minute in sec, sec
@@ -92,7 +106,7 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
     tolerance_min_sec = 0 if check_time_now_sec - deltasec < 0 else check_time_now_sec - deltasec
     tolerance_max_sec = check_time_now_sec + deltasec
 
-    task_id = "{}:{}|{}".format(check_time[0], check_time_scheduler_sec, crontask[1].replace(' ', ''))
+    task_id = "{}:{}|{}".format(check_time[0], check_time_scheduler_sec, str(crontask[1]).replace(' ', ''))
 
     # Check WD - WEEK DAY
     if check_time[0] == '*' or check_time[0] == cron_time_now[0]:
@@ -100,7 +114,17 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
         if tolerance_min_sec <= check_time_scheduler_sec <= tolerance_max_sec:
             __cron_task_cache_manager(check_time_now_sec, deltasec)
             if check_time[3] == '*' or task_id not in LAST_CRON_TASKS:
-                lm_state = exec_lm_core_schedule(crontask[1].split())
+                lm_state = False
+                if isinstance(crontask[1], str):
+                    # [1] Execute Load Module as a string (user LMs)
+                    lm_state = exec_lm_core_schedule(crontask[1].split())
+                else:
+                    try:
+                        # [2] Execute function reference (built-in functions)
+                        console_write("[builtin cron] {}".format(crontask[1]()))
+                        lm_state = True
+                    except Exception as e:
+                        errlog_add("[cron] function exec error: {}".format(e))
                 if not lm_state:
                     console_write("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
                                                                                                        __convert_sec_to_time(tolerance_min_sec),
@@ -119,6 +143,7 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
 
 def deserialize_raw_input(raw_cron_input):
     try:
+        # Returns (("WD:H:M:S", 'LM FUNC'), ("WD:H:M:S", 'LM FUNC'), ...)
         return tuple(tuple(cron.split('!')) for cron in raw_cron_input.split(';'))
     except Exception as e:
         console_write("deserialize_raw_input: input syntax error: {}".format(e))
@@ -130,10 +155,13 @@ def scheduler(scheduler_input, irqperiod):
     """
     irqperiod - in sec
     RAW INPUT SYNTAX:
-        '{cron time}!COMD;{cron time2}!COMD2;...'
+        'WD:H:M:S!CMD;WD:H:M:S!CMD2;...'
+    RAW INPUT SYNTAX TAG SUPPORT:
+        'sunrise!CMD;sunset!CMD'
     ! - execute
     ; - cron task separator
     """
+    builtin_tasks = (("*:3:0:0", suntime), ("*:3:5:0", ntptime))
     state = False
     time_now = localtime()[0:8]
     # time_now = GEN.__next__()   # TODO: remove after test
@@ -144,6 +172,10 @@ def scheduler(scheduler_input, irqperiod):
     now_sec_tuple = (cron_time_now[1] * 3600, cron_time_now[2] * 60, cron_time_now[3])
 
     try:
+        # Check builtin tasks (func. ref.)
+        for cron in builtin_tasks:
+            state |= __scheduler_trigger(cron_time_now, now_sec_tuple, cron, deltasec=irqperiod)
+        # Check user tasks (str)
         for cron in deserialize_raw_input(scheduler_input):
             state |= __scheduler_trigger(cron_time_now, now_sec_tuple, cron, deltasec=irqperiod)
         return state

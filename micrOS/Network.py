@@ -19,27 +19,8 @@ from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from machine import unique_id
 from ConfigHandler import cfgget, cfgput
-from Time import ntptime, suntime
 from Debug import console_write, errlog_add
 
-#################################################################
-#                      NTP & RTC TIME SETUP                     #
-#################################################################
-
-
-def set_ntp_rtc():
-    err = ''
-    for _ in range(4 if cfgget('cron') else 2):
-        try:
-            # Set ntp with utc offset
-            ntptime()
-            return True
-        except Exception as e:
-            console_write("set_ntp_rtc error.:{}".format(e))
-            err = e
-        sleep_ms(100)
-    errlog_add("set_ntp_rtc error: {}".format(err))
-    return False
 
 #################################################################
 #                   GET DEVICE UID BY MAC ADDRESS               #
@@ -187,17 +168,12 @@ def auto_network_configuration():
         if state:
             # Save STA NW mode
             cfgput("nwmd", "STA")
-            # Set UTC + SUN TIMES FROM API ENDPOINTS
-            if cfgget('cron'):
-                suntime()
-            # Set NTP - RTC + UTC shift
-            set_ntp_rtc()
-            # BREAK - STA mode successfully  configures
-            break
+            # STA mode successfully  configures
+            return 'STA'
         # SET AP MODE
         state = set_access_point(cfgget("devfid"), cfgget("appwd"))
         if state:
             # Save AP NW mode
             cfgput("nwmd", "AP")
-            # BREAK - AP mode successfully  configures
-            break
+            # AP mode successfully  configures
+            return 'AP'

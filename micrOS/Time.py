@@ -2,8 +2,9 @@ from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM, SOCK_STREAM
 from machine import RTC
 from utime import mktime, localtime
 from network import WLAN, STA_IF
-from Debug import errlog_add, console_write
 from re import match
+from utime import sleep_ms
+from Debug import errlog_add, console_write
 from ConfigHandler import cfgput, cfgget
 
 
@@ -56,11 +57,21 @@ def ntptime():
         val = struct.unpack("!I", msg[40:44])[0]
         return val - NTP_DELTA
 
-    t = getntp()
-    tm = localtime(t + Sun.UTC * 60)
-    # Get localtime + GMT shift
-    RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
-    return True
+    err = ''
+    for _ in range(4 if cfgget('cron') else 2):
+        try:
+
+            t = getntp()
+            tm = localtime(t + Sun.UTC * 60)
+            # Get localtime + GMT shift
+            RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
+            return True
+        except Exception as e:
+            console_write("ntptime error.:{}".format(e))
+            err = e
+        sleep_ms(100)
+    errlog_add("ntptime error: {}".format(err))
+    return False
 
 
 def http_get(url, bsize=512, tout=3):
@@ -125,6 +136,11 @@ def suntime():
     :param lng: longitude
     :return: raw string / query output
     """
+
+    if not cfgget('cron'):
+        msg = "Cron: {} - SKIP sync".format(cfgget('cron'))
+        console_write(msg)
+        return msg
 
     console_write('[suntime] api sync started ...')
     # Get latitude, longitude, timezone, utc offset by external ip

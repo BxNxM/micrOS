@@ -13,6 +13,7 @@ from Hooks import bootup_hook, profiling_info
 from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
 from Debug import errlog_add
+from Time import ntptime, suntime
 
 
 #################################################################
@@ -45,6 +46,13 @@ def external_interrupt_handler():
         errlog_add("external_interrupt_handler error: {}".format(e))
 
 
+def nw_time_sync():
+    # Set UTC + SUN TIMES FROM API ENDPOINTS
+    suntime()
+    # Set NTP - RTC + UTC shift
+    ntptime()
+
+
 #################################################################
 #                      MAIN FUNCTION CALLS                      #
 #################################################################
@@ -60,7 +68,9 @@ def micrOS():
     external_interrupt_handler()
 
     # NETWORK setup
-    auto_network_configuration()
+    nwmd = auto_network_configuration()
+    if nwmd:
+        nw_time_sync()
 
     # LOAD Singleton SocketServer [1]
     SocketServer()

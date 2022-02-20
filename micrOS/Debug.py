@@ -18,7 +18,7 @@ except Exception as e:
 
 class DebugCfg:
     DEBUG = True        # DEBUG PRINT ON/OFF - SET FROM ConfigHandler
-    PLED_OBJ = None         # PROGRESS LED OBJECT - init in init_pled
+    PLED_OBJ = None     # PROGRESS LED OBJECT - init in init_pled
 
     @staticmethod
     def init_pled():
@@ -59,36 +59,33 @@ def errlog_add(data, limit=10):
     """
     fname = 'err.log'
 
-    def add_line(data, fname):
-        with open(fname, 'a+') as f:
-            buff = [str(k) for k in localtime()]
-            ts = ".".join(buff[0:3]) + " " + ":".join(buff[3:6])
-            try:
-                f.write('{ts} {data}\n'.format(ts=ts, data=data))
-            except:
-                pass
-
-    def logrotate(fname):
+    # ADD LINE TO LOG
+    with open(fname, 'a+') as f:
+        buff = [str(k) for k in localtime()]
+        ts = ".".join(buff[0:3]) + " " + ":".join(buff[3:6])
         try:
-            with open(fname) as f:
-                flen = sum(1 for _ in f)
+            f.write('{ts} {data}\n'.format(ts=ts, data=data))
         except:
-            flen = 0
+            pass
 
-        if flen >= int(limit / 2):
-            try:
-                # Rotate log
-                with open(fname, 'r') as f:
-                    with open('{}.pre.log'.format(fname.split('.')[0]), 'w') as ff:
+    # LOG ROTATE
+    try:
+        with open(fname) as f:
+            flen = sum(1 for _ in f)
+    except:
+        flen = 0
+    if flen >= int(limit / 2):
+        try:
+            # Rotate log
+            with open(fname, 'r') as f:
+                with open('{}.pre.log'.format(fname.split('.')[0]), 'w') as ff:
+                    l = f.readline()
+                    while l:
+                        ff.write(l)
                         l = f.readline()
-                        while l:
-                            ff.write(l)
-                            l = f.readline()
-                os.remove(fname)
-            except Exception as e:
-                print("LogRotate error: {}".format(e))
-    add_line(data, fname)
-    logrotate(fname)
+            os.remove(fname)
+        except Exception as e:
+            print("LogRotate error: {}".format(e))
 
 
 def errlog_get(msgobj=None):

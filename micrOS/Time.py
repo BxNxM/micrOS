@@ -50,7 +50,7 @@ def ntptime():
         s = socket(AF_INET, SOCK_DGRAM)
         try:
             s.settimeout(2)
-            res = s.sendto(NTP_QUERY, addr)
+            s.sendto(NTP_QUERY, addr)       # return with sendto response
             msg = s.recv(48)
         finally:
             s.close()
@@ -75,6 +75,12 @@ def ntptime():
 
 
 def http_get(url, bsize=512, tout=3):
+    """
+    :param url: url param for http get
+    :param bsize: buffer size for response msg
+    :param tout: timeout for response
+    :return: data string
+    """
     data = ''
 
     if not WLAN(STA_IF).isconnected():
@@ -93,7 +99,9 @@ def http_get(url, bsize=512, tout=3):
     try:
         s.settimeout(tout)
         s.connect(addr)
+        # Send the http get query
         s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))
+        # Get last line of http response
         data = str(s.recv(bsize), 'utf8').splitlines()[-1]
     except Exception as e:
         errlog_add('[http_get] {} receive error: {}'.format(url, e))
@@ -120,7 +128,6 @@ def __persistent_cache_manager(mode):
         finally:
             return
     try:
-        print("-----------> DEBUG PRINT - CACHE LOAD")
         # RESTORE CACHE
         with open('sun.pds', 'r') as f:
             buff = {data.split(':')[0]: data.split(':')[1].split('-') for data in f.read().strip().split(';')}
@@ -174,11 +181,13 @@ def suntime():
             sun[key] = tuple(sun[key])
     # Save to global variable for later access
     if sum([1 for _ in sun]) > 0:
+        # Save and return with updated data
         Sun.TIME = sun
-        __persistent_cache_manager('s')
+        __persistent_cache_manager('s')              # Using Sun.TIME
         console_write('[suntime] sync done and cached')
         return sun
-    __persistent_cache_manager('r')
+    # Retrieve cached data and return
+    __persistent_cache_manager('r')                  # Using Sun.TIME
     console_write('[suntime] loaded from cache')
     return Sun.TIME
 

@@ -69,7 +69,7 @@ def micrOS():
 
     # NETWORK setup
     nwmd = auto_network_configuration()
-    if nwmd:
+    if nwmd == 'STA':
         nw_time_sync()
 
     # LOAD Singleton SocketServer [1]

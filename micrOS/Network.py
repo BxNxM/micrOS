@@ -21,6 +21,24 @@ from machine import unique_id
 from ConfigHandler import cfgget, cfgput
 from Debug import console_write, errlog_add
 
+NW_IF = None
+
+#################################################################
+#                 NW INTERFACE STATUS FUNCTIONS                 #
+#################################################################
+
+
+def ifconfig():
+    """
+    :return: network mode (AP/STA), ifconfig tuple
+    """
+    if NW_IF is None:
+        return '', ()
+    nw_mode = 'STA'
+    if_tuple = NW_IF.ifconfig()
+    if if_tuple[0] == if_tuple[2]:
+        nw_mode = 'AP'
+    return nw_mode, if_tuple
 
 #################################################################
 #                   GET DEVICE UID BY MAC ADDRESS               #
@@ -60,6 +78,7 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
 
 
 def set_wifi(essid, pwd, timeout=60):
+    global NW_IF
     console_write('[NW: STA] SET WIFI STA NW {}'.format(essid))
 
     # Disable AP mode
@@ -102,6 +121,7 @@ def set_wifi(essid, pwd, timeout=60):
         console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
     cfgput("devip", str(sta_if.ifconfig()[0]))
     set_dev_uid()
+    NW_IF = sta_if
     return sta_if.isconnected()
 
 
@@ -134,6 +154,7 @@ def __set_wifi_dev_static_ip(sta_if):
 
 
 def set_access_point(_essid, _pwd, _authmode=3):
+    global NW_IF
     console_write("[NW: AP] SET AP MODE: {} - {} - auth mode: {}".format(_essid, _pwd, _authmode))
 
     sta_if = WLAN(STA_IF)
@@ -145,7 +166,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
     # Set WiFi access point name (formally known as ESSID) and WiFi authmode (3): WPA2-PSK
     try:
         console_write("[NW: AP] Configure")
-        ap_if.config(essid=_essid, password=_pwd, authmode=_authmode)
+        ap_if.config(essid=_essid, password=_pwd, authmode=_authmode, max_clients=5)
     except Exception as e:
         console_write("[NW: AP] Config Error: {}".format(e))
         errlog_add("set_access_point error: {}".format(e))
@@ -153,6 +174,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
         cfgput("devip", ap_if.ifconfig()[0])
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
     set_dev_uid()
+    NW_IF = ap_if
     return ap_if.active()
 
 #################################################################

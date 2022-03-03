@@ -2,7 +2,7 @@
 
 from micropython import const
 import framebuf
-from machine import Pin, I2C
+from machine import Pin, SoftI2C
 from LogicalPins import physical_pin
 
 __INVERT = False
@@ -137,7 +137,7 @@ class SSD1306_I2C(SSD1306):
 
 def __init():
     if SSD1306_I2C.OLED_OBJ is None:
-        i2c = I2C(-1, Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
+        i2c = SoftI2C(Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
         SSD1306_I2C.OLED_OBJ = SSD1306_I2C(128, 64, i2c)
     return SSD1306_I2C.OLED_OBJ
 

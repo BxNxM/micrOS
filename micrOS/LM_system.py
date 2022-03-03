@@ -111,14 +111,13 @@ def rssi():
     value = WLAN(STA_IF).status('rssi')
     if value > -67:
         return {'Amazing': value}
-    elif value > -70:
+    if value > -70:
         return {'VeryGood': value}
-    elif value > -80:
+    if value > -80:
         return {'Okay': value}
-    elif value > -90:
+    if value > -90:
         return {'NotGood': value}
-    else:
-        return {'Unusable': value}
+    return {'Unusable': value}
 
 
 @socket_stream
@@ -172,6 +171,10 @@ def alarms(clean=False, test=False, msgobj=None):
     return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
 
 
+def ifconfig():
+    from Network import ifconfig
+    return ifconfig()
+
 #######################
 # LM helper functions #
 #######################
@@ -182,4 +185,4 @@ def help():
            'ntp', 'module unload="LM_rgb/None"', \
            'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
            'pinmap key="dhtpin/None"', 'ha_sta', 'alarms clean=False',\
-           'sun refresh=False'
+           'sun refresh=False', 'ifconfig'

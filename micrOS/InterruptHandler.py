@@ -17,6 +17,7 @@ Reference: https://docs.micropython.org/en/latest/library/machine.Pin.html
 #                            IMPORTS                            #
 #################################################################
 from machine import Pin
+from utime import ticks_us, ticks_diff
 from ConfigHandler import cfgget
 from Debug import console_write
 from InterpreterCore import exec_lm_pipe_schedule
@@ -92,17 +93,30 @@ def enableCron():
 # trigger=Pin.IRQ_RISING    signal LOW to HIGH
 #################################################################
 
+def __edge_exec(pin, cbf_resolver):
+    # Get stored tick - last executed
+    last = cbf_resolver.get('tick', 0)
+    # Calculate calls diff (now) - threshold 200 ms
+    if ticks_diff(int(ticks_us()*0.001), last) > 200:
+        # [!] Execute LM
+        exec_lm_pipe_schedule(cbf_resolver[str(pin)])
+        # Save now tick - last executed
+        cbf_resolver['tick'] = int(ticks_us() * 0.001)
+
 
 def initEventIRQs():
     """
     EVENT INTERRUPT CONFIGURATION - multiple
     """
+    # External IRQ executon data set from node config
+    # ((irq, trig, cbf), (irq, trig, cbf), (irq, trig, cbf), ...)
     irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
                (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
                (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
                (cfgget("irq4"), cfgget("irq4_trig"), cfgget("irq4_cbf")))
 
     # [*] hardcopy parameters to be able to resolve cbf-s
+    # cbf_resolver = {'Pin(1)': 'cbf;cbf', 'Pin(2)': 'cbf', ...}
     cbf_resolver = {}
     for i, data in enumerate(irqdata):
         irq, trig, cbf = data
@@ -114,23 +128,23 @@ def initEventIRQs():
             cbf_resolver['Pin({})'.format(pin)] = cbf
             trig = trig.strip().lower()
             # Init event irq with callback function wrapper
-            # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            # TODO: expose parameter
+            # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            # TODO: expose parameter ?
             pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
             # [IRQ] - event type setup
             if trig == 'down':
                 # pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: print("[down] {}:{}".format(pin, cbf_resolver[str(pin)])))
                 pin_obj.irq(trigger=Pin.IRQ_FALLING,
-                            handler=lambda pin: exec_lm_pipe_schedule(cbf_resolver[str(pin)]))
+                            handler=lambda pin: __edge_exec(pin, cbf_resolver))
                 continue
             if trig == 'both':
                 # pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: print("[both] {}:{}".format(pin, cbf_resolver[str(pin)])))
                 pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
-                            handler=lambda pin: exec_lm_pipe_schedule(cbf_resolver[str(pin)]))
+                            handler=lambda pin: __edge_exec(pin, cbf_resolver))
                 continue
-            # Default
+            # Default - 'up'
             # pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: print("[up] {}:{}".format(pin, cbf_resolver[str(pin)])))
             pin_obj.irq(trigger=Pin.IRQ_RISING,
-                        handler=lambda pin: exec_lm_pipe_schedule(cbf_resolver[str(pin)]))
+                        handler=lambda pin: __edge_exec(pin, cbf_resolver))
 
 #################################################################
 #                         INIT MODULE                           #

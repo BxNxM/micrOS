@@ -126,7 +126,7 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
                     except Exception as e:
                         errlog_add("[cron] function exec error: {}".format(e))
                 if not lm_state:
-                    console_write("[CRON ERROR]NOW[{}]  {} <-> {}  CONF[{}] EXECUTE[{}] LM: {}".format(cron_time_now,
+                    console_write("[cron]now[{}]  {} <-> {}  conf[{}] exec[{}] LM: {}".format(cron_time_now,
                                                                                                        __convert_sec_to_time(tolerance_min_sec),
                                                                                                        __convert_sec_to_time(tolerance_max_sec),
                                                                                                        crontask[0],
@@ -146,8 +146,8 @@ def deserialize_raw_input(raw_cron_input):
         # Returns (("WD:H:M:S", 'LM FUNC'), ("WD:H:M:S", 'LM FUNC'), ...)
         return tuple(tuple(cron.split('!')) for cron in raw_cron_input.split(';'))
     except Exception as e:
-        console_write("deserialize_raw_input: input syntax error: {}".format(e))
-        errlog_add('deserialize_raw_input input syntax error: {}'.format(e))
+        console_write("[cron] deserialize: syntax error: {}".format(e))
+        errlog_add("[cron] deserialize: syntax error: {}".format(e))
     return tuple()
 
 
@@ -180,8 +180,8 @@ def scheduler(scheduler_input, irqperiod):
             state |= __scheduler_trigger(cron_time_now, now_sec_tuple, cron, deltasec=irqperiod)
         return state
     except Exception as e:
-        console_write("scheduler callback error: {}".format(e))
-        errlog_add('scheduler error: {}'.format(e))
+        console_write("[cron] callback error: {}".format(e))
+        errlog_add('[cron] callback error: {}'.format(e))
         return False
 
 

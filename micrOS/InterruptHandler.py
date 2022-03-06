@@ -93,22 +93,31 @@ def enableCron():
 # trigger=Pin.IRQ_RISING    signal LOW to HIGH
 #################################################################
 
-def __edge_exec(pin, cbf_resolver):
-    # Get stored tick - last executed
-    last = cbf_resolver.get('tick', 0)
-    # Calculate calls diff (now) - threshold 200 ms
-    if ticks_diff(int(ticks_us()*0.001), last) > 200:
-        # [!] Execute LM
-        exec_lm_pipe_schedule(cbf_resolver[str(pin)])
-        # Save now tick - last executed
-        cbf_resolver['tick'] = int(ticks_us() * 0.001)
-
-
 def initEventIRQs():
     """
     EVENT INTERRUPT CONFIGURATION - multiple
     """
-    # External IRQ executon data set from node config
+
+    def __edge_exec(pin, cbf_resolver):
+        """
+        Prell filter / edge detection and execution
+        :param pin: pin obj name
+        :param cbf_resolver: callback resolver dict by pin obj name
+        :return: None
+        """
+        # Get stored tick - last executed
+        last = cbf_resolver.get('tick', 0)
+        # Calculate trigger diff in ms (from now)
+        diff = ticks_diff(int(ticks_us() * 0.001), last)
+        # console_write("[IRQ] Event {} - tick diff: {}".format(pin, diff))
+        # Threshold between ext. irq evens: 200 ms
+        if abs(diff) > 200:
+            # [!] Execute LM
+            exec_lm_pipe_schedule(cbf_resolver[str(pin)])
+            # Save now tick - last executed
+            cbf_resolver['tick'] = int(ticks_us() * 0.001)
+
+    # External IRQ execution data set from node config
     # ((irq, trig, cbf), (irq, trig, cbf), (irq, trig, cbf), ...)
     irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
                (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),

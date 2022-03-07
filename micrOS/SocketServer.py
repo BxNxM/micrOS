@@ -25,6 +25,7 @@ from utime import sleep
 from ConfigHandler import cfgget, cfgput
 from Debug import console_write, errlog_add
 from InterpreterShell import shell
+from Network import ifconfig
 
 try:
     from gc import collect, mem_free
@@ -48,7 +49,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.3.3-1'
+    __socket_interpreter_version = '1.3.3-2'
 
     def __new__(cls, host=''):
         """
@@ -231,7 +232,7 @@ class SocketServer:
         """
         Main method, runs socket server with interpreter shell
         """
-        cls.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(cfgget("devip"), cls.__port))
+        cls.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(ifconfig()[1][0], cls.__port))
         try:
             cfgput('version', cls.__socket_interpreter_version)
         except Exception as e:
@@ -276,7 +277,7 @@ class SocketServer:
         cls.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
         cls.reply_message("  [!] micrOS socket shell will be available again after reboot.")
         cls.reply_message("  \trestart machine shortcut: import reset")
-        cls.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(cfgget("devip")))
+        cls.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(ifconfig()[1][0]))
         cls.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
         if update:
             cls.reply_message('  Restart node then start webrepl...')

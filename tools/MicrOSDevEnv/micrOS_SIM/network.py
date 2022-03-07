@@ -29,7 +29,7 @@ class WLAN:
         self.__active = True
         self.__server_ip = None
         self.__config_dict = {'essid': None, 'password': None, 'authmode': None, 'mac': (1,2,3,4,5)}
-        self.__if_config_list = [self.__get_machine_ip()]
+        self.__if_config_list = [self.__get_machine_ip(), "0.0.0.0", "0.0.0.0", "0.0.0.0"]
 
     def isconnected(self):
         return self.__isconnected
@@ -50,7 +50,7 @@ class WLAN:
         console("Local server IP: {}".format(self.__get_machine_ip()))
         if addr_tuple is None:
             return self.__if_config_list
-        self.__if_config_list = list(addr_tuple)
+        self.__if_config_list = [addr_tuple, "0.0.0.0", "0.0.0.0", "0.0.0.0"]
         return self.__if_config_list
 
     def __get_machine_ip(self):

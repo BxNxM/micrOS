@@ -3,6 +3,7 @@ import struct
 import bluetooth
 from binascii import hexlify
 from ConfigHandler import cfgget
+from Network import ifconfig
 
 # BLUETOOTH IRQ LUT
 _IRQ_CENTRAL_CONNECT = const(1)
@@ -115,8 +116,8 @@ class BleHandler:
 
     @staticmethod
     def _gen_adv_info():
-        if cfgget('nwmd') == 'STA' and cfgget('devip') != 'n/a':
-            stasubip = '.'.join(cfgget('devip').split('.')[-2:])
+        if ifconfig()[0] == 'STA':
+            stasubip = '.'.join(str(ifconfig()[1][0]).split('.')[-2:])
             subfid = cfgget('devfid')[0:2]
             return '{}|{}'.format(subfid, stasubip)
         return 'micrOS'

@@ -36,3 +36,11 @@ def mktime(year, month, mday, hour, min, sec, x, y):
     # TODO: normalisan! :D
     return hour*3600 + min*60 + sec
 
+
+def ticks_us():
+    return 0
+
+
+def ticks_diff(a, b):
+    return a-b
+

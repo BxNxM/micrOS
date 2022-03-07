@@ -5,6 +5,7 @@ from network import WLAN, STA_IF
 import LM_oled as oled
 from Common import SmartADC
 from LogicalPins import physical_pin
+from Network import ifconfig
 
 
 #################################
@@ -43,7 +44,9 @@ class PageUI:
         h = "0{}".format(ltime[-5]) if len(str(ltime[-5])) < 2 else ltime[-5]
         m = "0{}".format(ltime[-4]) if len(str(ltime[-4])) < 2 else ltime[-4]
         s = "0{}".format(ltime[-3]) if len(str(ltime[-3])) < 2 else ltime[-3]
-        oled.text("{}   {}:{}:{}".format(cfgget("nwmd")[0], h, m, s), 0, 0)
+        nwmd = ifconfig()[0]
+        nwmd = nwmd[0] if len(nwmd) > 0 else "0"
+        oled.text("{}   {}:{}:{}".format(nwmd, h, m, s), 0, 0)
 
     def __page_bar(self):
         """Generates page indicator bar"""
@@ -148,7 +151,7 @@ def adc_page():
 
 def sys_page():
     oled.text(cfgget("devfid"), 0, 15)
-    oled.text("  {}".format(cfgget("devip")), 0, 25)
+    oled.text("  {}".format(ifconfig()[1][0]), 0, 25)
     fm = mem_free()
     kb, byte = int(fm / 1000), int(fm % 1000)
     oled.text("  {}kb {}b".format(kb, byte), 0, 35)

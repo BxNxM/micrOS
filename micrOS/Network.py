@@ -33,7 +33,7 @@ def ifconfig():
     :return: network mode (AP/STA), ifconfig tuple
     """
     if NW_IF is None:
-        return '', ()
+        return '', ("0.0.0.0", "0.0.0.0", "0.0.0.0", "0.0.0.0")
     nw_mode = 'STA'
     if_tuple = NW_IF.ifconfig()
     if if_tuple[0] == if_tuple[2]:
@@ -119,6 +119,7 @@ def set_wifi(essid, pwd, timeout=60):
         console_write("\t|\t| [NW: STA] CONNECTED: " + str(sta_if.isconnected()))
     else:
         console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
+    # Store STA IP (make it static ip)
     cfgput("devip", str(sta_if.ifconfig()[0]))
     set_dev_uid()
     NW_IF = sta_if
@@ -170,8 +171,8 @@ def set_access_point(_essid, _pwd, _authmode=3):
     except Exception as e:
         console_write("[NW: AP] Config Error: {}".format(e))
         errlog_add("set_access_point error: {}".format(e))
-    if ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode:
-        cfgput("devip", ap_if.ifconfig()[0])
+    if not (ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode):
+        errlog_add("[SET AP] setup error")
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
     set_dev_uid()
     NW_IF = ap_if
@@ -184,18 +185,18 @@ def set_access_point(_essid, _pwd, _authmode=3):
 
 
 def auto_network_configuration():
+    # Retry mechanism - create some connection... prio.: STA > AP
+    nwmd = cfgget('nwmd')
     for _ in range(0, 3):
-        # SET WIFI (STA) MODE
-        state = set_wifi(cfgget("staessid"), cfgget("stapwd"))
-        if state:
-            # Save STA NW mode
-            cfgput("nwmd", "STA")
-            # STA mode successfully  configures
-            return 'STA'
-        # SET AP MODE
+        # nwmd: default or STA
+        if nwmd is None or "AP" not in nwmd.upper():
+            # SET WIFI (STA) MODE
+            state = set_wifi(cfgget("staessid"), cfgget("stapwd"))
+            if state:
+                # STA mode successfully  configures
+                return 'STA'
+        # SET AP MODE - chack later if AP (additional ble interface case)
         state = set_access_point(cfgget("devfid"), cfgget("appwd"))
         if state:
-            # Save AP NW mode
-            cfgput("nwmd", "AP")
             # AP mode successfully  configures
             return 'AP'

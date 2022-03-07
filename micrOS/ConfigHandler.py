@@ -29,7 +29,7 @@ class Data:
                     "devfid": "node01",
                     "appwd": "ADmin123",
                     "dbg": True,
-                    "nwmd": "n/a",
+                    "nwmd": "STA",
                     "hwuid": "n/a",
                     "soctout": 100,
                     "socport": 9008,

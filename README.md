@@ -48,66 +48,52 @@ Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/
 ----------------------------------------
 ----------------------------------------
 
-## Installing micrOS with DevToolKit from macOS / Windows / Linux
+## Installing micrOS with DevToolKit (macOS / Windows / Linux)
 
 End-to-End solution for deploy, update, monitor and develop micrOS boards.
 
 I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you need.
 
-> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources (precompiled) from micrOS/mpy-MicrOS to the board.
+> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources (precompiled) from micrOs/toolkit/workspace/precompiled to the board.
 
-### 1. Clone **micrOS** repo:
-
-> Note: Install git manually for Windows before this step
-
-```
-git clone https://github.com/BxNxM/micrOs.git
-```
-
-### 2. Download python 3.8
+### 1. Download python 3.8
 
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
 > Note: Allow extend system path with that python version (installation parameter)
 > On **Windows**: RUN AS ADMINISTARTOR
 
-### 3. Install serial driver for board connection via USB
+### 2. Install serial driver (USB) for esp32 board
 
 Find the required driver in the cloned repo.
 
 - For Windows
 	
 ```
-micrOs/driver_cp210x/CP210x_Universal_Windows_Driver
+micrOs/env/driver_cp210x/CP210x_Universal_Windows_Driver
 ```
 	
 - For macOS
 	
 ```
-micrOs/driver_cp210x/SiLabsUSBDriverDisk.dmg
+micrOs/env/driver_cp210x/SiLabsUSBDriverDisk.dmg
 ```
 
-### *4. ONLY ON WINDOWNS: Special dependencies*
+### *2.1. ONLY ON WINDOWNS: Special dependencies*
 
 *You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt)*
 
 [C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)
 
-### 5. Execute **devToolKit** GUI
+### 3. Install and RUN **devToolKit** GUI
 
 It will open a graphical user interface for micrOS device management.
 
-`python3 ./micrOS/devToolKit.py`
+`pip install git+https://github.com/BxNxM/micrOS.git`
 
-or
+then, you can use the following cmdline paramater to start the devToolKit app:
 
-`./micrOS/devToolKit.py`
-
-
-- Verified OS list for development and deployment:
-	- macOS
-	- Raspbian (pyQT5 limitation)
-	- Windows
+`devToolKit.py`
 
 ![MICROSVISUALIZATION](./media/micrOSToolkit.gif?raw=true)
 
@@ -220,7 +206,7 @@ BedLamp $  neopixel help
 			- `Timer(1)` 
 	- Event based
 		-  Set trigger event up/down/both with LM callback function
-- **Background Job** aka **BgJob**
+- [BETA!] **Background Job** aka **BgJob**
 		- Capable of execute [L]oad [M]odules in a background thread
 		- WARNING, limitation: not use with IRQs and in micrOS config
 		- Invoke with single execution `&` or loop execution `&&`

@@ -1,6 +1,0 @@
-# mpy-cross compiler: https://github.com/micropython/micropython/tree/master/mpy-cross
-export SETUP_DIR2="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-alias get_upython_repo='git clone https://github.com/micropython/micropython.git'
-alias mpy_comile="${SETUP_DIR2}/micropython/mpy-cross/mpy-cross"
-export MPYCOMPILE="${SETUP_DIR2}/micropython/mpy-cross/mpy-cross"

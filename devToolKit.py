@@ -1,111 +1,29 @@
 #!/usr/bin/env python3.8
+# -*- coding: utf-8 -*-
 
 import os
 import sys
-import pip
-import venv
-try:
-    __file__
-except NameError:
-    raise AssertionError(
-        "You must run this like execfile('path/to/activate_this.py', dict(__file__='path/to/activate_this.py'))")
-MYPATH = os.path.dirname(os.path.abspath(__file__))
+
+MYPATH = os.path.dirname(__file__)
+print("Module [devToolKit] path: {} __package__: {} __name__: {} __file__: {}".format(
+    sys.path[0], __package__, __name__, MYPATH))
 
 
-def activate_venv():
-    # Virtualenv handling in python
-    virtualenv_path = os.path.join(MYPATH, 'tools/venv')
-
-    def activate_this():
-        old_os_path = os.environ.get('PATH', '')
-        os.environ['PATH'] = os.path.dirname(os.path.abspath(__file__)) + os.pathsep + old_os_path
-        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        if sys.platform == 'win32':
-            site_packages = os.path.join(base, 'Lib', 'site-packages')
-        else:
-            site_packages = os.path.join(base, 'lib', 'python%s' % sys.version[:3], 'site-packages')
-        prev_sys_path = list(sys.path)
-        import site
-        site.addsitedir(site_packages)
-        sys.real_prefix = sys.prefix
-        sys.prefix = base
-        # Move the added items to the front of the path:
-        new_sys_path = []
-        for item in list(sys.path):
-            if item not in prev_sys_path:
-                new_sys_path.append(item)
-                sys.path.remove(item)
-        sys.path[:0] = new_sys_path
-
-    def in_virtualenv():
-        return (getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix) != sys.prefix
-
-    def create_env():
-        try:
-            venv.create(virtualenv_path)
-            print("[VIRTUALENV][create] Creation done")
-            return True
-        except Exception as e:
-            print("[VIRTUALENV][create] Create failed: {}".format(e))
-        return False
-
-    def activate():
-        try:
-            activate_this()
-        except Exception as e:
-            print("[VIRTUALENV] Activation failed: {}".format(e))
-            return False
-        print("[VIRTUALENV] Activation was done")
-        return True
-
-    def install_requirements():
-        requirements_file = os.path.join(MYPATH, 'tools/requirements.txt')
-        try:
-            from pip._internal import main as pipmain
-        except ImportError:
-            from pip import main as pipmain
-        code = pipmain(["install", "-r", requirements_file])
-        if code == 0:
-            print("[VIRTUALENV] Install requirements was done")
-            return True
-        else:
-            return False
-
-    def safe_main():
-        try:
-            if not in_virtualenv():
-                state_create = create_env()
-                print("\tCreate: {}".format(state_create))
-                state_activate = activate()
-                print("\tActivate: {}".format(state_activate))
-            state_req = install_requirements()
-            print("\tRequirements: {}".format(state_req))
-        except Exception as e:
-            print("[VIRTUALENV] Activation failed: {}\nTry to continue".format(e))
-    safe_main()
-
-
-activate_venv()
-SOCKET_CLIENT_DIR_PATH = os.path.join(MYPATH, 'tools/')
-API_DIR_PATH = os.path.join(MYPATH, 'tools/MicrOSDevEnv/')
-APP_DIR = os.path.join(MYPATH, 'apps')
-MICROS_DIR = os.path.join(MYPATH, 'micrOS')
-MICROS_SIM_RESOURCES_DIR = os.path.join(MYPATH, 'tools/MicrOSDevEnv/micrOS_SIM')
-sys.path.append(API_DIR_PATH)
-sys.path.append(SOCKET_CLIENT_DIR_PATH)
-sys.path.append(APP_DIR)
-sys.path.append(MICROS_DIR)
+TOOLKIT_PATH = os.path.join(MYPATH, 'toolkit')
+APP_DIR = os.path.join(MYPATH, 'toolkit/dashboard_apps')
+MICROS_DIR = os.path.join(MYPATH, 'micrOS/source')
+MICROS_SIM_RESOURCES_DIR = os.path.join(MYPATH, 'toolkit/simulator_lib')
 import argparse
-import MicrOSDevEnv
-import socketClient
-import LocalMachine
+from toolkit import MicrOSDevEnv
+from toolkit import socketClient
+from toolkit.lib import LocalMachine
 
 
 def arg_parse():
     parser = argparse.ArgumentParser(prog="micrOS dev toolkit - deploy, connect, update, etc.",
                                             description="CMDline wrapper for {}\n and for {}".format(
-                                            os.path.join(API_DIR_PATH, 'MicrOSDevEnv.py'),
-                                            os.path.join(SOCKET_CLIENT_DIR_PATH, 'socketClient.py')))
+                                            os.path.join(TOOLKIT_PATH, 'MicrOSDevEnv.py'),
+                                            os.path.join(TOOLKIT_PATH, 'socketClient.py')))
 
     base_group = parser.add_argument_group("Base commands")
     base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (micrOS) & Install (micrOS)")
@@ -208,19 +126,12 @@ def backup_node_config(api_obj):
     api_obj.backup_node_config()
 
 
-def simulate_micrOS():
-    mypath_bak = MYPATH
-    os.chdir(MICROS_DIR)
-    sys.path.append(MICROS_SIM_RESOURCES_DIR)
-    try:
-        import micrOSloader
-        micrOSloader.main()
-    except Exception as e:
-        print("[ERROR] micrOS SIM\n{}".format(e))
-    os.chdir(mypath_bak)
+def simulate_micrOS(api_obj):
+    api_obj.simulator()
 
 
-def applications(app):
+def applications(api_obj, app):
+    print(APP_DIR)
     app_list = [app for app in LocalMachine.FileHandler.list_dir(APP_DIR) if app.endswith('.py') and not app.startswith('Template')]
     if app.lower() == 'list' or app.lower() == 'help' or app.lower() == '-':
         for index, app_content in enumerate(app_list):
@@ -232,15 +143,19 @@ def applications(app):
         except:
             app_name = None
         if app_name is not None:
-            __execute_app(app_name)
+            __execute_app(api_obj, app_name)
     elif app in [app_name.replace('_app.py', '') for app_name in app_list]:
         print("[ RUN ] {}".format(app))
-        __execute_app(app)
+        __execute_app(api_obj, app)
     else:
         print("[ APP ] {} was not found.".format(app))
 
 
-def __execute_app(app_name, app_postfix='_app'):
+def __execute_app(api_obj, app_name):
+    dev_name = "__simulator__"
+
+    print(api_obj.exec_app(app_name, dev_name))
+    """
     app_name = "{}{}".format(app_name, app_postfix)
     print("[APP] import {}".format(app_name))
     exec("import {}".format(app_name))
@@ -248,11 +163,12 @@ def __execute_app(app_name, app_postfix='_app'):
     return_value = eval("{}.app()".format(app_name))
     if return_value is not None:
         print(return_value)
+    """
 
 
 def init_gui():
     if len(sys.argv) == 1:
-        import micrOSdashboard
+        from toolkit import micrOSdashboard
         print("Init GUI")
         micrOSdashboard.main()
 
@@ -262,14 +178,7 @@ if __name__ == "__main__":
 
     cmd_args = arg_parse()
 
-    if cmd_args.simulate:
-        simulate_micrOS()
-
     # Socket interface module
-    if cmd_args.applications:
-        applications(cmd_args.applications)
-        sys.exit(0)
-
     if cmd_args.connect:
         connect(args=cmd_args.connect_parameters)
         sys.exit(0)
@@ -287,6 +196,13 @@ if __name__ == "__main__":
         api_obj = MicrOSDevEnv.MicrOSDevTool(dummy_exec=True)
     else:
         api_obj = MicrOSDevEnv.MicrOSDevTool()
+
+    if cmd_args.simulate:
+        simulate_micrOS(api_obj)
+
+    if cmd_args.applications:
+        applications(api_obj, cmd_args.applications)
+        sys.exit(0)
 
     # Commands
     if cmd_args.OTA:

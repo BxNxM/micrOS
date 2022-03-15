@@ -1,0 +1,14 @@
+{
+ "timirqseq": 3000,
+ "irq1": false,
+ "irq1_cbf": "n/a",
+ "timirqcbf": "n/a",
+ "boothook": "n/a",
+ "timirq": false,
+ "socport": 9008,
+ "dbg": null,
+ "utc": null,
+ "devfid": null,
+ "stapwd": null,
+ "staessid": null
+}

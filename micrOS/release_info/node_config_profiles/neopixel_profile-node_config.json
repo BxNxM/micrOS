@@ -1,0 +1,15 @@
+{
+ "timirqseq": 2000,
+ "irq1": true,
+ "irq1_cbf": "neopixel toggle",
+ "timirqcbf": "system heartbeat",
+ "boothook": "neopixel load_n_init",
+ "timirq": false,
+ "socport": 9008,
+ "dbg": True,
+ "utc": 60,
+ "devfid": null,
+ "stapwd": null,
+ "staessid": null,
+ "devip": null
+}

@@ -1,0 +1,15 @@
+{
+ "timirqseq": 2000,
+ "irq1": true,
+ "irq1_cbf": "rgb toggle",
+ "timirqcbf": "system heartbeat",
+ "boothook": "rgb load_n_init",
+ "timirq": false,
+ "socport": 9008,
+ "dbg": true,
+ "utc": 60,
+ "devfid": null,
+ "stapwd": null,
+ "staessid": null,
+ "devip": null
+}

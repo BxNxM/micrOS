@@ -1,17 +1,30 @@
-micropython_repo/micropython/
-micropython_repo/webrepl/
-micrOS/*.mpy
+# Generic file extension ignores
 **.pyc
 **.DS_Store
 **.idea/
 **__pycache__
-micrOS/node_config.json
-mpy-micrOS/node_config.json
-tools/venv/
 
-framework/esp-open-sdk/
+# micrOS code ignores
+micrOS/source/*.mpy
+micrOS/source/node_config.json
+
+# Workspace ignore
+toolkit/workspace/precompiled/node_config.json
+toolkit/workspace/simulator
+
+# Cloned resource
+micrOS/micropython/esp-open-sdk/
+toolkit/workspace/webrepl/
+
+# Generated virtualenv
+env/venv/
+
+# Temporary media edits
 media/micrOSDoc/
 media/micrOS_GIF_PNGs/
-proto/
-*.txt
-micrOS/.*.key
+
+# setup.py generated resources
+micrOSDevToolKit.egg-info/
+build/
+dist/
+.eggs/

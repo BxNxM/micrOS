@@ -435,10 +435,14 @@ class HeaderInfo:
             label = QLabel(' [devEnv] virtualenv active', self.parent_obj)
             label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
             label.setStyleSheet("background-color : green; color: {};".format(micrOSGUI.TEXTCOLOR))
+        elif 'site-packages' in MYPATH:
+            label = QLabel(' [devEnv] pip deployment', self.parent_obj)
+            label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
+            label.setStyleSheet("background-color : green; color: {};".format(micrOSGUI.TEXTCOLOR))
         else:
             label = QLabel(' [devEnv] virtualenv inactive', self.parent_obj)
             label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
-            label.setStyleSheet("background-color : yellow; color: {};".format(micrOSGUI.TEXTCOLOR))
+            label.setStyleSheet("background-color : grey; color: {};".format(micrOSGUI.TEXTCOLOR))
             label.setToolTip("Please create your dependency environment:\nvirtualenv -p python3 venv\
             \nsource venv/bin/activate\npip install -r micrOS/tools/requirements.txt")
 

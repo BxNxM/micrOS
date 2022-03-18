@@ -890,7 +890,7 @@ class MicrOSDevTool:
         # Get device IP and friendly name
         if device is None:
             # Select device dynamically - cmdline
-            device_ip, fuid = socketClient.ConnectionData.select_device()
+            device_ip, port, fuid, uid = socketClient.ConnectionData.select_device()
         else:
             # Select device from code / gui
             device_ip, fuid = device[1], device[0]
@@ -993,7 +993,7 @@ class MicrOSDevTool:
             # Get device IP and friendly name
             if device is None:
                 # Select device dynamically - cmdline
-                device_ip, fuid = socketClient.ConnectionData.select_device()
+                device_ip, port, fuid, uid = socketClient.ConnectionData.select_device()
             else:
                 # Select device from code / gui
                 device_ip, fuid = device[1], device[0]

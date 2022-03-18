@@ -139,6 +139,16 @@ def online_device_scanner(service_port=9008):
     return online_devices
 
 
+def node_is_online(ip, port=9008):
+    cmd_base = 'ping -c 1 -p {port} {ip}'
+    cmd = cmd_base.format(port=port, ip=ip)
+    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(cmd, shell=True, debug=False)
+    if exitcode == 0 and len(stderr.strip()) == 0:
+        return True
+    else:
+        return False
+
+
 if __name__ == "__main__":
     online_device_scanner()
 

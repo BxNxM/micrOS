@@ -222,9 +222,9 @@ class MicrOSDeviceSelector(DropDownBase):
         conn_data = self.socketcli_obj
         conn_data.read_micrOS_device_cache()
         self.device_conn_struct = []
-        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
-            devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
-            fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+        for uid in conn_data.MICROS_DEVICES.keys():
+            devip = conn_data.MICROS_DEVICES[uid][0]
+            fuid = conn_data.MICROS_DEVICES[uid][2]
             tmp = (fuid, devip, uid)
             self.device_conn_struct.append(tmp)
             print("\t{}".format(tmp))
@@ -239,10 +239,10 @@ class MicrOSDeviceSelector(DropDownBase):
         conn_data = self.socketcli_obj
         conn_data.read_micrOS_device_cache()
         dev_fid_list = []
-        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
+        for uid in conn_data.MICROS_DEVICES.keys():
             if uid not in [s[2] for s in self.device_conn_struct]:
-                devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
-                fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+                devip = conn_data.MICROS_DEVICES[uid][0]
+                fuid = conn_data.MICROS_DEVICES[uid][2]
                 if not (fuid.startswith('__') and fuid.endswith('__')):
                     dev_fid_list.append(fuid)
                     tmp = (fuid, devip, uid)
@@ -269,9 +269,9 @@ class LocalAppSelector(DropDownBase):
         conn_data = self.socketcli_obj
         conn_data.read_micrOS_device_cache()
         self.device_conn_struct = []
-        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
-            devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
-            fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+        for uid in conn_data.MICROS_DEVICES.keys():
+            devip = conn_data.MICROS_DEVICES[uid][0]
+            fuid = conn_data.MICROS_DEVICES[uid][2]
             tmp = (fuid, devip, uid)
             self.device_conn_struct.append(tmp)
             print("\t{}".format(tmp))
@@ -484,9 +484,9 @@ class ClusterStatus:
         # Get stored devices
         conn_data = self.socket_data_obj
         conn_data.read_micrOS_device_cache()
-        for uid in conn_data.MICROS_DEV_IP_DICT.keys():
-            devip = conn_data.MICROS_DEV_IP_DICT[uid][0]
-            fuid = conn_data.MICROS_DEV_IP_DICT[uid][2]
+        for uid in conn_data.MICROS_DEVICES.keys():
+            devip = conn_data.MICROS_DEVICES[uid][0]
+            fuid = conn_data.MICROS_DEVICES[uid][2]
             if fuid.startswith('__') or fuid.endswith('__'):
                 continue
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
@@ -499,7 +499,7 @@ class ClusterStatus:
 
             msg = f"{status}{hwuid}📍{devip}🏷{fuid} v:️{version}"
             self.parent_obj.console.append_output(msg)
-        self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEV_IP_DICT.keys())}')
+        self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEVICES.keys())}')
 
 
 class QuickOTAUpload(QLabel):

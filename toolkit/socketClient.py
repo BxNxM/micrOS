@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import sys
@@ -15,12 +15,15 @@ MYDIR = os.path.dirname(__file__)
 print("Module [socketClient] path: {} __package__: {} __name__: {} __file__: {}".format(
     sys.path[0], __package__, __name__, MYDIR))
 try:
-    from .lib import nwscan
+    from .lib import SearchDevices
     from .lib.TerminalColors import Colors
+    from .lib.LocalMachine import FileHandler
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
-    import lib.nwscan as nwscan
+    import lib.SearchDevices as SearchDevices
     from lib.TerminalColors import Colors
+    from lib.LocalMachine import FileHandler
+
 
 #########################################################
 #                 Device data handling                  #
@@ -28,21 +31,19 @@ except Exception as e:
 
 
 class ConnectionData:
-    HOST = 'localhost'
-    PORT = 9008
-    MICROS_DEV_IP_DICT = {}
+    # UID: [IP, PORT, FUID]
+    MICROS_DEVICES = {}
     DEVICE_CACHE_PATH = os.path.join(MYDIR, "user_data/device_conn_cache.json")
-    DEFAULT_CONFIG_FRAGMNENT = { "__devuid__": [
-                                                "192.168.4.1",
-                                                "__dev_mac_addr__",
-                                                "__device_on_AP__"
-                                                ],
-                                  "__localhost__": [
-                                                "127.0.0.1",
-                                                "__local_mac_addr__",
-                                                "__simulator__"
-                                               ]}
-
+    DEFAULT_CONFIG_FRAGMNENT = {"__devuid__": [
+        "192.168.4.1",
+        9008,
+        "__device_on_AP__"
+    ],
+        "__localhost__": [
+            "127.0.0.1",
+            9008,
+            "__simulator__"
+        ]}
 
     @staticmethod
     def auto_execute(search=False, status=False, dev=None):
@@ -55,51 +56,51 @@ class ConnectionData:
         if status:
             ConnectionData.nodes_status()
             sys.exit(0)
-        ConnectionData.select_device(device_tag=dev)
-        return ConnectionData.HOST, ConnectionData.PORT
+        # IP, PORT, FID, UID
+        return ConnectionData.select_device(device_tag=dev)
 
     @staticmethod
-    def __handshake_with_device_on_ip(device, thread_name):
+    def __handshake_with_device_on_ip(ip, port, thread_name):
         """
         :param device: device data
         :param thread_name: thread identifier (index)
-        Update ConnectionData.MICROS_DEV_IP_DICT with new devices
+        Update ConnectionData.MICROS_DEVICES with new devices
         """
         socket_obj = None
-        if '.' in device[0]:
+        if '.' in ip:
             try:
-                if not (device[0].startswith('10.') or device[0].startswith('192.')):
-                    print("[{}]Invalid device IP:{} - skip".format(thread_name, device[0]))
+                if not (ip.startswith('10.') or ip.startswith('192.')):
+                    print("[{}]Invalid device IP:{} - skip".format(thread_name, ip[0]))
                     return
-                print("Device Query on {} ...".format(device[0]))
-                socket_obj = SocketDictClient(host=device[0], port=ConnectionData.PORT)
+                print("Device Query on {}:{}".format(ip, port))
+                socket_obj = SocketDictClient(host=ip, port=port)
                 reply = socket_obj.non_interactive('hello')
                 if "hello" in reply:
-                    print("[{}][micrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
                     fuid = reply.split(':')[1]
                     uid = reply.split(':')[2]
-                    # Add device to known list
-                    ConnectionData.MICROS_DEV_IP_DICT[uid] = [device[0], device[1], fuid]
+                    # !!! Add device to known list: UID: [IP, PORT, FID, MAC]
+                    ConnectionData.MICROS_DEVICES[uid] = [ip, port, fuid]
+                    print("[{}][micrOS] Device: {} - {}:{} reply: {}".format(thread_name, fuid, ip, port, reply))
                 else:
-                    print("[{}][Non micrOS] Device: {} reply: {}".format(thread_name, device[0], reply))
+                    print("[{}][Non micrOS] Device: {} reply: {}".format(thread_name, ip, reply))
             except Exception as e:
-                print("[{}] {} scan warning: {}".format(thread_name, device, e))
+                print("[{}] {} scan warning: {}:{}".format(thread_name, ip, port, e))
             finally:
                 if socket_obj is not None and socket_obj.conn is not None:
                     socket_obj.conn.close()
                 del socket_obj
 
     @staticmethod
-    def search_micrOS_on_wlan():
+    def search_micrOS_on_wlan(service_port=9008):
         start_time = time.time()
         # start wlan search on entire ip range on a given port
-        filtered_devices = nwscan.map_wlan_devices(service_port=9008)
+        filtered_ip_list = SearchDevices.online_device_scanner(service_port=service_port)
         # initiate search threads with micrOS handshake callback
         thread_instance_list = []
-        for index, device in enumerate(filtered_devices):
-            thread_name = "thread-{} check: {}".format(index, device)
+        for index, device_ip in enumerate(filtered_ip_list):
+            thread_name = "thread-{} check: {}".format(index, device_ip)
             thread_instance_list.append(
-                threading.Thread(target=ConnectionData.__handshake_with_device_on_ip, args=(device, thread_name,))
+                threading.Thread(target=ConnectionData.__handshake_with_device_on_ip, args=(device_ip, service_port, thread_name,))
             )
 
         # Start threads
@@ -114,18 +115,18 @@ class ConnectionData:
         # Dump the result
         print("SEARCH TOTAL ELAPSED TIME: {} sec".format(end_time - start_time))
         # Save result to micrOS config cache + file
-        ConnectionData.save_micrOS_device_cache(ConnectionData.MICROS_DEV_IP_DICT)
-        print("AVAILABLE MICROS DEVICES:\n{}".format(json.dumps(ConnectionData.MICROS_DEV_IP_DICT, indent=4, sort_keys=True)))
+        ConnectionData.save_micrOS_device_cache()
+        print(
+            "AVAILABLE MICROS DEVICES:\n{}".format(json.dumps(ConnectionData.MICROS_DEVICES, indent=4, sort_keys=True)))
 
     @staticmethod
-    def save_micrOS_device_cache(device_dict):
+    def save_micrOS_device_cache():
         ConnectionData.read_micrOS_device_cache()
         cache_path = ConnectionData.DEVICE_CACHE_PATH
         print("Write micrOS device cache: {}".format(cache_path))
         with open(cache_path, 'w') as f:
-            ConnectionData.MICROS_DEV_IP_DICT.update(ConnectionData.DEFAULT_CONFIG_FRAGMNENT)
-            ConnectionData.MICROS_DEV_IP_DICT.update(device_dict)
-            json.dump(ConnectionData.MICROS_DEV_IP_DICT, f, indent=4)
+            ConnectionData.DEFAULT_CONFIG_FRAGMNENT.update(ConnectionData.MICROS_DEVICES)
+            json.dump(ConnectionData.MICROS_DEVICES, f, indent=4)
 
     @staticmethod
     def read_micrOS_device_cache():
@@ -134,80 +135,70 @@ class ConnectionData:
             print("Load micrOS device cache: {}".format(cache_path))
             with open(cache_path, 'r') as f:
                 cache_content = json.load(f)
-                cache_content.update(ConnectionData.MICROS_DEV_IP_DICT)
-                ConnectionData.MICROS_DEV_IP_DICT = cache_content
+                cache_content.update(ConnectionData.MICROS_DEVICES)
+                ConnectionData.MICROS_DEVICES = cache_content
         else:
             print("Load micrOS device cache not found: {}".format(cache_path))
-            ConnectionData.MICROS_DEV_IP_DICT = ConnectionData.DEFAULT_CONFIG_FRAGMNENT
-        return ConnectionData.MICROS_DEV_IP_DICT
+            ConnectionData.MICROS_DEVICES = ConnectionData.DEFAULT_CONFIG_FRAGMNENT
+        return ConnectionData.MICROS_DEVICES
 
     @staticmethod
     def select_device(device_tag=None):
         """
         :param device_tag: uid or devip or fuid
-        :return: ConnectionData.HOST, device_fid
+        :return: IP, PORT, FID
         """
-        device_choose_list = []
-        device_fid_in_order = []
-        device_was_found = False
-        device_fid = None
-        if len(ConnectionData.MICROS_DEV_IP_DICT) == 0:
-            print("Retrieve MICROS_DEV_IP_DICT")
+        # Select by device_tag param
+        if len(ConnectionData.MICROS_DEVICES) == 0:
+            print("Retrieve MICROS_DEVICES")
             ConnectionData.read_micrOS_device_cache()
-        if len(list(ConnectionData.MICROS_DEV_IP_DICT.keys())) == 1:
-            key = list(ConnectionData.MICROS_DEV_IP_DICT.keys())[0]
-            ConnectionData.HOST = ConnectionData.MICROS_DEV_IP_DICT[key][0]
+        for index, uid in enumerate(ConnectionData.MICROS_DEVICES.keys()):
+            if uid is not None:
+                device = ConnectionData.MICROS_DEVICES[uid]
+                # Match with IP, FID, UID
+                if device_tag == device[0] or device_tag == device[2] or device_tag == uid:
+                    print("{}Device was found: {}{}".format(Colors.OK, device_tag, Colors.NC))
+                    # IP, PORT, FID, UID
+                    return device[0], device[1], device[2], uid
+
+        # Manual select
+        uid_list_to_select = []
+        print("{}[i]         FUID        IP               UID{}".format(Colors.OKGREEN, Colors.NC))
+        for index, uid in enumerate(ConnectionData.MICROS_DEVICES.keys()):
+            devip = ConnectionData.MICROS_DEVICES[uid][0]
+            fuid = ConnectionData.MICROS_DEVICES[uid][2]
+            print("[{}{}{}] Device: {}{}{} - {} - {}".format(Colors.BOLD, index, Colors.NC,
+                                                             Colors.OKBLUE, fuid, Colors.NC,
+                                                             devip, uid))
+            uid_list_to_select.append(uid)
+        if len(uid_list_to_select) > 1:
+            index = int(input("{}Choose a device index: {}".format(Colors.OK, Colors.NC)))
+            device = ConnectionData.MICROS_DEVICES[uid_list_to_select[index]]
+            print("Device was selected: {}".format(device))
+            # IP, PORT, FID, UID
+            return device[0], device[1], device[2], uid_list_to_select[index]
         else:
-            for index, device in enumerate(ConnectionData.MICROS_DEV_IP_DICT.keys()):
-                uid = device
-                devip = ConnectionData.MICROS_DEV_IP_DICT[device][0]
-                fuid = ConnectionData.MICROS_DEV_IP_DICT[device][2]
-                if device is not None:
-                    if device_tag == uid or device_tag == devip or device_tag == fuid:
-                        print("{}Device was found: {}{}".format(Colors.OK, device_tag, Colors.NC))
-                        ConnectionData.HOST = devip
-                        device_was_found = True
-                        break
-            if not device_was_found:
-                # Print available device info
-                print("{}[i]         FUID        IP               UID{}".format(Colors.OKGREEN, Colors.NC))
-                for index, device in enumerate(ConnectionData.MICROS_DEV_IP_DICT.keys()):
-                    uid = device
-                    devip = ConnectionData.MICROS_DEV_IP_DICT[device][0]
-                    fuid = ConnectionData.MICROS_DEV_IP_DICT[device][2]
-                    print("[{}{}{}] Device: {}{}{} - {} - {}".format(Colors.BOLD, index, Colors.NC,
-                                                                         Colors.OKBLUE, fuid, Colors.NC,
-                                                                         devip, uid))
-
-                    device_choose_list.append(devip)
-                    device_fid_in_order.append(fuid)
-                if len(device_choose_list) > 1:
-                    index = int(input("{}Choose a device index: {}".format(Colors.OK, Colors.NC)))
-                    ConnectionData.HOST = device_choose_list[index]
-                    device_fid = device_fid_in_order[index]
-                    print("Device IP was set: {}".format(ConnectionData.HOST))
-                else:
-                    print("{}Device not found.{}".format(Colors.ERR, Colors.NC))
-                    sys.exit(0)
-        return ConnectionData.HOST, device_fid
-
+            print("{}Device not found.{}".format(Colors.ERR, Colors.NC))
+            sys.exit(0)
 
     @staticmethod
     def nodes_status():
         spr_offset1 = 30
         spr_offset2 = 57
         nodes_dict = ConnectionData.read_micrOS_device_cache()
-        spacer1 = " " * (spr_offset1-14)
+        spacer1 = " " * (spr_offset1 - 14)
         print("{cols}       [ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]\t[COMM SEC]{cole}"
-              .format(spr1=spacer1, cols=Colors.OKBLUE+Colors.BOLD, cole=Colors.NC))
+              .format(spr1=spacer1, cols=Colors.OKBLUE + Colors.BOLD, cole=Colors.NC))
         for uid, data in nodes_dict.items():
             ip = data[0]
+            port = data[1]
             fuid = "{}{}{}".format(Colors.HEADER, data[2], Colors.NC)
             if uid not in ['__devuid__']:
-                spacer1 = " "*(spr_offset1 - len(uid))
+                spacer1 = " " * (spr_offset1 - len(uid))
 
                 # print status msgs
-                is_online = "{}ONLINE{}".format(Colors.OK, Colors.NC) if nwscan.node_is_online(ip, port=ConnectionData.PORT) else "{}OFFLINE{}".format(Colors.WARN, Colors.NC)
+                is_online = "{}ONLINE{}".format(Colors.OK, Colors.NC) if SearchDevices.node_is_online(ip, port=port) else "{}OFFLINE{}".format(
+                    Colors.WARN, Colors.NC)
                 version_data = '<n/a>'
                 elapsed_time = 'n/a'
 
@@ -216,7 +207,7 @@ class ConnectionData:
                     # get version data
                     try:
                         start_comm = time.time()
-                        version_data = SocketDictClient(host=ip, port=ConnectionData.PORT, silent_mode=True).non_interactive(['version'])
+                        version_data = SocketDictClient(host=ip, port=port, silent_mode=True).non_interactive(['version'])
                         elapsed_time = "{:.3f}".format(time.time() - start_comm)
                     except:
                         pass
@@ -229,6 +220,36 @@ class ConnectionData:
                             stat=is_online, version=version_data, elapt=elapsed_time)
                 # Print line
                 print(data_line_str)
+
+    @staticmethod
+    def clean_cache():
+        print("Remove user cache: {}".format(ConnectionData.DEVICE_CACHE_PATH))
+        FileHandler.remove(ConnectionData.DEVICE_CACHE_PATH)
+
+    @staticmethod
+    def list_devices():
+        print("micrOS devices:")
+        device_struct = ConnectionData.read_micrOS_device_cache()
+        for k in device_struct.keys():
+            print("{}: {}".format(k, device_struct[k]))
+        return device_struct
+
+    @staticmethod
+    def resolve_hostname(fuid, uid):
+        local_dhcp_hostname = "{}.local".format(fuid.strip())
+        try:
+            ip = socket.gethostbyname(local_dhcp_hostname)
+            data = ConnectionData.MICROS_DEVICES[uid]
+            if '.' in ip and data[0] != ip:
+                data[0] = ip
+                ConnectionData.MICROS_DEVICES[uid] = data
+                ConnectionData.save_micrOS_device_cache()
+            # host, port, fid, uid
+            return data[0], data[1], data[2], uid
+        except Exception as e:
+            print("Cannot resolve hostname: {}: {}".format(local_dhcp_hostname, e))
+        return None, None, None, None
+
 
 #########################################################
 #               Socket Client Class                     #
@@ -340,37 +361,18 @@ class SocketDictClient:
                 print(str_msg.encode('ascii', 'ignore').decode('ascii'), end=end)
         return str_msg
 
+
 #########################################################
 #                       MAIN                            #
 #########################################################
 
 
-def socket_commandline_args(arg_list):
-    return_action_dict = {'search': False, 'device_tag': None, 'status': False}
-    if len(arg_list) > 0 and 'scan' in arg_list[0]:
-        del arg_list[0]
-        return_action_dict['search'] = True
-    if len(arg_list) > 0 and 'stat' in str(arg_list[0]):
-        del arg_list[0]
-        return_action_dict['status'] = True
-    if len(arg_list) > 0 and "dev" in arg_list[0]:
-        return_action_dict['device_tag'] = arg_list[1]
-        del arg_list[0:2]
-    if len(arg_list) > 0 and "man" in arg_list[0]:
-        print("--scan / scan\t\t- scan devices")
-        print("--dev / dev\t\t- select device - value should be: fuid or uid or devip")
-        print("--stat / stat\t\t- show devides online/offline - and memory data")
-        print("HINT\t\t- In non interactive mode you can pipe commands with <a> separator")
-        sys.exit(0)
-    return arg_list, return_action_dict
-
-
-def main(args, timeout=3):
+def main(args, host='127.0.0.1', port=9008, timeout=3):
     """ main connection wrapper function """
     answer_msg = None
     socketdictclient = None
     try:
-        socketdictclient = SocketDictClient(host=ConnectionData.HOST, port=ConnectionData.PORT, tout=timeout)
+        socketdictclient = SocketDictClient(host=host, port=port, tout=timeout)
         if len(args) == 0:
             # INTERACTIVE MODE
             socketdictclient.interactive()
@@ -387,22 +389,60 @@ def main(args, timeout=3):
             pass
         sys.exit(0)
     except Exception as e:
-        if "Connection reset by peer" not in str(e):
-            print("FAILED TO START: " + str(e))
-        return False, answer_msg
+        print("Socket communication error: {}".format(e))
+        if "timed out" in str(e) or "Host is down" in str(e):
+            raise Exception("TimeOut")
+    return False, answer_msg
+
+
+def socket_commandline_args(arg_list):
+    if arg_list is None or len(arg_list) == 0:
+        arg_list = sys.argv[1:]
+    return_action_dict = {'search': False, 'device_tag': None, 'status': False}
+    if len(arg_list) > 0 and 'scan' in arg_list[0]:
+        del arg_list[0]
+        return_action_dict['search'] = True
+    if len(arg_list) > 0 and 'stat' in str(arg_list[0]):
+        del arg_list[0]
+        return_action_dict['status'] = True
+    if len(arg_list) > 0 and "dev" in arg_list[0]:
+        return_action_dict['device_tag'] = arg_list[1]
+        del arg_list[0:2]
+    if len(arg_list) > 0 and 'clean' in arg_list[0]:
+        ConnectionData.clean_cache()
+        sys.exit()
+    if len(arg_list) > 0 and 'list' in arg_list[0]:
+        ConnectionData.list_devices()
+        sys.exit()
+    if len(arg_list) > 0 and ("man" in arg_list[0] or "hint" in arg_list[0]):
+        print("--scan / scan\t\t- scan devices")
+        print("--dev / dev\t\t- select device - value should be: fuid or uid or devip")
+        print("--stat / stat\t\t- show devides online/offline - and memory data")
+        print("--clean / clean\t\t- clean device_conn_cache.json")
+        print("--list / list\t\t- list mocrOS devices")
+        print("HINT\t\t- In non interactive mode you can pipe commands with <a> separator")
+        sys.exit(0)
+    return arg_list, return_action_dict
 
 
 def run(arg_list=[]):
     """ Run from code
         - Handles extra command line arguments
     """
+    print("Socket run (raw): {}".format(arg_list))
     args, action = socket_commandline_args(arg_list)
-    ConnectionData.auto_execute(search=action['search'], status=action['status'],  dev=action['device_tag'])
-    return main(args)
+    host, port, fid, uid = ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['device_tag'])
+    output = False, ''
+    try:
+        output = main(args, host=host, port=port)
+    except Exception as e:
+        if "TimeOut" in str(e):
+            print("Resolve device by host ... {}.local {}:{}:{}".format(fid, host, port, uid))
+            # host, port, fid, uid
+            ConnectionData.resolve_hostname(fid, uid)
+    return output
 
 
 if __name__ == "__main__":
     """Runs in individual - direct execution mode"""
-    args, action = socket_commandline_args(sys.argv[1:])
-    ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['device_tag'])
-    main(args)
+    run()

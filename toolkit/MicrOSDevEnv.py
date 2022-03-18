@@ -203,7 +203,7 @@ class MicrOSDevTool:
         return_value = eval("{}.app(devfid='{}')".format(app_name, dev_name))
         if return_value is not None:
             return return_value
-        return None
+        return ''
 
     def get_devices(self):
         self.console("------------------------------------------")

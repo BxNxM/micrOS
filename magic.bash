@@ -78,9 +78,15 @@ fi
 if [[ -n ${CMD_ARGS[0]} && "${CMD_ARGS[0]}" == "env" ]]
 then
     echo -e "Source env only, skip devToolKit load"
+elif [[ -n ${CMD_ARGS[0]} && "${CMD_ARGS[0]}" == "gateway" ]]
+then
+    echo -e "Source env and start rest api server aka gateway"
+    python3.8 devToolKit.py -gw
 else
     # Start devToolKit.py
     echo -e "Start devToolKit"
     python3.8 devToolKit.py
 fi
+
+
 

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CMD_ARGS="${@}"
 venv_path="./env/venv"
 activate="${venv_path}/bin/activate"
 requirements="./env/requirements.txt"
@@ -44,6 +45,7 @@ function venv_requirements {
 #################################
 #               VENV            #
 #################################
+
 echo -e "${GREEN}CREATE MICROS DEVTOOLKIT VIRTUAL ENVIRONMENT${NC}"
 venv_create
 
@@ -58,7 +60,6 @@ fi
 echo -e "${GREEN}ACTIVET VIRTUAL ENVIRONMENT: ${activate}${NC}"
 . "${activate}"
 
-
 # Install requirements
 if [[ -n "${VIRTUAL_ENV}" && "${install_req}" -eq 1 ]]
 then
@@ -72,7 +73,14 @@ fi
 #           DEVTOOLKIT          #
 #################################
 
-# Start devToolKit.py
-echo -e "Start devToolKit"
-python3.8 devToolKit.py
+
+# CMD ARGUMENT: env
+if [[ -n ${CMD_ARGS[0]} && "${CMD_ARGS[0]}" == "env" ]]
+then
+    echo -e "Source env only, skip devToolKit load"
+else
+    # Start devToolKit.py
+    echo -e "Start devToolKit"
+    python3.8 devToolKit.py
+fi
 

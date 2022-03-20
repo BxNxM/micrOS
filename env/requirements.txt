@@ -31,3 +31,5 @@ resources==0.0.1
 six==1.15.0
 toml==0.10.1
 wrapt==1.12.1
+Flask==2.0.3
+Flask-RESTful==0.3.9

@@ -17,6 +17,7 @@ import argparse
 from toolkit import MicrOSDevEnv
 from toolkit import socketClient
 from toolkit.lib import LocalMachine
+from toolkit import Gateway
 
 
 def arg_parse():
@@ -48,6 +49,7 @@ def arg_parse():
     dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update and -o/--OTA")
     dev_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
     dev_group.add_argument("-sim", "--simulate", action="store_true", help="start micrOS on your computer in simulated mode")
+    dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server")
 
 
     toolkit_group = parser.add_argument_group("Toolkit development")
@@ -128,6 +130,10 @@ def backup_node_config(api_obj):
 
 def simulate_micrOS(api_obj):
     api_obj.simulator()
+
+
+def gateway_rest_api():
+    Gateway.gateway()
 
 
 def applications(api_obj, app):
@@ -240,6 +246,9 @@ if __name__ == "__main__":
 
     if cmd_args.connect_via_usb:
         connect_via_usb(api_obj)
+
+    if cmd_args.gateway:
+        gateway_rest_api()
 
     sys.exit(0)
 

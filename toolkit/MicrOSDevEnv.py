@@ -186,7 +186,7 @@ class MicrOSDevTool:
         self.console("[SIM] ADD micrOS workspace to python path")
         sys.path.append(self.micros_sim_workspace)
         try:
-            self.console("[SIM] Start simulator")
+            self.console("[SIM] Start simulator: {}".format(self.micros_sim_workspace))
             import micrOSloader
             micrOSloader.main()
         except Exception as e:
@@ -1046,7 +1046,6 @@ class MicrOSDevTool:
             lock_value = webrepl_if_mode if lock else micros_if_mode # Select lock value
 
             workdir_handler = LocalMachine.SimplePopPushd()
-            # TODO: workdir in every case is mpy_micrOS
             workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
 
             # Create / modify file

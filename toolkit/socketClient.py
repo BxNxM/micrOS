@@ -171,7 +171,7 @@ class ConnectionData:
                                                              Colors.OKBLUE, fuid, Colors.NC,
                                                              devip, uid))
             uid_list_to_select.append(uid)
-        if len(uid_list_to_select) > 1:
+        if len(uid_list_to_select) > 1 and device_tag is None:
             index = int(input("{}Choose a device index: {}".format(Colors.OK, Colors.NC)))
             device = ConnectionData.MICROS_DEVICES[uid_list_to_select[index]]
             print("Device was selected: {}".format(device))
@@ -179,7 +179,7 @@ class ConnectionData:
             return device[0], device[1], device[2], uid_list_to_select[index]
         else:
             print("{}Device not found.{}".format(Colors.ERR, Colors.NC))
-            sys.exit(0)
+            return None, None, None, None
 
     @staticmethod
     def nodes_status():

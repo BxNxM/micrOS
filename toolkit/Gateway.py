@@ -73,15 +73,16 @@ class SendCmd(Resource):
         device_detailed = (uid, ip, port, fid)
 
         print("[Gateway] Raw command params: --dev {} {}".format(uid, cmd_str))
+        start = time.time()
         status, response = socketClient.run(['--dev', uid, cmd_str])
+        diff = round(time.time() - start, 2)
         if cmd_str.strip() == 'help':
             # DO not format (strip) response
             response = response.splitlines() if '\n' in response else response.strip()
         else:
             # FORMAT (strip) response
             response = [k.strip() for k in response.splitlines()] if '\n' in response else response.strip()
-
-        return jsonify({'cmd': cmd_list, 'device': device_detailed, 'response': response})
+        return jsonify({'cmd': cmd_list, 'device': device_detailed, 'response': response, 'latency': diff})
 
 
 class ListDevices(Resource):
@@ -154,7 +155,7 @@ class DeviceStatus(Resource):
             status = 'HEALTHY' if status else 'UNHEALTHY'
             output_dev_struct[hwuid] = {'verdict': status, 'fuid': fuid,
                                         'devip': devip, "version": version,
-                                        'alarms': alarms, "deltaT": diff}
+                                        'alarms': alarms, "latency": diff}
         DeviceStatus.NODE_STATUS = output_dev_struct
         return output_dev_struct
 

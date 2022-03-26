@@ -105,8 +105,9 @@ def search_devices():
 
 
 def precompile_micrOS(api_obj):
-    api_obj.precompile_micros()
-
+    if api_obj.precompile_micros():
+        return "Precompile OK"
+    return "Precompile NOK"
 
 def connect_via_usb(api_obj):
     api_obj.connect_dev()
@@ -230,7 +231,7 @@ if __name__ == "__main__":
         install(api_obj)
 
     if cmd_args.cross_compile_micros:
-        precompile_micrOS(api_obj)
+        print(precompile_micrOS(api_obj))
 
     if cmd_args.version:
         get_MicrOS_version(api_obj)

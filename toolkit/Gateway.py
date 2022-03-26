@@ -134,16 +134,27 @@ class DeviceStatus(Resource):
         for uid in device_struct.keys():
             devip = device_struct[uid][0]
             fuid = device_struct[uid][2]
-            if fuid.startswith('__') or fuid.endswith('__'):
+            if fuid.startswith('__') and fuid.endswith('__'):
                 continue
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
             hwuid = 'None'
+            alarms = 'Alarms'
+            diff = 0
+
             if status:
+                start = time.time()
                 _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
+                diff = round(time.time() - start, 2)
                 if _status:
                     hwuid = hello.strip().split(':')[2]
+                    _status2, alarms = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
+                    if _status2:
+                        alarms = alarms.splitlines()
+                        alarms = {'verdict': alarms[-1], 'log': alarms[0:-1]}
             status = 'HEALTHY' if status else 'UNHEALTHY'
-            output_dev_struct[hwuid] = [status, fuid, devip, "v{}".format(version)]
+            output_dev_struct[hwuid] = {'verdict': status, 'fuid': fuid,
+                                        'devip': devip, "version": version,
+                                        'alarms': alarms, "deltaT": diff}
         DeviceStatus.NODE_STATUS = output_dev_struct
         return output_dev_struct
 
@@ -167,7 +178,9 @@ class DeviceStatus(Resource):
             if DeviceStatus._LAST_DELTA > DeviceStatus.STATUS_LIMIT_SEC or len(DeviceStatus.NODE_STATUS.keys()) <= 0:
                 status = "Start"
                 self.status_thread()
-        return jsonify({'devices': DeviceStatus.NODE_STATUS, 'status': status, 'last': round(DeviceStatus._LAST_DELTA, 1)})
+        return jsonify({'devices': DeviceStatus.NODE_STATUS, 'status': status,
+                        'last': round(DeviceStatus._LAST_DELTA, 1),
+                        'devcnt': len(socketClient.ConnectionData.list_devices().keys())-2})
 
 
 # adding the defined resources along with their corresponding urls

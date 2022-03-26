@@ -25,7 +25,11 @@ except Exception as e:
     sys.path.append(MYPATH)
     import socketClient
 
-import mpy_cross
+try:
+    import mpy_cross
+except Exception as e:
+    print("{}[!!!] mpy-cross error{}: {}".format(Colors.ERR, Colors.NC, e))
+    mpy_cross = None
 
 
 class MicrOSDevTool:
@@ -59,7 +63,10 @@ class MicrOSDevTool:
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../micrOS/micropython")
         self.micropython_repo_path = os.path.join(MYPATH, 'workspace/micropython')
         self.webreplcli_repo_path = os.path.join(MYPATH, 'workspace/webrepl/webrepl_cli.py')
-        self.mpy_cross_compiler_path = mpy_cross.mpy_cross  # mpy-cross binary path for cross compilation
+        if mpy_cross is None:
+            self.mpy_cross_compiler_path = None
+        else:
+            self.mpy_cross_compiler_path = mpy_cross.mpy_cross  # mpy-cross binary path for cross compilation
         self.micros_sim_resources = os.path.join(MYPATH, 'simulator_lib')
         self.micros_sim_workspace = os.path.join(MYPATH, 'workspace/simulator')
         self.precompile_LM_wihitelist = self.read_LMs_whitelist()
@@ -315,6 +322,12 @@ class MicrOSDevTool:
         self.console("------------------------------------------")
         self.console("-             PRECOMPILE MICROS          -", state='imp')
         self.console("------------------------------------------")
+
+        # Skip precompile if mpy-cross not available
+        if self.mpy_cross_compiler_path is None or not os.path.exists(self.mpy_cross_compiler_path):
+            self.console("PRECOMPILE MICROS - FUNCTION NOT AVAILABLE - MPY-CROSS MISSING!", state='err')
+            self.console("Use stored precompiled resources", state='ok')
+            return False
 
         if not self.dummy_exec:
             self.__cleanup_precompiled_dir()
@@ -820,13 +833,10 @@ class MicrOSDevTool:
             time.sleep(2)
             if self.deploy_micropython_dev():
                 time.sleep(2)
-                if self.precompile_micros():
-                    time.sleep(2)
-                    self.put_micros_to_dev()
-                    self.archive_node_config()
-                else:
-                    self.console("micrOS install error", state='err')
-                    self.execution_verdict.append("[ERROR] usb_deploy - micrOS install failed")
+                self.precompile_micros()
+                time.sleep(2)
+                self.put_micros_to_dev()
+                self.archive_node_config()
             else:
                 self.console("Deploy micropython error", state='err')
                 self.execution_verdict.append("[ERROR] usb_deploy - micropython install failed")

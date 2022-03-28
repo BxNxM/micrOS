@@ -140,22 +140,29 @@ class DeviceStatus(Resource):
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
             hwuid = 'None'
             alarms = 'Alarms'
+            upython_version = 'None'
             diff = 0
 
             if status:
                 start = time.time()
+                # Get hello message response
                 _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
                 diff = round(time.time() - start, 2)
                 if _status:
                     hwuid = hello.strip().split(':')[2]
+                    # Get system alarms response
                     _status2, alarms = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
                     if _status2:
                         alarms = alarms.splitlines()
                         alarms = {'verdict': alarms[-1], 'log': alarms[0:-1]}
+                    # Get system info response -> upython version
+                    _status3, info = socketClient.run(['--dev', fuid.strip(), 'system info'])
+                    if 'upython' in info:
+                        upython_version = info.splitlines()[3].replace('upython:', '').strip()
             status = 'HEALTHY' if status else 'UNHEALTHY'
             output_dev_struct[hwuid] = {'verdict': status, 'fuid': fuid,
                                         'devip': devip, "version": version,
-                                        'alarms': alarms, "latency": diff}
+                                        'alarms': alarms, "latency": diff, 'upython': upython_version}
         DeviceStatus.NODE_STATUS = output_dev_struct
         return output_dev_struct
 

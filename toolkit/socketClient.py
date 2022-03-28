@@ -396,8 +396,6 @@ def main(args, host='127.0.0.1', port=9008, timeout=3):
 
 
 def socket_commandline_args(arg_list):
-    if arg_list is None or len(arg_list) == 0:
-        arg_list = sys.argv[1:]
     return_action_dict = {'search': False, 'device_tag': None, 'status': False}
     if len(arg_list) > 0 and 'scan' in arg_list[0]:
         del arg_list[0]
@@ -445,4 +443,5 @@ def run(arg_list=[]):
 
 if __name__ == "__main__":
     """Runs in individual - direct execution mode"""
-    run()
+    arg_list = sys.argv[1:]
+    run(arg_list=arg_list)

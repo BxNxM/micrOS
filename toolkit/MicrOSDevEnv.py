@@ -222,6 +222,7 @@ class MicrOSDevTool:
             return ['dummy_device']
 
         if not sys.platform.startswith('win'):
+            # List USB devices on Windows
             dev_path = '/dev/'
             content_list = [dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev]
             for present_dev in content_list:
@@ -232,6 +233,7 @@ class MicrOSDevTool:
                         self.console("Device was found: {}".format(dev_abs_path), state="imp")
                         break
         else:
+            # List USB devices on macOS and Linux
             ports = list(serial_port_list.comports())
             for item in ports:
                 if "CP210" in str(item.description):

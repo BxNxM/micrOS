@@ -403,10 +403,10 @@ class HeaderInfo:
 
     def __open_micrOS_URL(self):
         self.parent_obj.console.append_output("Open micrOS repo documentation")
-        if sys.platform == 'win32':
-            os.startfile(self.url)
-        elif sys.platform == 'darwin':
+        if sys.platform == 'darwin':
             subprocess.Popen(['open', self.url])
+        elif sys.platform.startswith('win'):
+            os.startfile(self.url)
         else:
             try:
                 subprocess.Popen(['xdg-open', self.url])

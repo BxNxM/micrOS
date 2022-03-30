@@ -253,7 +253,7 @@ class FileHandler:
         return False
 
 
-class SystemHandler():
+class SystemHandler:
     '''
     SystemHandler class contains disk, cpu, network
     related functionalities, like:
@@ -425,7 +425,8 @@ class SystemHandler():
         except Exception as e:
             debug_print("[DEBUG] Cannot delete env var: " + env_var + " " + str(e))
 
-class CommandHandler():
+
+class CommandHandler:
     '''
     CommandHandler class contains linux command execution
     related functionalities and evaluations

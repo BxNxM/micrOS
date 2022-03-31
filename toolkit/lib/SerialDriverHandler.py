@@ -27,6 +27,14 @@ def check_serial_driver_is_installed():
                 print("\tSerial driver was already installed: {}".format(stdout))
     elif sys.platform.startswith('win'):
         print("Check USB serial driver on Windows")
+        exitcode, stdout, stderr = CommandHandler.run_command("driverquery")
+        if exitcode == 0:
+            if 'cp210' in stdout:
+                print("\tDo serial driver install")
+                install_usb_serial_driver()
+            else:
+                print(USB_DRIVER_DIR)
+                print("\tSerial driver was already installed: {}".format(stdout))
     else:
         print("Check USB serial driver on Linux: TODO\n\tPlease install serial usb driver manually.")
 

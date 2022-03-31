@@ -20,21 +20,21 @@ def check_serial_driver_is_installed():
         exitcode, stdout, stderr = CommandHandler.run_command("kextstat | grep 'usb.serial'", shell=True, debug=False)
         if exitcode == 0:
             if 'usb.serial' not in stdout:
-                print("\tDo serial driver install")
+                print("\tDo serial driver install (usb.serial)")
                 install_usb_serial_driver()
             else:
                 print(USB_DRIVER_DIR)
-                print("\tSerial driver was already installed: {}".format(stdout))
+                print("\tSerial driver was already installed (usb.serial): {}".format(stdout))
     elif sys.platform.startswith('win'):
         print("Check USB serial driver on Windows")
-        exitcode, stdout, stderr = CommandHandler.run_command("driverquery")
+        exitcode, stdout, stderr = CommandHandler.run_command("driverquery", debug=False)
         if exitcode == 0:
             if 'cp210' in stdout:
-                print("\tDo serial driver install")
+                print("\tDo serial driver install (cp210X)")
                 install_usb_serial_driver()
             else:
                 print(USB_DRIVER_DIR)
-                print("\tSerial driver was already installed: {}".format(stdout))
+                print("\tSerial driver was already installed (cp210X): {}".format(stdout))
     else:
         print("Check USB serial driver on Linux: TODO\n\tPlease install serial usb driver manually.")
 

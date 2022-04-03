@@ -805,8 +805,10 @@ class MicrOSDevTool:
                                 continue
                             # Gen proper func name
                             function_name = '{}'.format(line.split(')')[0]).replace("def", '').strip()
-                            function_name = function_name.replace('(', ' ').replace(',', '').replace('msgobj',
-                                                                                                     '<msgobj>')
+                            function_name = function_name.replace('(', ' ')\
+                                                         .replace(',', '')\
+                                                         .replace('msgobj=None', '')\
+                                                         .replace('force=True', '')
                             # Save record
                             module_function_dict[module_int_name].append(function_name.strip())
             except Exception as e:

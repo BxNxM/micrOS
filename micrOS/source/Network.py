@@ -72,8 +72,12 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
         for _ in range(0, 2):
             if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
                 console_write('\t| - [NW: STA] ESSID WAS FOUND: {}'.format(essid))
-                return essid, str(raw_pwd.split(';')[idx]).strip()
-            sleep_ms(1000)
+                try:
+                    return essid, str(raw_pwd.split(';')[idx]).strip()
+                except Exception as e:
+                    console_write('\t| - [NW: STA] wifi stapwd config error: {}'.format(e))
+                    errlog_add('[SET STA] stapwd config error: {}'.format(e))
+            sleep_ms(400)
     return None, ''
 
 

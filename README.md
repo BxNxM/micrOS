@@ -26,7 +26,7 @@
 
 ## ◉ Shortcuts:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#micrOS-Client-Application)
-2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#Installing-micrOS-with-DevToolKit-#ESP32)
+2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32)
 3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 5. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
@@ -64,7 +64,7 @@ I would suggest to use micrOS GUI as a primary interface for micrOS development 
 
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
-> Note: Allow extend system path with that python version (installation parameter)
+> Note: Allow extend system path with that python version (installation parameter) </br>
 > On **Windows**: RUN AS ADMINISTARTOR
 
 ----------------------------------------
@@ -73,7 +73,7 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 #### 2.1. On macOS:
 
-&nbsp;Open command line, `commnd+space` + `type terminal` + `enter`
+&nbsp;Open command line, press: `commnd+space` + type: `terminal` + press: `enter`
 
 &nbsp;**`xcode-select --install; git --version`**
 	
@@ -85,7 +85,7 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 ### ONLY ON WINDOWNS: Special dependencies
 
-*You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt)*
+*You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt and setup.py)*
 
 &nbsp;**[C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)**
 
@@ -93,7 +93,7 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 ### 3. Install and RUN **devToolKit** GUI
 
-Download and install micrOS devToolKit python package,
+Download and install micrOS devToolKit python package:
 
 **`pip install git+https://github.com/BxNxM/micrOS.git`**
 
@@ -114,6 +114,18 @@ It will open a graphical user interface for micrOS device management, like usb d
 ```
 
 It will install your board via USB with default settings. **Continue with micrOS Client app...**
+
+> Note: At the first USB deployment, devToolKit will ask to install **SerialUSB driver** and it will open the driver installer as well, please follow the steps and install the necessary driver.
+
+
+```
+╔╗ ╔╗                  ╔═══╗╔╗ ╔╗╔═╗ ╔╗       ╔═══╗
+║║ ║║                  ║╔══╝║║ ║║║║╚╗║║       ╚╗╔╗║
+║╚═╝║╔══╗ ╔╗╔╗╔══╗     ║╚══╗║║ ║║║╔╗╚╝║    ╔═╗ ║║║║
+║╔═╗║╚ ╗║ ║╚╝║║╔╗║     ║╔══╝║║ ║║║║╚╗║║    ╚═╝ ║║║║
+║║ ║║║╚╝╚╗╚╗╔╝║║═╣    ╔╝╚╗  ║╚═╝║║║ ║║║    ╔═╗╔╝╚╝║
+╚╝ ╚╝╚═══╝ ╚╝ ╚══╝    ╚══╝  ╚═══╝╚╝ ╚═╝    ╚═╝╚═══╝
+```
 
 ----------------------------------------
 ----------------------------------------

@@ -1,0 +1,307 @@
+CP210x Macintosh OS VCP Driver v6 Release Notes
+Copyright (C) 2017-2021 Silicon Laboratories Inc.
+
+This release contains the following components:
+
+* SiLabsUSBDriverDisk.dmg - Image containing the VCP Driver Installer
+* ReleaseNotes.txt (this file)
+* uninstaller.sh - a bash shell script for removing the driver
+
+Known Issues and Limitations
+----------------------------
+
+	This release includes the Macintosh OS driver for 64 bit 
+	Macintosh computers running MacOS X 10.11 or greater.
+	For MacOS X 10.9 and 10.10, see the folder called "Legacy MacVCP Driver".
+
+Driver Installation
+-------------------
+
+	Mount the DMG file and double click on 
+	Silicon Labs VCP Driver. 
+	On MacOS 10.13 and later, the installation of the driver may be blocked. 
+	To unblock, open the System Preferences Security & Privacy pane and
+	unblock the system extension. See Apple Technical Note TN2459
+	"User-Approved Kernel Extension Loading" for more information.
+
+Uninstalling the Driver
+-----------------------
+
+	To uninstall the driver, run the uninstaller.sh shell script from
+	a Terminal command prompt. 
+
+Release Dates
+-------------
+	CP210x Macintosh OS VCP Driver 6.0.2     - October 26, 2021
+	CP210x Macintosh OS VCP Driver 6.0.1     - March 26, 2021
+	CP210x Macintosh OS VCP Driver 6.0       - December 18, 2020
+	CP210x Macintosh OSX VCP Driver 5.3.5    - February 25, 2020
+	CP210x Macintosh OSX VCP Driver 5.3.2    - January 27, 2020
+	CP210x Macintosh OSX VCP Driver 5.3.0    - January 20, 2020
+	CP210x Macintosh OSX VCP Driver 5.2.4    - December 13, 2019
+	CP210x Macintosh OSX VCP Driver 5.2.3    - December 6, 2019
+	CP210x Macintosh OSX VCP Driver 5.2.2    - October 2, 2019
+	CP210x Macintosh OSX VCP Driver 5.2.1    - September 9, 2019
+	CP210x Macintosh OSX VCP Driver 5.2.0    - July 11, 2019
+	CP210x Macintosh OSX VCP Driver 5.1.1    - July 1, 2019
+	CP210x Macintosh OSX VCP Driver 5.1.0    - May 23, 2019
+	CP210x Macintosh OSX VCP Driver 5.0.10   - March 27, 2019
+	CP210x Macintosh OSX VCP Driver 5.0.9    - February 13, 2019
+	CP210x Macintosh OSX VCP Driver 5.0.7    - December 17, 2018
+	CP210x Macintosh OSX VCP Driver 5.0.6    - September 17, 2018
+	CP210x Macintosh OSX VCP Driver 5.0.5    - July 13, 2018
+	CP210x Macintosh OSX VCP Driver 5.0.4    - January 19, 2018
+	CP210x Macintosh OSX VCP Driver 5.0.3    - November 21, 2017
+	CP210x Macintosh OSX VCP Driver 5.0.2    - October 12, 2017
+	CP210x Macintosh OSX VCP Driver 5.0.1    - Aug 25, 2017
+	CP210x Macintosh OSX VCP Driver 5.0      - Aug 3, 2017
+	CP210x Macintosh OSX VCP Driver 4.11.2   - June 16, 2017
+	CP210x Macintosh OSX VCP Driver 4.11.1   - May 26, 2017
+	CP210x Macintosh OSX VCP Driver 4.11.0   - May 2, 2017
+	CP210x Macintosh OSX VCP Driver 4.x.17   - March 23, 2017
+	CP210x Macintosh OSX VCP Driver 4.x.16   - Feb 3, 2017
+	CP210x Macintosh OSX VCP Driver 4.x.15   - December 19, 2016
+	CP210x Macintosh OSX VCP Driver 4.x.14   - November 3, 2016
+	CP210x Macintosh OSX VCP Driver 4.x.13   - August 31, 2016
+	CP210x Macintosh OSX VCP Driver 4.x.12   - June 15, 2016
+	CP210x Macintosh OSX VCP Driver 4.x.11   - May 26, 2016
+	CP210x Macintosh OSX VCP Driver 4.x.10   - April 6, 2016
+	CP210x Macintosh OSX VCP Driver 4.x.9    - March 28, 2016
+	CP210x Macintosh OSX VCP Driver 4.10.8   - March 2, 2016
+	CP210x Macintosh OSX VCP Driver v3.1     - December 6, 2012
+
+
+CP210x Macintosh OS Driver Revision History
+--------------------------------------------
+Version 6.0.2
+	On macOS Big Sur:
+		Fix issue that Xoff state is not remembered when macOS goes to sleep.
+		Fix potential driver installation issue on some machines.
+		Fix driver installation error on macOS Big Sur 11.5.
+		Added VID/PID for Variable, Inc.
+		Added VID/PID for Sony Corporation.
+	On macOS Catalina or older:
+		Support software flow control
+		Fix driver installation error on macOS 10.14.
+		Added VID/PID for Variable, Inc.
+		Added VID/PID for Sony Corporation.
+
+Version 6.0.1
+	On macOS Big Sur: 	
+		Fix issue with CP2105 that it cannot transfer data if Software flow control is enabled.
+		Fix installation error under some conditions.
+	On macOS Catalina or older: 	
+		Add support for Line Break to the driver.
+		Fix RTS doesn't go high if host PC buffer is full.
+		Improve throughput.
+	
+Version 6.0
+	Adds VID/PID for NECYD NLTAIR cp2105
+	Supports macOS Big Sur with implementation of DriverKit extension
+
+Version 5.3.5
+	Adds VID/PID for QIVICON ZigBee Device, eq-3 HmIP USB, and BitronVideo Zigbee
+	Addresses additional flow control bug.
+
+Version 5.3.2
+	Adds a lock to syncrhonize power event handling, state changes, 
+	and driver unload to prevent an error.
+
+Version 5.3.0
+	Corrects an issue with state maintenance for the CTS, DSR, DCD lines.
+
+Version 5.2.4
+	Corrects a compatbility issue with MacOS 10.13 and earlier.
+
+Version 5.2.3
+	Corrects issues with the installer.
+
+Version 5.2.2
+	Adds VID/PID for RF Code.
+	
+Version 5.2.1
+	Fixes a problem with the installer that prevents it from working
+	correctly wiht MacOS 10.15 Catalina.
+
+Version 5.2.0
+	Fixes a bug in the installer that prevented it from working properly
+	on MacOS 10.11 and 10.12
+	Fixes a bug in the driver that could corruption requiring a reboot 
+	if an attempt was made to unload the driver while a device was plugged
+	in and using it
+
+Version 5.1.1
+	The driver now has a new installer intended to reduce user confusion 
+	Added VID/PIDs for ST Link.
+
+Version 5.1.0
+	The driver is now Notarized for support of MacOS 10.14.5 and up. 
+	See Apple Developer documentation about Notarization for more information.
+	Added VID/PIDs for DECAGON DEVICES.
+
+Version 5.0.10
+	Added VID/PID for Sony Corporation.
+
+Version 5.0.9
+	Added VID/PID for TAMRON Co., Ltd.
+
+Version 5.0.7
+	Added VID/PID for GWinstek.
+	
+Version 5.0.6
+	Added Alternative Silicon Labs VID/PID Sets.
+
+Version 5.0.5
+	Added VID/PID for RS DYNAMICS.
+
+Version 5.0.4
+	Added VID/PID for PICARO.
+
+Version 5.0.3
+	Added VID/PID for Lunatico Astronomia.
+
+Version 5.0.2
+	Added VID/PID for Sony Corporation.
+
+Version 5.0.1
+	Bug fixes.
+	
+Version 5.0
+	Adds support for GPIO control.
+	Updated for compatibility with MacOS 10.11 Kernel driver APIs. 
+	This is a significant update to this driver.
+
+Version 4.11.2
+	Added VID/PID for Notch Dock.
+
+Version 4.11.1
+	Added VID/PID for HUSBZB-1: GoControl QuickStick Combo.
+
+Version 4.11.0
+	Fixed an issue that would cause the CP2102N to hang when a user space application disconnects while the device is receiving data.
+
+Version 4.x.17
+	Added VID/PID for METER USB.
+
+Version 4.x.16
+	Added VID/PID for Zero-Click.
+
+Version 4.x.15
+	Added VID/PID for NETGEAR.
+	
+Version 4.x.14
+	Added VID/PIDs for Planar UltraRes.
+	Added VID/PIDs for Coolon USB.
+
+1Version 4.x.13
+	Added VID/PIDs for Brim Brothers Ltd.
+	Added VID/PIDs for 3D Tek
+
+Version 4.x.12
+	Added VID/PIDs for Juniper Networks, Inc.
+	Added VID/PIDs for FluxData, Inc.
+
+Version 4.x.11
+	Corrected VID/PIDs for Findster Technologies, SA.
+
+Version 4.x.10
+	Added VID/PIDs for Mark-10 Corp.
+
+Version 4.x.9
+	Added VID/PIDs for Findster Technologies, SA and for CMA.
+
+Version 4.x.8
+	Added VID/PIDs for ETS-Lindgren.
+
+Version 4.x.7
+	Added VID/PID for Sekonic and DASCOM.
+	Minor fix to postflight script for 64 bit 10.8 and below OS's.
+
+Version 4.x.6
+	Added VID/PIDs for Vorze and Cadex Electronics.
+
+Version 4.x.5
+	Added VID/PIDs for California Eastern Labs and Micro Computer Control Corp.
+
+Version 4.x.4
+	Added VID/PIDs for Zonge International, AES GmbH, SPORTident GmbH
+
+Version 4.x.3
+	Added VID/PID for Aruba Networks, Inc.
+
+Version 4.x.2
+	Added VID/PID for ARKRAY, Inc.
+
+Version 4.x.1
+	Added VID/PIDs for BodyCap, RTKWARE, and West Mountain Radio
+	Added uninstaller script to DMG
+	Installer now runs uninstaller script before executing install - removes older versions using previous naming scheme
+	Dropping support for OS X 10.4.  If you require OS X 10.4 support, please install version 3.1 of the VCP driver
+
+Version 4.x.0
+	Added OSX 10.9 and 10.10 driver support with signed kernel extension
+	Updated version numbering - 2nd digit represents target OS versions
+		4.7 - OSX 10.7 and older, 32 bit
+		4.8 - OSX 10.8 and older, 64 bit
+		4.10 - OSX 10.9 and 10.10, 64 bit, signed kext
+	Updated version numbering - 3rd digit represents VID/PID updates.  Customers not needing the new VID/PID do not need to update drivers for 3rd digit changes.
+	Installer will now only install the proper matching kernel extension instead of both the 32 bit and 64 bit versions.
+
+Version 3.1
+	Added support for CP2108
+
+Version 3.0
+	Corrected issue where transmission would stop when a 0 length packet was sent
+	incorrectly on aligned packet boundaries
+
+Version 2.9
+	Corrected issue with Baud Rates not being set properly if they were greater 
+	than 230400 on PPC or Intel platforms
+	Corrected an issue where a device might get stuck when coming out of sleep mode
+	Corrected an issue on PPC where Baud Rates were not getting set properly
+	Added enhanced support for sleep, now reads state on sleep and writes state on
+	wake to provide smoother and more stable state transitions
+
+Version 2.7
+	Corrected issue with initial Stop Bits value
+	Corrected issue which seen which switching between 32 and 64 bit mode and trying
+	to use the driver in each mode
+	Added in a clear stall to be more complete in invalid control transfers
+
+Version 2.6
+	Corrected all known Kernel Panics for 10.4/5/6 for surprise removal and data
+	transmission
+	Corrected an issue with data drop while using XON/XOFF flow control
+	Corrected RTS/DTR toggling sync issue
+	
+Version 2.2
+	Corrected Kernel Panic in Snow Leopard which would randomly occur after
+	transmission
+	Modified DTR pin to toggle on open and close instead of on insertion
+	Modified driver to load without showing the Network Connection Dialog
+	Modified driver to allow toggling of RTS and DTR pins
+	Added 64 bit support for Snow Leopard
+	
+Version 2.1
+	Corrected device strings that were changed in the 2.0 release back to the
+	format used in pre-2.0 drivers
+
+Version 2.0
+	Driver architecture updated.
+
+Version 1.06
+	Corrected a bug which causes a Kernel Panic with a Baud Rate of 0, yileding
+	a Divide-By-Zero error
+
+Version 1.04
+	Updated to support newer versions of Mac OSX
+	
+
+Version 1.02
+	Updated to support the Intel platform through a universal binary that
+	also supports PowerPC.
+
+Version 1.00
+	Initial Release
+
+

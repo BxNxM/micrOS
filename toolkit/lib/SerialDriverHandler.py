@@ -23,14 +23,13 @@ def dmg_install_mac(dmg_path):
     if FileHandler.path_is_exists(dmg_path):
         # Path and params for install
         mount_command = "sudo hdiutil attach {}".format(dmg_path)
-        unmount_command = "sudo hdiutil detach /Volumes/Silicon\ Labs\ VCP\ Driver\ Install\ Disk"
-        pkg_path = "/Volumes/Silicon\ Labs\ VCP\ Driver\ Install\ Disk/Silicon\ Labs\ VCP\ Driver.pkg"
+        unmount_command = "sudo hdiutil detach /Volumes/Silicon\ Labs\ VCP\ Driver\ Install\ Disk/"
+        install_command = "/Volumes/Silicon\ Labs\ VCP\ Driver\ Install\ Disk/Install\ CP210x\ VCP\ Driver.app/Contents/MacOS/Install\ CP210x\ VCP\ Driver"
 
         # Do install
         print("[1/3] Mount dmg image: {}".format(dmg_path))
         exitcode, stdout, stderr = CommandHandler.run_command(mount_command, shell=True, debug=True)
         if exitcode == 0:
-            install_command = "sudo installer -package {} -target /".format(pkg_path)
             print("[2/3] Execute installer: {}".format(install_command))
             exitcode, stdout, stderr = CommandHandler.run_command(install_command, shell=True, debug=True)
             if exitcode == 0:
@@ -86,15 +85,14 @@ def restart():
 def check_serial_driver_is_installed():
     if sys.platform.strip() == "darwin":
         print("{}Check USB serial driver on macOS{}".format(Colors.BOLD, Colors.NC))
-        serial_driver_key = "driverkit.serial"
-        exitcode, stdout, stderr = CommandHandler.run_command("kextstat | grep '{}'".format(serial_driver_key), shell=True, debug=True)
-        if exitcode in [0, 1]:
-            if serial_driver_key not in stdout:
-                print("\t{}Do serial driver install ({}){}".format(Colors.OKGREEN, serial_driver_key, Colors.NC))
-                return False, 'mac'
-            else:
-                print("\t{}Serial driver was already installed ({}): {}{}".format(Colors.OKGREEN, serial_driver_key, stdout, Colors.NC))
-                return True, 'mac'
+        serial_app_path = '/Applications/CP210xVCPDriver.app/Contents/Library/SystemExtensions/com.silabs.cp210x.dext'
+        is_exists, ptype = FileHandler.path_is_exists(serial_app_path)
+        if is_exists and ptype == 'd':
+            print("\t{}Serial driver was already installed: {}{}".format(Colors.OKGREEN, serial_app_path, Colors.NC))
+            return True, 'mac'
+        print("\t{}Do serial driver install {}".format(Colors.OKGREEN, serial_app_path, Colors.NC))
+        return False, 'mac'
+
     elif sys.platform.startswith('win'):
         print("Check USB serial driver on Windows")
         serial_driver_key = 'cp210X'
@@ -114,7 +112,7 @@ def check_serial_driver_is_installed():
 
 def install_usb_serial_driver():
     driver_sub_path = {'win': 'CP210x_Universal_Windows_Driver/CP210xVCPInstaller_x64.exe',
-                       'mac': 'SiLabsUSBDriverDisk.dmg',
+                       'mac': 'macOS_VCP_Driver/SiLabsUSBDriverDisk.dmg',
                        'linux': ''}
     # Check driver was installed
     is_installed, platform = check_serial_driver_is_installed()

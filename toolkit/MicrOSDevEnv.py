@@ -17,11 +17,12 @@ try:
     from . import socketClient
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
+    from .lib.SerialDriverHandler import install_usb_serial_driver
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
-    print(MYPATH)
     from lib import LocalMachine
     from lib.TerminalColors import Colors
+    from lib.SerialDriverHandler import install_usb_serial_driver
     sys.path.append(MYPATH)
     import socketClient
 
@@ -39,7 +40,9 @@ class MicrOSDevTool:
         self.gui_console = gui_console
         self.cmdgui = cmdgui
         # Skip the following modules in OTA update (safe mode) to have recovery mode
-        self.safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy', 'Network.mpy']
+        self.safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy',
+                                              'Network.mpy', 'ConfigHandler.mpy',
+                                              'Debug.mpy']
         # USB serial (sub)names to recognize in /dev/tty...
         self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial']
         # Commands for devices
@@ -102,6 +105,7 @@ class MicrOSDevTool:
             self.console("micropython: {}".format(self.selected_micropython_bin))
         else:
             # Find micropython binaries
+            install_usb_serial_driver()             # Serial-USB Driver install
             self.get_micropython_binaries()
             # Find micrOS devices
             self.__select_devicetype_and_micropython()
@@ -162,6 +166,9 @@ class MicrOSDevTool:
     #####################################################
     #                    DevEnv METHODS                 #
     #####################################################
+    def safe_core_list(self):
+        return self.safe_mode_file_exception_list
+
     def simulator(self, prepare_only=False):
         self.console("[SIM] Clean sim workspace: {}".format(self.micros_sim_workspace))
         LocalMachine.FileHandler().remove(self.micros_sim_workspace, ignore=True)
@@ -169,6 +176,7 @@ class MicrOSDevTool:
         self.console("[SIM] Create workspace folder: {}".format(self.micros_sim_workspace))
         LocalMachine.FileHandler().create_dir(self.micros_sim_workspace)
 
+        self.console("[SIM] Copy micrOS files to workdir")
         # Copy micrOS to sim workspace
         file_list = LocalMachine.FileHandler().list_dir(self.MicrOS_dir_path)
         for f in file_list:
@@ -222,7 +230,7 @@ class MicrOSDevTool:
             return ['dummy_device']
 
         if not sys.platform.startswith('win'):
-            # List USB devices on Windows
+            # List USB devices on macOS and Linux
             dev_path = '/dev/'
             content_list = [dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev]
             for present_dev in content_list:
@@ -233,12 +241,13 @@ class MicrOSDevTool:
                         self.console("Device was found: {}".format(dev_abs_path), state="imp")
                         break
         else:
-            # List USB devices on macOS and Linux
+            # List USB devices on Windows
             ports = list(serial_port_list.comports())
             for item in ports:
                 if "CP210" in str(item.description):
                     micros_devices.append(item.device)
                     self.console("Device was found: {}".format(item.device, state="imp"))
+        # Eval device list, return with devices
         if len(micros_devices) > 0:
             self.console("Device was found. :)", state="ok")
         else:

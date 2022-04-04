@@ -1,8 +1,11 @@
 import os
 from time import localtime
 from machine import Pin
-from LogicalPins import physical_pin
 
+try:
+    from LogicalPins import physical_pin
+except:
+    physical_pin = None
 
 try:
     # TinyPICO progress led plugin
@@ -24,7 +27,7 @@ class DebugCfg:
     def init_pled():
         # CALL FROM ConfigHandler
         if TinyPLed is None:
-            if physical_pin('builtin') is not None:
+            if physical_pin is not None and physical_pin('builtin') is not None:
                 # Progress led for esp8266/esp32/etc
                 DebugCfg.PLED_OBJ = Pin(physical_pin('builtin'), Pin.OUT)
         else:

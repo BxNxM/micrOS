@@ -14,9 +14,13 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from utime import sleep
 from json import load, dump
-from LogicalPins import set_pinmap
 from os import remove
 from Debug import DebugCfg, console_write, errlog_add
+try:
+    from LogicalPins import set_pinmap
+except:
+    errlog_add("LogicalPins import error: set_pinmap")
+    set_pinmap = None
 
 
 class Data:
@@ -64,8 +68,9 @@ class Data:
         # Inject user config into template
         Data.__inject_default_conf()
         # [!!!] Init selected pinmap - default pinmap calculated by platform
-        pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
-        console_write("[PIN MAP] {}".format(pinmap))
+        if set_pinmap is not None:
+            pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
+            console_write("[PIN MAP] {}".format(pinmap))
         # SET dbg based on config settings (inject user conf)
         DebugCfg.DEBUG = cfgget('dbg')
         if Data.CONFIG_CACHE['dbg']:

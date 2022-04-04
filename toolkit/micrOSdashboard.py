@@ -302,11 +302,12 @@ class DevelopmentModifiers:
         checkbox.toggled.connect(self.__on_click_ignore_version_check)
 
     def unsafe_core_update_ota_check_checkbox(self):
-        self.checkbox = QCheckBox('FSCO+', self.parent_obj)  # ForceSystemCoreOta update
+        self.checkbox = QCheckBox('DEV+', self.parent_obj)  # ForceSystemCoreOta update
         self.checkbox.setChecked(FSCO_STATE)
         self.checkbox.setStyleSheet("QCheckBox::indicator:checked{background-color: red;} QCheckBox::indicator:hover{background-color: red;}")
         self.checkbox.move(self.parent_obj.width - 255, self.parent_obj.height - 50)
-        self.checkbox.setToolTip("[!!!][OTA] ForceSystemCoreOta update.\nIn case of failure, USB re-deployment required!\n+ LM_ prefix ignore for Quick OTA LM update.")
+        self.checkbox.setToolTip("[!][OTA] IgnoreSafeOta\nIn case of failure, USB re-deployment required!\n"
+                                 "{}\n\n[!][OTA] LM_ prefix ignore for Quick OTA LM update.".format(', '.join(self.parent_obj.devtool_obj.safe_core_list())))
         self.checkbox.toggled.connect(self.__on_click_unsafe_core_update_ota)
 
     def __on_click_ignore_version_check(self):

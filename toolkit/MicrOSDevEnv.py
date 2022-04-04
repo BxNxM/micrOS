@@ -200,12 +200,16 @@ class MicrOSDevTool:
         # Import simulator workspace
         self.console("[SIM] ADD micrOS workspace to python path")
         sys.path.append(self.micros_sim_workspace)
+
         try:
             self.console("[SIM] Start simulator: {}".format(self.micros_sim_workspace))
             import micrOSloader
+        except Exception as e:
+            print("[LOAD ERROR] micrOS SIM\n{}".format(e))
+        try:
             micrOSloader.main()
         except Exception as e:
-            print("[ERROR] micrOS SIM\n{}".format(e))
+            print("[RUN ERROR] micrOS SIM\n{}".format(e))
         workdir_handler.popd()
 
     def exec_app(self, app_name, dev_name, app_postfix='_app'):

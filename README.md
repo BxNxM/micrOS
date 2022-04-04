@@ -6,26 +6,27 @@
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
-✉️ 📡 Generic communication API (expose module functions - telnet) <br/>
+📲 💻 Communication over WiFi: Generic communication API <br/>
+&nbsp;&nbsp; ✉️ Expose upython module functions - telnet TCP/IP <br/>
 ⚙️ 📝 Device initialization from user config <br/>
-📲 💻 Communication over WiFi: application calls and configuration <br/>
 🧩  Codeless end user experience via phone client <br/>
-🚪 No external server or service required <br/>
-⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
+🚪 No external server or service required for client-device communication <br/>
+&nbsp;&nbsp; ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
 🛠 Easy to customize, create your own Load Modules: <br/>
-	1. Write **LM_`<your_app>`.py** <br/>
-	2. Copy (OTA/USB) python script to your device <br/>
-	3. Call any function your `<your_app>` module <br/>
-🦾 Built-in scheduling (IRQ):<br/>
-	- Time stamp based <br/>
-	- Simple periodic <br/>
-	- Thread <br/>
+&nbsp;&nbsp; 1. Write **LM_**`<your_app>`**.py** <br/>
+&nbsp;&nbsp; 2. Copy (OTA/USB) python script to your device (drap&drop)<br/>
+&nbsp;&nbsp; 3. Call any function your **`<your_app>`** module <br/>
+🦾 Built-in scheduling (IRQs):<br/>
+&nbsp;&nbsp; - Time stamp based <br/>
+&nbsp;&nbsp; - Geolocation based utc + sunset, sunrise rest features <br/>
+&nbsp;&nbsp; - Simple periodic <br/>
+&nbsp;&nbsp; - Thread (beta) <br/>
 
-🚀🎈Lightweight and high performance core system that leaves you space 😎<br/>
+🚀🎈Lightweight and high performance core system that leaves you space 😎
 
 ## ◉ Shortcuts:
 1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#micrOS-Client-Application)
-2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-macos--windows--linux)
+2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#Installing-micrOS-with-DevToolKit-#ESP32)
 3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 5. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
@@ -40,60 +41,67 @@ Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/
 ## micrOS Client Application
 
 ### AppStore
-[![AppStoreURL](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
+&nbsp;&nbsp;&nbsp;[![AppStoreURL](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
 
 ### PlayStore
-[![PlayStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
+&nbsp;&nbsp;&nbsp;[![PlayStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
 
 ----------------------------------------
 ----------------------------------------
 
-## Installing micrOS with DevToolKit (macOS / Windows / Linux)
+## Installing micrOS with DevToolKit #ESP32
+**From macOS / Windows / Linux to any esp32 boards**
 
-End-to-End solution for deploy, update, monitor and develop micrOS boards.
+End-to-End solution for deployment, update, monitor and develop micrOS boards.
 
-I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you need.
+I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you prefer.
 
-> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources (precompiled) from micrOs/toolkit/workspace/precompiled to the board.
+> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources (precompiled) from `micrOs/toolkit/workspace/precompiled` to the board.
 
-### 1. Download python 3.8
+<br/>
+
+### 1. Install python3.8
 
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
 > Note: Allow extend system path with that python version (installation parameter)
 > On **Windows**: RUN AS ADMINISTARTOR
 
-### 2. Install serial driver (USB) for esp32 board
+----------------------------------------
 
-Find the required driver in the cloned repo.
+### 2. Install Git
 
-- For Windows
-	
-```
-micrOs/env/driver_cp210x/CP210x_Universal_Windows_Driver
-```
-	
-- For macOS
-	
-```
-micrOs/env/driver_cp210x/SiLabsUSBDriverDisk.dmg
-```
+#### 2.1. On macOS:
 
-### *2.1. ONLY ON WINDOWNS: Special dependencies*
+&nbsp;Open command line, `commnd+space` + `type terminal` + `enter`
+
+&nbsp;**`xcode-select --install; git --version`**
+	
+#### 2.2. On Windows:
+
+&nbsp;Install git: **[download from here](https://git-scm.com/download/win)**
+
+----------------------------------------
+
+### ONLY ON WINDOWNS: Special dependencies
 
 *You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt)*
 
-[C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)
+&nbsp;**[C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)**
+
+----------------------------------------
 
 ### 3. Install and RUN **devToolKit** GUI
 
-It will open a graphical user interface for micrOS device management.
+Download and install micrOS devToolKit python package,
 
-`pip install git+https://github.com/BxNxM/micrOS.git`
+**`pip install git+https://github.com/BxNxM/micrOS.git`**
 
 then, you can use the following cmdline paramater to start the devToolKit app:
 
-`devToolKit.py`
+**`devToolKit.py`**
+
+It will open a graphical user interface for micrOS device management, like usb deploy, update, OTA operations, test executions, etc...
 
 ![MICROSVISUALIZATION](./media/micrOSToolkit.gif?raw=true)
 
@@ -107,6 +115,7 @@ then, you can use the following cmdline paramater to start the devToolKit app:
 
 It will install your board via USB with default settings. **Continue with micrOS Client app...**
 
+----------------------------------------
 ----------------------------------------
 
 ## micrOS Video Tutorials

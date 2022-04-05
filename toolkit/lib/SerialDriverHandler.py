@@ -5,13 +5,12 @@ import os
 # win exe install: https://stackoverflow.com/questions/58697911/how-to-run-exe-file-from-python
 
 try:
-    from .LocalMachine import CommandHandler, FileHandler
+    from .LocalMachine import CommandHandler, FileHandler, SimplePopPushd
     from .TerminalColors import Colors
 except Exception as e:
     print("Import warning: {}".format(e))
-    from LocalMachine import CommandHandler, FileHandler
+    from LocalMachine import CommandHandler, FileHandler, SimplePopPushd
     from TerminalColors import Colors
-
 
 MYPATH = os.path.dirname(__file__)
 print("Module [micrOSdashboard] path: {} __package__: {} __name__: {} __file__: {}".format(
@@ -50,7 +49,9 @@ def dmg_install_mac(dmg_path):
 def exe_install_win(exe_path):
     if FileHandler.path_is_exists(exe_path):
         print("Install USB driver exe: {}".format(exe_path))
-        exitcode, stdout, stderr = CommandHandler.run_command(exe_path, debug=True)
+        SimplePopPushd().pushd(os.path.dirname(exe_path))
+        exitcode, stdout, stderr = CommandHandler.run_command(os.path.basename(exe_path), shell=True, debug=True)
+        SimplePopPushd().popd()
         if exitcode == 0:
             print("\tUSB driver install was successful")
             return True
@@ -92,7 +93,6 @@ def check_serial_driver_is_installed():
             return True, 'mac'
         print("\t{}Do serial driver install {}".format(Colors.OKGREEN, serial_app_path, Colors.NC))
         return False, 'mac'
-
     elif sys.platform.startswith('win'):
         print("Check USB serial driver on Windows")
         serial_driver_key = 'cp210X'
@@ -104,9 +104,11 @@ def check_serial_driver_is_installed():
             else:
                 print("\tSerial driver was already installed ({}): {}".format(serial_driver_key, stdout))
                 return True, 'win'
+
     else:
         # TODO
-        print("{}Check USB serial driver on Linux:\n\tPlease install serial usb driver manually.{}".format(Colors.ERR, Colors.NC))
+        print("{}Check USB serial driver on Linux:\n\tPlease install serial usb driver manually.{}".format(Colors.ERR,Colors.NC))
+
         return None, 'linux'
 
 

@@ -1021,7 +1021,6 @@ class MicrOSDevTool:
             # Add source to upload
             upload_path_list.append(source)
         # Upload files / sources
-        self.console("RUN ota_webrepl_update_core updater on {} with: {}".format(device, upload_path_list))
         return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list, ota_password=webrepl_password)
 
     def ota_webrepl_update_core(self, device=None, upload_path_list=[], ota_password='ADmin123', force_lm=False):
@@ -1095,6 +1094,10 @@ class MicrOSDevTool:
             micros_if_mode = 'micros'  # micrOS running in normal mode - micrOS interface is active
             state = False
             lock_value = webrepl_if_mode if lock else micros_if_mode  # Select lock value
+            # Create webrepl copy command
+            command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
+                                                                              pwd=ota_password,
+                                                                              host=host)
 
             workdir_handler = LocalMachine.SimplePopPushd()
             workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
@@ -1103,10 +1106,12 @@ class MicrOSDevTool:
             with open(".if_mode", 'w') as f:
                 f.write(lock_value)
 
-            # Create webrepl copy command
-            command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
-                                                                              pwd=ota_password,
-                                                                              host=host)
+            # Wait for device reboot
+            if lock:
+                for i in range(1, 7):
+                    self.console("\tWait for device: {}/6 sec".format(i))
+                    time.sleep(1)
+
             if self.dummy_exec:
                 self.console("Webrepl CMD: {}".format(command))
                 return True

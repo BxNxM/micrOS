@@ -733,20 +733,20 @@ class micrOSGUI(QWidget):
         width = 200
         yoffset = 3
         buttons = {
-            'Deploy (USB)': ['[BOARD] [MICROPYTHON]\nInstall "empty" device.\nDeploy micropython and micrOS Framework',
+            'Deploy (USB)': ['[USB install + MICROPYTHON]\nInstall micropython on "empty board".\nDeploy micropython and micrOS Framework',
                              20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan', self.usb_color_code],
-            'Update (OTA)': ['[DEVICE]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
+            'Update (OTA)': ['[OTA Update]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
                              20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan', self.ota_color_code],
-            'LM Update (OTA)': ['[DEVICE]\nUpdate LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
+            'LM Update (OTA)': ['[OTA Update]\nUpdate LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
                                 20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan', self.ota_color_code],
-            'Update (USB)': ['[BOARD] [MICROPYTHON]\nUpdate micrOS over USB\nIt will redeploy micropython as well)',
+            'Update (USB)': ['[USB update + MICROPYTHON]\nUpdate micrOS over USB\nIt will redeploy micropython as well)',
                              20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'darkCyan', self.usb_color_code],
             'Search device': ['Search online micrOS devices\nOn local wifi network.',
                               20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices,
                               'darkCyan', self.ota_color_code],
             'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
                           20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen', 'lightGreen'],
-            'Execute': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
+            'Execute': ['[micrOS Client] Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
                         682, 170, 150, 24, self.__on_click_exec_app, 'darkCyan', 'darkCyan']
             }
 

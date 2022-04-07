@@ -95,7 +95,18 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 Download and install micrOS devToolKit python package:
 
-**`pip install git+https://github.com/BxNxM/micrOS.git`**
+> NOTE: There are multiple ways to start python pip install, it depends on your OS and python deployment. </br>
+> Select One command from below:
+
+**``` pip install git+https://github.com/BxNxM/micrOS.git```**
+
+OR
+
+```python3 -m pip install git+https://github.com/BxNxM/micrOS.git```
+
+OR
+
+```python -m pip install git+https://github.com/BxNxM/micrOS.git```
 
 then, you can use the following cmdline paramater to start the devToolKit app:
 

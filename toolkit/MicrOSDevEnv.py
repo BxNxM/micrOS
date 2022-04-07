@@ -1141,8 +1141,8 @@ class MicrOSDevTool:
             self.console("Device will reboot automatically, please wait 4-8 seconds.")
             time.sleep(4)
             up_again_status = False
-            for is_up_again in range(0, 10):
-                self.console("[{}/10] Try to connect ...".format(is_up_again))
+            for is_up_again in range(1, 16):
+                self.console("[{}/15] Try to connect ...".format(is_up_again))
                 status, answer_msg = socketClient.run(['--dev', fuid, 'hello'])
                 if status:
                     self.console("Device {} is up again".format(fuid), state='OK')

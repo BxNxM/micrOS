@@ -1088,8 +1088,8 @@ class micrOSGUI(QWidget):
         self.console.append_output("  micropython: {}".format(self.micropython_dropdown.get()))
         self.console.append_output("  board type: {}".format(self.board_dropdown.get()))
         self.console.append_output("  ignore version: {}".format(self.modifiers_obj.ignore_version_check))
-        self.console.append_output("  Force OTA: {}".format(self.modifiers_obj.unsafe_ota_enabled))
-        self.console.append_output("  OTA PWM: {}".format(self.appwd_textbox.get()))
+        self.console.append_output("  Force full OTA: {}".format(self.modifiers_obj.unsafe_ota_enabled))
+        self.console.append_output("  OTA passwd: {}".format(self.appwd_textbox.get()))
 
 
 def main():

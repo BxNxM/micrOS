@@ -43,7 +43,7 @@ APP_DIR = os.path.join(MYPATH, 'dashboard_apps')
 
 DUMMY_EXEC = False
 DAEMON = False
-FSCO_STATE = True
+FSCO_STATE = False
 
 
 #################################################
@@ -322,8 +322,8 @@ class DevelopmentModifiers:
         radioBtn = self.parent_obj.sender()
         if radioBtn.isChecked():
             choice = QMessageBox.question(self.parent_obj, "Quetion",
-                                          "!!! Developement mode !!!\n1. Enable Unsafe OTA upload. (boot, micrOSloader, Network)\n2. Disbale Quick OTA upload input file prefix validation (LM_)",
-                                          QMessageBox.Yes | QMessageBox.No)
+                                          "!!! Develpement mode !!!\n1. Enable Unsafe OTA upload. ({})\n\n2. Disbale Quick OTA upload input file prefix validation (LM_)"\
+                                          .format(','.join(self.parent_obj.devtool_obj.safe_core_list())), QMessageBox.Yes | QMessageBox.No)
             if choice == QMessageBox.No:
                 self.checkbox.setCheckState(False)
                 return
@@ -886,7 +886,7 @@ class micrOSGUI(QWidget):
         self.console.append_output('[ota_update] |- start ota_update job')
         th = threading.Thread(target=self.devtool_obj.update_with_webrepl,
                               kwargs={'device': (fuid, devip), 'force': ignore_version_check,
-                                      'unsafe': unsafe_ota_update, 'ota_password': self.appwd_textbox.get()},
+                                      'loader_update': unsafe_ota_update, 'ota_password': self.appwd_textbox.get()},
                               daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['ota_update'] = th

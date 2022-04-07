@@ -23,6 +23,7 @@ except Exception as e:
     from lib import LocalMachine
     from lib.TerminalColors import Colors
     from lib.SerialDriverHandler import install_usb_serial_driver
+
     sys.path.append(MYPATH)
     import socketClient
 
@@ -105,7 +106,7 @@ class MicrOSDevTool:
             self.console("micropython: {}".format(self.selected_micropython_bin))
         else:
             # Find micropython binaries
-            install_usb_serial_driver()             # Serial-USB Driver install
+            install_usb_serial_driver()  # Serial-USB Driver install
             self.get_micropython_binaries()
             # Find micrOS devices
             self.__select_devicetype_and_micropython()
@@ -181,7 +182,7 @@ class MicrOSDevTool:
         file_list = LocalMachine.FileHandler().list_dir(self.MicrOS_dir_path)
         for f in file_list:
             if f.endswith('.json'):
-               continue
+                continue
             f_path = os.path.join(self.MicrOS_dir_path, f)
             self.console("[SIM] Copy micrOS resources: {} -> {}".format(f_path, self.micros_sim_workspace))
             LocalMachine.FileHandler().copy(f_path, self.micros_sim_workspace)
@@ -818,10 +819,10 @@ class MicrOSDevTool:
                                 continue
                             # Gen proper func name
                             function_name = '{}'.format(line.split(')')[0]).replace("def", '').strip()
-                            function_name = function_name.replace('(', ' ')\
-                                                         .replace(',', '')\
-                                                         .replace('msgobj=None', '')\
-                                                         .replace('force=True', '')
+                            function_name = function_name.replace('(', ' ') \
+                                .replace(',', '') \
+                                .replace('msgobj=None', '') \
+                                .replace('force=True', '')
                             # Save record
                             module_function_dict[module_int_name].append(function_name.strip())
             except Exception as e:
@@ -898,18 +899,33 @@ class MicrOSDevTool:
         repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
         return repo_version
 
-    def update_with_webrepl(self, force=False, device=None, lm_only=False, unsafe=False, ota_password='ADmin123'):
+    def update_with_webrepl(self, force=False, device=None, lm_only=False, loader_update=False, ota_password='ADmin123'):
         """
         OTA UPDATE via webrepl
             git clone https://github.com/micropython/webrepl.git
             info: https://techoverflow.net/2020/02/22/how-to-upload-files-to-micropython-using-webrepl-using-webrepl_cli-py/
             ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
         """
-
         print("OTA UPDATE")
-
         upload_path_list = []
-        force_mode = False
+
+        def __version_compare(repo_version, fuid):
+            """
+            version SemVer: 1.2.3-4 - major[1.2]minor[.3]patch[-4]
+                In case of [major] change force full update (micrOS safe core: micrOSloadoer, etc.)
+                In case of [minor + patch] change install main micrOS resources + LMs
+            :param fud: friendly unique id / unique id
+            :return: repo_version, device_version, force
+            """
+            # Get device version via socket
+            status, answer_msg = socketClient.run(['--dev', fuid, 'version'])
+            device_version = answer_msg.strip() if status else None
+            # Parse versions
+            repo_major_version = repo_version.split('.')[0:2]
+            device_major_version = device_version.split('.')[0:2] if device_version is not None and len(
+                device_version.split('.')) == 3 else device_version
+            force = False if repo_major_version == device_major_version else True
+            return repo_version, device_version, force
 
         # Precompile micrOS
         self.precompile_micros()
@@ -918,25 +934,28 @@ class MicrOSDevTool:
         if device is None:
             # Select device dynamically - cmdline
             device_ip, port, fuid, uid = socketClient.ConnectionData.select_device()
+            device = fuid, device_ip        # pass that to OTA update core
         else:
             # Select device from code / gui
             device_ip, fuid = device[1], device[0]
+            device = fuid, device_ip       # pass that to OTA update core
         self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
 
-        repo_version = self.get_micros_version_from_repo()
-
-        # Get data before update from device
-        status, answer_msg = socketClient.run(['--dev', fuid, 'version'])
-        device_version = answer_msg.strip() if status else Exception("Get device version failed")
-        # ???
+        # Get device appwd - device password for webrepl connection (not too safe - ???)
         status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
-        webrepl_password = answer_msg.strip() if status else Exception("Get device password for webrepl failed")
+        webrepl_password = answer_msg.strip() if status else None
+        if webrepl_password is None:
+            if self.cmdgui:
+                # In case of update failure and retry (micrOS interface won't be active)
+                webrepl_password = input("Please write your webrepl password (appwd - default ADmin123): ").strip()
+            else:
+                # Use password parameter input - cannot get from device
+                webrepl_password = ota_password
 
-        if not self.cmdgui and not status and answer_msg is None:
-            webrepl_password = ota_password
-        elif not status and answer_msg is None:
-            # In case of update failure and retry (micrOS interface won't be active)
-            webrepl_password = input("Please write your webrepl password (appwd - default ADmin123): ").strip()
+        # Get versions: micrOS repo + live device, compare versions
+        repo_version, device_version, auto_force = __version_compare(self.get_micros_version_from_repo(), fuid)
+
+        # Show connection and version data
         self.console("  Device: {} ({})".format(fuid, device_ip), state='OK')
         self.console("  Device version: {}".format(device_version), state='OK')
         self.console("  Repo version: {}".format(repo_version), state='OK')
@@ -949,6 +968,7 @@ class MicrOSDevTool:
             self.console("Bye")
             return False
 
+        # Check device and repo versions - update is necessary?
         if device_version == repo_version:
             if not force:
                 self.console(
@@ -957,49 +977,51 @@ class MicrOSDevTool:
                 self.execution_verdict.append("[OK] ota_update - update not necessary (no new version)")
                 return False
 
-        if not self.cmdgui:
-            user_input = 'yy' if unsafe else 'y'
-        else:
+        # Continue with micrOS main [y] or full micrOS (core loader) [yy - loader_update]
+        if self.cmdgui:
+            force_mode = auto_force
             user_input = input("Do you want to continue? Y/N: ").lower()
-        # Detect update all mode - risky -> no recovery mode but updates all file on system
-        if user_input == 'yy':
-            msg_force = "[!!!] Force mode, update all files on micrOS system (recovery mode not available) Y/N: "
-            if not self.cmdgui:
-                user_input_force = 'y'
-            else:
+            # Detect update all mode - risky -> no recovery mode but updates all file on system
+            if user_input == 'yy':
+                msg_force = "[!!!] Force mode, update all files on micrOS system (recovery mode not available) Y/N: "
                 user_input_force = input(msg_force).strip().lower()
-            force_mode = True if user_input_force == 'y' else False
-        if 'n' == user_input:
-            self.console("\tBye")
-            return False
+                force_mode = True if user_input_force == 'y' else force_mode
+            if 'n' == user_input:
+                self.console("\tBye")
+                return False
+        else:
+            force_mode = loader_update if loader_update else auto_force
+        self.console("  loader update: {}".format(force_mode), state='OK')
 
         # Parse files from precompiled dir
         resource_list_to_upload = [os.path.join(self.precompiled_MicrOS_dir_path, pysource) for pysource in
                                    LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
                                    if pysource.endswith('.py') or pysource.endswith('.mpy')]
-        # Apply upload settings on pared resources
+        # Apply upload settings on parsed resources
         for index, source in enumerate(resource_list_to_upload):
             source_name = os.path.basename(source)
             # Handle force mode + file exception list (skip)
             if not force_mode and source_name in self.safe_mode_file_exception_list:
                 self.console(
-                    "\t[SKIP UPLOAD] updating {} - only available over USB update".format(source_name), state='WARN')
-                continue
-
-            # macOS icloud sync workaround ...
-            if ' ' in source_name:
-                self.console("\t[SKIP UPLOAD] space in resource name ... {}".format(source_name), state='WARN')
+                    "\t[SKIP UPLOAD][SKIP MICROS LOADER] {}".format(source_name), state='WARN')
                 continue
 
             # Handle lm_only mode - skip upload for not LM_
             if lm_only:
                 if not source_name.startswith("LM_"):
                     self.console(
-                        "\t[SKIP UPLOAD][LM ONLY] {}".format(source_name, lm_only), state='WARN')
+                        "\t[SKIP UPLOAD][SKIP MICROS CORE] {}".format(source_name, lm_only), state='WARN')
                     continue
+
+            # macOS icloud sync workaround ...
+            if ' ' in source_name:
+                self.console("\t[SKIP UPLOAD] space in resource name ... {}".format(source_name), state='WARN')
+                continue
+
             # Add source to upload
             upload_path_list.append(source)
         # Upload files / sources
+        self.console("RUN ota_webrepl_update_core updater on {} with: {}".format(device, upload_path_list))
         return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list, ota_password=webrepl_password)
 
     def ota_webrepl_update_core(self, device=None, upload_path_list=[], ota_password='ADmin123', force_lm=False):
@@ -1013,16 +1035,18 @@ class MicrOSDevTool:
         force_lm - use prefix as 'LM_' for every file - for user file upload / GUI drag n drop
         """
 
-        def enable_micros_ota_update_via_webrepl():
+        def enable_micros_ota_update_via_webrepl(dev=None):
             # Get specific device from device list
             self.console("Select device to update ...", state='IMP')
             socketClient.ConnectionData.read_micrOS_device_cache()
             # Get device IP and friendly name
-            if device is None:
+            if dev is None:
                 # Select device dynamically - cmdline
+                self.console("Select device manually:")
                 device_ip, port, fuid, uid = socketClient.ConnectionData.select_device()
             else:
                 # Select device from code / gui
+                self.console("Device was selected with func param: {}".format(dev))
                 device_ip, fuid = device[1], device[0]
             self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
             self.console(" \tWebRepl OTA password: {}".format(ota_password), state='OK')
@@ -1068,9 +1092,9 @@ class MicrOSDevTool:
             """
 
             webrepl_if_mode = 'webrepl'  # micrOS system runs in webrepl mode - no micrOS interface running
-            micros_if_mode = 'micros'    # micrOS running in normal mode - micrOS interface is active
+            micros_if_mode = 'micros'  # micrOS running in normal mode - micrOS interface is active
             state = False
-            lock_value = webrepl_if_mode if lock else micros_if_mode # Select lock value
+            lock_value = webrepl_if_mode if lock else micros_if_mode  # Select lock value
 
             workdir_handler = LocalMachine.SimplePopPushd()
             workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
@@ -1145,7 +1169,7 @@ class MicrOSDevTool:
         self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE.")
 
         # Enable micrOS OTA mode
-        status, device_ip, fuid = enable_micros_ota_update_via_webrepl()
+        status, device_ip, fuid = enable_micros_ota_update_via_webrepl(dev=device)
 
         # Create lock file for ota update
         self.console("[UPLOAD] Copy files to device...", state='IMP')
@@ -1185,7 +1209,8 @@ class MicrOSDevTool:
                 target_path=source_name_target)
 
             for ret_cnt in range(0, 5):
-                self.console("[{}%] {} copy over webrepl {}:{}".format(progress, source_name, device_ip, source_name_target))
+                self.console(
+                    "[{}%] {} copy over webrepl {}:{}".format(progress, source_name, device_ip, source_name_target))
                 if self.dummy_exec:
                     self.console("[{}%][UPLOAD] Webrepl CMD: {}".format(progress, command))
                     exitcode = 0

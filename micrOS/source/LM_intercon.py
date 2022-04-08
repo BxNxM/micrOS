@@ -1,4 +1,4 @@
-from InterConnect import send_cmd
+from InterConnect import send_cmd, dump_cache
 from Debug import errlog_add
 
 
@@ -28,10 +28,14 @@ def sendcmd(*args, **kwargs):
     return __send(host, cmd)
 
 
+def dump():
+    return dump_cache()
+
 #######################
 # LM helper functions #
 #######################
 
 def help():
     return 'sendcmd "hello" host="IP/hostname") OR sendcmd host="IP/hostname" cmd="system rssi")', \
-           'example: intercon sendcmd "10.0.1.84" "system rssi" OR intercon sendcmd "system rssi" host="node01.local"'
+           'example: intercon sendcmd "10.0.1.84" "system rssi" OR intercon sendcmd "system rssi" host="node01.local"', \
+           'dump (dump host cache)'

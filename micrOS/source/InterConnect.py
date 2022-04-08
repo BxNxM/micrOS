@@ -1,72 +1,97 @@
 import socket
 import select
 import re
-from time import sleep
 from Debug import errlog_add
 from ConfigHandler import cfgget
 from SocketServer import SocketServer
 
 
-def validate_ipv4(str_in):
-    pattern = "^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
-    if bool(re.match(pattern, str_in)):
-        return True
-    return False
+class InterCon:
+    CONN_MAP = {}
+
+    def __init__(self):
+        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.conn.settimeout(5)
+
+    @staticmethod
+    def validate_ipv4(str_in):
+        pattern = "^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+        if bool(re.match(pattern, str_in)):
+            return True
+        return False
+
+    def send_cmd(self, host, port, cmd):
+        hostname = None
+        # Check if host is hostname (example.local) and convert IP from it
+        if not InterCon.validate_ipv4(host):
+            hostname = host
+            # Retrieve IP address by hostname dynamically
+            if InterCon.CONN_MAP.get(hostname, None) is None:
+                host = socket.getaddrinfo(host, port)[-1][4][0]
+            else:
+                # Restore IP from cache by hostname
+                host = InterCon.CONN_MAP[hostname]
+        # IF IP is available send msg to the endpoint
+        if InterCon.validate_ipv4(host):
+            SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, port))
+
+            # Send command over TCP/IP
+            self.conn.connect((host, port))
+            output = self.__run_command(cmd, hostname)
+            self.conn.close()
+
+            # Cache successful connection data (hostname:IP)
+            if hostname is not None:
+                # In case of valid communication store device ip, otherwise set ip to None
+                InterCon.CONN_MAP[hostname] = None if output is None else host
+            return output
+        else:
+            errlog_add("[INTERCON] Invalid host: {}".format(host))
+            return None
+
+    def __run_command(self, cmd, hostname):
+        cmd = str.encode(cmd)
+        data, prompt = self.__receive_data()
+        # Compare prompt |node01 $| with hostname 'node01.local'
+        if hostname is None or prompt is None or str(prompt).replace('$', '').strip() == str(hostname).split('.')[0]:
+            # Sun command on validated device
+            self.conn.send(cmd)
+            data, _ = self.__receive_data(prompt=prompt)
+            if data == '\0':
+                return None
+            return data
+        # Skip command run: prompt and host not the same!
+        return None
+
+    def __receive_data(self, prompt=None):
+        data = ""
+        # Collect answer data
+        if select.select([self.conn], [], [], 1)[0]:
+            while True:
+                last_data = self.conn.recv(512).decode('utf-8').strip()
+                # First data is prompt, get it
+                prompt = last_data.strip() if prompt is None else prompt
+                data += last_data
+                # Wait for prompt or special cases (conf,exit)
+                if prompt in data.strip() or '[configure]' in data or "Bye!" in last_data:
+                    break
+            data = data.replace(prompt, '')
+            data = [k.strip() for k in data.split('\n')]
+        return data, prompt
 
 
+# Main command to send msg to other micrOS boards
 def send_cmd(host, cmd):
     port = cfgget('socport')
-    hostname = None
-    if not validate_ipv4(host):
-        hostname = host
-        host = socket.getaddrinfo(host, port)[-1][4][0]
-    if validate_ipv4(host):
-        # Socket reply msg
-        SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, port))
-        # Send CMD
-        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        conn.settimeout(5)
-        conn.connect((host, port))
-        output = __run_command(conn, cmd)
-        __close_connection(conn)
-        return output
-    else:
-        errlog_add("[INTERCON] Invalid host: {}".format(host))
-        return None
+    com_obj = InterCon()
+    # send command
+    output = com_obj.send_cmd(host, port, cmd)
+    # send command retry
+    if output is None:
+        output = com_obj.send_cmd(host, port, cmd)
+    return output
 
 
-def __run_command(conn, cmd):
-    cmd = str.encode(cmd)
-    conn.send(cmd)
-    data = __receive_data(conn)
-    if data == '\0':
-        # print('[INTERCON] exiting...')
-        __close_connection(conn)
-        return None
-    return data
-
-
-def __close_connection(conn):
-    __run_command(conn, "exit")
-    conn.close()
-
-
-def __receive_data(conn, wait_before_msg=0.2):
-    data = ""
-    prompt_postfix = ' $'
-    data_list = []
-    if select.select([conn], [], [], 1)[0]:
-        while True:
-            sleep(wait_before_msg)
-            last_data = conn.recv(512).decode('utf-8')
-            data += last_data
-            # Msg reply wait criteria (get the prompt back or special cases)
-            if len(data.split('\n')) > 1 or '[configure]' in data:
-                # wait for all msg in non-interactive mode until expected msg or prompt return
-                if prompt_postfix in data.split('\n')[-1] or "Bye!" in last_data:
-                    break
-        # Split raw data list
-        full_prompt = "{}{}".format(data.split(prompt_postfix.strip())[0].strip(), prompt_postfix)
-        data = data.replace(full_prompt, '').strip()
-        data_list = data.split('\n')
-    return data_list
+# Dump connection cache
+def dump_cache():
+    return InterCon.CONN_MAP

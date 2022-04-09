@@ -607,6 +607,7 @@ class micrOSGUI(QWidget):
         self.progressbar = None
         self.nodes_status_button_obj = None
         self.quick_upload_obj = None
+        self.header = None
         self.ota_color_code = 'darkBlue'
         self.usb_color_code = 'darkGrey'
 
@@ -630,7 +631,8 @@ class micrOSGUI(QWidget):
         self.setFixedHeight(self.height)
         self.setStyleSheet("background-color: grey; color: {};".format(micrOSGUI.TEXTCOLOR))
 
-        HeaderInfo(self).draw_header()
+        self.header = HeaderInfo(parent_obj=self)
+        self.header.draw_header()
         self.__create_console()
         self.progressbar = ProgressBar(self)
 

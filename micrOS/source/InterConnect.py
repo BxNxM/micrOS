@@ -46,7 +46,7 @@ class InterCon:
                 InterCon.CONN_MAP[hostname] = None if output is None else host
             return output
         else:
-            errlog_add("[INTERCON] Invalid host: {}".format(host))
+            errlog_add("[intercon] Invalid host: {}".format(host))
             return None
 
     def __run_command(self, cmd, hostname):
@@ -61,6 +61,7 @@ class InterCon:
                 return None
             return data
         # Skip command run: prompt and host not the same!
+        SocketServer().reply_message("[intercon] prompt mismatch, hostname: {} prompt: {} ".format(hostname, prompt))
         return None
 
     def __receive_data(self, prompt=None):

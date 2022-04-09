@@ -28,29 +28,28 @@ def arg_parse():
 
     base_group = parser.add_argument_group("Base commands")
     base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (micrOS) & Install (micrOS)")
+    base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) micrOS. - node config will be restored")
+    base_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
     base_group.add_argument("-o", "--OTA", action="store_true", help="OTA (OverTheArir update with webrepl)")
-    base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) micrOS. \
-                                                                    - node config will be restored")
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
     base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactivve mode.")
     base_group.add_argument("-a", "--applications", type=str, help="List/Execute frontend applications. [list]")
     base_group.add_argument("-stat", "--node_status", action="store_true", help="Show all available micrOS devices status data.")
+    base_group.add_argument("-cl", "--clean", action="store_true", help="Clean user connection data: device_conn_cache.json")
 
     dev_group = parser.add_argument_group("Development & Deployment & Connection")
+    dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update and -o/--OTA")
     dev_group.add_argument("-e", "--erase", action="store_true", help="Erase device")
     dev_group.add_argument("-d", "--deploy", action="store_true", help="Deploy micropython")
     dev_group.add_argument("-i", "--install", action="store_true", help="Install micrOS on micropython")
     dev_group.add_argument("-l", "--list_devs_n_bins", action="store_true", help="List connected devices & micropython binaries.")
-    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy]")
-    dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
     dev_group.add_argument("-ls", "--node_ls", action="store_true", help="List micrOS node filesystem content.")
     dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")
     dev_group.add_argument("-b", "--backup_node_config", action="store_true", help="Backup usb connected node config.")
-    dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update and -o/--OTA")
-    dev_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
     dev_group.add_argument("-sim", "--simulate", action="store_true", help="start micrOS on your computer in simulated mode")
+    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy]")
     dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server")
-
+    dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
 
     toolkit_group = parser.add_argument_group("Toolkit development")
     toolkit_group.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")
@@ -100,6 +99,10 @@ def node_status():
     socketClient.run(arg_list=['--stat'])
 
 
+def clean_user_data():
+    socketClient.run(arg_list=['--clean'])
+
+
 def search_devices():
     socketClient.ConnectionData.search_micrOS_on_wlan()
 
@@ -108,6 +111,7 @@ def precompile_micrOS(api_obj):
     if api_obj.precompile_micros():
         return "Precompile OK"
     return "Precompile NOK"
+
 
 def connect_via_usb(api_obj):
     api_obj.connect_dev()
@@ -162,15 +166,6 @@ def __execute_app(api_obj, app_name):
     dev_name = "__simulator__"
 
     print(api_obj.exec_app(app_name, dev_name))
-    """
-    app_name = "{}{}".format(app_name, app_postfix)
-    print("[APP] import {}".format(app_name))
-    exec("import {}".format(app_name))
-    print("[APP] {}.app()".format(app_name))
-    return_value = eval("{}.app()".format(app_name))
-    if return_value is not None:
-        print(return_value)
-    """
 
 
 def init_gui():
@@ -190,9 +185,11 @@ if __name__ == "__main__":
         connect(args=cmd_args.connect_parameters)
         sys.exit(0)
 
+    if cmd_args.clean:
+        clean_user_data()
+
     if cmd_args.search_devices:
         search_devices()
-        sys.exit(0)
 
     # Get all connected node status
     if cmd_args.node_status:
@@ -252,4 +249,3 @@ if __name__ == "__main__":
         gateway_rest_api()
 
     sys.exit(0)
-

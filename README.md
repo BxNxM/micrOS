@@ -15,7 +15,7 @@
 🛠 Easy to customize, create your own Load Modules: <br/>
 &nbsp;&nbsp; 1. Write **LM_**`<your_app>`**.py** <br/>
 &nbsp;&nbsp; 2. Copy (OTA/USB) python script to your device (drap&drop)<br/>
-&nbsp;&nbsp; 3. Call any function your **`<your_app>`** module <br/>
+&nbsp;&nbsp; 3. Call any function from **`<your_app>`** module <br/>
 🦾 Built-in scheduling (IRQs):<br/>
 &nbsp;&nbsp; - Time stamp based <br/>
 &nbsp;&nbsp; - Geolocation based utc + sunset, sunrise rest features <br/>

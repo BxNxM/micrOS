@@ -50,13 +50,13 @@ Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/
 ----------------------------------------
 
 ## Installing micrOS with DevToolKit #ESP32
-**From macOS / Windows / Linux to any esp32 boards**
+**macOS / Windows / Linux to install any esp32 board**
 
 End-to-End solution for deployment, update, monitor and develop micrOS boards.
 
 I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you prefer.
 
-> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources (precompiled) from `micrOs/toolkit/workspace/precompiled` to the board.
+> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources from `micrOs/toolkit/workspace/precompiled` to the connected board.
 
 <br/>
 
@@ -69,50 +69,56 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 ----------------------------------------
 
-### 2. Install Git
+### On macOS
 
-#### 2.1. On macOS:
+&nbsp;Open command line: press: `commnd+space` + type: `terminal` + press: `enter`
 
-&nbsp;Open command line, press: `commnd+space` + type: `terminal` + press: `enter`
+#### 1. Download and install **micrOS devToolKit** python package:
 
-&nbsp;**`xcode-select --install; git --version`**
-	
-#### 2.2. On Windows:
+**```python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.com/BxNxM/micrOS.git```**
 
-&nbsp;Install git: **[download from here](https://git-scm.com/download/win)**
+> Note: macOS will drop a message to install git, please follow the install guide steps. </br>
+> FYI: Manual git install on macOS**`xcode-select --install; git --version`**
 
-----------------------------------------
-
-### ONLY ON WINDOWNS: Special dependencies
-
-*You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt and setup.py)*
-
-&nbsp;**[C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)**
-
-----------------------------------------
-
-### 3. Install and RUN **devToolKit** GUI
-
-Download and install micrOS devToolKit python package:
-
-> NOTE: There are multiple ways to start python pip install, it depends on your OS and python deployment. </br>
-> Select One command from below:
-
-**``` pip install git+https://github.com/BxNxM/micrOS.git```**
-
-OR
-
-```python3 -m pip install git+https://github.com/BxNxM/micrOS.git```
-
-OR
-
-```python -m pip install git+https://github.com/BxNxM/micrOS.git```
-
-then, you can use the following cmdline paramater to start the devToolKit app:
+#### 2. Start micrOS devToolKit GUI
 
 **`devToolKit.py`**
 
 It will open a graphical user interface for micrOS device management, like usb deploy, update, OTA operations, test executions, etc...
+
+----------------------------------------
+<br/>
+
+### On Windows:
+
+#### 1. Install git
+
+For python github project download
+
+&nbsp;**[download from here](https://git-scm.com/download/win)**
+
+#### 2. C++ compiler
+
+You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt and setup.py)*
+
+&nbsp;**[C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)**
+
+#### 3. Download and install micrOS devToolKit python package:
+
+Open Windows **Command Prompt**
+
+```
+python -m pip install --upgrade pip
+python -m pip install git+https://github.com/BxNxM/micrOS.git
+```
+
+#### 4. Start micrOS devToolKit GUI
+
+**`devToolKit.py`**
+
+It will open a graphical user interface for micrOS device management, like usb deploy, update, OTA operations, test executions, etc...
+
+----------------------------------------
 
 ![MICROSVISUALIZATION](./media/micrOSToolkit.gif?raw=true)
 

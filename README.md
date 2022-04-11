@@ -221,14 +221,14 @@ Create custom Load Modules (LMs)
 	- Lot of built-in functions (table below)
 	- Create your own module with 3 easy steps
 		- Create a python file, naming convention: `LM_<your_app_name>.py`
-			- Replace `<your_app_name>` for aynthing you prefer!
-		- Write python functions, you can call any function from thet module...
+			- Replace `<your_app_name>` for anything you prefer!
+		- Write python functions, you can call any function from that module...
 		- Upload modul with "drag&Drop" with help of devToolKit GUI `devToolKit.py`
 
 - 📨**Socket interpreter** - wireless communication interface with the nodes
 	- **System commands**: `help, version, reboot, webrepl, webrepl --update, etc.`
-		- webrepl <--> micrOS interface switch  
-	- **Config(*)** SET/GET/DUMP
+		- After `webrepl --update` command the micrOS system reboots and waits for ota update in webrepl mode.
+	- **Config handling** SET/GET/DUMP - **node_config.json**
 		- enter configuration mode: `conf`
 		- exit configuration mode:`noconf`
 		- Print out all parameters and values: `dump`

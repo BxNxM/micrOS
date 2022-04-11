@@ -207,7 +207,7 @@ Create custom Load Modules (LMs)
 				- `Timer(0)`
 			- 🗓cron [time stump:LM task] pool execution `cron` & `crontasks`
 				- `Timer(1)` 
-				- timestump: `WD, H, M, S! LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
+				- timestamp: `WD:H:M:S!LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
 					- example: `*:8:0:0!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at 8am every day.
 				- tag: `sunset` / `sunrise`
 					- example: `sunset!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at every sunset, every day.

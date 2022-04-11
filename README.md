@@ -40,11 +40,7 @@ Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/
 
 ## micrOS Client Application
 
-### AppStore
-&nbsp;&nbsp;&nbsp;[![AppStoreURL](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
-
-### PlayStore
-&nbsp;&nbsp;&nbsp;[![PlayStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
+[![AppStore](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [![AppStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
 
 ----------------------------------------
 ----------------------------------------
@@ -188,30 +184,7 @@ Create custom Load Modules (LMs)
 
 ![MICROSVISUALIZATION](./media/micrOS.gif?raw=true)
 
->Note: micrOS development kit contains command line interface for socket communication. Example: `./devToolKit.py --connect`
-
-```
-[i]         FUID        IP               UID
-[0] Device: __device_on_AP__ - 192.168.4.1 - __devuid__
-[1] Device: __simulator__ - 127.0.0.1 - __localhost__
-[2] Device: BedLamp - 192.168.1.90 - micrf008d1d2ac30OS
-[3] Device: ImpiGamePro - 192.168.1.159 - micr240ac45861c8OS
-Choose a device index: 2
-Device IP was set: 192.168.1.90
-BedLamp $  hello
-hello:BedLamp:micrf008d1d2ac30OS
-BedLamp $  neopixel neopixel 100 10 10
-NEOPIXEL SET TO R100G10B10
-BedLamp $  neopixel help
- neopixel r=<0-255> g b smooth=True force=True,
- toggle state=None smooth=True,
- load_n_init ledcnt=24,
- segment r, g, b, s=<0-n>,
- set_transition r=<0-255> g b sec,
- run_transition,
- pinmap,
-```
-
+>Note: micrOS development kit contains command line interface for socket communication. Example: `devToolKit.py --connect`
 
 ----------------------------------------
 

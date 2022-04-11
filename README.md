@@ -217,34 +217,56 @@ BedLamp $  neopixel help
 
 ## micrOS Framework Features💡
 
-- **micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
+- 🕯**micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
 	- **OTA update** - push update over wifi (webrepl automation) / monitor update and auto restart node
-- **Config handling(*)** - user config - node_config.json
-	- Accessable over socket interface or Phone client
-- **[L]oad [M]odule** aka **application** handling
-	- Lot of built-in functions
-	- Create your own module with 2 easy steps
-		- Create a file in `micrOS` folder like: `LM_<your_app_name>.py`
-- **Boot phase** handling - preload Load Module(s) - pinout initialization from node_config
-- **Network handling** - based on node_config 
-	- STA / AP
-	- NTP setup
-	- Static IP configuration
-- **Socket interpreter** - wireless communication interface with the nodes
-	- **System commands**: `help, version, reboot, webrepl, etc.`
+- 📄**Config handling** - user config - **node_config.json**
+	- ⏳**Boot phase** - preload Load Module(s)
+		- For pinout and last state initialization - based on node_config `boothook`
+		- Example values: `rgb load_n_init; neopixel load_n_init`
+	- 📡**Network handling** - based on node_config 
+		- STA / AP network modes, `nwmd`
+		- NTP + UTC aka clock setup
+		- Static IP configuration, `devip`
+		- dhcp hostname setup, `devfid`.local
+	- ⚙️**Scheduling / External events** - Interrupt callback - based on node_config 
+		- Time based
+			- ⌛️simple LM task pool execution `timirq` & `timirqcbf`
+				- `Timer(0)`
+			- 🗓cron [time stump:LM task] pool execution `cron` & `crontasks`
+				- `Timer(1)` 
+				- timestump: `WD, H, M, S! LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
+					- example: `*:8:0:0!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at 8am every day.
+				- tag: `sunset` / `sunrise`
+					- example: `sunset!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at every sunset, every day.
+		- 💣Event based
+			- Set trigger event `irqX`
+				- Trigger up/down/both `irqX_trig`
+				- With LM callback function `irqX_cbf`
+			- X = 1, 2, 3 or 4
+
+- ⚙️**[L]oad [M]odule** aka **application** handling
+	- Lot of built-in functions (table below)
+	- Create your own module with 3 easy steps
+		- Create a python file, naming convention: `LM_<your_app_name>.py`
+			- Replace `<your_app_name>` for aynthing you prefer!
+		- Write python functions, you can call any function from thet module...
+		- Upload modul with "drag&Drop" with help of devToolKit GUI `devToolKit.py`
+
+- 📨**Socket interpreter** - wireless communication interface with the nodes
+	- **System commands**: `help, version, reboot, webrepl, webrepl --update, etc.`
 		- webrepl <--> micrOS interface switch  
 	- **Config(*)** SET/GET/DUMP
-		- `conf` and `noconf` 
+		- enter configuration mode: `conf`
+		- exit configuration mode:`noconf`
+		- Print out all parameters and values: `dump`
 	- **LM** - Load Module function execution (application modules)
-- **Scheduling / External events** - Interrupt callback - based on node_config 
-	- Time based
-		- simple LM task pool execution
-			- `Timer(0)` 
-		- cron [time stump:LM task] pool execution
-			- `Timer(1)` 
-	- Event based
-		-  Set trigger event up/down/both with LM callback function
-- [BETA!] **Background Job** aka **BgJob**
+		- Example: `system info`
+- 🖇**[L]ogical [P]inout** handling - lookuptables for each board
+	- Predefined pinout modules for esp32, tinyPico
+	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
+	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
+
+- 📍[BETA!] **Background Job** aka **BgJob**
 		- Capable of execute [L]oad [M]odules in a background thread
 		- WARNING, limitation: not use with IRQs and in micrOS config
 		- Invoke with single execution `&` or loop execution `&&`
@@ -252,14 +274,10 @@ BedLamp $  neopixel help
 			- In loop: `system heartbeat &&`
 			- Single call: `system heartbeat &`
 		- Stop thread: `bgjob stop`
-		- Show thread ouput and status: `bgjob show` 
-- **[L]ogical [P]inout** handling - lookuptables for each board
-	- Predefined pinout modules for esp32, tinyPico
-	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
-	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
+		- Show thread ouput and status: `bgjob show`
 
 
-DevToolKit CLI feature:
+⌘ DevToolKit CLI feature:
 
 - Socket client python plugin - interactive - non interactive mode
 
@@ -383,9 +401,8 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 Go to micrOS repo, where the `devToolKit.py` located.
 
-```
-cd micrOs 
-./devToolKit.py --make
+```bash
+devToolKit.py --make
 ```
 > Note: Follow the steps :)
 
@@ -393,7 +410,7 @@ cd micrOs
 Search and Connect to the device
 
 ```
-./devToolKit.py -s -c
+devToolKit.py -s -c
 ```
 
 ----------------------------------------
@@ -401,72 +418,77 @@ Search and Connect to the device
 **User commands**
 
 ```
-./devToolKit.py -h
+devToolKit.py -h
 
 optional arguments:
   -h, --help            show this help message and exit
 
 Base commands:
-  -m, --make            Erase & Deploy & Precompile (MicrOS) & Install (MicrOS)
-  -r, --update          Update/redeploy connected (usb) MicrOS. - node config will be restored
+  -m, --make            Erase & Deploy & Precompile (micrOS) & Install (micrOS)
+  -r, --update          Update/redeploy connected (usb) micrOS. - node config will be restored
+  -s, --search_devices  Search devices on connected wifi network.
+  -o, --OTA             OTA (OverTheArir update with webrepl)
   -c, --connect         Connect via socketclinet
-  -o, --OTA				 OTA update, over wifi (webrepl)
   -p CONNECT_PARAMETERS, --connect_parameters CONNECT_PARAMETERS
                         Parameters for connection in non-interactivve mode.
+  -a APPLICATIONS, --applications APPLICATIONS
+                        List/Execute frontend applications. [list]
+  -stat, --node_status  Show all available micrOS devices status data.
+  -cl, --clean          Clean user connection data: device_conn_cache.json
 ```
 
 **Search devices**
 
 ```
-./devToolKit.py --search_devices
+devToolKit.py --search_devices
 
 or
 
-./devToolKit.py -s
+devToolKit.py -s
 ```
 
 **List discovered devices with status updates**
 
 ```
-./devToolKit.py -stat
+devToolKit.py -stat
 
 or
 
-./devToolKit.py --node_status
+devToolKit.py --node_status
 ```
 
 Output:
 
 ```
        [ UID ]                [ FUID ]		[ IP ]		[ STATUS ]	[ VERSION ]	[COMM SEC]
-micr123c8456OS            RingLamp          10.0.1.75	ONLINE		1.0.1-0		0.319
-micr123456OS            BigRGB            10.0.1.119	ONLINE		1.0.1-0		0.418
-micr12345c860OS                CamLed            10.0.1.84	ONLINE		1.0.1-0		0.498
-micr12c83456OS                airquality        10.0.1.50	ONLINE		1.0.1-0		0.495
-micr5123456OS            tinyPico          10.0.1.189	ONLINE		<n/a>		n/a
-micr212345670OS            nodepro           10.0.1.140	OFFLINE		<n/a>		n/a
-micrf1234562a0OS            BedLamp           10.0.1.45	ONLINE		1.0.1-0		0.317
-micr212345661xOS            CatGamePro       10.0.1.23	ONLINE		1.0.1-0		0.393
+__localhost__                 __simulator__     127.0.0.1	OFFLINE		<n/a>		n/a
+micrf008d1d2ac30OS            BedLamp           192.168.1.78	ONLINE		1.4.0-1		0.787
+micr7c9ebd07a6d0OS            LedGenisys        192.168.1.71	ONLINE		1.3.3-2		1.430
+micr240ac4f679e8OS            Chillight         192.168.1.91	ONLINE		1.4.0-0		0.780
+micr3c61052fa788OS            RoboArm           192.168.1.79	ONLINE		1.4.0-0		0.539
+micr500291863428OS            TinyDevBoard      192.168.1.73	ONLINE		1.4.0-1		1.363
 ```
 
-**Developer commands**
+**Other Developer commands**
 
 ```
 Development & Deployment & Connection:
+  -f, --force_update    Force mode for -r/--update and -o/--OTA
   -e, --erase           Erase device
   -d, --deploy          Deploy micropython
-  -i, --install         Install MicrOS on micropython
+  -i, --install         Install micrOS on micropython
   -l, --list_devs_n_bins
                         List connected devices & micropython binaries.
-  -cc, --cross_compile_micros
-                        Cross Compile MicrOS system [py -> mpy]
-  -v, --version         Get micrOS version - repo + connected device.
   -ls, --node_ls        List micrOS node filesystem content.
   -u, --connect_via_usb
                         Connect via serial port - usb
-
-Toolkit development:
-  --dummy               Skip subshell executions - for API logic test.
+  -b, --backup_node_config
+                        Backup usb connected node config.
+  -sim, --simulate      start micrOS on your computer in simulated mode
+  -cc, --cross_compile_micros
+                        Cross Compile micrOS system [py -> mpy]
+  -gw, --gateway        Start micrOS Gateway rest-api server
+  -v, --version         Get micrOS version - repo + connected device.
 ```
 
 ## Socket terminal example - non interactive
@@ -474,7 +496,7 @@ Toolkit development:
 ### Identify device
 
 ```
-./devToolKit.py -c -p '--dev slim01 hello'
+devToolKit.py -c -p '--dev slim01 hello'
 Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
 Activate MicrOS device connection address
 [i]         FUID        IP               UID
@@ -486,12 +508,9 @@ hello:slim01:0x500x20x910x680xc0xf7
 ### Get help
 
 ```
-./devToolKit.py -c -p '--dev node01 help'
-Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
-Activate MicrOS device connection address
-[i]         FUID        IP               UID
-[0] Device: node01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
-Device was found: node01
+devToolKit.py -c -p '--dev BedLamp help'
+
+Device was found: BedLamp
 node01 $  help
 [MICROS]   - commands (SocketServer built-in)
    hello   - default hello msg - identify device
@@ -508,21 +527,6 @@ node01 $  help
 [EXEC] Command mode (LMs):
    L298N_DCmotor
                 help
-   VL53L0X
-          measure
-          help
-   adc
-      measure
-      action_fltr
-      help
-   air
-      help
-   bledns
-         advert
-         scan
-         list
-         make
-         help
    bme280
          help
    co2
@@ -538,15 +542,6 @@ node01 $  help
                   distance_cm
                   deinit
                   help
-   esp32
-        hall
-        temp
-        touch
-        battery
-        help
-   i2c
-      scan
-      help
    intercon
            help
    light_sensor
@@ -557,15 +552,6 @@ node01 $  help
                 help
    neopixel
            help
-   oled_128x64i2c
-                 help
-   oled_widgets
-               help
-   ph_sensor
-            measure
-            help
-   repair
-         help
    rgb
       help
    rgbfader
@@ -576,9 +562,6 @@ node01 $  help
          help
    system
          help
-   test
-       run
-       help
    tinyrgb
           help
    tinyrgb
@@ -592,76 +575,80 @@ node01 $  help
 ### Embedded config handler
  
 ```  
-./devToolKit.py -c -p '--dev node01 conf <a> dump'
-Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
-Activate MicrOS device connection address
-[i]         FUID        IP               UID
-[0] Device: node01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
-Device was found: node01
-[configure] node01
-  gmttime   :        1
-  irqmreq   :        6000
-  pled      :        True
-  crontasks :        *:19:2:0!rgbfader fade 0 107 6 120;*:19:4:0!rgbfader fade 0 92 2 120;*:19:6:0!rgbfader fade 128 0 7 120;*:19:8:0!rgbfader fade 107 7 0 120;*:19:10:0!rgbfader fade 0 31 9 120;*:19:12:0!rgbfader fade 310 1 2 120;*:19:14:0!rgbfader fade 11 1 0 120;*:23:0:0!rgbfader fade 0 0 0 3600;*:7:0:0!rgbfader fade 0 107 6 3600
-  soctout   :        100
-  devip     :        10.0.1.119
-  version   :        1.0.1-0
-  auth      :        False
-  cronseq   :        3000
-  guimeta   :        ...
-  cron      :        True
-  timirqcbf :        rgbfader transition
-  devfid    :        BigRGB
-  cstmpmap  :        n/a
-  boostmd   :        True
-  socport   :        9008
-  dbg       :        True
-  irqmembuf :        1000
-  timirqseq :        1000
-  extirq    :        False
-  staessid  :        <your-wifi-name>; <your-wifi-name2>
-  appwd     :        ADmin123
-  stapwd    :        <your-wifi-pwd>; <your-wifi-pwd2>
+devToolKit.py -c -p '--dev BedLamp conf <a> dump'
+
+[configure] BedLamp
+stapwd    :          <your-wifi-passwd>
+  irq2      :        False
+  irq1      :        True
   timirq    :        True
-  hwuid     :        micr8caab594d4c4OS
-  extirqcbf :        n/a
+  irq3      :        False
+  irq4      :        False
+  hwuid     :        micrf008d1d2ac30OS
+  devip     :        192.168.1.78
+  irq4_trig :        n/a
+  auth      :        False
+  cron      :        True
+  irq1_cbf  :        neopixel toggle
+  timirqcbf :        neopixel run_transition
+  devfid    :        BedLamp
+  irq1_trig :        n/a
+  irq4_cbf  :        n/a
+  boothook  :        neopixel load_n_init ledcnt=8
+  utc       :        120
+  irqmreq   :        6000
+  socport   :        9008
+  timirqseq :        1000
   nwmd      :        STA
-  extirqtrig:        n/a
-  boothook  :        rgbfader fader_cache_load_n_init
+  cronseq   :        3000
+  appwd     :        ADmin123
+  crontasks :        *:7:30:0!neopixel set_transition 255 56 5 1800;*:9:10:0!neopixel set_transition 3 58 156;*:12:0:0!neopixel set_transition 0 14 38 400;*:16:12:0!neopixel set_transition 181 54 0 180;*:0:0:0!neopixel set_transition 0 0 0 900;*:*:*:10!system ha_sta
+  boostmd   :        True
+  irq2_trig :        n/a
+  version   :        1.4.0-1
+  soctout   :        100
+  irq3_trig :        n/a
+  guimeta   :        ...
+  cstmpmap  :        n/a
+  dbg       :        True
+  irq2_cbf  :        n/a
+  irq3_cbf  :        n/a
+  staessid  :        <your-wifi-name>
 ```
 
 ### Load Modules - User defined functions
 
 ```
-./devToolKit.py -c -p '--dev node01 system info'
-Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
-Device was found: node01
+devToolKit.py -c -p '--dev BedLamp system info'
+
 CPU clock: 24 [MHz]
-MemFree: 25 kB 80 byte
-FSFREE: 88 %
-Plaform: esp32
+Free RAM: 14 kB 256 byte
+Free fs: 87 %
+upython: v1.17 on 2021-09-02
+board: ESP32 module with ESP32
+mac: f0:08:d1:d2:ac:30
 ```
 
 ## SocketClient
 
 ### Config:
 
+micrOS/toolkit/user_data/device_conn_cache.json
+
 ```json
 {
-    "<UINIGUE ID - MAC ADDRESS (UID)>": [
-        "<MICROS DEVIDE IP (DEVIP)>",
-        "<MICROS DEVIDE MAC>",
-        "<MICROS FRIENDLY NAME (FUID)>"
+    "micrf008d1d2ac30OS": [
+        "192.168.1.78",
+        9008,
+        "BedLamp"
+    ],
+        "node uid": [
+        "node ip",
+        node port,
+        "node name"
     ]
 }
 ```
-
-> NOTE: MUST TO HAVE DATA FOR CONNECTION: 
-```
-<MICROS DEVIDE IP (DEVIP)>
-```
-
-> All the other data can be dummy value :) 
 
 #### Interactive mode
 
@@ -708,193 +695,194 @@ Bye!
 
 ## Project structure
 
-### MicrOS resources library
+### micrOS resources library
+
+#### micrOS Core
 
 ```
-micrOS/
-├── BleHandler.py
-├── Common.py
-├── ConfigHandler.py
-├── Hooks.py
-├── InterConnect.py
-├── InterpreterCore.py
-├── InterpreterShell.py
-├── InterruptHandler.py
-├── LP_esp32.py
-├── LP_esp8266.py
-├── LP_tinypico.py
-├── LogicalPins.py
-├── Network.py
-├── Scheduler.py
-├── SocketServer.py
-├── TinyPLed.py
-├── boot.py
-├── micrOS.py
-├── micrOSloader.py
-├── node_config.json
-├── reset.py
+micrOS/source/
+     245	BgJob.py
+      67	Common.py
+     217	ConfigHandler.py
+     102	Debug.py
+      54	Hooks.py
+      85	InterConnect.py
+     164	InterpreterCore.py
+     199	InterpreterShell.py
+     141	InterruptHandler.py
+      46	LP_esp32.py
+      55	LP_tinypico.py
+      44	LogicalPins.py
+     176	Network.py
+     161	Scheduler.py
+     292	SocketServer.py
+     172	Time.py
+      24	TinyPLed.py
+      19	boot.py
+      64	micrOS.py
+     108	micrOSloader.py
+       5	reset.py
+SUM OF CODE LINES: 2440
 ```
-> Note: Core MicrOS components
+
+#### micrOS Load Modules
 
 ```
-micrOS/
-├── LM_L298N_DCmotor.py
-├── LM_VL53L0X.py
-├── LM_bledns.py
-├── LM_bme280.py
-├── LM_co2.py
-├── LM_dht11.py
-├── LM_dht22.py
-├── LM_dimmer.py
-├── LM_distance_HCSR04.py
-├── LM_esp32.py
-├── LM_i2c.py
-├── LM_intercon.py
-├── LM_light_sensor.py
-├── LM_neopixel.py
-├── LM_oled_128x64i2c.py
-├── LM_oled_widgets.py
-├── LM_ph_sensor.py
-├── LM_repair.py
-├── LM_rgb.py
-├── LM_rgbfader.py
-├── LM_servo.py
-├── LM_switch.py
-├── LM_system.py
-├── LM_tinyrgb.py
+micrOS/source/
+      59	LM_L298N_DCmotor.py
+      37	LM_L9110_DCmotor.py
+     310	LM_VL53L0X.py
+     273	LM_bme280.py
+     194	LM_buzzer.py
+      24	LM_catgame.py
+     177	LM_cct.py
+     103	LM_co2.py
+      32	LM_dht11.py
+      32	LM_dht22.py
+      90	LM_dimmer.py
+      57	LM_distance_HCSR04.py
+      36	LM_ds18.py
+      24	LM_esp32.py
+      67	LM_genIO.py
+      19	LM_i2c.py
+      31	LM_intercon.py
+      55	LM_light_sensor.py
+     108	LM_neoeffects.py
+     206	LM_neopixel.py
+     161	LM_oled.py
+     172	LM_oled_ui.py
+      30	LM_pet_feeder.py
+      50	LM_ph_sensor.py
+     198	LM_rgb.py
+     155	LM_roboarm.py
+      40	LM_robustness.py
+      89	LM_servo.py
+     110	LM_stepper.py
+     179	LM_switch.py
+     155	LM_system.py
+      60	LM_tinyrgb.py
+SUM OF CODE LINES: 3333
 ```
+
 > LM (Load Modules) - Application logic - accessable over socket server as a command
 
-```
-micrOS/
-├── node_config.json
-```
-> Note: System description config
+### micrOS devToolkit resources
 
-### MicrOS development tools library
+#### DevToolKit Dashboard apps
+
+> You can easly copy the `Template_app.py`, and create a new socket based app.
 
 ```
-├── devToolKit.py
-├── tools
-│   ├── MicrOSDevEnv
-```
-> Note: devToolKit wrapper resources for development, deployment, precompile, etc.
-
-```
-│   ├── nwscan.py
-│   ├── socketClient.py
-```
-> Note: devToolKit wrapper socket based connection handling
-
-```
-├── user_data
-│   ├── device_conn_cache.json
-│   └── node_config_archive
-```
-> Note: User data dir: conatins node connection informations (devToolKit --search_devices) and deployed node config backups are here.
-
-
-### MicrOS deployment resources
-
-Precompiled components with the actual user configured config location
-
-```
-mpy-micrOS/
-├── BleHandler.mpy
-├── Common.mpy
-├── ConfigHandler.mpy
-├── Hooks.mpy
-├── InterConnect.mpy
-├── InterpreterCore.mpy
-├── InterpreterShell.mpy
-├── InterruptHandler.mpy
-├── LM_L298N_DCmotor.mpy
-├── LM_VL53L0X.py
-├── LM_bledns.py
-├── LM_bme280.mpy
-├── LM_co2.mpy
-├── LM_dht11.mpy
-├── LM_dht22.mpy
-├── LM_dimmer.mpy
-├── LM_distance_HCSR04.py
-├── LM_esp32.py
-├── LM_i2c.py
-├── LM_intercon.mpy
-├── LM_light_sensor.mpy
-├── LM_neopixel.mpy
-├── LM_oled_128x64i2c.mpy
-├── LM_oled_widgets.mpy
-├── LM_ph_sensor.py
-├── LM_repair.mpy
-├── LM_rgb.mpy
-├── LM_rgbfader.mpy
-├── LM_servo.mpy
-├── LM_switch.mpy
-├── LM_system.mpy
-├── LM_tinyrgb.mpy
-├── LP_esp32.mpy
-├── LP_esp8266.mpy
-├── LP_tinypico.mpy
-├── LogicalPins.mpy
-├── Network.mpy
-├── Scheduler.mpy
-├── SocketServer.mpy
-├── TinyPLed.mpy
-├── boot.py
-├── micrOS.mpy
-├── micrOSloader.mpy
-└── reset.mpy
-44 files
+micrOS/toolkit/dashboard_apps
+│   ├── AirQualityBME280_app.py
+│   ├── AirQualityDHT22_CO2_app.py
+│   ├── AnalogCCT_app.py
+│   ├── AnalogRGB_app.py
+│   ├── CatGame_app.py
+│   ├── Dimmer_app.py
+│   ├── GetVersion_app.py
+│   ├── GetVersion_app.pyc
+│   ├── NeopixelTest_app.py
+│   ├── RoboArm_app.py
+│   ├── SysCheck_app.py
+│   ├── Template_app.py
 ```
 
-> Note: These resources will be copy to the micropython base image, all `LM_`s are optional.
-
-### Release info and Application Profiles
+#### Stored connection data and default node configs
 
 ```
-├── release_info
-│   ├── micrOS_ReleaseInfo
-│   │   ├── release_0.1.0-0_note.md
-│   │   ├── release_0.4.0-0_note_esp32.md
-│   │   ├── release_0.4.0-0_note_esp8266.md
-│   │   ├── release_sfuncman_0.1.0-0.json
-│   │   └── release_sfuncman_0.4.0-0.json
-│   └── node_config_profiles
-│       ├── README.md
-│       ├── catgame_profile-node_config.json
-│       ├── catgame_profile_command_examples.txt
-│       ├── default_profile-node_config.json
-│       ├── default_profile_command_examples.txt
-│       ├── dimmer_profile-node_config.json
-│       ├── dimmer_profile_command_examples.txt
-│       ├── heartbeat_profile-node_config.json
-│       ├── heartbeat_profile_command_examples.txt
-│       ├── lamp_profile-node_config.json
-│       ├── lamp_profile_command_examples.txt
-│       ├── neopixel_profile-node_config.json
-│       └── neopixel_profile_command_examples.txt
+micrOS/toolkit/user_data
+│   ├── device_conn_cache.json        <- connection cache
+│   └── node_config_archive
+│       ├── BigRGB-node_config.json
+│       ├── Chillight-node_config.json
+│       ├── Kapcsolo230-node_config.json
+│       ├── LampController-node_config.json
+│       ├── MeasureNode-node_config.json
+│       ├── MrGreen-node_config.json
+│       ├── RingLamp-node_config.json
+│       └── test-node_config.json
 ```
 
-> Note:  Under node_config_profiles you can find **configuration temaples**, named **profiles** (devenv automatically able to inject these under deployment) - there are also **command examples** for each application.
-
-> **MicrOS_Release_Info** folder(s) conatins system verification logs like:
-> 
-> - bootup log with different configurations
-> - application execution log
-> - memory measurements
-
-### Other project resoures 
+#### Virtaulenv for development and stored USB-Serial drivers
 
 ```
-apps/
-├── AirQualityBME280_app.py
-├── AirQualityDHT22_CO2_app.py
-├── AnanlogLED_app.py
-├── CatGame_app.py
-├── Dimmer_app.py
-├── GetVersion_app.py
-├── NeopixelTest_app.py
-├── Template_app.py
+micrOS/env/
+├── __init__.py
+├── driver_cp210x
+│   ├── CP210x_Universal_Windows_Driver
+│   └── macOS_VCP_Driver
+├── requirements.txt
+└── venv
+    ├── bin
+    ├── include
+    ├── lib
+    └── pyvenv.cfg
+```
+
+#### Precompiled resources for easy install
+
+```
+micrOS/toolkit/workspace/precompiled
+    │   ├── BgJob.mpy
+    │   ├── Common.mpy
+    │   ├── ConfigHandler.mpy
+    │   ├── Debug.mpy
+    │   ├── Hooks.mpy
+    │   ├── InterConnect.mpy
+    │   ├── InterpreterCore.mpy
+    │   ├── InterpreterShell.mpy
+    │   ├── InterruptHandler.mpy
+    │   ├── LM_L298N_DCmotor.mpy
+    │   ├── LM_L9110_DCmotor.py
+    │   ├── LM_VL53L0X.py
+    │   ├── LM_bme280.mpy
+    │   ├── LM_buzzer.mpy
+    │   ├── LM_catgame.py
+    │   ├── LM_cct.mpy
+    │   ├── LM_co2.mpy
+    │   ├── LM_dht11.mpy
+    │   ├── LM_dht22.mpy
+    │   ├── LM_dimmer.mpy
+    │   ├── LM_distance_HCSR04.py
+    │   ├── LM_ds18.mpy
+    │   ├── LM_esp32.py
+    │   ├── LM_genIO.mpy
+    │   ├── LM_i2c.py
+    │   ├── LM_intercon.mpy
+    │   ├── LM_light_sensor.mpy
+    │   ├── LM_neoeffects.mpy
+    │   ├── LM_neopixel.mpy
+    │   ├── LM_oled.mpy
+    │   ├── LM_oled_ui.mpy
+    │   ├── LM_pet_feeder.py
+    │   ├── LM_ph_sensor.py
+    │   ├── LM_rgb.mpy
+    │   ├── LM_roboarm.mpy
+    │   ├── LM_robustness.py
+    │   ├── LM_servo.mpy
+    │   ├── LM_stepper.mpy
+    │   ├── LM_switch.mpy
+    │   ├── LM_system.mpy
+    │   ├── LM_tinyrgb.mpy
+    │   ├── LP_esp32.mpy
+    │   ├── LP_tinypico.mpy
+    │   ├── LogicalPins.mpy
+    │   ├── Network.mpy
+    │   ├── Scheduler.mpy
+    │   ├── SocketServer.mpy
+    │   ├── Time.mpy
+    │   ├── TinyPLed.mpy
+    │   ├── boot.py
+    │   ├── micrOS.mpy
+    │   ├── micrOSloader.mpy
+    │   └── reset.mpy
+```
+
+> Note: From the `micrOS/source/` by default the LMs are not compiling, to extend complied LM list add LM explicitly to the following file:
+
+```
+micrOs/toolkit/LM_to_compile.dat
 ```
 
 ----------------------------------------
@@ -911,70 +899,13 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 - **micrOS core source code** lines:
 
 ```bash
-Ferenc@Bans-MBP:micrOS$ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
-     111	BgJob.py
-     154	BleHandler.py	       -> beta code
-      70	Common.py           -> Common functions/decorators for LMs
-     212	ConfigHandler.py
-     102	Debug.py				-> FSCO (TODO)
-      54	Hooks.py
-      42	InterConnect.py
-     164	InterpreterCore.py
-     199	InterpreterShell.py
-     119	InterruptHandler.py
-      43	LP_esp32.py
-      55	LP_tinypico.py
-      44	LogicalPins.py
-     185	Network.py          -> FSCO (ForceCoreOTA update)
-     130	Scheduler.py
-     291	SocketServer.py
-      24	TinyPLed.py
-      19	boot.py             -> FSCO
-      60	micrOS.py
-     110	micrOSloader.py     -> FSCO
-       5	reset.py            -> only used for webrepl manual reset
-SUM OF CODE LINES: 2193
+core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
 ```
 
 - **micrOS Load Module-s** (application-s) source code lines:
 
-
 ```
-bnm@Bans-MacBook-Pro:micrOS$ core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
-      59	LM_L298N_DCmotor.py
-      37	LM_L9110_DCmotor.py
-     310	LM_VL53L0X.py
-      27	LM_bledns.py
-     273	LM_bme280.py
-     194	LM_buzzer.py
-      24	LM_catgame.py
-     176	LM_cct.py
-     103	LM_co2.py
-      32	LM_dht11.py
-      32	LM_dht22.py
-      89	LM_dimmer.py
-      57	LM_distance_HCSR04.py
-      36	LM_ds18.py
-      24	LM_esp32.py
-      67	LM_genIO.py
-      19	LM_i2c.py
-      16	LM_intercon.py
-      55	LM_light_sensor.py
-     108	LM_neoeffects.py
-     205	LM_neopixel.py
-     161	LM_oled.py
-     169	LM_oled_ui.py
-      30	LM_pet_feeder.py
-      50	LM_ph_sensor.py
-     197	LM_rgb.py
-     154	LM_roboarm.py
-      40	LM_robustness.py
-      89	LM_servo.py
-     110	LM_stepper.py
-     179	LM_switch.py
-     140	LM_system.py
-      60	LM_tinyrgb.py
-SUM OF CODE LINES: 3322
+core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
 ```
 
 GIT:

@@ -150,36 +150,45 @@ def suntime():
         return msg
 
     console_write('[suntime] api sync started ...')
+    # Search keys in http request response
+    location_keys = ('lat', 'lon', 'timezone', 'offset')
+    sun_keys = ('sunrise', 'sunset')
+
+    # IP-API REQUEST HANDLING
     # Get latitude, longitude, timezone, utc offset by external ip
     url = 'http://ip-api.com/json/?fields=lat,lon,timezone,offset'
-    location_keys = ('lat', 'lon', 'timezone', 'offset')
-    location = http_get(url, 512)
-    parsed = {}
+    response = http_get(url, 512)
+    location = {}
     try:
-        parsed = {key: match('.+?{}.+?([0-9.a-zA-Z/]+)'.format(key), location).group(1) for key in location_keys}
+        location = {key: match('.+?{}.+?([0-9.a-zA-Z/]+)'.format(key), response).group(1) for key in location_keys}
         # Save utc offset in Sun class and micrOS config
-        Sun.UTC = int(int(parsed['offset']) / 60)  # IN MINUTE
+        Sun.UTC = int(int(location['offset']) / 60)  # IN MINUTE
         cfgput('utc', Sun.UTC, True)
     except Exception as e:
         errlog_add('ip-api parse error: {}'.format(e))
-
     # Get sunrise-sunset + utc offset
-    lat = parsed.get('lat', None)
-    lon = parsed.get('lon', None)
+    lat = location.get('lat', None)
+    lon = location.get('lon', None)
+
+    # SUNSET-SUNRISE API REQUEST HANDLING
     sun = {}
     if not (lat is None or lon is None):
         url = 'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'.format(lat=lat, lon=lon)
-        sun_keys = ('sunrise', 'sunset')
-        sun = http_get(url, 660)
+        response = http_get(url, 660)
         try:
-            sun = {key: match('.+?results.+?{}.+?T([0-9:]+)'.format(key), sun).group(1).split(':') for key in sun_keys}
+            sun = {key: match('.+?results.+?{}.+?T([0-9:]+)'.format(key), response).group(1).split(':') for key in sun_keys}
         except Exception as e:
-            errlog_add('sunrise-api parse error: {}'.format(e))
+            errlog_add('sunrise-api parse error: {} data: {}'.format(e, response))
+    # Try to parse response by expected sun_keys
+    try:
         for key in sun_keys:
             sun[key] = [int(v) for v in sun[key]]
-            sun[key][0] += int(Sun.UTC / 60)         # TODO: Handle UTC MINUTE OFFSET!
+            sun[key][0] += int(Sun.UTC / 60)
             sun[key] = tuple(sun[key])
-    # Save to global variable for later access
+    except:
+        pass
+
+    # Save to values class static variable for later access
     if sum([1 for _ in sun]) > 0:
         # Save and return with updated data
         Sun.TIME = sun

@@ -96,7 +96,7 @@ class PageUI:
             self.__page_header()
             self.__page_bar()
             if not msg_event:
-                self.page_callback_list[self.active_page]()
+                self.page_callback_list[self.active_page]()         # <== Execute page functions
             oled.show()
 
     def control(self, cmd):
@@ -198,7 +198,7 @@ def adc_page():
 
 def pageui():
     """ INIT PageUI - add page definitions here """
-    pages = [sys_page, intercon_cache, micros_welcome, adc_page]
+    pages = [sys_page, intercon_cache, micros_welcome, adc_page]      # <== Add page function HERE
     if PageUI.PAGE_UI_OBJ is None:
         PageUI(pages, 128, 64)
     PageUI.PAGE_UI_OBJ.show_page()

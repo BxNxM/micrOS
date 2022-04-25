@@ -1,6 +1,7 @@
 #########################################
 #       ANALOG rgb CONTROLLER PARAMS    #
 #########################################
+from machine import Pin, PWM
 from sys import platform
 from Common import transition
 from ConfigHandler import cfgget
@@ -24,7 +25,6 @@ class Data:
 
 def __RGB_init():
     if Data.RGB_OBJS[0] is None or Data.RGB_OBJS[1] is None or Data.RGB_OBJS[2] is None:
-        from machine import Pin, PWM
         red = Pin(physical_pin('redgb'))
         green = Pin(physical_pin('rgreenb'))
         blue = Pin(physical_pin('rgbue'))
@@ -73,11 +73,12 @@ def load_n_init(cache=None):
         Data.PERSISTENT_CACHE = True if platform == 'esp32' else False
     else:
         Data.PERSISTENT_CACHE = cache
-    __persistent_cache_manager('r')      # recover data cache if enabled
+    __persistent_cache_manager('r')     # recover data cache if enabled
     if Data.RGB_CACHE[3] == 1:
+        Data.RGB_CACHE[3] = 0           # Force ON at boot
         toggle(True)
     else:
-        rgb(0, 0, 0, smooth=False)       # If no persistent cache, init all pins low (OFF)
+        rgb(0, 0, 0, smooth=False)      # If no persistent cache, init all pins low (OFF)
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
@@ -138,22 +139,22 @@ def toggle(state=None, smooth=True):
     :param smooth: runs colors change with smooth effect
     :return: verdict
     """
-    # State auto invert
+    # Set state directly (inverse) + check change
     if state is not None:
+        if bool(state) is bool(Data.RGB_CACHE[3]):
+            return status()
         Data.RGB_CACHE[3] = 0 if state else 1
-    # Set OFF state
+
+    # Set OFF state (1)
     if Data.RGB_CACHE[3]:
-        rgb(0, 0, 0, smooth=smooth, force=False)
-        return status()
-    # Turn ON with smooth "hack"
+        return rgb(0, 0, 0, smooth=smooth, force=False)
+    # Turn ON with smooth "hack" (0)
     if smooth:
         r, g, b = Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2]
         Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2] = 0, 0, 0
-        rgb(r, g, b, force=False)
-        return status()
-    # Turn ON without smooth
-    rgb(force=False)
-    return status()
+        return rgb(r, g, b, smooth=smooth, force=False)
+    # Turn ON without smooth (0)
+    return rgb(smooth=smooth, force=False)
 
 
 def set_transition(r, g, b, sec):

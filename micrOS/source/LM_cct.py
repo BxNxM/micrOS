@@ -1,6 +1,7 @@
 #########################################
 #       ANALOG rgb CONTROLLER PARAMS    #
 #########################################
+from machine import Pin, PWM
 from sys import platform
 from utime import sleep_ms
 from Common import transition
@@ -21,7 +22,6 @@ class Data:
 
 def __cwww_init():
     if Data.CWWW_OBJS[0] is None or Data.CWWW_OBJS[1] is None:
-        from machine import Pin, PWM
         cw = Pin(physical_pin('cwhite'))
         ww = Pin(physical_pin('wwhite'))
         if platform == 'esp8266':
@@ -69,7 +69,8 @@ def load_n_init(cache=None):
         Data.PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')        # recover data cache
     if Data.CWWW_CACHE[2] == 1:
-        toggle(True)                       # Recover state if ON
+        Data.CWWW_CACHE[2] = 0             # Force ON at boot
+        toggle(True)
     else:
         white(0, 0, smooth=False)          # Init pins at bootup
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
@@ -125,20 +126,22 @@ def toggle(state=None, smooth=True):
     :param smooth: runs white channels change with smooth effect
     :return: verdict
     """
+    # Set state directly (inverse) + check change
     if state is not None:
+        if bool(state) is bool(Data.CWWW_CACHE[2]):
+            return status()
         Data.CWWW_CACHE[2] = 0 if state else 1
+
+    # Set OFF state (1)
     if Data.CWWW_CACHE[2]:
-        white(0, 0, smooth=smooth, force=False)
-        return status()
-    # Turn ON with smooth "hack"
+        return white(0, 0, smooth=smooth, force=False)
+    # Turn ON with smooth "hack" (0)
     if smooth:
         cw, ww = Data.CWWW_CACHE[0], Data.CWWW_CACHE[1]
         Data.CWWW_CACHE[0], Data.CWWW_CACHE[1] = 0, 0
-        white(cw, ww, force=False)
-        return status()
-    # Turn ON without smooth
-    white(force=False)
-    return status()
+        return white(cw, ww, smooth=smooth, force=False)
+    # Turn ON without smooth (0)
+    return white(smooth=smooth, force=False)
 
 
 def set_transition(cw, ww, sec):

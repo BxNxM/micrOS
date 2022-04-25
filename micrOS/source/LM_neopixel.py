@@ -1,3 +1,5 @@
+from neopixel import NeoPixel
+from machine import Pin
 from sys import platform
 from utime import sleep_ms
 from Common import transition
@@ -27,8 +29,6 @@ def __init_NEOPIXEL(n=24):
     n - number of led fragments
     """
     if Data.NEOPIXEL_OBJ is None:
-        from neopixel import NeoPixel
-        from machine import Pin
         neopixel_pin = Pin(physical_pin('neop'))     # Get Neopixel pin from LED PIN pool
         Data.NEOPIXEL_OBJ = NeoPixel(neopixel_pin, n)                 # initialize for max 8 segments
         del neopixel_pin
@@ -69,9 +69,10 @@ def load_n_init(cache=None, ledcnt=24):
         Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
     else:
         Data.PERSISTENT_CACHE = cache
-    __persistent_cache_manager('r')        # recover data cache
+    __persistent_cache_manager('r')         # recover data cache
     _ledcnt = __init_NEOPIXEL(n=ledcnt).n
     if Data.PERSISTENT_CACHE and Data.DCACHE[3] == 1:
+        Data.DCACHE[3] = 0                  # Force ON at boot
         toggle(True)
     return "CACHE: {}, LED CNT: {}".format(Data.PERSISTENT_CACHE, _ledcnt)
 
@@ -155,20 +156,22 @@ def toggle(state=None, smooth=True):
     :param smooth: runs colors change with smooth effect
     :return: verdict
     """
+    # Set state directly (inverse) + check change
     if state is not None:
+        if bool(state) is bool(Data.DCACHE[3]):
+            return status()
         Data.DCACHE[3] = 0 if state else 1
+
+    # Set OFF state (1)
     if Data.DCACHE[3] == 1:
-        neopixel(r=0, g=0, b=0, smooth=smooth, force=False)
-        return status()
-    # Turn ON with smooth "hack"
+        return neopixel(r=0, g=0, b=0, smooth=smooth, force=False)
+    # Turn ON with smooth "hack" (0)
     if smooth:
         r, g, b = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]
         Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2] = 0, 0, 0
-        neopixel(r, g, b, force=False)
-        return status()
-    # Turn ON without smooth
-    neopixel(force=False)
-    return status()
+        return neopixel(r, g, b, smooth=smooth, force=False)
+    # Turn ON without smooth (0)
+    return neopixel(smooth=smooth, force=False)
 
 
 def set_transition(r, g, b, sec):

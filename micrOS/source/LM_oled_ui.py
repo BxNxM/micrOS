@@ -6,6 +6,10 @@ import LM_oled as oled
 from Common import SmartADC
 from LogicalPins import physical_pin
 from Network import ifconfig
+try:
+    from InterConnect import InterCon
+except:
+    InterCon = None
 
 
 #################################
@@ -123,10 +127,49 @@ class PageUI:
 #        PAGE DEFINITIONS       #
 #################################
 
-""" Create "user" pages here """
+def sys_page():
+    """
+    System basic information page
+    """
+    oled.text(cfgget("devfid"), 0, 15)
+    oled.text("  {}".format(ifconfig()[1][0]), 0, 25)
+    fm = mem_free()
+    kb, byte = int(fm / 1000), int(fm % 1000)
+    oled.text("  {}kb {}b".format(kb, byte), 0, 35)
+    oled.text("  V: {}".format(cfgget("version")), 0, 45)
+    return True
+
+
+def intercon_cache():
+    if InterCon is None:
+        return False
+    line_start = 15
+    line_cnt = 1
+    line_limit = 3
+    oled.text("InterCon cache", 0, line_start)
+    if sum([1 for _ in InterCon.CONN_MAP.keys()]) > 0:
+        for key, val in InterCon.CONN_MAP.items():
+            key = key.split('.')[0]
+            val = '.'.join(val.split('.')[-2:])
+            oled.text(" {} {}".format(val, key), 0, line_start+(line_cnt*10))
+            line_cnt = 1 if line_cnt > line_limit else line_cnt+1
+        return True
+    oled.text("Empty", 40, line_start+20)
+    return True
+
+
+def micros_welcome():
+    try:
+        oled.text('micrOS GUI', 20, 30)
+    except Exception as e:
+        return str(e)
+    return True
 
 
 def adc_page():
+    """
+    ADC value visualizer
+    """
     def __visualize(p):
         max_w = 50
         percent = p * 0.01
@@ -148,28 +191,6 @@ def adc_page():
     oled.text("{} V".format(data['volt']), 65, 40)
     return True
 
-
-def sys_page():
-    oled.text(cfgget("devfid"), 0, 15)
-    oled.text("  {}".format(ifconfig()[1][0]), 0, 25)
-    fm = mem_free()
-    kb, byte = int(fm / 1000), int(fm % 1000)
-    oled.text("  {}kb {}b".format(kb, byte), 0, 35)
-    oled.text("  V: {}".format(cfgget("version")), 0, 45)
-    return True
-
-
-def simple_page():
-    try:
-        oled.text('micrOS GUI', 20, 30)
-    except Exception as e:
-        return str(e)
-    return True
-
-
-def template():
-    return True
-
 #################################
 # PAGE GUI CONTROLLER FUNCTIONS #
 #################################
@@ -177,7 +198,7 @@ def template():
 
 def pageui():
     """ INIT PageUI - add page definitions here """
-    pages = [sys_page, simple_page, template, adc_page]
+    pages = [sys_page, intercon_cache, micros_welcome, adc_page]
     if PageUI.PAGE_UI_OBJ is None:
         PageUI(pages, 128, 64)
     PageUI.PAGE_UI_OBJ.show_page()

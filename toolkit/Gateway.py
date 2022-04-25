@@ -75,6 +75,9 @@ class SendCmd(Resource):
         print("[Gateway] Raw command params: --dev {} {}".format(uid, cmd_str))
         start = time.time()
         status, response = socketClient.run(['--dev', uid, cmd_str])
+        if status is False:
+            # 1x retry (in the background, maybe the IP was refreshed)
+            status, response = socketClient.run(['--dev', uid, cmd_str])
         diff = round(time.time() - start, 2)
         if cmd_str.strip() == 'help':
             # DO not format (strip) response
@@ -93,7 +96,7 @@ class ListDevices(Resource):
 
 
 class SearchDevices(Resource):
-    SEARCH_LIMIT_SEC = 60
+    SEARCH_LIMIT_SEC = 30
     _THREAD_OBJ = None
     _LAST_EXEC_TIME = time.time()
     _LAST_DELTA = 0
@@ -123,7 +126,8 @@ class SearchDevices(Resource):
 
 
 class DeviceStatus(Resource):
-    STATUS_LIMIT_SEC = 90
+    CLEAN_MICROS_ALARMS = True
+    STATUS_LIMIT_SEC = 60
     NODE_STATUS = {}
     _THREAD_OBJ = None
     _LAST_EXEC_TIME = time.time()
@@ -138,32 +142,67 @@ class DeviceStatus(Resource):
             if fuid.startswith('__') and fuid.endswith('__'):
                 continue
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
-            hwuid = 'None'
-            alarms = 'Alarms'
-            upython_version = 'None'
+            hwuid = uid
+            alarms = 'Unknown'
+            upython_version = 'Unknown'
+            free_ram = 'Unknown'
+            free_fs = 'Unknown'
+            cpu_temp = 'Unknown'
             diff = 0
 
             if status:
                 start = time.time()
+
                 # Get hello message response
                 _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
                 diff = round(time.time() - start, 2)
                 if _status:
-                    hwuid = hello.strip().split(':')[2]
-                    # Get system alarms response
-                    _status2, alarms = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
-                    if _status2:
-                        alarms = alarms.splitlines()
+                    try:
+                        hwuid = hello.strip().split(':')[2]
+                    except:
+                        pass
+
+                # Get system alarms response
+                _status2, alarms = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
+                if _status2:
+                    alarms = alarms.splitlines()
+                    try:
                         alarms = {'verdict': alarms[-1], 'log': alarms[0:-1]}
-                    # Get system info response -> upython version
-                    _status3, info = socketClient.run(['--dev', fuid.strip(), 'system info'])
-                    if 'upython' in info:
-                        upython_version = info.splitlines()[3].replace('upython:', '').strip()
+                    except:
+                        pass
+
+                # Clean Alarms
+                clean_alarms = DeviceStatus.CLEAN_MICROS_ALARMS
+                if clean_alarms and 'NOK' in str(alarms):
+                    _, _ = socketClient.run(['--dev', fuid.strip(), 'system alarms True'])
+
+                # Get system info response -> upython version
+                _status3, info = socketClient.run(['--dev', fuid.strip(), 'system info'])
+                if 'upython' in info:
+                    try:
+                        free_ram = info.splitlines()[1].split(":")[-1].strip()
+                        free_fs = info.splitlines()[2].split(":")[-1].strip()
+                        upython_version = info.splitlines()[3].split(":")[-1].strip()
+                    except:
+                        pass
+
+                # Get cpu temp
+                _status4, cpu_temp = socketClient.run(['--dev', fuid.strip(), 'esp32 temp'])
+                if 'temp' in cpu_temp:
+                    try:
+                        cpu_temp = cpu_temp.split(":")[1].strip()
+                    except:
+                        pass
+
             status = 'HEALTHY' if status else 'UNHEALTHY'
             output_dev_struct[hwuid] = {'verdict': status, 'fuid': fuid,
                                         'devip': devip, "version": version,
-                                        'alarms': alarms, "latency": diff, 'upython': upython_version}
+                                        'alarms': alarms, "latency": diff,
+                                        'upython': upython_version, 'cpu_temp': cpu_temp,
+                                        'free_fs': free_fs, 'free_ram': free_ram}
+
         DeviceStatus.NODE_STATUS = output_dev_struct
+        DeviceStatus._LAST_EXEC_TIME = time.time()
         return output_dev_struct
 
     def status_thread(self):

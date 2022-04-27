@@ -17,6 +17,7 @@ class Data:
     RGB_CACHE = [197, 35, 10, 0]           # R, G, B (default color) + RGB state (default: off)
     PERSISTENT_CACHE = False
     FADE_OBJS = (None, None, None)
+    CH_MAX = 1000                          # maximum value per chanel
 
 
 #########################################
@@ -55,7 +56,7 @@ def __persistent_cache_manager(mode):
     try:
         # RESTORE CACHE
         with open('rgb.pds', 'r') as f:
-            Data.RGB_CACHE = [int(data) for data in f.read().strip().split(',')]
+            Data.RGB_CACHE = [float(data) for data in f.read().strip().split(',')]
     except:
         pass
 
@@ -119,17 +120,34 @@ def rgb(r=None, g=None, b=None, smooth=True, force=True):
     if smooth:
         __buttery(r_from=Data.RGB_CACHE[0], g_from=Data.RGB_CACHE[1], b_from=Data.RGB_CACHE[2], r_to=r, g_to=g, b_to=b)
     else:
-        Data.RGB_OBJS[0].duty(r)
-        Data.RGB_OBJS[1].duty(g)
-        Data.RGB_OBJS[2].duty(b)
+        Data.RGB_OBJS[0].duty(int(r))
+        Data.RGB_OBJS[1].duty(int(g))
+        Data.RGB_OBJS[2].duty(int(b))
     # Save channel duties if LED on
     if r > 0 or g > 0 or b > 0:
-        Data.RGB_CACHE = [Data.RGB_OBJS[0].duty(), Data.RGB_OBJS[1].duty(), Data.RGB_OBJS[2].duty(), 1]
+        Data.RGB_CACHE = [r, g, b, 1]
     else:
         Data.RGB_CACHE[3] = 0
     # Save state machine (cache)
     __persistent_cache_manager('s')
     return status()
+
+
+def brightness(percent=None, smooth=True):
+    actual_percent = sum(Data.RGB_CACHE[:-1]) / (3 * Data.CH_MAX)
+    if percent is None:
+        return actual_percent
+    if percent < 0 or percent > 100:
+        return "Percent is out of range"
+
+    target_br = Data.CH_MAX * (percent / 100)
+    max_rgb = max(Data.RGB_CACHE[:-1])
+    print("max_rgb: {}".format(max_rgb))
+    new_rgb = (target_br * float(Data.RGB_CACHE[0] / max_rgb),
+               target_br * float(Data.RGB_CACHE[1] / max_rgb),
+               target_br * float(Data.RGB_CACHE[2]) / max_rgb)
+    print("new_rgb: {}".format(new_rgb))
+    return rgb(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
 
 
 def toggle(state=None, smooth=True):

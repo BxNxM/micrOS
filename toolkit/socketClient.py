@@ -423,7 +423,7 @@ def socket_commandline_args(arg_list):
     return arg_list, return_action_dict
 
 
-def run(arg_list=[]):
+def run(arg_list=[], timeout=3):
     """ Run from code
         - Handles extra command line arguments
     """
@@ -432,7 +432,7 @@ def run(arg_list=[]):
     host, port, fid, uid = ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['device_tag'])
     output = False, ''
     try:
-        output = main(args, host=host, port=port)
+        output = main(args, host=host, port=port, timeout=timeout)
     except Exception as e:
         if "TimeOut" in str(e):
             print("Resolve device by host ... {}.local {}:{}:{}".format(fid, host, port, uid))

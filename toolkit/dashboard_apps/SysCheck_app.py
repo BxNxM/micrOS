@@ -303,6 +303,39 @@ def check_robustness_recursion():
         return False, f'{info_msg}: {output}'
 
 
+def check_intercon(host=None):
+    info_msg = '[ST] Check device-device connectivity'
+    print(info_msg)
+    host = 'test.local' if host is None else host
+    cmd_list = ['intercon sendcmd "{}" "hello"'.format(host)]
+    output = execute(cmd_list, tout=8)
+    device_was_found = False
+    if output[1] == '[]':
+        # Valid input, device was not found
+        output = 'Device was not found: {}:{}'.format(host, output)
+        state = True, f'{info_msg}:\n\t\t{output}'
+    elif "hello" in output[1]:
+        # Valid input on online device
+        output = "Device was found: {}:{}".format(host, output)
+        output = output.split('\n')
+        state = True, f'{info_msg}:\n\t\t{output}'
+        device_was_found = True
+    else:
+        state = False, output
+
+    if device_was_found:
+        # DO Negative testing as well
+        cmd_list = ['intercon sendcmd "notavailable.local" "hello"']
+        output_neg = execute(cmd_list, tout=10)
+        state_neg = False, output_neg
+        if output_neg[1] == '[]':
+            output_neg = 'Device was not found: "notavailable.local":{}'.format(output_neg)
+            state_neg = True, output_neg
+        return state[0] & state_neg[0], "{}\n\t\tNegative test: {}".format(state[1], state_neg[1])
+
+    return state
+
+
 def app(devfid=None):
     global DEVICE
     if devfid is not None:
@@ -323,6 +356,7 @@ def app(devfid=None):
                'lm_exception': check_robustness_exception(),
                'mem_alloc': check_robustness_memory(),
                'recursion': check_robustness_recursion(),
+               'intercon': check_intercon(host='RingLamp.local'),
                'micros_alarms': micros_alarm_check()
                }
 
@@ -349,10 +383,10 @@ def app(devfid=None):
     oled_msg_end_result(f"System[{state}] {pass_rate}")
 
 
-def execute(cmd_list):
+def execute(cmd_list, tout=5):
     cmd_args = base_cmd() + cmd_list
     print("[ST] test cmd: {}".format(cmd_args))
-    return socketClient.run(cmd_args)
+    return socketClient.run(cmd_args, timeout=tout)
 
 
 if __name__ == "__main__":

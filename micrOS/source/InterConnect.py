@@ -11,7 +11,7 @@ class InterCon:
 
     def __init__(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.settimeout(5)
+        self.conn.settimeout(4)
 
     @staticmethod
     def validate_ipv4(str_in):
@@ -22,7 +22,7 @@ class InterCon:
 
     def send_cmd(self, host, port, cmd):
         hostname = None
-        # Check if host is hostname (example.local) and convert IP from it
+        # Check IF host is hostname (example.local) and resolve it's IP address
         if not InterCon.validate_ipv4(host):
             hostname = host
             # Retrieve IP address by hostname dynamically
@@ -31,13 +31,17 @@ class InterCon:
             else:
                 # Restore IP from cache by hostname
                 host = InterCon.CONN_MAP[hostname]
-        # IF IP is available send msg to the endpoint
+        # IF IP address is available send msg to the endpoint
         if InterCon.validate_ipv4(host):
             SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, port))
 
             # Send command over TCP/IP
             self.conn.connect((host, port))
-            output = self.__run_command(cmd, hostname)
+            try:
+                output = self.__run_command(cmd, hostname)
+            except Exception as e:
+                errlog_add("[intercon] send_cmd error: {}".format(e))
+                output = None
             self.conn.close()
 
             # Cache successful connection data (hostname:IP)
@@ -47,7 +51,7 @@ class InterCon:
             return output
         else:
             errlog_add("[intercon] Invalid host: {}".format(host))
-            return None
+        return None
 
     def __run_command(self, cmd, hostname):
         cmd = str.encode(cmd)

@@ -11,7 +11,8 @@ from LogicalPins import physical_pin
 
 class Data:
     CWWW_OBJS = (None, None)
-    CWWW_CACHE = [600, 600, 0]           # cold white / warm white / state
+    CWWW_CACHE = [500, 500, 0]           # cold white / warm white / state
+    CH_MAX = 1000
     PERSISTENT_CACHE = False
     FADE_OBJS = (None, None)
 
@@ -49,7 +50,7 @@ def __persistent_cache_manager(mode):
     try:
         # RESTORE CACHE
         with open('cwww.pds', 'r') as f:
-            Data.CWWW_CACHE = [int(data) for data in f.read().strip().split(',')]
+            Data.CWWW_CACHE = [float(data) for data in f.read().strip().split(',')]
     except:
         pass
 
@@ -117,6 +118,26 @@ def white(c=None, w=None, smooth=True, force=True):
     # Save config
     __persistent_cache_manager('s')
     return status()
+
+
+def brightness(percent=None, smooth=True):
+    if percent is None:
+        if Data.CWWW_CACHE[2] == 0:
+            return "0 %"
+        # Get color (channel) max brightness inverse
+        rel_max_delta = Data.CH_MAX - max(Data.CWWW_CACHE[:-1])
+        # Calculate actual relative brightness
+        col_max_br = sum([c + rel_max_delta for c in Data.CWWW_CACHE[:-1]])
+        actual_percent = round(sum(Data.CWWW_CACHE[:-1]) / col_max_br, 1)
+        return "{} %".format(actual_percent * 100)
+    if percent < 0 or percent > 100:
+        return "Percent is out of range: 0-100"
+
+    target_br = Data.CH_MAX * (percent / 100)
+    max_cct = max(Data.CWWW_CACHE[:-1])
+    new_cct = (target_br * float(Data.CWWW_CACHE[0] / max_cct),
+               target_br * float(Data.CWWW_CACHE[1] / max_cct))
+    return white(round(new_cct[0], 3), round(new_cct[1], 3), smooth=smooth)
 
 
 def toggle(state=None, smooth=True):
@@ -199,6 +220,6 @@ def pinmap():
 
 def help():
     return 'white c=<0-1000> w=<0-1000> smooth=True force=True',\
-           'toggle state=None smooth=True', 'load_n_init', \
+           'toggle state=None smooth=True', 'load_n_init', 'brightness percent=<0-100> smooth=True', \
            'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition',\
            'status', 'pinmap'

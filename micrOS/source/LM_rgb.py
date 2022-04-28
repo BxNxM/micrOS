@@ -134,19 +134,23 @@ def rgb(r=None, g=None, b=None, smooth=True, force=True):
 
 
 def brightness(percent=None, smooth=True):
-    actual_percent = sum(Data.RGB_CACHE[:-1]) / (3 * Data.CH_MAX)
     if percent is None:
-        return actual_percent
+        if Data.RGB_CACHE[3] == 0:
+            return "0 %"
+        # Get color (channel) max brightness inverse
+        rel_max_delta = Data.CH_MAX - max(Data.RGB_CACHE[:-1])
+        # Calculate actual relative brightness
+        col_max_br = sum([c + rel_max_delta for c in Data.RGB_CACHE[:-1]])
+        actual_percent = round(sum(Data.RGB_CACHE[:-1]) / col_max_br, 1)
+        return "{} %".format(actual_percent * 100)
     if percent < 0 or percent > 100:
-        return "Percent is out of range"
+        return "Percent is out of range: 0-100"
 
     target_br = Data.CH_MAX * (percent / 100)
     max_rgb = max(Data.RGB_CACHE[:-1])
-    print("max_rgb: {}".format(max_rgb))
     new_rgb = (target_br * float(Data.RGB_CACHE[0] / max_rgb),
                target_br * float(Data.RGB_CACHE[1] / max_rgb),
                target_br * float(Data.RGB_CACHE[2]) / max_rgb)
-    print("new_rgb: {}".format(new_rgb))
     return rgb(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
 
 
@@ -239,4 +243,5 @@ def help():
     # Return help msg
     return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
+           'brightness percent=<0-100> smooth=True',\
            'set_transition r=<0-1000> g b sec', 'run_transition', 'status', 'pinmap'

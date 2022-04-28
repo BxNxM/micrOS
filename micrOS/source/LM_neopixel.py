@@ -13,6 +13,7 @@ from LogicalPins import physical_pin
 class Data:
     # Values: R, G, B, STATE_ON_OFF, IS_INITIALIZED
     DCACHE = [100, 100, 100, 0]
+    CH_MAX = 255
     NEOPIXEL_OBJ = None
     PERSISTENT_CACHE = False
     FADE_OBJ = (None, None, None)
@@ -51,7 +52,7 @@ def __persistent_cache_manager(mode):
     try:
         # RESTORE CACHE
         with open('neopixel.pds', 'r') as f:
-            Data.DCACHE = [int(data) for data in f.read().strip().split(',')]
+            Data.DCACHE = [float(data) for data in f.read().strip().split(',')]
     except:
         pass
 
@@ -125,6 +126,27 @@ def neopixel(r=None, g=None, b=None, smooth=True, force=True):
         Data.DCACHE[3] = 0                                 # State - False - OFF
     __persistent_cache_manager('s')                        # Save cache - Data.DCACHE -  to file
     return status()
+
+
+def brightness(percent=None, smooth=True):
+    if percent is None:
+        if Data.DCACHE[3] == 0:
+            return "0 %"
+        # Get color (channel) max brightness inverse
+        rel_max_delta = Data.CH_MAX - max(Data.DCACHE[:-1])
+        # Calculate actual relative brightness
+        col_max_br = sum([c + rel_max_delta for c in Data.DCACHE[:-1]])
+        actual_percent = round(sum(Data.DCACHE[:-1]) / col_max_br, 1)
+        return "{} %".format(actual_percent * 100)
+    if percent < 0 or percent > 100:
+        return "Percent is out of range: 0-100"
+
+    target_br = Data.CH_MAX * (percent / 100)
+    max_rgb = max(Data.DCACHE[:-1])
+    new_rgb = (target_br * float(Data.DCACHE[0] / max_rgb),
+               target_br * float(Data.DCACHE[1] / max_rgb),
+               target_br * float(Data.DCACHE[2]) / max_rgb)
+    return neopixel(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
 
 
 def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
@@ -235,5 +257,5 @@ def pinmap():
 
 def help():
     return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
-           'load_n_init ledcnt=24', 'segment r, g, b, s=<0-n>',\
+           'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition', 'status', 'pinmap'

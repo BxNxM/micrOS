@@ -145,38 +145,60 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ## micrOS Video Tutorials
 
-### 1.1 Prepare micrOS devToolKit for deployment [macOS]
+### 1.1 Prepare micrOS devToolKit for deployment [macOS] - OBSOLETE
 
 [![micrOSAppBasics](./media/thumbnails/install_on_mac.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t)
 
-### 1.2 Prepare micrOS devToolKit for deployment [Windows]
+### 1.2 Prepare micrOS devToolKit for deployment [Windows] - OBSOLETE
 
 [![micrOSAppBasics](./media/thumbnails/install_on_windows.jpg)](https://www.youtube.com/watch?v=8e_YCjFVZng)
+
+----------------------------------------
+
+### 1.1 Install micrOS devToolKit GUI on macOS (new)
+
+Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI on macOS (terminal)
+
+> Coming soon
+
+### 1.2 Install micrOS devToolKit GUI on Windows (new)
+
+Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI on windows (PowerShell)
+
+> Coming soon
 
 ### 2. Basic setup with micrOS Client App
 
 [![micrOSAppBasics](./media/thumbnails/first_configuration.jpg)](https://www.youtube.com/watch?v=xVNwHnBs1Tw)
 
-	
-### 3. How to OTA update device
-### 4. Widgets and Load Modules via micrOS Client  
+### 3. micrOS devToolKit GUI main functionalities
 
-How to get available module list
-Overview of micrOS Client UI
+Common on Windows and macOS
 
-### 5. Configuration via micrOS Client
+Step-by-step tutorial for micrOS devToolKit GUI basic usage: install (usb) and update (ota) boards plus communication based app executions. (How to write custom remote apps will be descriped in later episode)
 
-Idea behind: network, time, boothook, irqs, cron
-Set some stuff in config ...
+> Coming soon
 
-### 6. Get familier with micrOS shell
+### 4. Detailed micrOS Client walkthrough
 
-micrOS terminal
-built-in commands, Load Modules
+[Widgets] How to get available module list <br/>
+[Pages] Overview of micrOS Client UI <br/>
+[Config] Idea behind: network, time, boothook, irqs, cron <br/>
+		  Set some stuff in config ... Scheduler, irq (transition) <br/>
+
+
+### 5. Get familier with micrOS shell - micrOS devToolKit CLI
+
+micrOS terminal <br/>
+built-in commands, Load Modules <br/>
+LM development <br/>
+1. LM_app.py creation (basics python programming) <br/>
+2. Upload module with ota update (drag-n-drop LM_app file) <br/>
+3. Call LM_app function <br/>
 
 ### 7. How to customize or contribute to micrOS
 
-Create custom Load Modules (LMs)
+Create custom Load Modules (LMs) - github pull request
 
 ----------------------------------------
 

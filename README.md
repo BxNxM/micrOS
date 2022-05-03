@@ -145,17 +145,10 @@ It will install your board via USB with default settings. **Continue with micrOS
 ## micrOS Projects
 
 ![RingLamp](./media/projects/RingLamp.gif?raw=true)
-![RingLamp](./media/projects/RingLamp_wiring.gif?raw=true)
-
-----------------------------------------
 
 ![RoboArm](./media/projects/RoboArm.gif?raw=true)
-![RoboArm](./media/projects/RoboArm_wiring.gif?raw=true)
-
-----------------------------------------
 
 ![RGB_CCT](./media/projects/RGB_CCT.gif?raw=true)
-![RGB_CCT](./media/projects/RGB_CCT_wiring.gif?raw=true)
 
 ----------------------------------------
 

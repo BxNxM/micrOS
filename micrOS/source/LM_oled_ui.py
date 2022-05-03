@@ -185,10 +185,17 @@ def adc_page():
             else:
                 oled.rect(0, 9, scale, scale, state=1)
 
+    def __rgb_brightness(percent):
+        from sys import modules
+        if 'LM_rgb' in modules.keys():
+            from LM_rgb import brightness
+            brightness(percent, smooth=False)
+
     data = SmartADC.get_singleton(physical_pin('genadc')).get()
     __visualize(p=data['percent'])
     oled.text("{} %".format(data['percent']), 65, 20)
     oled.text("{} V".format(data['volt']), 65, 40)
+    __rgb_brightness(data['percent'])
     return True
 
 #################################

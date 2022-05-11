@@ -91,15 +91,9 @@ It will open a graphical user interface for micrOS device management, like usb d
 
 For python github project download
 
-&nbsp;**[download from here](https://git-scm.com/download/win)**
+&nbsp;**[download git from here](https://git-scm.com/download/win)**
 
-#### 2. C++ compiler
-
-You will need **C++ compiler** to able to install all python pip dependencies (defined in the tool/requirements.txt and setup.py)*
-
-&nbsp;**[C++ compiler download](https://support.microsoft.com/en-us/topic/the-latest-supported-visual-c-downloads-2647da03-1eea-4433-9aff-95f26a218cc0?fbclid=IwAR3_sC43aIkQ7TaCIyO3LnJAH5YEM22GavxngTS-X08Z2p1rJq12_vrX6FU)**
-
-#### 3. Download and install micrOS devToolKit python package:
+#### 2. Download and install micrOS devToolKit python package:
 
 Open Windows **Command Prompt**
 
@@ -108,7 +102,12 @@ python -m pip install --upgrade pip
 python -m pip install git+https://github.com/BxNxM/micrOS.git
 ```
 
-#### 4. Start micrOS devToolKit GUI
+> NOTE: You are on windows so maybe you will need windows restart after micrOS install to make it available.
+
+----------------------------------------
+<br/>
+
+### Start micrOS devToolKit GUI
 
 **`devToolKit.py`**
 
@@ -207,9 +206,9 @@ Step-by-step tutorial for micrOS devToolKit GUI basic usage: install (usb) and u
 micrOS terminal <br/>
 built-in commands, Load Modules <br/>
 LM development <br/>
-1. LM_app.py creation (basics python programming) <br/>
-2. Upload module with ota update (drag-n-drop LM_app file) <br/>
-3. Call LM_app function <br/>
+1. `LM_app.py` creation (basics python programming) <br/>
+2. Upload module with ota update (drag-n-drop `LM_app` file) <br/>
+3. Call `LM_app` function <br/>
 
 ### 7. How to customize or contribute to micrOS
 

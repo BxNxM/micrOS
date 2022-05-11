@@ -86,15 +86,13 @@ python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.
 
 #### On Windows:
 
-##### 2.1. Install git
-
-For python github project download
+##### 2.1. Install git for devToolKit download
 
 &nbsp;**[download git from here](https://git-scm.com/download/win)**
 
 > **Restart Windows after python install, because it's windows :)** </br>
 
-##### 2.2. Download and install micrOS devToolKit python package:
+##### 2.2. Download and install **micrOS devToolKit** python package:
 
 Open Windows **PowerShell**, press `windows+R` + type: `powershell` + press `enter`
 
@@ -112,6 +110,8 @@ python -m pip install git+https://github.com/BxNxM/micrOS.git
 <br/>
 
 ### 3. Start micrOS devToolKit GUI
+
+Copy the following command to the command line and press enter to start.
 
 **`devToolKit.py`**
 

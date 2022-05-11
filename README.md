@@ -96,9 +96,9 @@ For python github project download
 
 ##### 2.2. Download and install micrOS devToolKit python package:
 
-Open Windows **Command Prompt**, press `windows+R` + type: `cmd` + press `enter`
+Open Windows **PowerShell**, press `windows+R` + type: `powershell` + press `enter`
 
-Copy the following lines to the Command Prompt and press enter.
+Copy the following lines to the PowerShell and press enter.
 
 ```
 python -m pip install --upgrade pip

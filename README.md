@@ -71,7 +71,9 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 #### 1. Download and install **micrOS devToolKit** python package:
 
-**```python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.com/BxNxM/micrOS.git```**
+```
+python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.com/BxNxM/micrOS.git
+```
 
 > Note: macOS will drop a message to install git, please follow the install guide steps. </br>
 > FYI: Manual git install on macOS**`xcode-select --install; git --version`**

@@ -60,7 +60,7 @@ I would suggest to use micrOS GUI as a primary interface for micrOS development 
 
 Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
 
-> Note: Allow extend system path with that python version (installation parameter) </br>
+> Note: **Allow extend system path** with that python version (installation parameter) </br>
 > On **Windows**: RUN AS ADMINISTARTOR
 
 ----------------------------------------
@@ -76,7 +76,8 @@ python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.
 ```
 
 > Note: macOS will drop a message to install git, please follow the install guide steps. </br>
-> FYI: Manual git install on macOS**`xcode-select --install; git --version`**
+> Use the same command abow to update micrOS devToolkit </br>
+> FYI: Manual git install on macOS **`xcode-select --install; git --version`**
 
 #### 2. Start micrOS devToolKit GUI
 

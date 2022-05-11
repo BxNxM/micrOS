@@ -65,52 +65,53 @@ Link for python 3.8 [download](https://www.python.org/downloads/release/python-3
 
 ----------------------------------------
 
-### On macOS
+### 2. Install micrOS devToolKit GUI
 
-&nbsp;Open command line: press: `commnd+space` + type: `terminal` + press: `enter`
+#### On macOS
 
-#### 1. Download and install **micrOS devToolKit** python package:
+&nbsp;Open **command line**, press: `commnd+space` + type: `terminal` + press: `enter`
+
+##### 2.1. Download and install **micrOS devToolKit** python package:
 
 ```
 python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.com/BxNxM/micrOS.git
 ```
 
 > Note: macOS will drop a message to install git, please follow the install guide steps. </br>
-> Use the same command abow to update micrOS devToolkit </br>
+> Use the same command abow to update micrOS devToolkit GUI </br>
 > FYI: Manual git install on macOS **`xcode-select --install; git --version`**
-
-#### 2. Start micrOS devToolKit GUI
-
-**`devToolKit.py`**
-
-It will open a graphical user interface for micrOS device management, like usb deploy, update, OTA operations, test executions, etc...
 
 ----------------------------------------
 <br/>
 
-### On Windows:
+#### On Windows:
 
-#### 1. Install git
+##### 2.1. Install git
 
 For python github project download
 
 &nbsp;**[download git from here](https://git-scm.com/download/win)**
 
-#### 2. Download and install micrOS devToolKit python package:
+> **Restart Windows after python install, because it's windows :)** </br>
 
-Open Windows **Command Prompt**
+##### 2.2. Download and install micrOS devToolKit python package:
+
+Open Windows **Command Prompt**, press `windows+R` + type: `cmd` + press `enter`
+
+Copy the following lines to the Command Prompt and press enter.
 
 ```
 python -m pip install --upgrade pip
 python -m pip install git+https://github.com/BxNxM/micrOS.git
 ```
 
-> NOTE: You are on windows so maybe you will need windows restart after micrOS install to make it available.
+> NOTE: Wait for the installation, it may take several minutes to finish. </br>
+> Use the same command abow to update micrOS devToolkit GUI </br>
 
 ----------------------------------------
 <br/>
 
-### Start micrOS devToolKit GUI
+### 3. Start micrOS devToolKit GUI
 
 **`devToolKit.py`**
 

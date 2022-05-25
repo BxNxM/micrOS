@@ -1057,6 +1057,13 @@ class micrOSGUI(QWidget):
         if 'simulator' in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict['simulator'].is_alive():
                 self.console.append_output('[search_devices][SKIP] already running.')
+                # Verify data
+                if self.start_bg_application_popup(text="Stop simulator?"):
+                    try:
+                        self.console("Stop simulator")
+                    except Exception as e:
+                        print("Stop simulator: {}".format(e))
+                    self.devtool_obj.simulator(stop=True)
                 return
 
         # Verify data
@@ -1075,7 +1082,10 @@ class micrOSGUI(QWidget):
         # Start job
         self.console.append_output('[search_devices] |- start simulator job')
         self.progressbar.progressbar_update()
-        th = threading.Thread(target=self.devtool_obj.simulator, daemon=DAEMON)
+        # Start simulator process
+        sim_process = self.devtool_obj.simulator()
+        # Start process wait thread
+        th = threading.Thread(target=sim_process.wait_process, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['simulator'] = th
         self.console.append_output('[search_devices] |- simulator job was started')

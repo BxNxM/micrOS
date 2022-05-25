@@ -33,7 +33,10 @@ class micrOSIM():
         sim_path.popd()
 
     def wait_process(self):
-        self.process.join()
+        try:
+            self.process.join()
+        except Exception as e:
+            console(e)
 
     def start(self):
         console("Start micrOS simulator process")
@@ -64,8 +67,8 @@ class micrOSIM():
                 proc.close()
             except Exception as e:
                 console("Proc already stopped: {}/{}: {}".format(i+1, proc_len, e))
-            del micrOSIM.SIM_PROCESS_LIST[0]
             console("Proc was finished: {}/{}".format(i+1, proc_len))
+        micrOSIM.SIM_PROCESS_LIST = []
 
 
 if __name__ == '__main__':

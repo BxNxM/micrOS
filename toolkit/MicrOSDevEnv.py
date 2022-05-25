@@ -171,42 +171,43 @@ class MicrOSDevTool:
         return self.safe_mode_file_exception_list
 
     def simulator(self, prepare_only=False, stop=False, restart=False):
-        ######################  Preparation phase  ######################
-        self.console("[SIM] Clean sim workspace: {}".format(self.micros_sim_workspace))
-        LocalMachine.FileHandler().remove(self.micros_sim_workspace, ignore=True)
+        if not stop or prepare_only:
+            ######################  Preparation phase  ######################
+            self.console("[SIM] Clean sim workspace: {}".format(self.micros_sim_workspace))
+            LocalMachine.FileHandler().remove(self.micros_sim_workspace, ignore=True)
 
-        self.console("[SIM] Create workspace folder: {}".format(self.micros_sim_workspace))
-        LocalMachine.FileHandler().create_dir(self.micros_sim_workspace)
+            self.console("[SIM] Create workspace folder: {}".format(self.micros_sim_workspace))
+            LocalMachine.FileHandler().create_dir(self.micros_sim_workspace)
 
-        self.console("[SIM] Copy micrOS files to workdir")
-        # Copy micrOS to sim workspace
-        file_list = LocalMachine.FileHandler().list_dir(self.MicrOS_dir_path)
-        for f in file_list:
-            if f.endswith('.json'):
-                continue
-            f_path = os.path.join(self.MicrOS_dir_path, f)
-            self.console("[SIM] Copy micrOS resources: {} -> {}".format(f_path, self.micros_sim_workspace))
-            LocalMachine.FileHandler().copy(f_path, self.micros_sim_workspace)
+            self.console("[SIM] Copy micrOS files to workdir")
+            # Copy micrOS to sim workspace
+            file_list = LocalMachine.FileHandler().list_dir(self.MicrOS_dir_path)
+            for f in file_list:
+                if f.endswith('.json'):
+                    continue
+                f_path = os.path.join(self.MicrOS_dir_path, f)
+                self.console("[SIM] Copy micrOS resources: {} -> {}".format(f_path, self.micros_sim_workspace))
+                LocalMachine.FileHandler().copy(f_path, self.micros_sim_workspace)
 
-        if prepare_only:
-            # In case of automatic node_conf creation
-            return
+            if prepare_only:
+                # In case of automatic node_conf creation
+                return
 
         ######################  Execution phase  ######################
 
-        # Import simulator resources
+        # Import simulator resources - magic
         self.console("[SIM] ADD simulator resources to python path")
         sys.path.append(self.micros_sim_resources)
 
         import simulator
+        sim_proc = simulator.micrOSIM()
         if restart or stop:
-            simulator.micrOSIM().stop_all()
+            sim_proc.stop_all()
             if stop:
-                return True
+                return
         # Start micrOS on host
-        sim = simulator.micrOSIM()
-        sim.start()
-        return True
+        sim_proc.start()
+        return sim_proc
 
     def exec_app(self, app_name, dev_name, app_postfix='_app'):
         print("=== NEW ===")

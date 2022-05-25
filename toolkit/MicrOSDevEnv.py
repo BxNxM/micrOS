@@ -170,7 +170,8 @@ class MicrOSDevTool:
     def safe_core_list(self):
         return self.safe_mode_file_exception_list
 
-    def simulator(self, prepare_only=False):
+    def simulator(self, prepare_only=False, stop=False, restart=False):
+        ######################  Preparation phase  ######################
         self.console("[SIM] Clean sim workspace: {}".format(self.micros_sim_workspace))
         LocalMachine.FileHandler().remove(self.micros_sim_workspace, ignore=True)
 
@@ -191,27 +192,21 @@ class MicrOSDevTool:
             # In case of automatic node_conf creation
             return
 
-        workdir_handler = LocalMachine.SimplePopPushd()
-        workdir_handler.pushd(self.micros_sim_workspace)
+        ######################  Execution phase  ######################
 
         # Import simulator resources
         self.console("[SIM] ADD simulator resources to python path")
         sys.path.append(self.micros_sim_resources)
 
-        # Import simulator workspace
-        self.console("[SIM] ADD micrOS workspace to python path")
-        sys.path.append(self.micros_sim_workspace)
-
-        try:
-            self.console("[SIM] Start simulator: {}".format(self.micros_sim_workspace))
-            import micrOSloader
-        except Exception as e:
-            print("[LOAD ERROR] micrOS SIM\n{}".format(e))
-        try:
-            micrOSloader.main()
-        except Exception as e:
-            print("[RUN ERROR] micrOS SIM\n{}".format(e))
-        workdir_handler.popd()
+        import simulator
+        if restart or stop:
+            simulator.micrOSIM().stop_all()
+            if stop:
+                return True
+        # Start micrOS on host
+        sim = simulator.micrOSIM()
+        sim.start()
+        return True
 
     def exec_app(self, app_name, dev_name, app_postfix='_app'):
         print("=== NEW ===")

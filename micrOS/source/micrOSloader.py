@@ -11,6 +11,11 @@ try:
     import traceback
 except:
     traceback = None
+try:
+    from Debug import errlog_add
+except Exception as e:
+    print("Import error: {}".format(e))
+    errlog_add = None
 
 
 def __is_micrOS():
@@ -112,6 +117,8 @@ def main():
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
             print("[loader][main mode] micrOS start failed: {}".format(e))
             print("[loader][main mode] -> [recovery mode]")
+            if errlog_add is not None:
+                errlog_add("[micrOSloader] micrOS start failed: {}".format(e))
     # Recovery aka webrepl mode
     __recovery_mode()
     __auto_restart_event()

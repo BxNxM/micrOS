@@ -204,3 +204,4 @@ def auto_network_configuration():
         if state:
             # AP mode successfully  configures
             return 'AP'
+    return 'Unknown'

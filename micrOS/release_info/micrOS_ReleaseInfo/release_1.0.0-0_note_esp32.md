@@ -30,7 +30,7 @@ measurement error of baseload: 1424 byte, 2.08%
 
 |  version  |       memory usage    | board type  |     config    |
 | :------:  | :-------------------: | :---------: | :-----------: |
-| 1.0.0-0   |  **15,2%**  10394 byte |    esp32    | [default_profile](./micrOS/release_info/node_config_profiles/default_profile-node_config.json)      |
+| 1.0.0-0   |  **15,2%**  10394 byte |    esp32    | [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -125,7 +125,7 @@ GC: total: 111168, used: 53280, free: 57888
 
 |  version  |       memory usage    | board type  |     config    | 
 | :------:  | :-------------------: | :---------: | :-----------: |
-| 1.0.0-0   |   **~23,9%** 16048 byte |   esp32     |     [heartbeat_profile](./micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)      |
+| 1.0.0-0   |   **~23,9%** 16048 byte |   esp32     |     [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -224,7 +224,7 @@ GC: total: 111168, used: 60336, free: 50832
 
 |  version  |       memory usage    | board type  |     config    | 
 | :------:  | :-------------------: | :---------: | :-----------: |
-| 1.0.0-0   | **~23,2%** 15488 byte |    esp32    |     [neopixel_profile](./micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)      |
+| 1.0.0-0   | **~23,2%** 15488 byte |    esp32    |     [neopixel_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 

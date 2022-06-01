@@ -6,10 +6,8 @@
  "boothook": "neopixel load_n_init",
  "timirq": false,
  "socport": 9008,
- "dbg": True,
- "utc": 60,
+ "dbg": true,
  "devfid": null,
  "stapwd": null,
- "staessid": null,
- "devip": null
+ "staessid": null
 }

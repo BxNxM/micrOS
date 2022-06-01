@@ -6,8 +6,7 @@
  "boothook": "n/a",
  "timirq": false,
  "socport": 9008,
- "dbg": null,
- "utc": null,
+ "dbg": true,
  "devfid": null,
  "stapwd": null,
  "staessid": null

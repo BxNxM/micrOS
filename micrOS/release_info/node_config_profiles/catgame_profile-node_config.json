@@ -7,7 +7,6 @@
  "timirq": true,
  "socport": 9008,
  "dbg": true,
- "utc": 60,
  "devfid": null,
  "stapwd": null,
  "staessid": null

@@ -134,17 +134,19 @@ def rgb(r=None, g=None, b=None, smooth=True, force=True):
 
 
 def brightness(percent=None, smooth=True):
+    # Get color (channel) max brightness
+    ch_max = max(Data.RGB_CACHE[:-1])
+    # Calculate actual relative brightness
+    actual_percent = ch_max * 0.1
+
     if percent is None:
         if Data.RGB_CACHE[3] == 0:
             return "0 %"
-        # Get color (channel) max brightness inverse
-        rel_max_delta = Data.CH_MAX - max(Data.RGB_CACHE[:-1])
-        # Calculate actual relative brightness
-        col_max_br = sum([c + rel_max_delta for c in Data.RGB_CACHE[:-1]])
-        actual_percent = round(sum(Data.RGB_CACHE[:-1]) / col_max_br, 1)
-        return "{} %".format(actual_percent * 100)
+        return "{} %".format(actual_percent)
     if percent < 0 or percent > 100:
         return "Percent is out of range: 0-100"
+    if percent == actual_percent:
+        return status()
 
     target_br = Data.CH_MAX * (percent / 100)
     max_rgb = max(Data.RGB_CACHE[:-1])

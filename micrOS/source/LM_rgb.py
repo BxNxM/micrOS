@@ -137,7 +137,7 @@ def brightness(percent=None, smooth=True):
     # Get color (channel) max brightness
     ch_max = max(Data.RGB_CACHE[:-1])
     # Calculate actual relative brightness
-    actual_percent = ch_max * 0.1
+    actual_percent = ch_max / Data.CH_MAX * 100
 
     if percent is None:
         if Data.RGB_CACHE[3] == 0:

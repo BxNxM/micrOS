@@ -130,12 +130,12 @@ def neopixel(r=None, g=None, b=None, smooth=True, force=True):
 
 def brightness(percent=None, smooth=True):
     # Get color (channel) max brightness
-    ch_max = max(Data.RGB_CACHE[:-1])
+    ch_max = max(Data.DCACHE[:-1])
     # Calculate actual relative brightness
-    actual_percent = ch_max * 0.1
+    actual_percent = ch_max / Data.CH_MAX * 100
 
     if percent is None:
-        if Data.RGB_CACHE[3] == 0:
+        if Data.DCACHE[3] == 0:
             return "0 %"
         return "{} %".format(actual_percent)
     if percent < 0 or percent > 100:

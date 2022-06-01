@@ -121,22 +121,27 @@ def white(c=None, w=None, smooth=True, force=True):
 
 
 def brightness(percent=None, smooth=True):
+    # Get color (channel) max brightness
+    ch_max = max(Data.CWWW_CACHE[:-1])
+    # Calculate actual brightness
+    actual_percent = ch_max / Data.CH_MAX * 100
+
+    # Return brightness percentage
     if percent is None:
         if Data.CWWW_CACHE[2] == 0:
             return "0 %"
-        # Get color (channel) max brightness inverse
-        rel_max_delta = Data.CH_MAX - max(Data.CWWW_CACHE[:-1])
-        # Calculate actual relative brightness
-        col_max_br = sum([c + rel_max_delta for c in Data.CWWW_CACHE[:-1]])
-        actual_percent = round(sum(Data.CWWW_CACHE[:-1]) / col_max_br, 1)
-        return "{} %".format(actual_percent * 100)
+        return "{} %".format(actual_percent)
+    # Validate input percentage value
     if percent < 0 or percent > 100:
         return "Percent is out of range: 0-100"
+    # Percent not changed
+    if percent == actual_percent and Data.CWWW_CACHE[2] == 1:
+        return status()
 
+    # Set brightness percentage
     target_br = Data.CH_MAX * (percent / 100)
-    max_cct = max(Data.CWWW_CACHE[:-1])
-    new_cct = (target_br * float(Data.CWWW_CACHE[0] / max_cct),
-               target_br * float(Data.CWWW_CACHE[1] / max_cct))
+    new_cct = (target_br * float(Data.CWWW_CACHE[0] / ch_max),
+               target_br * float(Data.CWWW_CACHE[1] / ch_max))
     return white(round(new_cct[0], 3), round(new_cct[1], 3), smooth=smooth)
 
 

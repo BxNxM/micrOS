@@ -101,6 +101,7 @@ function help {
     echo -e "============================================================="
     echo -e "env        :activate python virtual environment and exit"
     echo -e "gateway    :start micrOS gateway service over devToolKit.py"
+    echo -e "sim        :start micrOS simulator on host OS"
     echo -e "gitclean   :cleans untracked files, with -f cleans ignored too"
     echo -e "<no param> :run devToolKit.py without params -> GUI\n"
 }
@@ -125,6 +126,9 @@ then
       then
         git clean -fdx | tee "${log_file}"
       fi
+    elif [[ "${CMD_ARGS[0]}" == "sim" ]]
+    then
+        python3.8 "${MY_PATH}/devToolKit.py" -sim | tee "${log_file}"
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
       help

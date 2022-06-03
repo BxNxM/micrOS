@@ -8,12 +8,12 @@ MY_PATH="$(dirname "${BASH_SOURCE[0]}")"
 if [[ "${MY_PATH}" == "." || ${MY_PATH} = /* ]]
 then
   venv_path="${MY_PATH}/env/venv"
-  activate="${venv_path}/bin/activate"
+  env_activate="${venv_path}/bin/activate"
   requirements="${MY_PATH}/env/requirements.txt"
   log_file="${MY_PATH}/micros.log"
 else
   venv_path="./${MY_PATH}/env/venv"
-  activate="./${venv_path}/bin/activate"
+  env_activate="./${venv_path}/bin/activate"
   requirements="./${MY_PATH}/env/requirements.txt"
   log_file="./${MY_PATH}/micros.log"
 fi
@@ -37,11 +37,11 @@ function venv_create {
     #IFS='/'
     #read -ra list <<< "$venv_path"
     # Check path is exists
-    if [[ -d "$venv_path" ]]
+    if [[ -d $(dirname "$venv_path") ]]
     then
         if [[ ! -d "$venv_path" ]]
         then
-            console_log "${GREEN}Create venv: ./$venv_path${NC}"
+            console_log "${GREEN}    Create venv: $venv_path${NC}"
             python3.8 -m venv "${venv_path}"
             "${venv_path}/bin/python3.8" -m pip install --upgrade pip
             install_req=1
@@ -49,17 +49,17 @@ function venv_create {
             install_req=0
         fi
     else
-        console_log "${RED}Invalid path: ${venv_path}${NC}"
+        console_log "${RED}    Invalid path: ${venv_path}${NC}"
     fi
 }
 
 function venv_requirements {
     if [[ -f "${requirements}" ]]
     then
-        console_log "${GREEN}Install requirements: ${requirements}${NC}"
+        console_log "${GREEN}    Install requirements: ${requirements}${NC}"
         python3.8 -m pip install -r "${requirements}"
     else
-        console_log "${RED}No requirements file: ${requirements}${NC}"
+        console_log "${RED}    No requirements file: ${requirements}${NC}"
     fi
 }
 
@@ -79,16 +79,16 @@ then
 fi
 
 # Activate venv
-console_log "${GREEN}ACTIVATE VIRTUAL ENVIRONMENT: ${activate}${NC}"
-source ${activate}
+console_log "${GREEN}ACTIVATE VIRTUAL ENVIRONMENT:${NC} ${env_activate}"
+source "${env_activate}"
 
 # Install requirements
 if [[ -n "${VIRTUAL_ENV}" && "${install_req}" -eq 1 ]]
 then
-    console_log "${GREEN}Virtual env active: ${VIRTUAL_ENV}${NC}"
+    console_log "${GREEN}    Install requirements: ${VIRTUAL_ENV}${NC}"
     venv_requirements
 else
-    console_log "Venv setup skipped: ${VIRTUAL_ENV}"
+    console_log "    Venv already prepared and active: ${VIRTUAL_ENV}"
 fi
 
 #################################
@@ -113,21 +113,26 @@ then
 
   if [[ "${CMD_ARGS[0]}" == "env" ]]
   then
-      console_log "Source env only, skip devToolKit load"
+      console_log "[env] Source env only, skip devToolKit start"
   elif [[ "${CMD_ARGS[0]}" == "gateway" ]]
   then
       # Start devToolKit.py gateway service
-      console_log "Source env and start rest api server aka gateway"
+      console_log "[gateway] Source env and start rest api server aka gateway"
       python3.8 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
   elif [[ "${CMD_ARGS[0]}" == "gitclean" ]]
   then
-      git clean -fd | tee -a "${log_file}"
+      pushd "${MY_PATH}"
+      console_log "[gitclean] Clean untracked files: git clean -fd"
+      git clean -fd
       if [[ -n "${CMD_ARGS[1]}" && "${CMD_ARGS[1]}" == "all" ]]
       then
-        git clean -fdx | tee -a "${log_file}"
+        console_log "\t[gitclean all] + gitignored files: git clean -fdx"
+        git clean -fdx
       fi
+      popd
     elif [[ "${CMD_ARGS[0]}" == "sim" ]]
     then
+       console_log "[sim] Start micrOS simulator"
         python3.8 "${MY_PATH}/devToolKit.py" -sim | tee -a "${log_file}"
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
@@ -136,6 +141,6 @@ then
 else
     help
     # Start devToolKit.py GUI
-    console_log "Start devToolKit: ${MY_PATH}"
+    console_log "Start devToolKit GUI: ${MY_PATH}/devToolKit.py"
     python3.8 "${MY_PATH}/devToolKit.py" | tee -a "${log_file}"
 fi

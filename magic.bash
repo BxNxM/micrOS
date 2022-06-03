@@ -10,10 +10,12 @@ then
   venv_path="${MY_PATH}/env/venv"
   activate="${venv_path}/bin/activate"
   requirements="${MY_PATH}/env/requirements.txt"
+  log_file="${MY_PATH}/micros.log"
 else
   venv_path="./${MY_PATH}/env/venv"
   activate="./${venv_path}/bin/activate"
   requirements="./${MY_PATH}/env/requirements.txt"
+  log_file="./${MY_PATH}/micros.log"
 fi
 
 # Calculate if pip install was done once
@@ -27,7 +29,7 @@ NC='\033[0m' # No Color
 function console_log {
   message=$1
   echo -e "$message"
-  echo -e "$message" >> "${MY_PATH}/micros.log"
+  echo -e "$message" >> "${log_file}"
 }
 
 function venv_create {
@@ -115,13 +117,13 @@ then
   then
       # Start devToolKit.py gateway service
       console_log "Source env and start rest api server aka gateway"
-      python3.8 "${MY_PATH}/devToolKit.py" -gw
+      python3.8 "${MY_PATH}/devToolKit.py" -gw | tee "${log_file}"
   elif [[ "${CMD_ARGS[0]}" == "gitclean" ]]
   then
-      git clean -fd
+      git clean -fd | tee "${log_file}"
       if [[ -n "${CMD_ARGS[1]}" && "${CMD_ARGS[1]}" == "all" ]]
       then
-        git clean -fdx
+        git clean -fdx | tee "${log_file}"
       fi
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
@@ -131,5 +133,5 @@ else
     help
     # Start devToolKit.py GUI
     console_log "Start devToolKit: ${MY_PATH}"
-    python3.8 "${MY_PATH}/devToolKit.py"
+    python3.8 "${MY_PATH}/devToolKit.py" | tee "${log_file}"
 fi

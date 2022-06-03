@@ -5,7 +5,7 @@ CMD_ARGS=${*}
 # Get current script path
 MY_PATH="$(dirname "${BASH_SOURCE[0]}")"
 # Create script global path variables
-if [[ "${MY_PATH}" == "." ]]
+if [[ "${MY_PATH}" == "." || ${MY_PATH} = /* ]]
 then
   venv_path="${MY_PATH}/env/venv"
   activate="${venv_path}/bin/activate"
@@ -118,17 +118,17 @@ then
   then
       # Start devToolKit.py gateway service
       console_log "Source env and start rest api server aka gateway"
-      python3.8 "${MY_PATH}/devToolKit.py" -gw | tee "${log_file}"
+      python3.8 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
   elif [[ "${CMD_ARGS[0]}" == "gitclean" ]]
   then
-      git clean -fd | tee "${log_file}"
+      git clean -fd | tee -a "${log_file}"
       if [[ -n "${CMD_ARGS[1]}" && "${CMD_ARGS[1]}" == "all" ]]
       then
-        git clean -fdx | tee "${log_file}"
+        git clean -fdx | tee -a "${log_file}"
       fi
     elif [[ "${CMD_ARGS[0]}" == "sim" ]]
     then
-        python3.8 "${MY_PATH}/devToolKit.py" -sim | tee "${log_file}"
+        python3.8 "${MY_PATH}/devToolKit.py" -sim | tee -a "${log_file}"
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
       help
@@ -137,5 +137,5 @@ else
     help
     # Start devToolKit.py GUI
     console_log "Start devToolKit: ${MY_PATH}"
-    python3.8 "${MY_PATH}/devToolKit.py" | tee "${log_file}"
+    python3.8 "${MY_PATH}/devToolKit.py" | tee -a "${log_file}"
 fi

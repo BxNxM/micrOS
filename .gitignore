@@ -28,3 +28,6 @@ micrOSDevToolKit.egg-info/
 build/
 dist/
 .eggs/
+
+# micrOS console log
+micros.log

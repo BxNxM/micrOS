@@ -6,6 +6,7 @@ from flask_restful import Resource, Api
 import threading
 import time
 import socket
+import concurrent.futures
 
 try:
     from . import socketClient
@@ -37,7 +38,7 @@ class Hello(Resource):
     # this function is called whenever there
     # is a GET request for this resource
     def get(self):
-        manual = {'micrOS gateway': 'v0.1',
+        manual = {'micrOS gateway': 'v0.2',
                   '/list': 'List known devices.',
                   '/search': 'Search devices',
                   '/status': 'Get all device status',
@@ -132,69 +133,96 @@ class DeviceStatus(Resource):
     _THREAD_OBJ = None
     _LAST_EXEC_TIME = time.time()
     _LAST_DELTA = 0
+    DEVS_AVAIL = 0
+
+    def __get_node_status(self, device_struct, uid):
+        devip = device_struct[uid][0]
+        fuid = device_struct[uid][2]
+        if fuid.startswith('__') and fuid.endswith('__'):
+            return None
+        status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
+        hwuid = uid
+        alarms = 'Unknown'
+        upython_version = 'Unknown'
+        free_ram = 'Unknown'
+        free_fs = 'Unknown'
+        cpu_temp = 'Unknown'
+        diff = 0
+
+        if status:
+            start = time.time()
+
+            # Get hello message response
+            _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
+            diff = round(time.time() - start, 2)
+            if _status:
+                try:
+                    hwuid = hello.strip().split(':')[2]
+                except:
+                    hwuid = uid
+
+            # Get system alarms response
+            _status2, alarms = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
+            if _status2:
+                alarms = alarms.splitlines()
+                try:
+                    alarms = {'verdict': alarms[-1], 'log': alarms[0:-1]}
+                except:
+                    pass
+
+            # Clean Alarms
+            clean_alarms = DeviceStatus.CLEAN_MICROS_ALARMS
+            if clean_alarms and 'NOK' in str(alarms):
+                _, _ = socketClient.run(['--dev', fuid.strip(), 'system alarms True'])
+
+            # Get system info response -> upython version
+            _status3, info = socketClient.run(['--dev', fuid.strip(), 'system info'])
+            if 'upython' in info:
+                try:
+                    free_ram = info.splitlines()[1].split(":")[-1].strip()
+                    free_fs = info.splitlines()[2].split(":")[-1].strip()
+                    upython_version = info.splitlines()[3].split(":")[-1].strip()
+                except:
+                    pass
+
+            # Get cpu temp
+            _status4, cpu_temp = socketClient.run(['--dev', fuid.strip(), 'esp32 temp'])
+            if 'temp' in cpu_temp:
+                try:
+                    cpu_temp = cpu_temp.split(":")[1].strip()
+                except:
+                    pass
+        return hwuid, status, fuid, devip, version, alarms, diff, upython_version, cpu_temp, free_fs, free_ram
+
 
     def get_all_node_status(self):
         output_dev_struct = {}
+        online_dev_cnt = 0
         device_struct = socketClient.ConnectionData.list_devices()
-        for uid in device_struct.keys():
-            devip = device_struct[uid][0]
-            fuid = device_struct[uid][2]
-            if fuid.startswith('__') and fuid.endswith('__'):
+        dev_query_list = []
+
+        # Start parallel status queries
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for uid in device_struct.keys():
+                future = executor.submit(self.__get_node_status, device_struct, uid)
+                dev_query_list.append(future)
+
+        # Collect results from queries
+        for query in dev_query_list:
+            node_info = query.result()
+
+            if node_info is None:
                 continue
-            status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
-            hwuid = uid
-            alarms = 'Unknown'
-            upython_version = 'Unknown'
-            free_ram = 'Unknown'
-            free_fs = 'Unknown'
-            cpu_temp = 'Unknown'
-            diff = 0
+            # Unwrap data
+            hwuid, status, fuid, devip, version, alarms, diff, upython_version, cpu_temp, free_fs, free_ram = node_info
 
+            # Status calculation
             if status:
-                start = time.time()
-
-                # Get hello message response
-                _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
-                diff = round(time.time() - start, 2)
-                if _status:
-                    try:
-                        hwuid = hello.strip().split(':')[2]
-                    except:
-                        pass
-
-                # Get system alarms response
-                _status2, alarms = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
-                if _status2:
-                    alarms = alarms.splitlines()
-                    try:
-                        alarms = {'verdict': alarms[-1], 'log': alarms[0:-1]}
-                    except:
-                        pass
-
-                # Clean Alarms
-                clean_alarms = DeviceStatus.CLEAN_MICROS_ALARMS
-                if clean_alarms and 'NOK' in str(alarms):
-                    _, _ = socketClient.run(['--dev', fuid.strip(), 'system alarms True'])
-
-                # Get system info response -> upython version
-                _status3, info = socketClient.run(['--dev', fuid.strip(), 'system info'])
-                if 'upython' in info:
-                    try:
-                        free_ram = info.splitlines()[1].split(":")[-1].strip()
-                        free_fs = info.splitlines()[2].split(":")[-1].strip()
-                        upython_version = info.splitlines()[3].split(":")[-1].strip()
-                    except:
-                        pass
-
-                # Get cpu temp
-                _status4, cpu_temp = socketClient.run(['--dev', fuid.strip(), 'esp32 temp'])
-                if 'temp' in cpu_temp:
-                    try:
-                        cpu_temp = cpu_temp.split(":")[1].strip()
-                    except:
-                        pass
-
-            status = 'HEALTHY' if status else 'UNHEALTHY'
+                online_dev_cnt += 1
+                DeviceStatus.DEVS_AVAIL = round((online_dev_cnt / (len(device_struct)-2)) *100, 1)
+                status = 'HEALTHY'
+            else:
+                status = 'UNHEALTHY'
             output_dev_struct[hwuid] = {'verdict': status, 'fuid': fuid,
                                         'devip': devip, "version": version,
                                         'alarms': alarms, "latency": diff,
@@ -226,8 +254,9 @@ class DeviceStatus(Resource):
                 status = "Start"
                 self.status_thread()
         return jsonify({'devices': DeviceStatus.NODE_STATUS, 'status': status,
-                        'last': round(DeviceStatus._LAST_DELTA, 1),
-                        'devcnt': len(socketClient.ConnectionData.list_devices().keys())-2})
+                        'last[sec]': round(DeviceStatus._LAST_DELTA, 1),
+                        'device_count': len(socketClient.ConnectionData.list_devices().keys())-2,
+                        'availablity[%]': DeviceStatus.DEVS_AVAIL})
 
 
 # adding the defined resources along with their corresponding urls

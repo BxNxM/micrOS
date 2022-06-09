@@ -920,7 +920,39 @@ core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref 
 core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
 ```
 
-GIT:
+
+### micrOS gateway - Linux service template
+
+- Create service: [micrOS gateway service](https://domoticproject.com/creating-raspberry-pi-service/)
+
+- create `micros-gw.service` file:
+
+```
+[Unit]
+Description=micrOS gateway REST API service
+After=network-online.target
+
+[Service]
+ExecStart=/bin/bash <micrOS repo root>/magic.bash gateway
+WorkingDirectory=<micrOS repo root>
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=<raspbian user>
+
+[Install]
+WantedBy=multi-user.target
+```
+
+- start service: sudo systemctl start micros_gw.service
+
+- enable serice at bootup: sudo systemctl enable micros_gw.service
+
+- show service state: sudo systemctl status micros_gw.service
+
+
+### GIT
+
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
 
 - Publish tags: `git push origin --tags`
@@ -932,3 +964,4 @@ GIT:
 - GitHub embed youtube link: `https://github.com/itskeshav/Add-youtube-link-in-Readme.md`
 
 git push -u origin master
+

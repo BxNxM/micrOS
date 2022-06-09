@@ -118,7 +118,16 @@ then
   then
       # Start devToolKit.py gateway service
       console_log "[gateway] Source env and start rest api server aka gateway"
-      python3.8 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
+      if [[ "$OSTYPE" == "linux"* ]]
+      then
+          # TODO [!!!!] Raspbian workaround
+          console_log "[gateway][!!!] Raspberry workaround: venc deactivate and use python3.9"
+          deactivate
+          python3.9 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
+      else
+          # Execution in virtual env
+          python3.8 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
+      fi
   elif [[ "${CMD_ARGS[0]}" == "gitclean" ]]
   then
       pushd "${MY_PATH}"
@@ -133,7 +142,16 @@ then
     elif [[ "${CMD_ARGS[0]}" == "sim" ]]
     then
        console_log "[sim] Start micrOS simulator"
-        python3.8 "${MY_PATH}/devToolKit.py" -sim | tee -a "${log_file}"
+      if [[ "$OSTYPE" == "linux"* ]]
+      then
+          # TODO [!!!!] Raspbian workaround
+          console_log "[simulator][!!!] Raspberry workaround: venc deactivate and use python3.9"
+          deactivate
+          python3.9 "${MY_PATH}/devToolKit.py" -sim
+       else
+          # Execution in virtual env
+          python3.8 "${MY_PATH}/devToolKit.py" -sim
+       fi
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
       help
@@ -142,5 +160,5 @@ else
     help
     # Start devToolKit.py GUI
     console_log "Start devToolKit GUI: ${MY_PATH}/devToolKit.py"
-    python3.8 "${MY_PATH}/devToolKit.py" | tee -a "${log_file}"
+    python3.8 "${MY_PATH}/devToolKit.py"
 fi

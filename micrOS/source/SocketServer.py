@@ -49,7 +49,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.5.0-1'
+    __socket_interpreter_version = '1.5.0-2'
 
     def __new__(cls, host=''):
         """
@@ -74,8 +74,10 @@ class SocketServer:
             SocketServer.__instance.__auth_mode = cfgget('auth')
             SocketServer.__instance.__prompt = "{} $ ".format(cfgget('devfid'))
             SocketServer.__instance.__port = cfgget("socport")
-            SocketServer.__instance.__timeout_user = int(cfgget("soctout"))
             SocketServer.__instance.__hwuid = cfgget("hwuid")
+            # ---- Set socket timeout (min 3 sec)
+            soc_timeout = int(cfgget("soctout"))
+            SocketServer.__instance.__timeout_user = 3 if soc_timeout < 3 else soc_timeout
             # ---         ----
             SocketServer.__instance.server_console("[ socket server ] <<constructor>>")
         return SocketServer.__instance

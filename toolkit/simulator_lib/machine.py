@@ -114,6 +114,30 @@ class ADC:
         return 420
 
 
+class I2C:
+
+    def __init__(self, scl, sda, freq):
+        self.scl = scl
+        self.sda = sda
+        self.freq = freq
+
+    def writeto(self, address, value):
+        console(f"[I2C writeto] scl: {self.scl} sda: {self.sda} freq: {self.freq} addr: {address} value: {value}")
+        return True
+
+    def writeto_mem(self, address, register, b):
+        console(f"[I2C writeto_mem] scl: {self.scl} sda: {self.sda} freq: {self.freq} addr: {address} reg: {register} bit: {b}")
+        return True
+
+    def readfrom(self, address, byte):
+        console(f"[I2C readfrom] scl: {self.scl} sda: {self.sda} freq: {self.freq} addr: {address} byte: {byte}")
+        return b'00000000'
+
+    def readfrom_mem(self, address, register, byte):
+        console(f"[I2C readfrom_mem] scl: {self.scl} sda: {self.sda} freq: {self.freq} addr: {address} reg: {register} byte: {byte}")
+        return b'00000000'
+
+
 def freq(*args, **kwargs):
     pass
 

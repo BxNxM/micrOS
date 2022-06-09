@@ -9,6 +9,10 @@ def sleep_ms(ms):
     pytime.sleep(ms*0.001)
 
 
+def sleep_us(us):
+    pytime.sleep(us * 0.000001)
+
+
 def localtime(sec=None):
     def __convert_localtime(struct_time):
         return (struct_time.tm_year,

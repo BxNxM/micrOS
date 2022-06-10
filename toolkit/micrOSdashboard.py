@@ -52,15 +52,15 @@ FSCO_STATE = False
 #################################################
 
 class ProgressbarTimers:
-    mminute = 90
-    usb_deploy = int(mminute * 4)  # min estimation
-    usb_update = int(mminute * 5)  # min estimation
-    ota_update = int(mminute * 2)  # min estimation
-    lm_update = int(mminute * 1.5)  # min estimation
-    search_devices = int(mminute * 3)  # min estimation
-    general_app = int(mminute * 2)  # min estimation
-    simulator = 4  # sec estimation
-    quick_ota = int(mminute * 1)  # min estimation
+    base_minute = 60                        # Sec
+    usb_deploy = 6 * base_minute            # min estimation
+    usb_update = 6 * base_minute            # min estimation
+    ota_update = 4 * base_minute            # min estimation
+    lm_update = int(1.5 * base_minute)      # min estimation
+    search_devices = int(1.5 * base_minute)  # min estimation
+    general_app = base_minute               # min estimation
+    simulator = 4                           # sec estimation
+    quick_ota = base_minute                 # min estimation - dragNDrop updaload
 
 
 class ProgressbarUpdateThread(QThread):

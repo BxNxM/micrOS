@@ -86,10 +86,12 @@ class SendCmd(Resource):
         diff = round(time.time() - start, 2)
         if cmd_str.strip() == 'help':
             # DO not format (strip) response
-            response = response.splitlines() if '\n' in response else response.strip()
+            if response is not None:
+                response = response.splitlines() if '\n' in response else response.strip()
         else:
             # FORMAT (strip) response
-            response = [k.strip() for k in response.splitlines()] if '\n' in response else response.strip()
+            if response is not None:
+                response = [k.strip() for k in response.splitlines()] if '\n' in response else response.strip()
         return jsonify({'cmd': cmd_list, 'device': device_detailed, 'response': response, 'latency': diff})
 
 

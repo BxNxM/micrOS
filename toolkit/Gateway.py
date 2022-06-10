@@ -38,10 +38,10 @@ class Hello(Resource):
     # this function is called whenever there
     # is a GET request for this resource
     def get(self):
-        manual = {'micrOS gateway': 'v0.3',
-                  '/list': 'List known devices.',
+        manual = {'micrOS gateway': 'v1.0',
+                  '/list': 'List known devices, sort by online/offline',
                   '/search': 'Search devices',
-                  '/status': 'Get all device status',
+                  '/status': 'Get all device status - node info',
                   '/sendcmd/<device>/<cmd>': 'Send command to the selected device. Use + instead of space.'}
         return jsonify(manual)
 
@@ -96,8 +96,11 @@ class SendCmd(Resource):
 
 
 class ListDevices(Resource):
+    DEVICE_CACHE = {}
+    _THREAD_OBJ = None
+    _LAST_EXEC_TIME = time.time()
 
-    def get(self):
+    def sort_devices(self):
         device_struct = socketClient.ConnectionData.list_devices()
         online_devices = socketClient.ConnectionData.nodes_status()
         filtered_devices = {"online": {}, "offline": {}}
@@ -106,6 +109,30 @@ class ListDevices(Resource):
                 filtered_devices['online'][uid] = data
             else:
                 filtered_devices['offline'][uid] = data
+        ListDevices.DEVICE_CACHE = filtered_devices
+        ListDevices._LAST_EXEC_TIME = time.time()
+        return filtered_devices
+
+    def get(self):
+        status = 'Done'
+        filtered_devices = ListDevices.DEVICE_CACHE
+        if len(ListDevices.DEVICE_CACHE) == 0:
+            # No cache available - run without thread -> wait for result
+            filtered_devices = self.sort_devices()
+        elif ListDevices._THREAD_OBJ is None:
+            # Cache is available refresh in the background
+            ListDevices._THREAD_OBJ = threading.Thread(target=self.sort_devices, args=())
+            ListDevices._THREAD_OBJ.start()
+            status = 'start'
+        elif ListDevices._THREAD_OBJ is not None and ListDevices._THREAD_OBJ.is_alive():
+            # Cache is available refresh thread is already running
+            status = 'running'
+        else:
+            # Thread finished - delete object - set state done
+            ListDevices._THREAD_OBJ = None
+            status = 'done'
+        gateway_metrics = {'status': status, 'last[sec]': round(time.time()-ListDevices._LAST_EXEC_TIME, 1)}
+        filtered_devices['gateway_metrics'] = gateway_metrics
         return jsonify(filtered_devices)
 
 
@@ -113,31 +140,29 @@ class SearchDevices(Resource):
     SEARCH_LIMIT_SEC = 30
     _THREAD_OBJ = None
     _LAST_EXEC_TIME = time.time()
-    _LAST_DELTA = 0
 
-    def search_thread(self):
-        SearchDevices._THREAD_OBJ = threading.Thread(target=socketClient.ConnectionData.search_micrOS_on_wlan, args=())
-        SearchDevices._THREAD_OBJ.start()
+    def _thread_worker(self):
+        socketClient.ConnectionData.search_micrOS_on_wlan()
+        SearchDevices._LAST_EXEC_TIME = time.time()
 
     def get(self):
         status = "Done"
         if SearchDevices._THREAD_OBJ:
             if SearchDevices._THREAD_OBJ.is_alive():
-                SearchDevices._LAST_DELTA = time.time() - SearchDevices._LAST_EXEC_TIME
                 status = "Running"
             else:
-                SearchDevices._LAST_DELTA = time.time() - SearchDevices._LAST_EXEC_TIME
                 status = "Done"
                 SearchDevices._THREAD_OBJ = None
-                SearchDevices._LAST_EXEC_TIME = time.time()
         else:
-            SearchDevices._LAST_DELTA = time.time() - SearchDevices._LAST_EXEC_TIME
-            if SearchDevices._LAST_DELTA > SearchDevices.SEARCH_LIMIT_SEC:
+            delta_t = time.time() - SearchDevices._LAST_EXEC_TIME
+            if delta_t > SearchDevices.SEARCH_LIMIT_SEC and SearchDevices._THREAD_OBJ is None:
+                SearchDevices._THREAD_OBJ = threading.Thread(target=self._thread_worker, args=())
+                SearchDevices._THREAD_OBJ.start()
                 status = "Start"
-                self.search_thread()
 
         device_struct = socketClient.ConnectionData.list_devices()
-        gateway_metrics = {'status': status, 'last[sec]': round(SearchDevices._LAST_DELTA, 1),
+        delta_t = time.time() - SearchDevices._LAST_EXEC_TIME
+        gateway_metrics = {'status': status, 'last[sec]': round(delta_t, 1),
                            'qlimit[sec]': SearchDevices.SEARCH_LIMIT_SEC}
         return jsonify({'devices': device_struct, 'gateway_metrics': gateway_metrics})
 
@@ -148,7 +173,6 @@ class DeviceStatus(Resource):
     NODE_STATUS = {}
     _THREAD_OBJ = None
     _LAST_EXEC_TIME = time.time()
-    _LAST_DELTA = 0
     DEVS_AVAIL = 0
 
     def __get_node_status(self, device_struct, uid):
@@ -249,28 +273,23 @@ class DeviceStatus(Resource):
         DeviceStatus._LAST_EXEC_TIME = time.time()
         return output_dev_struct
 
-    def status_thread(self):
-        DeviceStatus._THREAD_OBJ = threading.Thread(target=self.get_all_node_status, args=())
-        DeviceStatus._THREAD_OBJ.start()
-
     def get(self):
         status = "Done"
         if DeviceStatus._THREAD_OBJ:
             if DeviceStatus._THREAD_OBJ.is_alive():
-                DeviceStatus._LAST_DELTA = time.time() - DeviceStatus._LAST_EXEC_TIME
                 status = "Running"
             else:
-                DeviceStatus._LAST_DELTA = time.time() - DeviceStatus._LAST_EXEC_TIME
                 status = "Done"
                 DeviceStatus._THREAD_OBJ = None
-                DeviceStatus._LAST_EXEC_TIME = time.time()
         else:
-            DeviceStatus._LAST_DELTA = time.time() - DeviceStatus._LAST_EXEC_TIME
-            if DeviceStatus._LAST_DELTA > DeviceStatus.STATUS_LIMIT_SEC or len(DeviceStatus.NODE_STATUS.keys()) <= 0:
+            delta_t = time.time() - DeviceStatus._LAST_EXEC_TIME
+            if delta_t > DeviceStatus.STATUS_LIMIT_SEC or len(DeviceStatus.NODE_STATUS.keys()) <= 0:
+                DeviceStatus._THREAD_OBJ = threading.Thread(target=self.get_all_node_status, args=())
+                DeviceStatus._THREAD_OBJ.start()
                 status = "Start"
-                self.status_thread()
 
-        gateway_metrics = {'status': status, 'last[sec]': round(DeviceStatus._LAST_DELTA, 1),
+        delta_t = time.time() - DeviceStatus._LAST_EXEC_TIME
+        gateway_metrics = {'status': status, 'last[sec]': round(delta_t, 1),
                            'device_count': len(socketClient.ConnectionData.list_devices().keys())-2,
                            'availablity[%]': DeviceStatus.DEVS_AVAIL, 'qlimit[sec]': DeviceStatus.STATUS_LIMIT_SEC}
         return jsonify({'devices': DeviceStatus.NODE_STATUS,

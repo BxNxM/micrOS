@@ -23,7 +23,6 @@ except Exception as e:
     from lib import LocalMachine
     from lib.TerminalColors import Colors
     from lib.SerialDriverHandler import install_usb_serial_driver
-
     sys.path.append(MYPATH)
     import socketClient
 
@@ -825,7 +824,7 @@ class MicrOSDevTool:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
         self.console("Dump micrOS static manual: {}".format(static_help_json_path))
         with open(static_help_json_path, 'w') as f:
-            json.dump(module_function_dict, f, indent=2)
+            json.dump(module_function_dict, f, indent=2, sort_keys=True)
 
     def purge_node_config_from_workdir(self):
         path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')

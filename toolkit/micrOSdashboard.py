@@ -17,6 +17,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap
+import concurrent.futures
 
 MYPATH = os.path.dirname(__file__)
 print("Module [micrOSdashboard] path: {} __package__: {} __name__: {} __file__: {}".format(
@@ -489,11 +490,9 @@ class ClusterStatus:
         # Get stored devices
         conn_data = self.socket_data_obj
         conn_data.read_micrOS_device_cache()
-        for uid in conn_data.MICROS_DEVICES.keys():
-            devip = conn_data.MICROS_DEVICES[uid][0]
-            fuid = conn_data.MICROS_DEVICES[uid][2]
-            if fuid.startswith('__') or fuid.endswith('__'):
-                continue
+        query_list = []
+
+        def _status_worker(devip, fuid):
             status, version = socketClient.run(['--dev', fuid.strip(), 'version'])
             hwuid = 'None'
             if status:
@@ -501,9 +500,18 @@ class ClusterStatus:
                 if _status:
                     hwuid = hello.strip().split(':')[2]
             status = '🟢' if status else '🔴'
-
             msg = f"{status}{hwuid}📍{devip}🏷{fuid} v:️{version}"
-            self.parent_obj.console.append_output(msg)
+            return msg
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for uid in conn_data.MICROS_DEVICES.keys():
+                devip = conn_data.MICROS_DEVICES[uid][0]
+                fuid = conn_data.MICROS_DEVICES[uid][2]
+                f = executor.submit(_status_worker, devip, fuid)
+                query_list.append(f)
+
+        for q in query_list:
+            self.parent_obj.console.append_output(q.result())
         self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEVICES.keys())}')
 
 

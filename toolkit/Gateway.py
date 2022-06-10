@@ -38,31 +38,35 @@ class Hello(Resource):
     # this function is called whenever there
     # is a GET request for this resource
     def get(self):
-        manual = {'micrOS gateway': 'v0.2',
+        manual = {'micrOS gateway': 'v0.3',
                   '/list': 'List known devices.',
                   '/search': 'Search devices',
                   '/status': 'Get all device status',
                   '/sendcmd/<device>/<cmd>': 'Send command to the selected device. Use + instead of space.'}
         return jsonify(manual)
 
-    # Corresponds to POST request
-    #def post(self):
-    #    data = request.get_json()  # status code
-    #    return jsonify({'data': data}), 201
-
 
 class SendCmd(Resource):
     """
-    http://127.0.0.1:5000/sendcmd/dev/lm+func+arg1+arg2
+    http://127.0.0.1:5000/sendcmd/micr240ac4f679e8OS/rgb+toggle
         {
-            "cmd": [
-            "lm",
-            "func",
-            "arg1",
-            "arg2"
-            ],
-            "device": "dev",
-            "response": null
+          "cmd": [
+            "rgb",
+            "toggle"
+          ],
+          "device": [
+            "micr240ac4f679e8OS",
+            "192.168.1.91",
+            9008,
+            "Chillight"
+          ],
+          "latency": 2.35,
+          "response": [
+            "B: 35",
+            "S: 1",
+            "G: 140",
+            "R: 4"
+          ]
         }
     """
 
@@ -93,7 +97,14 @@ class ListDevices(Resource):
 
     def get(self):
         device_struct = socketClient.ConnectionData.list_devices()
-        return jsonify(device_struct)
+        online_devices = socketClient.ConnectionData.nodes_status()
+        filtered_devices = {"online": {}, "offline": {}}
+        for uid, data in device_struct.items():
+            if data[0] in online_devices:
+                filtered_devices['online'][uid] = data
+            else:
+                filtered_devices['offline'][uid] = data
+        return jsonify(filtered_devices)
 
 
 class SearchDevices(Resource):
@@ -122,8 +133,11 @@ class SearchDevices(Resource):
             if SearchDevices._LAST_DELTA > SearchDevices.SEARCH_LIMIT_SEC:
                 status = "Start"
                 self.search_thread()
+
         device_struct = socketClient.ConnectionData.list_devices()
-        return jsonify({'devices': device_struct, 'state': status, 'last': round(SearchDevices._LAST_DELTA, 1)})
+        gateway_metrics = {'status': status, 'last[sec]': round(SearchDevices._LAST_DELTA, 1),
+                           'qlimit[sec]': SearchDevices.SEARCH_LIMIT_SEC}
+        return jsonify({'devices': device_struct, 'gateway_metrics': gateway_metrics})
 
 
 class DeviceStatus(Resource):
@@ -194,7 +208,6 @@ class DeviceStatus(Resource):
                     pass
         return hwuid, status, fuid, devip, version, alarms, diff, upython_version, cpu_temp, free_fs, free_ram
 
-
     def get_all_node_status(self):
         output_dev_struct = {}
         online_dev_cnt = 0
@@ -223,6 +236,7 @@ class DeviceStatus(Resource):
                 status = 'HEALTHY'
             else:
                 status = 'UNHEALTHY'
+
             output_dev_struct[hwuid] = {'verdict': status, 'fuid': fuid,
                                         'devip': devip, "version": version,
                                         'alarms': alarms, "latency": diff,
@@ -253,10 +267,12 @@ class DeviceStatus(Resource):
             if DeviceStatus._LAST_DELTA > DeviceStatus.STATUS_LIMIT_SEC or len(DeviceStatus.NODE_STATUS.keys()) <= 0:
                 status = "Start"
                 self.status_thread()
-        return jsonify({'devices': DeviceStatus.NODE_STATUS, 'status': status,
-                        'last[sec]': round(DeviceStatus._LAST_DELTA, 1),
-                        'device_count': len(socketClient.ConnectionData.list_devices().keys())-2,
-                        'availablity[%]': DeviceStatus.DEVS_AVAIL})
+
+        gateway_metrics = {'status': status, 'last[sec]': round(DeviceStatus._LAST_DELTA, 1),
+                           'device_count': len(socketClient.ConnectionData.list_devices().keys())-2,
+                           'availablity[%]': DeviceStatus.DEVS_AVAIL, 'qlimit[sec]': DeviceStatus.STATUS_LIMIT_SEC}
+        return jsonify({'devices': DeviceStatus.NODE_STATUS,
+                        'gateway_metrics': gateway_metrics})
 
 
 # adding the defined resources along with their corresponding urls

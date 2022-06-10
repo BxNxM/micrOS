@@ -10,6 +10,7 @@ import select
 import time
 import json
 import threading
+import concurrent.futures
 
 MYDIR = os.path.dirname(__file__)
 print("Module [socketClient] path: {} __package__: {} __name__: {} __file__: {}".format(
@@ -185,14 +186,9 @@ class ConnectionData:
     def nodes_status():
         spr_offset1 = 30
         spr_offset2 = 57
-        nodes_dict = ConnectionData.read_micrOS_device_cache()
-        spacer1 = " " * (spr_offset1 - 14)
-        print("{cols}       [ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]\t[COMM SEC]{cole}"
-              .format(spr1=spacer1, cols=Colors.OKBLUE + Colors.BOLD, cole=Colors.NC))
-        for uid, data in nodes_dict.items():
-            ip = data[0]
-            port = data[1]
-            fuid = "{}{}{}".format(Colors.HEADER, data[2], Colors.NC)
+
+        def _dev_status(ip, port, fuid):
+            fuid = "{}{}{}".format(Colors.HEADER, fuid, Colors.NC)
             if uid not in ['__devuid__']:
                 spacer1 = " " * (spr_offset1 - len(uid))
 
@@ -201,13 +197,15 @@ class ConnectionData:
                     Colors.WARN, Colors.NC)
                 version_data = '<n/a>'
                 elapsed_time = 'n/a'
+                online_ip = None
 
                 # is online
                 if 'ONLINE' in is_online:
                     # get version data
+                    online_ip = ip
                     try:
                         start_comm = time.time()
-                        version_data = SocketDictClient(host=ip, port=port, silent_mode=True).non_interactive(['version'])
+                        version_data = SocketDictClient(host=ip, port=port, silent_mode=True, tout=3).non_interactive(['version'])
                         elapsed_time = "{:.3f}".format(time.time() - start_comm)
                     except:
                         pass
@@ -218,8 +216,35 @@ class ConnectionData:
                 data_line_str = "{base}{spr2}{ip}\t{stat}\t\t{version}\t\t{elapt}" \
                     .format(base=base_info, spr2=spacer1, ip=ip,
                             stat=is_online, version=version_data, elapt=elapsed_time)
-                # Print line
-                print(data_line_str)
+                return data_line_str, online_ip
+            return None
+
+        nodes_dict = ConnectionData.read_micrOS_device_cache()
+        spacer1 = " " * (spr_offset1 - 14)
+        print("{cols}       [ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]\t[COMM SEC]{cole}"
+              .format(spr1=spacer1, cols=Colors.OKBLUE + Colors.BOLD, cole=Colors.NC))
+
+        # Start parallel status queries
+        query_list = []
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for uid, data in nodes_dict.items():
+                ip = data[0]
+                port = data[1]
+                fuid = data[2]
+                future = executor.submit(_dev_status, ip, port, fuid)
+                query_list.append(future)
+
+        online_ip_addr_list = []
+        for q in query_list:
+            res = q.result()
+            if res is None:
+                continue
+            data_line_str, ipaddr = res
+            # Print command line status
+            print(data_line_str)
+            if isinstance(ipaddr, str):
+                online_ip_addr_list.append(ipaddr)
+        return online_ip_addr_list
 
     @staticmethod
     def clean_cache():

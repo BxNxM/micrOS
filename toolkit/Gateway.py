@@ -14,6 +14,8 @@ except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     import socketClient
 
+API_URL_CACHE = ""
+
 # creating the flask app
 app = Flask(__name__)
 # creating an API object
@@ -38,11 +40,12 @@ class Hello(Resource):
     # this function is called whenever there
     # is a GET request for this resource
     def get(self):
-        manual = {'micrOS gateway': 'v1.0',
+        manual = {'micrOS gateway': 'v1.1',
                   '/list': 'List known devices, sort by online/offline',
                   '/search': 'Search devices',
                   '/status': 'Get all device status - node info',
-                  '/sendcmd/<device>/<cmd>': 'Send command to the selected device. Use + instead of space.'}
+                  '/sendcmd/<device>/<cmd>': f'Send command to the selected device. Use + instead of space. \
+Example: {API_URL_CACHE}/sendcmd/__simulator__/system+clock'}
         return jsonify(manual)
 
 
@@ -119,7 +122,7 @@ class ListDevices(Resource):
         if len(ListDevices.DEVICE_CACHE) == 0:
             # No cache available - run without thread -> wait for result
             filtered_devices = self.sort_devices()
-        elif ListDevices._THREAD_OBJ is None:
+        elif ListDevices._THREAD_OBJ is None or (ListDevices._THREAD_OBJ and not ListDevices._THREAD_OBJ.is_alive()):
             # Cache is available refresh in the background
             ListDevices._THREAD_OBJ = threading.Thread(target=self.sort_devices, args=())
             ListDevices._THREAD_OBJ.start()
@@ -131,6 +134,7 @@ class ListDevices(Resource):
             # Thread finished - delete object - set state done
             ListDevices._THREAD_OBJ = None
             status = 'done'
+
         gateway_metrics = {'status': status, 'last[sec]': round(time.time()-ListDevices._LAST_EXEC_TIME, 1)}
         filtered_devices['gateway_metrics'] = gateway_metrics
         return jsonify(filtered_devices)
@@ -305,8 +309,10 @@ api.add_resource(SendCmd, '/sendcmd/<string:device>/<string:cmd>')
 
 
 def gateway():
+    global API_URL_CACHE
+    API_URL_CACHE = f"http://{get_local_ip()}:5000"
     print("\n############### START MICROS GATEWAY ###############")
-    print("#             http://{}:5000            #".format(get_local_ip()))
+    print("#             {}            #".format(API_URL_CACHE))
     print("####################################################\n")
     app.run(debug=True, host=get_local_ip(), port=5000)
 

@@ -1,4 +1,4 @@
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
@@ -40,7 +40,7 @@ def motor_control(direc=None, speed=None):
 #######################
 def pinmap():
     # Return module used PIN mapping
-    return {'l9110dir_1': physical_pin('l9110dir_1'), 'l9110dir_2': physical_pin('l9110dir_2')}
+    return pinmap_dump(['l9110dir_1', 'l9110dir_2'])
 
 
 def help():

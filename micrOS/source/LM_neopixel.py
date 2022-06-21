@@ -4,7 +4,7 @@ from sys import platform
 from utime import sleep_ms
 from Common import transition
 from ConfigHandler import cfgget
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 
 #########################################
@@ -257,7 +257,7 @@ def status(lmf=None):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'neop': physical_pin('neop')}
+    return pinmap_dump('neop')
 
 
 def help():

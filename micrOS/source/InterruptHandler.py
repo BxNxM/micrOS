@@ -19,7 +19,7 @@ Reference: https://docs.micropython.org/en/latest/library/machine.Pin.html
 from machine import Pin
 from utime import ticks_us, ticks_diff
 from ConfigHandler import cfgget
-from Debug import console_write
+from Debug import console_write, errlog_add
 from InterpreterCore import exec_lm_pipe_schedule
 from LogicalPins import physical_pin
 if cfgget('cron'):
@@ -131,29 +131,36 @@ def initEventIRQs():
         irq, trig, cbf = data
         console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i+1, irq, trig))
         console_write("|- [IRQ] EXTIRQ CBF: {}".format(cbf))
-        pin = physical_pin('irq{}'.format(i+1))       # irq1, irq2, etc.
-        if irq and pin:
-            # [*] update cbf dict by pin number (available in irq callback)
-            cbf_resolver['Pin({})'.format(pin)] = cbf
-            trig = trig.strip().lower()
-            # Init event irq with callback function wrapper
-            # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            # TODO: expose parameter ?
-            pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
-            # [IRQ] - event type setup
-            if trig == 'down':
-                # pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: print("[down] {}:{}".format(pin, cbf_resolver[str(pin)])))
-                pin_obj.irq(trigger=Pin.IRQ_FALLING,
+        if irq:
+            try:
+                pin = physical_pin('irq{}'.format(i + 1))  # irq1, irq2, etc.
+            except Exception as e:
+                msg = 'EVENT IRQ{} IO error: {}'.format(i+1, e)
+                pin = None
+                console_write("|-- [!] {}".format(msg))
+                errlog_add(msg)
+            if pin:
+                # [*] update cbf dict by pin number (available in irq callback)
+                cbf_resolver['Pin({})'.format(pin)] = cbf
+                trig = trig.strip().lower()
+                # Init event irq with callback function wrapper
+                # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            # TODO: expose parameter ?
+                pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+                # [IRQ] - event type setup
+                if trig == 'down':
+                    # pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: print("[down] {}:{}".format(pin, cbf_resolver[str(pin)])))
+                    pin_obj.irq(trigger=Pin.IRQ_FALLING,
+                                handler=lambda pin: __edge_exec(pin, cbf_resolver))
+                    continue
+                if trig == 'both':
+                    # pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: print("[both] {}:{}".format(pin, cbf_resolver[str(pin)])))
+                    pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
+                                handler=lambda pin: __edge_exec(pin, cbf_resolver))
+                    continue
+                # Default - 'up'
+                # pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: print("[up] {}:{}".format(pin, cbf_resolver[str(pin)])))
+                pin_obj.irq(trigger=Pin.IRQ_RISING,
                             handler=lambda pin: __edge_exec(pin, cbf_resolver))
-                continue
-            if trig == 'both':
-                # pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: print("[both] {}:{}".format(pin, cbf_resolver[str(pin)])))
-                pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
-                            handler=lambda pin: __edge_exec(pin, cbf_resolver))
-                continue
-            # Default - 'up'
-            # pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: print("[up] {}:{}".format(pin, cbf_resolver[str(pin)])))
-            pin_obj.irq(trigger=Pin.IRQ_RISING,
-                        handler=lambda pin: __edge_exec(pin, cbf_resolver))
 
 #################################################################
 #                         INIT MODULE                           #

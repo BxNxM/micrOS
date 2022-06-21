@@ -1,6 +1,6 @@
 from machine import Pin, time_pulse_us
 from utime import sleep_us
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 __TRIGGER_OBJ = None
 __ECHO_OBJ = None
@@ -66,7 +66,7 @@ def deinit():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'hcsrtrig': physical_pin('hcsrtrig'), 'hcsrecho': physical_pin('hcsrecho')}
+    return pinmap_dump(['hcsrtrig', 'hcsrecho'])
 
 
 def help():

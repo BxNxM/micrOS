@@ -1,5 +1,5 @@
 from LM_co2 import measure_mq135
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 #########################################
 #  DHT22 temperature & humidity sensor  #
@@ -41,7 +41,7 @@ def lmdep():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'dhtpin': physical_pin('dhtpin')}
+    return pinmap_dump('dhtpin')
 
 
 def help():

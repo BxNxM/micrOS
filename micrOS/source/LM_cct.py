@@ -6,7 +6,7 @@ from sys import platform
 from utime import sleep_ms
 from Common import transition
 from ConfigHandler import cfgget
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 
 class Data:
@@ -220,7 +220,7 @@ def status(lmf=None):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'cwhite': physical_pin('cwhite'), 'wwhite': physical_pin('wwhite')}
+    return pinmap_dump(['cwhite', 'wwhite'])
 
 
 def help():

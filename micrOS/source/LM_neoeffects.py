@@ -1,4 +1,5 @@
 from LM_neopixel import __init_NEOPIXEL, segment
+from LM_neopixel import pinmap as pm
 
 
 class StateMachine:
@@ -126,6 +127,10 @@ def lmdep():
     return 'neopixel'
 
 
+def pinmap():
+    return pm()
+
+
 def help():
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=False ledcnt=24',\
-           'cycle r g b ledcnt=24', 'rainbow step=15 br=<5-100> ledcnt=24'
+           'cycle r g b ledcnt=24', 'rainbow step=15 br=<5-100> ledcnt=24', 'pinmap'

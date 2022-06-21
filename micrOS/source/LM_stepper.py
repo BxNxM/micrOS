@@ -2,7 +2,7 @@
 
 from utime import sleep_ms
 from machine import Pin
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 STEPPER_INST = None
 
 
@@ -122,8 +122,7 @@ def standby():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'stppr_1': physical_pin('stppr_1'), 'stppr_2': physical_pin('stppr_2'),
-            'stppr_3': physical_pin('stppr_3'), 'stppr_4': physical_pin('stppr_4')}
+    return pinmap_dump(['stppr_1', 'stppr_2', 'stppr_3', 'stppr_4'])
 
 
 def help():

@@ -2,6 +2,7 @@ from utime import sleep_ms
 from random import randint
 import LM_servo as servo
 from LM_switch import set_state
+from LM_switch import pinmap as pm
 from Common import transition
 
 
@@ -178,7 +179,13 @@ def lmdep():
     return 'servo', 'switch'
 
 
+def pinmap():
+    s_pm = servo.pinmap()
+    s_pm.update({'switch_1': pm()['switch_1']})
+    return s_pm
+
+
 def help():
     return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True', 'boot_move', 'standby',\
            'jiggle', 'play 40 40 115 115 s=<ms> delay=<ms>, deinit=True',\
-           'record clean=False', 'load_n_init', 'status', 'lmdep'
+           'record clean=False', 'load_n_init', 'pinmap', 'status', 'lmdep'

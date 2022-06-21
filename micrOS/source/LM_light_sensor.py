@@ -6,7 +6,7 @@ ADC.ATTN_6DB — the full range voltage: 2.0V
 ADC.ATTN_11DB — the full range voltage: 3.3V
 """
 from sys import platform
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 __ADC = None
 # [0] ADC RESOLUTION, [1] ADC VOLTAGE MEASURE RANGE
@@ -60,7 +60,7 @@ def illuminance():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'temp6000': physical_pin('temp6000')}
+    return pinmap_dump('temp6000')
 
 
 def help():

@@ -1,5 +1,6 @@
 from random import randint
 from LM_servo import sduty
+from LM_servo import pinmap as pm
 from utime import sleep_ms
 
 
@@ -31,5 +32,9 @@ def lmdep():
     return 'servo'
 
 
+def pinmap():
+    return pm()
+
+
 def help():
-    return 'game repeat=10', 'live_game chance=<10-90>', 'stop', 'lmdep'
+    return 'game repeat=10', 'live_game chance=<10-90>', 'stop', 'pinmap', 'lmdep'

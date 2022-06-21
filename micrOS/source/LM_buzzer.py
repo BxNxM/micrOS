@@ -1,6 +1,6 @@
 from sys import platform
 from utime import sleep
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 #########################################
 #      BUZZER PWM CONTROLLER PARAMS     #
@@ -223,8 +223,7 @@ def load_n_init(cache=None):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'buzzer': physical_pin('buzzer')}
-
+    return pinmap_dump('buzzer')
 
 def help():
     return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr>', 'load_n_init', 'pinmap'

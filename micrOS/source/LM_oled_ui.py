@@ -232,6 +232,10 @@ def lmdep():
     return 'oled'
 
 
+def pinmap():
+    return oled.pinmap()
+
+
 def help():
     return 'pageui', 'control next/prev/on/off',\
-           'msgbox "msg"', 'INFO: OLED Module for SSD1306'
+           'msgbox "msg"', 'pinmap', 'INFO: OLED Module for SSD1306'

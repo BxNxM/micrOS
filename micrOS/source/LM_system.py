@@ -143,8 +143,10 @@ def pinmap(key='builtin'):
     """
     Get Logical pin by key runtime
     """
-    from LogicalPins import physical_pin, get_pinmap
-    return {key: physical_pin(key), 'pinmap': get_pinmap()}
+    from LogicalPins import pinmap_dump, get_pinmap
+    map = get_pinmap()
+    map[key] = pinmap_dump(key)
+    return map
 
 
 def ha_sta():

@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 
 class Data:
@@ -105,7 +105,7 @@ def status(lmf=None):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'servo_1': physical_pin('servo_1'), 'servo_2': physical_pin('servo_2')}
+    return pinmap_dump(['servo_1', 'servo_2'])
 
 
 def help():

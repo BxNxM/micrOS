@@ -1,4 +1,5 @@
-from LogicalPins import physical_pin
+from machine import Pin, PWM
+from LogicalPins import physical_pin, pinmap_dump
 
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
@@ -14,7 +15,6 @@ __L298N_OBJS = []
 def __l298n_init():
     global __L298N_OBJS
     if len(__L298N_OBJS) == 0:
-        from machine import Pin, PWM
         __L298N_OBJS.append(PWM(Pin(physical_pin('l298speed')), freq=50))
         __L298N_OBJS.append(Pin(physical_pin('l298dir_1'), Pin.OUT))
         __L298N_OBJS.append(Pin(physical_pin('l298dir_2'), Pin.OUT))
@@ -67,8 +67,7 @@ def set_direction(direc=0):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'l298speed': physical_pin('l298speed'), 'l298dir_1': physical_pin('l298dir_1'),
-            'l298dir_2': physical_pin('l298dir_2')}
+    return pinmap_dump(['l298speed', 'l298dir_1', 'l298dir_2'])
 
 
 def help():

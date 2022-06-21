@@ -3,7 +3,7 @@
 from micropython import const
 import framebuf
 from machine import Pin, SoftI2C
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 __INVERT = False
 
@@ -193,7 +193,7 @@ def show():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'i2c_scl': physical_pin('i2c_scl'), 'i2c_sda': physical_pin('i2c_sda')}
+    return pinmap_dump(['i2c_scl', 'i2c_sda'])
 
 
 def help():

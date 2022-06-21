@@ -1,7 +1,7 @@
 from math import pow
 from sys import platform
 from machine import ADC, Pin
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 #########################################
 #            MQ135 GAS SENSOR           #
@@ -119,7 +119,7 @@ def measure_mq135(temperature=None, humidity=None):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'co2': physical_pin('co2')}
+    return pinmap_dump('co2')
 
 
 def help():

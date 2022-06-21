@@ -1,5 +1,5 @@
 from time import sleep
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 from Common import SmartADC
 
 """
@@ -32,7 +32,7 @@ def measure():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'ph': physical_pin('ph')}
+    return pinmap_dump('ph')
 
 
 def help():

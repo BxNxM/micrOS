@@ -7,7 +7,7 @@ https://randomnerdtutorials.com/micropython-bme280-esp32-esp8266/
 import utime as time
 from machine import Pin, I2C
 from LM_co2 import measure_mq135
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 # BME280 default address.
 BME280_I2CADDR = 0x76
@@ -324,7 +324,7 @@ def lmdep():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'i2c_scl': physical_pin('i2c_scl'), 'i2c_sda': physical_pin('i2c_sda')}
+    return pinmap_dump(['i2c_scl', 'i2c_sda'])
 
 
 def help():

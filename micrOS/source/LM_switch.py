@@ -1,5 +1,5 @@
 from machine import Pin
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 #########################################
 #           DIGITAL IO SWITCH           #
@@ -210,8 +210,7 @@ def status(lmf=None):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'switch_1': physical_pin('switch_1'), 'switch_2': physical_pin('switch_2'),
-            'switch_3': physical_pin('switch_3'), 'switch_4': physical_pin('switch_4')}
+    return pinmap_dump(['switch_1', 'switch_2', 'switch_3', 'switch_4'])
 
 
 def help():

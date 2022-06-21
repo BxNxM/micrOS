@@ -2,7 +2,7 @@ from micropython import const
 import ustruct
 import utime
 from machine import I2C, Pin
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 __TOF_OBJ = None
 
@@ -357,7 +357,7 @@ def measure():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'i2c_scl': physical_pin('i2c_scl'), 'i2c_sda': physical_pin('i2c_sda')}
+    return pinmap_dump(['i2c_scl', 'i2c_sda'])
 
 
 def help():

@@ -1,5 +1,5 @@
 from sys import platform
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
@@ -102,7 +102,7 @@ def status(lmf=None):
 
 def pinmap():
     # Return module used PIN mapping
-    return {'dim_1': physical_pin('dim_1')}
+    return pinmap_dump('dim_1')
 
 
 def help():

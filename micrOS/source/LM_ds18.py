@@ -1,5 +1,5 @@
 import machine, onewire, ds18x20, time
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 
 DS_OBJ = None
 
@@ -39,7 +39,7 @@ def measure():
 
 def pinmap():
     # Return module used PIN mapping
-    return {'ds18': physical_pin('ds18')}
+    return pinmap_dump('ds18')
 
 
 def help():

@@ -65,7 +65,9 @@ class MicrOSDevTool:
         self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "workspace/precompiled")
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../micrOS/micropython")
         self.micropython_repo_path = os.path.join(MYPATH, 'workspace/micropython')
-        self.webreplcli_repo_path = os.path.join(MYPATH, 'workspace/webrepl/webrepl_cli.py')
+        # handle space in path: command line "escape path fix"
+        self.webreplcli_repo_path = os.path.join(MYPATH, 'workspace/webrepl/webrepl_cli.py').replace(" ", "\ ")
+        self.python_interpreter = sys.executable.replace(" ", "\ ")
         if mpy_cross is None:
             self.mpy_cross_compiler_path = None
         else:
@@ -569,7 +571,7 @@ class MicrOSDevTool:
         workdir_handler = LocalMachine.SimplePopPushd()
         workdir_handler.pushd(self.MicrOS_dir_path)
 
-        create_default_config_command = "python3 ConfigHandler.py"
+        create_default_config_command = "{} ConfigHandler.py".format(self.python_interpreter)
         if not self.dummy_exec:
             # Remove actual defualt config
             LocalMachine.FileHandler.remove(os.path.join(self.MicrOS_dir_path, 'node_config.json'))
@@ -1087,12 +1089,12 @@ class MicrOSDevTool:
 
             webrepl_if_mode = 'webrepl'  # micrOS system runs in webrepl mode - no micrOS interface running
             micros_if_mode = 'micros'  # micrOS running in normal mode - micrOS interface is active
-            state = False
             lock_value = webrepl_if_mode if lock else micros_if_mode  # Select lock value
             # Create webrepl copy command
-            command = 'python {api} -p {pwd} .if_mode {host}:.if_mode'.format(api=self.webreplcli_repo_path,
-                                                                              pwd=ota_password,
-                                                                              host=host)
+            command = '{python} {api} -p {pwd} .if_mode {host}:.if_mode'.format(python=self.python_interpreter,
+                                                                                api=self.webreplcli_repo_path,
+                                                                                pwd=ota_password,
+                                                                                host=host)
 
             workdir_handler = LocalMachine.SimplePopPushd()
             workdir_handler.pushd(self.precompiled_MicrOS_dir_path)
@@ -1107,6 +1109,7 @@ class MicrOSDevTool:
                     self.console("\tWait for device: {}/6 sec".format(i))
                     time.sleep(1)
 
+            state = False
             if self.dummy_exec:
                 self.console("Webrepl CMD: {}".format(command))
                 return True
@@ -1203,7 +1206,8 @@ class MicrOSDevTool:
             if force_lm and not source_name.startswith('LM_'):
                 source_name_target = 'LM_{}'.format(source_name)
 
-            command = 'python {api} -p {pwd} {input_file} {host}:{target_path}'.format(
+            command = '{python} {api} -p {pwd} {input_file} {host}:{target_path}'.format(
+                python=self.python_interpreter,
                 api=self.webreplcli_repo_path, pwd=ota_password,
                 input_file=source_name, host=device_ip,
                 target_path=source_name_target)

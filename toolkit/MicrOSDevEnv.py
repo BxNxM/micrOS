@@ -65,13 +65,14 @@ class MicrOSDevTool:
         self.precompiled_MicrOS_dir_path = os.path.join(MYPATH, "workspace/precompiled")
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../micrOS/micropython")
         self.micropython_repo_path = os.path.join(MYPATH, 'workspace/micropython')
+        self.webreplcli_repo_path = os.path.join(MYPATH, 'workspace/webrepl/webrepl_cli.py')
         # handle space in path: command line "escape path fix"
-        self.webreplcli_repo_path = os.path.join(MYPATH, 'workspace/webrepl/webrepl_cli.py').replace(" ", "\ ")
         self.python_interpreter = sys.executable.replace(" ", "\ ")
+        # mpy-cross binary path for cross compilation
         if mpy_cross is None:
             self.mpy_cross_compiler_path = None
         else:
-            self.mpy_cross_compiler_path = mpy_cross.mpy_cross  # mpy-cross binary path for cross compilation
+            self.mpy_cross_compiler_path = mpy_cross.mpy_cross
         self.micros_sim_resources = os.path.join(MYPATH, 'simulator_lib')
         self.micros_sim_workspace = os.path.join(MYPATH, 'workspace/simulator')
         self.precompile_LM_wihitelist = self.read_LMs_whitelist()
@@ -370,11 +371,11 @@ class MicrOSDevTool:
         for to_compile in tmp_precompile_set:
             precompiled_target_name = to_compile.replace('.py', '.mpy')
 
-            # Build micrOS with mpy-cross binary
+            # Build micrOS with mpy-cross binary - handle space in path
             command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(
-                mpy_cross=self.mpy_cross_compiler_path,
-                to_compile=to_compile,
-                target_path=self.precompiled_MicrOS_dir_path,
+                mpy_cross=self.mpy_cross_compiler_path.replace(" ", "\ "),
+                to_compile=to_compile.replace(" ", "\ "),
+                target_path=self.precompiled_MicrOS_dir_path.replace(" ", "\ "),
                 target_name=precompiled_target_name)
             self.console("Precomile: {}\n|->CMD: {}".format(to_compile, command), state='imp')
             if not self.dummy_exec:
@@ -860,13 +861,14 @@ class MicrOSDevTool:
         self.execution_verdict.append("[OK] usb_deploy was finished")
 
     def __clone_webrepl_repo(self):
-        if os.path.isdir(os.path.dirname(self.webreplcli_repo_path)) and os.path.isfile(self.webreplcli_repo_path):
+        webrepl_path = self.webreplcli_repo_path
+        if os.path.isdir(os.path.dirname(webrepl_path)) and os.path.isfile(webrepl_path):
             return True
         # Download webrepl repo if necessary
-        if not os.path.isfile(self.webreplcli_repo_path):
+        if not os.path.isfile(webrepl_path):
             # Change workdir
             workdir_handler = LocalMachine.SimplePopPushd()
-            workdir_handler.pushd(os.path.dirname(os.path.dirname(self.webreplcli_repo_path)))
+            workdir_handler.pushd(os.path.dirname(os.path.dirname(webrepl_path)))
 
             command = 'git clone {url} {name}'.format(
                 name='webrepl',
@@ -1092,7 +1094,7 @@ class MicrOSDevTool:
             lock_value = webrepl_if_mode if lock else micros_if_mode  # Select lock value
             # Create webrepl copy command
             command = '{python} {api} -p {pwd} .if_mode {host}:.if_mode'.format(python=self.python_interpreter,
-                                                                                api=self.webreplcli_repo_path,
+                                                                                api=self.webreplcli_repo_path.replace(" ", "\ "),
                                                                                 pwd=ota_password,
                                                                                 host=host)
 
@@ -1188,7 +1190,7 @@ class MicrOSDevTool:
             progress = round(((index + 1) / len(upload_path_list)) * 100)
 
             # Check no space in the file name
-            if ' ' in source:
+            if ' ' in os.path.basename(source):
                 self.console("\t[{}%][SKIP UPLOAD] space in resource name ... {}".format(progress, source),
                              state='WARN')
                 continue
@@ -1208,7 +1210,8 @@ class MicrOSDevTool:
 
             command = '{python} {api} -p {pwd} {input_file} {host}:{target_path}'.format(
                 python=self.python_interpreter,
-                api=self.webreplcli_repo_path, pwd=ota_password,
+                api=self.webreplcli_repo_path.replace(" ", "\ "),
+                pwd=ota_password,
                 input_file=source_name, host=device_ip,
                 target_path=source_name_target)
 

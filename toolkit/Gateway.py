@@ -212,11 +212,12 @@ class DeviceStatus(Resource):
                 try:
                     alarms = {'verdict': alarms[-1], 'log': alarms[0:-1]}
                 except:
-                    pass
+                    alarms = {'verdict': "NOK", "log": []}
 
             # Clean Alarms
             clean_alarms = DeviceStatus.CLEAN_MICROS_ALARMS
-            if clean_alarms and 'NOK' in str(alarms):
+            log_data = alarms.get('log', None)
+            if clean_alarms and log_data and len(log_data) > 0:
                 _, _ = socketClient.run(['--dev', fuid.strip(), 'system alarms True'])
 
             # Get system info response -> upython version

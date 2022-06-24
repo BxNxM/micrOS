@@ -49,7 +49,7 @@ def set_dev_uid():
     try:
         cfgput('hwuid', 'micr{}OS'.format(hexlify(unique_id()).decode('utf-8')))
     except Exception as e:
-        errlog_add("set_dev_uid error: {}".format(e))
+        errlog_add("[ERR] set_dev_uid error: {}".format(e))
 
 
 def get_mac():
@@ -76,7 +76,7 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
                     return essid, str(raw_pwd.split(';')[idx]).strip()
                 except Exception as e:
                     console_write('\t| - [NW: STA] wifi stapwd config error: {}'.format(e))
-                    errlog_add('[SET STA] stapwd config error: {}'.format(e))
+                    errlog_add('[ERR][SET STA] stapwd config error: {}'.format(e))
             sleep_ms(400)
     return None, ''
 
@@ -174,9 +174,9 @@ def set_access_point(_essid, _pwd, _authmode=3):
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode, max_clients=5)
     except Exception as e:
         console_write("[NW: AP] Config Error: {}".format(e))
-        errlog_add("set_access_point error: {}".format(e))
+        errlog_add("[ERR] set_access_point error: {}".format(e))
     if not (ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode):
-        errlog_add("[SET AP] setup error")
+        errlog_add("[ERR][SET AP] config error")
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
     set_dev_uid()
     NW_IF = ap_if

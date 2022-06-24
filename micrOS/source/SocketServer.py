@@ -49,7 +49,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.5.1-0'
+    __socket_interpreter_version = '1.6.0-0'
 
     def __new__(cls, host=''):
         """
@@ -101,7 +101,7 @@ class SocketServer:
                 break
             except Exception as msg:
                 cls.server_console('[ socket server ] Bind failed. Error Code : {}'.format(msg))
-                errlog_add('__init_socket bind failed: {}'.format(msg))
+                errlog_add('[ERR] __init_socket bind failed: {}'.format(msg))
                 sleep(1)
         cls.server_console('[ socket server ] Socket bind complete')
         cls.__s.listen(5)
@@ -239,7 +239,7 @@ class SocketServer:
             cfgput('version', cls.__socket_interpreter_version)
         except Exception as e:
             console_write("Export system version to config failed: {}".format(e))
-            errlog_add('socket run system version export error: {}'.format(e))
+            errlog_add('[socket.run][ERR] system version export error: {}'.format(e))
         cls.__init_socket()
         while True and cls.__isconn:
             try:
@@ -253,7 +253,7 @@ class SocketServer:
                 cls.__reconnect()
             except Exception as e:
                 console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
-                errlog_add("Socket-InterpreterShell error: {}".format(e))
+                errlog_add("[ERR] Socket-InterpreterShell error: {}".format(e))
                 cls.__recovery(is_critic=True)
             # Memory dimensioning dump
             cls.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
@@ -296,7 +296,7 @@ class SocketServer:
             cls.__del__()
         except Exception as e:
             cls.reply_message("Error while starting webrepl: {}".format(e))
-            errlog_add('Start Webrepl error: {}'.format(e))
+            errlog_add('[ERR] Start Webrepl error: {}'.format(e))
 
     def __authentication(cls, data_str):
         if not cls.__auth and data_str:

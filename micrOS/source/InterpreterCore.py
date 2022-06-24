@@ -68,7 +68,7 @@ def exec_lm_pipe(taskstr):
                 console_write("|-[LM-PIPE] task error: {}".format(cmd))
     except Exception as e:
         console_write("[IRQ-PIPE] error: {}\n{}".format(taskstr, e))
-        errlog_add('exec_lm_pipe error: {}'.format(e))
+        errlog_add('[ERR] exec_lm_pipe error: {}'.format(e))
         return False
     return True
 

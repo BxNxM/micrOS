@@ -36,6 +36,6 @@ def dump():
 #######################
 
 def help():
-    return 'sendcmd "hello" host="IP/hostname") OR sendcmd host="IP/hostname" cmd="system rssi")', \
+    return 'sendcmd "hello" host="IP/hostname.local") OR sendcmd host="IP/hostname.local" cmd="system rssi")', \
            'example: intercon sendcmd "10.0.1.84" "system rssi" OR intercon sendcmd "system rssi" host="node01.local"', \
            'dump (dump host cache)'

@@ -165,9 +165,9 @@ def ha_sta():
 @socket_stream
 def alarms(clean=False, test=False, msgobj=None):
     if test:
-        errlog_add('TeSt ErRoR')
+        errlog_add('[ERR] TeSt ErRoR')
     if clean:
-        errlog_clean()
+        errlog_clean(msgobj=msgobj)
     errcnt = errlog_get(msgobj=msgobj)
     return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
 

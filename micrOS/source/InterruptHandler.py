@@ -135,7 +135,7 @@ def initEventIRQs():
             try:
                 pin = physical_pin('irq{}'.format(i + 1))  # irq1, irq2, etc.
             except Exception as e:
-                msg = 'EVENT IRQ{} IO error: {}'.format(i+1, e)
+                msg = '[ERR] EVENT IRQ{} IO error: {}'.format(i+1, e)
                 pin = None
                 console_write("|-- [!] {}".format(msg))
                 errlog_add(msg)

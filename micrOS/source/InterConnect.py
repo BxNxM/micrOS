@@ -40,7 +40,7 @@ class InterCon:
             try:
                 output = self.__run_command(cmd, hostname)
             except Exception as e:
-                errlog_add("[intercon] send_cmd error: {}".format(e))
+                errlog_add("[intercon][ERR] send_cmd error: {}".format(e))
                 output = None
             self.conn.close()
 
@@ -50,7 +50,7 @@ class InterCon:
                 InterCon.CONN_MAP[hostname] = None if output is None else host
             return output
         else:
-            errlog_add("[intercon] Invalid host: {}".format(host))
+            errlog_add("[intercon][ERR] Invalid host: {}".format(host))
         return None
 
     def __run_command(self, cmd, hostname):

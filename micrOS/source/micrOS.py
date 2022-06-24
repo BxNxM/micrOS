@@ -26,7 +26,7 @@ def safe_boot_hook():
         bootup_hook()
     except Exception as e:
         print("[micrOS main] Hooks.bootup_hook() error: {}".format(e))
-        errlog_add("safe_boot_hook error: {}".format(e))
+        errlog_add("[ERR] safe_boot_hook error: {}".format(e))
 
 
 def interrupt_handler():
@@ -35,7 +35,7 @@ def interrupt_handler():
         enableCron()
     except Exception as e:
         print("[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {}".format(e))
-        errlog_add("interrupt_handler error: {}".format(e))
+        errlog_add("[ERR] interrupt_handler error: {}".format(e))
 
 
 def external_interrupt_handler():
@@ -43,7 +43,7 @@ def external_interrupt_handler():
         initEventIRQs()
     except Exception as e:
         print("[micrOS main] InterruptHandler.initEventIRQs error: {}".format(e))
-        errlog_add("external_interrupt_handler error: {}".format(e))
+        errlog_add("[ERR] external_interrupt_handler error: {}".format(e))
 
 
 def nw_time_sync():
@@ -83,4 +83,4 @@ def micrOS():
     SocketServer().run()
 
     # UNEXPECTED RESTART ???
-    errlog_add("Unexpected micrOS restart")
+    errlog_add("[ERR] !!! Unexpected micrOS restart")

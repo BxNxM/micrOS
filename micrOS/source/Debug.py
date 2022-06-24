@@ -54,7 +54,7 @@ def console_write(msg):
 #############################################
 
 
-def errlog_add(data, limit=10):
+def errlog_add(data, limit=12):
     """
     :param data: msg string / data
     :param limit: line limit to rotate
@@ -95,12 +95,19 @@ def errlog_get(msgobj=None):
     errcnt = 0
 
     def stream_records(fname):
-        cnt = 0
+        """
+        Get and stream (ver osocket/stdout) .log file's content and count "critical" errors
+        - critical error tag in log line: [ERR]
+        """
+        err_cnt = 0
         try:
             with open(fname, 'r') as f:
                 eline = f.readline().strip()
                 while eline:
-                    cnt += 1
+                    # GET error from log line (tag: [ERR])
+                    if "[ERR]" in eline:
+                        err_cnt += 1
+                    # GIVE BACK .log file contents
                     if msgobj is None:
                         console_write(eline)
                     else:
@@ -108,14 +115,23 @@ def errlog_get(msgobj=None):
                     eline = f.readline().strip()
         except:
             pass
-        return cnt
+        return err_cnt
+
+    # List all .log files on the board
     to_list = [file for file in os.listdir() if file.endswith('.log')]
     for log in to_list:
+        # Get specific .log file contact
         errcnt += stream_records(log)
+    # Return error number
     return errcnt
 
 
-def errlog_clean():
+def errlog_clean(msgobj=None):
     to_del = [file for file in os.listdir() if file.endswith('.log')]
     for _del in to_del:
+        del_msg = " Delete: {}".format(_del)
+        if msgobj is None:
+            console_write(del_msg)
+        else:
+            msgobj(del_msg)
         os.remove(_del)

@@ -70,7 +70,7 @@ def ntptime():
             console_write("ntptime error.:{}".format(e))
             err = e
         sleep_ms(100)
-    errlog_add("ntptime error: {}".format(err))
+    errlog_add("[ERR] ntptime error: {}".format(err))
     return False
 
 

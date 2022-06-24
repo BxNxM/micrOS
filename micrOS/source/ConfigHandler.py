@@ -19,7 +19,7 @@ from Debug import DebugCfg, console_write, errlog_add
 try:
     from LogicalPins import set_pinmap
 except:
-    errlog_add("LogicalPins import error: set_pinmap")
+    errlog_add("[ERR] LogicalPins import error: set_pinmap")
     set_pinmap = None
 
 
@@ -103,7 +103,7 @@ class Data:
             console_write("[CONFIGHANDLER] Save conf struct successful")
         except Exception as e:
             console_write("[CONFIGHANDLER] Save conf struct failed: {}".format(e))
-            errlog_add('__inject_default_conf error: {}'.format(e))
+            errlog_add('[ERR] __inject_default_conf error: {}'.format(e))
         finally:
             del liveconf
 
@@ -121,7 +121,7 @@ class Data:
                 if nosafe:
                     break
                 sleep(0.2)
-                errlog_add('read_cfg_file error: {}'.format(e))
+                errlog_add('[ERR] read_cfg_file error: {}'.format(e))
         # Return config cache
         return conf
 
@@ -135,7 +135,7 @@ class Data:
                 break
             except Exception as e:
                 console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(Data.CONFIG_PATH, e))
-                errlog_add('write_cfg_file error: {}'.format(e))
+                errlog_add('[ERR] write_cfg_file error: {}'.format(e))
             sleep(0.2)
         return True
 
@@ -202,7 +202,7 @@ def cfgget(key=None):
         return val
     except Exception as e:
         console_write("[CONFIGHANDLER] Get config value error: {}".format(e))
-        errlog_add('cfgget {} error: {}'.format(key, e))
+        errlog_add('[ERR] cfgget {} error: {}'.format(key, e))
     return None
 
 
@@ -224,7 +224,7 @@ def cfgput(key, value, type_check=False):
         del value
         return True
     except Exception as e:
-        errlog_add('cfgput {} error: {}'.format(key, e))
+        errlog_add('[ERR] cfgput {} error: {}'.format(key, e))
         return False
 
 #################################################################

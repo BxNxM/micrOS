@@ -91,7 +91,7 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
         tag = crontask[0].strip()
         value = Sun.TIME.get(tag, None)
         if value is None or len(value) < 3:
-            errlog_add('cron syntax error: {}:{}'.format(tag, value))
+            errlog_add('[cron][ERR] syntax error: {}:{}'.format(tag, value))
             return False
         check_time = ('*', value[0], value[1], value[2])
 
@@ -124,7 +124,7 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
                         console_write("[builtin cron] {}".format(crontask[1]()))
                         lm_state = True
                     except Exception as e:
-                        errlog_add("[cron] function exec error: {}".format(e))
+                        errlog_add("[cron][ERR] function exec error: {}".format(e))
                 if not lm_state:
                     console_write("[cron]now[{}]  {} <-> {}  conf[{}] exec[{}] LM: {}".format(cron_time_now,
                                                                                                        __convert_sec_to_time(tolerance_min_sec),
@@ -147,7 +147,7 @@ def deserialize_raw_input(raw_cron_input):
         return tuple(tuple(cron.split('!')) for cron in raw_cron_input.split(';'))
     except Exception as e:
         console_write("[cron] deserialize: syntax error: {}".format(e))
-        errlog_add("[cron] deserialize: syntax error: {}".format(e))
+        errlog_add("[cron][ERR] deserialize: syntax error: {}".format(e))
     return tuple()
 
 
@@ -181,7 +181,7 @@ def scheduler(scheduler_input, irqperiod):
         return state
     except Exception as e:
         console_write("[cron] callback error: {}".format(e))
-        errlog_add('[cron] callback error: {}'.format(e))
+        errlog_add('[cron][ERR] callback error: {}'.format(e))
         return False
 
 

@@ -22,7 +22,7 @@ setuptools.setup(
     },
     license='MIT',
     packages=setuptools.find_packages(),
-    install_requires=['adafruit-ampy', 'esptool', 'ipaddress', 'mpy-cross', 'netaddr',
+    install_requires=['adafruit-ampy-1.1.0', 'esptool==4.1', 'ipaddress', 'mpy-cross==1.19.1', 'netaddr',
                       'netifaces', 'pylint', 'PyQt5', 'pyserial', 'resources', 'flask', 'flask_restful'],
     scripts=['devToolKit.py'],
     include_package_data=True,

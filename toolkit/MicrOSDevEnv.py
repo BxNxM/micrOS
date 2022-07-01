@@ -375,10 +375,24 @@ class MicrOSDevTool:
             mpc_v = mpy_cross_version.split('.')
             upy_v = upython_version.split('.')
 
-            # If main mpy-cross version changes - block ota update with new binaries (incompatibility)
-            if upy_v[0] == mpc_v[0] and upy_v[1] == mpc_v[1]:
-                # Compatible
-                return True
+            # Handle incompatibility - stop execution
+            if upy_v[0] == mpc_v[0]:
+                if int(mpc_v[1]) <= 18:
+                    if int(upy_v[1]) <= 18:
+                        # Both mpy-cross and upython less then/ equal 1.18 [OK - good enough]
+                        return True
+                    else:
+                        msg = "[HINT] Obsoleted mpy-cross version, upython > 1.18\n\tUpdate mpy-cross version: pip uninstall mpy_cross; pip install mpy_cross"
+                        if self.gui_console is not None: self.gui_console(msg)
+                        self.console(msg, state='WARN')
+                elif int(mpc_v[1]) > 18:
+                    if int(upy_v[1]) > 18:
+                        # Both mpy-cross and upython greater then 1.18 [OK]
+                        return True
+                    else:
+                        msg = "[HINT] Obsoleted upython version, mpy-cross > 1.18\n\tUpdate micrOS over USB with new upython version > 1.18"
+                        if self.gui_console is not None: self.gui_console(msg)
+                        self.console(msg, state='WARN')
         except Exception as e:
             self.console(e, state='ERR')
         # Not compatible
@@ -1008,6 +1022,7 @@ class MicrOSDevTool:
         if not self.mpy_cross_compatibility_check(device=fuid):
             self.console("Version mismatch: upython vs. mpycross", state='ERR')
             self.console("==> Update your micropython board via USB!", state='OK')
+            if self.gui_console is not None: self.gui_console("Version mismatch: upython vs. mpycross")
             return False
 
         # Get versions: micrOS repo + live device, compare versions

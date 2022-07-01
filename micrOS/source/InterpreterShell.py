@@ -72,7 +72,7 @@ def __shell(msg, sso):
         return True
 
     # HELP MSG
-    if msg_list[0] == 'help':
+    if msg_list[0] == "help":
         sso.reply_message("[MICROS]   - commands (SocketServer built-in)")
         sso.reply_message("   hello   - default hello msg - identify device")
         sso.reply_message("   version - shows micrOS version")
@@ -85,11 +85,14 @@ def __shell(msg, sso):
         sso.reply_message("    key        - Get value")
         sso.reply_message("    key value  - Set value")
         sso.reply_message("  noconf     - Exit conf mode")
-        sso.reply_message("[BGJOB] Background LM execution")
+        sso.reply_message("[BGJOB][beta] Background LM execution")
         sso.reply_message("    show     - Show running job data")
         sso.reply_message("    stop     - Stop running job")
         sso.reply_message("[EXEC] Command mode (LMs):")
-        return __show_LM_functions(sso)
+        sso.reply_message("    help lm  - list LoadModule functions")
+        if "lm" in str(msg_list):
+            return __show_LM_functions(sso)
+        return True
 
     # EXECUTE:
     # @1 Configure mode

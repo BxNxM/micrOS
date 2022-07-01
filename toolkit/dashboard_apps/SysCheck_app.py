@@ -310,7 +310,10 @@ def check_intercon(host=None):
     cmd_list = ['intercon sendcmd "{}" "hello"'.format(host)]
     output = execute(cmd_list, tout=8)
     device_was_found = False
-    if output[1] == '[]':
+    if output[0] is False or output[1] is None:
+        output = 'Device was not found: {}:{}'.format(host, output)
+        return False, output
+    elif output[1] == '[]':
         # Valid input, device was not found
         output = 'Device was not found: {}:{}'.format(host, output)
         state = True, f'{info_msg}:\n\t\t{output}'

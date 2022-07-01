@@ -28,6 +28,10 @@ except Exception as e:
 
 try:
     import mpy_cross
+    print("{}MICROPYTHON mpy_cross version{}:".format(Colors.WARN, Colors.NC))
+    mpy_cross.run('--version')
+    time.sleep(0.1)
+    print("{}|_ Update mpy_cross{}: source magic.bash env; pip uninstall mpy_cross; pip install mpy_cross".format(Colors.WARN, Colors.NC))
 except Exception as e:
     print("{}[!!!] mpy-cross error{}: {}".format(Colors.ERR, Colors.NC, e))
     mpy_cross = None
@@ -315,6 +319,7 @@ class MicrOSDevTool:
         if self.dummy_exec:
             exitcode = 0
             stdout = "Dummy stdout"
+            stderr = "Dummy stderr"
         else:
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
         if exitcode == 0:
@@ -332,7 +337,55 @@ class MicrOSDevTool:
             self.console("Cleanup dir - remove: {}".format(to_remove_path), state='imp')
             LocalMachine.FileHandler.remove(to_remove_path)
 
+    def mpy_cross_compatibility_check(self, device=None):
+        self.console("Compare mpycross - upython version compatibility")
+        mpy_cross_version = None
+        upython_version = None
+        command = "{mpy_cross} --version".format(mpy_cross=self.mpy_cross_compiler_path.replace(" ", "\ "))
+        result = LocalMachine.CommandHandler.run_command(command, shell=True)
+        exitcode = result[0]
+        raw_version = result[1]
+        if exitcode == 0 and isinstance(raw_version, str):
+            try:
+                version = [v for v in raw_version.lower().split(" ") if v.startswith('v')][0]
+                mpy_cross_version = version.split('-')[0].replace('v', '')
+            except Exception as e:
+                self.console("Cannot get mpy-cross version: {}".format(e))
+
+        status, answer_msg = socketClient.run(['--dev', device, 'system info'])
+        if status:
+            try:
+                upython = [upython for upython in answer_msg.split("\n") if "upython" in upython][0]
+                upython_version = upython.split(" ")[1].replace('v', '')
+            except Exception as e:
+                self.console("Cannot get upython version from board {}: {}".format(device, e))
+
+        self.console("|- mpy-cross version: {}".format(mpy_cross_version))
+        self.console("|- upython version on {}: {}".format(device, upython_version))
+
+        if mpy_cross_version is not None and upython_version is None:
+            # TODO: Get version over webrepl in case of micrOS interface not av ailable
+            #       Corner case to be able to continue the update (if interrupted)
+            self.console("Device upython version not available on micrOS interface ...", state="WARN")
+            if input("Do you want to continue with this mpycross {} version? (Y/N)".format(mpy_cross_version)).lower().strip() == "y":
+                return True
+            return False
+
+        try:
+            mpc_v = mpy_cross_version.split('.')
+            upy_v = upython_version.split('.')
+
+            # If main mpy-cross version changes - block ota update with new binaries (incompatibility)
+            if upy_v[0] == mpc_v[0] and upy_v[1] == mpc_v[1]:
+                # Compatible
+                return True
+        except Exception as e:
+            self.console(e, state='ERR')
+        # Not compatible
+        return False
+
     def precompile_micros(self):
+
         self.console("------------------------------------------")
         self.console("-             PRECOMPILE MICROS          -", state='imp')
         self.console("------------------------------------------")
@@ -950,6 +1003,12 @@ class MicrOSDevTool:
             else:
                 # Use password parameter input - cannot get from device
                 webrepl_password = ota_password
+
+        # Check micropython cross compile version compatibility
+        if not self.mpy_cross_compatibility_check(device=fuid):
+            self.console("Version mismatch: upython vs. mpycross", state='ERR')
+            self.console("==> Update your micropython board via USB!", state='OK')
+            return False
 
         # Get versions: micrOS repo + live device, compare versions
         repo_version, device_version, auto_force = __version_compare(self.get_micros_version_from_repo(), fuid)

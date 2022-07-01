@@ -97,7 +97,9 @@ def set_wifi(essid, pwd, timeout=60):
     # Set custom DHCP hostname
     sta_if.config(dhcp_hostname=cfgget('devfid'))
     # Check are we already connected
-    if not sta_if.isconnected():
+    if sta_if.isconnected():
+        console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
+    else:
         # Multiple essid and pwd handling with retry mechanism
         essid, pwd = __select_available_wifi_nw(sta_if, essid, pwd)
 
@@ -121,8 +123,7 @@ def set_wifi(essid, pwd, timeout=60):
             return False
         console_write("\t|\t| [NW: STA] network config: " + str(sta_if.ifconfig()))
         console_write("\t|\t| [NW: STA] CONNECTED: " + str(sta_if.isconnected()))
-    else:
-        console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
+
     # Store STA IP (make it static ip)
     cfgput("devip", str(sta_if.ifconfig()[0]))
     set_dev_uid()

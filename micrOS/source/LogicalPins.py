@@ -37,7 +37,7 @@ def set_pinmap(lpsname=None):
     """
     Select pin map on device
     - by input name like: my_pinmap -> LP_my_pinmap.mpy
-    - by platform detection, like: esp32 -> LM_esp32.mpy
+    - by platform detection, like: esp32 -> LP_esp32.mpy
     """
     # SELECT LOOKUP TABLE BASED ON PLATFORM / User input
     if isinstance(lpsname, str) and lpsname != 'n/a':
@@ -56,17 +56,18 @@ def physical_pin(key):
     """
     # Get pin number on platform by pin key aka logical pin
     pin_num = __resolve_pin_number(key)
-    # Check pin is already used
-    if pin_num in PinMap.IO_USE_DICT.keys():
-        key_cache = PinMap.IO_USE_DICT[pin_num]
-        if key_cache == key:
-            print("[io] ReInit pin: {}:{}".format(key_cache, pin_num))
-            return pin_num
-        msg = "[io] Pin {} is busy: {}:{}".format(key, key_cache, pin_num)
-        raise Exception(msg)
-    # key: pin number, value: pin key (alias)
-    PinMap.IO_USE_DICT[pin_num] = key
-    print("[io] Init pin: {}:{}".format(key, pin_num))
+    if isinstance(pin_num, int):
+        # Check pin is already used
+        if pin_num in PinMap.IO_USE_DICT.keys():
+            key_cache = PinMap.IO_USE_DICT[pin_num]
+            if key_cache == key:
+                print("[io] ReInit pin: {}:{}".format(key_cache, pin_num))
+                return pin_num
+            msg = "[io] Pin {} is busy: {}:{}".format(key, key_cache, pin_num)
+            raise Exception(msg)
+        # key: pin number, value: pin key (alias)
+        PinMap.IO_USE_DICT[pin_num] = key
+        print("[io] Init pin: {}:{}".format(key, pin_num))
     return pin_num
 
 
@@ -113,6 +114,8 @@ def __resolve_pin_number(key):
         # Workaround to support normal python (tuple output), micropython (exact output - int)
         return int(out[0]) if isinstance(out, tuple) else out
     except Exception as e:
-        msg = "[io-resolve] error: {}".format(e)
-        print(msg)
-        raise Exception(msg)
+        # Missing LP module - don't die
+        if "No module named" in str(e):
+            return None
+        # Other issue (key not found, etc...)
+        raise Exception("[io-resolve] error: {}".format(e))

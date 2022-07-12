@@ -220,7 +220,7 @@ class MicropythonSelector(DropDownBase):
     def dropdown_micropythonbin(self, device_prefix=None):
         title = "Select micropython"
         geometry = (290, 30, 200, 30)
-        help_msg = "Select micropython binary for usb deployment"
+        help_msg = "Select micropython binary for USB deployment"
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
         self.dowpdown_obj.clear()
         # GET MICROPYTHON BINARIES
@@ -248,7 +248,7 @@ class MicrOSDeviceSelector(DropDownBase):
     def dropdown_micrOS_device(self):
         title = "Select device"
         geometry = (500, 30, 170, 30)
-        help_msg = "Select device for OTA operations or APP execution."
+        help_msg = "Select micrOS device for OTA operations / APP execution."
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
 
         # Get stored devices
@@ -295,7 +295,7 @@ class LocalAppSelector(DropDownBase):
     def dropdown_application(self):
         title = "Select app"
         geometry = (682, 108, 150, 30)
-        help_msg = "[DEVICE] Select python application to execute"
+        help_msg = "[DEVICE] Select python application to execute!\napp dir: {}".format(APP_DIR)
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
 
         # Get stored devices
@@ -776,20 +776,20 @@ class micrOSGUI(QWidget):
         width = 200
         yoffset = 3
         buttons = {
-            'Deploy (USB)': ['[USB install + MICROPYTHON]\nInstall micropython on "empty board".\nDeploy micropython and micrOS Framework',
+            'Deploy (USB)': ['[micropython + micrOS deployment]\nInstall micropython on "empty board" with micrOS.\n  1. Clean board + deploy micropython\n  2. Install micrOS framework',
                              20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan', self.usb_color_code],
-            'Update (OTA)': ['[OTA Update]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
+            'Update (OTA)': ['[micrOS OTA Update]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
                              20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan', self.ota_color_code],
-            'LM Update (OTA)': ['[OTA Update]\nUpdate LM (LoadModules) only\nUpload micrOS LM resources over webrepl)',
+            'LM Update (OTA)': ['[micrOS LMs OTA Update]\nUpdate LM (LoadModules) ONLY\nUpload micrOS LM resources over webrepl',
                                 20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan', self.ota_color_code],
-            'Update (USB)': ['[USB update + MICROPYTHON]\nUpdate micrOS over USB\nIt will redeploy micropython as well)',
+            'Update (USB)': ['[micropython + micrOS update]\nUpdate micrOS over USB\nIt will redeploy micropython as well) but restores micrOS config',
                              20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'darkCyan', self.usb_color_code],
-            'Search device': ['Search online micrOS devices\nOn local wifi network.',
+            'Search device': ['[Search on WLAN]\nSearch online micrOS devices on 9008 port,\nOn local wifi network.',
                               20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices,
                               'darkCyan', self.ota_color_code],
             'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
                           20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen', 'lightGreen'],
-            'Execute': ['[micrOS Client] Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
+            'Execute': ['[micrOS Client] Execute selected client APP on device.\nAPP path: {}'.format(APP_DIR),
                         682, 170, 150, 24, self.__on_click_exec_app, 'darkCyan', 'darkCyan']
             }
 

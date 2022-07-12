@@ -167,10 +167,6 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 [![micrOSAppBasics](./media/thumbnails/install_on_mac.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t)
 
-### 1.2 Prepare micrOS devToolKit for deployment [Windows] - OBSOLETE
-
-[![micrOSAppBasics](./media/thumbnails/install_on_windows.jpg)](https://www.youtube.com/watch?v=8e_YCjFVZng)
-
 ----------------------------------------
 
 ### 1.1 Install micrOS devToolKit GUI on macOS (new)
@@ -183,7 +179,7 @@ Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI
 
 Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI on windows (PowerShell)
 
-> Coming soon
+[![micrOSAppBasics](./media/thumbnails/install_on_windows.jpg)](https://www.youtube.com/watch?v=E6U1E0pN6tU)
 
 ### 2. Basic setup with micrOS Client App
 

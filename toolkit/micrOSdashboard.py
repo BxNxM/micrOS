@@ -113,7 +113,8 @@ class DropDownBase:
         self.parent_obj = parent_obj
         self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
         self.selected_list_item = None
-        self.dowpdown_obj = None
+        self.dowpdown_obj = QComboBox(self.parent_obj)
+        self.child_callbacks = {}
 
     def create_dropdown(self, items_list=None, title="Select", geometry_tuple=(120, 30, 160, 30), tooltip="Help...",
                         style=None):
@@ -124,7 +125,6 @@ class DropDownBase:
         dropdown_label.setGeometry(geometry_tuple[0], geometry_tuple[1], geometry_tuple[2], geometry_tuple[3])
 
         # creating a combo box widget
-        self.dowpdown_obj = QComboBox(self.parent_obj)
         self.dowpdown_obj.setToolTip(tooltip)
 
         # setting geometry of combo box
@@ -151,8 +151,17 @@ class DropDownBase:
         self.dowpdown_obj.activated.connect(self.__on_click_callback)
 
     def __on_click_callback(self, index):
+        child_class = self.__get_child_name()
         self.selected_list_item = self.dowpdown_obj.itemText(index)
-        print("DEBUG: CLICK: {}".format(self.selected_list_item))
+        print("DEBUG: {} CLICK: {}".format(child_class, self.selected_list_item))
+        # Execute callback
+        clb = self.child_callbacks.get(child_class, None)
+        if clb is not None:
+            try:
+                print("Execute callback for {}: {}".format(child_class, clb))
+                clb()
+            except Exception as e:
+                print("Callback execution errer: {}".format(e))
 
     def get(self):
         return self.selected_list_item
@@ -160,6 +169,13 @@ class DropDownBase:
     def update(self, elements):
         self.dowpdown_obj.addItems(elements)
         self.dowpdown_obj.view()
+
+    def __get_child_name(self):
+        child_class = str(self.__class__).split('.')[-1].replace('\'>', '')
+        return child_class
+
+    def add_child_callback(self, callback):
+        self.child_callbacks[self.__get_child_name()] = callback
 
 
 #################################################
@@ -180,22 +196,38 @@ class BoardTypeSelector(DropDownBase):
         supported_board_list = self.devtool_obj.dev_types_and_cmds.keys()
         self.create_dropdown(items_list=supported_board_list, title=title, geometry_tuple=geometry, tooltip=help_msg,
                              style=style)
+        self.add_child_callback(self.selected_action)
+
+    def selected_action(self):
+        print("Click action -> update micropython bin list")
+        micrpython_dropdown_obj = MicropythonSelector.recreate_on_action_self_obj
+        if micrpython_dropdown_obj is not None:
+            micrpython_dropdown_obj.dropdown_micropythonbin(self.get())
+
+    def get(self):
+        return super(BoardTypeSelector, self).get()
 
 
 class MicropythonSelector(DropDownBase):
+    recreate_on_action_self_obj = None
 
     def __init__(self, parent_obj, color='green'):
         super().__init__(parent_obj)
         self.micropython_bin_dirpath = None
         self.color = color
+        MicropythonSelector.recreate_on_action_self_obj = self
 
-    def dropdown_micropythonbin(self):
+    def dropdown_micropythonbin(self, device_prefix=None):
         title = "Select micropython"
         geometry = (290, 30, 200, 30)
         help_msg = "Select micropython binary for usb deployment"
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
+        self.dowpdown_obj.clear()
         # GET MICROPYTHON BINARIES
-        micropython_bin_pathes = self.devtool_obj.get_micropython_binaries()
+        if device_prefix is None:
+            micropython_bin_pathes = self.devtool_obj.get_micropython_binaries()
+        else:
+            micropython_bin_pathes = [b for b in self.devtool_obj.get_micropython_binaries() if device_prefix in os.path.basename(b)]
         self.micropython_bin_dirpath = os.path.dirname(micropython_bin_pathes[0])
         micropython_bin_names = [os.path.basename(path) for path in micropython_bin_pathes]
         self.create_dropdown(items_list=micropython_bin_names, title=title, geometry_tuple=geometry, tooltip=help_msg,
@@ -657,7 +689,8 @@ class micrOSGUI(QWidget):
         self.board_dropdown.dropdown_board()
 
         self.micropython_dropdown = MicropythonSelector(parent_obj=self, color=self.usb_color_code)
-        self.micropython_dropdown.dropdown_micropythonbin()
+        # Without prefix, list all available binaries
+        self.micropython_dropdown.dropdown_micropythonbin(device_prefix=self.board_dropdown.get())
 
         self.micrOS_devide_dropdown = MicrOSDeviceSelector(parent_obj=self, color=self.ota_color_code)
         self.device_conn_struct = self.micrOS_devide_dropdown.dropdown_micrOS_device()

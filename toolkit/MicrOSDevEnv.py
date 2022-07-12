@@ -61,6 +61,11 @@ class MicrOSDevTool:
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                   'connect': 'screen {dev} 115200',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
+             'rp2-pico-w':
+                 {'erase': None,
+                  'deploy': None,
+                  'connect': 'screen {dev} 115200',
+                  'ampy_cmd': None},
              }
 
         # DevEnv base pathes
@@ -268,7 +273,7 @@ class MicrOSDevTool:
         micropython_bins_list = []
 
         mp_bin_list = [binary for binary in LocalMachine.FileHandler.list_dir(self.micropython_bin_dir_path) if
-                       binary.endswith('.bin')]
+                       binary.endswith('.bin') or binary.endswith('.uf2')]
         for mp_bin in mp_bin_list:
             micropython_bins_list.append(os.path.join(self.micropython_bin_dir_path, mp_bin))
         if len(micropython_bins_list) > 0:

@@ -113,7 +113,7 @@ python -m pip install git+https://github.com/BxNxM/micrOS.git
 
 Copy the following command to the command line and press enter to start.
 
-**`devToolKit.py`**
+**```devToolKit.py```**
 
 It will open a graphical user interface for micrOS device management, like usb deploy, update, OTA operations, test executions, etc...
 

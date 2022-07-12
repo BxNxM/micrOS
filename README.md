@@ -179,7 +179,9 @@ Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI
 
 Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI on windows (PowerShell)
 
-[![micrOSAppBasics](./media/thumbnails/install_on_windows.jpg)](https://www.youtube.com/watch?v=E6U1E0pN6tU)
+[![micrOSAppBasics](./media/thumbnails/install_on_windows.jpg)](https://youtu.be/054v5GKWQTo)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/054v5GKWQTo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ### 2. Basic setup with micrOS Client App
 

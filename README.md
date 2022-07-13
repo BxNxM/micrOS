@@ -154,65 +154,12 @@ It will install your board via USB with default settings. **Continue with micrOS
 ![RGB_CCT](./media/projects/RGB_CCT.gif?raw=true)
 
 ----------------------------------------
-
-> etc... :) Youtube content coming soon.
-
-----------------------------------------
 ----------------------------------------
 
 
 ## micrOS Video Tutorials
 
-### 1.1 Prepare micrOS devToolKit for deployment [macOS] - OBSOLETE
-
-[![micrOSAppBasics](./media/thumbnails/install_on_mac.jpg)](https://www.youtube.com/watch?v=heqZMTUAWcg&t)
-
-----------------------------------------
-
-### 1.1 Install micrOS devToolKit GUI on macOS (new)
-
-Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI on macOS (terminal)
-
-> Coming soon
-
-### 1.2 Install micrOS devToolKit GUI on Windows (new)
-
-Step-by-step tutorial for micrOS devToolKit GUI install and how to start the GUI on windows (PowerShell)
-
-[![micrOSAppBasics](./media/thumbnails/install_on_windows.jpg)](https://youtu.be/054v5GKWQTo)
-
-### 2. Basic setup with micrOS Client App
-
-[![micrOSAppBasics](./media/thumbnails/first_configuration.jpg)](https://www.youtube.com/watch?v=xVNwHnBs1Tw)
-
-### 3. micrOS devToolKit GUI main functionalities
-
-Common on Windows and macOS
-
-Step-by-step tutorial for micrOS devToolKit GUI basic usage: install (usb) and update (ota) boards plus communication based app executions. (How to write custom remote apps will be descriped in later episode)
-
-> Coming soon
-
-### 4. Detailed micrOS Client walkthrough
-
-[Widgets] How to get available module list <br/>
-[Pages] Overview of micrOS Client UI <br/>
-[Config] Idea behind: network, time, boothook, irqs, cron <br/>
-		  Set some stuff in config ... Scheduler, irq (transition) <br/>
-
-
-### 5. Get familier with micrOS shell - micrOS devToolKit CLI
-
-micrOS terminal <br/>
-built-in commands, Load Modules <br/>
-LM development <br/>
-1. `LM_app.py` creation (basics python programming) <br/>
-2. Upload module with ota update (drag-n-drop `LM_app` file) <br/>
-3. Call `LM_app` function <br/>
-
-### 7. How to customize or contribute to micrOS
-
-Create custom Load Modules (LMs) - github pull request
+[![YoutubeChannel](./media/YoutubeChannel.png)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
 
 ----------------------------------------
 
@@ -378,6 +325,50 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 ![MICROSNWMODES](./media/micrOSNetworking.png?raw=true)
 
+# micrOS Customization
+
+Aka How to write Load Modules
+
+1. Create python file with the following naming convension: `LM_`your_app`.py`
+2. You can create any function in this modul, these will be exposed by micrOS framework over tcp/ip so these can be accessable via phone client.
+3. drag-n-drop LM file to micrOS devToolKit GUI
+4. Select device
+5. Press upload
+
+### LM_simple.py
+
+```python3
+
+def hello(name="Anonimus"):
+	return "Hello {}!".format(name)
+	
+def add_two_numbers(a, b):
+	return "{}+{} = {}".format(a, b, a+b)
+```
+
+### LM_template.py
+
+Function naming convesions for Load Modules.
+
+```python3
+
+def load_n_init():
+	pass
+	
+def lmdep():
+	pass
+	
+def pinmap():
+	pass
+	
+def status():
+	pass
+	
+def help():
+	pass
+
+```
+
 # System Architecture 
 
 ![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
@@ -403,6 +394,7 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 
 ## Developer Quick guide
+
 
 #### Erase device & Deploy micropython & Install micrOS 
 

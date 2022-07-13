@@ -30,6 +30,7 @@
 3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 5. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
+6. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
 
 Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framework/designs)</br>
 Youtube: [link](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)</br>
@@ -162,6 +163,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 [![YoutubeChannel](./media/YoutubeChannel.png)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
 
 ----------------------------------------
+<br/>
 
 ## micrOS System, message-function visualization
 
@@ -352,20 +354,69 @@ Function naming convesions for Load Modules.
 
 ```python3
 
+from LogicalPins import physical_pin, pinmap_dump
+from machine import Pin
+
 def load_n_init():
-	pass
+	"""
+	[RECOMMENDED]
+	Function naming convension to create IO (Pin) objects
+	- function to initialize IO peripheries
+
+	physical_pin - to resolve pin on board by logical name (tag)
+	"""
 	
+	pin_number = physical_pin('redgb')
+	red = Pin(pin_number)
+	return red
+
+
 def lmdep():
-	pass
-	
+   """
+   [IN CASE OF LM DEPENDENCY]
+   Function to return Load Module dependencies (tuple)
+   - example: if this module uses LM_rgb.py, you should
+   				 return 'rgb'
+   """
+	return '<module_name>'
+
+
 def pinmap():
-	pass
+	"""
+	[OPTIONAL]
+	Return list of pins
+	Example:
+		RoboArm $  rgb pinmap >json
+		{"rgbue": 15, "rgreenb": 12, "redgb": 14}
+	return: dict {pinkey: pinvalue}
 	
-def status():
-	pass
+	pinmap_dump - logical pinmap resolver based on LP_<device_tag>.py
 	
+	Example:
+	return pinmap_dump(['redgb', 'rgreenb', 'rgbue'])
+	"""
+	return {}
+
+
+def status(lmf=None):
+	"""
+	[OPTIONAL]
+	Function naming convension for
+	module state-machine return
+	return: dict
+	
+	Example in case of RGB color state return
+	return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
+	"""
+	return {}
+
+
 def help():
-	pass
+	"""
+	[OPTIONAL]
+	Return help message tuple
+	"""
+	return 'load_n_init', 'pinmap', 'status', 'lmdep'
 
 ```
 

@@ -63,7 +63,7 @@ class MicrOSDevTool:
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
              'rp2-pico-w':
                  {'erase': None,
-                  'deploy': None,
+                  'deploy': self._deploy_micropython_dev_usb_storage,
                   'connect': 'screen {dev}',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
              }
@@ -291,8 +291,13 @@ class MicrOSDevTool:
         self.console("------------------------------------------")
         self.__initialize_dev_env_for_deployment_vis_usb()
 
-        selected_device = self.get_devices()[0]
         erase_cmd = self.dev_types_and_cmds[self.selected_device_type]['erase']
+        if erase_cmd is None:
+            """Handle missing erase command - in case of raspberry pico"""
+            self.console("Cannot erase device, erase command not found (raspberry pico w)")
+            return True
+
+        selected_device = self.get_devices()[0]
         print("selected_device_port: {}".format(selected_device))
         command = erase_cmd.format(dev=selected_device)
         self.console("CMD: {}".format(command))
@@ -310,6 +315,24 @@ class MicrOSDevTool:
             self.console("Erase failed.\n{} - {}".format(stdout, stderr), state='err')
             return False
 
+    def _deploy_micropython_dev_usb_storage(self):
+        """
+        Handle micropython block storage install (rp2-w)
+        """
+        storage_path = "/Volumes/RPI-RP2"
+        # TODO: handle path in windows
+        selected_micropython = self.selected_micropython_bin
+        if os.path.isdir(storage_path):
+            self.console("Install micropython by binary copy: {} -> {}".format(selected_micropython, storage_path))
+        state = LocalMachine.FileHandler().copy(selected_micropython, storage_path)
+        if state:
+            for _ in range(0, 10):
+                self.console("Wait for usb device...")
+                time.sleep(3)
+                if len(self.get_devices()) > 0:
+                    break
+        return state
+
     def deploy_micropython_dev(self):
         self.console("------------------------------------------")
         self.console("-            DEPLOY MICROPYTHON          -", state='imp')
@@ -317,6 +340,10 @@ class MicrOSDevTool:
         self.__initialize_dev_env_for_deployment_vis_usb()
 
         deploy_cmd = self.dev_types_and_cmds[self.selected_device_type]['deploy']
+        # Handle method call as deploy_cmd (for raspberry pi pico micropython deployment)
+        if not isinstance(deploy_cmd, str):
+            return self._deploy_micropython_dev_usb_storage()
+
         selected_device = self.get_devices()[0]
         selected_micropython = self.selected_micropython_bin
         command = deploy_cmd.format(dev=selected_device, micropython=selected_micropython)

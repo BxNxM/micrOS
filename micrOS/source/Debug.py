@@ -3,7 +3,7 @@ from time import localtime
 from machine import Pin
 
 try:
-    from LogicalPins import physical_pin
+    from LogicalPins import physical_pin, pinmap_dump
 except:
     physical_pin = None
 
@@ -27,7 +27,7 @@ class DebugCfg:
     def init_pled():
         # CALL FROM ConfigHandler
         if TinyPLed is None:
-            if physical_pin is not None and physical_pin('builtin') is not None:
+            if physical_pin is not None and pinmap_dump('builtin')['builtin'] is not None:
                 # Progress led for esp8266/esp32/etc
                 DebugCfg.PLED_OBJ = Pin(physical_pin('builtin'), Pin.OUT)
         else:

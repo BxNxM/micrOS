@@ -49,7 +49,7 @@ class SocketServer:
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.6.0-2'
+    __socket_interpreter_version = '1.7.0-0'
 
     def __new__(cls, host=''):
         """
@@ -210,8 +210,8 @@ class SocketServer:
         cls.reply_message("Bye!")
         cls.__close()
         sleep(1)
-        from machine import reset
-        reset()
+        from machine import soft_reset
+        soft_reset()
         cls.__reconnect()          # In case of simulator - dummy reset
 
     def reply_message(cls, msg):

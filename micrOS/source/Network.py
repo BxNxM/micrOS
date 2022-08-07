@@ -94,8 +94,12 @@ def set_wifi(essid, pwd, timeout=60):
     # Set STA and Connect
     sta_if = WLAN(STA_IF)
     sta_if.active(True)
-    # Set custom DHCP hostname
-    sta_if.config(dhcp_hostname=cfgget('devfid'))
+    # Handle rsp2-w limitation (try)
+    try:
+        # Set custom DHCP hostname for dhcp name resolve
+        sta_if.config(dhcp_hostname=cfgget('devfid'))
+    except Exception as e:
+        console_write("dhcp_hostname conf error: {}".format(e))
     # Check are we already connected
     if sta_if.isconnected():
         console_write("\t| [NW: STA] ALREADY CONNECTED TO {}".format(essid))
@@ -161,7 +165,7 @@ def __set_wifi_dev_static_ip(sta_if):
 
 def set_access_point(_essid, _pwd, _authmode=3):
     global NW_IF
-    console_write("[NW: AP] SET AP MODE: {} - {} - auth mode: {}".format(_essid, _pwd, _authmode))
+    console_write("[NW: AP] SET AP MODE: {} - {} - auth mode: {} (if possible)".format(_essid, _pwd, _authmode))
 
     sta_if = WLAN(STA_IF)
     if sta_if.isconnected():
@@ -171,12 +175,20 @@ def set_access_point(_essid, _pwd, _authmode=3):
     ap_if.active(True)
     # Set WiFi access point name (formally known as ESSID) and WiFi authmode (3): WPA2-PSK
     try:
+        # Config #1 (esp)
         console_write("[NW: AP] Configure")
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode, max_clients=5)
-    except Exception as e:
-        console_write("[NW: AP] Config Error: {}".format(e))
-        errlog_add("[ERR] set_access_point error: {}".format(e))
-    if not (ap_if.active() and str(ap_if.config('essid')) == str(_essid) and ap_if.config('authmode') == _authmode):
+    except Exception as e1:
+        # Correction because rp2-w network interface limitation (parameter mismatch)
+        console_write("[NW: AP] Config Error: {}".format(e1))
+        try:
+            console_write("|- Simplified config...")
+            # Config #2 (rp2-w)???
+            ap_if.config(essid=_essid, password=_pwd)
+        except Exception as e2:
+                console_write("|- [NW: AP] Config Error: {}".format(e2))
+                errlog_add("[ERR] set_access_point error: {}".format(e2))
+    if not (ap_if.active() and str(ap_if.config('essid')) == str(_essid)):
         errlog_add("[ERR][SET AP] config error")
     console_write("\t|\t| [NW: AP] network config: " + str(ap_if.ifconfig()))
     set_dev_uid()

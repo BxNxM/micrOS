@@ -12,7 +12,7 @@ try:
     # Turn off esp debug msg-s over usb (UART)
     esp.osdebug(None)
 except:
-    print("[micrOS boot] Unknown board")
+    print("[micrOS boot] non esp board")
 
 from gc import enable
 from micrOSloader import main

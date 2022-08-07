@@ -67,8 +67,11 @@ def __recovery_mode():
     # Set up network
     auto_network_configuration()
     # Start webrepl
-    import webrepl
-    webrepl.start(password=pwd)
+    try:
+        import webrepl
+        webrepl.start(password=pwd)
+    except Exception as e:
+        print("Webrepl import error: {}".format(e))
 
 
 def __auto_restart_event():

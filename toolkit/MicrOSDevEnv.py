@@ -44,11 +44,11 @@ class MicrOSDevTool:
         self.gui_console = gui_console
         self.cmdgui = cmdgui
         # Skip the following modules in OTA update (safe mode) to have recovery mode
-        self.safe_mode_file_exception_list = ['boot.py', 'micrOSloader.mpy',
+        self.safe_mode_file_exception_list = ['main.py', 'micrOSloader.mpy',
                                               'Network.mpy', 'ConfigHandler.mpy',
                                               'Debug.mpy']
         # USB serial (sub)names to recognize in /dev/tty...
-        self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial']
+        self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial', 'usbmodem']
         # Commands for devices
         self.dev_types_and_cmds = \
             {'esp32':
@@ -64,8 +64,8 @@ class MicrOSDevTool:
              'rp2-pico-w':
                  {'erase': None,
                   'deploy': None,
-                  'connect': 'screen {dev} 115200',
-                  'ampy_cmd': None},
+                  'connect': 'screen {dev}',
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
              }
 
         # DevEnv base pathes
@@ -418,7 +418,7 @@ class MicrOSDevTool:
         if not self.dummy_exec:
             self.__cleanup_precompiled_dir()
 
-        file_prefix_blacklist = ['LM_', 'boot.py']
+        file_prefix_blacklist = ['LM_', 'main.py', 'boot.py']
         tmp_precompile_set = set()
         tmp_skip_compile_set = set()
         error_cnt = 0
@@ -506,7 +506,7 @@ class MicrOSDevTool:
         device = self.get_devices()[0]
         source_to_put_device = LocalMachine.FileHandler.list_dir(self.precompiled_MicrOS_dir_path)
         # Set source order - main, boot
-        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('boot.py')))
+        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('main.py')))
 
         # Change workdir
         workdir_handler = LocalMachine.SimplePopPushd()

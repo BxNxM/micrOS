@@ -2,7 +2,7 @@
 
 ### micropython based smart edge IoT platform
 
-`#telnet #wifi #esp32 #ota #GPIO #RTC/NTP #AP/STA #IRQ #thread #cron`
+`#telnet #wifi #esp32 #RaspberryPiPicoW #ota #GPIO #RTC/NTP #AP/STA #IRQ #thread #cron`
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
@@ -754,38 +754,39 @@ micrOS/source/
      245	BgJob.py
       67	Common.py
      217	ConfigHandler.py
-     102	Debug.py
-      54	Hooks.py
-      85	InterConnect.py
+     117	Debug.py
+      62	Hooks.py
+      89	InterConnect.py
      164	InterpreterCore.py
-     199	InterpreterShell.py
-     141	InterruptHandler.py
+     202	InterpreterShell.py
+     148	InterruptHandler.py
       46	LP_esp32.py
+       3	LP_rp2.py
       55	LP_tinypico.py
-      44	LogicalPins.py
-     176	Network.py
+     105	LogicalPins.py
+     189	Network.py
      161	Scheduler.py
-     292	SocketServer.py
-     172	Time.py
+     294	SocketServer.py
+     179	Time.py
       24	TinyPLed.py
-      19	boot.py
+      19	main.py
       64	micrOS.py
-     108	micrOSloader.py
-       5	reset.py
-SUM OF CODE LINES: 2440
+     118	micrOSloader.py
+       9	reset.py
+SUM OF CODE LINES: 2577
 ```
 
 #### micrOS Load Modules
 
 ```
 micrOS/source/
-      59	LM_L298N_DCmotor.py
+      58	LM_L298N_DCmotor.py
       37	LM_L9110_DCmotor.py
      310	LM_VL53L0X.py
      273	LM_bme280.py
      194	LM_buzzer.py
-      24	LM_catgame.py
-     177	LM_cct.py
+      27	LM_catgame.py
+     201	LM_cct.py
      103	LM_co2.py
       32	LM_dht11.py
       32	LM_dht22.py
@@ -797,21 +798,21 @@ micrOS/source/
       19	LM_i2c.py
       31	LM_intercon.py
       55	LM_light_sensor.py
-     108	LM_neoeffects.py
-     206	LM_neopixel.py
+     111	LM_neoeffects.py
+     231	LM_neopixel.py
      161	LM_oled.py
-     172	LM_oled_ui.py
+     203	LM_oled_ui.py
       30	LM_pet_feeder.py
-      50	LM_ph_sensor.py
-     198	LM_rgb.py
-     155	LM_roboarm.py
+      29	LM_ph_sensor.py
+     222	LM_rgb.py
+     160	LM_roboarm.py
       40	LM_robustness.py
       89	LM_servo.py
-     110	LM_stepper.py
-     179	LM_switch.py
-     155	LM_system.py
+     109	LM_stepper.py
+     178	LM_switch.py
+     157	LM_system.py
       60	LM_tinyrgb.py
-SUM OF CODE LINES: 3333
+SUM OF CODE LINES: 3426
 ```
 
 > LM (Load Modules) - Application logic - accessable over socket server as a command

@@ -20,7 +20,7 @@
 &nbsp;&nbsp; - Time stamp based <br/>
 &nbsp;&nbsp; - Geolocation based utc + sunset, sunrise rest features <br/>
 &nbsp;&nbsp; - Simple periodic <br/>
-&nbsp;&nbsp; - Thread (beta) <br/>
+&nbsp;&nbsp; - Async task manager <br/>
 
 🚀🎈Lightweight and high performance core system that leaves you space 😎
 
@@ -224,15 +224,14 @@ It will install your board via USB with default settings. **Continue with micrOS
 	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
 	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
 
-- 📍[BETA!] **Background Job** aka **BgJob**
-		- Capable of execute [L]oad [M]odules in a background thread
-		- WARNING, limitation: not use with IRQs and in micrOS config
+- 📍**Task manager** aka **Async LM jobs**
+		- Capable of execute [L]oad [M]odules in the background
 		- Invoke with single execution `&` or loop execution `&&`
 		- Example:
 			- In loop: `system heartbeat &&`
 			- Single call: `system heartbeat &`
-		- Stop thread: `bgjob stop`
-		- Show thread ouput and status: `bgjob show`
+		- Stop thread: `task kill system.heartbeat`
+		- Show thread ouput and status: `task show system.heartbeat`
 
 
 ⌘ DevToolKit CLI feature:
@@ -289,6 +288,7 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **auth**             |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. **WARNING** OTA upade not supported in this mode.
 | **utc**              |     `60`   `<int>`          |       Yes       | NTP-RTC - timezone setup (UTC in minute) - it is automatically calibrated in STA mode based on geolocation.
 | **boothook**         |    `n/a` `<str>`            |      Yes        | Callback function(s) list for priority Load Module(s) execution in boot sequence [before network setup!]. Add LoadModule(s) here, separator `;`. Example: Set LED colors / Init custom module(s) / etc.
+| **aioqueue**         |    `4` `<int>`              |       Yes       | Set asyc task queue limit, system overload protection
 | **timirq**           |     `False`  `<bool>`       |       Yes       | Timer(0) interrupt enabler - background "subprocess" emulation, timer based infinite loop for the LoadModule execution
 | **timirqcbf**        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
 | **timirqseq**        |    `1000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
@@ -408,7 +408,7 @@ def status(lmf=None):
 	Example in case of RGB color state return
 	return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
 	"""
-	return {}
+	return {'key': 'value'}
 
 
 def help():

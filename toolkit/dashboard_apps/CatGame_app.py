@@ -22,19 +22,19 @@ def play_game(iteration=30, devfid=None):
     for _ in range(iteration):
         piped_commands = []
 
-        args = base_cmd() + ['servo', 'sduty {} '.format(SERVO_CENTER_VAL)]
+        args = base_cmd() + ['servo sduty {} '.format(SERVO_CENTER_VAL)]
         print("CMD: {}".format(args))
         args.append(CMD_PIPE_SEP)
         piped_commands += args
 
         for _ in range(randint(1, 6)):
             duty = randint(55, 100)
-            args = ['servo', 'sduty {duty} '.format(duty=duty)]
+            args = ['servo sduty {duty} '.format(duty=duty)]
             print("\tCMD: {}".format(args))
             args.append(CMD_PIPE_SEP)
             piped_commands += args
 
-        args += ['servo', 'sduty {}'.format(SERVO_CENTER_VAL)]
+        args += ['servo sduty {}'.format(SERVO_CENTER_VAL)]
         print("CMD: {}".format(args))
         piped_commands += args
 
@@ -44,7 +44,7 @@ def play_game(iteration=30, devfid=None):
 
 def deinit_servo():
     print("DEINIT SERVO, SET TO {} and DEINIT".format(SERVO_CENTER_VAL))
-    args = base_cmd() + ['servo', 'sduty {}'.format(SERVO_CENTER_VAL)]
+    args = base_cmd() + ['servo sduty {}'.format(SERVO_CENTER_VAL)]
     socketClient.run(args)
 
 

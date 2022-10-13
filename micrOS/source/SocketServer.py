@@ -2,30 +2,22 @@
 Module is responsible for socket server
 dedicated to micrOS framework.
 - The heart of communication
-- micrOS version handler
-- Maintain connections
-- built in exposed commands
-    - hello
-    - version
-    - webrepl     (switch to webrepl interface)
-    - webrepl -u  (update micrOS over webrepl)
-    - exit
-    - reboot
-- server recovery handling
-- providing server console instance
+- providing server-client console instance
 
-Designed by Marcell Ban aka BxNxM
+Designed by Marcell Ban aka BxNxM GitHub
 """
 #########################################################
 #                         IMPORTS                       #
 #########################################################
 
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
-from utime import sleep
-from ConfigHandler import cfgget, cfgput
+from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
-from InterpreterShell import shell
+from InterpreterShell import Shell
 from Network import ifconfig
+import uasyncio as asyncio
+from TaskManager import Manager
+from utime import ticks_ms, ticks_diff
 
 try:
     from gc import collect, mem_free
@@ -33,25 +25,146 @@ except:
     console_write("[SIMULATOR MODE GC IMPORT]")
     from simgc import collect, mem_free
 
+
+class Debug:
+    INDENT = 0
+
+    @staticmethod
+    def console(msg):
+        console_write("|" + "-" * Debug.INDENT + msg)
+        if Debug.INDENT < 50:
+            # if less then max indent
+            Debug.INDENT += 1
+
+
+#########################################################
+#          SOCKET SERVER-CLIENT HANDLER CLASS           #
+#########################################################
+
+class Client:
+    TASK_MANAGER = Manager()
+
+    def __init__(self, reader, writer):
+        self.connected = True
+        self.reader = reader
+        self.writer = writer
+        self.drain_event = asyncio.Event()
+        self.drain_event.set()
+
+        self.client_id = writer.get_extra_info('peername')
+        self.shell = Shell(self.send)
+        self.last_msg_t = ticks_ms()
+        Debug().console("[Client] new conn: {}".format(self.client_id))
+
+    async def read(self):
+        """
+        Implements client read function
+        - set timeout counter
+        - read input from client (run: return False)
+        - connection error handling (stop: return True)
+        - exit command handling (stop: return True)
+        """
+        Debug().console("[Client] read {}".format(self.client_id))
+        self.last_msg_t = ticks_ms()
+        try:
+            request = (await self.reader.read(1024))
+            request = request.decode('utf8').strip()
+        except Exception as e:
+            Debug().console("[Client] Stream read error ({}): {}".format(self.client_id, e))
+            return True, ''
+
+        # Input handling
+        Debug().console("[Client] raw request ({}): |{}|".format(self.client_id, request))
+        if request == 'exit' or request == '':
+            return True, request
+        return False, request
+
+    def send(self, response):
+        """
+        Send response to client with non-async function
+        """
+        if self.connected:
+            if self.shell.prompt() != response:
+                # Add new line if not prompt (?)
+                response = "{}\n".format(response)
+            #Debug().console("[Client] ----- SteamWrite: {}".format(response))
+            # Store data in stream buffer
+            self.writer.write(response.encode('utf8'))
+            # Send buffered data with async task - hacky
+            Client.TASK_MANAGER.loop.create_task(self.__wait_for_drain())
+        else:
+            print(response)
+
+    async def __wait_for_drain(self):
+        """
+        Handle drain serialization
+        - solve output data duplicate
+        """
+        # Wait for event set (True) - drain is free
+        await self.drain_event.wait()
+
+        # set drain busy
+        self.drain_event.clear()
+        try:
+            # send write buffer
+            #Debug().console("  |----- start drain")
+            await self.writer.drain()
+            #Debug().console("  |------ stop drain")
+        except Exception as e:
+            Debug().console("[Client] Drain error -> close conn: {}".format(e))
+            await self.close()
+        # set drain free
+        self.drain_event.set()
+
+    async def close(self):
+        Debug().console("[Client] Close connection {}".format(self.client_id))
+        # Reset shell state machine
+        self.shell.reset()
+        self.send("Bye!\n")
+        await asyncio.sleep_ms(100)
+        try:
+            self.writer.close()
+            await self.writer.wait_closed()
+        except Exception as e:
+            Debug().console("[Client] Close error: {}".format(e))
+        self.connected = False
+        Debug.INDENT = 0
+
+    async def shell_cmd(self, request):
+        # Run micrOS shell with request string
+        try:
+            Debug().console("[CLIENT] --- #Run shell")
+            state = self.shell.shell(request)
+            if state:
+                return True
+        except Exception as e:
+            if "ECONNRESET" in e:
+                await self.close()
+            Debug().console("[Client] Shell exception: {}".format(e))
+            return False
+        collect()
+        self.send("[HA] Shells cleanup: {}".format(mem_free()))
+        return True
+
+    def __del__(self):
+        Debug().console("Delete client connection: {}".format(self.client_id))
+
+
 #########################################################
 #                    SOCKET SERVER CLASS                #
 #########################################################
-
 
 class SocketServer:
     """
     Socket message data packet layer - send and receive
     Embedded command interpretation:
-    - hello
-    - version
     - exit
     - reboot
     InterpreterShell invocation with msg data
     """
     __instance = None
-    __socket_interpreter_version = '1.7.0-0'
 
-    def __new__(cls, host=''):
+    def __new__(cls):
         """
         Singleton design pattern
         __new__ - Customize the instance creation
@@ -61,257 +174,105 @@ class SocketServer:
             # SocketServer singleton properties
             SocketServer.__instance = super().__new__(cls)
             # Socket server initial parameters
-            SocketServer.__instance.__host = host
-            SocketServer.__instance.__s = None
-            SocketServer.__instance.__conn = None
-            SocketServer.__instance.__addr = None
-            SocketServer.__instance.__server_console_indent = 0
-            SocketServer.__instance.__auth = False
-            SocketServer.__instance.__isconn = False
-            SocketServer.__instance.configure_mode = False
+            SocketServer.__instance.__host = ''
+            SocketServer.__instance.server = None
+            SocketServer.__instance.server_console_indent = 0
+            SocketServer.__instance.client = None
+
             # ---- Config ---
-            SocketServer.__instance.pre_prompt = ""
-            SocketServer.__instance.__auth_mode = cfgget('auth')
-            SocketServer.__instance.__prompt = "{} $ ".format(cfgget('devfid'))
             SocketServer.__instance.__port = cfgget("socport")
-            SocketServer.__instance.__hwuid = cfgget("hwuid")
-            # ---- Set socket timeout (min 3 sec)
+            # ---- Set socket timeout (min 5 sec)
             soc_timeout = int(cfgget("soctout"))
-            SocketServer.__instance.__timeout_user = 3 if soc_timeout < 3 else soc_timeout
+            SocketServer.__instance.soc_timeout = 5 if soc_timeout < 5 else soc_timeout
             # ---         ----
-            SocketServer.__instance.server_console("[ socket server ] <<constructor>>")
+            Debug().console("[ socket server ] <<constructor>>")
         return SocketServer.__instance
 
     #####################################
     #       Socket Server Methods       #
     #####################################
-    def __init_socket(cls):
-        """
-        Socket init:
-        - socket create + setup as reusable (for rebind)
-        - listen on socket connections
-        """
-        # Create and Configure socket instance
-        cls.__s = socket(AF_INET, SOCK_STREAM)
-        cls.__s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        # Listen up clients
-        while True:
-            try:
-                cls.__s.bind((cls.__host, cls.__port))
-                break
-            except Exception as msg:
-                cls.server_console('[ socket server ] Bind failed. Error Code : {}'.format(msg))
-                errlog_add('[ERR] __init_socket bind failed: {}'.format(msg))
-                sleep(1)
-        cls.server_console('[ socket server ] Socket bind complete')
-        cls.__s.listen(5)
-        cls.server_console('[ socket server ] Socket now listening')
-        cls.__accept()
 
-    def __close(cls):
-        """
-        Safe close of socket
-        """
-        cls.__isconn = False
-        try:
-            cls.__conn.close()
-        except Exception:
-            cls.server_console('[ socket server ] Socket was already closed.')
+    async def accept_client(cls, new_client):
+        # Get new client ID
+        client_id = new_client.client_id
+        # Check there is open connection
+        if cls.client is None:
+            return True, client_id
 
-    def __reconnect(cls):
-        # Reset shell parameters
-        cls.configure_mode = False
-        cls.__server_console_indent = 0
-        cls.__auth = False
-        # Close session
-        cls.server_console("[ socket server ] exit and close connection from " + str(cls.__addr))
-        cls.__close()
-        # Cleanup GC Collect
-        collect()
-        # Accept new connection again
-        cls.__accept()
-
-    def __accept(cls):
-        # Set prompt
-        cls.pre_prompt = "[password] " if cls.__auth_mode else ""
-        # Accept connection
-        cls.server_console("[ socket server ] wait to accept a connection")
-        cls.__conn, cls.__addr = cls.__s.accept()
-        cls.server_console('[ socket server ] Connected with {}:{}'.format(cls.__addr[0], cls.__addr[1]))
-        cls.__isconn = True
-
-    #####################################
-    #      Socket Connection Methods    #
-    #####################################
-
-    def __send_prompt(cls):
-        cls.reply_message("{}{} ".format(cls.pre_prompt, cls.__prompt).encode('utf-8'))
-
-    def __wait_for_msg(cls):
-        # Check for open connection
-        if cls.__conn is None: return ''
-        # Reply on open connection
-        cls.__send_prompt()
-        cls.__conn.settimeout(cls.__timeout_user)
-        # Receive msg and handle timeout
-        try:
-            # message size 1024 byte
-            data_byte = cls.__conn.recv(1024)
-        except Exception as e:
-            data_byte = b''
-            if 'ETIMEDOUT' in str(e).upper():
-                cls.server_console(
-                    "[ socket server ] socket recv - connection with user - timeout {} sec".format(cls.__timeout_user))
-                cls.reply_message("\n__@_/' Session timeout {} sec\nBye!".format(cls.__timeout_user))
-                cls.__reconnect()
+        # Get active client timeout counter
+        client_inactive = int(ticks_diff(ticks_ms(), cls.client.last_msg_t) * 0.001)
+        Debug().console("[server] accept client {} - isconn: {}-{}-{}".format(client_id, cls.client.connected,
+                                                                          cls.client.client_id, cls.soc_timeout-client_inactive))
+        if cls.client.connected:
+            if client_inactive < cls.soc_timeout:
+                # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
+                Debug().console("|------- connection busy")
+                # Handle only single connection
+                new_client.send("Connection is busy. Bye!")
+                await new_client.close()    # Play nicely - close connection
+                del new_client              # Clean up unused client
+                return False, client_id
             else:
-                errlog_add('__wait_for_msg unexpected error: {}'.format(e))
-                cls.__reconnect()
-        # Convert msg to str
-        try:
-            data_str = data_byte.decode("utf-8").strip()
-        except Exception:
-            data_str = 'ctrl-c'
-        cls.server_console("[ socket server ] RAW INPUT |{}|".format(data_str))
-        # CALL LOW LEVEL COMMANDS -  server built-ins
-        return cls.__server_level_cmds(data_str)
+                # OPEN CONNECTION IS INACTIVE > CLOSE
+                Debug().console("|------- connection - client timeout - accept new connection")
+                await cls.client.close()
+        return True, client_id
 
-    def __server_level_cmds(cls, data_str):
-        # globally available micrOS functions
-        if data_str == 'exit':
-            # For low level exit handling
-            cls.reply_message("Bye!")
-            cls.__reconnect()
-            return ""
-        if data_str == 'hello':
-            # For low level device identification - hello msg
-            cls.reply_message("hello:{}:{}".format(cfgget('devfid'), cls.__hwuid))
-            return ""
-        if data_str == 'version':
-            # For micrOS system version info
-            cls.reply_message("{}".format(cls.__socket_interpreter_version))
-            return ""
-        # Authentication handling
-        data_str = cls.__authentication(data_str) if cls.__auth_mode else data_str
-        # Authenticated user functions ... shell, etc
-        if data_str == 'reboot':
-            cls.reply_message("Reboot micrOS system.")
-            cls.__safe_reboot()
-            return ""
-        if data_str.startswith('webrepl'):
-            if '--u' in data_str:
-                cls.start_micropython_webrepl(update=True)
-            cls.start_micropython_webrepl()
-            return ""
-        return data_str
+    async def handle_client(cls, reader, writer):
+        """
+        Handle async requests towards server
+        """
+        # Create client object
+        new_client = Client(reader, writer)
 
-    def __safe_reboot(cls):
-        cls.server_console("Execute safe reboot: __safe_reboot()")
-        cls.reply_message("Bye!")
-        cls.__close()
-        sleep(1)
-        from machine import soft_reset
-        soft_reset()
-        cls.__reconnect()          # In case of simulator - dummy reset
+        # Check incoming client
+        state, client_id = await cls.accept_client(new_client)
+        if not state:
+            # Server busy, there is one active open connection - reject client
+            # delete unused new_client as well!
+            return
+
+        # Store client object as active client
+        cls.client = new_client
+
+        # Init prompt
+        cls.client.send(cls.client.shell.prompt())
+        # Run async connection handling
+        while cls.client.connected:
+            # Read request msg from client
+            state, request = await cls.client.read()
+            if state:
+                break
+
+            state = await cls.client.shell_cmd(request)
+            if not state:
+                cls.client.send("[HA] Critical error - disconnect & hard reset")
+                errlog_add("[ERR] Socket critical error - reboot")
+                cls.client.shell.reboot()
+
+        # Close connection
+        await cls.client.close()
+
+    async def run_server(cls):
+        """
+        Define async socket server (tcp by default)
+        """
+        addr = ifconfig()[1][0]
+        Debug().console("[ socket server ] Start socket server on {}:{}".format(addr, cls.__port))
+        Debug().console("- connect: telnet {} {}".format(addr, cls.__port))
+        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=1)
+        await cls.server
+        Debug().console("-- TCP server running in background")
 
     def reply_message(cls, msg):
-        # Skip reply if no open connection
-        if not cls.__isconn:
+        """
+        Only used for LM msg stream over Common.socket_stream wrapper
+        - single connection support!!!
+        """
+        if cls.client is None:
             return
-        # Reply on active connection
-        try:
-            if not isinstance(msg, bytes):
-                msg = "{}\n".format(msg).encode("utf-8")
-            cls.__conn.sendall(msg)           # conn sendall
-        except Exception as e:
-            cls.server_console("[ socket server ] reply error: {} -> RECONNECT".format(e))
-            cls.__reconnect()
-            # Send prompt after reconnect (normally runs in __wait_for_msg method)
-            cls.__send_prompt()
-        return
-
-    def run(cls):
-        """
-        Main method, runs socket server with interpreter shell
-        """
-        cls.server_console("[ socket server ] SERVER ADDR: telnet {} {}".format(ifconfig()[1][0], cls.__port))
-        try:
-            cfgput('version', cls.__socket_interpreter_version)
-        except Exception as e:
-            console_write("Export system version to config failed: {}".format(e))
-            errlog_add('[socket.run][ERR] system version export error: {}'.format(e))
-        cls.__init_socket()
-        while True and cls.__isconn:
-            try:
-                # Evaluate incoming msg via InterpreterShell -> InterpreterCore "Console prompt"
-                is_healthy = shell(cls.__wait_for_msg(), sso=cls)
-                if not is_healthy:
-                    console_write("[EXEC-WARNING] InterpreterShell internal error.")
-                    cls.__recovery(is_critic=False)
-            except OSError:
-                # Broken pipe error handling
-                cls.__reconnect()
-            except Exception as e:
-                console_write("[EXEC-ERROR] InterpreterShell error: {}".format(e))
-                errlog_add("[ERR] Socket-InterpreterShell error: {}".format(e))
-                cls.__recovery(is_critic=True)
-            # Memory dimensioning dump
-            cls.server_console('[X] AFTER INTERPRETER EXECUTION FREE MEM [byte]: {}'.format(mem_free()))
-
-    def __recovery(cls, is_critic=False):
-        """
-        Handle memory errors here
-        """
-        cls.reply_message("[HA] system recovery ...")
-        collect()
-        cls.reply_message("[HA] gc-collect-memfree: {}".format(mem_free()))
-        if is_critic:
-            cls.reply_message("[HA] Critical error - disconnect & hard reset")
-            cls.__safe_reboot()
-
-    def server_console(cls, msg):
-        console_write("|" + "-" * cls.__server_console_indent + msg)
-        if cls.__server_console_indent < 50:
-            # if less then max indent
-            cls.__server_console_indent += 1
-
-    def start_micropython_webrepl(cls, update=False):
-        cls.reply_message(" Start micropython WEBREPL for interpreter web access and file transferring.")
-        cls.reply_message("  [!] micrOS socket shell will be available again after reboot.")
-        cls.reply_message("  \trestart machine shortcut: import reset")
-        cls.reply_message("  Connect over http://micropython.org/webrepl/#{}:8266/".format(ifconfig()[1][0]))
-        cls.reply_message("  \t[!] webrepl password: {}".format(cfgget('appwd')))
-        if update:
-            cls.reply_message('  Restart node then start webrepl...')
-        cls.reply_message(" Bye!")
-        if update:
-            from machine import reset
-            with open('.if_mode', 'w') as f:
-                f.write('webrepl')
-            reset()
-        try:
-            import webrepl
-            cls.reply_message(webrepl.start(password=cfgget('appwd')))
-            # Deinit socket obj to make webrepl available
-            cls.__del__()
-        except Exception as e:
-            cls.reply_message("Error while starting webrepl: {}".format(e))
-            errlog_add('[ERR] Start Webrepl error: {}'.format(e))
-
-    def __authentication(cls, data_str):
-        if not cls.__auth and data_str:
-            # check password
-            if cfgget('appwd') == data_str:
-                cls.__auth = True
-                cls.reply_message("AuthOk")
-                cls.pre_prompt = ""
-                return ""
-            cls.reply_message("AuthFailed\nBye!")
-            cls.__reconnect()
-            return ""
-        return data_str
+        cls.client.send(msg)
 
     def __del__(cls):
-        console_write("[ socket server ] <<destructor>>")
-        cls.__close()
-        cls.__s.close()
+        Debug().console("[ socket server ] <<destructor>>")
+        cls.server.close()

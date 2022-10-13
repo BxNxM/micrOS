@@ -3,7 +3,7 @@ from machine import RTC
 from utime import mktime, localtime
 from network import WLAN, STA_IF
 from re import match
-from utime import sleep_ms
+from utime import sleep_ms, time
 from Debug import errlog_add, console_write
 from ConfigHandler import cfgput, cfgget
 
@@ -11,6 +11,7 @@ from ConfigHandler import cfgput, cfgget
 class Sun:
     TIME = {}
     UTC = cfgget('utc')  # STORED IN MINUTE
+    BOOTIME = None    # Not SUN, but for system uptime
 
 
 def settime(year, month, mday, hour, min, sec):
@@ -24,6 +25,9 @@ def settime(year, month, mday, hour, min, sec):
     localtime(time_sec)
     # Set RTC
     RTC().datetime((year, month, mday, 0, hour, min, sec, 0))
+    # Set bootup time - first time init
+    if Sun.BOOTIME is None:
+        Sun.BOOTIME = time()
     return True
 
 
@@ -65,6 +69,9 @@ def ntptime():
             tm = localtime(t + Sun.UTC * 60)
             # Get localtime + GMT shift
             RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
+            # Set bootup time - first time init
+            if Sun.BOOTIME is None:
+                Sun.BOOTIME = time()
             return True
         except Exception as e:
             console_write("ntptime error.:{}".format(e))
@@ -199,6 +206,13 @@ def suntime():
     __persistent_cache_manager('r')                  # Using Sun.TIME
     console_write('[suntime] loaded from cache')
     return Sun.TIME
+
+
+def uptime():
+    if Sun.BOOTIME is None:
+        return "No time function was initialized..."
+    delta = int(time() - Sun.BOOTIME)
+    return "{} {}:{}:{}".format(int(delta/60/60/24), int(delta/60/60 % 60), int(delta/60 % 60), int(delta % 60))
 
 
 # Initial suntime cache load (for AP mode)

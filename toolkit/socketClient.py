@@ -19,11 +19,13 @@ try:
     from .lib import SearchDevices
     from .lib.TerminalColors import Colors
     from .lib.LocalMachine import FileHandler
+    from .lib.micrOSClient import micrOSClient
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     import lib.SearchDevices as SearchDevices
     from lib.TerminalColors import Colors
     from lib.LocalMachine import FileHandler
+    from lib.micrOSClient import micrOSClient
 
 
 #########################################################
@@ -87,8 +89,6 @@ class ConnectionData:
             except Exception as e:
                 print("[{}] {} scan warning: {}:{}".format(thread_name, ip, port, e))
             finally:
-                if socket_obj is not None and socket_obj.conn is not None:
-                    socket_obj.conn.close()
                 del socket_obj
 
     @staticmethod
@@ -283,109 +283,55 @@ class ConnectionData:
 
 class SocketDictClient:
 
-    def __init__(self, host='localhost', port=9008, bufsize=4096, silent_mode=False, tout=6):
+    def __init__(self, host='localhost', port=9008, silent_mode=False, tout=6):
         self.silent_mode = silent_mode
-        self.is_interactive = False
-        self.bufsize = bufsize
         self.host = host
         self.port = port
         self.tout = tout
-        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.settimeout(self.tout)
-        self.conn.connect((host, port))
+        self.client = micrOSClient(self.host, self.port, dbg=False)
 
-    def run_command(self, cmd, info=False):
-        cmd = str.encode(cmd)
-        self.conn.send(cmd)
-        data = self.receive_data()
-        if info:
-            msglen = len(data)
-            self.console("got: {}".format(data))
-            self.console("received: {}".format(msglen))
-        if data == '\0':
-            self.console('exiting...')
-            self.close_connection()
-            sys.exit(0)
+    def run_command(self, cmd):
+        data = self.client.send_cmd_retry(cmd)
         return data
 
-    def receive_data(self):
-        data = ""
-        prompt_postfix = ' $'
-        data_list = []
-        if select.select([self.conn], [], [], 3)[0]:
-            while True:
-                time.sleep(0.2)
-                last_data = self.conn.recv(self.bufsize).decode('utf-8')
-                data += last_data
-                # Msg reply wait criteria (get the prompt back or special cases)
-                if not self.is_interactive and (len(data.split('\n')) > 1 or '[configure]' in data):
-                    # wait for all msg in non-interactive mode until expected msg or prompt return
-                    if prompt_postfix in data.split('\n')[-1] or "Bye!" in last_data:
-                        break
-                elif self.is_interactive and (prompt_postfix in data.split('\n')[-1] or "Bye!" in last_data):
-                    # handle interactive mode: return msg when the prompt or expected output returns
-                    break
-            # Split raw data list
-            data_list = data.split('\n')
-        return data, data_list
-
     def interactive(self):
-        self.is_interactive = True
-        self.console(self.receive_data(), end='')
-        while True:
-            cmd = input().strip()
-            self.console(self.run_command(cmd), end='')
-            if cmd.rstrip() == "exit":
-                self.close_connection()
-                sys.exit(0)
+        return self.client.telnet()
 
-    def non_interactive(self, cmd_list):
-        self.is_interactive = False
-        if isinstance(cmd_list, list):
-            cmd_args = " ".join(cmd_list).strip()
-        elif isinstance(cmd_list, str):
-            cmd_args = cmd_list
-        else:
-            Exception("non_interactive function input must be list ot str!")
-        ret_msg = self.command_pipeline(cmd_args)
-        return ret_msg
+    def non_interactive(self, cmd_list, separator='<a>', to_str=True):
+        #print("non_interactive input: {}".format(cmd_list))
+        cmd_args = cmd_list
+        if isinstance(cmd_list, str):
+            cmd_args = cmd_list.split(separator)
+        elif isinstance(cmd_list, list) or isinstance(cmd_list, tuple):
+            if len(cmd_list) == 1:
+                if separator in cmd_list[0]:
+                    cmd_args = cmd_list[0].split(separator)
+        if separator in cmd_args:
+            cmd_args.remove(separator)
+        ret_list = self.command_pipeline(cmd_args)
+        if to_str:
+            ret_msg = ""
+            for ret in ret_list:
+                if ret is not None:
+                    ret_msg += '\n'.join(ret).strip()
+            if not self.silent_mode:
+                print(ret_msg)
+            return ret_msg
+        return ret_list
 
-    def command_pipeline(self, cmd_args, separator='<a>'):
-        cmd_pipeline = cmd_args.split(separator)
-        ret_msg = ""
+    def command_pipeline(self, cmd_pipeline):
+        ret_msg = []
+        # Start connection - ensure it stays open
+        self.client.connect(self.tout)
         for cmd in cmd_pipeline:
             cmd = cmd.strip()
-            ret_msg = self.console(self.run_command(cmd))
-        self.close_connection()
+            # Run commands over tcp/ip
+            data = self.run_command(cmd)
+            if data is not None:
+                ret_msg.append(data)
+        # Close connection, all cmd was sent
+        self.client.close()
         return ret_msg
-
-    def close_connection(self):
-        self.run_command("exit")
-        self.conn.close()
-
-    def console(self, msg, end='\n', server_pronpt_sep=' $'):
-        if isinstance(msg, list) or isinstance(msg, tuple):
-            str_msg = str(msg[0])
-            list_msg = msg[1]
-            if not self.is_interactive:
-                input_list_buff = [k.split(server_pronpt_sep) for k in list_msg]
-                filtered_msg = ""
-                for line in input_list_buff:
-                    if len(line) > 1:
-                        for word in line[1:]:
-                            filtered_msg += word + "\n"
-                    else:
-                        filtered_msg += ''.join(line) + "\n"
-                str_msg = filtered_msg.strip()
-        else:
-            str_msg = msg
-        if not self.silent_mode:
-            try:
-                print(str_msg, end=end)
-            except UnicodeEncodeError:
-                print(str_msg.encode('ascii', 'ignore').decode('ascii'), end=end)
-        return str_msg
-
 
 #########################################################
 #                       MAIN                            #
@@ -395,26 +341,22 @@ class SocketDictClient:
 def main(args, host='127.0.0.1', port=9008, timeout=3):
     """ main connection wrapper function """
     answer_msg = None
-    socketdictclient = None
+
     try:
         socketdictclient = SocketDictClient(host=host, port=port, tout=timeout)
         if len(args) == 0:
+            #print("Run interactive mode")
             # INTERACTIVE MODE
             socketdictclient.interactive()
         else:
+            #print("Run non-interactive mode")
             # NON INTERACTIVE MODE WITH ARGS
             answer_msg = socketdictclient.non_interactive(args)
         return True, answer_msg
     except KeyboardInterrupt:
-        try:
-            if socketdictclient is not None:
-                socketdictclient.close_connection()
-        except Exception as e:
-            print(e)
-            pass
         sys.exit(0)
     except Exception as e:
-        print("Socket communication error: {}".format(e))
+        print("Socket communication error (tout: {}): {}".format(timeout, e))
         if "timed out" in str(e) or "Host is down" in str(e):
             raise Exception("TimeOut")
     return False, answer_msg
@@ -452,7 +394,7 @@ def run(arg_list=[], timeout=3):
     """ Run from code
         - Handles extra command line arguments
     """
-    print("Socket run (raw): {}".format(arg_list))
+    #print("Socket run (raw): {}".format(arg_list))
     args, action = socket_commandline_args(arg_list)
     host, port, fid, uid = ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['device_tag'])
     output = False, ''

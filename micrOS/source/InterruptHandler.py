@@ -20,7 +20,7 @@ from machine import Pin
 from utime import ticks_us, ticks_diff
 from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
-from InterpreterCore import exec_lm_pipe_schedule
+from TaskManager import exec_lm_pipe_schedule
 from LogicalPins import physical_pin
 if cfgget('cron'):
     # Only import when enabled - memory usage optimization

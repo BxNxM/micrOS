@@ -1,5 +1,5 @@
 from time import localtime
-from InterpreterCore import exec_lm_core_schedule
+from TaskManager import exec_lm_core_schedule
 from Debug import console_write, errlog_add
 from Time import Sun, suntime, ntptime
 

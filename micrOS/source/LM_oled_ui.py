@@ -3,13 +3,16 @@ from gc import mem_free
 from utime import localtime
 from network import WLAN, STA_IF
 import LM_oled as oled
-from Common import SmartADC
 from LogicalPins import physical_pin
 from Network import ifconfig
 try:
     from InterConnect import InterCon
 except:
     InterCon = None
+try:
+    from LM_genIO import get_adc
+except:
+    get_adc = None
 
 
 #################################
@@ -189,9 +192,13 @@ def adc_page():
         from sys import modules
         if 'LM_rgb' in modules.keys():
             from LM_rgb import brightness
+            if percent is None:
+                return
             brightness(percent, smooth=False)
 
-    data = SmartADC.get_singleton(physical_pin('genadc')).get()
+    data = {'percent': 'null', 'volt': 'null'}
+    if get_adc is not None:
+        data = get_adc(physical_pin('genadc'))
     __visualize(p=data['percent'])
     oled.text("{} %".format(data['percent']), 65, 20)
     oled.text("{} V".format(data['volt']), 65, 40)

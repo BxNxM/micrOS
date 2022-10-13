@@ -104,5 +104,6 @@ def app(devfid=None):
         print("\t{} - {}".format(k, verdict))
     print("{}{} % success rate.{}".format(Colors.BOLD, round(round((pass_cnt/len(test_pool))*100)), Colors.NC))
 
+
 if __name__ == "__main__":
     app()

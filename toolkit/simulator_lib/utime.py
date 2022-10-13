@@ -28,10 +28,6 @@ def localtime(sec=None):
     return __convert_localtime(pytime.localtime())
 
 
-def sleep_us(us):
-    pytime.sleep(us*0.000001)
-
-
 def time():
     return pytime.time()
 
@@ -42,7 +38,11 @@ def mktime(year, month, mday, hour, min, sec, x, y):
 
 
 def ticks_us():
-    return 0
+    return pytime.time() * 1000000
+
+
+def ticks_ms():
+    return pytime.time()*1000
 
 
 def ticks_diff(a, b):

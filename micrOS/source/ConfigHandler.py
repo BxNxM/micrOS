@@ -57,6 +57,7 @@ class Data:
                     "irq4_cbf": "n/a",
                     "irq4_trig": "n/a",
                     "boothook": "n/a",
+                    "aioqueue": 4,
                     "utc": +60,
                     "boostmd": True,
                     "irqmreq": 6000,

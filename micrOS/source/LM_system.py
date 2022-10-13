@@ -1,7 +1,7 @@
 from utime import localtime
 from Common import socket_stream
 from Network import get_mac
-from Time import ntptime, settime, suntime, Sun
+from Time import ntptime, settime, suntime, Sun, uptime
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 
@@ -23,6 +23,7 @@ def info(msgobj):
     msgobj('upython: {}'.format(uname()[3]))
     msgobj('board: {}'.format(uname()[4]))
     msgobj('mac: {}'.format(get_mac()))
+    msgobj('uptime: {}'.format(uptime()))
     return ''
 
 

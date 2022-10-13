@@ -21,13 +21,13 @@ def app(devfid=None):
     """
     devfid: selected device input
         send command(s) over socket connection [socketClient.run(args)]
-        <a> command separator in single connection
+        list load module commands and send in single connection
     """
     global DEVICE
     if devfid is not None:
         DEVICE = devfid
     # EDIT YOUR COMMAND
-    args = base_cmd() + ['help', '<a>', 'version']
+    args = base_cmd() + ['help', 'version']
     status, answer = socketClient.run(args)
 
 

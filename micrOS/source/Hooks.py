@@ -20,7 +20,7 @@ Designed by Marcell Ban aka BxNxM
 from sys import platform
 from ConfigHandler import cfgget
 from Debug import console_write
-from InterpreterCore import exec_lm_pipe
+from TaskManager import exec_lm_pipe
 from micropython import mem_info
 from machine import freq
 

@@ -37,36 +37,36 @@ def app(devfid=None):
         DEVICE = devfid
 
     def home():
-        args = base_cmd() + ['roboarm', 'control 75 70']
+        args = base_cmd() + ['roboarm control 75 70']
         status, answer = socketClient.run(args)
         test_eval(status, answer)
 
     home()
 
-    args = base_cmd() + ['roboarm', 'control 40 40 s=10']
+    args = base_cmd() + ['roboarm control 40 40 s=10']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
 
     home()
 
-    args = base_cmd() + ['roboarm', 'control 115 115']
+    args = base_cmd() + ['roboarm control 115 115']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
 
-    args = base_cmd() + ['roboarm', 'control 40 115']
+    args = base_cmd() + ['roboarm control 40 115']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
 
-    args = base_cmd() + ['roboarm', 'control 115 40']
+    args = base_cmd() + ['roboarm control 115 40']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
 
-    args = base_cmd() + ['roboarm', 'control 40 40']
+    args = base_cmd() + ['roboarm control 40 40']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
 
     # Move back to home pos
-    args = base_cmd() + ['roboarm', 'control 75 70 s=5']
+    args = base_cmd() + ['roboarm control 75 70 s=5']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
 

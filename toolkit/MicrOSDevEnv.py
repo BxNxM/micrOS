@@ -182,7 +182,7 @@ class MicrOSDevTool:
         return self.safe_mode_file_exception_list
 
     def simulator(self, prepare_only=False, stop=False, restart=False):
-        if not stop or prepare_only:
+        if (not stop or prepare_only) and not restart:
             ######################  Preparation phase  ######################
             self.console("[SIM] Clean sim workspace: {}".format(self.micros_sim_workspace))
             LocalMachine.FileHandler().remove(self.micros_sim_workspace, ignore=True)
@@ -212,8 +212,11 @@ class MicrOSDevTool:
 
         import simulator
         sim_proc = simulator.micrOSIM()
-        if restart or stop:
-            sim_proc.stop_all()
+        if stop:
+            try:
+                sim_proc.stop_all()
+            except Exception as e:
+                print(e)
             if stop:
                 return
         # Start micrOS on host
@@ -991,7 +994,7 @@ class MicrOSDevTool:
 
     def get_micros_version_from_repo(self):
         # Get repo version
-        with open(os.path.join(self.MicrOS_dir_path, 'SocketServer.py'), 'r') as f:
+        with open(os.path.join(self.MicrOS_dir_path, 'InterpreterShell.py'), 'r') as f:
             code_lines_string = f.read()
         regex = r"\d+.\d+.\d+-\d+"
         repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]

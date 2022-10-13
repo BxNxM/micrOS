@@ -7,6 +7,7 @@ from Common import transition
 from ConfigHandler import cfgget
 from utime import sleep_ms
 from LogicalPins import physical_pin, pinmap_dump
+from random import randint
 
 
 class Data:
@@ -229,9 +230,19 @@ def run_transition():
     return 'Nothing to run.'
 
 
+def random(smooth=True):
+    """
+    Demo function: random color change
+    """
+    r = randint(0, 1000)
+    g = randint(0, 1000)
+    b = randint(0, 1000)
+    return rgb(r, g, b, smooth=smooth)
+
 #######################
 # LM helper functions #
 #######################
+
 
 def status(lmf=None):
     # RGB dedicated widget input - [OK]
@@ -249,4 +260,5 @@ def help():
     return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
            'brightness percent=<0-100> smooth=True',\
-           'set_transition r=<0-1000> g b sec', 'run_transition', 'status', 'pinmap'
+           'set_transition r=<0-1000> g b sec', 'run_transition',\
+           'random smooth=True', 'status', 'pinmap'

@@ -86,7 +86,10 @@ def install(api_obj):
 
 def connect(args=None):
     if args is not None and len(args) != 0:
-        socketClient.run(arg_list=args.split(' '))
+        arg_list = args.split(' ')
+        dev_name = arg_list[0:2]
+        param_str = ' '.join(arg_list[2:])
+        socketClient.run(arg_list=[dev_name[0], dev_name[1], param_str])
     else:
         socketClient.run(arg_list=[])
 

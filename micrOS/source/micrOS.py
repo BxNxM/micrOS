@@ -7,6 +7,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
+from TaskManager import Manager
 from SocketServer import SocketServer
 from Network import auto_network_configuration
 from Hooks import bootup_hook, profiling_info
@@ -61,8 +62,11 @@ def nw_time_sync():
 def micrOS():
     profiling_info(label='[memUsage] MAIN LOAD')
 
-    # BOOT HOOKs execution
+    # BOOT HOOK: Initial LM executions
     safe_boot_hook()
+
+    # CREATE ASYNC TASK MANAGER
+    aio_man = Manager()
 
     # SET external interrupt with extirqcbf from nodeconfig
     external_interrupt_handler()
@@ -72,15 +76,14 @@ def micrOS():
     if nwmd == 'STA':
         nw_time_sync()
 
-    # LOAD Singleton SocketServer [1]
-    SocketServer()
-
     # SET interrupt with timirqcbf from nodeconfig
     interrupt_handler()
     profiling_info(label='[memUsage] SYSTEM IS UP')
 
-    # RUN Singleton SocketServer - main loop [2]
-    SocketServer().run()
+    # [SocketServer] as async task
+    aio_man.create_task(SocketServer().run_server(), tag='server')
+    # [EVENT LOOP] Start async event loop
+    aio_man.run_forever()
 
     # UNEXPECTED RESTART ???
     errlog_add("[ERR] !!! Unexpected micrOS restart")

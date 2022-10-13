@@ -5,6 +5,7 @@ from utime import sleep_ms
 from Common import transition
 from ConfigHandler import cfgget
 from LogicalPins import physical_pin, pinmap_dump
+from random import randint
 
 
 #########################################
@@ -245,6 +246,16 @@ def run_transition():
     return 'Nothing to run.'
 
 
+def random(smooth=True):
+    """
+    Demo function: random color change
+    """
+    r = randint(0, 254)
+    g = randint(0, 254)
+    b = randint(0, 254)
+    return neopixel(r, g, b, smooth=smooth)
+
+
 #######################
 # LM helper functions #
 #######################
@@ -263,4 +274,5 @@ def pinmap():
 def help():
     return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
-           'set_transition r=<0-255> g b sec', 'run_transition', 'status', 'pinmap'
+           'set_transition r=<0-255> g b sec', 'run_transition',\
+           'random smooth=True', 'status', 'pinmap'

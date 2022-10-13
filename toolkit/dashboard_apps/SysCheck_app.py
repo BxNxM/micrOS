@@ -43,7 +43,7 @@ def lm_cmd_exec_check():
 def micrOS_config_get():
     info = "[ST] Run micrOS config get [conf -> socport]"
     print(info)
-    cmd_list = ['config', '<a>', 'socport']
+    cmd_list = ['config <a> socport']
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() == '9008':
@@ -57,7 +57,7 @@ def micrOS_config_set():
     print(info)
 
     # [1] Get actual utc value
-    cmd_list = ['config', '<a>', 'utc']
+    cmd_list = ['config <a> utc']
     output = execute(cmd_list)
     if output[0]:
         try:
@@ -67,21 +67,21 @@ def micrOS_config_set():
 
     # [2] Set x+1 value as expected
     utc_expected = utc_bak+1
-    cmd_list = ['config', '<a>', 'utc', str(utc_expected)]
+    cmd_list = ['config <a> utc {}'.format(utc_expected)]
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() != 'Saved':
             return False, f"{info} + utc overwrite issue: {output[1]}"
 
     # [3] Get modified utc value - veridy [2] step
-    cmd_list = ['config', '<a>', 'utc']
+    cmd_list = ['config <a> utc']
     output = execute(cmd_list)
     if output[0]:
         if int(output[1].strip()) != utc_expected:
             return False, f"{info} + utc modified value error: {output[1]} != {utc_expected}"
 
     # Restore original value
-    cmd_list = ['config', '<a>', 'utc', str(utc_bak)]
+    cmd_list = ['config <a> utc {}'.format(utc_bak)]
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() != 'Saved':
@@ -95,8 +95,16 @@ def micrOS_bgjob_one_shot_check():
     info = "[ST] Run micrOS BgJob check [system clock &]"
     print(info)
 
+    async_available_cmd_list = ['help']
+    output = execute(async_available_cmd_list)
+    if output[0]:
+        if "[TASK]" not in output[1]:
+            return False, f'[ASYNC] task function not available: {output[1]}'
+    else:
+        return False, f'[ASYNC] check: help cmd return error.'
+
     for _ in range(0, 2):
-        cmd_list = ['system', 'clock', '&']
+        cmd_list = ['system clock &']
         output = execute(cmd_list)
         if output[0]:
             if 'Start system.clock' not in output[1].strip():
@@ -105,45 +113,44 @@ def micrOS_bgjob_one_shot_check():
 
 
 def micrOS_bgjob_loop_check():
-    info = "[ST] Run micrOS BgJob check [system clock &&] + bgjob show / stop"
+    info = "[ST] Run micrOS Async Task check [system clock &&] + task kill"
     print(info)
 
-    # Start background thread loop
-    cmd_list = ['system', 'clock', '&&']
+    async_available_cmd_list = ['help']
+    output = execute(async_available_cmd_list)
+    if output[0]:
+        if "[TASK]" not in output[1]:
+            return False, f'[ASYNC] task function not available: {output[1]}'
+    else:
+        return False, f'[ASYNC] check: help cmd return error.'
+
+    # Start background task loop
+    cmd_list = ['system clock &&']
     output = execute(cmd_list)
     if output[0]:
         if 'Start system.clock' not in output[1].strip():
-            return False, f'[Start Bg. Loop] {info} + not expected return: {output[1]}'
+            return False, f'[Start Task error] {info} + not expected return: {output[1]}'
 
     # Attempt to overload background thread
-    cmd_list = ['system', 'clock', '&&']
+    cmd_list = ['system clock &&']
     output = execute(cmd_list)
     if output[0]:
         if 'system.clock is Busy' not in output[1].strip():
-            return False, f'[Overload thread] {info} + not expected return: {output[1]}'
+            return False, f'[Overload task - run same] {info} + not expected return: {output[1]}'
 
-    # Show BgJob status - running
-    cmd_list = ['bgjob', 'show', '>json']
+    # Show task output by task tag
+    cmd_list = ['task show system.clock']
     output = execute(cmd_list)
     if output[0]:
-        if "'isbusy': True" not in output[1].strip():
-            return False, f'[Thread running] {info} + not expected return: {output[1]}'
+        if "No task found" in output[1].strip() or len(output[1].strip()) == 0:
+            return False, f'[No task output] {info} + not expected return: {output[1]}'
 
     # Stop BgJob
-    cmd_list = ['bgjob', 'stop']
+    cmd_list = ['task kill system.clock']
     output = execute(cmd_list)
     if output[0]:
-        if 'Stop' not in output[1].strip() or 'system.clock' not in output[1].strip():
-            return False, f'[Stop thread] {info} + not expected return: {output[1]}'
-
-    # Show BgJob status - stopped
-    cmd_list = ['bgjob', 'show', '>json']
-    for _ in range(0, 5):
-        output = execute(cmd_list)
-        if output[0]:
-            if "'isbusy': False" in output[1].strip():
-                # Return test verdict
-                return True, info
+        if 'Kill:' in output[1].strip() or 'system.clock' in output[1].strip():
+            return True, f'[Stop task] {info}'
 
     # Failed verdict
     return False, f'[Thread not stopped]{info} + not expected return: {output[1]}'
@@ -180,19 +187,19 @@ def negative_interface_check():
         if 'SHELL: type help for single word commands' not in output[1].strip():
             return False, f'[Wrong single command] {info} + not expected return: {output[1]}'
 
-    cmd_list = ['Apple', 'test']
+    cmd_list = ['Apple test']
     output = execute(cmd_list)
     if output[0]:
         if 'no module named' not in output[1].strip().lower():
             return False, f'[Missing module] {info} + not expected return: {output[1]}'
 
-    cmd_list = ['conf', '<a>',  'gmttimaaaa']
+    cmd_list = ['conf', 'gmttimaaaa']
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() != 'None':
             return False, f'[Config invalid key] {info} + not expected return: {output[1]}'
 
-    cmd_list = ['conf', '<a>', 'utc', '"type"']
+    cmd_list = ['conf', 'utc "type"']
     output = execute(cmd_list)
     if output[0]:
         if output[1].strip() != 'Failed to save':
@@ -204,15 +211,15 @@ def negative_interface_check():
 def measure_package_response_time():
     info = "[ST] Measure response time [system heartbeat]x10"
     print(info)
-    cmd_list = ['system heartbeat', '<a>',
-                'system heartbeat', '<a>',
-                'system heartbeat', '<a>',
-                'system heartbeat', '<a>',
-                'system heartbeat', '<a>',
-                'system heartbeat', '<a>',
-                'system heartbeat', '<a>',
-                'system heartbeat', '<a>',
-                'system heartbeat', '<a>',
+    cmd_list = ['system heartbeat',
+                'system heartbeat',
+                'system heartbeat',
+                'system heartbeat',
+                'system heartbeat',
+                'system heartbeat',
+                'system heartbeat',
+                'system heartbeat',
+                'system heartbeat',
                 'system heartbeat']
     # Start time
     start = time.time()
@@ -224,7 +231,7 @@ def measure_package_response_time():
     delta_cmd_rep_time = round(end/10, 1)
     # Create verdict
     print(output)
-    if output[0] and output[1] == '<3 heartbeat <3':
+    if output[0] and "<3 heartbeat <3" in output[1]:
         return True, info + f' deltaT: {delta_cmd_rep_time} s'
     return False, info + f' {output[0]}:{output[1]} deltaT: {delta_cmd_rep_time} s'
 
@@ -349,8 +356,8 @@ def app(devfid=None):
                'lm_cmd_exec': lm_cmd_exec_check(),
                'config_get': micrOS_config_get(),
                'config_set': micrOS_config_set(),
-               'thread_oneshot': micrOS_bgjob_one_shot_check(),
-               'thread_loop': micrOS_bgjob_loop_check(),
+               'task_oneshot': micrOS_bgjob_one_shot_check(),
+               'task_loop': micrOS_bgjob_loop_check(),
                'version': micrOS_get_version(),
                'json_check': json_format_check(),
                'reponse time': measure_package_response_time(),

@@ -1,50 +1,68 @@
-from LM_neopixel import __init_NEOPIXEL, segment
+from LM_neopixel import load_n_init, segment, Data
 from LM_neopixel import pinmap as pm
 
 
-class StateMachine:
-    INDEX_OFFSET = 0
-    PIX_CNT = None
-    COLOR_WHEEL = 0
+class DrawEffect:
+    __instance = None
 
+    def __new__(cls, pixcnt=24):
+        if DrawEffect.__instance is None:
+            # SocketServer singleton properties
+            DrawEffect.__instance = super().__new__(cls)
+            DrawEffect.__instance.pix_cnt = None
+            DrawEffect.__instance.index_offset = 0
+            DrawEffect.__instance.color_wheel = 0
+            DrawEffect.__instance.__init_effect(pixcnt)
+            DrawEffect.__instance.offset_gen = None
+        return DrawEffect.__instance
 
-def __init_effect(ledcnt=24):
-    if StateMachine.PIX_CNT is None:
-        return __init_NEOPIXEL(n=ledcnt).n
-    return StateMachine.PIX_CNT
+    def __init_effect(cls, ledcnt):
+        """
+        Set neopixel object & store pixel cnt
+        """
+        if Data.NEOPIXEL_OBJ is None:
+            load_n_init(ledcnt=ledcnt)
+            cls.pix_cnt = Data.NEOPIXEL_OBJ.n
+        if cls.pix_cnt is None:
+            cls.pix_cnt = Data.NEOPIXEL_OBJ.n
+        return cls.pix_cnt
 
+    def __offset(cls, shift):
+        def gen(step):
+            while True:
+                if step:
+                    # Step rotation cycle - shift True
+                    cls.index_offset += 1
+                    if cls.index_offset > cls.pix_cnt - 1:
+                        cls.index_offset = 0
+                for k in range(cls.index_offset, cls.pix_cnt):
+                    yield k
+                for k in range(0, cls.index_offset):
+                    yield k
+        if cls.offset_gen is None:
+            cls.offset_gen = gen(step=shift)
+        return cls.offset_gen
 
-def __draw(iterable, pixcnt, shift=False):
-    """
-    DRAW GENERATED COLORS (RGB)
-    HELPER FUNCTION with auto shift (offset) sub function
-    :param iterable: Colors generator object / iterable
-    :ms: wait in ms / step aka speed
-    :return: None
-    """
-
-    def __offset(pixcnt, shift):
-        if shift:
-            # Normal rotation cycle
-            StateMachine.INDEX_OFFSET += 1
-            if StateMachine.INDEX_OFFSET > pixcnt-1:
-                StateMachine.INDEX_OFFSET = 0
-        for k in range(StateMachine.INDEX_OFFSET, pixcnt):
-            yield k
-        for k in range(0, StateMachine.INDEX_OFFSET):
-            yield k
-
-    # Rotate generator pattern
-    i_gen = __offset(pixcnt, shift=shift)
-    for r, g, b in iterable:
-        i = i_gen.__next__()
-        segment(int(r), int(g), int(b), s=i, write=False)
-    try:
-        # Send (all) and save (last) color
-        segment(int(r), int(g), int(b), s=i, cache=True, write=True)
-        return True
-    except Exception:
-        return False
+    def draw(cls, iterable, shift=False):
+        """
+        DRAW GENERATED COLORS (RGB)
+        HELPER FUNCTION with auto shift (offset) sub function
+        :param iterable: Colors generator object / iterable
+        :ms: wait in ms / step aka speed
+        :return: None
+        """
+        offset_gen = cls.__offset(shift=shift)
+        r, g, b, i = 0, 0, 0, 0
+        for r, g, b in iterable:
+            # Handle index offset - rotate effect
+            i = offset_gen.__next__()
+            segment(int(r), int(g), int(b), s=i, write=False)
+        try:
+            # Send (all) and save (last) color
+            segment(int(r), int(g), int(b), s=i, cache=True, write=True)
+            return True
+        except Exception:
+            return False
 
 
 def meteor(r, g, b, shift=False, ledcnt=24):
@@ -63,12 +81,12 @@ def meteor(r, g, b, shift=False, ledcnt=24):
             yield data
 
     # Init custom params
-    pixel_cnt = __init_effect(ledcnt)
+    effect = DrawEffect(pixcnt=ledcnt)
     # Create effect data
-    cgen = __effect(r, g, b, pixel_cnt)
+    cgen = __effect(r, g, b, effect.pix_cnt)
     # Draw effect data
-    __draw(cgen, pixcnt=pixel_cnt, shift=shift)
-    return 'Meteor R{}:G{}:B{} N:{}'.format(r, g, b, pixel_cnt)
+    effect.draw(cgen, shift=shift)
+    return 'Meteor R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
 
 
 def cycle(r, g, b, ledcnt=24):
@@ -80,10 +98,10 @@ def cycle(r, g, b, ledcnt=24):
         for i in range(3, n):
             yield 0, 0, 0
 
-    cnt = __init_effect(ledcnt)
-    data = __effect(r, g, b, cnt)
-    cgen = __draw(data, pixcnt=cnt, shift=True)
-    return 'Cycle: {}'.format(cgen)
+    effect = DrawEffect(pixcnt=ledcnt)
+    cgen = __effect(r, g, b, effect.pix_cnt)
+    o = effect.draw(cgen, shift=True)
+    return 'Cycle: {}'.format(o)
 
 
 def rainbow(step=15, br=100, ledcnt=24):
@@ -106,16 +124,16 @@ def rainbow(step=15, br=100, ledcnt=24):
         :param br: max brightness 0-100%
         :param step: step size
         """
-        cw = StateMachine.COLOR_WHEEL
-        StateMachine.COLOR_WHEEL = 0 if cw >= 255 else cw+step
+        cw = DrawEffect().color_wheel
+        DrawEffect().color_wheel = 0 if cw >= 255 else cw+step
         for i in range(0, cnt):
-            rc_index = (i * 256 // cnt) + StateMachine.COLOR_WHEEL
+            rc_index = (i * 256 // cnt) + DrawEffect().color_wheel
             r, g, b = __wheel(rc_index & 255)
             yield round(r*br*0.01), round(g*br*0.01), round(b*br*0.01)
 
-    cnt = __init_effect(ledcnt)
-    gen = __effect(cnt, step=step, br=br)
-    o = __draw(gen, pixcnt=cnt, shift=True)
+    effect = DrawEffect(pixcnt=ledcnt)
+    cgen = __effect(effect.pix_cnt, step=step, br=br)
+    o = effect.draw(cgen, shift=True)
     return 'Rainbow: {}'.format(o)
 
 

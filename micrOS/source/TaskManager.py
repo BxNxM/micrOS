@@ -18,6 +18,7 @@ from micropython import schedule
 import uasyncio as asyncio
 from Debug import console_write, errlog_add
 from ConfigHandler import cfgget
+from utime import ticks_ms, ticks_diff
 
 
 #################################################################
@@ -158,6 +159,7 @@ class Task:
 class Manager:
     __instance = None
     QUEUE_SIZE = cfgget('aioqueue')
+    LOAD = 0
 
     def __new__(cls):
         """
@@ -203,10 +205,14 @@ class Manager:
     async def idle_task():
         """
         Create IDLE task - fix IRQ task start
-        - TODO: task monitoring / task resource usage???
+        - Try to measure system load - based on idle task latency
         """
+        period_ms = 2000
         while True:
-            await asyncio.sleep_ms(2000)
+            t = ticks_ms()
+            await asyncio.sleep_ms(period_ms)
+            delta_rate = int(((ticks_diff(ticks_ms(), t) / period_ms)-1) * 100)
+            Manager.LOAD = int((Manager.LOAD + delta_rate) / 2)
 
     def create_task(cls, callback, tag=None, loop=False, delay=None):
         """
@@ -226,7 +232,8 @@ class Manager:
         Primary interface
             List tasks - micrOS top :D
         """
-        output = ["#isDONE   #taskID", "----[queue:{}]----".format(Manager.QUEUE_SIZE - Manager._queue_free())]
+        q = Manager.QUEUE_SIZE - Manager._queue_free()
+        output = ["--- micrOS  top ---", "#queue: {} #load: {}%\n".format(q, Manager.LOAD), "#isDONE   #taskID"]
         for tag, task in Task.TASKS.items():
             spcr = " " * (10 - len(str(task.done)))
             task_view = "{}{}{}".format(task.done, spcr, tag)

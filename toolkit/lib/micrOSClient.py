@@ -119,7 +119,7 @@ class micrOSClient:
         """
         self.dbg_print("[GET PROMPT]")
         if select.select([self.conn], [], [], timeout)[0]:
-            prompt = self.conn.recv(256).decode('utf-8').strip()
+            prompt = self.conn.recv(256).decode('utf-8')        #.strip()
             # Special use-cases
             if 'Bye!' in prompt and "busy" in prompt:
                 raise Exception("Busy server: {}".format(prompt))
@@ -133,6 +133,7 @@ class micrOSClient:
         return False if self.prompt is None else True
 
     def __filter_preprompt(self, _data):
+        _data = _data.strip()
         if len(_data) == 0:
             return
         # get pre-prompt: >[configure]< prompt $
@@ -164,7 +165,7 @@ class micrOSClient:
         # Collect answer data
         if select.select([self.conn], [], [], read_timeout)[0]:
             while True:
-                raw_data = self.conn.recv(2048).decode('utf-8').strip()
+                raw_data = self.conn.recv(2048).decode('utf-8')     #.strip()
                 filtered_data = self.__filter_preprompt(raw_data)
                 #self.dbg_print("\n\t\tRaw data: |{}|\n\t\tLast data: |{}|".format(raw_data, filtered_data))
                 data += filtered_data
@@ -196,6 +197,7 @@ class micrOSClient:
         - send command str
         - return reply line list / None (host miss-match)
         """
+        reboot_request = True if cmd.strip() == 'reboot' else False
         cmd = str.encode(cmd)
         # Compare prompt |node01 $| with hostname 'node01.local'
         check_prompt = str(self.prompt).replace('$', '').strip()
@@ -203,6 +205,9 @@ class micrOSClient:
         if self.hostname is None or check_prompt == check_hostname:
             # Sun command on validated device
             self.conn.send(cmd)
+            # Workaround for reboot command - micrOS async server cannot send Bye! msg before reboot.
+            if reboot_request:
+                return 'Bye!'
             data = self.__receive_data()
             return data
         # Skip command run: prompt and host not the same!
@@ -282,7 +287,7 @@ class micrOSClient:
             if not (cmd.strip() == '' and output is None):
                 print(output)
             # Close session
-            if 'Bye' in str(output):
+            if 'Bye!' in str(output):
                 break
         self.close()
 

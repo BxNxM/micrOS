@@ -67,7 +67,7 @@ class Client:
         Debug().console("[Client] read {}".format(self.client_id))
         self.last_msg_t = ticks_ms()
         try:
-            request = (await self.reader.read(1024))
+            request = (await self.reader.read(2048))
             request = request.decode('utf8').strip()
         except Exception as e:
             Debug().console("[Client] Stream read error ({}): {}".format(self.client_id, e))
@@ -201,12 +201,12 @@ class SocketServer:
 
         # Get active client timeout counter
         client_inactive = int(ticks_diff(ticks_ms(), cls.client.last_msg_t) * 0.001)
-        Debug().console("[server] accept client {} - isconn: {}-{}-{}".format(client_id, cls.client.connected,
+        Debug().console("[server] accept client {} - isconn: {}({}):{}s".format(client_id, cls.client.connected,
                                                                           cls.client.client_id, cls.soc_timeout-client_inactive))
         if cls.client.connected:
             if client_inactive < cls.soc_timeout:
                 # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
-                Debug().console("|------- connection busy")
+                Debug().console("------- connection busy")
                 # Handle only single connection
                 new_client.send("Connection is busy. Bye!")
                 await new_client.close()    # Play nicely - close connection
@@ -214,7 +214,7 @@ class SocketServer:
                 return False, client_id
             else:
                 # OPEN CONNECTION IS INACTIVE > CLOSE
-                Debug().console("|------- connection - client timeout - accept new connection")
+                Debug().console("------- connection - client timeout - accept new connection")
                 await cls.client.close()
         return True, client_id
 

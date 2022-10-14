@@ -164,7 +164,7 @@ def micrOS_get_version():
     if output[0]:
         if '.' in output[1].strip() and '-' in output[1].strip():
             return True, f"{info} v:{output[1].strip()}"
-    return False, info
+    return False, f"{info} out: {output[1]}"
 
 
 def json_format_check():

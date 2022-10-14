@@ -233,7 +233,7 @@ class Manager:
             List tasks - micrOS top :D
         """
         q = Manager.QUEUE_SIZE - Manager._queue_free()
-        output = ["--- micrOS  top ---", "#queue: {} #load: {}%\n".format(q, Manager.LOAD), "#isDONE   #taskID"]
+        output = ["----- micrOS  top -----", "#queue: {} #overload: {}%\n".format(q, Manager.LOAD), "#isDONE   #taskID"]
         for tag, task in Task.TASKS.items():
             spcr = " " * (10 - len(str(task.done)))
             task_view = "{}{}{}".format(task.done, spcr, tag)

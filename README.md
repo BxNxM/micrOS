@@ -178,29 +178,31 @@ It will install your board via USB with default settings. **Continue with micrOS
 - 🕯**micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
 	- **OTA update** - push update over wifi (webrepl automation) / monitor update and auto restart node
 - 📄**Config handling** - user config - **node_config.json**
-	- ⏳**Boot phase** - preload Load Module(s)
-		- For pinout and last state initialization - based on node_config `boothook`
-		- Example values: `rgb load_n_init; neopixel load_n_init`
-	- 📡**Network handling** - based on node_config 
-		- STA / AP network modes, `nwmd`
-		- NTP + UTC aka clock setup
-		- Static IP configuration, `devip`
-		- dhcp hostname setup, `devfid`.local
-	- ⚙️**Scheduling / External events** - Interrupt callback - based on node_config 
-		- Time based
-			- ⌛️simple LM task pool execution `timirq` & `timirqcbf`
-				- `Timer(0)`
-			- 🗓cron [time stump:LM task] pool execution `cron` & `crontasks`
-				- `Timer(1)` 
-				- timestamp: `WD:H:M:S!LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
-					- example: `*:8:0:0!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at 8am every day.
-				- tag: `sunset` / `sunrise`
-					- example: `sunset!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at every sunset, every day.
-		- 💣Event based
-			- Set trigger event `irqX`
-				- Trigger up/down/both `irqX_trig`
-				- With LM callback function `irqX_cbf`
-			- X = 1, 2, 3 or 4
+    - ⏳**Boot phase** - preload Load Module(s)
+        - For pinout and last state initialization - based on node_config `boothook`
+        - Example values: `rgb load_n_init; neopixel load_n_init`
+    - 📡**Network handling** - based on node_config 
+        - STA / AP network modes, `nwmd`
+        - NTP + UTC aka clock setup
+          - API: [ip-api.com](http://ip-api.com/json/?fields=lat,lon,timezone,offset)
+        - Static IP configuration, `devip`
+        - dhcp hostname setup, `devfid`.local
+    - ⚙️**Scheduling / External events** - Interrupt callback - based on node_config 
+        - Time based
+            - ⌛️simple LM task pool execution `timirq` & `timirqcbf`
+                - `Timer(0)`
+            - 🗓cron [time stump!LM task] pool execution `cron` & `crontasks`
+                - `Timer(1)` 
+                - timestamp: `WD:H:M:S!LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
+                    - example: `*:8:0:0!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at 8am every day.
+                - tag: `sunset` / `sunrise`
+                    - example: `sunset!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at every sunset, every day.
+                      - API: [api.sunrise-sunset.org](https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0)
+        - 💣Event based
+            - Set trigger event `irqX`
+                - Trigger up/down/both `irqX_trig`
+                - With LM callback function `irqX_cbf`
+            - X = 1, 2, 3 or 4
 
 - ⚙️**[L]oad [M]odule** aka **application** handling
 	- Lot of built-in functions (table below)
@@ -687,16 +689,21 @@ micrOS/toolkit/user_data/device_conn_cache.json
 
 ```json
 {
-    "micrf008d1d2ac30OS": [
-        "192.168.1.78",
-        9008,
-        "BedLamp"
-    ],
-        "node uid": [
-        "node ip",
-        node port,
-        "node name"
-    ]
+	"__devuid__": [
+		"192.168.4.1",
+		9008,
+		"__device_on_AP__"
+	],
+	"__localhost__": [
+		"127.0.0.1",
+		9008,
+		"__simulator__"
+	],
+	"micr240ac4f679e8OS": [
+		"192.168.1.74",
+		9008,
+		"Chillight"
+	]
 }
 ```
 

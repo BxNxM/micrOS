@@ -159,7 +159,7 @@ class Task:
 class Manager:
     __instance = None
     QUEUE_SIZE = cfgget('aioqueue')
-    LOAD = 0
+    OLOAD = 0
 
     def __new__(cls):
         """
@@ -187,7 +187,8 @@ class Manager:
 
     @staticmethod
     def _queue_free():
-        return sum([1 for _, task in Task.TASKS.items() if not task.done])
+        # Get active Load Module tasks (tag: module.function)
+        return sum([1 for tag, task in Task.TASKS.items() if not task.done and '.' in tag])
 
     @staticmethod
     def _queue_limiter():
@@ -196,7 +197,7 @@ class Manager:
         - compare with active running tasks count
         - when queue full raise Exception!!!
         """
-        if Manager._queue_free() > Manager.QUEUE_SIZE:
+        if Manager._queue_free() >= Manager.QUEUE_SIZE:
             msg = "[aio] Task queue full: {}".format(Manager.QUEUE_SIZE)
             errlog_add(msg)
             raise Exception(msg)
@@ -212,7 +213,7 @@ class Manager:
             t = ticks_ms()
             await asyncio.sleep_ms(period_ms)
             delta_rate = int(((ticks_diff(ticks_ms(), t) / period_ms)-1) * 100)
-            Manager.LOAD = int((Manager.LOAD + delta_rate) / 2)
+            Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)
 
     def create_task(cls, callback, tag=None, loop=False, delay=None):
         """
@@ -233,7 +234,7 @@ class Manager:
             List tasks - micrOS top :D
         """
         q = Manager.QUEUE_SIZE - Manager._queue_free()
-        output = ["----- micrOS  top -----", "#queue: {} #overload: {}%\n".format(q, Manager.LOAD), "#isDONE   #taskID"]
+        output = ["----- micrOS  top -----", "#queue: {} #overload: {}%\n".format(q, Manager.OLOAD), "#isDONE   #taskID"]
         for tag, task in Task.TASKS.items():
             spcr = " " * (10 - len(str(task.done)))
             task_view = "{}{}{}".format(task.done, spcr, tag)

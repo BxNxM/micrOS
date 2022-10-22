@@ -179,6 +179,12 @@
     "pinmap",
     "help"
   ],
+  "presence": [
+    "motion_trigger",
+    "noise threshold=50",
+    "pinmap",
+    "help"
+  ],
   "rgb": [
     "load_n_init cache=None",
     "rgb r=None g=None b=None smooth=True",

@@ -21,8 +21,7 @@ def noise(threshold=50):
     """
     adc_obj = SmartADC.get_singleton(physical_pin('mic'))
     data = adc_obj.get()                # raw, percent, volt
-    voltage = data['percent']
-    return voltage
+    return data
 
 
 #######################

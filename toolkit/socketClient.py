@@ -72,7 +72,7 @@ class ConnectionData:
         socket_obj = None
         if '.' in ip:
             try:
-                if not (ip.startswith('10.') or ip.startswith('192.')):
+                if not (ip.startswith('10.') or ip.startswith('192.') or ip.startswith('172.')):
                     print("[{}]Invalid device IP:{} - skip".format(thread_name, ip[0]))
                     return
                 print("Device Query on {}:{}".format(ip, port))

@@ -65,3 +65,5 @@ co2 = const(35)        # D35 - CO2
 temp6000 = const(36)   # VP - light sensor TEMP6000
 ph = const(39)         # VN - PH sensor
 ds18 = const(19)       # D19 - DS18B20 - temp. sensor
+
+mic = const(39)

@@ -15,7 +15,7 @@ iso8601==1.0.2
 isort==4.3.21
 lazy-object-proxy==1.4.3
 mccabe==0.6.1
-mpy-cross==1.13
+mpy-cross==1.19
 netaddr==0.8.0
 netifaces==0.10.9
 pyaes==1.6.1

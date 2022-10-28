@@ -256,6 +256,13 @@ def random(smooth=True):
     return neopixel(r, g, b, smooth=smooth)
 
 
+def subscribe_presence(timer=30):
+    """
+    Initialize LM presence module with ON/OFF callback functions
+    """
+    from LM_presence import subscribe
+    subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
+
 #######################
 # LM helper functions #
 #######################

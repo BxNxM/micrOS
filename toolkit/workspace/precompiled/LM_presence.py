@@ -8,12 +8,12 @@ from Debug import errlog_add
 
 class Data:
     TASK_TAG = 'mic_sample'
-    RAW_DATA = []
+    RAW_DATA = [] # format [[<time>, <amplitude>, <trigger>],...]
     TIMER_VALUE = 50
     OFF_EV_TIMER = 0
     OFF_CALLBACK = None
     ON_CALLBACK = None
-    TRIG_THRESHOLD = 3
+    TRIG_THRESHOLD = 10
 
 
 def threshold(th=3):
@@ -47,7 +47,7 @@ def motion_trig(sample_ms=50, buff_size=4):
     # [2] (Re)Set timer counter value
     Data.OFF_EV_TIMER = Data.TIMER_VALUE
 
-    # [2] Start mic sampling in async task
+    # [3] Start mic sampling in async task
     state = Manager().create_task(callback=__mic_sample(sample_ms, buff_size), tag=Data.TASK_TAG)
     return "Starting" if state else "Already running"
 
@@ -74,7 +74,7 @@ async def __mic_sample(sample_ms, buff_size):
 
     # Time window for mic sampling - reactivation
     while Data.OFF_EV_TIMER > 0:
-        # [1]Measure mic signal + get time stump (tick_ms)
+        # [1] Measure mic signal + get time stump (tick_ms)
         time_stump = ticks_ms()
 
         # Create average measurement sampling
@@ -82,22 +82,25 @@ async def __mic_sample(sample_ms, buff_size):
         for _ in range(0, 50):
             data_sum += mic_adc.get()['percent']  # raw, percent, volt
         data = data_sum / 50
-        # Store data pair
-        data_pair = (time_stump, data)
+        
+        # Store data triplet
+        data_triplet = [time_stump, data, 0]
 
         # Store data in task cache
         if my_task is not None:
-            my_task.out = "last data: {} - timer: {}".format(data_pair, Data.OFF_EV_TIMER)
+            my_task.out = "last data: {} - timer: {}".format(data_triplet, Data.OFF_EV_TIMER)
 
-        # Store data pair (time_stump, mic_data)
-        Data.RAW_DATA.append(data_pair)
+        # Store data triplet (time_stump, mic_data)
+        Data.RAW_DATA.append(data_triplet)
+
         # Rotate results (based on buff size)
         if len(Data.RAW_DATA) > buff_size:
-            Data.RAW_DATA = Data.RAW_DATA[-buff_size:-1]
+            Data.RAW_DATA = Data.RAW_DATA[-buff_size:]
 
         # [2] (Re)Set timer counter value
         if __eval_trigger():
             Data.OFF_EV_TIMER = Data.TIMER_VALUE
+            data_triplet[2] = 1
         Data.OFF_EV_TIMER -= sample_ms/1000         # TODO
 
         # Async sleep - feed event loop
@@ -134,4 +137,3 @@ def pinmap():
 
 def help():
     return 'motion_trig sample_ms=50 buff_size=20', 'threshold th=3', 'get_samples', 'pinmap'
-

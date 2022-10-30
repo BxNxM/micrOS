@@ -311,7 +311,7 @@ class LocalAppSelector(DropDownBase):
 
         # Get devices friendly unique identifier
         app_list = [app.replace('.py', '') for app in LocalMachine.FileHandler.list_dir(APP_DIR) if
-                    app.endswith('.py') and not app.startswith('Template') and not app.startswith('__')]
+                    app.endswith('.py') and not app.startswith('Template') and not app.startswith('_')]
         self.create_dropdown(items_list=app_list, title=title, geometry_tuple=geometry, tooltip=help_msg, style=style)
 
 

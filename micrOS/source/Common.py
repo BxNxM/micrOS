@@ -13,6 +13,11 @@ from SocketServer import SocketServer
 from machine import Pin, ADC
 from sys import platform
 from LogicalPins import physical_pin
+try:
+    from TaskManager import Task, Manager
+except Exception as e:
+    print("Import ERROR, TaskManager: {}".format(e))
+    Task, Manager = None, None
 
 
 def socket_stream(func):
@@ -77,3 +82,15 @@ class SmartADC:
             return SmartADC.OBJS[pin]
         SmartADC.OBJS[pin] = SmartADC(pin)
         return SmartADC.OBJS[pin]
+
+
+def micro_task():
+    """
+    Async task creation from Load Modules
+    - Indirect interface
+    """
+    if Task is None or Manager is None:
+        return None, None
+    task_gen_obj = Manager().create_task
+    async_tasks = Task.TASKS
+    return task_gen_obj, async_tasks

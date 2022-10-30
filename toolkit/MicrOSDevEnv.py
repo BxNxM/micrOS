@@ -223,9 +223,8 @@ class MicrOSDevTool:
         sim_proc.start()
         return sim_proc
 
-    def exec_app(self, app_name, dev_name, app_postfix='_app'):
+    def exec_app(self, app_name, dev_name):
         print("=== NEW ===")
-        app_name = "{}{}".format(app_name, app_postfix)
         import_cmd = "from {} import {}".format(".dashboard_apps", app_name)
         print("[APP] Import: {}".format(import_cmd))
         exec(import_cmd)

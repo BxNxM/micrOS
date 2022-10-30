@@ -6,7 +6,6 @@
 
 import sys
 import os
-from tkinter import Y
 from numpy import average
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
@@ -17,7 +16,6 @@ sys.path.append(os.path.dirname(MYPATH))
 import socketClient
 
 sys.path.append(os.path.join(MYPATH, "../lib/"))
-from TerminalColors import Colors
 
 # FILL OUT
 DEVICE = "node01"
@@ -57,17 +55,7 @@ def measure(x, y, trigger_x, trigger_y):
         return None
 
 
-def app(devfid=None, frames=100, window_size=200, repeat=True):
-    """
-    devfid: selected device input
-    frames: number of measurements to take
-    window_size: maximum number of data points displayed at once
-    repeat: measure continuously
-    """
-    global DEVICE
-    if devfid is not None:
-        DEVICE = devfid
-
+def plotting(frames, window_size, repeat):
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
 
@@ -111,11 +99,33 @@ def app(devfid=None, frames=100, window_size=200, repeat=True):
                     "\nMax(${f_{sampling}}$) [Hz] = "f"{1/(min(diffs)/1000):.2f}",
                     transform=ax.transAxes,
                     fontsize=10
-            )
+                    )
 
     a = anim.FuncAnimation(fig, update, frames=frames, repeat=repeat)
     plt.show()
 
 
+def app(devfid=None):
+    """
+    devfid: selected device input
+    frames: number of measurements to take
+    window_size: maximum number of data points displayed at once
+    repeat: measure continuously
+    """
+    global DEVICE
+
+    # Handle command line arguments
+    args = sys.argv
+    print("Start python script: {}".format(args[0]))
+    if len(args) > 1:
+        devfid = args[1]
+
+    if devfid is not None:
+        DEVICE = devfid
+
+    plotting(frames=100, window_size=200, repeat=True)
+
+
 if __name__ == "__main__":
     app()
+

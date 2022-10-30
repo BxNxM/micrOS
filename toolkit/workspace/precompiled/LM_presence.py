@@ -1,6 +1,5 @@
 from LogicalPins import physical_pin, pinmap_dump
-from Common import SmartADC
-from TaskManager import Manager, Task
+from Common import SmartADC, micro_task
 import uasyncio as asyncio
 from utime import ticks_ms
 from Debug import errlog_add
@@ -8,30 +7,33 @@ from Debug import errlog_add
 
 class Data:
     TASK_TAG = 'mic_sample'
-    RAW_DATA = [] # format [[<time>, <amplitude>, <trigger>],...]
-    TIMER_VALUE = 50
-    OFF_EV_TIMER = 0
-    OFF_CALLBACK = None
-    ON_CALLBACK = None
-    TRIG_THRESHOLD = 10
+    RAW_DATA = []               # format [[<time>, <amplitude>, <trigger>],...]
+    TIMER_VALUE = 50            # OFF action timer in sec
+    OFF_EV_TIMER = 0            # Presence StateMachine
+    OFF_CALLBACK = None         # Presence StateMachine
+    ON_CALLBACK = None          # Presence StateMachine
+    TRIG_THRESHOLD = 3          # Presence StateMachine
 
 
-def threshold(th=3):
+def threshold(th=Data.TRIG_THRESHOLD):
+    """Set threshold value"""
     th = th if th > 1 else 1
     Data.TRIG_THRESHOLD = th
+    return th
 
 
 def subscribe(on, off, timer=50):
     """
+    Load Module interface function to hook presence ON/OFF functions
     Set ON and OFF callbacks
-        if callbacks have paramaters wrap into labda expression
+        Hint: if callbacks have parameters wrap into lambda expression
     """
     Data.TIMER_VALUE = timer
     Data.ON_CALLBACK = on
     Data.OFF_CALLBACK = off
 
 
-def motion_trig(sample_ms=50, buff_size=4):
+def motion_trig(sample_ms=30, buff_size=15):
     """
     Set motion trigger by IRQx - PIR sensor
     - Reset OFF_EV_TIMER to TIMER_VALUE
@@ -48,11 +50,15 @@ def motion_trig(sample_ms=50, buff_size=4):
     Data.OFF_EV_TIMER = Data.TIMER_VALUE
 
     # [3] Start mic sampling in async task
-    state = Manager().create_task(callback=__mic_sample(sample_ms, buff_size), tag=Data.TASK_TAG)
+    create_task, _ = micro_task()
+    state = create_task(callback=__mic_sample(sample_ms, buff_size), tag=Data.TASK_TAG)
     return "Starting" if state else "Already running"
 
 
 def __eval_trigger():
+    """
+    Evaluate/Detect noise trigger
+    """
     moving_avg = sum([k[1] for k in Data.RAW_DATA])/len(Data.RAW_DATA)
     if abs(moving_avg-Data.RAW_DATA[-1][1]) > Data.TRIG_THRESHOLD:
         return True
@@ -66,8 +72,9 @@ async def __mic_sample(sample_ms, buff_size):
         - threshold not reached -> decrease OFF_EV_TIMER with deltaT
     - when OFF_EV_TIMER == 0 -> OFF event (+ exit task)
     """
+    _, tasks = micro_task()
     # Get my own task object to control output and state
-    my_task = Task.TASKS.get(Data.TASK_TAG, None)
+    my_task = tasks.get(Data.TASK_TAG, None)
 
     # Create ADC object
     mic_adc = SmartADC.get_singleton(physical_pin('mic'))
@@ -88,7 +95,7 @@ async def __mic_sample(sample_ms, buff_size):
 
         # Store data in task cache
         if my_task is not None:
-            my_task.out = "last data: {} - timer: {}".format(data_triplet, Data.OFF_EV_TIMER)
+            my_task.out = "th: {} last data: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, Data.OFF_EV_TIMER)
 
         # Store data triplet (time_stump, mic_data)
         Data.RAW_DATA.append(data_triplet)
@@ -114,7 +121,7 @@ async def __mic_sample(sample_ms, buff_size):
         errlog_add("[OFF] presence->__mic_sample error: {}".format(e))
 
     # Hack to detect task was stopped - SET Task obj done param to True
-    my_task = Task.TASKS.get(Data.TASK_TAG, None)
+    my_task = tasks.get(Data.TASK_TAG, None)
     if my_task is not None:
         my_task.done = True
 

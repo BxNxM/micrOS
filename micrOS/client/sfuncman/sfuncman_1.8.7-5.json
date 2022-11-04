@@ -169,7 +169,7 @@
     "pageui",
     "control cmd='next'",
     "msgbox msg='micrOS msg'",
-    "intercon_genpage cmds=\"RingLamp.local hello\"",
+    "intercon_genpage cmd=None",
     "lmdep",
     "pinmap",
     "help"

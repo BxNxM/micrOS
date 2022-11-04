@@ -263,6 +263,7 @@ def subscribe_presence(timer=30):
     from LM_presence import subscribe
     subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
 
+
 #######################
 # LM helper functions #
 #######################
@@ -282,4 +283,4 @@ def help():
     return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition',\
-           'random smooth=True', 'status', 'pinmap'
+           'random smooth=True', 'status', 'subscribe_presence timer=30', 'pinmap'

@@ -10,7 +10,7 @@ Designed by Marcell Ban aka BxNxM GitHub
 #                         IMPORTS                       #
 #########################################################
 
-from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+# from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
 from InterpreterShell import Shell

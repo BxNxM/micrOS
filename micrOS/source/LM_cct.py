@@ -219,6 +219,14 @@ def random(smooth=True):
     return white(c=cold, w=warm, smooth=smooth)
 
 
+def subscribe_presence(timer=30):
+    """
+    Initialize LM presence module with ON/OFF callback functions
+    """
+    from LM_presence import subscribe
+    subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
+
+
 #######################
 # LM helper functions #
 #######################
@@ -237,4 +245,4 @@ def help():
     return 'white c=<0-1000> w=<0-1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', 'brightness percent=<0-100> smooth=True', \
            'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition',\
-           'random smooth=True', 'status', 'pinmap'
+           'random smooth=True', 'status', 'subscribe_presence timer=30', 'pinmap'

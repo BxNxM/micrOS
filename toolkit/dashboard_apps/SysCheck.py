@@ -249,6 +249,10 @@ def micros_alarm_check():
         except Exception as e:
             alarm_cnt = 404
             print(e)
+        # Clean alarms
+        cmd_list = ['system alarms True']
+        execute(cmd_list)
+        # Evaluation
         if alarm_cnt > 0:
             return True, info + f" -1 !!!WARN!!! [{alarm_cnt}] out: {output[1]}"
     return True, info + f" [{alarm_cnt}] out: {output[1]}"

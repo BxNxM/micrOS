@@ -143,4 +143,4 @@ def pinmap():
 
 
 def help():
-    return 'motion_trig sample_ms=30 buff_size=10', 'threshold th=3', 'get_samples', 'pinmap'
+    return 'motion_trig sample_ms=30 buff_size=15', 'threshold th=3', 'get_samples', 'pinmap'

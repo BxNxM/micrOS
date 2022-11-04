@@ -6,7 +6,7 @@ import LM_oled as oled
 from LogicalPins import physical_pin
 from Network import ifconfig
 try:
-    from InterConnect import InterCon
+    import LM_intercon as InterCon
 except:
     InterCon = None
 try:
@@ -28,10 +28,19 @@ class PageUI:
         self.width = w
         self.height = h
         self.show_msg = None
-        self.msg_effect = False
+        self.blink_effect = False
         self.oled_state = True
+        # OK/CENTER button state values
+        self.bttn_press_callback = None
+        # Intercon connection state values
+        self.open_intercons = []
+        self.conn_data = "n/a"
+        # Store instance - use as singleton
         PageUI.PAGE_UI_OBJ = self
 
+    #############################
+    #        INTERNAL MAGIC     #
+    #############################
     def __page_header(self):
         """Generates header bar with NW mode + Clock + wifi rssi"""
 
@@ -66,9 +75,9 @@ class PageUI:
 
     def __msgbox(self):
         def __effect():
-            self.msg_effect = not self.msg_effect
-            oled.rect(106, 17, 9, 5, state=1, fill=self.msg_effect)
-            oled.rect(106, 24, 9, 9, state=1, fill=self.msg_effect)
+            self.blink_effect = not self.blink_effect
+            oled.rect(106, 17, 9, 5, state=1, fill=self.blink_effect)
+            oled.rect(106, 24, 9, 9, state=1, fill=self.blink_effect)
 
         msg = self.show_msg
         if msg is None:
@@ -91,6 +100,15 @@ class PageUI:
         oled.text(msg, 15, 40)
         return True
 
+    #############################
+    #       PUBLIC FUNCTIONS    #
+    #############################
+    def add_page(self, page_callback):
+        if page_callback in self.page_callback_list:
+            return True
+        self.page_callback_list.append(page_callback)
+        return True
+
     def show_page(self):
         """Re/draw active page"""
         oled.clean()
@@ -103,34 +121,95 @@ class PageUI:
             oled.show()
 
     def control(self, cmd):
+        # Reset sys msg data
         self.show_msg = None
-        if cmd.strip() == 'next':
+        # Handle control parameters
+        if cmd.strip() == 'press':
+            """Simulate button press"""
+            self._page_button_press()  # Execute button callback
+        elif cmd.strip() == 'next':
             """Change page - next & Draw"""
             self.active_page += 1
             if self.active_page > len(self.page_callback_list) - 1:
                 self.active_page = 0
             self.show_page()
-            return self.active_page
+            self.bttn_press_callback = None
+            self.conn_data = 'n/a'
         elif cmd.strip() == 'prev':
             """Change page - previous & Draw"""
             self.active_page -= 1
             if self.active_page < 0:
                 self.active_page = len(self.page_callback_list) - 1
             self.show_page()
-            return self.active_page
-        if cmd.strip() == 'on':
+            self.bttn_press_callback = None
+            self.conn_data = 'n/a'
+        elif cmd.strip() == 'on':
             oled.poweron()
             self.oled_state = True
         elif cmd.strip() == 'off':
             oled.poweroff()
             self.oled_state = False
+            self.bttn_press_callback = None
+            self.conn_data = 'n/a'
+        return "page: {} pwr: {}".format(self.active_page, self.oled_state)
+
+    def _page_button_press(self):
+        """
+        Create OK/Center button
+        - any page can register callback function
+        what will be called by this function (button pressed)
+        """
+        if self.bttn_press_callback is None:
+            return
+        # Execute callback
+        self.bttn_press_callback()
+        # Clean bttn press event - delete callback
+        self.bttn_press_callback = None
+
+    def set_press_callback(self, callback):
+        """Button callback setter method + draw button"""
+        self.bttn_press_callback = callback
+
+        # Draw button
+        posx, posy = 44, 45
+        oled.rect(posx-4, posy-4, 48, 15)
+        oled.text("press", posx, posy)
+        # Draw press effect
+        self.blink_effect = not self.blink_effect
+        oled.rect(posx-3, posy-3, 48, 13, self.blink_effect)
+
+    def intercon_page(self, host, cmd):
+        """Generic interconnect page core - create multiple page with it"""
+        posx = 5
+        posy = 12
+
+        def button():
+            # BUTTON CALLBACK - INTERCONNECT execution
+            self.open_intercons.append(host)
+            try:
+                # Send CMD to other device & show result
+                data = InterCon.send_cmd(host, cmd)
+                self.conn_data = ''.join(data).replace(' ', '')     # squish data to print
+            except Exception as e:
+                self.conn_data = str(e)
+            self.open_intercons.remove(host)
+
+        # Check open host connection
+        if host in self.open_intercons:
+            return
+        # Draw host + cmd details
+        oled.text(host, posx, posy)
+        oled.text(cmd, posx, posy+10)
+        oled.text(self.conn_data, posx, posy + 20)
+        # Set button press callback (+draw button)
+        self.set_press_callback(button)
 
 
 #################################
 #        PAGE DEFINITIONS       #
 #################################
 
-def sys_page():
+def _sys_page():
     """
     System basic information page
     """
@@ -143,15 +222,15 @@ def sys_page():
     return True
 
 
-def intercon_cache():
+def _intercon_cache():
     if InterCon is None:
         return False
     line_start = 15
     line_cnt = 1
     line_limit = 3
     oled.text("InterCon cache", 0, line_start)
-    if sum([1 for _ in InterCon.CONN_MAP.keys()]) > 0:
-        for key, val in InterCon.CONN_MAP.items():
+    if sum([1 for _ in InterCon.dump()]) > 0:
+        for key, val in InterCon.dump().items():
             key = key.split('.')[0]
             val = '.'.join(val.split('.')[-2:])
             oled.text(" {} {}".format(val, key), 0, line_start+(line_cnt*10))
@@ -161,15 +240,22 @@ def intercon_cache():
     return True
 
 
-def micros_welcome():
+def _micros_welcome():
+    """Template function"""
+    def button():
+        """Button callback example"""
+        oled.text('HELLO :D', 35, 29)
+        oled.show()
+
     try:
-        oled.text('micrOS GUI', 20, 30)
+        oled.text('micrOS GUI', 30, 15)
+        PageUI.PAGE_UI_OBJ.set_press_callback(button)
     except Exception as e:
         return str(e)
     return True
 
 
-def adc_page():
+def _adc_page():
     """
     ADC value visualizer
     """
@@ -207,36 +293,60 @@ def adc_page():
 
 #################################
 # PAGE GUI CONTROLLER FUNCTIONS #
+#   USED IN MICROS SHELL/IRQs   #
 #################################
 
 
 def pageui():
-    """ INIT PageUI - add page definitions here """
-    pages = [sys_page, intercon_cache, micros_welcome, adc_page]      # <== Add page function HERE
+    """ INIT PageUI - add page definitions here - interface"""
+    pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]      # <== Add page function HERE
     if PageUI.PAGE_UI_OBJ is None:
         PageUI(pages, 128, 64)
     PageUI.PAGE_UI_OBJ.show_page()
 
 
 def control(cmd='next'):
-    valid_cmd = ('next', 'prev', 'on', 'off')
+    """OLED UI control functions interface"""
+    valid_cmd = ('next', 'prev', 'press', 'on', 'off')
     if cmd in valid_cmd:
         return PageUI.PAGE_UI_OBJ.control(cmd)
     return 'Invalid command {}! Hint: {}'.format(cmd, valid_cmd)
 
 
 def msgbox(msg='micrOS msg'):
+    """POP-UP message function - interface"""
     PageUI.PAGE_UI_OBJ.show_msg = msg
     PageUI.PAGE_UI_OBJ.show_page()
     return 'Show msg'
+
+
+def intercon_genpage(cmd=None):
+    """
+    Create intercon pages dynamically :)
+    based on cmd value.
+    cmd: host hello / host system clock
+    """
+    cmd = cmd.replace(",", '')      # TODO: Command parsing/joining workaround (exec LM core)
+    raw = cmd.split()
+    host = raw[0]
+    cmd = ' '.join(raw[1:])
+    if PageUI.PAGE_UI_OBJ is None:
+        # Auto init UI
+        pageui()
+    try:
+        # Create page for intercon command
+        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(host, cmd))
+    except Exception as e:
+        return str(e)
+    return True
+
 
 #######################
 # LM helper functions #
 #######################
 
-
 def lmdep():
-    return 'oled'
+    return 'oled', 'intercon', 'genIO'
 
 
 def pinmap():
@@ -244,5 +354,6 @@ def pinmap():
 
 
 def help():
-    return 'pageui', 'control next/prev/on/off',\
-           'msgbox "msg"', 'pinmap', 'INFO: OLED Module for SSD1306'
+    return 'pageui', 'control next/prev/press/on/off',\
+           'msgbox "msg"', 'intercon_genpage "host cmd"',\
+           'pinmap', 'INFO: OLED Module for SSD1306'

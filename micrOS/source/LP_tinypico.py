@@ -41,6 +41,7 @@ irq1 = const(5)         # D5  - event irq pin
 irq2 = const(18)        # D18 - event irq pin
 irq3 = const(19)        # D19  - event irq pin
 irq4 = const(23)        # D23  - event irq pin
+oleduibttn = const(32)  # D32 - oled_ui center/ok button
 
 touch_0 = const(32)     # D32 - builtin touch sensor	TODO
 

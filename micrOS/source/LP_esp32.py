@@ -49,10 +49,11 @@ i2c_scl = const(22)    # D21 - oled - clock
 
 
 # EXTERNAL EVENT IRQ
-irq1 = const(4)        # D4  - event irq pin
-irq2 = const(18)       # D18 - event irq pin
-irq3 = const(5)        # D19  - event irq pin
-irq4 = const(13)       # D13  - event irq pin
+irq1 = const(4)         # D4  - event irq pin
+irq2 = const(18)        # D18 - event irq pin
+irq3 = const(5)         # D19  - event irq pin
+irq4 = const(13)        # D13  - event irq pin
+oleduibttn = const(34)  # D34 - oled_ui center/ok button
 
 touch_0 = const(13)    # D13 - touch sensor TODO
 

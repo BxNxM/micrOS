@@ -3,8 +3,10 @@ from gc import mem_free
 from utime import localtime
 from network import WLAN, STA_IF
 import LM_oled as oled
-from LogicalPins import physical_pin
+from LogicalPins import physical_pin, pinmap_dump
 from Network import ifconfig
+from Debug import errlog_add
+from machine import Pin
 try:
     import LM_intercon as InterCon
 except:
@@ -35,6 +37,8 @@ class PageUI:
         # Intercon connection state values
         self.open_intercons = []
         self.conn_data = "n/a"
+        # Create built-in event/button IRQ
+        self.__create_button_irq()
         # Store instance - use as singleton
         PageUI.PAGE_UI_OBJ = self
 
@@ -99,6 +103,19 @@ class PageUI:
         # Second line
         oled.text(msg, 15, 40)
         return True
+
+    def __create_button_irq(self, pinkey='oleduibttn'):
+        """Create button press IRQ for OK/Center button"""
+        try:
+            pin = physical_pin(pinkey)
+        except Exception as e:
+            msg = '[ERR] Button IRQ:{} {}'.format(pinkey, e)
+            pin = None
+            errlog_add(msg)
+        if pin:
+            pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+            # [IRQ] - event type setup
+            pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: self.control('press'))
 
     #############################
     #       PUBLIC FUNCTIONS    #
@@ -350,7 +367,9 @@ def lmdep():
 
 
 def pinmap():
-    return oled.pinmap()
+    pin_map = oled.pinmap()
+    pin_map.update(pinmap_dump('oleduibttn'))
+    return pin_map
 
 
 def help():

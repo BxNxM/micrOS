@@ -65,7 +65,7 @@ class DrawEffect:
             return False
 
 
-def meteor(r, g, b, shift=False, ledcnt=24):
+def meteor(r=None, g=None, b=None, shift=False, ledcnt=24):
     def __effect(r, g, b, pixel):
         """
         :param r: red target color
@@ -80,6 +80,12 @@ def meteor(r, g, b, shift=False, ledcnt=24):
             data = round(r * fade), round(g * fade), round(b * fade)
             yield data
 
+    # Conditional value load - with neopixel cache
+    _r, _g, _b, _ = Data.DCACHE
+    r = _r if r is None else r
+    g = _g if g is None else g
+    b = _b if b is None else b
+
     # Init custom params
     effect = DrawEffect(pixcnt=ledcnt)
     # Create effect data
@@ -89,7 +95,7 @@ def meteor(r, g, b, shift=False, ledcnt=24):
     return 'Meteor R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
 
 
-def cycle(r, g, b, ledcnt=24):
+def cycle(r=None, g=None, b=None, ledcnt=24):
     def __effect(r, g, b, n):
         lightrgb = round(r*0.1), round(g*0.1), round(b*0.1)
         yield lightrgb
@@ -98,13 +104,19 @@ def cycle(r, g, b, ledcnt=24):
         for i in range(3, n):
             yield 0, 0, 0
 
+    # Conditional value load - with neopixel cache
+    _r, _g, _b, _ = Data.DCACHE
+    r = _r if r is None else r
+    g = _g if g is None else g
+    b = _b if b is None else b
+
     effect = DrawEffect(pixcnt=ledcnt)
     cgen = __effect(r, g, b, effect.pix_cnt)
     o = effect.draw(cgen, shift=True)
     return 'Cycle: {}'.format(o)
 
 
-def rainbow(step=15, br=100, ledcnt=24):
+def rainbow(step=1, br=50, ledcnt=24):
     def __wheel(pos):
         # Input a value 0 to 255 to get a color value.
         # The colours are a transition r - g - b - back to r.
@@ -137,6 +149,33 @@ def rainbow(step=15, br=100, ledcnt=24):
     return 'Rainbow: {}'.format(o)
 
 
+def shader(size=6, offset=0, ledcnt=24, shift=False):
+    def __effect(size, offset, pixcnt):
+        # Conditional value load - with neopixel cache
+        r, g, b, _ = Data.DCACHE
+        # calculate 0->24 range
+        _slice1 = pixcnt if size + offset > pixcnt else size + offset
+        # calculate 24->0-> range (overflow)
+        _slice2 = size + offset - pixcnt if size + offset > pixcnt else 0
+        for i in range(0, pixcnt):
+            if offset < i < _slice1:
+                yield 0, 0, 0
+            elif 0 <= i < _slice2:
+                yield 0, 0, 0
+            else:
+                yield r, g, b
+
+    # Init custom params
+    effect = DrawEffect(pixcnt=ledcnt)
+    # Create effect data
+    if size < effect.pix_cnt:
+        cgen = __effect(size, offset, effect.pix_cnt)
+        # Draw effect data
+        effect.draw(cgen, shift=shift)
+        return 'Shader size: {} ->{} ({})'.format(size, offset, effect.pix_cnt)
+    return 'Shader invalid size: {} ({})'.format(size, effect.pix_cnt)
+
+
 #######################
 # LM helper functions #
 #######################
@@ -151,4 +190,5 @@ def pinmap():
 
 def help():
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=False ledcnt=24',\
-           'cycle r g b ledcnt=24', 'rainbow step=15 br=<5-100> ledcnt=24', 'pinmap'
+           'cycle r g b ledcnt=24', 'rainbow step=1 br=<5-100> ledcnt=24',\
+           'shader size=4 ledcnt=24 shift=True', 'pinmap'

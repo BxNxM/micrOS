@@ -24,7 +24,7 @@ except:
 class PageUI:
     PAGE_UI_OBJ = None
 
-    def __init__(self, page_callbacks, w, h):
+    def __init__(self, page_callbacks, w, h, pwr_sec=None):
         self.active_page = 0
         self.page_callback_list = page_callbacks
         self.width = w
@@ -40,6 +40,8 @@ class PageUI:
         # Create built-in event/button IRQ
         self.irq_ok = False
         self.__create_button_irq()
+        # Power saver state machine - turn off sec, deltaT (timirq executor seq loop), counter
+        self.pwr_saver_state = [pwr_sec, round(cfgget('timirqseq') / 1000, 2), pwr_sec]
         # Store instance - use as singleton
         PageUI.PAGE_UI_OBJ = self
 
@@ -57,10 +59,21 @@ class PageUI:
             for _h in range(0, show_range):
                 oled.line(118 - _h, 8 - _h, 120 + _h, 8 - _h)
 
+        def __pwr_off():
+            x_offset = 29
+            sec, _, cnt = self.pwr_saver_state
+            if sec is None:
+                return
+            indicator = round(cnt / sec, 1) * 8       # pixel height 8
+            for i in range(indicator):
+                oled.line(self.width-x_offset, 6-i, self.width-x_offset-2, 6-i)
+
         try:
             __draw_rssi()
+            __pwr_off()
         except:
             pass
+
         ltime = localtime()
         h = "0{}".format(ltime[-5]) if len(str(ltime[-5])) < 2 else ltime[-5]
         m = "0{}".format(ltime[-4]) if len(str(ltime[-4])) < 2 else ltime[-4]
@@ -120,6 +133,17 @@ class PageUI:
             pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: self.control('press'))
             self.irq_ok = True
 
+    def __power_save(self):
+        sec, dt, cnt = self.pwr_saver_state
+        if sec is None:
+            # Power saver off - no auto turn off
+            return
+        if cnt > 0:
+            self.pwr_saver_state[2] = cnt - dt
+        else:
+            self.control('off')
+            self.pwr_saver_state[2] = sec
+
     #############################
     #       PUBLIC FUNCTIONS    #
     #############################
@@ -139,8 +163,11 @@ class PageUI:
             if not msg_event:
                 self.page_callback_list[self.active_page]()         # <== Execute page functions
             oled.show()
+            self.__power_save()
 
     def control(self, cmd):
+        # Reset power saver counter
+        self.pwr_saver_state[2] = self.pwr_saver_state[0]
         # Reset sys msg data
         self.show_msg = None
         # Handle control parameters
@@ -170,7 +197,6 @@ class PageUI:
             oled.poweroff()
             self.oled_state = False
             self.bttn_press_callback = None
-            self.conn_data = 'n/a'
         return "page: {} pwr: {}".format(self.active_page, self.oled_state)
 
     def _page_button_press(self):
@@ -324,11 +350,11 @@ def _adc_page():
 #################################
 
 
-def pageui():
+def pageui(pwr_sec=None):
     """ INIT PageUI - add page definitions here - interface"""
     pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]      # <== Add page function HERE
     if PageUI.PAGE_UI_OBJ is None:
-        PageUI(pages, 128, 64)
+        PageUI(pages, 128, 64, pwr_sec)
     PageUI.PAGE_UI_OBJ.show_page()
 
 
@@ -383,6 +409,6 @@ def pinmap():
 
 
 def help():
-    return 'pageui', 'control next/prev/press/on/off',\
+    return 'pageui pwr_sec=None/int(sec)', 'control next/prev/press/on/off',\
            'msgbox "msg"', 'intercon_genpage "host cmd"',\
            'pinmap', 'INFO: OLED Module for SSD1306'

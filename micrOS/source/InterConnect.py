@@ -9,9 +9,10 @@ from SocketServer import SocketServer
 class InterCon:
     CONN_MAP = {}
 
-    def __init__(self):
+    def __init__(self, conn_timeout=2, recv_timeout=2):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.settimeout(2)         # become x2 due to retry
+        self.conn.settimeout(conn_timeout)
+        self.recv_timeout = recv_timeout
 
     @staticmethod
     def validate_ipv4(str_in):
@@ -71,7 +72,7 @@ class InterCon:
     def __receive_data(self, prompt=None):
         data = ""
         # Collect answer data
-        if select.select([self.conn], [], [], 1)[0]:
+        if select.select([self.conn], [], [], self.recv_timeout)[0]:
             while True:
                 last_data = self.conn.recv(512).decode('utf-8').strip()
                 # First data is prompt, get it
@@ -86,9 +87,9 @@ class InterCon:
 
 
 # Main command to send msg to other micrOS boards
-def send_cmd(host, cmd):
+def send_cmd(host, cmd, conn_timout=2, recv_timeout=2):
     port = cfgget('socport')
-    com_obj = InterCon()
+    com_obj = InterCon(conn_timout, recv_timeout)
     # send command
     output = com_obj.send_cmd(host, port, cmd)
     # send command retry

@@ -11,7 +11,7 @@ class InterCon:
 
     def __init__(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.settimeout(4)
+        self.conn.settimeout(2)         # become x2 due to retry
 
     @staticmethod
     def validate_ipv4(str_in):

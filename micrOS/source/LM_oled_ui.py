@@ -38,6 +38,7 @@ class PageUI:
         self.open_intercons = []
         self.conn_data = "n/a"
         # Create built-in event/button IRQ
+        self.irq_ok = False
         self.__create_button_irq()
         # Store instance - use as singleton
         PageUI.PAGE_UI_OBJ = self
@@ -66,7 +67,8 @@ class PageUI:
         s = "0{}".format(ltime[-3]) if len(str(ltime[-3])) < 2 else ltime[-3]
         nwmd = ifconfig()[0]
         nwmd = nwmd[0] if len(nwmd) > 0 else "0"
-        oled.text("{}   {}:{}:{}".format(nwmd, h, m, s), 0, 0)
+        irq_ok = ' ' if self.bttn_press_callback is None else '*' if self.irq_ok else '!'
+        oled.text("{} {} {}:{}:{}".format(nwmd, irq_ok, h, m, s), 0, 0)
 
     def __page_bar(self):
         """Generates page indicator bar"""
@@ -116,6 +118,7 @@ class PageUI:
             pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
             # [IRQ] - event type setup
             pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: self.control('press'))
+            self.irq_ok = True
 
     #############################
     #       PUBLIC FUNCTIONS    #
@@ -191,9 +194,16 @@ class PageUI:
         posx, posy = 44, 45
         oled.rect(posx-4, posy-4, 48, 15)
         oled.text("press", posx, posy)
-        # Draw press effect
-        self.blink_effect = not self.blink_effect
-        oled.rect(posx-3, posy-3, 48, 13, self.blink_effect)
+
+        # Draw press effect - based on button state: S
+        if "S:1" in self.conn_data:
+            self.blink_effect = True
+        elif "S:0" in self.conn_data:
+            self.blink_effect = False
+        else:
+            # # Draw press effect - blink
+            self.blink_effect = not self.blink_effect
+        oled.rect(posx-3, posy-3, 48-2, 15-2, self.blink_effect)
 
     def intercon_page(self, host, cmd):
         """Generic interconnect page core - create multiple page with it"""
@@ -215,7 +225,7 @@ class PageUI:
         if host in self.open_intercons:
             return
         # Draw host + cmd details
-        oled.text(host, posx, posy)
+        oled.text(host, 0, posy)
         oled.text(cmd, posx, posy+10)
         oled.text(self.conn_data, posx, posy + 20)
         # Set button press callback (+draw button)
@@ -297,7 +307,7 @@ def _adc_page():
             from LM_rgb import brightness
             if percent is None:
                 return
-            brightness(percent, smooth=False)
+            brightness(percent, smooth=True)
 
     data = {'percent': 'null', 'volt': 'null'}
     if get_adc is not None:

@@ -133,11 +133,10 @@ class micrOSClient:
         return False if self.prompt is None else True
 
     def __filter_preprompt(self, _data):
-        _data = _data.strip()
         if len(_data) == 0:
             return
+        last_line = _data.strip().split('\n')[-1]
         # get pre-prompt: >[configure]< prompt $
-        last_line = _data.split("\n")[0]
         if self.prompt is not None:
             # Check prompt is in last line
             if self.prompt in last_line:
@@ -146,7 +145,7 @@ class micrOSClient:
                 # SET preprompt if preprompt exists
                 self.preprompt = x if len(x) > 0 else self.preprompt
             # Pre-prompt remove and cancel preprompt modes
-            if self.preprompt in _data:
+            if self.preprompt in last_line:
                 _data = _data.replace(self.preprompt, "")
             else:
                 self.preprompt = ""
@@ -161,26 +160,28 @@ class micrOSClient:
         Output: data line list
         """
 
-        data = ""
+        data_buffer = ""
         # Collect answer data
         if select.select([self.conn], [], [], read_timeout)[0]:
             while True:
-                raw_data = self.conn.recv(2048).decode('utf-8')     #.strip()
-                filtered_data = self.__filter_preprompt(raw_data)
-                #self.dbg_print("\n\t\tRaw data: |{}|\n\t\tLast data: |{}|".format(raw_data, filtered_data))
-                data += filtered_data
+                data_buffer += self.conn.recv(4096).decode('utf-8')
+                # Last line from data_buffer (handle fragmented messages - prompt detection)
+                last_line = data_buffer.strip().split("\n")[-1]
                 # Wait for prompt or special cases (exit/prompt)
-                if "Bye!" in filtered_data:
+                if "Bye!" in last_line:
                     self.dbg_print("\t\t[Bye!] Stop receiver loop")
                     break
-                if self.prompt in filtered_data:
+                if self.prompt in last_line:
                     self.dbg_print("\t\t[{}] Stop receiver loop".format(self.prompt))
                     break
+            self.dbg_print("\n\t\tData: {}".format(data_buffer))
+            # Remove preprompt from last line if we have
+            data_buffer = self.__filter_preprompt(data_buffer)
             # Remove prompt from output - only for msg end detection
-            data = data.replace(self.prompt, '').rstrip()
+            data_buffer = data_buffer.replace(self.prompt, '').rstrip()
             # Create list data output
-            data = [k for k in data.split('\n') if k != '']
-        return data
+            data_buffer = [k for k in data_buffer.split('\n') if k != '']
+        return data_buffer
 
     def close(self):
         if self.conn is None:
@@ -215,7 +216,7 @@ class micrOSClient:
         # Check UID?
         return None
 
-    def send_cmd(self, cmd, timeout=4):
+    def send_cmd(self, cmd, timeout=3):
         """
         Send command function - main usage for non interactive mode
         """
@@ -251,7 +252,7 @@ class micrOSClient:
         # return output list
         return out
 
-    def send_cmd_retry(self, cmd, timeout=5, retry=5):
+    def send_cmd_retry(self, cmd, timeout=6, retry=5):
         out = None
         for cnt in range(0, retry):
             try:

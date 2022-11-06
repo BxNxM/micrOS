@@ -283,12 +283,12 @@ class ConnectionData:
 
 class SocketDictClient:
 
-    def __init__(self, host='localhost', port=9008, silent_mode=False, tout=6):
+    def __init__(self, host='localhost', port=9008, silent_mode=False, tout=4):
         self.silent_mode = silent_mode
         self.host = host
         self.port = port
         self.tout = tout
-        self.client = micrOSClient(self.host, self.port, dbg=False)
+        self.client = micrOSClient(self.host, self.port, dbg=False)         # <== SET CLIENT DEBUG HERE
 
     def run_command(self, cmd):
         data = self.client.send_cmd_retry(cmd)
@@ -390,7 +390,7 @@ def socket_commandline_args(arg_list):
     return arg_list, return_action_dict
 
 
-def run(arg_list=[], timeout=3):
+def run(arg_list=[], timeout=5):
     """ Run from code
         - Handles extra command line arguments
     """

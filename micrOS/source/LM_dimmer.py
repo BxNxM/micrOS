@@ -94,8 +94,8 @@ def subscribe_presence(timer=30):
     """
     Initialize LM presence module with ON/OFF callback functions
     """
-    from LM_presence import subscribe
-    subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
+    from LM_presence import _subscribe
+    _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
 
 
 #######################

@@ -913,7 +913,7 @@ class MicrOSDevTool:
                         line = f.readline()
                         if not line:
                             break
-                        if 'def ' in line and 'def __' not in line:
+                        if 'def ' in line and 'def _' not in line:
                             if '(self' in line:
                                 continue
                             # Gen proper func name

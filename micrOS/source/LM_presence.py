@@ -3,6 +3,10 @@ from Common import SmartADC, micro_task
 import uasyncio as asyncio
 from utime import ticks_ms
 from Debug import errlog_add
+try:
+    import LM_intercon as InterCon
+except:
+    InterCon = None
 
 
 class Data:
@@ -13,6 +17,8 @@ class Data:
     OFF_CALLBACK = None         # Presence StateMachine
     ON_CALLBACK = None          # Presence StateMachine
     TRIG_THRESHOLD = 3          # Presence StateMachine
+    ON_INTERCON_CLBK = None     # Intercon ON callback
+    OFF_INTERCON_CLBK = None    # Intercon OFF callback
 
 
 def threshold(th=Data.TRIG_THRESHOLD):
@@ -22,7 +28,7 @@ def threshold(th=Data.TRIG_THRESHOLD):
     return th
 
 
-def subscribe(on, off, timer=50):
+def _subscribe(on, off, timer=50):
     """
     Load Module interface function to hook presence ON/OFF functions
     Set ON and OFF callbacks
@@ -31,6 +37,47 @@ def subscribe(on, off, timer=50):
     Data.TIMER_VALUE = timer
     Data.ON_CALLBACK = on
     Data.OFF_CALLBACK = off
+
+
+def subscribe_intercon(on, off):
+    """
+    Subscribe function for remote function execution
+    - intercon ON/OFF string callbacks
+        ON: host cmd
+        OFF: host cmd
+    """
+    Data.ON_INTERCON_CLBK = on.replace(",", '')      # TODO: Command parsing/joining workaround (exec LM core)
+    Data.OFF_INTERCON_CLBK = off.replace(",", '')    # TODO: Command parsing/joining workaround (exec LM core)
+    return {'on': Data.ON_INTERCON_CLBK, 'off': Data.OFF_INTERCON_CLBK}
+
+
+def __run_intercon(state):
+    """
+    Run stored intercon ON/OFF commands
+    state: on/off
+    """
+    if state.lower() == "on":
+        if Data.ON_INTERCON_CLBK is None:
+            return
+        try:
+            cmd = Data.ON_INTERCON_CLBK.split()
+            host = cmd[0]
+            cmd = ' '.join(cmd[1:])
+            # Send CMD to other device & show result
+            InterCon.send_cmd(host, cmd)
+        except Exception as e:
+            errlog_add("__run_intercon error: {}".format(e))
+    if state.lower() == "off":
+        if Data.OFF_INTERCON_CLBK is None:
+            return
+        try:
+            cmd = Data.OFF_INTERCON_CLBK.split()
+            host = cmd[0]
+            cmd = ' '.join(cmd[1:])
+            # Send CMD to other device & show result
+            InterCon.send_cmd(host, cmd)
+        except Exception as e:
+            errlog_add("__run_intercon error: {}".format(e))
 
 
 def motion_trig(sample_ms=30, buff_size=15):
@@ -43,6 +90,7 @@ def motion_trig(sample_ms=30, buff_size=15):
     try:
         if Data.ON_CALLBACK is not None:
             Data.ON_CALLBACK()
+            __run_intercon('on')
     except Exception as e:
         errlog_add("[ON] presence->motion_trigger error: {}".format(e))
 
@@ -117,6 +165,7 @@ async def __mic_sample(sample_ms, buff_size):
     try:
         if Data.OFF_CALLBACK is not None:
             Data.OFF_CALLBACK()
+            __run_intercon('off')
     except Exception as e:
         errlog_add("[OFF] presence->__mic_sample error: {}".format(e))
 
@@ -143,4 +192,6 @@ def pinmap():
 
 
 def help():
-    return 'motion_trig sample_ms=30 buff_size=15', 'threshold th=3', 'get_samples', 'pinmap'
+    return 'motion_trig sample_ms=30 buff_size=15', 'threshold th=3',\
+           'get_samples', 'subscribe_intercon on="host cmd" off="host cmd"',\
+           'pinmap'

@@ -2,6 +2,10 @@ from LM_neopixel import load_n_init, segment, Data
 from LM_neopixel import pinmap as pm
 
 
+#################################
+#  NEOPIXEL EFFECT DRAWER CLASS #
+#################################
+
 class DrawEffect:
     __instance = None
 
@@ -14,6 +18,7 @@ class DrawEffect:
             DrawEffect.__instance.color_wheel = 0
             DrawEffect.__instance.__init_effect(pixcnt)
             DrawEffect.__instance.offset_gen = None
+            DrawEffect.__instance.auto_shift = False
         return DrawEffect.__instance
 
     def __init_effect(cls, ledcnt):
@@ -28,9 +33,9 @@ class DrawEffect:
         return cls.pix_cnt
 
     def __offset(cls, shift):
-        def gen(step):
+        def gen():
             while True:
-                if step:
+                if cls.auto_shift:
                     # Step rotation cycle - shift True
                     cls.index_offset += 1
                     if cls.index_offset > cls.pix_cnt - 1:
@@ -39,8 +44,9 @@ class DrawEffect:
                     yield k
                 for k in range(0, cls.index_offset):
                     yield k
+        cls.auto_shift = shift
         if cls.offset_gen is None:
-            cls.offset_gen = gen(step=shift)
+            cls.offset_gen = gen()
         return cls.offset_gen
 
     def draw(cls, iterable, shift=False):
@@ -48,26 +54,26 @@ class DrawEffect:
         DRAW GENERATED COLORS (RGB)
         HELPER FUNCTION with auto shift (offset) sub function
         :param iterable: Colors generator object / iterable
-        :ms: wait in ms / step aka speed
+        :param shift: automatic color map rotation
         :return: None
         """
         offset_gen = cls.__offset(shift=shift)
-        r, g, b, i = 0, 0, 0, 0
         for r, g, b in iterable:
             # Handle index offset - rotate effect
             i = offset_gen.__next__()
-            segment(int(r), int(g), int(b), s=i, write=False)
-        try:
-            # Send (all) and save (last) color
-            segment(int(r), int(g), int(b), s=i, cache=True, write=True)
-            return True
-        except Exception:
-            return False
+            # Write data to neopixel - write / segment :)
+            segment(int(r), int(g), int(b), s=i, cache=False, write=True)
+        return True
 
 
-def meteor(r=None, g=None, b=None, shift=False, ledcnt=24):
+#################################
+#         DEFINE EFFECTS        #
+#################################
+
+def meteor(r=None, g=None, b=None, shift=True, ledcnt=24):
     def __effect(r, g, b, pixel):
         """
+        Describe one full length color map
         :param r: red target color
         :param g: green target color
         :param b: blue target color
@@ -95,13 +101,21 @@ def meteor(r=None, g=None, b=None, shift=False, ledcnt=24):
     return 'Meteor R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
 
 
-def cycle(r=None, g=None, b=None, ledcnt=24):
-    def __effect(r, g, b, n):
+def cycle(r=None, g=None, b=None, shift=True, ledcnt=24):
+    def __effect(r, g, b, pixel):
+        """
+        Describe one full length color map
+        :param r: red target color
+        :param g: green target color
+        :param b: blue target color
+        :param pixel: number of led segments
+        :return: yield tuple with r,g,b
+        """
         lightrgb = round(r*0.1), round(g*0.1), round(b*0.1)
         yield lightrgb
         yield r, g, b
         yield lightrgb
-        for i in range(3, n):
+        for i in range(3, pixel):
             yield 0, 0, 0
 
     # Conditional value load - with neopixel cache
@@ -112,8 +126,8 @@ def cycle(r=None, g=None, b=None, ledcnt=24):
 
     effect = DrawEffect(pixcnt=ledcnt)
     cgen = __effect(r, g, b, effect.pix_cnt)
-    o = effect.draw(cgen, shift=True)
-    return 'Cycle: {}'.format(o)
+    effect.draw(cgen, shift=shift)
+    return 'Cycle R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
 
 
 def rainbow(step=1, br=50, ledcnt=24):
@@ -145,11 +159,11 @@ def rainbow(step=1, br=50, ledcnt=24):
 
     effect = DrawEffect(pixcnt=ledcnt)
     cgen = __effect(effect.pix_cnt, step=step, br=br)
-    o = effect.draw(cgen, shift=True)
-    return 'Rainbow: {}'.format(o)
+    effect.draw(cgen, shift=True)
+    return 'Rainbow'
 
 
-def shader(size=6, offset=0, ledcnt=24, shift=False):
+def shader(size=6, offset=0, shift=False, ledcnt=24):
     def __effect(size, offset, pixcnt):
         # Conditional value load - with neopixel cache
         r, g, b, _ = Data.DCACHE
@@ -189,6 +203,7 @@ def pinmap():
 
 
 def help():
-    return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=False ledcnt=24',\
-           'cycle r g b ledcnt=24', 'rainbow step=1 br=<5-100> ledcnt=24',\
-           'shader size=4 ledcnt=24 shift=True', 'pinmap'
+    return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',\
+           'cycle r g b shift=True ledcnt=24',\
+           'rainbow step=1 br=<5-100> ledcnt=24',\
+           'shader size=4 shift=True ledcnt=24', 'pinmap'

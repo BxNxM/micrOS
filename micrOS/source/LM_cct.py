@@ -210,12 +210,12 @@ def run_transition():
     return 'Nothing to run.'
 
 
-def random(smooth=True):
+def random(smooth=True, max_val=1000):
     """
     Demo function: random color change
     """
-    cold = randint(0, 1000)
-    warm = randint(0, 1000)
+    cold = randint(0, max_val)
+    warm = randint(0, max_val)
     return white(c=cold, w=warm, smooth=smooth)
 
 
@@ -245,4 +245,4 @@ def help():
     return 'white c=<0-1000> w=<0-1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', 'brightness percent=<0-100> smooth=True', \
            'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition',\
-           'random smooth=True', 'status', 'subscribe_presence timer=30', 'pinmap'
+           'random smooth=True max_val=1000', 'status', 'subscribe_presence timer=30', 'pinmap'

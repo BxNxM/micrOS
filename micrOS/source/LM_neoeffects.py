@@ -1,5 +1,6 @@
-from LM_neopixel import load_n_init, segment, Data
+from LM_neopixel import load_n_init, segment, Data, status
 from LM_neopixel import pinmap as pm
+from random import randint
 
 
 #################################
@@ -185,9 +186,32 @@ def shader(size=6, offset=0, shift=False, ledcnt=24):
     if size < effect.pix_cnt:
         cgen = __effect(size, offset, effect.pix_cnt)
         # Draw effect data
+        effect.index_offset = 0     # reset auto shift offset
         effect.draw(cgen, shift=shift)
         return 'Shader size: {} ->{} ({})'.format(size, offset, effect.pix_cnt)
     return 'Shader invalid size: {} ({})'.format(size, effect.pix_cnt)
+
+
+def random(max_val=254):
+    r = randint(0, max_val)
+    g = randint(0, max_val)
+    b = randint(0, max_val)
+    Data.DCACHE[0] = r
+    Data.DCACHE[1] = g
+    Data.DCACHE[2] = b
+    return "Set random: R:{} G: B:{}".format(r, g, b)
+
+
+def color(r=None, g=None, b=None):
+    # Conditional value load - with neopixel cache
+    _r, _g, _b, _ = Data.DCACHE
+    r = _r if r is None else r
+    g = _g if g is None else g
+    b = _b if b is None else b
+    Data.DCACHE[0] = r
+    Data.DCACHE[1] = g
+    Data.DCACHE[2] = b
+    return status()
 
 
 #######################
@@ -206,4 +230,6 @@ def help():
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',\
            'cycle r g b shift=True ledcnt=24',\
            'rainbow step=1 br=<5-100> ledcnt=24',\
-           'shader size=4 shift=True ledcnt=24', 'pinmap'
+           'shader size=4 shift=True ledcnt=24',\
+           'random max_val=254',\
+           'color r g b', 'pinmap'

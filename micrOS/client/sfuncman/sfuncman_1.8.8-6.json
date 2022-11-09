@@ -131,6 +131,7 @@
     "rainbow step=1 br=50 ledcnt=24",
     "shader size=6 offset=0 shift=False ledcnt=24",
     "random max_val=254",
+    "color r=None g=None b=None",
     "lmdep",
     "pinmap",
     "help"

@@ -246,13 +246,13 @@ def run_transition():
     return 'Nothing to run.'
 
 
-def random(smooth=True):
+def random(smooth=True, max_val=254):
     """
     Demo function: random color change
     """
-    r = randint(0, 254)
-    g = randint(0, 254)
-    b = randint(0, 254)
+    r = randint(0, max_val)
+    g = randint(0, max_val)
+    b = randint(0, max_val)
     return neopixel(r, g, b, smooth=smooth)
 
 
@@ -283,4 +283,4 @@ def help():
     return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition',\
-           'random smooth=True', 'status', 'subscribe_presence timer=30', 'pinmap'
+           'random smooth=True max_val=254', 'status', 'subscribe_presence timer=30', 'pinmap'

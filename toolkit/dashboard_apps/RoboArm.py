@@ -41,9 +41,15 @@ def app(devfid=None):
         status, answer = socketClient.run(args)
         test_eval(status, answer)
 
-    home()
+    def switch(state=False):
+        args = base_cmd() + ['switch set_state {}'.format(state)]
+        status, answer = socketClient.run(args)
+        print(answer)
 
-    args = base_cmd() + ['roboarm control 40 40 s=10']
+    home()
+    switch(True)
+
+    args = base_cmd() + ['roboarm control 40 40 speed_ms=7']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
 
@@ -66,9 +72,11 @@ def app(devfid=None):
     test_eval(status, answer)
 
     # Move back to home pos
-    args = base_cmd() + ['roboarm control 75 70 s=5']
+    args = base_cmd() + ['roboarm control 75 70 speed_ms=3']
     status, answer = socketClient.run(args)
     test_eval(status, answer)
+
+    switch(False)
 
     print("[Roboarm] success rate: {} %".format(round(__TEST_DATA['ok']/(__TEST_DATA['ok']+__TEST_DATA['err'])*100), 2))
 

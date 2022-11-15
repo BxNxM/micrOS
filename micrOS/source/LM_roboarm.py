@@ -7,9 +7,10 @@ from Common import transition
 
 
 class RoboArm:
-    ACTUAL_XY = [75, 70]
-    SPEED_MS = 10
-    MOVE_RECORD = []
+    CENTER_XY = 77                          # Store XY center servo position 40+(115-40)/2 ~ 77
+    ACTUAL_XY = [CENTER_XY, CENTER_XY]      # Set default XY position
+    SPEED_MS = 10                           # Set default speed between steps (ms)
+    MOVE_RECORD = []                        # Buffer for XY move record/replay
 
 
 def __persistent_cache_manager(mode):
@@ -32,17 +33,21 @@ def __persistent_cache_manager(mode):
         pass
 
 
-def load_n_init(x=75, y=70):
+def load_n_init():
+    # Initial positioning
+    x, y = RoboArm.CENTER_XY, RoboArm.CENTER_XY
     servo.sduty(x)
     RoboArm.ACTUAL_XY[0] = x
     servo.s2duty(y)
     RoboArm.ACTUAL_XY[1] = y
+    # Load move records
     __persistent_cache_manager('r')
     return 'Move to home'
 
 
-def control(x_new, y_new, s=None, smooth=True):
+def control(x_new, y_new, speed_ms=None, smooth=True):
     def __buttery(x_from, y_from, x_to, y_to):
+        # Transition effect / smooth position change
         x_diff = abs(x_from-x_to)
         y_diff = abs(y_from-y_to)
         max_diff = y_diff if x_diff < y_diff else x_diff
@@ -55,20 +60,25 @@ def control(x_new, y_new, s=None, smooth=True):
             servo.s2duty(y.__next__())
             sleep_ms(step_ms)
 
-    # Skip if X;Y is the same
+    # Skip if new XY is the same as current
     if RoboArm.ACTUAL_XY[0] == x_new and RoboArm.ACTUAL_XY[1] == y_new:
-        return 'Already was moved X:{} Y:{}'.format(x_new, y_new)
+        return 'Already on X:{} Y:{}'.format(x_new, y_new)
+    # Check input parameter range
+    if 40 > x_new > 115 or 40 > y_new > 115:
+        return "X{}/Y{} out of range... range: 40-115".format(x_new, y_new)
 
     # Set arm speed
-    RoboArm.SPEED_MS = s if isinstance(s, int) else RoboArm.SPEED_MS
+    RoboArm.SPEED_MS = speed_ms if isinstance(speed_ms, int) else RoboArm.SPEED_MS
     # Get actual position
     x_prev = RoboArm.ACTUAL_XY[0]
     y_prev = RoboArm.ACTUAL_XY[1]
 
     if smooth:
+        # Move roboarm to position
         __buttery(x_prev, y_prev, x_new, y_new)
         RoboArm.ACTUAL_XY = [x_new, y_new]
     else:
+        # Fast move robaorm to position
         if x_new is not None:
             servo.sduty(x_new)
             RoboArm.ACTUAL_XY[0] = x_new
@@ -78,20 +88,23 @@ def control(x_new, y_new, s=None, smooth=True):
     return 'Move X{}->{} Y{}->{}'.format(x_prev, RoboArm.ACTUAL_XY[0], y_prev, RoboArm.ACTUAL_XY[1])
 
 
-def boot_move(s=None):
-    RoboArm.SPEED_MS = s if isinstance(s, int) else RoboArm.SPEED_MS
+def boot_move(speed_ms=None):
+    """
+    Full range demo move
+    """
+    RoboArm.SPEED_MS = speed_ms if isinstance(speed_ms, int) else RoboArm.SPEED_MS
     # Set arm to center
     load_n_init()
     sleep_ms(RoboArm.SPEED_MS*2)
-    # Test X move (Y=65)
-    control(40, 70)
-    control(115, 70)
-    control(75, 70)
+    # Test X
+    control(40, RoboArm.CENTER_XY)
+    control(115, RoboArm.CENTER_XY)
+    control(RoboArm.CENTER_XY, RoboArm.CENTER_XY)
     sleep_ms(RoboArm.SPEED_MS*2)
-    # Test Y move (X=75)
-    control(75, 40)
-    control(75, 115)
-    control(75, 70)
+    # Test Y
+    control(RoboArm.CENTER_XY, 40)
+    control(RoboArm.CENTER_XY, 115)
+    control(RoboArm.CENTER_XY, RoboArm.CENTER_XY)
     sleep_ms(RoboArm.SPEED_MS*2)
     # Test multiple
     control(40, 40)     # left top
@@ -100,23 +113,29 @@ def boot_move(s=None):
     control(40, 115)     # left bottom
     sleep_ms(RoboArm.SPEED_MS*2)
     # Enter to home
-    control(75, 70)     # Move home
+    control(RoboArm.CENTER_XY, RoboArm.CENTER_XY)     # Move home
     servo.deinit()
     return 'Boot move'
 
 
 def standby():
+    """
+    Standby roboarm - OFF switch
+    """
     set_state(False)
-    control(75, 45)
+    control(RoboArm.CENTER_XY, 45)
     servo.deinit()
     return 'Standby mode'
 
 
 def jiggle():
+    """
+    Joggle roboarm in small range
+    """
     x, y = RoboArm.ACTUAL_XY
     for _ in range(5):
-        jx = randint(-1, 1)
-        jy = randint(-1, 1)
+        jx = int(randint(-10, 10)/10)
+        jy = int(randint(-10, 10)/10)
         control(x+jx, y+jy)
         sleep_ms(RoboArm.SPEED_MS)
     control(x, y)
@@ -166,6 +185,19 @@ def record(clean=False):
     return 'Record[{}]: X:{} Y:{}'.format(int(len(RoboArm.MOVE_RECORD)/2), x, y)
 
 
+def random(x_range=20, y_range=20, speed_ms=5):
+    """
+    Move to random position
+    x_range: +/- x from center
+    y_range: +/- y from center
+    """
+    center_x = RoboArm.CENTER_XY
+    center_y = RoboArm.CENTER_XY
+    to_x = randint(center_x-x_range, center_x+x_range)
+    to_y = randint(center_y-y_range, center_y+y_range)
+    return control(x_new=to_x, y_new=to_y, speed_ms=speed_ms, smooth=True)
+
+
 #######################
 # LM helper functions #
 #######################
@@ -187,5 +219,6 @@ def pinmap():
 
 def help():
     return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True', 'boot_move', 'standby',\
-           'jiggle', 'play 40 40 115 115 s=<ms> delay=<ms>, deinit=True',\
-           'record clean=False', 'load_n_init', 'pinmap', 'status', 'lmdep'
+           'jiggle', 'play 40 40 115 115 s=<speed ms> delay=<ms> deinit=True',\
+           'record clean=False', 'random x_range=20 y_range=20 speed_ms=5',\
+           'load_n_init', 'pinmap', 'status', 'lmdep'

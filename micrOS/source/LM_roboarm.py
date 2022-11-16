@@ -3,7 +3,8 @@ from random import randint
 import LM_servo as servo
 from LM_switch import set_state
 from LM_switch import pinmap as pm
-from Common import transition
+from Common import transition, micro_task
+import uasyncio as asyncio
 
 
 class RoboArm:
@@ -11,6 +12,7 @@ class RoboArm:
     ACTUAL_XY = [CENTER_XY, CENTER_XY]      # Set default XY position
     SPEED_MS = 10                           # Set default speed between steps (ms)
     MOVE_RECORD = []                        # Buffer for XY move record/replay
+    PLAY_TAG = 'roboarm._play'
 
 
 def __persistent_cache_manager(mode):
@@ -142,6 +144,34 @@ def jiggle():
     return 'JJiggle :)'
 
 
+async def _play(args, deinit, delay):
+    """
+    :param args: X Y X2 Y2
+    """
+    # Get my task by tag
+    task = micro_task(tag=RoboArm.PLAY_TAG)
+
+    # ON LASER
+    set_state(True)
+    for i in range(0, len(args), 2):
+        # Make servo control
+        x, y = args[i], args[i+1]
+        control(x, y)
+        # Update task output buffer
+        if task is not None:
+            task.out = "Roboarm X:{} Y:{}".format(x, y)
+        # Async wait between steps
+        await asyncio.sleep_ms(delay)
+    if deinit:
+        servo.deinit()
+    # OFF LASER
+    set_state(False)
+
+    # Set task state done
+    if task is not None:
+        task.done = True
+
+
 def play(*args, s=None, delay=None, deinit=True):
     """
     Runs move instructions from input or RoboArm.MOVE_RECORD
@@ -157,15 +187,13 @@ def play(*args, s=None, delay=None, deinit=True):
     args = list(args)
     # Execute MOVE_RECORD if no input was provided
     args = RoboArm.MOVE_RECORD if len(args) < 2 else args
-    set_state(True)
-    for i in range(0, len(args), 2):
-        x, y = args[i], args[i+1]
-        control(x, y)
-        sleep_ms(delay)
-    if deinit:
-        servo.deinit()
-    set_state(False)
-    return 'MovePipe: {} move was played.'.format(int(len(args)/2))
+
+    # Start play task
+    create_task = micro_task()
+    state = create_task(callback=_play(args, deinit, delay), tag=RoboArm.PLAY_TAG)
+    if state:
+        return 'Play: {} steps'.format(int(len(args)/2))
+    return 'Play - already running'
 
 
 def record(clean=False):

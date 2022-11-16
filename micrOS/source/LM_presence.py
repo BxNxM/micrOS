@@ -98,7 +98,7 @@ def motion_trig(sample_ms=30, buff_size=15):
     Data.OFF_EV_TIMER = Data.TIMER_VALUE
 
     # [3] Start mic sampling in async task
-    create_task, _ = micro_task()
+    create_task = micro_task()
     state = create_task(callback=__mic_sample(sample_ms, buff_size), tag=Data.TASK_TAG)
     return "Starting" if state else "Already running"
 
@@ -120,9 +120,8 @@ async def __mic_sample(sample_ms, buff_size):
         - threshold not reached -> decrease OFF_EV_TIMER with deltaT
     - when OFF_EV_TIMER == 0 -> OFF event (+ exit task)
     """
-    _, tasks = micro_task()
     # Get my own task object to control output and state
-    my_task = tasks.get(Data.TASK_TAG, None)
+    my_task = micro_task(tag=Data.TASK_TAG)
 
     # Create ADC object
     mic_adc = SmartADC.get_singleton(physical_pin('mic'))
@@ -170,7 +169,6 @@ async def __mic_sample(sample_ms, buff_size):
         errlog_add("[OFF] presence->__mic_sample error: {}".format(e))
 
     # Hack to detect task was stopped - SET Task obj done param to True
-    my_task = tasks.get(Data.TASK_TAG, None)
     if my_task is not None:
         my_task.done = True
 

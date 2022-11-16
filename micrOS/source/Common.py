@@ -84,13 +84,18 @@ class SmartADC:
         return SmartADC.OBJS[pin]
 
 
-def micro_task():
+def micro_task(tag=None):
     """
     Async task creation from Load Modules
     - Indirect interface
     """
+    # Check dependecies
     if Task is None or Manager is None:
-        return None, None
-    task_gen_obj = Manager().create_task
-    async_tasks = Task.TASKS
-    return task_gen_obj, async_tasks
+        return None
+    # Create mode - return create task object (async function input!)
+    if tag is None:
+        task_gen_obj = Manager().create_task
+        return task_gen_obj
+    # Get / state mode - return async_task (done, out attributes)
+    async_task = Task.TASKS.get(tag, None)
+    return async_task

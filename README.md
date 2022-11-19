@@ -242,7 +242,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ## Built in pheriphery support
 
-[micrOS project ALL LMs](./micrOS/client/sfuncman/sfuncman.html)</br>
+[micrOS project ALL LMs](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)</br>
 
 ### Sensors / inputes
 

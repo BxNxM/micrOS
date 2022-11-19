@@ -15,21 +15,25 @@ import LocalMachine
 class micrOSIM():
     SIM_PROCESS_LIST = []
 
-    def __init__(self):
-        console("INFO: Number of cpu : {}".format(multiprocessing.cpu_count()))
-        console("Create micrOS simulator process...")
-        self.process = multiprocessing.Process(target=self.micrOS_sim_worker)
-        self.pid = None
-        micrOSIM.SIM_PROCESS_LIST.append(self.process)
+    def __init__(self, doc_resolve=False):
+        if doc_resolve:
+            console("[micrOSIM] Create micrOS LM doc (env proc)")
+            self.doc_output = None
+        else:
+            console("[micrOSIM] INFO: Number of cpu : {}".format(multiprocessing.cpu_count()))
+            console("[micrOSIM] Create micrOS simulator process...")
+            self.process = multiprocessing.Process(target=self.micrOS_sim_worker)
+            self.pid = None
+            micrOSIM.SIM_PROCESS_LIST.append(self.process)
 
     def micrOS_sim_worker(self):
         sim_path = LocalMachine.SimplePopPushd()
         sim_path.pushd(SIM_PATH)
-        console("Start micrOS loader in: {}".format(SIM_PATH))
+        console("[micrOSIM] Start micrOS loader in: {}".format(SIM_PATH))
 
         micrOSloader.main()
 
-        console("Stop micrOS ({})".format(SIM_PATH))
+        console("[micrOSIM] Stop micrOS ({})".format(SIM_PATH))
         sim_path.popd()
 
     def wait_process(self):
@@ -39,19 +43,19 @@ class micrOSIM():
             console(e)
 
     def start(self):
-        console("Start micrOS simulator process")
+        console("[micrOSIM] Start micrOS simulator process")
         self.process.start()
         self.pid = self.process.pid
-        console("micrOS process was started: {}".format(self.pid))
+        console("[micrOSIM] micrOS process was started: {}".format(self.pid))
 
     def terminate(self):
         if self.process.is_alive():
             self.process.terminate()
             while self.process.is_alive():
-                console("Wait process to terminate: {}".format(self.pid))
+                console("[micrOSIM] Wait process to terminate: {}".format(self.pid))
                 time.sleep(1)
         self.process.close()
-        console("Proc was finished: {}".format(self.pid))
+        console("[micrOSIM] Proc was finished: {}".format(self.pid))
 
     @staticmethod
     def stop_all():
@@ -62,13 +66,42 @@ class micrOSIM():
                 if proc.is_alive():
                     proc.terminate()
                     while proc.is_alive():
-                        console("Wait process to terminate: {}/{}".format(i+1, proc_len))
+                        console("[micrOSIM] Wait process to terminate: {}/{}".format(i+1, proc_len))
                         time.sleep(1)
                 proc.close()
             except Exception as e:
-                console("Proc already stopped: {}/{}: {}".format(i+1, proc_len, e))
-            console("Proc was finished: {}/{}".format(i+1, proc_len))
+                console("[micrOSIM] Proc already stopped: {}/{}: {}".format(i+1, proc_len, e))
+            console("[micrOSIM] Proc was finished: {}/{}".format(i+1, proc_len))
         micrOSIM.SIM_PROCESS_LIST = []
+
+    def _lm_doc_strings(self, structure):
+        # Step into workspace path
+        popd = LocalMachine.SimplePopPushd()
+        popd.pushd(SIM_PATH)
+
+        # Based on created module-function structure collect doc strings
+        for mod, func_dict in structure.items():
+            for func in func_dict:
+                if not isinstance(structure[mod][func], dict):
+                    break
+                console(f"[micrOSIM][Extract doc-str] LM_{mod}.{func}.__doc__")
+                try:
+                    exec(f"import LM_{mod}")
+                    doc_str = eval(f"LM_{mod}.{func}.__doc__")
+                except Exception as e:
+                    doc_str = str(e)
+                # Update structure with doc-str
+                structure[mod][func]['doc'] = doc_str
+
+        # restore path
+        popd.popd()
+        self.doc_output = structure
+
+    def gen_lm_doc(self, structure):
+        proc = multiprocessing.Process(target=self._lm_doc_strings(structure))
+        while proc.is_alive():
+            time.sleep(0.1)
+        return self.doc_output
 
 
 if __name__ == '__main__':

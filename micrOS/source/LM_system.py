@@ -37,18 +37,27 @@ def gclean():
 
 
 def heartbeat():
+    """
+    Test function for built-in led blinking and test reply message
+    """
     console_write("<3 heartbeat <3")
     return "<3 heartbeat <3"
 
 
 def clock():
+    """
+    Get formatted localtime value
+    Format:
+        YYYY.MM.DD  hh:mm:ss
+        WD: 0-6 YD: 0-364
+    """
     buff = [str(k) for k in localtime()]
     return "{}  {}\nWD: {} YD: {}".format('.'.join(buff[0:3]), ':'.join(buff[3:6]), buff[6], buff[7])
 
 
 def ntp():
     """
-    Set NTP manually
+    Trigger NTP time sync
     """
     from ConfigHandler import cfgget
     try:
@@ -60,6 +69,13 @@ def ntp():
 
 
 def sun(refresh=False):
+    """
+    Get sunset/sunrise time stumps
+    Parameters:
+        (bool) refresh: trigger sync with sun rest-api
+    Return:
+        (dict) sun time
+    """
     if refresh:
         return suntime()
     return Sun.TIME
@@ -68,6 +84,15 @@ def sun(refresh=False):
 def setclock(year, month, mday, hour, min, sec):
     """
     Set Localtime + RTC Clock manually
+    Parameters:
+        year
+        month
+        mday
+        hour
+        min
+        sec
+    Return:
+        localtime
     """
     settime(year, month, mday, hour, min, sec)
     return localtime()
@@ -75,7 +100,12 @@ def setclock(year, month, mday, hour, min, sec):
 
 def module(unload=None):
     """
-    List and unload LM modules
+    List / unload Load Modules
+    Parameters:
+         (str) unload: module name to unload
+         (None) unload: list active modules
+    Return:
+        (str) verdict
     """
     from sys import modules
     if unload is None:
@@ -177,6 +207,7 @@ def ifconfig():
     from Network import ifconfig
     return ifconfig()
 
+
 #######################
 # LM helper functions #
 #######################
@@ -186,5 +217,5 @@ def help():
            'setclock year month mday hour min sec',\
            'ntp', 'module unload="LM_rgb/None"', \
            'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
-           'pinmap key="dhtpin/None"', 'ha_sta', 'alarms clean=False',\
+           'pinmap key="dhtpin"/None', 'ha_sta', 'alarms clean=False',\
            'sun refresh=False', 'ifconfig'

@@ -10,15 +10,21 @@ PACKAGE = '' if __package__ is None else str(__package__).replace('.', os.sep)
 MYPATH = os.path.join(sys.path[0], PACKAGE)
 LIB = os.path.join(MYPATH, 'toolkit/lib')
 sys.path.append(LIB)
-from TerminalColors import Colors
-
+try:
+    from TerminalColors import Colors
+except Exception as e:
+    print("TerminalColors import error: {}".format(e))
+    Colors = None
 
 def console(msg, end='\n', skip_tmp_msgs=True):
     if end == '\r' and skip_tmp_msgs:
         return
     if end == '\r':
         print(' '*100, end='\r')
-    print("{}[SIM]{} {}".format(Colors.OKGREEN, Colors.NC, msg), end=end)
+    if Colors is None:
+        print("[SIM] {}".format(msg), end=end)
+    else:
+        print("{}[SIM]{} {}".format(Colors.OKGREEN, Colors.NC, msg), end=end)
 
 
 if __name__ == "__main__":

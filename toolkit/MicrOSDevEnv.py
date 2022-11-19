@@ -209,8 +209,8 @@ class MicrOSDevTool:
         # Import simulator resources - magic
         self.console("[SIM] ADD simulator resources to python path")
         sys.path.append(self.micros_sim_resources)
-
         import simulator
+
         sim_proc = simulator.micrOSIM()
         if stop:
             try:
@@ -901,13 +901,16 @@ class MicrOSDevTool:
         """
         repo_version = self.get_micros_version_from_repo()
         static_help_json_path = os.path.join(self.sfuncman_output_path, 'sfuncman_{}.json'.format(repo_version))
+        static_help_html_path = os.path.join(self.sfuncman_output_path, 'sfuncman.html')
+
+        # [PARSING] Collect Load Module function structure buffer
         module_function_dict = {}
         for LM in (i.split('.')[0] for i in LocalMachine.FileHandler.list_dir(self.MicrOS_dir_path) if
                    i.startswith('LM_') and (i.endswith('.py'))):
             LMpath = '{}/{}.py'.format(self.MicrOS_dir_path, LM)
             try:
-                module_int_name = LM.replace('LM_', '')
-                module_function_dict[module_int_name] = []
+                module_name = LM.replace('LM_', '')
+                module_function_dict[module_name] = {}
                 with open(LMpath, 'r') as f:
                     while True:
                         line = f.readline()
@@ -917,18 +920,80 @@ class MicrOSDevTool:
                             if '(self' in line:
                                 continue
                             # Gen proper func name
-                            function_name = '{}'.format(line.split(')')[0]).replace("def", '').strip()
-                            function_name = function_name.replace('(', ' ') \
+                            command = '{}'.format(line.split(')')[0]).replace("def", '').strip()
+                            command = command.replace('(', ' ') \
                                 .replace(',', '') \
                                 .replace('msgobj=None', '') \
                                 .replace('force=True', '')
+                            func = command.strip().split()[0]
+                            param = ' '.join(command.strip().split()[1:])
                             # Save record
-                            module_function_dict[module_int_name].append(function_name.strip())
+                            if module_function_dict[module_name].get(func, None) is None:
+                                module_function_dict[module_name][func] = {}
+                            module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else None
+                module_function_dict[module_name]['img'] = '<img src="/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png" alt="" height=100 width=100> '
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
+
+        # Prepare (update simulator workspace)
+        self.simulator(prepare_only=True)
+        self.console("[SIM] ADD simulator resources to python path")
+        sys.path.append(self.micros_sim_resources)
+        import simulator
+        sim_proc = simulator.micrOSIM(doc_resolve=True)
+        module_function_dict = sim_proc.gen_lm_doc(module_function_dict)
+
+        # [JSON] Dump generated Load Module description: static function manual: sfuncman.json
         self.console("Dump micrOS static manual: {}".format(static_help_json_path))
         with open(static_help_json_path, 'w') as f:
-            json.dump(module_function_dict, f, indent=2, sort_keys=True)
+            json.dump(module_function_dict, f, indent=4, sort_keys=True)
+
+        # +[HTML] Convert dict to json -> html table
+        module_function_json = json.dumps(module_function_dict, indent=4)
+        import json2html
+        table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
+        html_table = json2html.json2html.convert(json=module_function_json,
+                                                 table_attributes=table_attributes,
+                                                 clubbing=True, escape=False, encode=False)
+        # Newline dirty hack in html
+        html_table = html_table.replace('\n', '<br>\n')
+
+        html_body_start = """<!DOCTYPE html>
+<html>
+<head>
+
+<title>micrOS Load Modules</title>
+
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: rgba(150, 212, 212, 0.4);
+}
+
+th:nth-child(even),td:nth-child(even) {
+  background-color: rgba(150, 212, 212, 0.4);
+}
+
+</style>
+</head>
+<body>
+
+<p>
+    <b>micrOS Load Modules</b> 
+</p>
+"""
+        html_body_end = """</body>
+</html>"""
+
+        html_page = html_body_start + html_table + html_body_end
+        # Write html to file
+        with open(static_help_html_path, 'w') as f:
+            f.write(html_page)
 
     def purge_node_config_from_workdir(self):
         path = os.path.join(self.precompiled_MicrOS_dir_path, 'node_config.json')

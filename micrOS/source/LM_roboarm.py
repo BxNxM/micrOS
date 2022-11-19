@@ -240,6 +240,11 @@ def lmdep():
 
 
 def pinmap():
+    """
+    [i] micrOS LM naming convention
+    Shows logical pins associated to the module
+    :return dict: pin name (str) - pin value (int) pairs
+    """
     s_pm = servo.pinmap()
     s_pm.update({'switch_1': pm()['switch_1']})
     return s_pm

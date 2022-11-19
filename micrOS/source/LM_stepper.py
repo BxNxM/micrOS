@@ -121,7 +121,11 @@ def standby():
 #######################
 
 def pinmap():
-    # Return module used PIN mapping
+    """
+    [i] micrOS LM naming convention
+    Shows logical pins associated to the module
+    :return dict: pin name (str) - pin value (int) pairs
+    """
     return pinmap_dump(['stppr_1', 'stppr_2', 'stppr_3', 'stppr_4'])
 
 

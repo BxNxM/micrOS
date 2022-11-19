@@ -38,7 +38,11 @@ def measure():
 #######################
 
 def pinmap():
-    # Return module used PIN mapping
+    """
+    [i] micrOS LM naming convention
+    Shows logical pins associated to the module
+    :return dict: pin name (str) - pin value (int) pairs
+    """
     return pinmap_dump('ds18')
 
 

@@ -33,6 +33,11 @@ def lmdep():
 
 
 def pinmap():
+    """
+    [i] micrOS LM naming convention
+    Shows logical pins associated to the module
+    :return dict: pin name (str) - pin value (int) pairs
+    """
     return pm()
 
 

@@ -403,6 +403,11 @@ def lmdep():
 
 
 def pinmap():
+    """
+    [i] micrOS LM naming convention
+    Shows logical pins associated to the module
+    :return dict: pin name (str) - pin value (int) pairs
+    """
     pin_map = oled.pinmap()
     pin_map.update(pinmap_dump('oleduibttn'))
     return pin_map

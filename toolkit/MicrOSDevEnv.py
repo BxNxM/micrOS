@@ -989,7 +989,8 @@ micrOS Load Modules
 </h1>
 <p>
     <b>Generated function manual with module doc strings.</b><br>
-    <b>[i] Use <module_name> pinmap function to get pins on a runtime system and start DIY</b>  
+    <b>[i] Use <module_name> pinmap function to get pins on a runtime system and start DIY</b>
+    <p><a href="https://github.com/BxNxM/micrOS/tree/master/micrOS/client/sfuncman" target="_blank">JSON formatted manuals</a></p>
 </p>
 """
         html_body_end = """</body>

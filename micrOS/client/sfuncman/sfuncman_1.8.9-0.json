@@ -683,11 +683,11 @@
     },
     "roboarm": {
         "boot_move": {
-            "doc": "\n    Full range demo move\n    ",
+            "doc": "\n    Full range demo move\n    :param speed_ms: speed - step wait in ms\n    :return: verdict\n    ",
             "param(s)": "speed_ms=None"
         },
         "control": {
-            "doc": null,
+            "doc": "\n    Control robot arm function\n    :param x_new: new x position\n    :param y_new: new y position\n    :param speed_ms: speed - step wait in ms\n    :param smooth: smooth transition, default True\n    :return str: move verdict\n    ",
             "param(s)": "x_new y_new speed_ms=None smooth=True"
         },
         "help": {
@@ -716,11 +716,11 @@
             "param(s)": "*args s=None delay=None deinit=True"
         },
         "random": {
-            "doc": "\n    Move to random position\n    x_range: +/- x from center\n    y_range: +/- y from center\n    ",
+            "doc": "\n    Move to random position\n    :param x_range: +/- x(35) from center\n    :param y_range: +/- y(35) from center\n    :return str: move verdict\n    ",
             "param(s)": "x_range=20 y_range=20 speed_ms=5"
         },
         "record": {
-            "doc": "\n    Record function for move automation :D\n    - Store actual X, Y\n    :return: verdict\n    ",
+            "doc": "\n    Record function for move automation :D\n    - Store actual X, Y\n    :param clean: clean move cache (True), default: False\n    :return: verdict\n    ",
             "param(s)": "clean=False"
         },
         "standby": {

@@ -55,6 +55,14 @@ def load_n_init():
 
 
 def control(x_new, y_new, speed_ms=None, smooth=True):
+    """
+    Control robot arm function
+    :param x_new: new x position
+    :param y_new: new y position
+    :param speed_ms: speed - step wait in ms
+    :param smooth: smooth transition, default True
+    :return str: move verdict
+    """
     def __buttery(x_from, y_from, x_to, y_to):
         # Transition effect / smooth position change
         x_diff = abs(x_from-x_to)
@@ -100,6 +108,8 @@ def control(x_new, y_new, speed_ms=None, smooth=True):
 def boot_move(speed_ms=None):
     """
     Full range demo move
+    :param speed_ms: speed - step wait in ms
+    :return: verdict
     """
     RoboArm.SPEED_MS = speed_ms if isinstance(speed_ms, int) else RoboArm.SPEED_MS
     # Set arm to center
@@ -207,6 +217,7 @@ def record(clean=False):
     """
     Record function for move automation :D
     - Store actual X, Y
+    :param clean: clean move cache (True), default: False
     :return: verdict
     """
     if clean:
@@ -223,8 +234,9 @@ def record(clean=False):
 def random(x_range=20, y_range=20, speed_ms=5):
     """
     Move to random position
-    x_range: +/- x from center
-    y_range: +/- y from center
+    :param x_range: +/- x(35) from center
+    :param y_range: +/- y(35) from center
+    :return str: move verdict
     """
     center_x = RoboArm.CENTER_XY
     center_y = RoboArm.CENTER_XY

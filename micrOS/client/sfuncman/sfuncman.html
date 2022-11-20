@@ -33,16 +33,25 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>control</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>x_new y_new speed_ms=None smooth=True</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>boot_move</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>speed_ms=None</td></tr><tr><th>doc</th><td>Full&nbsp;range&nbsp;demo&nbsp;move</td></tr></table></td></tr><tr><th>standby</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Standby&nbsp;roboarm&nbsp;-&nbsp;OFF&nbsp;switch</td></tr></table></td></tr><tr><th>jiggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Joggle&nbsp;roboarm&nbsp;in&nbsp;small&nbsp;range</td></tr></table></td></tr><tr><th>play</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>*args s=None delay=None deinit=True</td></tr><tr><th>doc</th><td>Runs&nbsp;move&nbsp;instructions&nbsp;from&nbsp;input&nbsp;or&nbsp;RoboArm.MOVE_RECORD<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>control</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>x_new y_new speed_ms=None smooth=True</td></tr><tr><th>doc</th><td>Control&nbsp;robot&nbsp;arm&nbsp;function<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;x_new:&nbsp;new&nbsp;x&nbsp;position<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;y_new:&nbsp;new&nbsp;y&nbsp;position<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;speed_ms:&nbsp;speed&nbsp;-&nbsp;step&nbsp;wait&nbsp;in&nbsp;ms<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;smooth&nbsp;transition,&nbsp;default&nbsp;True<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;move&nbsp;verdict</td></tr></table></td></tr><tr><th>boot_move</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>speed_ms=None</td></tr><tr><th>doc</th><td>Full&nbsp;range&nbsp;demo&nbsp;move<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;speed_ms:&nbsp;speed&nbsp;-&nbsp;step&nbsp;wait&nbsp;in&nbsp;ms<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;verdict</td></tr></table></td></tr><tr><th>standby</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Standby&nbsp;roboarm&nbsp;-&nbsp;OFF&nbsp;switch</td></tr></table></td></tr><tr><th>jiggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Joggle&nbsp;roboarm&nbsp;in&nbsp;small&nbsp;range</td></tr></table></td></tr><tr><th>play</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>*args s=None delay=None deinit=True</td></tr><tr><th>doc</th><td>Runs&nbsp;move&nbsp;instructions&nbsp;from&nbsp;input&nbsp;or&nbsp;RoboArm.MOVE_RECORD<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;args:&nbsp;X&nbsp;Y&nbsp;X2&nbsp;Y2&nbsp;...<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;s:&nbsp;SPEED_MS&nbsp;(delay)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;delay:&nbsp;delay&nbsp;in&nbsp;ms&nbsp;between&nbsp;steps<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;deinit:&nbsp;deinit&nbsp;servo&nbsp;after&nbsp;execution<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;verdict</td></tr></table></td></tr><tr><th>record</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>clean=False</td></tr><tr><th>doc</th><td>Record&nbsp;function&nbsp;for&nbsp;move&nbsp;automation&nbsp;:D<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Store&nbsp;actual&nbsp;X,&nbsp;Y<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;clean:&nbsp;clean&nbsp;move&nbsp;cache&nbsp;(True),&nbsp;default:&nbsp;False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;verdict</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>x_range=20 y_range=20 speed_ms=5</td></tr><tr><th>doc</th><td>Move&nbsp;to&nbsp;random&nbsp;position<br>
-&nbsp;&nbsp;&nbsp;&nbsp;x_range:&nbsp;+/-&nbsp;x&nbsp;from&nbsp;center<br>
-&nbsp;&nbsp;&nbsp;&nbsp;y_range:&nbsp;+/-&nbsp;y&nbsp;from&nbsp;center</td></tr></table></td></tr><tr><th>status</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>lmf=None</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;x_range:&nbsp;+/-&nbsp;x(35)&nbsp;from&nbsp;center<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;y_range:&nbsp;+/-&nbsp;y(35)&nbsp;from&nbsp;center<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;move&nbsp;verdict</td></tr></table></td></tr><tr><th>status</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>lmf=None</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Load&nbsp;Module&nbsp;state&nbsp;machine<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;lmf&nbsp;str:&nbsp;selected&nbsp;load&nbsp;module&nbsp;function&nbsp;aka&nbsp;(function&nbsp;to&nbsp;show&nbsp;state&nbsp;of):&nbsp;None&nbsp;(show&nbsp;all&nbsp;states)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;micrOS&nbsp;client&nbsp;state&nbsp;synchronization<br>

@@ -12,6 +12,10 @@ def __init():
 
 
 def scan():
+    """
+    I2C scan function - experimental
+    :return list: list of devices
+    """
     # https://docs.micropython.org/en/latest/library/machine.I2C.html
     return __init().scan()
 

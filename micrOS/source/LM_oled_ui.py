@@ -354,7 +354,11 @@ def _adc_page():
 
 
 def pageui(pwr_sec=None):
-    """ INIT PageUI - add page definitions here - interface"""
+    """
+    Init&RUN PageUI
+    - add page definitions here - interface from code
+    :param pwr_sec: power down oled after given sec - power safe
+    """
     pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]      # <== Add page function HERE
     if PageUI.PAGE_UI_OBJ is None:
         PageUI(pages, 128, 64, pwr_sec)
@@ -362,7 +366,11 @@ def pageui(pwr_sec=None):
 
 
 def control(cmd='next'):
-    """OLED UI control functions interface"""
+    """
+    OLED UI control
+    :param cmd str: next, prev, press, on, off
+    :return str: verdict
+    """
     valid_cmd = ('next', 'prev', 'press', 'on', 'off')
     if cmd in valid_cmd:
         return PageUI.PAGE_UI_OBJ.control(cmd)
@@ -370,7 +378,10 @@ def control(cmd='next'):
 
 
 def msgbox(msg='micrOS msg'):
-    """POP-UP message function - interface"""
+    """
+    POP-UP message function
+    :param msg: message string
+    """
     PageUI.PAGE_UI_OBJ.show_msg = msg
     PageUI.PAGE_UI_OBJ.show_page()
     return 'Show msg'
@@ -379,8 +390,9 @@ def msgbox(msg='micrOS msg'):
 def intercon_genpage(cmd=None):
     """
     Create intercon pages dynamically :)
-    based on cmd value.
-    cmd: host hello / host system clock
+    - based on cmd value.
+    :param cmd: 'host hello' or 'host system clock'
+    :return: page creation verdict
     """
     cmd = cmd.replace(",", '')      # TODO: Command parsing/joining workaround (exec LM core)
     raw = cmd.split()

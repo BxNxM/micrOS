@@ -303,12 +303,24 @@ def __init_bme280_i2c():
     return BME280_OBJ
 
 
+#########################
+# Application functions #
+#########################
+
 def measure():
+    """
+    Measure with bme280
+    :return dict: temp, hum, pressure
+    """
     bme = __init_bme280_i2c()
     return {'temp [ºC]': bme.temperature, 'hum [%]': bme.humidity, 'pressure [hPa]': bme.pressure}
 
 
 def measure_w_co2():
+    """
+    Measure with bme280 and mq135 (CO2)
+    :return dict: temp, hum, pressure, co2
+    """
     data = measure()
     data['co2 [ppm]'] = measure_mq135(data['temp [ºC]'], data['hum [%]'])
     return data

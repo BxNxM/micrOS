@@ -36,6 +36,10 @@ def __send_pulse_and_wait(echo_timeout_us=1000000):
         raise ex
 
 
+#########################
+# Application functions #
+#########################
+
 def distance_mm():
     """
     To calculate the distance we get the pulse_time and divide it by 2

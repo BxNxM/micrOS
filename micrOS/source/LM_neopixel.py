@@ -81,12 +81,12 @@ def load_n_init(cache=None, ledcnt=24):
 def neopixel(r=None, g=None, b=None, smooth=True, force=True):
     """
     Set NEOPIXEL RGB values
-    :param r: red value   0-255
-    :param g: green value 0-255
-    :param b: blue value  0-255
+    :param r: red value   0-254
+    :param g: green value 0-254
+    :param b: blue value  0-254
     :param smooth: runs colors change with smooth effect
     :param force: clean fade generators and set color
-    :return: verdict string
+    :return dict: rgb status - states: R, G, B, S
     """
 
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
@@ -129,6 +129,12 @@ def neopixel(r=None, g=None, b=None, smooth=True, force=True):
 
 
 def brightness(percent=None, smooth=True):
+    """
+    Set neopixel brightness
+    :param percent int: brightness percentage: 0-100
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :return dict: rgb status - states: R, G, B, S
+    """
     # Get color (channel) max brightness
     ch_max = max(Data.DCACHE[:-1])
     # Calculate actual brightness
@@ -155,6 +161,16 @@ def brightness(percent=None, smooth=True):
 
 
 def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
+    """
+    Set single segment by index on neopixel
+    :param r: red value 0-254
+    :param g: green value 0-254
+    :param b: blue value 0-254
+    :param s: segment - index 0-ledcnt
+    :param cache: cache color (update .pds file)
+    :param write: send color buffer to neopixel (update LEDs)
+    :return dict: rgb status - states: R, G, B, S
+    """
     r = Data.DCACHE[0] if r is None else r
     g = Data.DCACHE[1] if g is None else g
     b = Data.DCACHE[2] if b is None else b
@@ -181,7 +197,7 @@ def toggle(state=None, smooth=True):
     Toggle led state based on the stored state
     :param state: True(1)/False(0)
     :param smooth: runs colors change with smooth effect
-    :return: verdict
+    :return dict: rgb status - states: R, G, B, S
     """
     # Set state directly (inverse) + check change
     if state is not None:
@@ -225,10 +241,9 @@ def set_transition(r, g, b, sec):
 
 def run_transition():
     """
-    Transition execution/"stepping"
-    - run color change for long dimming periods
-        - runs the generated color dimming generators
-    :return: Execution verdict
+    Transition execution - color change for long dimming periods
+    - runs the generated color dimming generators
+    :return str: Execution verdict: Run / No Run
     """
     if None not in Data.FADE_OBJ:
         try:
@@ -247,7 +262,10 @@ def run_transition():
 
 def random(smooth=True, max_val=254):
     """
-    Demo function: random color change
+    Demo function: implements random color change
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :param max_val: set channel maximum generated value: 0-1000
+    :return dict: rgb status - states: R, G, B, S
     """
     r = randint(0, max_val)
     g = randint(0, max_val)
@@ -258,6 +276,8 @@ def random(smooth=True, max_val=254):
 def subscribe_presence(timer=30):
     """
     Initialize LM presence module with ON/OFF callback functions
+    :param timer int: counter value in sec
+    :return: None
     """
     from LM_presence import _subscribe
     _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)

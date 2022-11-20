@@ -342,6 +342,9 @@ class VL53L0X:
 
 
 def measure():
+    """
+    Experimental
+    """
     global __TOF_OBJ
     if __TOF_OBJ is None:
         __TOF_OBJ = VL53L0X()

@@ -184,7 +184,17 @@ def __play_tone(freq, msec):
     buzz.duty(0)                # Stop playing
 
 
+#########################
+# Application functions #
+#########################
+
 def bipp(repeat=1, freq=None):
+    """
+    Buzzer bipp sound generator
+    :param repeat int: bipp count
+    :param freq int: 0-1000 default: 600
+    :return str: Verdict string
+    """
     global __BUZZER_CACHE
     # restore data from cache if it was not provided
     freq = int(__BUZZER_CACHE[0] if freq is None else freq)
@@ -197,6 +207,11 @@ def bipp(repeat=1, freq=None):
 
 
 def play(rtttlstr='d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'):
+    """
+    RTTTL Piezzo Player
+    :param rtttlstr str: rttl string, default: 'd=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'
+    :return str: verdict
+    """
     # https://github.com/dhylands/upy-rtttl/blob/master/songs.py
     tune = RTTTL(rtttlstr)
     for freq, msec in tune.notes():

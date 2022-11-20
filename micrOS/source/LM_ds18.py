@@ -12,7 +12,16 @@ def __init_DS18():
     return DS_OBJ
 
 
+#########################
+# Application functions #
+#########################
+
 def measure():
+    """
+    Measure with digital onewire temperature sensor
+    - ds18
+    :return str: temp string
+    """
     data = []
     # Init DS18
     ds_obj = __init_DS18()

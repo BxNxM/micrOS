@@ -7,6 +7,10 @@ from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 @socket_stream
 def info(msgobj=None):
+    """
+    Show system info message
+    - cpu clock, ram, free fs, upython, board, mac addr, uptime
+    """
     try:
         from gc import mem_free
     except:
@@ -38,6 +42,9 @@ def info(msgobj=None):
 
 
 def gclean():
+    """
+    Run micropython garbage collection
+    """
     try:
         from gc import collect, mem_free
     except:
@@ -94,15 +101,13 @@ def sun(refresh=False):
 def setclock(year, month, mday, hour, min, sec):
     """
     Set Localtime + RTC Clock manually
-    Parameters:
-        year
-        month
-        mday
-        hour
-        min
-        sec
-    Return:
-        localtime
+    :param year
+    :param month
+    :param mday
+    :param hour
+    :param min
+    :param sec
+    :return: localtime
     """
     settime(year, month, mday, hour, min, sec)
     return localtime()
@@ -111,11 +116,9 @@ def setclock(year, month, mday, hour, min, sec):
 def module(unload=None):
     """
     List / unload Load Modules
-    Parameters:
-         (str) unload: module name to unload
-         (None) unload: list active modules
-    Return:
-        (str) verdict
+    :param unload str: module name to unload
+    :param unload None: list active modules
+    :return str: verdict
     """
     from sys import modules
     if unload is None:
@@ -148,6 +151,9 @@ def cachedump(cdel=None, msgobj=None):
 
 
 def rssi():
+    """
+    Show Wifi RSSI - wifi strength
+    """
     from network import WLAN, STA_IF
     value = WLAN(STA_IF).status('rssi')
     if value > -67:
@@ -164,8 +170,10 @@ def rssi():
 @socket_stream
 def lmpacman(lm_del=None, msgobj=None):
     """
-    lm_del: LM_<loadmodulename.py/.mpy>
-        Add name without LM_ but with extension
+    Load module package manager
+    :param lm_del str: LM_<loadmodulename.py/.mpy>
+    :param lm_del None: list available load modules
+    - Add name without LM_ but with extension!
     """
     from os import listdir, remove
     if lm_del is not None and lm_del.endswith('py'):
@@ -183,6 +191,8 @@ def lmpacman(lm_del=None, msgobj=None):
 def pinmap(key='builtin'):
     """
     Get Logical pin by key runtime
+    :param key str: logical pin name to resolve
+    :return dict: key map
     """
     from LogicalPins import pinmap_dump, get_pinmap
     map = get_pinmap()
@@ -193,6 +203,7 @@ def pinmap(key='builtin'):
 def ha_sta():
     """
     Check and repair STA network mode
+    - able to restart the system -> wifi reconnect
     """
     from ConfigHandler import cfgget
     from network import STA_IF, WLAN
@@ -205,6 +216,12 @@ def ha_sta():
 
 @socket_stream
 def alarms(clean=False, test=False, msgobj=None):
+    """
+    Show micrOS alarms - system error list
+    :param clean bool: clean alarms, default: False
+    :param test bool: create test alarms, set True
+    :return dict: verdict
+    """
     if test:
         errlog_add('[ERR] TeSt ErRoR')
     if clean:
@@ -214,6 +231,9 @@ def alarms(clean=False, test=False, msgobj=None):
 
 
 def ifconfig():
+    """
+    Show network ifconfig
+    """
     from Network import ifconfig
     return ifconfig()
 

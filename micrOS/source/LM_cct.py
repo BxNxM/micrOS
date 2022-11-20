@@ -56,6 +56,10 @@ def __persistent_cache_manager(mode):
         pass
 
 
+#########################
+# Application functions #
+#########################
+
 def load_n_init(cache=None):
     """
     Initiate Cold white / Warm white LED module
@@ -81,11 +85,11 @@ def load_n_init(cache=None):
 def white(c=None, w=None, smooth=True, force=True):
     """
     Set RGB values with PWM signal
-    :param c: cold white value   0-1000
-    :param w: warm white value 0-1000
-    :param smooth: runs white channels change with smooth effect
-    :param force: clean fade generators and set color
-    :return: verdict string
+    :param c int: cold white value   0-1000
+    :param w int: warm white value 0-1000
+    :param smooth int: runs white channels change with smooth effect
+    :param force bool: clean fade generators and set color
+    :return dict: cct status - states: CW, WW, S
     """
     def __buttery(ww_from, cw_from, ww_to, cw_to):
         step_ms = 2
@@ -122,6 +126,12 @@ def white(c=None, w=None, smooth=True, force=True):
 
 
 def brightness(percent=None, smooth=True):
+    """
+    Set CCT brightness
+    :param percent int: brightness percentage: 0-100
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :return dict: cct status - states: CW, WW, S
+    """
     # Get color (channel) max brightness
     ch_max = max(Data.CWWW_CACHE[:-1])
     # Calculate actual brightness
@@ -149,9 +159,9 @@ def brightness(percent=None, smooth=True):
 def toggle(state=None, smooth=True):
     """
     Toggle led state based on the stored state
-    :param state: True(1)/False(0)
-    :param smooth: runs white channels change with smooth effect
-    :return: verdict
+    :param state bool: True(1)/False(0)/None(default - automatic toggle)
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :return dict: cct status - states: CW, WW, S
     """
     # Set state directly (inverse) + check change
     if state is not None:
@@ -193,7 +203,7 @@ def set_transition(cw, ww, sec):
 def run_transition():
     """
     Transition execution - white channels change for long dimming periods
-    - runs the generated 2 white dimming generators
+    - runs the generated 2 white dimming generators in timirq
     :return: Execution verdict
     """
     if None not in Data.FADE_OBJS:
@@ -212,7 +222,10 @@ def run_transition():
 
 def random(smooth=True, max_val=1000):
     """
-    Demo function: random color change
+    Demo function: implements random hue change
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :param max_val: set channel maximum generated value: 0-1000
+    :return dict: cct status - states: CW, WW, S
     """
     cold = randint(0, max_val)
     warm = randint(0, max_val)
@@ -222,6 +235,8 @@ def random(smooth=True, max_val=1000):
 def subscribe_presence(timer=30):
     """
     Initialize LM presence module with ON/OFF callback functions
+    :param timer int: counter value in sec
+    :return: None
     """
     from LM_presence import _subscribe
     _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)

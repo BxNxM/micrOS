@@ -143,8 +143,8 @@ def jiggle():
     """
     x, y = RoboArm.ACTUAL_XY
     for _ in range(5):
-        jx = int(randint(-10, 10)/10)
-        jy = int(randint(-10, 10)/10)
+        jx = randint(-2, 2)
+        jy = randint(-2, 2)
         control(x+jx, y+jy)
         sleep_ms(RoboArm.SPEED_MS)
     control(x, y)

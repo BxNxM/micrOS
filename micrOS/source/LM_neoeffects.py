@@ -72,6 +72,15 @@ class DrawEffect:
 #################################
 
 def meteor(r=None, g=None, b=None, shift=True, ledcnt=24):
+    """
+    Meteor effect
+    :param r int: red value 0-1000
+    :param g int: green value 0-1000
+    :param b int: blue value 0-1000
+    :param shift bool: automatic effect shifting
+    :param ledcnt int: number of neopixel elements in chain (default: 24)
+    :return str: verdict
+    """
     def __effect(r, g, b, pixel):
         """
         Describe one full length color map
@@ -103,6 +112,15 @@ def meteor(r=None, g=None, b=None, shift=True, ledcnt=24):
 
 
 def cycle(r=None, g=None, b=None, shift=True, ledcnt=24):
+    """
+    Cycle effect
+    :param r int: red value 0-1000
+    :param g int: green value 0-1000
+    :param b int: blue value 0-1000
+    :param shift bool: automatic effect shifting
+    :param ledcnt int: number of neopixel elements in chain (default: 24)
+    :return str: verdict
+    """
     def __effect(r, g, b, pixel):
         """
         Describe one full length color map
@@ -132,6 +150,13 @@ def cycle(r=None, g=None, b=None, shift=True, ledcnt=24):
 
 
 def rainbow(step=1, br=50, ledcnt=24):
+    """
+    Rainbow effect
+    :param step int: color weel resolution in step (default: 1)
+    :param br int: brightness in percentage
+    :param ledcnt int: number of neopixel elements in chain (default: 24)
+    :return str: verdict
+    """
     def __wheel(pos):
         # Input a value 0 to 255 to get a color value.
         # The colours are a transition r - g - b - back to r.
@@ -165,6 +190,14 @@ def rainbow(step=1, br=50, ledcnt=24):
 
 
 def shader(size=6, offset=0, shift=False, ledcnt=24):
+    """
+    Shader for ring lamp
+    :param size int: shader size (disabled LEDs)
+    :param offset int: rotate shader 0-(ledcnt-1)
+    :param shift bool: auto shift shader effect (False)
+    :param ledcnt int: number of neopixel elements in chain (default: 24)
+    :return str: verdict
+    """
     def __effect(size, offset, pixcnt):
         # Conditional value load - with neopixel cache
         r, g, b, _ = Data.DCACHE
@@ -193,6 +226,11 @@ def shader(size=6, offset=0, shift=False, ledcnt=24):
 
 
 def random(max_val=254):
+    """
+    Demo function: implements random color change
+    :param max_val: set channel maximum generated value: 0-1000
+    :return str: rgb status - states: R, G, B
+    """
     r = randint(0, max_val)
     g = randint(0, max_val)
     b = randint(0, max_val)
@@ -203,6 +241,13 @@ def random(max_val=254):
 
 
 def color(r=None, g=None, b=None):
+    """
+    Set color buffer - for runtime effect color change
+    :param r int: red channel 0-254 (default: None - cached value)
+    :param g int: green channel 0-254 (default: None - cached value)
+    :param b int: blue channel 0-254 (default: None - cached value)
+    :return dict: rgb status - states: R, G, B, S
+    """
     # Conditional value load - with neopixel cache
     _r, _g, _b, _ = Data.DCACHE
     r = _r if r is None else r

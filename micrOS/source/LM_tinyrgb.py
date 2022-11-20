@@ -23,6 +23,13 @@ def __init_tinyrgb():
 
 
 def setrgb(r=None, g=None, b=None, br=None):
+    """
+    TinyPico built-in apa102 LED control
+    :param r: red value 0-254
+    :param g: green value 0-254
+    :param b: blue value 0-254
+    :param br: brightness of LED 0-100
+    """
     __init_tinyrgb()
     r = DOTSTAR[0][0] if r is None else r
     g = DOTSTAR[0][1] if g is None else g
@@ -34,10 +41,18 @@ def setrgb(r=None, g=None, b=None, br=None):
 
 
 def getstate():
+    """
+    Get state of TinyPico built-in LED
+    """
     return DOTSTAR, DOTSTAR_STATE
 
 
 def toggle(state=None):
+    """
+    Toggle TinyPico built-in LED
+    :param state bool: True/False/None(default: based on current toggle)
+    :return str: verdict
+    """
     __init_tinyrgb()
     if state is None:
         state = DOTSTAR_STATE[0]
@@ -53,6 +68,11 @@ def toggle(state=None):
 
 
 def wheel(br=None):
+    """
+    TinyPico ColorWheel generator - step color on LED
+    :param br: brightness 0-100
+    :return str: verdict
+    """
     global COLOR_INDEX
     __init_tinyrgb()
     br = DOTSTAR_STATE[1] if br is None else br

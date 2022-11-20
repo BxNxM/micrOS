@@ -48,21 +48,9 @@ def __persistent_cache_manager(mode='r'):
         pass
 
 
-def set_value(value=None):
-    global __DIMMER_CACHE
-    # restore data from cache if it was not provided
-    value = int(__DIMMER_CACHE[1] if value is None else value)
-    if 0 <= value <= 1000:
-        __dimmer_init().duty(value)
-        if value == 0:
-            __DIMMER_CACHE[0] = 0        # SAVE STATE TO CACHE
-        else:
-            __DIMMER_CACHE[1] = value    # SAVE VALUE TO CACHE
-            __DIMMER_CACHE[0] = 1        # SAVE STATE TO CACHE
-        __persistent_cache_manager('s')
-        return status()
-    return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)
-
+#########################
+# Application functions #
+#########################
 
 def load_n_init(cache=None):
     """
@@ -86,9 +74,32 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(__PERSISTENT_CACHE)
 
 
+def set_value(value=None):
+    """
+    Set dimmer values with PWM signal
+    :param value int: value 0-1000 default: None (set cached value)
+    :return dict: X, S
+    """
+    global __DIMMER_CACHE
+    # restore data from cache if it was not provided
+    value = int(__DIMMER_CACHE[1] if value is None else value)
+    if 0 <= value <= 1000:
+        __dimmer_init().duty(value)
+        if value == 0:
+            __DIMMER_CACHE[0] = 0        # SAVE STATE TO CACHE
+        else:
+            __DIMMER_CACHE[1] = value    # SAVE VALUE TO CACHE
+            __DIMMER_CACHE[0] = 1        # SAVE STATE TO CACHE
+        __persistent_cache_manager('s')
+        return status()
+    return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)
+
+
 def toggle(state=None):
     """
-    Toggle led state based on the stored one
+    Toggle dimmer state based on the stored state
+    :param state bool: True(1)/False(0)/None(default - automatic toggle)
+    :return dict: X, S
     """
     if state is not None:
         __DIMMER_CACHE[0] = 0 if state else 1
@@ -100,6 +111,8 @@ def toggle(state=None):
 def subscribe_presence(timer=30):
     """
     Initialize LM presence module with ON/OFF callback functions
+    :param timer int: counter value in sec
+    :return: None
     """
     from LM_presence import _subscribe
     _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)

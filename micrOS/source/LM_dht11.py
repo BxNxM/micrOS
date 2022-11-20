@@ -21,12 +21,24 @@ def __temp_hum():
     return __DHT_OBJ.temperature(), __DHT_OBJ.humidity()
 
 
+#########################
+# Application functions #
+#########################
+
 def measure():
+    """
+    Measure with dht11
+    :return dict: temp, hum
+    """
     _temp, _hum = __temp_hum()
     return {'temp [ºC]': _temp, 'hum [%]': _hum}
 
 
 def measure_w_co2():
+    """
+    Measure with dht11 and mq135 (CO2)
+    :return dict: temp, hum, co2
+    """
     _temp, _hum = __temp_hum()
     return {'temp [ºC]': _temp, 'hum [%]': _hum, 'co2 [ppm]': measure_mq135(_temp, _hum)}
 

@@ -1,19 +1,31 @@
 import esp32
 
+#########################
+# Application functions #
+#########################
+
 
 def hall():
+    """
+    Measure with esp32 built-in hall sensor
+    """
     # read the internal hall sensor
     return esp32.hall_sensor()
 
 
 def temp():
+    """
+    Measure CPU temperature
+    """
     # read the internal temperature of the MCU, in Farenheit
     return {'CPU temp [ºC]': '{:.1f}'.format((esp32.raw_temperature() - 32) / 1.8)}
 
 
 def touch(triglvl=300):
     """
-    triglvl - trigger level, value < triglvl decide touched
+    Test function:
+    :param triglvl: trigger level, value < triglvl decide touched
+    :return dict: verdict isTouched and value
     """
     from machine import TouchPad, Pin
     from LogicalPins import physical_pin
@@ -23,6 +35,10 @@ def touch(triglvl=300):
 
 
 def battery():
+    """
+    TinyPico battery manager interface
+    :return dict: volt, state (is charging)
+    """
     from tinypico import get_battery_voltage, get_battery_charging
     return {'volt': get_battery_voltage(), 'state': get_battery_charging()}
 

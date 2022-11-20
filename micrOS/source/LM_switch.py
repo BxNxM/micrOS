@@ -86,6 +86,11 @@ def __switch_init():
 
 
 def set_state(state=None):
+    """
+    Set switch (1) state
+    :param state bool: True/False/None(default: use cached value)
+    :return: verdict
+    """
     state = __SWITCH_STATE[0] if state is None else int(state)
     if state in (0, 1):
         __switch_init().value(state)
@@ -98,7 +103,8 @@ def set_state(state=None):
 
 def toggle():
     """
-    Toggle led state based on the stored one
+    Toggle switch (1) state based on current state
+    :return: set_state verdict
     """
     new_state = 1 if __SWITCH_STATE[0] == 0 else 0
     return set_state(new_state)
@@ -116,6 +122,11 @@ def __switch2_init():
 
 
 def set_state2(state=None):
+    """
+    Set switch (2) state
+    :param state bool: True/False/None(default: use cached value)
+    :return: verdict
+    """
     state = __SWITCH_STATE[1] if state is None else int(state)
     if state in (0, 1):
         __switch2_init().value(state)
@@ -128,7 +139,8 @@ def set_state2(state=None):
 
 def toggle2():
     """
-    Toggle led state based on the stored one
+    Toggle switch (2) state based on current state
+    :return: set_state verdict
     """
     new_state = 1 if __SWITCH_STATE[1] == 0 else 0
     return set_state2(new_state)
@@ -145,6 +157,11 @@ def __switch3_init():
 
 
 def set_state3(state=None):
+    """
+    Set switch (3) state
+    :param state bool: True/False/None(default: use cached value)
+    :return: verdict
+    """
     state = __SWITCH_STATE[2] if state is None else int(state)
     if state in (0, 1):
         __switch3_init().value(state)
@@ -157,7 +174,8 @@ def set_state3(state=None):
 
 def toggle3():
     """
-    Toggle led state based on the stored one
+    Toggle switch (3) state based on current state
+    :return: set_state verdict
     """
     new_state = 1 if __SWITCH_STATE[2] == 0 else 0
     return set_state3(new_state)
@@ -174,6 +192,11 @@ def __switch4_init():
 
 
 def set_state4(state=None):
+    """
+    Set switch (4) state
+    :param state bool: True/False/None(default: use cached value)
+    :return: verdict
+    """
     state = __SWITCH_STATE[3] if state is None else int(state)
     if state in (0, 1):
         __switch4_init().value(state)
@@ -186,7 +209,8 @@ def set_state4(state=None):
 
 def toggle4():
     """
-    Toggle led state based on the stored one
+    Toggle switch (4) state based on current state
+    :return: set_state verdict
     """
     new_state = 1 if __SWITCH_STATE[3] == 0 else 0
     return set_state4(new_state)

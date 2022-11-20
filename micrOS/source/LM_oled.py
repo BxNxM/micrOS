@@ -143,11 +143,20 @@ def __init():
 
 
 def text(string="text", x=0, y=0):
+    """
+    Create text on OLED
+    :param string: text to draw
+    :param x: 0-127
+    :param y: 0-63
+    """
     __init().text(string, x, y)
     return True
 
 
 def invert():
+    """
+    Invert OLED display
+    """
     global __INVERT
     __init()
     __INVERT = not __INVERT
@@ -156,16 +165,37 @@ def invert():
 
 
 def clean(state=0):
+    """
+    Clean display
+    :param state: 0/1
+    """
     __init().fill(state)
     return True
 
 
 def line(sx, sy, ex, ey, state=1):
+    """
+    Draw line on OLED
+    :param sx: start x
+    :param sy: start y
+    :param ex: end x
+    :param ey: end y
+    :param state: state 0/1
+    """
     __init().line(sx, sy, ex, ey, state)
     return True
 
 
 def rect(x, y, w, h, state=1, fill=False):
+    """
+    Draw rectangle on OLED
+    :param x: start x
+    :param y: start y
+    :param w: width
+    :param h: height
+    :param state: state
+    :param fill: fill rectangle (True/False)
+    """
     if fill:
         __init().fill_rect(x, y, w, h, state)
     else:
@@ -174,16 +204,26 @@ def rect(x, y, w, h, state=1, fill=False):
 
 
 def poweron():
+    """
+    Power ON OLED
+    """
     __init().poweron()
     return True
 
 
 def poweroff():
+    """
+    Power OFF OLED
+    """
     __init().poweroff()
     return True
 
 
 def show():
+    """
+    Show OLED buffer data
+    - update display
+    """
     SSD1306_I2C.OLED_OBJ.show()
 
 

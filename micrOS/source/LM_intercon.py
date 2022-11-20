@@ -3,7 +3,13 @@ from Debug import errlog_add
 
 
 def sendcmd(*args, **kwargs):
-
+    """
+    Implements send command function towards micrOS devices
+        example: sendcmd "hello" host="IP/hostname.local") OR sendcmd host="IP/hostname.local" cmd="system rssi")
+    :param host[0]: host IP or Hostname
+    :param cmd[1]: command - module func arg(s)
+    :return str: reply
+    """
     def __send(_host, _cmd):
         try:
             out = send_cmd(_host, _cmd)
@@ -29,6 +35,10 @@ def sendcmd(*args, **kwargs):
 
 
 def dump():
+    """
+    Dump intercon connection cache
+    :return dict: device-ip pairs
+    """
     return dump_cache()
 
 

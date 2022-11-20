@@ -25,6 +25,11 @@ def __servo_init():
 
 
 def sduty(duty=75):
+    """
+    Set servo (1) position
+    :param duty: servo duty position 40-115, default: 75
+    :return: verdict
+    """
     s = __servo_init()
     if duty > 115:
         duty = 115
@@ -40,6 +45,9 @@ def sduty(duty=75):
 
 
 def sdemo():
+    """
+    Demo move function for sduty (1)
+    """
     from utime import sleep
     sduty(40)
     sleep(1)
@@ -65,6 +73,11 @@ def __servo2_init():
 
 
 def s2duty(duty=75):
+    """
+    Set servo (2) position
+    :param duty: servo duty position 40-115, default: 75
+    :return: verdict
+    """
     s = __servo2_init()
     if duty > 115:
         duty = 115
@@ -80,6 +93,10 @@ def s2duty(duty=75):
 
 
 def deinit():
+    """
+    Deinit servo motors
+    - stop pwm channels (sduty/s2duty)
+    """
     if Data.S_OBJ:
         Data.S_OBJ.deinit()
         Data.S_OBJ = None

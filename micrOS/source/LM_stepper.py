@@ -87,14 +87,19 @@ def __init_stepper(mode='HALF'):
 
 
 def load_n_init(mode="HALF"):
+    """
+    Init stepper motor module
+    :param mode: step mode: HALF/FULL
+    """
     __init_stepper(mode=mode)
 
 
 def angle(dg, speed=None):
     """
+    Control stepper motor by angle
     :param dg: +/- 0-360 degree
     :param speed: wait ms
-    :return: Info
+    :return: verdict
     """
     i = __init_stepper()
     if speed:
@@ -104,6 +109,11 @@ def angle(dg, speed=None):
 
 
 def step(st, speed=None):
+    """
+    Control stepper motor by step
+    :param st: step
+    :param speed: set step speed, wait ms
+    """
     i = __init_stepper()
     if speed:
         i.speed_ms = speed
@@ -112,6 +122,10 @@ def step(st, speed=None):
 
 
 def standby():
+    """
+    Deinit stepper motor
+    - power down
+    """
     __init_stepper().reset()
     return "Standby"
 

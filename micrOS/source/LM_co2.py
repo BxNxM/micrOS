@@ -85,7 +85,15 @@ def __ppm_verdict(ppm):
     return status
 
 
+#########################
+# Application functions #
+#########################
+
 def raw_measure_mq135():
+    """
+    Measure raw mq135 CO2 value
+    :return str: raw value / adc_property
+    """
     raw = __get_resistance()
     return "{}/{}".format(raw, __ADC_PROP)
 
@@ -101,10 +109,12 @@ def measure_mq135(temperature=None, humidity=None):
         2,000-5,000 ppm Headaches, sleepiness and stagnant, stale, stuffy air. Poor concentration, loss of attention, increased heart rate and slight nausea may also be present.
         5,000ppm        Workplace exposure limit (as 8-hour TWA) in most jurisdictions.
         >40,000 ppm     Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.
+    :param temperature int: temp compensation - celsius
+    :param humidity int: hum compensation
+    :return str: verdict
     """
     if temperature is None or humidity is None:
-        print("Missing mandatory parameters: temperature and/or humidity")
-        return
+        return "Missing mandatory parameters: temperature and/or humidity"
 
     try:
         ppm = __get_corrected_ppm(temperature, humidity)

@@ -932,7 +932,7 @@ class MicrOSDevTool:
                                 module_function_dict[module_name][func] = {}
                             module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else None
                 module_img_url = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
-                module_function_dict[module_name]['img'] = f'<img src="{module_img_url}" alt="{module_name}" height=150 width=200>'
+                module_function_dict[module_name]['img'] = f'<img src="{module_img_url}" alt="{module_name}" height=150>'
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
 
@@ -959,33 +959,32 @@ class MicrOSDevTool:
         # Newline dirty hack in html
         html_table = html_table.replace('\n', '<br>\n')
 
+        # http://corelangs.com/css/table/tablecolor.html
+        # http://corelangs.com/css/table/tablecolor.html
+
         html_body_start = """<!DOCTYPE html>
 <html>
 <head>
-
 <title>micrOS Load Modules</title>
 
 <style>
-table, th, td {
-  border: 1px solid black;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-tr:nth-child(even) {
-  background-color: rgba(150, 212, 212, 0.4);
-}
-
-th:nth-child(even),td:nth-child(even) {
-  background-color: rgba(150, 212, 212, 0.4);
-}
+  table,th,td
+  {
+    border:2px solid black;
+    color:black;
+  }
+  table{border-collapse:collapse;width:80%;}
+  td{height:40px;}
+  
+  tbody tr:nth-child(even){background: gray;}
 
 </style>
-</head>
-<body>
 
+</head>
+<body style="background-color:LightGray;">
+<h1 style="background-color:MediumSeaGreen;">micrOS Load Modules</h1>
 <p>
-    <b>micrOS Load Modules</b> 
+    <b>Generated function manual with module doc strings.</b> 
 </p>
 """
         html_body_end = """</body>

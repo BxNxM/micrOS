@@ -6,25 +6,35 @@ from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 
 @socket_stream
-def info(msgobj):
+def info(msgobj=None):
     try:
         from gc import mem_free
     except:
         from simgc import mem_free  # simulator mode
     from os import statvfs, getcwd, uname
     from machine import freq
+
+    msg_buffer = []
+
+    def _reply(msg):
+        nonlocal msg_buffer
+        if msgobj is None:
+            msg_buffer.append(msg)
+        else:
+            msgobj(msg)
+
     fs_stat = statvfs(getcwd())
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
     mem = mem_free()
-    msgobj('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
-    msgobj('Free RAM: {} kB {} byte'.format(int(mem / 1024), int(mem % 1024)))
-    msgobj('Free fs: {} %'.format(int((fs_free / fs_size) * 100)))
-    msgobj('upython: {}'.format(uname()[3]))
-    msgobj('board: {}'.format(uname()[4]))
-    msgobj('mac: {}'.format(get_mac()))
-    msgobj('uptime: {}'.format(uptime()))
-    return ''
+    _reply('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
+    _reply('Free RAM: {} kB {} byte'.format(int(mem / 1024), int(mem % 1024)))
+    _reply('Free fs: {} %'.format(int((fs_free / fs_size) * 100)))
+    _reply('upython: {}'.format(uname()[3]))
+    _reply('board: {}'.format(uname()[4]))
+    _reply('mac: {}'.format(get_mac()))
+    _reply('uptime: {}'.format(uptime()))
+    return '\n'.join(msg_buffer)
 
 
 def gclean():

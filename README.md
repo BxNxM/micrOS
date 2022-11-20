@@ -244,9 +244,9 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 `#Sensors / inputes` `#Actuators / outputs`
 
-![pheriphery-io-preview](./media/pheriphery-io-preview.png)
+[![pheriphery-io-preview](./media/pheriphery-io-preview.png)](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
 
-[micrOS Load Module functions](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)</br>
+[[CLICK] Show micrOS Load Module functions](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)</br>
 
 ----------------------------------------
 

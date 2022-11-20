@@ -106,6 +106,10 @@ class micrOSIM():
                 # Update structure with doc-str
                 structure[mod][func]['doc'] = doc_str
                 structure_to_html[mod][func]['doc'] = None if doc_str is None else doc_str.strip().replace('\n', '<br>\n')
+                # Remove empty param(s) cells
+                param_cell = structure_to_html[mod][func].get('param(s)', None)
+                if param_cell is not None and len(param_cell.strip()) == 0:
+                    structure_to_html[mod][func].pop('param(s)')
 
         # restore path
         popd.popd()

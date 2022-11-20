@@ -274,24 +274,24 @@
     },
     "distance": {
         "deinit": {
-            "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "distance_cm": {
-            "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "distance_mm": {
-            "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    To calculate the distance we get the pulse_time and divide it by 2\n    (the pulse walk the distance twice) and by 29.1 becasue\n    the sound speed on air (343.2 m/s), that It's equivalent to\n    0.34320 mm/us that is 1mm each 2.91us\n    pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582\n    ",
             "param(s)": ""
         },
         "help": {
-            "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true",
         "pinmap": {
-            "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
             "param(s)": ""
         }
     },
@@ -896,7 +896,7 @@
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true",
         "info": {
             "doc": null,
-            "param(s)": "msgobj"
+            "param(s)": ""
         },
         "lmpacman": {
             "doc": null,

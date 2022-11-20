@@ -931,7 +931,8 @@ class MicrOSDevTool:
                             if module_function_dict[module_name].get(func, None) is None:
                                 module_function_dict[module_name][func] = {}
                             module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else None
-                module_function_dict[module_name]['img'] = '<img src="/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png" alt="" height=100 width=100> '
+                module_img_url = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
+                module_function_dict[module_name]['img'] = f'<img src="{module_img_url}" alt="{module_name}" height=150 width=200>'
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
 

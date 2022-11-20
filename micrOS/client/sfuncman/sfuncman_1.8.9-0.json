@@ -4,7 +4,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/L298N_DCmotor.png?raw=true\" alt=\"L298N_DCmotor\" height=150 width=200>",
         "m1_control": {
             "doc": null,
             "param(s)": "direc=None speed=None"
@@ -31,7 +31,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/L9110_DCmotor.png?raw=true\" alt=\"L9110_DCmotor\" height=150 width=200>",
         "motor_control": {
             "doc": null,
             "param(s)": "direc=None speed=None"
@@ -46,7 +46,7 @@
             "doc": "No module named 'ustruct'",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true\" alt=\"VL53L0X\" height=150 width=200>",
         "measure": {
             "doc": "No module named 'ustruct'",
             "param(s)": null
@@ -61,7 +61,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true\" alt=\"bme280\" height=150 width=200>",
         "lmdep": {
             "doc": null,
             "param(s)": null
@@ -88,7 +88,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true\" alt=\"buzzer\" height=150 width=200>",
         "load_n_init": {
             "doc": null,
             "param(s)": "cache=None"
@@ -111,7 +111,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/catgame.png?raw=true\" alt=\"catgame\" height=150 width=200>",
         "live_game": {
             "doc": null,
             "param(s)": "chance=10"
@@ -138,7 +138,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true\" alt=\"cct\" height=150 width=200>",
         "load_n_init": {
             "doc": "\n    Initiate Cold white / Warm white LED module\n    - Load .pds file for that module\n    - restore state machine from .pds\n    :param cache: file state machine chache: True(default)/False\n    :return: Cache state\n    ",
             "param(s)": "cache=None"
@@ -181,7 +181,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true\" alt=\"co2\" height=150 width=200>",
         "measure_mq135": {
             "doc": "\n    CO2 Gas Concentration - Parts-per-million - PPM\n    -> 1ppm = 0.0001% gas.\n    Concentration evaluation:\n        250-400ppm      Normal background concentration in outdoor ambient air\n        400-1,000ppm    Concentrations typical of occupied indoor spaces with good air exchange\n        1,000-2,000ppm  Complaints of drowsiness and poor air.\n        2,000-5,000 ppm Headaches, sleepiness and stagnant, stale, stuffy air. Poor concentration, loss of attention, increased heart rate and slight nausea may also be present.\n        5,000ppm        Workplace exposure limit (as 8-hour TWA) in most jurisdictions.\n        >40,000 ppm     Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.\n    ",
             "param(s)": "temperature=None humidity=None"
@@ -200,7 +200,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true\" alt=\"dht11\" height=150 width=200>",
         "lmdep": {
             "doc": null,
             "param(s)": null
@@ -223,7 +223,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true\" alt=\"dht22\" height=150 width=200>",
         "lmdep": {
             "doc": null,
             "param(s)": null
@@ -246,7 +246,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true\" alt=\"dimmer\" height=150 width=200>",
         "load_n_init": {
             "doc": null,
             "param(s)": "cache=None"
@@ -272,7 +272,7 @@
             "param(s)": "state=None"
         }
     },
-    "distance_HCSR04": {
+    "distance": {
         "deinit": {
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
             "param(s)": null
@@ -289,7 +289,7 @@
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true\" alt=\"distance\" height=150 width=200>",
         "pinmap": {
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
             "param(s)": null
@@ -300,7 +300,7 @@
             "doc": "No module named 'onewire'",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/ds18.png?raw=true\" alt=\"ds18\" height=150 width=200>",
         "measure": {
             "doc": "No module named 'onewire'",
             "param(s)": null
@@ -323,7 +323,7 @@
             "doc": "No module named 'esp32'",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/esp32.png?raw=true\" alt=\"esp32\" height=150 width=200>",
         "temp": {
             "doc": "No module named 'esp32'",
             "param(s)": null
@@ -346,7 +346,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/genIO.png?raw=true\" alt=\"genIO\" height=150 width=200>",
         "set_out": {
             "doc": "\n    Set simple digital (high/low) output\n    :param pin: pun number or logical name\n    :param state: state: 1/0 = True/False\n    :return: verdict\n    ",
             "param(s)": "pin state"
@@ -361,7 +361,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/i2c.png?raw=true\" alt=\"i2c\" height=150 width=200>",
         "pinmap": {
             "doc": "\"\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
             "param(s)": null
@@ -380,7 +380,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/intercon.png?raw=true\" alt=\"intercon\" height=150 width=200>",
         "sendcmd": {
             "doc": null,
             "param(s)": "*args **kwargs"
@@ -395,7 +395,7 @@
             "doc": "\n    Measure light illuminance in flux\n    ",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true\" alt=\"light_sensor\" height=150 width=200>",
         "intensity": {
             "doc": "\n    Measure light intensity in %\n    max value: 65535\n    ",
             "param(s)": null
@@ -426,7 +426,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true\" alt=\"neoeffects\" height=150 width=200>",
         "lmdep": {
             "doc": null,
             "param(s)": null
@@ -461,7 +461,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true\" alt=\"neopixel\" height=150 width=200>",
         "load_n_init": {
             "doc": "\n    Initiate NeoPixel RGB module\n    - Load .pds file for that module\n    - restore state machine from .pds\n    :param cache: file state machine chache: True(default)/False\n    :param ledcnt: led segment count (for addressing) - should be set in boothook\n    :return: Cache state\n    ",
             "param(s)": "cache=None ledcnt=24"
@@ -512,7 +512,7 @@
             "doc": "No module named 'framebuf'",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true\" alt=\"oled\" height=150 width=200>",
         "invert": {
             "doc": "No module named 'framebuf'",
             "param(s)": null
@@ -559,7 +559,7 @@
             "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true\" alt=\"oled_ui\" height=150 width=200>",
         "intercon_genpage": {
             "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
             "param(s)": "cmd=None"
@@ -586,7 +586,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/pet_feeder.png?raw=true\" alt=\"pet_feeder\" height=150 width=200>",
         "lmdep": {
             "doc": null,
             "param(s)": null
@@ -605,7 +605,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/ph_sensor.png?raw=true\" alt=\"ph_sensor\" height=150 width=200>",
         "measure": {
             "doc": null,
             "param(s)": null
@@ -624,7 +624,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/presence.png?raw=true\" alt=\"presence\" height=150 width=200>",
         "motion_trig": {
             "doc": "\n    Set motion trigger by IRQx - PIR sensor\n    - Reset OFF_EV_TIMER to TIMER_VALUE\n    - Start async mic sample task\n    ",
             "param(s)": "sample_ms=30 buff_size=15"
@@ -651,7 +651,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true\" alt=\"rgb\" height=150 width=200>",
         "load_n_init": {
             "doc": "\n    Initiate RGB module\n    - Load .pds file for that module\n    - restore state machine from .pds\n    :param cache: file state machine chache: True(default)/False\n    :return: Cache state\n    ",
             "param(s)": "cache=None"
@@ -702,7 +702,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true\" alt=\"roboarm\" height=150 width=200>",
         "jiggle": {
             "doc": "\n    Joggle roboarm in small range\n    ",
             "param(s)": null
@@ -745,7 +745,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/robustness.png?raw=true\" alt=\"robustness\" height=150 width=200>",
         "memory_leak": {
             "doc": null,
             "param(s)": "cnt=160"
@@ -768,7 +768,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/servo.png?raw=true\" alt=\"servo\" height=150 width=200>",
         "pinmap": {
             "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
             "param(s)": null
@@ -799,7 +799,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/stepper.png?raw=true\" alt=\"stepper\" height=150 width=200>",
         "load_n_init": {
             "doc": null,
             "param(s)": "mode=\"HALF\""
@@ -822,7 +822,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true\" alt=\"switch\" height=150 width=200>",
         "load_n_init": {
             "doc": null,
             "param(s)": "cache=None ch_init=None"
@@ -901,7 +901,7 @@
             "doc": null,
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true\" alt=\"system\" height=150 width=200>",
         "info": {
             "doc": null,
             "param(s)": "msgobj"
@@ -944,7 +944,7 @@
             "doc": "No module named 'tinypico'",
             "param(s)": null
         },
-        "img": "<img src=\"/Users/bnm/Documents/NodeMcu/MicrOS/media/logo_mini.png\" alt=\"\" height=100 width=100> ",
+        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/tinyrgb.png?raw=true\" alt=\"tinyrgb\" height=150 width=200>",
         "setrgb": {
             "doc": "No module named 'tinypico'",
             "param(s)": "r=None g=None b=None br=None"

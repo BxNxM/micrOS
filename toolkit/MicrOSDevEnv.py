@@ -96,7 +96,6 @@ class MicrOSDevTool:
 
         # External access for exec results
         self.execution_verdict = []
-        self.LM_functions_static_dump_gen()
 
     #####################################################
     #               BASE / INTERNAL METHODS             #
@@ -443,6 +442,9 @@ class MicrOSDevTool:
             self.console("PRECOMPILE MICROS - FUNCTION NOT AVAILABLE - MPY-CROSS MISSING!", state='err')
             self.console("Use stored precompiled resources", state='ok')
             return False
+
+        # Generate static documentation for LMs
+        self.LM_functions_static_dump_gen()
 
         if not self.dummy_exec:
             self.__cleanup_precompiled_dir()
@@ -973,19 +975,21 @@ class MicrOSDevTool:
   table{border-collapse:collapse;width:80%;}
   td{height:40px;}
   
-  tbody tr:nth-child(even){background: gray;}
+  tbody tr:nth-child(even){background: rgb(82, 122, 122);}
 
 </style>
 
 </head>
 <body style="background-color:LightGray;">
-<h1 style="background-color:MediumSeaGreen;">
+<h1 style="background-color: rgb(82, 122, 122);">
 
+<img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="{mod}" height=150>
 micrOS Load Modules
 
 </h1>
 <p>
-    <b>Generated function manual with module doc strings.</b> 
+    <b>Generated function manual with module doc strings.</b><br>
+    <b>[i] Use <module_name> pinmap function to get pins on a runtime system and start DIY</b>  
 </p>
 """
         html_body_end = """</body>

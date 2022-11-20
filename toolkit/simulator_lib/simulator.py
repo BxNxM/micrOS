@@ -105,7 +105,8 @@ class micrOSIM():
                     doc_str = str(e)
                 # Update structure with doc-str
                 structure[mod][func]['doc'] = doc_str
-                structure_to_html[mod][func]['doc'] = None if doc_str is None else doc_str.strip().replace('\n', '<br>\n')
+                structure_to_html[mod][func]['doc'] = 'No doc string available' if doc_str is None else doc_str.strip()\
+                    .replace('\n', '<br>\n').replace(' ', '&nbsp;')
                 # Remove empty param(s) cells
                 param_cell = structure_to_html[mod][func].get('param(s)', None)
                 if param_cell is not None and len(param_cell.strip()) == 0:

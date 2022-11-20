@@ -194,13 +194,19 @@ def show():
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['i2c_scl', 'i2c_sda'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
            'show', 'poweron', 'poweroff', 'pinmap', 'INFO: OLED Module for SSD1306'

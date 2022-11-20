@@ -917,7 +917,7 @@ class MicrOSDevTool:
                         if not line:
                             break
                         if 'def ' in line and 'def _' not in line:
-                            if '(self' in line:
+                            if '(self' in line or '(cls' in line:
                                 continue
                             # Gen proper func name
                             command = '{}'.format(line.split(')')[0]).replace("def", '').strip()
@@ -930,9 +930,8 @@ class MicrOSDevTool:
                             # Save record
                             if module_function_dict[module_name].get(func, None) is None:
                                 module_function_dict[module_name][func] = {}
-                            module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else None
-                module_img_url = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
-                module_function_dict[module_name]['img'] = f'<img src="{module_img_url}" alt="{module_name}" height=150>'
+                            module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else ""
+                module_function_dict[module_name]['img'] = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
 
@@ -942,7 +941,7 @@ class MicrOSDevTool:
         sys.path.append(self.micros_sim_resources)
         import simulator
         sim_proc = simulator.micrOSIM(doc_resolve=True)
-        module_function_dict = sim_proc.gen_lm_doc(module_function_dict)
+        module_function_dict, module_function_dict_html = sim_proc.gen_lm_doc_json_html(module_function_dict)
 
         # [JSON] Dump generated Load Module description: static function manual: sfuncman.json
         self.console("Dump micrOS static manual: {}".format(static_help_json_path))
@@ -950,14 +949,12 @@ class MicrOSDevTool:
             json.dump(module_function_dict, f, indent=4, sort_keys=True)
 
         # +[HTML] Convert dict to json -> html table
-        module_function_json = json.dumps(module_function_dict, indent=4)
+        module_function_json = json.dumps(module_function_dict_html, indent=4)
         import json2html
         table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
         html_table = json2html.json2html.convert(json=module_function_json,
                                                  table_attributes=table_attributes,
                                                  clubbing=True, escape=False, encode=False)
-        # Newline dirty hack in html
-        html_table = html_table.replace('\n', '<br>\n')
 
         # http://corelangs.com/css/table/tablecolor.html
         # http://corelangs.com/css/table/tablecolor.html
@@ -982,7 +979,11 @@ class MicrOSDevTool:
 
 </head>
 <body style="background-color:LightGray;">
-<h1 style="background-color:MediumSeaGreen;">micrOS Load Modules</h1>
+<h1 style="background-color:MediumSeaGreen;">
+
+micrOS Load Modules
+
+</h1>
 <p>
     <b>Generated function manual with module doc strings.</b> 
 </p>

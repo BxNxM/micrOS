@@ -1,5 +1,4 @@
 from ConfigHandler import cfgget
-from gc import mem_free
 from utime import localtime
 from network import WLAN, STA_IF
 import LM_oled as oled
@@ -8,13 +7,17 @@ from Network import ifconfig
 from Debug import errlog_add
 from machine import Pin
 try:
+    from gc import mem_free
+except:
+    from simgc import mem_free  # simulator mode
+try:
     import LM_intercon as InterCon
 except:
-    InterCon = None
+    InterCon = None             # Optional function handling
 try:
     from LM_genIO import get_adc
 except:
-    get_adc = None
+    get_adc = None              # Optional function handling
 
 
 #################################
@@ -399,13 +402,19 @@ def intercon_genpage(cmd=None):
 #######################
 
 def lmdep():
+    """
+    Show Load Module dependency
+    - List of load modules used by this application
+    :return: tuple
+    """
     return 'oled', 'intercon', 'genIO'
 
 
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     pin_map = oled.pinmap()
@@ -414,6 +423,11 @@ def pinmap():
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'pageui pwr_sec=None/int(sec)', 'control next/prev/press/on/off',\
            'msgbox "msg"', 'intercon_genpage "host cmd"',\
            'pinmap', 'INFO: OLED Module for SSD1306'

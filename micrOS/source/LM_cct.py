@@ -59,10 +59,10 @@ def __persistent_cache_manager(mode):
 def load_n_init(cache=None):
     """
     Initiate Cold white / Warm white LED module
-    - Load .pds file for that module
-    - restore state machine from .pds
-    :param cache: file state machine chache: True(default)/False
-    :return: Cache state
+    :param cache bool: file state machine cache: True/False/None(default: automatic True)
+    - Load .pds (state machine cache) for this load module
+    - Apply loaded states to gpio pins (boot function)
+    :return str: Cache state
     """
     from sys import platform
     if cache is None:
@@ -231,6 +231,13 @@ def subscribe_presence(timer=30):
 # LM helper functions #
 #######################
 def status(lmf=None):
+    """
+    [i] micrOS LM naming convention
+    Show Load Module state machine
+    :param lmf str: selected load module function aka (function to show state of): None (show all states)
+    - micrOS client state synchronization
+    :return dict: CW, WW, S
+    """
     # Cold White / Warm White dedicated widget input - [OK]
     data = Data.CWWW_CACHE
     return {'CW': data[0], 'WW': data[1], 'S': data[2]}
@@ -239,13 +246,19 @@ def status(lmf=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['cwhite', 'wwhite'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'white c=<0-1000> w=<0-1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', 'brightness percent=<0-100> smooth=True', \
            'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition',\

@@ -319,17 +319,28 @@ def measure_w_co2():
 #######################
 
 def lmdep():
+    """
+    Show Load Module dependency
+    - List of load modules used by this application
+    :return: tuple
+    """
     return 'co2'
 
 
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['i2c_scl', 'i2c_sda'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'measure', 'measure_w_co2', 'lmdep', 'pinmap'

@@ -187,13 +187,19 @@ def get_samples():
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['mic', 'irq1'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'motion_trig sample_ms=30 buff_size=15', 'threshold th=3',\
            'get_samples', 'subscribe_intercon on="host cmd" off="host cmd"',\
            'pinmap'

@@ -207,6 +207,13 @@ def play(rtttlstr='d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'):
 
 
 def load_n_init(cache=None):
+    """
+    Initiate buzzer module
+    :param cache bool: file state machine cache: True/False/None(default: automatic True)
+    - Load .pds (state machine cache) for this load module
+    - Apply loaded states to gpio pins (boot function)
+    :return str: Cache state
+    """
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
@@ -224,10 +231,17 @@ def load_n_init(cache=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump('buzzer')
 
+
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr>', 'load_n_init', 'pinmap'

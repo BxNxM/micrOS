@@ -68,12 +68,18 @@ def set_direction(direc=0):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['l298speed', 'l298dir_1', 'l298dir_2'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'm1_control direc=<0/1> speed=<0-1023>', 'set_speed <0-1023>',\
            'set_direction <0-1>', 'stop', 'pinmap'

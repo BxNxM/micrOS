@@ -50,6 +50,13 @@ def __init_switches_state(state=None, ch_init=None):
 
 
 def load_n_init(cache=None, ch_init=None):
+    """
+    Initiate switch module (4 switch pack)
+    :param cache bool: file state machine cache: True/False/None(default: automatic True)
+    - Load .pds (state machine cache) for this load module
+    - Apply loaded states to gpio pins (boot function)
+    :return str: Cache state
+    """
     if ch_init is None:
         ch_init = []
     from sys import platform
@@ -191,8 +198,12 @@ def toggle4():
 
 def status(lmf=None):
     """
-    :param lmf: Load Module Function name e.x.: toggle / set_state2
-    :return: return all / selected status
+    [i] micrOS LM naming convention
+    Show Load Module state machine
+    :param lmf str: selected load module function aka (function to show state of): None (show all states)
+    - lmf: set_stateX, toggleX - X: 1,2,3,4
+    - micrOS client state synchronization
+    :return dict: SW1, SW2, SW3, SW4 -> S
     """
     if lmf is None:
         return {'SW1': __SWITCH_STATE[0], 'SW2': __SWITCH_STATE[1],
@@ -211,13 +222,19 @@ def status(lmf=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['switch_1', 'switch_2', 'switch_3', 'switch_4'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'set_state state=<0,1>', 'toggle', \
            'set_state2 state=<0,1>', 'toggle2', \
            'set_state3 state=<0,1>', 'toggle3', \

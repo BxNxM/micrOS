@@ -34,7 +34,7 @@ class DrawEffect:
         return cls.pix_cnt
 
     def __offset(cls, shift):
-        def gen():
+        def _gen():
             while True:
                 if cls.auto_shift:
                     # Step rotation cycle - shift True
@@ -47,7 +47,7 @@ class DrawEffect:
                     yield k
         cls.auto_shift = shift
         if cls.offset_gen is None:
-            cls.offset_gen = gen()
+            cls.offset_gen = _gen()
         return cls.offset_gen
 
     def draw(cls, iterable, shift=False):
@@ -219,19 +219,30 @@ def color(r=None, g=None, b=None):
 #######################
 
 def lmdep():
+    """
+    Show Load Module dependency
+    - List of load modules used by this application
+    :return: tuple
+    """
     return 'neopixel'
 
 
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pm()
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',\
            'cycle r g b shift=True ledcnt=24',\
            'rainbow step=1 br=<5-100> ledcnt=24',\

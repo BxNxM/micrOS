@@ -138,6 +138,17 @@ class I2C:
         return b'00000000'
 
 
+class SoftI2C(I2C):
+
+    def __init__(self, scl, sda, freq):
+        super().__init__(scl, sda, freq)
+
+
+class SoftSPI:
+    def __init__(self, sck, mosi, miso):
+        pass
+
+
 def freq(*args, **kwargs):
     pass
 
@@ -153,3 +164,7 @@ def reset_cause():
 
 def unique_id():
     return hex(1234)
+
+
+def time_pulse_us():
+    return time.time_ns()*1000

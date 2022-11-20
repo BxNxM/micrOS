@@ -18,7 +18,7 @@ class Data:
     RGB_CACHE = [197, 35, 10, 0]           # R, G, B (default color) + RGB state (default: off)
     PERSISTENT_CACHE = False
     FADE_OBJS = (None, None, None)
-    CH_MAX = 1000                          # maximum value per chanel
+    CH_MAX = 1000                          # maximum value per channel
 
 
 #########################################
@@ -65,10 +65,10 @@ def __persistent_cache_manager(mode):
 def load_n_init(cache=None):
     """
     Initiate RGB module
-    - Load .pds file for that module
-    - restore state machine from .pds
-    :param cache: file state machine chache: True(default)/False
-    :return: Cache state
+    :param cache bool: file state machine cache: True/False/None(default: automatic True)
+    - Load .pds (state machine cache) for this load module
+    - Apply loaded states to gpio pins (boot function)
+    :return str: Cache state
     """
     from sys import platform
     if cache is None:
@@ -87,12 +87,12 @@ def load_n_init(cache=None):
 def rgb(r=None, g=None, b=None, smooth=True, force=True):
     """
     Set RGB values with PWM signal
-    :param r: red value   0-1000
-    :param g: green value 0-1000
-    :param b: blue value  0-1000
-    :param smooth: runs colors change with smooth effect
-    :param force: clean fade generators and set color
-    :return: verdict string
+    :param r int: red value   0-1000
+    :param g int: green value 0-1000
+    :param b int: blue value  0-1000
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :param force bool: clean fade generators and set color (default: True)
+    :return dict: rgb status - states: R, G, B, S
     """
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
         step_ms = 2
@@ -135,6 +135,12 @@ def rgb(r=None, g=None, b=None, smooth=True, force=True):
 
 
 def brightness(percent=None, smooth=True):
+    """
+    Set RGB brightness
+    :param percent int: brightness percentage: 0-100
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :return dict: rgb status - states: R, G, B, S
+    """
     # Get color (channel) max brightness
     ch_max = max(Data.RGB_CACHE[:-1])
     # Calculate actual brightness
@@ -163,9 +169,9 @@ def brightness(percent=None, smooth=True):
 def toggle(state=None, smooth=True):
     """
     Toggle led state based on the stored state
-    :param state: True(1)/False(0)
-    :param smooth: runs colors change with smooth effect
-    :return: verdict
+    :param state bool: True(1)/False(0)/None(default - automatic toggle)
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :return dict: rgb status - states: R, G, B, S
     """
     # Set state directly (inverse) + check change
     if state is not None:
@@ -189,11 +195,11 @@ def set_transition(r, g, b, sec):
     """
     Set transition color change for long dimming periods < 30sec
     - creates the color dimming generators
-    :param r: red value   0-1000
-    :param g: green value 0-1000
-    :param b: blue value  0-1000
-    :param sec: transition length in sec
-    :return: info msg string
+    :param r int: red value   0-1000
+    :param g int: green value 0-1000
+    :param b int: blue value  0-1000
+    :param sec int: transition length in sec
+    :return str: info msg string
     """
     # Set by cron OR manual "effect"
     Data.RGB_CACHE[3] = 1
@@ -212,7 +218,7 @@ def run_transition():
     """
     Transition execution - color change for long dimming periods
     - runs the generated color dimming generators
-    :return: Execution verdict
+    :return str: Execution verdict: Run / No Run
     """
     if None not in Data.FADE_OBJS:
         try:
@@ -232,7 +238,10 @@ def run_transition():
 
 def random(smooth=True, max_val=1000):
     """
-    Demo function: random color change
+    Demo function: implements random color change
+    :param smooth bool: enable smooth color transition: True(default)/False
+    :param max_val: set channel maximum generated value: 0-1000
+    :return dict: rgb status - states: R, G, B, S
     """
     r = randint(0, max_val)
     g = randint(0, max_val)
@@ -243,6 +252,8 @@ def random(smooth=True, max_val=1000):
 def subscribe_presence(timer=30):
     """
     Initialize LM presence module with ON/OFF callback functions
+    :param timer int: counter value in sec
+    :return: None
     """
     from LM_presence import _subscribe
     _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
@@ -253,7 +264,13 @@ def subscribe_presence(timer=30):
 
 
 def status(lmf=None):
-    # RGB dedicated widget input - [OK]
+    """
+    [i] micrOS LM naming convention
+    Show Load Module state machine
+    :param lmf str: selected load module function aka (function to show state of): None (show all states)
+    - micrOS client state synchronization
+    :return dict: R, G, B, S
+    """
     data = Data.RGB_CACHE
     return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
 
@@ -261,14 +278,19 @@ def status(lmf=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['redgb', 'rgreenb', 'rgbue'])
 
 
 def help():
-    # Return help msg
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
            'brightness percent=<0-100> smooth=True',\

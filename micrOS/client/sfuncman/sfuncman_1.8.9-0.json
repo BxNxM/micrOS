@@ -1,17 +1,17 @@
 {
     "L298N_DCmotor": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/L298N_DCmotor.png?raw=true\" alt=\"L298N_DCmotor\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L298N_DCmotor.png?raw=true",
         "m1_control": {
             "doc": null,
             "param(s)": "direc=None speed=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "set_direction": {
             "doc": "\n    direc (direction) values:\n    0: forward\n    1: backward\n    ",
@@ -23,60 +23,60 @@
         },
         "stop": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "L9110_DCmotor": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/L9110_DCmotor.png?raw=true\" alt=\"L9110_DCmotor\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L9110_DCmotor.png?raw=true",
         "motor_control": {
             "doc": null,
             "param(s)": "direc=None speed=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         }
     },
     "VL53L0X": {
         "help": {
             "doc": "No module named 'ustruct'",
-            "param(s)": null
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true\" alt=\"VL53L0X\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true",
         "measure": {
             "doc": "No module named 'ustruct'",
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
             "doc": "No module named 'ustruct'",
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "bme280": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true\" alt=\"bme280\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true",
         "lmdep": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "measure": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "measure_w_co2": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         }
     },
     "buzzer": {
@@ -85,17 +85,17 @@
             "param(s)": "repeat=1 freq=None"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true\" alt=\"buzzer\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true",
         "load_n_init": {
-            "doc": null,
+            "doc": "\n    Initiate buzzer module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "play": {
             "doc": null,
@@ -108,25 +108,25 @@
             "param(s)": "repeat=10 delta=20"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/catgame.png?raw=true\" alt=\"catgame\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/catgame.png?raw=true",
         "live_game": {
             "doc": null,
             "param(s)": "chance=10"
         },
         "lmdep": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "stop": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "cct": {
@@ -135,17 +135,17 @@
             "param(s)": "percent=None smooth=True"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true\" alt=\"cct\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true",
         "load_n_init": {
-            "doc": "\n    Initiate Cold white / Warm white LED module\n    - Load .pds file for that module\n    - restore state machine from .pds\n    :param cache: file state machine chache: True(default)/False\n    :return: Cache state\n    ",
+            "doc": "\n    Initiate Cold white / Warm white LED module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "random": {
             "doc": "\n    Demo function: random color change\n    ",
@@ -153,14 +153,14 @@
         },
         "run_transition": {
             "doc": "\n    Transition execution - white channels change for long dimming periods\n    - runs the generated 2 white dimming generators\n    :return: Execution verdict\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "set_transition": {
             "doc": "\n    Set transition white channel change for long dimming periods < 30sec\n    - creates the 2 white dimming generators\n    :param cw: cold white value   0-1000\n    :param ww: warm white value 0-1000\n    :param sec: transition length in sec\n    :return: info msg string\n    ",
             "param(s)": "cw ww sec"
         },
         "status": {
-            "doc": null,
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: CW, WW, S\n    ",
             "param(s)": "lmf=None"
         },
         "subscribe_presence": {
@@ -178,89 +178,89 @@
     },
     "co2": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true\" alt=\"co2\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true",
         "measure_mq135": {
             "doc": "\n    CO2 Gas Concentration - Parts-per-million - PPM\n    -> 1ppm = 0.0001% gas.\n    Concentration evaluation:\n        250-400ppm      Normal background concentration in outdoor ambient air\n        400-1,000ppm    Concentrations typical of occupied indoor spaces with good air exchange\n        1,000-2,000ppm  Complaints of drowsiness and poor air.\n        2,000-5,000 ppm Headaches, sleepiness and stagnant, stale, stuffy air. Poor concentration, loss of attention, increased heart rate and slight nausea may also be present.\n        5,000ppm        Workplace exposure limit (as 8-hour TWA) in most jurisdictions.\n        >40,000 ppm     Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.\n    ",
             "param(s)": "temperature=None humidity=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "raw_measure_mq135": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "dht11": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true\" alt=\"dht11\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true",
         "lmdep": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "measure": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "measure_w_co2": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         }
     },
     "dht22": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true\" alt=\"dht22\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true",
         "lmdep": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "measure": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "measure_w_co2": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         }
     },
     "dimmer": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true\" alt=\"dimmer\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true",
         "load_n_init": {
-            "doc": null,
+            "doc": "\n    Initiate dimmer module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "set_value": {
             "doc": null,
             "param(s)": "value=None"
         },
         "status": {
-            "doc": null,
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: X, S\n    ",
             "param(s)": "lmf=None"
         },
         "subscribe_presence": {
@@ -275,58 +275,58 @@
     "distance": {
         "deinit": {
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
-            "param(s)": null
+            "param(s)": ""
         },
         "distance_cm": {
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
-            "param(s)": null
+            "param(s)": ""
         },
         "distance_mm": {
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
-            "param(s)": null
+            "param(s)": ""
         },
         "help": {
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
-            "param(s)": null
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true\" alt=\"distance\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true",
         "pinmap": {
             "doc": "cannot import name 'time_pulse_us' from 'machine' (/Users/bnm/Documents/NodeMcu/MicrOS/toolkit/simulator_lib/machine.py)",
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "ds18": {
         "help": {
             "doc": "No module named 'onewire'",
-            "param(s)": null
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/ds18.png?raw=true\" alt=\"ds18\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ds18.png?raw=true",
         "measure": {
             "doc": "No module named 'onewire'",
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
             "doc": "No module named 'onewire'",
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "esp32": {
         "battery": {
             "doc": "No module named 'esp32'",
-            "param(s)": null
+            "param(s)": ""
         },
         "hall": {
             "doc": "No module named 'esp32'",
-            "param(s)": null
+            "param(s)": ""
         },
         "help": {
             "doc": "No module named 'esp32'",
-            "param(s)": null
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/esp32.png?raw=true\" alt=\"esp32\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/esp32.png?raw=true",
         "temp": {
             "doc": "No module named 'esp32'",
-            "param(s)": null
+            "param(s)": ""
         },
         "touch": {
             "doc": "No module named 'esp32'",
@@ -343,10 +343,10 @@
             "param(s)": "pin"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/genIO.png?raw=true\" alt=\"genIO\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/genIO.png?raw=true",
         "set_out": {
             "doc": "\n    Set simple digital (high/low) output\n    :param pin: pun number or logical name\n    :param state: state: 1/0 = True/False\n    :return: verdict\n    ",
             "param(s)": "pin state"
@@ -358,29 +358,29 @@
     },
     "i2c": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/i2c.png?raw=true\" alt=\"i2c\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/i2c.png?raw=true",
         "pinmap": {
-            "doc": "\"\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "scan": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "intercon": {
         "dump": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/intercon.png?raw=true\" alt=\"intercon\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/intercon.png?raw=true",
         "sendcmd": {
             "doc": null,
             "param(s)": "*args **kwargs"
@@ -388,21 +388,21 @@
     },
     "light_sensor": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
         "illuminance": {
             "doc": "\n    Measure light illuminance in flux\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true\" alt=\"light_sensor\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true",
         "intensity": {
             "doc": "\n    Measure light intensity in %\n    max value: 65535\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         }
     },
     "neoeffects": {
@@ -414,30 +414,22 @@
             "doc": null,
             "param(s)": "r=None g=None b=None shift=True ledcnt=24"
         },
-        "draw": {
-            "doc": "module 'LM_neoeffects' has no attribute 'draw'",
-            "param(s)": "cls iterable shift=False"
-        },
-        "gen": {
-            "doc": "module 'LM_neoeffects' has no attribute 'gen'",
-            "param(s)": null
-        },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true\" alt=\"neoeffects\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true",
         "lmdep": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "meteor": {
             "doc": null,
             "param(s)": "r=None g=None b=None shift=True ledcnt=24"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "rainbow": {
             "doc": null,
@@ -458,12 +450,12 @@
             "param(s)": "percent=None smooth=True"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true\" alt=\"neopixel\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true",
         "load_n_init": {
-            "doc": "\n    Initiate NeoPixel RGB module\n    - Load .pds file for that module\n    - restore state machine from .pds\n    :param cache: file state machine chache: True(default)/False\n    :param ledcnt: led segment count (for addressing) - should be set in boothook\n    :return: Cache state\n    ",
+            "doc": "\n    Initiate NeoPixel RGB module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None ledcnt=24"
         },
         "neopixel": {
@@ -471,8 +463,8 @@
             "param(s)": "r=None g=None b=None smooth=True"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "random": {
             "doc": "\n    Demo function: random color change\n    ",
@@ -480,7 +472,7 @@
         },
         "run_transition": {
             "doc": "\n    Transition execution/\"stepping\"\n    - run color change for long dimming periods\n        - runs the generated color dimming generators\n    :return: Execution verdict\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "segment": {
             "doc": null,
@@ -491,7 +483,7 @@
             "param(s)": "r g b sec"
         },
         "status": {
-            "doc": null,
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: R, G, B, S\n    ",
             "param(s)": "lmf=None"
         },
         "subscribe_presence": {
@@ -505,91 +497,91 @@
     },
     "oled": {
         "clean": {
-            "doc": "No module named 'framebuf'",
+            "doc": null,
             "param(s)": "state=0"
         },
         "help": {
-            "doc": "No module named 'framebuf'",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true\" alt=\"oled\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true",
         "invert": {
-            "doc": "No module named 'framebuf'",
-            "param(s)": null
+            "doc": null,
+            "param(s)": ""
         },
         "line": {
-            "doc": "No module named 'framebuf'",
+            "doc": null,
             "param(s)": "sx sy ex ey state=1"
         },
         "pinmap": {
-            "doc": "No module named 'framebuf'",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "poweroff": {
-            "doc": "No module named 'framebuf'",
-            "param(s)": null
+            "doc": null,
+            "param(s)": ""
         },
         "poweron": {
-            "doc": "No module named 'framebuf'",
-            "param(s)": null
+            "doc": null,
+            "param(s)": ""
         },
         "rect": {
-            "doc": "No module named 'framebuf'",
+            "doc": null,
             "param(s)": "x y w h state=1 fill=False"
         },
         "show": {
-            "doc": "No module named 'framebuf'",
-            "param(s)": null
+            "doc": null,
+            "param(s)": ""
         },
         "text": {
-            "doc": "No module named 'framebuf'",
+            "doc": null,
             "param(s)": "string=\"text\" x=0 y=0"
         }
     },
     "oled_ui": {
         "button": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
-            "param(s)": null
+            "doc": "module 'LM_oled_ui' has no attribute 'button'",
+            "param(s)": ""
         },
         "control": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
+            "doc": "OLED UI control functions interface",
             "param(s)": "cmd='next'"
         },
         "help": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true\" alt=\"oled_ui\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true",
         "intercon_genpage": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
+            "doc": "\n    Create intercon pages dynamically :)\n    based on cmd value.\n    cmd: host hello / host system clock\n    ",
             "param(s)": "cmd=None"
         },
         "lmdep": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "msgbox": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
+            "doc": "POP-UP message function - interface",
             "param(s)": "msg='micrOS msg'"
         },
         "pageui": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
+            "doc": " INIT PageUI - add page definitions here - interface",
             "param(s)": "pwr_sec=None"
         },
         "pinmap": {
-            "doc": "cannot import name 'mem_free' from 'gc' (unknown location)",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         }
     },
     "pet_feeder": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/pet_feeder.png?raw=true\" alt=\"pet_feeder\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/pet_feeder.png?raw=true",
         "lmdep": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "portion": {
             "doc": null,
@@ -602,36 +594,36 @@
     },
     "ph_sensor": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/ph_sensor.png?raw=true\" alt=\"ph_sensor\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ph_sensor.png?raw=true",
         "measure": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         }
     },
     "presence": {
         "get_samples": {
             "doc": "\n    [DEBUG] Return measured data set\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/presence.png?raw=true\" alt=\"presence\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/presence.png?raw=true",
         "motion_trig": {
             "doc": "\n    Set motion trigger by IRQx - PIR sensor\n    - Reset OFF_EV_TIMER to TIMER_VALUE\n    - Start async mic sample task\n    ",
             "param(s)": "sample_ms=30 buff_size=15"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "subscribe_intercon": {
             "doc": "\n    Subscribe function for remote function execution\n    - intercon ON/OFF string callbacks\n        ON: host cmd\n        OFF: host cmd\n    ",
@@ -644,48 +636,48 @@
     },
     "rgb": {
         "brightness": {
-            "doc": null,
+            "doc": "\n    Set RGB brightness\n    :param percent int: brightness percentage: 0-100\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :return dict: rgb status - states: R, G, B, S\n    ",
             "param(s)": "percent=None smooth=True"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true\" alt=\"rgb\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true",
         "load_n_init": {
-            "doc": "\n    Initiate RGB module\n    - Load .pds file for that module\n    - restore state machine from .pds\n    :param cache: file state machine chache: True(default)/False\n    :return: Cache state\n    ",
+            "doc": "\n    Initiate RGB module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "random": {
-            "doc": "\n    Demo function: random color change\n    ",
+            "doc": "\n    Demo function: implements random color change\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :param max_val: set channel maximum generated value: 0-1000\n    :return dict: rgb status - states: R, G, B, S\n    ",
             "param(s)": "smooth=True max_val=1000"
         },
         "rgb": {
-            "doc": "\n    Set RGB values with PWM signal\n    :param r: red value   0-1000\n    :param g: green value 0-1000\n    :param b: blue value  0-1000\n    :param smooth: runs colors change with smooth effect\n    :param force: clean fade generators and set color\n    :return: verdict string\n    ",
+            "doc": "\n    Set RGB values with PWM signal\n    :param r int: red value   0-1000\n    :param g int: green value 0-1000\n    :param b int: blue value  0-1000\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :param force bool: clean fade generators and set color (default: True)\n    :return dict: rgb status - states: R, G, B, S\n    ",
             "param(s)": "r=None g=None b=None smooth=True"
         },
         "run_transition": {
-            "doc": "\n    Transition execution - color change for long dimming periods\n    - runs the generated color dimming generators\n    :return: Execution verdict\n    ",
-            "param(s)": null
+            "doc": "\n    Transition execution - color change for long dimming periods\n    - runs the generated color dimming generators\n    :return str: Execution verdict: Run / No Run\n    ",
+            "param(s)": ""
         },
         "set_transition": {
-            "doc": "\n    Set transition color change for long dimming periods < 30sec\n    - creates the color dimming generators\n    :param r: red value   0-1000\n    :param g: green value 0-1000\n    :param b: blue value  0-1000\n    :param sec: transition length in sec\n    :return: info msg string\n    ",
+            "doc": "\n    Set transition color change for long dimming periods < 30sec\n    - creates the color dimming generators\n    :param r int: red value   0-1000\n    :param g int: green value 0-1000\n    :param b int: blue value  0-1000\n    :param sec int: transition length in sec\n    :return str: info msg string\n    ",
             "param(s)": "r g b sec"
         },
         "status": {
-            "doc": null,
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: R, G, B, S\n    ",
             "param(s)": "lmf=None"
         },
         "subscribe_presence": {
-            "doc": "\n    Initialize LM presence module with ON/OFF callback functions\n    ",
+            "doc": "\n    Initialize LM presence module with ON/OFF callback functions\n    :param timer int: counter value in sec\n    :return: None\n    ",
             "param(s)": "timer=30"
         },
         "toggle": {
-            "doc": "\n    Toggle led state based on the stored state\n    :param state: True(1)/False(0)\n    :param smooth: runs colors change with smooth effect\n    :return: verdict\n    ",
+            "doc": "\n    Toggle led state based on the stored state\n    :param state bool: True(1)/False(0)/None(default - automatic toggle)\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :return dict: rgb status - states: R, G, B, S\n    ",
             "param(s)": "state=None smooth=True"
         }
     },
@@ -699,25 +691,25 @@
             "param(s)": "x_new y_new speed_ms=None smooth=True"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true\" alt=\"roboarm\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true",
         "jiggle": {
             "doc": "\n    Joggle roboarm in small range\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "lmdep": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+            "param(s)": ""
         },
         "load_n_init": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    Initiate roboarm module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
+            "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "play": {
             "doc": "\n    Runs move instructions from input or RoboArm.MOVE_RECORD\n    :param args: X Y X2 Y2 ...\n    :param s: SPEED_MS (delay)\n    :param delay: delay in ms between steps\n    :param deinit: deinit servo after execution\n    :return: verdict\n    ",
@@ -733,26 +725,26 @@
         },
         "standby": {
             "doc": "\n    Standby roboarm - OFF switch\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "status": {
-            "doc": null,
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: X, Y\n    ",
             "param(s)": "lmf=None"
         }
     },
     "robustness": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/robustness.png?raw=true\" alt=\"robustness\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/robustness.png?raw=true",
         "memory_leak": {
             "doc": null,
             "param(s)": "cnt=160"
         },
         "raise_error": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "recursion_limit": {
             "doc": null,
@@ -762,16 +754,16 @@
     "servo": {
         "deinit": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/servo.png?raw=true\" alt=\"servo\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/servo.png?raw=true",
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "s2duty": {
             "doc": null,
@@ -779,14 +771,14 @@
         },
         "sdemo": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "sduty": {
             "doc": null,
             "param(s)": "duty=75"
         },
         "status": {
-            "doc": null,
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - lmf: sduty, s2duty\n    - micrOS client state synchronization\n    :return dict: S1(X), S2(X)\n    ",
             "param(s)": "lmf=None"
         }
     },
@@ -796,21 +788,21 @@
             "param(s)": "dg speed=None"
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/stepper.png?raw=true\" alt=\"stepper\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/stepper.png?raw=true",
         "load_n_init": {
             "doc": null,
             "param(s)": "mode=\"HALF\""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "standby": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "step": {
             "doc": null,
@@ -819,17 +811,17 @@
     },
     "switch": {
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true\" alt=\"switch\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true",
         "load_n_init": {
-            "doc": null,
+            "doc": "\n    Initiate switch module (4 switch pack)\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None ch_init=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins associated to the module\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
         },
         "set_state": {
             "doc": null,
@@ -848,24 +840,24 @@
             "param(s)": "state=None"
         },
         "status": {
-            "doc": "\n    :param lmf: Load Module Function name e.x.: toggle / set_state2\n    :return: return all / selected status\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - lmf: set_stateX, toggleX - X: 1,2,3,4\n    - micrOS client state synchronization\n    :return dict: SW1, SW2, SW3, SW4 -> S\n    ",
             "param(s)": "lmf=None"
         },
         "toggle": {
             "doc": "\n    Toggle led state based on the stored one\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "toggle2": {
             "doc": "\n    Toggle led state based on the stored one\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "toggle3": {
             "doc": "\n    Toggle led state based on the stored one\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "toggle4": {
             "doc": "\n    Toggle led state based on the stored one\n    ",
-            "param(s)": null
+            "param(s)": ""
         }
     },
     "system": {
@@ -879,29 +871,29 @@
         },
         "clock": {
             "doc": "\n    Get formatted localtime value\n    Format:\n        YYYY.MM.DD  hh:mm:ss\n        WD: 0-6 YD: 0-364\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "gclean": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "ha_sta": {
             "doc": "\n    Check and repair STA network mode\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "heartbeat": {
             "doc": "\n    Test function for built-in led blinking and test reply message\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "help": {
-            "doc": null,
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
         "ifconfig": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true\" alt=\"system\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true",
         "info": {
             "doc": null,
             "param(s)": "msgobj"
@@ -916,7 +908,7 @@
         },
         "ntp": {
             "doc": "\n    Trigger NTP time sync\n    ",
-            "param(s)": null
+            "param(s)": ""
         },
         "pinmap": {
             "doc": "\n    Get Logical pin by key runtime\n    ",
@@ -924,7 +916,7 @@
         },
         "rssi": {
             "doc": null,
-            "param(s)": null
+            "param(s)": ""
         },
         "setclock": {
             "doc": "\n    Set Localtime + RTC Clock manually\n    Parameters:\n        year\n        month\n        mday\n        hour\n        min\n        sec\n    Return:\n        localtime\n    ",
@@ -937,24 +929,24 @@
     },
     "tinyrgb": {
         "getstate": {
-            "doc": "No module named 'tinypico'",
-            "param(s)": null
+            "doc": null,
+            "param(s)": ""
         },
         "help": {
-            "doc": "No module named 'tinypico'",
-            "param(s)": null
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "param(s)": ""
         },
-        "img": "<img src=\"https://github.com/BxNxM/micrOS/blob/master/media/lms/tinyrgb.png?raw=true\" alt=\"tinyrgb\" height=150>",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tinyrgb.png?raw=true",
         "setrgb": {
-            "doc": "No module named 'tinypico'",
+            "doc": null,
             "param(s)": "r=None g=None b=None br=None"
         },
         "toggle": {
-            "doc": "No module named 'tinypico'",
+            "doc": null,
             "param(s)": "state=None"
         },
         "wheel": {
-            "doc": "No module named 'tinypico'",
+            "doc": null,
             "param(s)": "br=None"
         }
     }

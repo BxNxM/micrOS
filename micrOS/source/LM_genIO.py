@@ -81,4 +81,9 @@ def get_in(pin):
 #######################
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'set_pwm pin=<int> freq=<int> duty=<0-1000>', 'set_out pin state', 'get_adc pin', 'get_in pin'

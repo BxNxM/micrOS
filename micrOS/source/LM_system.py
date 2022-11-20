@@ -213,6 +213,11 @@ def ifconfig():
 #######################
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'info', 'gclean', 'heartbeat', 'clock',\
            'setclock year month mday hour min sec',\
            'ntp', 'module unload="LM_rgb/None"', \

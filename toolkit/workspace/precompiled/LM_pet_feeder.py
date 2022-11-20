@@ -31,8 +31,18 @@ def portion_new(count=1, forward=135, back=10):
 
 
 def lmdep():
+    """
+    Show Load Module dependency
+    - List of load modules used by this application
+    :return: tuple
+    """
     return 'servo', 'stepper'
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'portion repeat=1', '<-servo control',  'portion_new count=1', '<-stepper control', 'lmdep'

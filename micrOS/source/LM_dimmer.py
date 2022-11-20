@@ -65,6 +65,13 @@ def set_value(value=None):
 
 
 def load_n_init(cache=None):
+    """
+    Initiate dimmer module
+    :param cache bool: file state machine cache: True/False/None(default: automatic True)
+    - Load .pds (state machine cache) for this load module
+    - Apply loaded states to gpio pins (boot function)
+    :return str: Cache state
+    """
     from sys import platform
     global __PERSISTENT_CACHE
     if cache is None:
@@ -103,6 +110,13 @@ def subscribe_presence(timer=30):
 #######################
 
 def status(lmf=None):
+    """
+    [i] micrOS LM naming convention
+    Show Load Module state machine
+    :param lmf str: selected load module function aka (function to show state of): None (show all states)
+    - micrOS client state synchronization
+    :return dict: X, S
+    """
     # Slider dedicated widget input - [OK]
     data = __DIMMER_CACHE
     return {'X': data[1], 'S': data[0]}
@@ -111,12 +125,18 @@ def status(lmf=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump('dim_1')
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'set_value value=<0-1000>', 'toggle state=None', 'load_n_init',\
            'subscribe_presence', 'status', 'pinmap'

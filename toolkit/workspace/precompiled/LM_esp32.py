@@ -32,4 +32,9 @@ def battery():
 #######################
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'hall', 'temp', 'touch', 'battery', 'NOTE: battery only available on tinypico'

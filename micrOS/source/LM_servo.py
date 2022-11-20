@@ -94,6 +94,14 @@ def deinit():
 #######################
 
 def status(lmf=None):
+    """
+    [i] micrOS LM naming convention
+    Show Load Module state machine
+    :param lmf str: selected load module function aka (function to show state of): None (show all states)
+    - lmf: sduty, s2duty
+    - micrOS client state synchronization
+    :return dict: S1(X), S2(X)
+    """
     # Slider dedicated widget input - [OK]
     if lmf is None:
         return {'S1': Data.S, 'S2': Data.S2}
@@ -106,11 +114,17 @@ def status(lmf=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['servo_1', 'servo_2'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'sduty duty=<int>40-115', 'sdemo', 's2duty', 'deinit', 'status', 'pinmap'

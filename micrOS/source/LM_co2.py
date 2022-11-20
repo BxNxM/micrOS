@@ -120,12 +120,18 @@ def measure_mq135(temperature=None, humidity=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump('co2')
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'measure_mq135 temp=<int> hum=<int>', 'raw_measure_mq135', 'pinmap'
 

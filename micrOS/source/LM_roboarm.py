@@ -36,6 +36,13 @@ def __persistent_cache_manager(mode):
 
 
 def load_n_init():
+    """
+    Initiate roboarm module
+    :param cache bool: file state machine cache: True/False/None(default: automatic True)
+    - Load .pds (state machine cache) for this load module
+    - Apply loaded states to gpio pins (boot function)
+    :return str: Cache state
+    """
     # Initial positioning
     x, y = RoboArm.CENTER_XY, RoboArm.CENTER_XY
     servo.sduty(x)
@@ -231,18 +238,31 @@ def random(x_range=20, y_range=20, speed_ms=5):
 #######################
 
 def status(lmf=None):
+    """
+    [i] micrOS LM naming convention
+    Show Load Module state machine
+    :param lmf str: selected load module function aka (function to show state of): None (show all states)
+    - micrOS client state synchronization
+    :return dict: X, Y
+    """
     # Roboarm - Joystick dedicated widget input - [OK]
     return {'X': RoboArm.ACTUAL_XY[0], 'Y': RoboArm.ACTUAL_XY[1]}
 
 
 def lmdep():
+    """
+    Show Load Module dependency
+    - List of load modules used by this application
+    :return: tuple
+    """
     return 'servo', 'switch'
 
 
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     s_pm = servo.pinmap()
@@ -251,6 +271,11 @@ def pinmap():
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True', 'boot_move', 'standby',\
            'jiggle', 'play 40 40 115 115 s=<speed ms> delay=<ms> deinit=True',\
            'record clean=False', 'random x_range=20 y_range=20 speed_ms=5',\

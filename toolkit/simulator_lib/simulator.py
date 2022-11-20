@@ -2,6 +2,7 @@ import sys
 import os
 import multiprocessing
 import time
+import copy
 
 MYPATH = os.path.dirname(__file__)
 SIM_PATH = os.path.join(MYPATH, '../workspace/simulator')
@@ -18,7 +19,8 @@ class micrOSIM():
     def __init__(self, doc_resolve=False):
         if doc_resolve:
             console("[micrOSIM] Create micrOS LM doc (env proc)")
-            self.doc_output = None
+            # json_structure, html_structure
+            self.doc_output = (None, None)
         else:
             console("[micrOSIM] INFO: Number of cpu : {}".format(multiprocessing.cpu_count()))
             console("[micrOSIM] Create micrOS simulator process...")
@@ -75,12 +77,23 @@ class micrOSIM():
         micrOSIM.SIM_PROCESS_LIST = []
 
     def _lm_doc_strings(self, structure):
+        """
+        Create 2 dict structures adding docstring
+        - html hack structure
+        - json raw structure
+        """
+        structure_to_html = copy.deepcopy(structure)
+
         # Step into workspace path
         popd = LocalMachine.SimplePopPushd()
         popd.pushd(SIM_PATH)
 
         # Based on created module-function structure collect doc strings
         for mod, func_dict in structure.items():
+            # Embed img url to table
+            img_url = structure[mod]['img']
+            structure_to_html[mod]['img'] = f'<img src="{img_url}" alt="{mod}" height=150>'
+            # Parse function doc strings
             for func in func_dict:
                 if not isinstance(structure[mod][func], dict):
                     break
@@ -92,12 +105,13 @@ class micrOSIM():
                     doc_str = str(e)
                 # Update structure with doc-str
                 structure[mod][func]['doc'] = doc_str
+                structure_to_html[mod][func]['doc'] = None if doc_str is None else doc_str.strip().replace('\n', '<br>\n')
 
         # restore path
         popd.popd()
-        self.doc_output = structure
+        self.doc_output = (structure, structure_to_html)
 
-    def gen_lm_doc(self, structure):
+    def gen_lm_doc_json_html(self, structure):
         proc = multiprocessing.Process(target=self._lm_doc_strings(structure))
         while proc.is_alive():
             time.sleep(0.1)

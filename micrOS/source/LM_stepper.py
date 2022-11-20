@@ -123,13 +123,19 @@ def standby():
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump(['stppr_1', 'stppr_2', 'stppr_3', 'stppr_4'])
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'angle dg=+/-360 speed=<ms>',\
            'step st=+/-2 speed=<ms>',\
            'standby',\

@@ -61,11 +61,10 @@ def __persistent_cache_manager(mode):
 def load_n_init(cache=None, ledcnt=24):
     """
     Initiate NeoPixel RGB module
-    - Load .pds file for that module
-    - restore state machine from .pds
-    :param cache: file state machine chache: True(default)/False
-    :param ledcnt: led segment count (for addressing) - should be set in boothook
-    :return: Cache state
+    :param cache bool: file state machine cache: True/False/None(default: automatic True)
+    - Load .pds (state machine cache) for this load module
+    - Apply loaded states to gpio pins (boot function)
+    :return str: Cache state
     """
     if cache is None:
         Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
@@ -269,6 +268,13 @@ def subscribe_presence(timer=30):
 #######################
 
 def status(lmf=None):
+    """
+    [i] micrOS LM naming convention
+    Show Load Module state machine
+    :param lmf str: selected load module function aka (function to show state of): None (show all states)
+    - micrOS client state synchronization
+    :return dict: R, G, B, S
+    """
     # Neopixel(=RGB) dedicated widget input - [OK]
     data = Data.DCACHE
     return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
@@ -277,13 +283,19 @@ def status(lmf=None):
 def pinmap():
     """
     [i] micrOS LM naming convention
-    Shows logical pins associated to the module
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
     return pinmap_dump('neop')
 
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition',\

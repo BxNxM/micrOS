@@ -31,11 +31,17 @@ def sendcmd(*args, **kwargs):
 def dump():
     return dump_cache()
 
+
 #######################
 # LM helper functions #
 #######################
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'sendcmd "hello" host="IP/hostname.local") OR sendcmd host="IP/hostname.local" cmd="system rssi")', \
            'example: intercon sendcmd "10.0.1.84" "system rssi" OR intercon sendcmd "system rssi" host="node01.local"', \
            'dump (dump host cache)'

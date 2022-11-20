@@ -70,5 +70,10 @@ def wheel(br=None):
 #######################
 
 def help():
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application
+    """
     return 'setrgb r=<0-232> g=<0-232> b=<0-232> br=<0-1>', 'getstate', 'toggle', 'wheel',\
            'NOTE: Available on tinyPICO, used by progressLED'

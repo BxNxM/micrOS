@@ -239,7 +239,7 @@ class PageUI:
         posx = 5
         posy = 12
 
-        def button():
+        def _button():
             # BUTTON CALLBACK - INTERCONNECT execution
             self.open_intercons.append(host)
             try:
@@ -258,7 +258,7 @@ class PageUI:
         oled.text(cmd, posx, posy+10)
         oled.text(self.conn_data, posx, posy + 20)
         # Set button press callback (+draw button)
-        self.set_press_callback(button)
+        self.set_press_callback(_button)
 
 
 #################################

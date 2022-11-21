@@ -29,8 +29,9 @@
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32)
 3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
-5. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
-6. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
+5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS#built-in-periphery-support)
+6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
+7. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
 
 Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framework/designs)</br>
 Youtube: [link](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)</br>
@@ -240,7 +241,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 - Socket client python plugin - interactive - non interactive mode
 
-## Built in pheriphery support
+## Built in periphery support
 
 `#Sensors / inputes` `#Actuators / outputs`
 

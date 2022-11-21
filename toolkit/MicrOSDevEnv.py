@@ -933,6 +933,7 @@ class MicrOSDevTool:
                             if module_function_dict[module_name].get(func, None) is None:
                                 module_function_dict[module_name][func] = {}
                             module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else ""
+                # Create / update module data fields
                 module_function_dict[module_name]['img'] = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
@@ -943,7 +944,17 @@ class MicrOSDevTool:
         sys.path.append(self.micros_sim_resources)
         import simulator
         sim_proc = simulator.micrOSIM(doc_resolve=True)
-        module_function_dict, module_function_dict_html = sim_proc.gen_lm_doc_json_html(module_function_dict)
+        # Generate function doc-strings and pinmap info
+        _out = sim_proc.gen_lm_doc_json_html(module_function_dict)
+        if _out is None:
+            self.console("#########################", state='ERR')
+            self.console("#  DOC STRING GEN ERROR #", state='ERR')
+            self.console("# -[micrOSIM][DOC ERR]- #", state='ERR')
+            self.console("#########################", state='ERR')
+            module_function_dict_html = module_function_dict
+        else:
+            # Unpack output
+            module_function_dict, module_function_dict_html = _out
 
         # [JSON] Dump generated Load Module description: static function manual: sfuncman.json
         self.console("Dump micrOS static manual: {}".format(static_help_json_path))
@@ -965,7 +976,6 @@ class MicrOSDevTool:
 <html>
 <head>
 <title>micrOS Load Modules</title>
-
 <style>
   table,th,td
   {
@@ -978,20 +988,29 @@ class MicrOSDevTool:
   tbody tr:nth-child(even){background: rgb(82, 122, 122);}
 
 </style>
-
 </head>
+
 <body style="background-color:LightGray;">
 <h1 style="background-color: rgb(82, 122, 122);">
-
-<img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="{mod}" height=150>
+<img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" target="_blank" alt="{mod}" height=150>
 micrOS Load Modules
-
 </h1>
 <p>
     <b>Generated function manual with module doc strings.</b><br>
-    <b>[i] Use <module_name> pinmap function to get pins on a runtime system and start DIY</b>
-    <p><a href="https://github.com/BxNxM/micrOS/tree/master/micrOS/client/sfuncman" target="_blank">JSON formatted manuals</a></p>
+    <a href="https://github.com/BxNxM/micrOS/tree/master/micrOS/client/sfuncman" target="_blank">JSON formatted manuals</a>
 </p>
+
+<h2>
+Logical pin names aka pin map
+</h2>
+    <b> Implements hardware independent periphery handling in Load Modules.<br>
+    <b>[i] Use 'module_name pinmap()' function to get pins on a runtime system (micrOS shell) and start DIY</b>
+<ul>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/LP_esp32.py" target="_blank">esp32</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/LP_tinypico.py" target="_blank">tinypico</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/LP_rp2.py" target="_blank">rp2 (experimental)</a></li>
+</ul>
+
 """
         html_body_end = """</body>
 </html>"""

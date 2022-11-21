@@ -2,7 +2,6 @@
 <html>
 <head>
 <title>micrOS Load Modules</title>
-
 <style>
   table,th,td
   {
@@ -15,20 +14,29 @@
   tbody tr:nth-child(even){background: rgb(82, 122, 122);}
 
 </style>
-
 </head>
+
 <body style="background-color:LightGray;">
 <h1 style="background-color: rgb(82, 122, 122);">
-
-<img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="{mod}" height=150>
+<img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" target="_blank" alt="{mod}" height=150>
 micrOS Load Modules
-
 </h1>
 <p>
     <b>Generated function manual with module doc strings.</b><br>
-    <b>[i] Use <module_name> pinmap function to get pins on a runtime system and start DIY</b>
-    <p><a href="https://github.com/BxNxM/micrOS/tree/master/micrOS/client/sfuncman" target="_blank">JSON formatted manuals</a></p>
+    <a href="https://github.com/BxNxM/micrOS/tree/master/micrOS/client/sfuncman" target="_blank">JSON formatted manuals</a>
 </p>
+
+<h2>
+Logical pin names aka pin map
+</h2>
+    <b> Implements hardware independent periphery handling in Load Modules.<br>
+    <b>[i] Use 'module_name pinmap()' function to get pins on a runtime system (micrOS shell) and start DIY</b>
+<ul>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/LP_esp32.py" target="_blank">esp32</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/LP_tinypico.py" target="_blank">tinypico</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/LP_rp2.py" target="_blank">rp2 (experimental)</a></li>
+</ul>
+
 <table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>roboarm</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load_n_init</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Initiate&nbsp;roboarm&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
@@ -60,7 +68,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;servo_1,&nbsp;servo_2,&nbsp;switch_1</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true" alt="roboarm" height=150></td></tr></table></td></tr><tr><th>stepper</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load_n_init</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>mode="HALF"</td></tr><tr><th>doc</th><td>Init&nbsp;stepper&nbsp;motor&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;mode:&nbsp;step&nbsp;mode:&nbsp;HALF/FULL</td></tr></table></td></tr><tr><th>angle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>dg speed=None</td></tr><tr><th>doc</th><td>Control&nbsp;stepper&nbsp;motor&nbsp;by&nbsp;angle<br>
@@ -72,7 +82,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;power&nbsp;down</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;stppr_1,&nbsp;stppr_2,&nbsp;stppr_3,&nbsp;stppr_4</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/stepper.png?raw=true" alt="stepper" height=150></td></tr></table></td></tr><tr><th>genIO</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>set_pwm</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>pin freq=1024 duty=500</td></tr><tr><th>doc</th><td>Set&nbsp;PWM&nbsp;signal&nbsp;output<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;pin&nbsp;number&nbsp;or&nbsp;logical&nbsp;name<br>
@@ -100,7 +112,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;oleduibttn</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true" alt="oled_ui" height=150></td></tr></table></td></tr><tr><th>system</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>info</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>gclean</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Run&nbsp;micropython&nbsp;garbage&nbsp;collection</td></tr></table></td></tr><tr><th>heartbeat</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Test&nbsp;function&nbsp;for&nbsp;built-in&nbsp;led&nbsp;blinking&nbsp;and&nbsp;test&nbsp;reply&nbsp;message</td></tr></table></td></tr><tr><th>clock</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Get&nbsp;formatted&nbsp;localtime&nbsp;value<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Format:<br>
@@ -121,7 +135,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;unload&nbsp;None:&nbsp;list&nbsp;active&nbsp;modules<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>cachedump</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cdel=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>rssi</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;Wifi&nbsp;RSSI&nbsp;-&nbsp;wifi&nbsp;strength</td></tr></table></td></tr><tr><th>lmpacman</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>lm_del=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>key='builtin'</td></tr><tr><th>doc</th><td>Get&nbsp;Logical&nbsp;pin&nbsp;by&nbsp;key&nbsp;runtime<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;key&nbsp;str:&nbsp;logical&nbsp;pin&nbsp;name&nbsp;to&nbsp;resolve<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;key&nbsp;map</td></tr></table></td></tr><tr><th>ha_sta</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Check&nbsp;and&nbsp;repair&nbsp;STA&nbsp;network&nbsp;mode<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;key&nbsp;map<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;map,&nbsp;booked,&nbsp;builtin</td></tr></table></td></tr><tr><th>ha_sta</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Check&nbsp;and&nbsp;repair&nbsp;STA&nbsp;network&nbsp;mode<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;able&nbsp;to&nbsp;restart&nbsp;the&nbsp;system&nbsp;->&nbsp;wifi&nbsp;reconnect</td></tr></table></td></tr><tr><th>alarms</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>clean=False test=False</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>ifconfig</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;network&nbsp;ifconfig</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true" alt="system" height=150></td></tr></table></td></tr><tr><th>robustness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>raise_error</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>memory_leak</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cnt=160</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>recursion_limit</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cnt=14</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
@@ -141,7 +157,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true" alt="co2" height=150></td></tr></table></td></tr><tr><th>oled</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>text</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>string="text" x=0 y=0</td></tr><tr><th>doc</th><td>Create&nbsp;text&nbsp;on&nbsp;OLED<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;string:&nbsp;text&nbsp;to&nbsp;draw<br>
@@ -162,7 +180,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;update&nbsp;display</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true" alt="oled" height=150></td></tr></table></td></tr><tr><th>tinyrgb</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>setrgb</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None br=None</td></tr><tr><th>doc</th><td>TinyPico&nbsp;built-in&nbsp;apa102&nbsp;LED&nbsp;control<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r:&nbsp;red&nbsp;value&nbsp;0-254<br>
@@ -181,12 +201,16 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true" alt="bme280" height=150></td></tr></table></td></tr><tr><th>ph_sensor</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>measure</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;ph</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/ph_sensor.png?raw=true" alt="ph_sensor" height=150></td></tr></table></td></tr><tr><th>buzzer</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>bipp</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>repeat=1 freq=None</td></tr><tr><th>doc</th><td>Buzzer&nbsp;bipp&nbsp;sound&nbsp;generator<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;repeat&nbsp;int:&nbsp;bipp&nbsp;count<br>
@@ -200,7 +224,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;buzzer</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true" alt="buzzer" height=150></td></tr></table></td></tr><tr><th>switch</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load_n_init</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None ch_init=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;switch&nbsp;module&nbsp;(4&nbsp;switch&nbsp;pack)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
@@ -226,7 +252,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;SW1,&nbsp;SW2,&nbsp;SW3,&nbsp;SW4&nbsp;->&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;switch_1,&nbsp;switch_2,&nbsp;switch_3,&nbsp;switch_4</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true" alt="switch" height=150></td></tr></table></td></tr><tr><th>servo</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>sduty</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>duty=75</td></tr><tr><th>doc</th><td>Set&nbsp;servo&nbsp;(1)&nbsp;position<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;duty:&nbsp;servo&nbsp;duty&nbsp;position&nbsp;40-115,&nbsp;default:&nbsp;75<br>
@@ -241,7 +269,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;S1(X),&nbsp;S2(X)</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;servo_1,&nbsp;servo_2</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/servo.png?raw=true" alt="servo" height=150></td></tr></table></td></tr><tr><th>neopixel</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load_n_init</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None ledcnt=24</td></tr><tr><th>doc</th><td>Initiate&nbsp;NeoPixel&nbsp;RGB&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
@@ -286,7 +316,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true" alt="neopixel" height=150></td></tr></table></td></tr><tr><th>cct</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load_n_init</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;Cold&nbsp;white&nbsp;/&nbsp;Warm&nbsp;white&nbsp;LED&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
@@ -322,12 +354,16 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;cwhite,&nbsp;wwhite</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true" alt="cct" height=150></td></tr></table></td></tr><tr><th>L9110_DCmotor</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>motor_control</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>direc=None speed=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;l9110dir_1,&nbsp;l9110dir_2</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/L9110_DCmotor.png?raw=true" alt="L9110_DCmotor" height=150></td></tr></table></td></tr><tr><th>neoeffects</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>meteor</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None shift=True ledcnt=24</td></tr><tr><th>doc</th><td>Meteor&nbsp;effect<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r&nbsp;int:&nbsp;red&nbsp;value&nbsp;0-1000<br>
@@ -361,13 +397,17 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true" alt="neoeffects" height=150></td></tr></table></td></tr><tr><th>i2c</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>scan</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>I2C&nbsp;scan&nbsp;function&nbsp;-&nbsp;experimental<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;list:&nbsp;list&nbsp;of&nbsp;devices</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/i2c.png?raw=true" alt="i2c" height=150></td></tr></table></td></tr><tr><th>dht22</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>measure</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;dht22<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;temp,&nbsp;hum</td></tr></table></td></tr><tr><th>measure_w_co2</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;dht22&nbsp;and&nbsp;mq135&nbsp;(CO2)<br>
@@ -376,14 +416,18 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true" alt="dht22" height=150></td></tr></table></td></tr><tr><th>L298N_DCmotor</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>m1_control</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>direc=None speed=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>set_speed</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>speed=100</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>stop</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>set_direction</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>direc=0</td></tr><tr><th>doc</th><td>direc&nbsp;(direction)&nbsp;values:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;0:&nbsp;forward<br>
 &nbsp;&nbsp;&nbsp;&nbsp;1:&nbsp;backward</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;l298speed,&nbsp;l298dir_1,&nbsp;l298dir_2</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/L298N_DCmotor.png?raw=true" alt="L298N_DCmotor" height=150></td></tr></table></td></tr><tr><th>esp32</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>hall</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'esp32'</td></tr></table></td></tr><tr><th>temp</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'esp32'</td></tr></table></td></tr><tr><th>touch</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>triglvl=300</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'esp32'</td></tr></table></td></tr><tr><th>battery</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'esp32'</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'esp32'</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/esp32.png?raw=true" alt="esp32" height=150></td></tr></table></td></tr><tr><th>pet_feeder</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>portion</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>repeat=1 posmin=65 posmax=97</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>portion_new</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>count=1 forward=135 back=10</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>lmdep</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;Load&nbsp;Module&nbsp;dependency<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;List&nbsp;of&nbsp;load&nbsp;modules&nbsp;used&nbsp;by&nbsp;this&nbsp;application<br>
@@ -396,7 +440,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true" alt="dht11" height=150></td></tr></table></td></tr><tr><th>rgb</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load_n_init</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;RGB&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
@@ -434,7 +480,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;redgb,&nbsp;rgreenb,&nbsp;rgbue</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true" alt="rgb" height=150></td></tr></table></td></tr><tr><th>distance</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>distance_mm</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>To&nbsp;calculate&nbsp;the&nbsp;distance&nbsp;we&nbsp;get&nbsp;the&nbsp;pulse_time&nbsp;and&nbsp;divide&nbsp;it&nbsp;by&nbsp;2<br>
 &nbsp;&nbsp;&nbsp;&nbsp;(the&nbsp;pulse&nbsp;walk&nbsp;the&nbsp;distance&nbsp;twice)&nbsp;and&nbsp;by&nbsp;29.1&nbsp;becasue<br>
@@ -443,13 +491,17 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;pulse_time&nbsp;//&nbsp;2&nbsp;//&nbsp;2.91&nbsp;->&nbsp;pulse_time&nbsp;//&nbsp;5.82&nbsp;->&nbsp;pulse_time&nbsp;*&nbsp;100&nbsp;//&nbsp;582</td></tr></table></td></tr><tr><th>distance_cm</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>deinit</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;hcsrtrig,&nbsp;hcsrecho</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true" alt="distance" height=150></td></tr></table></td></tr><tr><th>VL53L0X</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>measure</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'ustruct'</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'ustruct'</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'ustruct'</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true" alt="VL53L0X" height=150></td></tr></table></td></tr><tr><th>light_sensor</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>intensity</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;intensity&nbsp;in&nbsp;%<br>
 &nbsp;&nbsp;&nbsp;&nbsp;max&nbsp;value:&nbsp;65535</td></tr></table></td></tr><tr><th>illuminance</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;illuminance&nbsp;in&nbsp;flux</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;temp6000</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true" alt="light_sensor" height=150></td></tr></table></td></tr><tr><th>presence</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>threshold</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>th=Data.TRIG_THRESHOLD</td></tr><tr><th>doc</th><td>Set&nbsp;threshold&nbsp;value</td></tr></table></td></tr><tr><th>subscribe_intercon</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>on off</td></tr><tr><th>doc</th><td>Subscribe&nbsp;function&nbsp;for&nbsp;remote&nbsp;function&nbsp;execution<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;intercon&nbsp;ON/OFF&nbsp;string&nbsp;callbacks<br>
@@ -459,7 +511,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Start&nbsp;async&nbsp;mic&nbsp;sample&nbsp;task</td></tr></table></td></tr><tr><th>get_samples</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[DEBUG]&nbsp;Return&nbsp;measured&nbsp;data&nbsp;set</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;mic,&nbsp;irq1</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/presence.png?raw=true" alt="presence" height=150></td></tr></table></td></tr><tr><th>dimmer</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load_n_init</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;dimmer&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
@@ -478,7 +532,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;dim_1</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true" alt="dimmer" height=150></td></tr></table></td></tr><tr><th>catgame</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>game</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>repeat=10 delta=20</td></tr><tr><th>doc</th><td>Servo&nbsp;cat&nbsp;toy&nbsp;"mover"&nbsp;-&nbsp;left-right<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;repeat&nbsp;int:&nbsp;repeat&nbsp;servo&nbsp;pos&nbsp;change<br>
@@ -491,7 +547,9 @@ micrOS Load Modules
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;servo_1,&nbsp;servo_2</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Module&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/catgame.png?raw=true" alt="catgame" height=150></td></tr></table></td></tr><tr><th>intercon</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>sendcmd</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>*args **kwargs</td></tr><tr><th>doc</th><td>Implements&nbsp;send&nbsp;command&nbsp;function&nbsp;towards&nbsp;micrOS&nbsp;devices<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;example:&nbsp;sendcmd&nbsp;"hello"&nbsp;host="IP/hostname.local")&nbsp;OR&nbsp;sendcmd&nbsp;host="IP/hostname.local"&nbsp;cmd="system&nbsp;rssi")<br>

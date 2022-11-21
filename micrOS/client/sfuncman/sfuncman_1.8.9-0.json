@@ -10,7 +10,7 @@
             "param(s)": "direc=None speed=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l298speed, l298dir_1, l298dir_2",
             "param(s)": ""
         },
         "set_direction": {
@@ -37,7 +37,7 @@
             "param(s)": "direc=None speed=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l9110dir_1, l9110dir_2",
             "param(s)": ""
         }
     },
@@ -75,7 +75,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
             "param(s)": ""
         }
     },
@@ -94,7 +94,7 @@
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: buzzer",
             "param(s)": ""
         },
         "play": {
@@ -121,7 +121,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2",
             "param(s)": ""
         },
         "stop": {
@@ -144,7 +144,7 @@
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: cwhite, wwhite",
             "param(s)": ""
         },
         "random": {
@@ -187,7 +187,7 @@
             "param(s)": "temperature=None humidity=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: co2",
             "param(s)": ""
         },
         "raw_measure_mq135": {
@@ -214,7 +214,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: dhtpin",
             "param(s)": ""
         }
     },
@@ -237,7 +237,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: dhtpin",
             "param(s)": ""
         }
     },
@@ -252,7 +252,7 @@
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: dim_1",
             "param(s)": ""
         },
         "set_value": {
@@ -291,7 +291,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true",
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: hcsrtrig, hcsrecho",
             "param(s)": ""
         }
     },
@@ -363,7 +363,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/i2c.png?raw=true",
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
             "param(s)": ""
         },
         "scan": {
@@ -401,7 +401,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: temp6000",
             "param(s)": ""
         }
     },
@@ -428,7 +428,7 @@
             "param(s)": "r=None g=None b=None shift=True ledcnt=24"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: neop",
             "param(s)": ""
         },
         "rainbow": {
@@ -463,7 +463,7 @@
             "param(s)": "r=None g=None b=None smooth=True"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: neop",
             "param(s)": ""
         },
         "random": {
@@ -514,7 +514,7 @@
             "param(s)": "sx sy ex ey state=1"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
             "param(s)": ""
         },
         "poweroff": {
@@ -569,7 +569,7 @@
             "param(s)": "pwr_sec=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda, oleduibttn",
             "param(s)": ""
         }
     },
@@ -603,7 +603,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: ph",
             "param(s)": ""
         }
     },
@@ -622,7 +622,7 @@
             "param(s)": "sample_ms=30 buff_size=15"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: mic, irq1",
             "param(s)": ""
         },
         "subscribe_intercon": {
@@ -649,7 +649,7 @@
             "param(s)": "cache=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: redgb, rgreenb, rgbue",
             "param(s)": ""
         },
         "random": {
@@ -708,7 +708,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2, switch_1",
             "param(s)": ""
         },
         "play": {
@@ -762,7 +762,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/servo.png?raw=true",
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2",
             "param(s)": ""
         },
         "s2duty": {
@@ -797,7 +797,7 @@
             "param(s)": "mode=\"HALF\""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: stppr_1, stppr_2, stppr_3, stppr_4",
             "param(s)": ""
         },
         "standby": {
@@ -820,7 +820,7 @@
             "param(s)": "cache=None ch_init=None"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: switch_1, switch_2, switch_3, switch_4",
             "param(s)": ""
         },
         "set_state": {
@@ -911,7 +911,7 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    Get Logical pin by key runtime\n    :param key str: logical pin name to resolve\n    :return dict: key map\n    ",
+            "doc": "\n    Get Logical pin by key runtime\n    :param key str: logical pin name to resolve\n    :return dict: key map\n    \npin map: map, booked, builtin",
             "param(s)": "key='builtin'"
         },
         "rssi": {

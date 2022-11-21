@@ -78,6 +78,7 @@ class micrOSIM():
 
     def _lm_doc_strings(self, structure):
         """
+        Collect function doc strings and module logical pins (pin map)
         Create 2 dict structures adding docstring
         - html hack structure
         - json raw structure
@@ -90,17 +91,34 @@ class micrOSIM():
 
         # Based on created module-function structure collect doc strings
         for mod, func_dict in structure.items():
-            # Embed img url to table
+            # Embed img url to table - module level
             img_url = structure[mod]['img']
             structure_to_html[mod]['img'] = f'<img src="{img_url}" alt="{mod}" height=150>'
             # Parse function doc strings
             for func in func_dict:
+                # -- Skip functions --
                 if not isinstance(structure[mod][func], dict):
-                    break
+                    continue
+                # -- Skip functions --
+
                 console(f"[micrOSIM][Extract doc-str] LM_{mod}.{func}.__doc__")
                 try:
+                    # Get function doc string
                     exec(f"import LM_{mod}")
                     doc_str = eval(f"LM_{mod}.{func}.__doc__")
+                    # Get function pin map
+                    if func == 'pinmap':
+                        # Get module pin map - module level
+                        console(f"[micrOSIM][Extract pin map tokens] LM_{mod}.pinmap()")
+                        try:
+                            mod_pinmap = eval(f"LM_{mod}.pinmap()")
+                            if mod_pinmap is not None:
+                                mod_pinmap = ', '.join(dict(mod_pinmap).keys())
+                                mod_pinmap = f"\npin map: {mod_pinmap}"
+                        except:
+                            mod_pinmap = ''
+                        # Add pinmap to doc string of pinmap() function
+                        doc_str += mod_pinmap
                 except Exception as e:
                     doc_str = str(e)
                 # Update structure with doc-str
@@ -117,10 +135,14 @@ class micrOSIM():
         self.doc_output = (structure, structure_to_html)
 
     def gen_lm_doc_json_html(self, structure):
-        proc = multiprocessing.Process(target=self._lm_doc_strings(structure))
-        while proc.is_alive():
-            time.sleep(0.1)
-        return self.doc_output
+        try:
+            proc = multiprocessing.Process(target=self._lm_doc_strings(structure))
+            while proc.is_alive():
+                time.sleep(0.1)
+            return self.doc_output
+        except Exception as e:
+            console("[micrOSIM][DOC ERR] Doc generation error: gen_lm_doc_json_html: {}".format(e))
+        return None
 
 
 if __name__ == '__main__':

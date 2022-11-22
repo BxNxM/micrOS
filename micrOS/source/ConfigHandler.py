@@ -60,7 +60,6 @@ class Data:
                     "aioqueue": 3,
                     "utc": +60,
                     "boostmd": True,
-                    "irqmreq": 6000,
                     "guimeta": "...",     # special "offloaded" key indicator
                     "cstmpmap": "n/a"}
 

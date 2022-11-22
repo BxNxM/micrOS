@@ -28,7 +28,7 @@ except:
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.8.9-1'
+    __socket_interpreter_version = '1.8.10-0'
 
     def __init__(self, msg_obj=None):
         """
@@ -217,12 +217,6 @@ class Shell:
             # Deserialize params
             key = attributes[0]
             value = " ".join(attributes[1:])
-            # Check irq required memory
-            if attributes[1].lower() == 'true':
-                isOK, avmem = self.__irq_mem_req_check(key)
-                if not isOK:
-                    self.msg("Skip ... feature requires more memory then {} byte".format(avmem))
-                    return True
             # Set the parameter value in config
             try:
                 output = cfgput(key, value, type_check=True)
@@ -233,25 +227,6 @@ class Shell:
             issue_msg = 'Invalid key' if cfgget(key) is None else 'Failed to save'
             self.msg('Saved' if output else issue_msg)
         return True
-
-    @staticmethod
-    def __irq_mem_req_check(key):
-        """
-        :param key: config param key to check
-            Checks the selected config function hw resource need before setup
-        :return: Enable(True)/Disable(False), available memory
-        """
-        if key not in ('timirq', 'irq1', 'irq2', 'irq3', 'irq14', 'cron'):
-            return True, None
-        collect()                   # gc collect
-        memavail = mem_free()       # get free memory
-        if key == 'timirq' and memavail < cfgget('irqmreq'):
-            return False, memavail
-        if key == 'cron' and memavail < cfgget('irqmreq') * 2:
-            return False, memavail
-        if key in ('irq1', 'irq2', 'irq3', 'irq4') and memavail < int(cfgget('irqmreq') * 0.7):
-            return False, memavail
-        return True, memavail
 
     #################################################################
     #                   COMMAND MODE & LMS HANDLER                  #

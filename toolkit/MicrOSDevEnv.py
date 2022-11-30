@@ -55,17 +55,26 @@ class MicrOSDevTool:
                  {'erase': 'esptool.py --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                   'connect': 'screen {dev} 115200',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'cmd_line_info': '[!HINT!] PRESS [EN] BUTTON TO ENABLE DEVICE ERASE...'},
+             'esp32s2':
+                 {'erase': 'esptool.py --chip esp32s2 --port {dev} --after no_reset erase_flash',
+                  'deploy': 'esptool.py --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}',
+                  'connect': 'screen {dev} 115200',
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'cmd_line_info': '[!HINT!] Hold on Button 0 -> Press Button Reset -> Release Button 0'},
              'tinypico':
                  {'erase': 'esptool.py --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                   'connect': 'screen {dev} 115200',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'cmd_line_info': ''},
              'rp2-pico-w':
                  {'erase': None,
                   'deploy': self._deploy_micropython_dev_usb_storage,
                   'connect': 'screen {dev}',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}'},
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'cmd_line_info': '[!!!] Experimental device - no stable micropython yet'},
              }
 
         # DevEnv base pathes
@@ -133,6 +142,7 @@ class MicrOSDevTool:
 
         micropython_bin_for_type = [mbin for mbin in self.get_micropython_binaries() if
                                     self.selected_device_type.lower() in mbin]
+
         selected_index = 0
         if len(micropython_bin_for_type) > 1:
             self.console("Please select micropython for deployment")
@@ -291,6 +301,7 @@ class MicrOSDevTool:
         self.console("-           ERASE MICROS DEVICE          -", state='imp')
         self.console("------------------------------------------")
         self.__initialize_dev_env_for_deployment_vis_usb()
+        commandline_comment = ""
 
         erase_cmd = self.dev_types_and_cmds[self.selected_device_type]['erase']
         if erase_cmd is None:
@@ -305,15 +316,17 @@ class MicrOSDevTool:
         if self.dummy_exec:
             exitcode = 0
             stdout = "Dummy stdout"
+            stderr = "Dummy stderr"
         else:
-            if 'esp32' in self.selected_device_type:
-                self.console("[!!!] PRESS [EN] BUTTON TO ERASE DEVICE ...", state='imp')
+            commandline_comment = self.dev_types_and_cmds[self.selected_device_type]['cmd_line_info']
+            self.console(commandline_comment, state='imp')
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
         if exitcode == 0:
             self.console("Erase done.\n{}".format(stdout), state='ok')
             return True
         else:
             self.console("Erase failed.\n{} - {}".format(stdout, stderr), state='err')
+            self.console(commandline_comment, state='warn')
             return False
 
     def _deploy_micropython_dev_usb_storage(self):
@@ -532,6 +545,13 @@ class MicrOSDevTool:
         config_is_valid = self.__validate_json()
         if not config_is_valid:
             sys.exit(6)
+
+        # Handle HARD RESET requirement
+        if "no_reset" in self.dev_types_and_cmds[self.selected_device_type]['deploy']:
+            self.console("[!HINT!] USB reset not available. [!!!] PRESS RST BUTTON!", state='warn')
+            for k in range(1, 6):
+                self.console(f"... wait for reset {5-k} sec", state='imp')
+                time.sleep(1)
 
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.get_devices()[0]

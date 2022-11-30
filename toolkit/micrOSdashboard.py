@@ -227,7 +227,7 @@ class MicropythonSelector(DropDownBase):
         if device_prefix is None:
             micropython_bin_pathes = self.devtool_obj.get_micropython_binaries()
         else:
-            micropython_bin_pathes = [b for b in self.devtool_obj.get_micropython_binaries() if device_prefix in os.path.basename(b)]
+            micropython_bin_pathes = [b for b in self.devtool_obj.get_micropython_binaries() if f"{device_prefix}-" in os.path.basename(b)]
         self.micropython_bin_dirpath = os.path.dirname(micropython_bin_pathes[0])
         micropython_bin_names = [os.path.basename(path) for path in micropython_bin_pathes]
         self.create_dropdown(items_list=micropython_bin_names, title=title, geometry_tuple=geometry, tooltip=help_msg,

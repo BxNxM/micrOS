@@ -27,10 +27,13 @@ def detect_platform():
     """
     if 'esp32' in platform:
         from os import uname
-        if 'tinypico' in str(uname()[4]).lower():
-            return 'tinypico'   # tinypico - esp32
-        return 'esp32'          # esp32
-    return platform             # esp8266 something else
+        board = uname()[-1]
+        if 'tinypico' in str(board).lower():
+            return 'tinypico'    # esp32 family - tinypico
+        if 'esp32s2' in str(board).lower():
+            return 'esp32s2'     # esp32 family - esp32S2
+        return 'esp32'           # esp32 family - general
+    return platform              # esp8266 or something else
 
 
 def set_pinmap(lpsname=None):

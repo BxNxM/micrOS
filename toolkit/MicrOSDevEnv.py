@@ -62,7 +62,7 @@ class MicrOSDevTool:
                   'deploy': 'esptool.py --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}',
                   'connect': 'screen {dev} 115200',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
-                  'cmd_line_info': '[!HINT!] Hold on Button 0 -> Press Button Reset -> Release Button 0'},
+                  'cmd_line_info': '[!HINT!] Hold on Button 0 -> Press Button Reset -> Release Button 0 TO ENABLE DEVICE ERASE...'},
              'tinypico':
                  {'erase': 'esptool.py --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
@@ -180,9 +180,6 @@ class MicrOSDevTool:
             print(prompt.format(COL=Colors.ERR, msg=msg, END=Colors.NC))
         elif state.upper() == 'IMP':
             print(prompt.format(COL=Colors.BOLD, msg=msg, END=Colors.NC))
-
-        if self.gui_console is not None:
-            self.gui_console(msg)
 
     #####################################################
     #                    DevEnv METHODS                 #
@@ -320,6 +317,8 @@ class MicrOSDevTool:
         else:
             commandline_comment = self.dev_types_and_cmds[self.selected_device_type]['cmd_line_info']
             self.console(commandline_comment, state='imp')
+            if self.gui_console is not None:
+                self.gui_console(commandline_comment)
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
         if exitcode == 0:
             self.console("Erase done.\n{}".format(stdout), state='ok')
@@ -549,8 +548,10 @@ class MicrOSDevTool:
         # Handle HARD RESET requirement
         if "no_reset" in self.dev_types_and_cmds[self.selected_device_type]['deploy']:
             self.console("[!HINT!] USB reset not available. [!!!] PRESS RST BUTTON!", state='warn')
-            for k in range(1, 6):
-                self.console(f"... wait for reset {5-k} sec", state='imp')
+            if self.gui_console is not None:
+                self.gui_console("[!HINT!] USB reset not available. [!!!] PRESS RST BUTTON!")
+            for k in range(1, 11):
+                self.console(f"... wait for reset {10-k} sec", state='imp')
                 time.sleep(1)
 
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
@@ -582,12 +583,15 @@ class MicrOSDevTool:
 
     def __safe_execute_ampy_cmd(self, command, source, retry=8):
         retry_orig = retry
+        status = False
         for retry in range(1, retry_orig):
             if not self.dummy_exec:
                 try:
                     exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
                 except Exception as e:
                     self.console(e)
+                    exitcode = 1
+                    stderr = str(e)
             else:
                 exitcode = 0
                 stderr = ''
@@ -600,6 +604,7 @@ class MicrOSDevTool:
                 self.console("[ ERROR/RETRY ][{}/{}] PUT {}\n{}".format(retry, retry_orig, source, stderr), state='err')
                 self.console(" |-> CMD: {}".format(command))
                 status = False
+            time.sleep(0.2)
         return status
 
     def connect_dev(self):

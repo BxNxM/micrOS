@@ -111,7 +111,7 @@ class DropDownBase:
 
     def __init__(self, parent_obj):
         self.parent_obj = parent_obj
-        self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
+        self.devtool_obj = parent_obj.devtool_obj  # MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
         self.selected_list_item = None
         self.dowpdown_obj = QComboBox(self.parent_obj)
         self.child_callbacks = {}
@@ -380,13 +380,20 @@ class MyConsole(QPlainTextEdit):
         MyConsole.console = self
 
     @pyqtSlot(str)
-    def append_output(self, text, end='\n'):
+    def append_output(self, text, end='\n', maxlen=62):
         self.clear_console()
         if not MyConsole.lock:
             MyConsole.lock = True
             try:
+                text2 = None
+                if len(text) > maxlen:
+                    text2 = text[maxlen:]
+                    text = text[0:maxlen]
                 self._cursor_output.insertText("{}{}".format(text, end))
                 self.scroll_to_last_line()
+                if text2 is not None:
+                    self._cursor_output.insertText("{}{}".format(text2, end))
+                    self.scroll_to_last_line()
             except Exception as e:
                 print("MyConsole.append_output failure: {}".format(e))
             MyConsole.lock = False
@@ -401,12 +408,22 @@ class MyConsole(QPlainTextEdit):
         cursor.movePosition(QTextCursor.Up if cursor.atBlockStart() else QTextCursor.StartOfLine)
         self.setTextCursor(cursor)
 
+    @staticmethod
+    def gui_console(msg):
+        if MyConsole.console is None:
+            print(f"GUI: {msg}")
+        else:
+            try:
+                MyConsole.console.append_output(text=msg)
+            except:
+                MyConsole.lock = False
+
 
 class HeaderInfo:
 
     def __init__(self, parent_obj):
         self.parent_obj = parent_obj
-        self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
+        self.devtool_obj = parent_obj.devtool_obj #MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
         self.url = 'https://github.com/BxNxM/micrOS'
 
     def draw_header(self):
@@ -543,7 +560,7 @@ class ClusterStatus:
                 query_list.append(f)
 
         for q in query_list:
-            self.parent_obj.console.append_output(q.result())
+            self.parent_obj.console.append_output(q.result(), maxlen=52)
         self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEVICES.keys())}')
 
 
@@ -653,7 +670,7 @@ class micrOSGUI(QWidget):
 
         self.console = None
         self.device_conn_struct = []
-        self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC)
+        self.devtool_obj = MicrOSDevEnv.MicrOSDevTool(cmdgui=False, dummy_exec=DUMMY_EXEC, gui_console=MyConsole.gui_console)
         self.socketcli_obj = socketClient.ConnectionData()
         self.bgjob_thread_obj_dict = {}
         self.bgjon_progress_monitor_thread_obj_dict = {}

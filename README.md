@@ -271,6 +271,9 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 ![MicrOSESP23pinout](./media/NodeMCUPinOutESP32.png?raw=true)
 
+
+![MicrOSESP23S2pinout](./media/NodeMCUPinOutESP32S2_mini.png?raw=true)
+
 ----------------------------------------
 
 ## micrOS **node configuration**, parameters with description

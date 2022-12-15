@@ -58,9 +58,9 @@ I would suggest to use micrOS GUI as a primary interface for micrOS development 
 
 <br/>
 
-### 1. Install python3.8
+### 1. Install python3.9
 
-Link for python 3.8 [download](https://www.python.org/downloads/release/python-383/)
+Link for python 3.9 [download](https://www.python.org/downloads/release/python-390/)
 
 > Note: **Allow extend system path** with that python version (installation parameter) </br>
 > On **Windows**: RUN AS ADMINISTARTOR

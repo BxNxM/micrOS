@@ -42,8 +42,8 @@ function venv_create {
         if [[ ! -d "$venv_path" ]]
         then
             console_log "${GREEN}    Create venv: $venv_path${NC}"
-            python3.8 -m venv "${venv_path}"
-            "${venv_path}/bin/python3.8" -m pip install --upgrade pip
+            python3.9 -m venv "${venv_path}"
+            "${venv_path}/bin/python3.9" -m pip install --upgrade pip
             install_req=1
         else
             install_req=0
@@ -57,7 +57,7 @@ function venv_requirements {
     if [[ -f "${requirements}" ]]
     then
         console_log "${GREEN}    Install requirements: ${requirements}${NC}"
-        python3.8 -m pip install -r "${requirements}"
+        python3.9 -m pip install -r "${requirements}"
     else
         console_log "${RED}    No requirements file: ${requirements}${NC}"
     fi
@@ -126,7 +126,7 @@ then
           python3.9 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
       else
           # Execution in virtual env
-          python3.8 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
+          python3.9 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
       fi
   elif [[ "${CMD_ARGS[0]}" == "gitclean" ]]
   then
@@ -150,7 +150,7 @@ then
           python3.9 "${MY_PATH}/devToolKit.py" -sim
        else
           # Execution in virtual env
-          python3.8 "${MY_PATH}/devToolKit.py" -sim
+          python3.9 "${MY_PATH}/devToolKit.py" -sim
        fi
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
@@ -160,5 +160,5 @@ else
     help
     # Start devToolKit.py GUI
     console_log "Start devToolKit GUI: ${MY_PATH}/devToolKit.py"
-    python3.8 "${MY_PATH}/devToolKit.py"
+    python3.9 "${MY_PATH}/devToolKit.py"
 fi

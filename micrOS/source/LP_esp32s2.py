@@ -1,5 +1,7 @@
 from micropython import const
 
+# BUILTIN LED
+builtin = const(15)      # BUILT IN LED - progress_led
 
 # ANALOG RGB + WW + CW
 redgb = const(7)        # rgb red channel [PWM]
@@ -58,7 +60,7 @@ hcsrtrig = const(34)    # distance HCSR04 trigger pin
 hcsrecho = const(36)    # distance HCSR04 echo pin
 dhtpin = const(17)      # dht_pin 11 and 22
 co2 = const(13)         # [ADC] CO2
-temp6000 = const(15)    # [ADC] light sensor TEMP6000
+temp6000 = const(10)    # [ADC] light sensor TEMP6000
 ph = const(1)           # [ADC] PH sensor
 ds18 = const(21)        # DS18B20 - temp. sensor
 mic = const(14)         # [ADC] microphone

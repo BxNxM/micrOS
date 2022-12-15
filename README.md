@@ -261,6 +261,7 @@ LogicalPin lookup tables:
 
 - [tinypico](./micrOS/source/LP_tinypico.py)
 - [esp32](./micrOS/source/LP_esp32.py)
+- [esp32s2](./micrOS/source/LP_esp32s2.py)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 

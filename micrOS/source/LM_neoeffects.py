@@ -291,6 +291,6 @@ def help():
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',\
            'cycle r g b shift=True ledcnt=24',\
            'rainbow step=1 br=<5-100> ledcnt=24',\
-           'shader size=4 shift=True ledcnt=24',\
+           'shader size=4 offset=0 shift=True ledcnt=24',\
            'random max_val=254',\
            'color r g b', 'pinmap'

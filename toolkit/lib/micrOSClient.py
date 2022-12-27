@@ -98,7 +98,7 @@ class micrOSClient:
                     if "Busy server" in str(e):
                         self.__connect(timeout)
                 # Wait between retries
-                time.sleep(0.2)
+                time.sleep(0.3)
             else:
                 # Handle busy server connection case
                 raise Exception("[EXIT] Server is busy, try later.")

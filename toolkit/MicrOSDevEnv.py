@@ -983,7 +983,7 @@ class MicrOSDevTool:
 
         hardcoded_manual = {"task": {"list": {"doc": "list micrOS tasks by taskID", "param(s)": ""},
                                      "kill": {"doc": "kill / stop micrOS task", "param(s)": "taskID"},
-                                     "img": ""}
+                                     "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tasks.png?raw=true"}
                             }
 
         # [JSON] Dump generated Load Module description: static function manual: sfuncman.json
@@ -993,6 +993,8 @@ class MicrOSDevTool:
             json.dump(module_function_dict, f, indent=4, sort_keys=True)
 
         # +[HTML] Convert dict to json -> html table
+        _url = hardcoded_manual["task"]["img"]
+        hardcoded_manual['task']['img'] = f'<img src="{_url}" alt="tasks" height=150>'
         module_function_dict_html.update(hardcoded_manual)
         module_function_json = json.dumps(module_function_dict_html, indent=4)
         import json2html

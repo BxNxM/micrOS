@@ -936,7 +936,7 @@
         }
     },
     "task": {
-        "img": "",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tasks.png?raw=true",
         "kill": {
             "doc": "kill / stop micrOS task",
             "param(s)": "taskID"

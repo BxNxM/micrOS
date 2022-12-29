@@ -208,8 +208,8 @@ def subscribe_intercon(on, off):
         ON: host cmd
         OFF: host cmd
     """
-    Data.ON_INTERCON_CLBK = on.replace(",", '')      # TODO: Command parsing/joining workaround (exec LM core)
-    Data.OFF_INTERCON_CLBK = off.replace(",", '')    # TODO: Command parsing/joining workaround (exec LM core)
+    Data.ON_INTERCON_CLBK = on
+    Data.OFF_INTERCON_CLBK = off
     return {'on': Data.ON_INTERCON_CLBK, 'off': Data.OFF_INTERCON_CLBK}
 
 

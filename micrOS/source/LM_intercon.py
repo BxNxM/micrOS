@@ -28,9 +28,7 @@ def sendcmd(*args, **kwargs):
 
     # Cmd correction (exec_lm_core) if keyword-arg was not found
     if cmd is None:
-        cmd = ' '.join([k.replace(',', '') for k in args])
-        return __send(host, cmd)
-    cmd = ''.join([k.replace(',', '') for k in cmd])
+        cmd = ''.join(args)
     return __send(host, cmd)
 
 

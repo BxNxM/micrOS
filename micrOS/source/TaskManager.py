@@ -397,6 +397,18 @@ def _exec_lm_core(arg_list, msgobj):
     NOTE: msgobj - must be a function with one input param (stdout/file/stream)
     """
 
+    def __conv_func_params(param):
+        buf = None
+        if "'" in param or '"' in param:
+            str_index = [i for i, c in enumerate(param) if c == '"' or c == "'"]
+            buf = [param[str_index[str_i]:str_index[str_i + 1] + 1] for str_i in range(0, len(str_index), 2)]
+            for substr in buf:
+                param = param.replace(substr, '{}')
+        param = param.replace(' ', ', ')
+        if isinstance(buf, list):
+            param = param.format(*buf)
+        return param
+
     # Dict output user format / jsonify
     def __format_out(json_mode, lm_func, output):
         if isinstance(output, dict):
@@ -418,7 +430,7 @@ def _exec_lm_core(arg_list, msgobj):
         del arg_list[-1]
     # LoadModule execution
     if len(arg_list) >= 2:
-        lm_mod, lm_func, lm_params = "LM_{}".format(arg_list[0]), arg_list[1], ', '.join(arg_list[2:])
+        lm_mod, lm_func, lm_params = "LM_{}".format(arg_list[0]), arg_list[1], __conv_func_params(' '.join(arg_list[2:]))
         try:
             # --- LM LOAD & EXECUTE --- #
             # [1] LOAD MODULE

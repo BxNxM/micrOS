@@ -28,7 +28,7 @@ except:
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.9.0-1'
+    __socket_interpreter_version = '1.9.1-0'
 
     def __init__(self, msg_obj=None):
         """

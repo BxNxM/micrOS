@@ -394,7 +394,6 @@ def intercon_genpage(cmd=None):
     :param cmd: 'host hello' or 'host system clock'
     :return: page creation verdict
     """
-    cmd = cmd.replace(",", '')      # TODO: Command parsing/joining workaround (exec LM core)
     raw = cmd.split()
     host = raw[0]
     cmd = ' '.join(raw[1:])

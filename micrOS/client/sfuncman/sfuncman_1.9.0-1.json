@@ -334,9 +334,13 @@
         }
     },
     "genIO": {
+        "genio_pins": {
+            "doc": "\n    Get used pins in genIO module\n    ",
+            "param(s)": ""
+        },
         "get_adc": {
-            "doc": "\n    Get Analog Digital conersion input\n    :param pin: pin number or logical pin name\n    :return dict: adc volt, percent, raw\n    ",
-            "param(s)": "pin"
+            "doc": "\n    Get Analog Digital conersion input\n    :param pin: pin number or logical pin name\n    :param key: select adc parameter by key\n    :return dict: adc volt, percent, raw\n    ",
+            "param(s)": "pin key=None"
         },
         "get_in": {
             "doc": "\n    Get digital input (high(1)/ low (0))\n    :param pin: pin number or logical pin\n    :return dict: pin, state\n    ",
@@ -349,11 +353,15 @@
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/genIO.png?raw=true",
         "set_out": {
             "doc": "\n    Set simple digital (high/low) output\n    :param pin: pun number or logical name\n    :param state: state: 1/0 = True/False\n    :return dict: pin, state\n    ",
-            "param(s)": "pin state"
+            "param(s)": "pin state=None"
         },
         "set_pwm": {
-            "doc": "\n    Set PWM signal output\n    :param pin: pin number or logical name\n    :param freq: pwm frequency (board dependent)\n    :param duty: pwm duty\n    :return dict: pin, freq, duty\n    ",
-            "param(s)": "pin freq=1024 duty=500"
+            "doc": "\n    Set PWM signal output\n    :param pin: pin number or logical name\n    :param duty: pwm duty\n    :param freq: pwm frequency (board dependent)\n    :return dict: pin, freq, duty\n    ",
+            "param(s)": "pin duty=500 freq=20480"
+        },
+        "set_random_pwm": {
+            "doc": "\n    Set random PWM duty in min-max range\n    :param pin: pin number or logical name\n    :param min_duty: set min duty value (0-1000)\n    :param max_duty: set max duty value (0-1000)\n    :param freq: pwm frequency (board dependent)\n    ",
+            "param(s)": "pin min_duty max_duty freq=20480"
         }
     },
     "i2c": {

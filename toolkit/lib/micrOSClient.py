@@ -198,7 +198,7 @@ class micrOSClient:
         - send command str
         - return reply line list / None (host miss-match)
         """
-        reboot_request = True if cmd.strip() == 'reboot' else False
+        reboot_request = True if 'reboot' in cmd.strip() else False
         cmd = str.encode(cmd)
         # Compare prompt |node01 $| with hostname 'node01.local'
         check_prompt = str(self.prompt).replace('$', '').strip()

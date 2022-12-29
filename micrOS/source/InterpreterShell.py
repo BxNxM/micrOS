@@ -28,7 +28,7 @@ except:
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.9.0-0'
+    __socket_interpreter_version = '1.9.0-1'
 
     def __init__(self, msg_obj=None):
         """
@@ -62,10 +62,13 @@ class Shell:
         self.__auth_ok = False
         self.__conf_mode = False
 
-    def reboot(self):
+    def reboot(self, hard=False):
         """Reboot micropython VM"""
-        self.msg("Reboot micrOS system.")
+        self.msg("{}Reboot micrOS system.".format("[HARD] " if hard else ""))
         self.msg("Bye!")
+        if hard:
+            from machine import reset
+            reset()
         from machine import soft_reset
         soft_reset()
 
@@ -111,9 +114,10 @@ class Shell:
             return True
         msg_list = msg.strip().split()
 
-        ##################################
-        #   [1] Handle single commands   #
-        ##################################
+        ##########################################
+        #   [1] Handle built-in shell commands   #
+        # hello, *auth, version, reboot, webrepl #
+        ##########################################
 
         # Hello message
         if msg_list[0] == 'hello':
@@ -135,7 +139,11 @@ class Shell:
 
         # Reboot micropython VM
         if msg_list[0] == 'reboot':
-            self.reboot()
+            hard = False
+            if len(msg_list) >= 2 and "-h" in msg_list[1]:
+                # reboot / reboot -h
+                hard = True
+            self.reboot(hard)
 
         if msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:
@@ -156,7 +164,7 @@ class Shell:
             self.msg("   hello   - default hello msg - identify device")
             self.msg("   version - shows micrOS version")
             self.msg("   exit    - exit from shell socket prompt")
-            self.msg("   reboot  - system safe reboot")
+            self.msg("   reboot  - system safe reboot, use with -h for hard reset - reboot")
             self.msg("   webrepl - start web repl, use with --update for file transfers")
             self.msg("[CONF] Configure mode (InterpreterShell built-in):")
             self.msg("  conf       - Enter conf mode")

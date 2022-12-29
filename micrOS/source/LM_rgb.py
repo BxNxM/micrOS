@@ -249,14 +249,13 @@ def random(smooth=True, max_val=1000):
     return rgb(r, g, b, smooth=smooth)
 
 
-def subscribe_presence(timer=30):
+def subscribe_presence():
     """
     Initialize LM presence module with ON/OFF callback functions
-    :param timer int: counter value in sec
     :return: None
     """
     from LM_presence import _subscribe
-    _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
+    _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s))
 
 #######################
 # LM helper functions #
@@ -295,4 +294,4 @@ def help():
            'toggle state=None smooth=True', 'load_n_init', \
            'brightness percent=<0-100> smooth=True',\
            'set_transition r=<0-1000> g b sec', 'run_transition',\
-           'random smooth=True max_val=1000', 'status', 'subscribe_presence timer=30', 'pinmap'
+           'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'

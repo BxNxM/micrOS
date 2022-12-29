@@ -546,7 +546,7 @@ class MicrOSDevTool:
             sys.exit(6)
 
         # Handle HARD RESET requirement
-        if "no_reset" in self.dev_types_and_cmds[self.selected_device_type]['deploy']:
+        if isinstance(self.dev_types_and_cmds[self.selected_device_type]['deploy'], str) and "no_reset" in self.dev_types_and_cmds[self.selected_device_type]['deploy']:
             self.console("[!HINT!] USB reset not available. [!!!] PRESS RST BUTTON!", state='warn')
             if self.gui_console is not None:
                 self.gui_console("[!HINT!] USB reset not available. [!!!] PRESS RST BUTTON!")
@@ -981,12 +981,19 @@ class MicrOSDevTool:
             # Unpack output
             module_function_dict, module_function_dict_html = _out
 
+        hardcoded_manual = {"task": {"list": {"doc": "list micrOS tasks by taskID", "param(s)": ""},
+                                     "kill": {"doc": "kill / stop micrOS task", "param(s)": "taskID"},
+                                     "img": ""}
+                            }
+
         # [JSON] Dump generated Load Module description: static function manual: sfuncman.json
+        module_function_dict.update(hardcoded_manual)
         self.console("Dump micrOS static manual: {}".format(static_help_json_path))
         with open(static_help_json_path, 'w') as f:
             json.dump(module_function_dict, f, indent=4, sort_keys=True)
 
         # +[HTML] Convert dict to json -> html table
+        module_function_dict_html.update(hardcoded_manual)
         module_function_json = json.dumps(module_function_dict_html, indent=4)
         import json2html
         table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'

@@ -108,14 +108,13 @@ def toggle(state=None):
     return set_value()              # Set value to the cached - ON
 
 
-def subscribe_presence(timer=30):
+def subscribe_presence():
     """
     Initialize LM presence module with ON/OFF callback functions
-    :param timer int: counter value in sec
     :return: None
     """
     from LM_presence import _subscribe
-    _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s), timer=timer)
+    _subscribe(on=lambda s=True: toggle(s), off=lambda s=False: toggle(s))
 
 
 #######################

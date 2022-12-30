@@ -2,7 +2,6 @@ from LM_neopixel import load_n_init, segment, Data, status
 from LM_neopixel import pinmap as pm
 from random import randint
 
-
 #################################
 #  NEOPIXEL EFFECT DRAWER CLASS #
 #################################
@@ -50,6 +49,7 @@ class DrawEffect:
             cls.offset_gen = _gen()
         return cls.offset_gen
 
+
     def draw(cls, iterable, shift=False):
         """
         DRAW GENERATED COLORS (RGB)
@@ -66,6 +66,13 @@ class DrawEffect:
             segment(int(r), int(g), int(b), s=i, cache=False, write=True)
         return True
 
+
+def color_input(r, g, b):
+    _r, _g, _b, _ = Data.DCACHE
+    r = _r if r is None else r
+    g = _g if g is None else g
+    b = _b if b is None else b
+    return r, g, b
 
 #################################
 #         DEFINE EFFECTS        #
@@ -97,10 +104,7 @@ def meteor(r=None, g=None, b=None, shift=True, ledcnt=24):
             yield data
 
     # Conditional value load - with neopixel cache
-    _r, _g, _b, _ = Data.DCACHE
-    r = _r if r is None else r
-    g = _g if g is None else g
-    b = _b if b is None else b
+    r, g, b = color_input(r, g, b)
 
     # Init custom params
     effect = DrawEffect(pixcnt=ledcnt)
@@ -138,10 +142,7 @@ def cycle(r=None, g=None, b=None, shift=True, ledcnt=24):
             yield 0, 0, 0
 
     # Conditional value load - with neopixel cache
-    _r, _g, _b, _ = Data.DCACHE
-    r = _r if r is None else r
-    g = _g if g is None else g
-    b = _b if b is None else b
+    r, g, b = color_input(r, g, b)
 
     effect = DrawEffect(pixcnt=ledcnt)
     cgen = __effect(r, g, b, effect.pix_cnt)
@@ -225,10 +226,10 @@ def shader(size=6, offset=0, shift=False, ledcnt=24):
     return 'Shader invalid size: {} ({})'.format(size, effect.pix_cnt)
 
 
-def random(max_val=254):
+def random(max_val=255):
     """
     Demo function: implements random color change
-    :param max_val: set channel maximum generated value: 0-1000
+    :param max_val: set channel maximum generated value: 0-255
     :return str: rgb status - states: R, G, B
     """
     r = randint(0, max_val)
@@ -243,21 +244,53 @@ def random(max_val=254):
 def color(r=None, g=None, b=None):
     """
     Set color buffer - for runtime effect color change
-    :param r int: red channel 0-254 (default: None - cached value)
-    :param g int: green channel 0-254 (default: None - cached value)
-    :param b int: blue channel 0-254 (default: None - cached value)
+    :param r int: red channel 0-255 (default: None - cached value)
+    :param g int: green channel 0-255 (default: None - cached value)
+    :param b int: blue channel 0-255 (default: None - cached value)
     :return dict: rgb status - states: R, G, B, S
     """
     # Conditional value load - with neopixel cache
-    _r, _g, _b, _ = Data.DCACHE
-    r = _r if r is None else r
-    g = _g if g is None else g
-    b = _b if b is None else b
+    r, g, b = color_input(r, g, b)
     Data.DCACHE[0] = r
     Data.DCACHE[1] = g
     Data.DCACHE[2] = b
     return status()
 
+
+def fire(r=None, g=None, b=None, smooth=False, ledcnt=24):
+
+    def __effect(r, g, b, pixcnt):
+        for _ in range(pixcnt):
+            rand_percent = round(randint(1, 200)/100, 2)
+
+            rgb = [
+                r * rand_percent,
+                g * rand_percent,
+                b * rand_percent
+            ]
+
+            for  i, color in enumerate(rgb):
+                if color > 255:
+                    rgb[i] = 255
+                if color < 0:
+                    rgb[i] = 0
+
+            yield rgb
+
+    # Conditional value load - with neopixel cache
+    r, g, b = color_input(r, g, b)
+
+    effect = DrawEffect(pixcnt=ledcnt)
+    cgen = __effect(r, g, b, effect.pix_cnt)
+    effect.draw(cgen, shift=False)
+    return 'fire R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
+
+
+def testfun(idx):
+    neo_obj = Data.NEOPIXEL_OBJ
+    if neo_obj is None:
+        return "neo_obj is None"
+    return  neo_obj[idx]
 
 #######################
 # LM helper functions #

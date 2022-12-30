@@ -390,13 +390,13 @@ pin&nbsp;map:&nbsp;l9110dir_1,&nbsp;l9110dir_2</td></tr></table></td></tr><tr><t
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;offset&nbsp;int:&nbsp;rotate&nbsp;shader&nbsp;0-(ledcnt-1)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;shift&nbsp;bool:&nbsp;auto&nbsp;shift&nbsp;shader&nbsp;effect&nbsp;(False)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ledcnt&nbsp;int:&nbsp;number&nbsp;of&nbsp;neopixel&nbsp;elements&nbsp;in&nbsp;chain&nbsp;(default:&nbsp;24)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>max_val=254</td></tr><tr><th>doc</th><td>Demo&nbsp;function:&nbsp;implements&nbsp;random&nbsp;color&nbsp;change<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;max_val:&nbsp;set&nbsp;channel&nbsp;maximum&nbsp;generated&nbsp;value:&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>max_val=255</td></tr><tr><th>doc</th><td>Demo&nbsp;function:&nbsp;implements&nbsp;random&nbsp;color&nbsp;change<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;max_val:&nbsp;set&nbsp;channel&nbsp;maximum&nbsp;generated&nbsp;value:&nbsp;0-255<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B</td></tr></table></td></tr><tr><th>color</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None</td></tr><tr><th>doc</th><td>Set&nbsp;color&nbsp;buffer&nbsp;-&nbsp;for&nbsp;runtime&nbsp;effect&nbsp;color&nbsp;change<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r&nbsp;int:&nbsp;red&nbsp;channel&nbsp;0-254&nbsp;(default:&nbsp;None&nbsp;-&nbsp;cached&nbsp;value)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g&nbsp;int:&nbsp;green&nbsp;channel&nbsp;0-254&nbsp;(default:&nbsp;None&nbsp;-&nbsp;cached&nbsp;value)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b&nbsp;int:&nbsp;blue&nbsp;channel&nbsp;0-254&nbsp;(default:&nbsp;None&nbsp;-&nbsp;cached&nbsp;value)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>lmdep</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;Load&nbsp;Module&nbsp;dependency<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r&nbsp;int:&nbsp;red&nbsp;channel&nbsp;0-255&nbsp;(default:&nbsp;None&nbsp;-&nbsp;cached&nbsp;value)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g&nbsp;int:&nbsp;green&nbsp;channel&nbsp;0-255&nbsp;(default:&nbsp;None&nbsp;-&nbsp;cached&nbsp;value)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b&nbsp;int:&nbsp;blue&nbsp;channel&nbsp;0-255&nbsp;(default:&nbsp;None&nbsp;-&nbsp;cached&nbsp;value)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>fire</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None ledcnt=24</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>lmdep</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;Load&nbsp;Module&nbsp;dependency<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;List&nbsp;of&nbsp;load&nbsp;modules&nbsp;used&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>

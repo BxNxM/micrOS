@@ -28,7 +28,7 @@ except:
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.9.1-0'
+    __socket_interpreter_version = '1.9.1-1'
 
     def __init__(self, msg_obj=None):
         """
@@ -172,7 +172,7 @@ class Shell:
             self.msg("    key        - Get value")
             self.msg("    key value  - Set value")
             self.msg("  noconf     - Exit conf mode")
-            self.msg("[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms")
+            self.msg("[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [min x: 20ms]")
             self.msg("  task list         - list async tasks (tags)")
             self.msg("  task kill <tag>   - stop task")
             self.msg("  task show <tag>   - show task output")

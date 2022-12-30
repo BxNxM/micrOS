@@ -2,6 +2,7 @@ from LM_neopixel import load_n_init, segment, Data, status
 from LM_neopixel import pinmap as pm
 from random import randint
 
+
 #################################
 #  NEOPIXEL EFFECT DRAWER CLASS #
 #################################
@@ -49,7 +50,6 @@ class DrawEffect:
             cls.offset_gen = _gen()
         return cls.offset_gen
 
-
     def draw(cls, iterable, shift=False):
         """
         DRAW GENERATED COLORS (RGB)
@@ -59,20 +59,23 @@ class DrawEffect:
         :return: None
         """
         offset_gen = cls.__offset(shift=shift)
+        r, g, b, i = 0, 0, 0, 0
         for r, g, b in iterable:
             # Handle index offset - rotate effect
             i = offset_gen.__next__()
             # Write data to neopixel - write / segment :)
-            segment(int(r), int(g), int(b), s=i, cache=False, write=True)
+            segment(int(r), int(g), int(b), s=i, cache=False, write=False)
+        segment(int(r), int(g), int(b), s=i, cache=False, write=True)
         return True
 
 
-def color_input(r, g, b):
+def __color_input(r, g, b):
     _r, _g, _b, _ = Data.DCACHE
     r = _r if r is None else r
     g = _g if g is None else g
     b = _b if b is None else b
     return r, g, b
+
 
 #################################
 #         DEFINE EFFECTS        #
@@ -104,7 +107,7 @@ def meteor(r=None, g=None, b=None, shift=True, ledcnt=24):
             yield data
 
     # Conditional value load - with neopixel cache
-    r, g, b = color_input(r, g, b)
+    r, g, b = __color_input(r, g, b)
 
     # Init custom params
     effect = DrawEffect(pixcnt=ledcnt)
@@ -142,7 +145,7 @@ def cycle(r=None, g=None, b=None, shift=True, ledcnt=24):
             yield 0, 0, 0
 
     # Conditional value load - with neopixel cache
-    r, g, b = color_input(r, g, b)
+    r, g, b = __color_input(r, g, b)
 
     effect = DrawEffect(pixcnt=ledcnt)
     cgen = __effect(r, g, b, effect.pix_cnt)
@@ -250,14 +253,14 @@ def color(r=None, g=None, b=None):
     :return dict: rgb status - states: R, G, B, S
     """
     # Conditional value load - with neopixel cache
-    r, g, b = color_input(r, g, b)
+    r, g, b = __color_input(r, g, b)
     Data.DCACHE[0] = r
     Data.DCACHE[1] = g
     Data.DCACHE[2] = b
     return status()
 
 
-def fire(r=None, g=None, b=None, smooth=False, ledcnt=24):
+def fire(r=None, g=None, b=None, ledcnt=24):
 
     def __effect(r, g, b, pixcnt):
         for _ in range(pixcnt):
@@ -269,28 +272,21 @@ def fire(r=None, g=None, b=None, smooth=False, ledcnt=24):
                 b * rand_percent
             ]
 
-            for  i, color in enumerate(rgb):
+            for i, color in enumerate(rgb):
                 if color > 255:
                     rgb[i] = 255
                 if color < 0:
                     rgb[i] = 0
-
             yield rgb
 
     # Conditional value load - with neopixel cache
-    r, g, b = color_input(r, g, b)
+    r, g, b = __color_input(r, g, b)
 
     effect = DrawEffect(pixcnt=ledcnt)
     cgen = __effect(r, g, b, effect.pix_cnt)
     effect.draw(cgen, shift=False)
     return 'fire R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
 
-
-def testfun(idx):
-    neo_obj = Data.NEOPIXEL_OBJ
-    if neo_obj is None:
-        return "neo_obj is None"
-    return  neo_obj[idx]
 
 #######################
 # LM helper functions #
@@ -324,6 +320,7 @@ def help():
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',\
            'cycle r g b shift=True ledcnt=24',\
            'rainbow step=1 br=<5-100> ledcnt=24',\
+           'fire r=None g=None b=None ledcnt=24',\
            'shader size=4 offset=0 shift=True ledcnt=24',\
-           'random max_val=254',\
+           'random max_val=255',\
            'color r g b', 'pinmap'

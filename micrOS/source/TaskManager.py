@@ -33,7 +33,7 @@ class Task:
         self.__loop = loop      # Stores async event loop
         self.__callback = None  # [LM] Task callback: list of strings (LM call)
         self.__inloop = False   # [LM] Task while loop for LM callback
-        self.__sleep = 50       # [LM] Task while loop - async wait (proc feed) [ms]
+        self.__sleep = 20       # [LM] Task while loop - async wait (proc feed) [ms]
         self.task = None        # [LM] Store created async task object
         self.done = True        # [LM] Store task state
         self.out = ""           # [LM] Store LM output
@@ -95,8 +95,8 @@ class Task:
         # Set parameters for async wrapper
         self.__callback = callback
         self.__inloop = self.__inloop if loop is None else loop
-        # Set sleep value for async loop - optional parameter with min sleep limit check (50ms)
-        self.__sleep = self.__sleep if sleep is None else sleep if sleep > 49 else self.__sleep
+        # Set sleep value for async loop - optional parameter with min sleep limit check (20ms)
+        self.__sleep = self.__sleep if sleep is None else sleep if sleep > 19 else self.__sleep
 
         self.done = False
 

@@ -137,10 +137,14 @@ def cachedump(cdel=None, msgobj=None):
     if cdel is None:
         # List pds files aka application cache
         from os import listdir
+        msg_buf = []
         for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
             with open(pds, 'r') as f:
-                msgobj('{}: {}'.format(pds, f.read()))
-        return ''
+                if msgobj is None:
+                    msg_buf.append('{}: {}'.format(pds, f.read()))
+                else:
+                    msgobj('{}: {}'.format(pds, f.read()))
+        return msg_buf
     # Remove given pds file
     from os import remove
     try:
@@ -183,9 +187,13 @@ def lmpacman(lm_del=None, msgobj=None):
         remove('LM_{}'.format(lm_del))
         return 'Delete module: {}'.format(lm_del)
     # Dump available LMs
+    msg_buf = []
     for k in (res.replace('LM_', '') for res in listdir() if 'LM_' in res):
-        msgobj('   {}'.format(k))
-    return ''
+        if msgobj is None:
+            msg_buf.append('   {}'.format(k))
+        else:
+            msgobj('   {}'.format(k))
+    return msg_buf
 
 
 def pinmap(key='builtin'):

@@ -144,7 +144,7 @@ def cachedump(cdel=None, msgobj=None):
                     msg_buf.append('{}: {}'.format(pds, f.read()))
                 else:
                     msgobj('{}: {}'.format(pds, f.read()))
-        return msg_buf
+        return msg_buf if len(msg_buf) > 0 else ''
     # Remove given pds file
     from os import remove
     try:
@@ -193,7 +193,7 @@ def lmpacman(lm_del=None, msgobj=None):
             msg_buf.append('   {}'.format(k))
         else:
             msgobj('   {}'.format(k))
-    return msg_buf
+    return msg_buf if len(msg_buf) > 0 else ''
 
 
 def pinmap(key='builtin'):

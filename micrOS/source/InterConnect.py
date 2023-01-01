@@ -9,10 +9,10 @@ from SocketServer import SocketServer
 class InterCon:
     CONN_MAP = {}
 
-    def __init__(self, conn_timeout=2, recv_timeout=2):
+    def __init__(self, timeout):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.settimeout(conn_timeout)
-        self.recv_timeout = recv_timeout
+        self.conn.settimeout(timeout)
+        self.timeout = timeout
 
     @staticmethod
     def validate_ipv4(str_in):
@@ -28,7 +28,7 @@ class InterCon:
             hostname = host
             # Retrieve IP address by hostname dynamically
             if InterCon.CONN_MAP.get(hostname, None) is None:
-                host = socket.getaddrinfo(host, port)[-1][4][0]
+                host = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[-1][4][0]
             else:
                 # Restore IP from cache by hostname
                 host = InterCon.CONN_MAP[hostname]
@@ -72,7 +72,7 @@ class InterCon:
     def __receive_data(self, prompt=None):
         data = ""
         # Collect answer data
-        if select.select([self.conn], [], [], self.recv_timeout)[0]:
+        if select.select([self.conn], [], [], self.timeout)[0]:
             while True:
                 last_data = self.conn.recv(512).decode('utf-8').strip()
                 # First data is prompt, get it
@@ -82,14 +82,14 @@ class InterCon:
                 if prompt in data.strip() or '[configure]' in data or "Bye!" in last_data:
                     break
             data = data.replace(prompt, '')
-            data = [k.strip() for k in data.split('\n')]
+            data = [k.strip() for k in data.strip().split('\n')]
         return data, prompt
 
 
 # Main command to send msg to other micrOS boards
-def send_cmd(host, cmd, conn_timout=2, recv_timeout=2):
+def send_cmd(host, cmd, timeout=2.0):
     port = cfgget('socport')
-    com_obj = InterCon(conn_timout, recv_timeout)
+    com_obj = InterCon(timeout)
     # send command
     output = com_obj.send_cmd(host, port, cmd)
     # send command retry

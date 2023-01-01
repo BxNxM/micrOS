@@ -165,28 +165,24 @@ async def _play(args, deinit, delay):
     """
     :param args: X Y X2 Y2
     """
-    # Get my task by tag
-    task = micro_task(tag=RoboArm.PLAY_TAG)
-
-    # ON LASER
-    set_state(True)
-    for i in range(0, len(args), 2):
-        # Make servo control
-        x, y = args[i], args[i+1]
-        control(x, y)
-        # Update task output buffer
-        if task is not None:
-            task.out = "Roboarm X:{} Y:{}".format(x, y)
-        # Async wait between steps
-        await asyncio.sleep_ms(delay)
-    if deinit:
-        servo.deinit()
-    # OFF LASER
-    set_state(False)
-
-    # Set task state done
-    if task is not None:
-        task.done = True
+    # ASYNC TASK ADAPTER [*2] with automatic state management
+    #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
+    with micro_task(tag=RoboArm.PLAY_TAG) as task:
+        # ON LASER
+        set_state(True)
+        for i in range(0, len(args), 2):
+            # Make servo control
+            x, y = args[i], args[i+1]
+            control(x, y)
+            # Update task output buffer
+            if task is not None:
+                task.out = "Roboarm X:{} Y:{}".format(x, y)
+            # Async wait between steps
+            await asyncio.sleep_ms(delay)
+        if deinit:
+            servo.deinit()
+        # OFF LASER
+        set_state(False)
 
 
 def play(*args, s=None, delay=None, deinit=True):
@@ -205,7 +201,8 @@ def play(*args, s=None, delay=None, deinit=True):
     # Execute MOVE_RECORD if no input was provided
     args = RoboArm.MOVE_RECORD if len(args) < 2 else args
 
-    # Start play task
+    # Start play - servo XY in async task
+    # ASYNC TASK CREATION [1*] with async callback
     create_task = micro_task()
     state = create_task(callback=_play(args, deinit, delay), tag=RoboArm.PLAY_TAG)
     if state:

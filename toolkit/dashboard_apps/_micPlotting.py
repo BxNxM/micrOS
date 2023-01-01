@@ -91,12 +91,14 @@ def plotting(frames, window_size, repeat):
             ax.set_xlim(left=(x[0] if len(x) <= window_size else x[-window_size]), right=x[-1])
 
         # Debug: calculate min, max, avg sampling frequency on the current time window
+        raw_sample = 20     # on device sampling average (TODO: dynamic!)
         if len(x):
             diffs = [abs(x[i] - x[i - 1]) for i in range(-min(len(x) - 1, window_size), 0)]
             ax.text(0.01, 0.02,
-                    "Avg(${f_{sampling}}$) [Hz] = "f"{1/(average(diffs)/1000):.2f}"
+                    "Avg(${f_{sampling}}$) [Hz] = "f"{1/(average(diffs)/1000):.2f}" 
                     "\nMin(${f_{sampling}}$) [Hz] = "f"{1/(max(diffs)/1000):.2f}"
-                    "\nMax(${f_{sampling}}$) [Hz] = "f"{1/(min(diffs)/1000):.2f}",
+                    "\nMax(${f_{sampling}}$) [Hz] = "f"{1/(min(diffs)/1000):.2f}"
+                    "\nAvgRaw(${f_{sampling}}$) [Hz] = "f"{(1/(average(diffs)/1000))*raw_sample:.2f}",
                     transform=ax.transAxes,
                     fontsize=10
                     )

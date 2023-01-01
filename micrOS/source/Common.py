@@ -88,6 +88,8 @@ def micro_task(tag=None):
     """
     Async task creation from Load Modules
     - Indirect interface
+    [1] tag=None: return task generator object
+    [2] tag=taskID: return existing task object by tag
     """
     # Check dependecies
     if Task is None or Manager is None:

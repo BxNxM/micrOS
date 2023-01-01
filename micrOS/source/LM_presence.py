@@ -88,30 +88,25 @@ def __run_intercon(state):
 ####################################
 
 async def __task(ms_period, buff_size):
-    # [TaskManager] Get my own task object to control output and state
-    my_task = micro_task(tag=Data.TASK_TAG)
-
     if Data.ENABLE_MIC:
         # Create ADC object
         mic_adc = SmartADC.get_singleton(physical_pin('mic'))
 
-    # [TaskManager] Time window for mic sampling - reactivation
-    while Data.OFF_EV_TIMER > 0:
-        if Data.ENABLE_MIC:
-            __mic_sample(buff_size=buff_size, mic_adc=mic_adc, mytask=my_task)
-        else:
-            my_task.out = "{} sec until off event".format(Data.OFF_EV_TIMER)
-        Data.OFF_EV_TIMER -= round(ms_period / 1000, 3)
-        # Async sleep - feed event loop
-        await asyncio.sleep_ms(ms_period)
+    # ASYNC TASK ADAPTER [*2] with automatic state management
+    #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
+    with micro_task(tag=Data.TASK_TAG) as my_task:
+        while int(Data.OFF_EV_TIMER) > 0:
+            if Data.ENABLE_MIC:
+                __mic_sample(buff_size=buff_size, mic_adc=mic_adc, mytask=my_task)
+            else:
+                my_task.out = "{} sec until off event".format(int(Data.OFF_EV_TIMER)-1)
+            Data.OFF_EV_TIMER -= round(ms_period / 1000, 3)
+            # Async sleep - feed event loop
+            await asyncio.sleep_ms(ms_period)
 
-    # RUN OFF CALLBACK (local + remote)
-    __exec_local_callbacks(Data.OFF_CALLBACKS)
-    __run_intercon('off')
-
-    # [TaskManager] Hack to detect task was stopped - SET Task obj done param to True
-    if my_task is not None:
-        my_task.done = True
+        # RUN OFF CALLBACK (local + remote)
+        __exec_local_callbacks(Data.OFF_CALLBACKS)
+        __run_intercon('off')
 
 
 #########################
@@ -122,7 +117,7 @@ def __eval_trigger():
     """
     Evaluate/Detect noise trigger
     """
-    moving_avg = sum([k[1] for k in Data.RAW_DATA])/len(Data.RAW_DATA)
+    moving_avg = round(sum([k[1] for k in Data.RAW_DATA])/len(Data.RAW_DATA), 4)
     if abs(moving_avg-Data.RAW_DATA[-1][1]) > Data.TRIG_THRESHOLD:
         return True
 
@@ -149,7 +144,7 @@ def __mic_sample(buff_size, mic_adc, mytask):
     data_triplet = [time_stump, data, 0]
 
     # Store data in task cache
-    mytask.out = "th: {} last data: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, Data.OFF_EV_TIMER)
+    mytask.out = "th: {} last data: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, int(Data.OFF_EV_TIMER))
 
     # Store data triplet (time_stump, mic_data)
     Data.RAW_DATA.append(data_triplet)
@@ -196,6 +191,7 @@ def motion_trig(sample_ms=20, buff_size=15):
     Data.OFF_EV_TIMER = Data.TIMER_VALUE
 
     # [3] Start mic sampling in async task
+    # ASYNC TASK CREATION [1*] with async callback
     create_task = micro_task()
     state = create_task(callback=__task(ms_period=sample_ms, buff_size=buff_size), tag=Data.TASK_TAG)
     return "Starting" if state else "Already running"

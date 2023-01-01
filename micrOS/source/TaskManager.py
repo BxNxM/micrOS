@@ -60,6 +60,23 @@ class Task:
         if self.tag in Task.TASKS.keys():
             del Task.TASKS[self.tag]
 
+    def __enter__(self):
+        """
+        START CONDITION
+        Helper function for Task creation in Load Modules
+        [HINT] Use python with feature to utilize this feature
+        """
+        self.done = False
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
+        AUTOMATIC STOP CONDITION
+        Helper function for Task creation in Load Modules
+        [HINT] Use python with feature to utilize this feature
+        """
+        self.done = True
+
     def create(self, callback=None, tag=None):
         """
         Create async task with coroutine callback (no queue limit check!)
@@ -71,6 +88,7 @@ class Task:
         if Task.__task_busy(self.tag):
             # Skip task if already running
             return False
+
         # Start task with coroutine callback
         self.done = False
         self.task = self.__loop.create_task(callback)

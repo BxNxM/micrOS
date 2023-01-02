@@ -17,7 +17,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from sys import platform
+from LogicalPins import detect_platform
 from ConfigHandler import cfgget
 from Debug import console_write
 from TaskManager import exec_lm_pipe
@@ -54,9 +54,9 @@ def bootup_hook():
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:
         console_write("[BOOT HOOKS] Set up CPU 16MHz/24MHz - boostmd: {}".format(cfgget('boostmd')))
-        if platform == 'esp8266':
+        if detect_platform() == 'esp8266':
             freq(160000000)
-        if platform == 'esp32':
+        if detect_platform() == 'esp32':
             freq(240000000)
     else:
         console_write("[BOOT HOOKS] Set up CPU 8MHz - boostmd: {}".format(cfgget('boostmd')))

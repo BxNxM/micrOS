@@ -204,7 +204,7 @@ def pinmap(key='builtin'):
     """
     from LogicalPins import pinmap_dump, get_pinmap
     map = get_pinmap()
-    map[key] = pinmap_dump(key)
+    map[key] = pinmap_dump(key)[key]
     return map
 
 

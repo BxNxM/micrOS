@@ -308,11 +308,10 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **irq4**           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when desired signal state detected - button press happens / motion detection / etc
 | **irq4_cbf**        |     `n/a`  `<str>`          |      Yes        | `irq4` enabled, calls the given Load Modules, e.x.: `module function optional_parameter(s)` when external trigger happens
 | **irq4_trig**       |     `n/a`   `<str>`         |      Yes        | Sets trigger mode for external irq, signal phase detection, values `up` (default: `n/a`) or `down` or `both`.
-| **cstmpmap**         |      `n/a`  `<str>`          |      Yes       | Custom pin mapping for custom function setups. (1) copy your pinmap aka [L]ogical[P]ins (python variables in module) to the board, file format: `LP_<pin_map_name>.py` or `.mpy`, (2) set `<pin_map_name>` as the parameter.
+| **cstmpmap**         |      `n/a`  `<str>`          |      Yes       | Default (`n/a`), select pinmap automatically based on platform (`LP_<platform>`). Manual control / customization of application pins, syntax: `pin_map_name; pin name:pin number; ` etc. [1][optional] `pin_map_name` [L]ogical[P]in represented as `LP_<pin_map_name>.py/.mpy` file on device. [2+][optinal] `dht:22` overwrite individual existing load module pin(s). Hint: `<module> pinmap()` to get app pins, example: `neopixel pinmap()`
 | **dbg**	            |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc. + progress LED (heartbeat)
 | **soctout**          |   `100`      `<int>`        |      Yes        | Socket server connection timeout (because single process socket interface)
 | **socport**          |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility)
-| **irqmreq**          |      `6000`  `<int>`        |       No        | Controlls memory overload avoidance (byte). `timirq` requires this amount of memory for activation. `irqmreq`*0.7 is the memory limit for `extirq` enabling. **WARNING**: If the system gets memory overloaded with irq(s) micropython crashes and stucks in cycling reboot!!!
 | **devip**            |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
 | **nwmd**             |     `n/a`  `<str>`          |      N/A        | Prefered network mode - `AP` or `STA`
 | **hwuid**            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
@@ -757,68 +756,69 @@ Bye!
 
 ```
 micrOS/source/
-     245	BgJob.py
-      67	Common.py
+      89	Common.py
      217	ConfigHandler.py
      117	Debug.py
       62	Hooks.py
-      89	InterConnect.py
-     164	InterpreterCore.py
-     202	InterpreterShell.py
+      90	InterConnect.py
+     258	InterpreterShell.py
      148	InterruptHandler.py
-      46	LP_esp32.py
+      48	LP_esp32.py
+      47	LP_esp32s2.py
        3	LP_rp2.py
-      55	LP_tinypico.py
-     105	LogicalPins.py
+      56	LP_tinypico.py
+     131	LogicalPins.py
      189	Network.py
      161	Scheduler.py
-     294	SocketServer.py
-     179	Time.py
+     242	SocketServer.py
+     435	TaskManager.py
+     191	Time.py
       24	TinyPLed.py
       19	main.py
-      64	micrOS.py
+      67	micrOS.py
      118	micrOSloader.py
        9	reset.py
-SUM OF CODE LINES: 2577
+SUM OF CODE LINES: 2721
 ```
 
 #### micrOS Load Modules
 
 ```
 micrOS/source/
-      58	LM_L298N_DCmotor.py
-      37	LM_L9110_DCmotor.py
-     310	LM_VL53L0X.py
-     273	LM_bme280.py
-     194	LM_buzzer.py
-      27	LM_catgame.py
-     201	LM_cct.py
-     103	LM_co2.py
-      32	LM_dht11.py
-      32	LM_dht22.py
-      90	LM_dimmer.py
-      57	LM_distance_HCSR04.py
-      36	LM_ds18.py
-      24	LM_esp32.py
-      67	LM_genIO.py
-      19	LM_i2c.py
-      31	LM_intercon.py
-      55	LM_light_sensor.py
-     111	LM_neoeffects.py
-     231	LM_neopixel.py
-     161	LM_oled.py
-     203	LM_oled_ui.py
-      30	LM_pet_feeder.py
-      29	LM_ph_sensor.py
-     222	LM_rgb.py
-     160	LM_roboarm.py
-      40	LM_robustness.py
-      89	LM_servo.py
-     109	LM_stepper.py
-     178	LM_switch.py
-     157	LM_system.py
-      60	LM_tinyrgb.py
-SUM OF CODE LINES: 3426
+      68	LM_L298N_DCmotor.py
+      47	LM_L9110_DCmotor.py
+     323	LM_VL53L0X.py
+     299	LM_bme280.py
+     225	LM_buzzer.py
+      60	LM_catgame.py
+     245	LM_cct.py
+     122	LM_co2.py
+      58	LM_dht11.py
+      58	LM_dht22.py
+     132	LM_dimmer.py
+      70	LM_distance.py
+      54	LM_ds18.py
+      44	LM_esp32.py
+     130	LM_genIO.py
+      33	LM_i2c.py
+      45	LM_intercon.py
+      65	LM_light_sensor.py
+     283	LM_neoeffects.py
+     282	LM_neopixel.py
+     211	LM_oled.py
+     391	LM_oled_ui.py
+      40	LM_pet_feeder.py
+      39	LM_ph_sensor.py
+     197	LM_presence.py
+     263	LM_rgb.py
+     255	LM_roboarm.py
+      56	LM_robustness.py
+     124	LM_servo.py
+     133	LM_stepper.py
+     223	LM_switch.py
+     228	LM_system.py
+      85	LM_tinyrgb.py
+SUM OF CODE LINES: 4888
 ```
 
 > LM (Load Modules) - Application logic - accessable over socket server as a command

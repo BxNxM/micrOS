@@ -246,6 +246,20 @@ def ifconfig():
     return ifconfig()
 
 
+@socket_stream
+def micros_checksum(msgobj=None):
+    from hashlib import sha256
+    from binascii import hexlify
+    from os import listdir
+    from ConfigHandler import cfgget
+
+    for f_name in (_pds for _pds in listdir() if _pds.endswith('py')):
+        with open(f_name, 'rb') as f:
+            cs = hexlify(sha256(f.read()).digest()).decode('utf-8')
+        msgobj("{} {}".format(cs, f_name))
+    return "micrOS version: {}".format(cfgget('version'))
+
+
 #######################
 # LM helper functions #
 #######################
@@ -261,4 +275,4 @@ def help():
            'ntp', 'module unload="LM_rgb/None"', \
            'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
            'pinmap key="dhtpin"/None', 'ha_sta', 'alarms clean=False',\
-           'sun refresh=False', 'ifconfig'
+           'sun refresh=False', 'ifconfig', 'micros_checksum'

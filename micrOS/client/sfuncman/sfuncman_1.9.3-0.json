@@ -914,6 +914,10 @@
             "doc": null,
             "param(s)": "lm_del=None"
         },
+        "micros_checksum": {
+            "doc": null,
+            "param(s)": ""
+        },
         "module": {
             "doc": "\n    List / unload Load Modules\n    :param unload str: module name to unload\n    :param unload None: list active modules\n    :return str: verdict\n    ",
             "param(s)": "unload=None"

@@ -18,6 +18,9 @@ else
   log_file="./${MY_PATH}/micros.log"
 fi
 
+# Activates precompile (mpycross) + doc generation
+export MICROS_DEV=true
+
 # Calculate if pip install was done once
 install_req=0
 

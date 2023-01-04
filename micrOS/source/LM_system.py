@@ -248,15 +248,16 @@ def ifconfig():
 
 @socket_stream
 def micros_checksum(msgobj=None):
-    from hashlib import sha256
+    from hashlib import sha1
     from binascii import hexlify
     from os import listdir
     from ConfigHandler import cfgget
 
     for f_name in (_pds for _pds in listdir() if _pds.endswith('py')):
         with open(f_name, 'rb') as f:
-            cs = hexlify(sha256(f.read()).digest()).decode('utf-8')
+            cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
         msgobj("{} {}".format(cs, f_name))
+        gclean()
     return "micrOS version: {}".format(cfgget('version'))
 
 

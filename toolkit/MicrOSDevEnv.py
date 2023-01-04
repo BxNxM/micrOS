@@ -35,7 +35,6 @@ class MicrOSDevTool(OTA, USB):
     #####################################################
     def precompile_micros(self):
         micros_dev_env = os.environ.get("MICROS_DEV", None)
-        print("===> {}".format(micros_dev_env))
         if micros_dev_env is None or 'true' not in micros_dev_env.lower():
             self.console("SKIP PRECOMPILE - DEV ENV INACTIVE\n\t-> to activate: export MICROS_DEV=true", state='ok')
             return True

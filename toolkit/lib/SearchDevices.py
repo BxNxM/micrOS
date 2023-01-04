@@ -3,7 +3,6 @@
 
 import ipaddress
 import socket
-import netifaces
 import netaddr
 import time
 import sys
@@ -33,7 +32,7 @@ except Exception as e:
     from LocalMachine import CommandHandler
 
 
-def get_all_hosts(net, subnet=24):
+def __get_all_hosts(net, subnet=24):
     """
     Generate network range list for scanning
     """
@@ -50,22 +49,25 @@ def my_local_ip():
     """
     Get local machine local IP
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    local_ip = s.getsockname()[0]
-    s.close()
-    return local_ip
+    h_name = socket.gethostname()
+    ip_address = socket.gethostbyname(h_name)
+    return ip_address
 
 
-def gateway_ip():
+def __gateway_ip():
     """
     Get router IP
     """
-    gws = netifaces.gateways()
-    return list(gws['default'].values())[0][0]
+    h_name = socket.gethostname()
+    ip_address = socket.gethostbyname(h_name)
+    print("[__gateway_ip] Host Name is: {} ({})".format(h_name, ip_address))
+    ip_addr_hack = ip_address.split('.')
+    ip_addr_hack[-1] = '1'
+    ip_address = '.'.join(ip_addr_hack)
+    return ipaddress.ip_address(ip_address)
 
 
-def guess_net_address(gateway_ip, subnet=24):
+def __guess_net_address(gateway_ip, subnet=24):
     """
     Determine network IP
     """
@@ -80,6 +82,7 @@ def __port_is_open_ip_filter(host_list, port, thname="main"):
     # Elemental port check on ip
     def isOpen(_host, _port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
         socket.setdefaulttimeout(1)
         conn = sock.connect_ex((_host, _port))
         _is_open = conn == 0
@@ -109,7 +112,7 @@ def __port_is_open_ip_filter(host_list, port, thname="main"):
     return online_host_list
 
 
-def ip_scanner_on_open_port(host_list, port, threads=50):
+def __ip_scanner_on_open_port(host_list, port, threads=50):
     """
     Use threads for parallel network scanning
     """
@@ -144,10 +147,10 @@ def ip_scanner_on_open_port(host_list, port, threads=50):
 def online_device_scanner(service_port=9008):
     start_time = time.time()
 
-    gw_ip = gateway_ip()
-    net_ip = guess_net_address(gw_ip)
-    all_hosts_in_net_list = get_all_hosts(net_ip)
-    online_devices = ip_scanner_on_open_port(all_hosts_in_net_list, port=service_port)
+    gw_ip = __gateway_ip()
+    net_ip = __guess_net_address(gw_ip)
+    all_hosts_in_net_list = __get_all_hosts(net_ip)
+    online_devices = __ip_scanner_on_open_port(all_hosts_in_net_list, port=service_port)
 
     end_time = time.time()
     print("Elapsed time: {} sec".format(round(end_time - start_time)))
@@ -165,5 +168,7 @@ def node_is_online(ip, port=9008):
 
 
 if __name__ == "__main__":
-    online_device_scanner()
+    online_devices = online_device_scanner()
+    print(f"Online devices: {online_devices}")
+    print(f"Device {online_devices[0]} is online?: {node_is_online(ip=online_devices[0])}")
 

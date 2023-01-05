@@ -80,11 +80,11 @@ def load_n_init(cache=None):
         Data.RGB_CACHE[3] = 0           # Force ON at boot
         toggle(True)
     else:
-        rgb(0, 0, 0, smooth=False)      # If no persistent cache, init all pins low (OFF)
+        color(0, 0, 0, smooth=False)      # If no persistent cache, init all pins low (OFF)
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
-def rgb(r=None, g=None, b=None, smooth=True, force=True):
+def color(r=None, g=None, b=None, smooth=True, force=True):
     """
     Set RGB values with PWM signal
     :param r int: red value   0-1000
@@ -163,7 +163,7 @@ def brightness(percent=None, smooth=True):
     new_rgb = (target_br * float(Data.RGB_CACHE[0] / ch_max),
                target_br * float(Data.RGB_CACHE[1] / ch_max),
                target_br * float(Data.RGB_CACHE[2]) / ch_max)
-    return rgb(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
+    return color(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
 
 
 def toggle(state=None, smooth=True):
@@ -181,14 +181,14 @@ def toggle(state=None, smooth=True):
 
     # Set OFF state (1)
     if Data.RGB_CACHE[3]:
-        return rgb(0, 0, 0, smooth=smooth, force=False)
+        return color(0, 0, 0, smooth=smooth, force=False)
     # Turn ON with smooth "hack" (0)
     if smooth:
         r, g, b = Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2]
         Data.RGB_CACHE[0], Data.RGB_CACHE[1], Data.RGB_CACHE[2] = 0, 0, 0
-        return rgb(r, g, b, smooth=smooth, force=False)
+        return color(r, g, b, smooth=smooth, force=False)
     # Turn ON without smooth (0)
-    return rgb(smooth=smooth, force=False)
+    return color(smooth=smooth, force=False)
 
 
 def set_transition(r, g, b, sec):
@@ -227,7 +227,7 @@ def run_transition():
             b = Data.FADE_OBJS[2].__next__()
             # Check output enabled - LED is ON
             if Data.RGB_CACHE[3] == 1:
-                rgb(int(r), int(g), int(b), smooth=False, force=False)
+                color(int(r), int(g), int(b), smooth=False, force=False)
                 return 'Transition R{}R{}B{}'.format(r, g, b)
             return 'Transition deactivated'
         except:
@@ -246,7 +246,7 @@ def random(smooth=True, max_val=1000):
     r = randint(0, max_val)
     g = randint(0, max_val)
     b = randint(0, max_val)
-    return rgb(r, g, b, smooth=smooth)
+    return color(r, g, b, smooth=smooth)
 
 
 def subscribe_presence():
@@ -290,7 +290,7 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'rgb r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
+    return 'color r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
            'brightness percent=<0-100> smooth=True',\
            'set_transition r=<0-1000> g b sec', 'run_transition',\

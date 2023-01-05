@@ -20,18 +20,18 @@ def base_cmd():
 def test():
     print(f"{Colors.BOLD}1. Turn Channels OFF{Colors.NC}")
     # Turn OFF all outputs (+ initialize all modules) [6 channel]
-    cmd_off_all = ['rgb rgb 1 1 1', 'rgb toggle False',
+    cmd_off_all = ['rgb color 1 1 1', 'rgb toggle False',
                    'cct white 1 1', 'cct toggle False',
                    'dimmer set_value 1', 'dimmer toggle False']
     status = send_cmd(cmd_off_all)
 
     print(f"{Colors.BOLD}2. Turn RGB Channels ON effect{Colors.NC}")
     # RGB ON ONE-BY-ONE EFFECT [3 channel]
-    cmd_on_rgb = ['rgb rgb 900 0 0',
-                  'rgb rgb 0 900 0',
-                  'rgb rgb 0 0 900',
-                  'rgb rgb 0 0 1',
-                  'rgb rgb 0 0 0']
+    cmd_on_rgb = ['rgb color 900 0 0',
+                  'rgb color 0 900 0',
+                  'rgb color 0 0 900',
+                  'rgb color 0 0 1',
+                  'rgb color 0 0 0']
     status &= send_cmd(cmd_on_rgb)
 
     print(f"{Colors.BOLD}3. Turn CCT Channels ON effect{Colors.NC}")
@@ -51,7 +51,7 @@ def test():
 
     print(f"{Colors.BOLD}5. Turn ALL Channels ON{Colors.NC}")
     # ON ALL CHANNELS [6 channel]
-    cmd_on_all = ['rgb rgb 900 900 900',
+    cmd_on_all = ['rgb color 900 900 900',
                    'cct white 900 900',
                    'dimmer set_value 900']
     status &= send_cmd(cmd_on_all)

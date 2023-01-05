@@ -78,7 +78,7 @@ def load_n_init(cache=None, ledcnt=24):
     return "CACHE: {}, LED CNT: {}".format(Data.PERSISTENT_CACHE, _ledcnt)
 
 
-def neopixel(r=None, g=None, b=None, smooth=True, force=True):
+def color(r=None, g=None, b=None, smooth=True, force=True):
     """
     Set NEOPIXEL RGB values
     :param r: red value   0-254
@@ -157,7 +157,7 @@ def brightness(percent=None, smooth=True):
     new_rgb = (target_br * float(Data.DCACHE[0] / ch_max),
                target_br * float(Data.DCACHE[1] / ch_max),
                target_br * float(Data.DCACHE[2]) / ch_max)
-    return neopixel(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
+    return color(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
 
 
 def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
@@ -207,14 +207,14 @@ def toggle(state=None, smooth=True):
 
     # Set OFF state (1)
     if Data.DCACHE[3] == 1:
-        return neopixel(r=0, g=0, b=0, smooth=smooth, force=False)
+        return color(r=0, g=0, b=0, smooth=smooth, force=False)
     # Turn ON with smooth "hack" (0)
     if smooth:
         r, g, b = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]
         Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2] = 0, 0, 0
-        return neopixel(r, g, b, smooth=smooth, force=False)
+        return color(r, g, b, smooth=smooth, force=False)
     # Turn ON without smooth (0)
-    return neopixel(smooth=smooth, force=False)
+    return color(smooth=smooth, force=False)
 
 
 def set_transition(r, g, b, sec):
@@ -251,7 +251,7 @@ def run_transition():
             g = Data.FADE_OBJ[1].__next__()
             b = Data.FADE_OBJ[2].__next__()
             if Data.DCACHE[3] == 1:
-                neopixel(int(r), int(g), int(b), smooth=False, force=False)
+                color(int(r), int(g), int(b), smooth=False, force=False)
                 return 'Run R{}R{}B{}'.format(r, g, b)
             return 'Run deactivated'
         except:
@@ -270,7 +270,7 @@ def random(smooth=True, max_val=254):
     r = randint(0, max_val)
     g = randint(0, max_val)
     b = randint(0, max_val)
-    return neopixel(r, g, b, smooth=smooth)
+    return color(r, g, b, smooth=smooth)
 
 
 def subscribe_presence():
@@ -315,7 +315,7 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'neopixel r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
+    return 'color r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
            'set_transition r=<0-255> g b sec', 'run_transition',\
            'random smooth=True max_val=254', 'status', 'subscribe_presence', 'pinmap'

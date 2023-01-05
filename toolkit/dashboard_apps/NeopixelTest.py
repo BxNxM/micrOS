@@ -20,7 +20,7 @@ def base_cmd():
 
 
 def test_random_colors(test_len=8, smooth=False):
-    main_function = 'neopixel neopixel'
+    main_function = 'neopixel color'
     # generate color list
     color_list = []
     for cycle in range(1, test_len+1):

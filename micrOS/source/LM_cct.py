@@ -1,5 +1,5 @@
 #########################################
-#       ANALOG rgb CONTROLLER PARAMS    #
+#       ANALOG CCT CONTROLLER PARAMS    #
 #########################################
 from machine import Pin, PWM
 from sys import platform
@@ -19,7 +19,7 @@ class Data:
 
 
 #########################################
-#      ANALOG rgb WITH 3 channel PWM    #
+#      ANALOG CCT WITH 2 channel PWM    #
 #########################################
 
 def __cwww_init():
@@ -84,7 +84,7 @@ def load_n_init(cache=None):
 
 def white(c=None, w=None, smooth=True, force=True):
     """
-    Set RGB values with PWM signal
+    Set CCT values with PWM signal
     :param c int: cold white value   0-1000
     :param w int: warm white value 0-1000
     :param smooth int: runs white channels change with smooth effect

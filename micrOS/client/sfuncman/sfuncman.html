@@ -283,7 +283,7 @@ pin&nbsp;map:&nbsp;servo_1,&nbsp;servo_2</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>neopixel</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;NEOPIXEL&nbsp;RGB&nbsp;values<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>color</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;NEOPIXEL&nbsp;RGB&nbsp;values<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r:&nbsp;red&nbsp;value&nbsp;&nbsp;&nbsp;0-254<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g:&nbsp;green&nbsp;value&nbsp;0-254<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b:&nbsp;blue&nbsp;value&nbsp;&nbsp;0-254<br>
@@ -329,7 +329,7 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table b
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>white</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>c=None w=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;RGB&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>white</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>c=None w=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;c&nbsp;int:&nbsp;cold&nbsp;white&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;w&nbsp;int:&nbsp;warm&nbsp;white&nbsp;value&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;int:&nbsp;runs&nbsp;white&nbsp;channels&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
@@ -457,7 +457,7 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>rgb</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;RGB&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>color</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;RGB&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r&nbsp;int:&nbsp;red&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g&nbsp;int:&nbsp;green&nbsp;value&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b&nbsp;int:&nbsp;blue&nbsp;value&nbsp;&nbsp;0-1000<br>

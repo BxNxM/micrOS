@@ -1,26 +1,55 @@
+import uasyncio as asyncio
 from LM_servo import sduty, deinit
 from LM_stepper import step
+from Common import micro_task
 from utime import sleep_ms
 
 
-def portion(repeat=1, posmin=65, posmax=97):
-    # Run portion sequence
-    for _ in range(0, repeat):
-        # Run pos fill up
-        for pos in range(posmin, posmax):
-            sduty(pos)
-            sleep_ms(10)
-        sleep_ms(500)
-        # Run pos food out
-        for pos in range(posmax, posmin, -1):
-            sduty(pos)
-            sleep_ms(15)
+class Data:
+    TASK_TAG = "pet_feeder.portion"
+
+
+async def __portion_task(portion, posmin, posmax):
+    # ASYNC TASK ADAPTER [*2] with automatic state management
+    #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
+    with micro_task(tag=Data.TASK_TAG) as my_task:
+        for p in range(0, portion):
+            # [1]Run pos fill up
+            for pos in range(posmin, posmax):
+                sduty(pos)
+                await asyncio.sleep_ms(15)
+            # [2]Wait between fill up / food out
+            await asyncio.sleep_ms(500)
+            # [3]Run pos food out
+            for pos in range(posmax, posmin, -1):
+                sduty(pos)
+                await asyncio.sleep_ms(20)
+            my_task.out = "{}/{} serving".format(p+1, portion)
     deinit()
-    return 'Portion {} was served'.format(repeat)
+    my_task.out += ": {} task done".format(Data.TASK_TAG)
 
 
-def portion_new(count=1, forward=135, back=10):
-    for _ in range(count):
+def serve(portion=1, posmin=65, posmax=97):
+    """
+    Pet feeder - with servo motor
+    :param portion: number of portions (min/max positions to repeat)
+    :param posmin: servo "start" position
+    :param posmax: servo "stop" position
+    """
+    # ASYNC TASK CREATION [1*] with async callback
+    create_task = micro_task()
+    state = create_task(callback=__portion_task(portion=portion, posmin=posmin, posmax=posmax), tag=Data.TASK_TAG)
+    return "Starting" if state else "Already running"
+
+
+def serve_w_stepper(portion=1, forward=135, back=10):
+    """
+    Pet feeder (beta) - with stepper motor
+    :param count: number of portions
+    :param forward: s
+    :param back:
+    """
+    for _ in range(portion):
         # portion move
         step(forward)
         # Safety anti-block solution?
@@ -45,4 +74,4 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'portion repeat=1', '<-servo control',  'portion_new count=1', '<-stepper control', 'lmdep'
+    return 'serve portion=1 \t\t[info] servo control',  'serve_w_stepper portion=1 \t[info] stepper control', 'lmdep'

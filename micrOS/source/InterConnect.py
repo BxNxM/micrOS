@@ -36,14 +36,18 @@ class InterCon:
         if InterCon.validate_ipv4(host):
             SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, port))
 
-            # Send command over TCP/IP
-            self.conn.connect((host, port))
             try:
+                # Connect to host
+                self.conn.connect((host, port))
+                # Send command over TCP/IP
                 output = self.__run_command(cmd, hostname)
-            except Exception as e:
-                errlog_add("[intercon][ERR] send_cmd error: {}".format(e))
+            except OSError as e:
+                errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
                 output = None
-            self.conn.close()
+            try:
+                self.conn.close()
+            except:
+                pass
 
             # Cache successful connection data (hostname:IP)
             if hostname is not None:
@@ -64,6 +68,7 @@ class InterCon:
             data, _ = self.__receive_data(prompt=prompt)
             if data == '\0':
                 return None
+            # Successful data receive, return data
             return data
         # Skip command run: prompt and host not the same!
         SocketServer().reply_message("[intercon] prompt mismatch, hostname: {} prompt: {} ".format(hostname, prompt))

@@ -42,6 +42,7 @@ class InterCon:
                 # Send command over TCP/IP
                 output = self.__run_command(cmd, hostname)
             except OSError as e:
+                SocketServer().reply_message("[intercon] NoHost: {}".format(e))
                 errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
                 output = None
             try:
@@ -53,14 +54,18 @@ class InterCon:
             if hostname is not None:
                 # In case of valid communication store device ip, otherwise set ip to None
                 InterCon.CONN_MAP[hostname] = None if output is None else host
-            return output
+            # Successful communication: list of received lines / Failed communication: None
+            return [] if output is None else output
         else:
             errlog_add("[intercon][ERR] Invalid host: {}".format(host))
-        return None
+        return []
 
     def __run_command(self, cmd, hostname):
         cmd = str.encode(cmd)
         data, prompt = self.__receive_data()
+        if "Connection is busy. Bye!" in prompt:
+            SocketServer().reply_message("Try later...")
+            return None
         # Compare prompt |node01 $| with hostname 'node01.local'
         if hostname is None or prompt is None or str(prompt).replace('$', '').strip() == str(hostname).split('.')[0]:
             # Sun command on validated device
@@ -92,14 +97,11 @@ class InterCon:
 
 
 # Main command to send msg to other micrOS boards
-def send_cmd(host, cmd, timeout=2.0):
+def send_cmd(host, cmd, timeout=1.0):
     port = cfgget('socport')
     com_obj = InterCon(timeout)
     # send command
     output = com_obj.send_cmd(host, port, cmd)
-    # send command retry
-    if output is None:
-        output = com_obj.send_cmd(host, port, cmd)
     return output
 
 

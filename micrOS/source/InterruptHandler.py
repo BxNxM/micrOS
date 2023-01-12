@@ -33,7 +33,7 @@ if cfgget('cron'):
 
 def emergency_mbuff():
     emergency_buff_kb = 1000
-    if cfgget('extirq') or cfgget("timirq"):
+    if cfgget('cron') or cfgget('extirq') or cfgget("timirq"):
         from micropython import alloc_emergency_exception_buf
         console_write("[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={}".format(emergency_buff_kb))
         alloc_emergency_exception_buf(emergency_buff_kb)
@@ -98,39 +98,40 @@ def initEventIRQs():
     EVENT INTERRUPT CONFIGURATION - multiple
     """
 
-    def __edge_exec(pin, cbf_resolver):
+    def __edge_exec(pin, resolver):
         """
         Prell filter / edge detection and execution
         :param pin: pin obj name
-        :param cbf_resolver: callback resolver dict by pin obj name
+        :param resolver: callback resolver dict,  LM_cbf obj by pins {PinKey: [LM_cbf, prellTimer]}
         :return: None
         """
-        # Get stored tick - last executed
-        last = cbf_resolver.get('tick', 0)
+        pin = str(pin)
+        # Get stored tick by pin - last executed
+        last = resolver.get(pin)[1]
         # Calculate trigger diff in ms (from now)
         diff = ticks_diff(int(ticks_us() * 0.001), last)
         # console_write("[IRQ] Event {} - tick diff: {}".format(pin, diff))
-        # Threshold between ext. irq evens: 200 ms
-        if abs(diff) > 200:
-            # [!] Execute LM
-            exec_lm_pipe_schedule(cbf_resolver[str(pin)])
+        # Threshold between ext. irq evens
+        if abs(diff) > resolver.get('prell_ms'):
+            # [!] Execute LM(s)
+            exec_lm_pipe_schedule(resolver.get(pin)[0])
             # Save now tick - last executed
-            cbf_resolver['tick'] = int(ticks_us() * 0.001)
+            resolver[pin][1] = int(ticks_us() * 0.001)
 
     # External IRQ execution data set from node config
-    # ((irq, trig, cbf), (irq, trig, cbf), (irq, trig, cbf), ...)
+    # ((irq, trig, lm_cbf), (irq, trig, lm_cbf), (irq, trig, lm_cbf), ...)
     irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
                (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
                (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
                (cfgget("irq4"), cfgget("irq4_trig"), cfgget("irq4_cbf")))
 
     # [*] hardcopy parameters to be able to resolve cbf-s
-    # cbf_resolver = {'Pin(1)': 'cbf;cbf', 'Pin(2)': 'cbf', ...}
-    cbf_resolver = {}
+    # cbf_resolver = {'Pin(1)': 'cbf;cbf', 'Pin(2)': 'cbf', ... + 'prell_ms': for example 300ms}
+    cbf_resolver = {'prell_ms': cfgget("irq_prell_ms")}
     for i, data in enumerate(irqdata):
-        irq, trig, cbf = data
+        irq, trig, lm_cbf = data
         console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i+1, irq, trig))
-        console_write("|- [IRQ] EXTIRQ CBF: {}".format(cbf))
+        console_write("|- [IRQ] EXTIRQ CBF: {}".format(lm_cbf))
         if irq:
             try:
                 pin = physical_pin('irq{}'.format(i + 1))  # irq1, irq2, etc.
@@ -140,11 +141,12 @@ def initEventIRQs():
                 console_write("|-- [!] {}".format(msg))
                 errlog_add(msg)
             if pin:
-                # [*] update cbf dict by pin number (available in irq callback)
-                cbf_resolver['Pin({})'.format(pin)] = cbf
+                # [*] update resolver dict by pin number (available in irq callback):
+                # PinKey: [CallbackFunction, PrellTimer]  (prell: contact recurrence - fake event filtering... :D)
+                cbf_resolver['Pin({})'.format(pin)] = [lm_cbf, 0]
                 trig = trig.strip().lower()
                 # Init event irq with callback function wrapper
-                # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            # TODO: expose parameter ?
+                # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            #TODO: expose built in resistor parameter ?
                 pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
                 # [IRQ] - event type setup
                 if trig == 'down':

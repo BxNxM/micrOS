@@ -56,6 +56,7 @@ class Data:
                     "irq4": False,
                     "irq4_cbf": "n/a",
                     "irq4_trig": "n/a",
+                    "irq_prell_ms": 300,
                     "boothook": "n/a",
                     "aioqueue": 3,
                     "utc": +60,

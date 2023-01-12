@@ -322,7 +322,7 @@ def exec_lm_pipe(taskstr):
         if taskstr.startswith('n/a'):
             return True
         # Execute individual commands - msgobj->"/dev/null"
-        for cmd in (cmd.strip().split() for cmd in taskstr.split(';')):
+        for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
             if not exec_lm_core(cmd):
                 console_write("|-[LM-PIPE] task error: {}".format(cmd))
     except Exception as e:

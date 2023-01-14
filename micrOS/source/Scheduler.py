@@ -76,6 +76,25 @@ def __cron_task_cache_manager(now_in_sec, sec_tolerant):
             LAST_CRON_TASKS.remove(LAST_CRON_TASKS[index])
 
 
+def __resolve_time_tag(check_time, crontask):
+    """
+    Handle time stump/tag in check_time
+        time stump: (WD, H, M, S)
+        tag: sunrise, sunset   <- filter this use case
+    """
+    # Resolve time tag: sunrise, sunset
+    if len(check_time) < 3:
+        tag = crontask[0].strip()
+        # Resolve tag
+        value = Sun.TIME.get(tag, None)
+        if value is None or len(value) < 3:
+            errlog_add('[cron][ERR] syntax error: {}:{}'.format(tag, value))
+            return ()
+        # Update check_time with resolved value by tag
+        check_time = ('*', value[0], value[1], value[2])
+    return check_time
+
+
 def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
     """
     SchedulerCore logic
@@ -87,13 +106,9 @@ def __scheduler_trigger(cron_time_now, now_sec_tuple, crontask, deltasec=2):
     # Resolve "normal" time
     check_time = tuple(int(t.strip()) if t.isdigit() else t.strip() for t in crontask[0].split(':'))
     # Resolve "time tag" to "normal" time
-    if len(check_time) < 3:
-        tag = crontask[0].strip()
-        value = Sun.TIME.get(tag, None)
-        if value is None or len(value) < 3:
-            errlog_add('[cron][ERR] syntax error: {}:{}'.format(tag, value))
-            return False
-        check_time = ('*', value[0], value[1], value[2])
+    check_time = __resolve_time_tag(check_time, crontask)
+    if len(check_time) < 4:
+        return False
 
     # Cron actual time (now) parts summary in sec
     check_time_now_sec = now_sec_tuple[0] + now_sec_tuple[1] + now_sec_tuple[2]

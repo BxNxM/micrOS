@@ -172,7 +172,7 @@
             "param(s)": "state=None smooth=True"
         },
         "white": {
-            "doc": "\n    Set CCT values with PWM signal\n    :param c int: cold white value   0-1000\n    :param w int: warm white value 0-1000\n    :param smooth int: runs white channels change with smooth effect\n    :param force bool: clean fade generators and set color\n    :return dict: cct status - states: CW, WW, S\n    ",
+            "doc": "\n    Set CCT values with PWM signal\n    :param c int: cold white value   0-1000\n    :param w int: warm white value 0-1000\n    :param smooth bool: runs white channels change with smooth effect\n    :param force bool: clean fade generators and set color\n    :return dict: cct status - states: CW, WW, S\n    ",
             "param(s)": "c=None w=None smooth=True"
         }
     },
@@ -256,8 +256,8 @@
             "param(s)": ""
         },
         "set_value": {
-            "doc": "\n    Set dimmer values with PWM signal\n    :param value int: value 0-1000 default: None (set cached value)\n    :return dict: X, S\n    ",
-            "param(s)": "value=None"
+            "doc": "\n    Set dimmer values with PWM signal\n    :param value int: value 0-1000 default: None (set cached value)\n    :param smooth bool: run channel change with smooth effect\n    :return dict: X, S\n    ",
+            "param(s)": "value=None smooth=True"
         },
         "status": {
             "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: X, S\n    ",
@@ -268,8 +268,8 @@
             "param(s)": ""
         },
         "toggle": {
-            "doc": "\n    Toggle dimmer state based on the stored state\n    :param state bool: True(1)/False(0)/None(default - automatic toggle)\n    :return dict: X, S\n    ",
-            "param(s)": "state=None"
+            "doc": "\n    Toggle dimmer state based on the stored state\n    :param state bool: True(1)/False(0)/None(default - automatic toggle)\n    :param smooth bool: run channel change with smooth effect\n    :return dict: X, S\n    ",
+            "param(s)": "state=None smooth=True"
         }
     },
     "distance": {
@@ -646,6 +646,21 @@
             "param(s)": "on off"
         }
     },
+    "rencoder": {
+        "help": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rencoder.png?raw=true",
+        "load_n_init": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "read_state": {
+            "doc": null,
+            "param(s)": ""
+        }
+    },
     "rgb": {
         "brightness": {
             "doc": "\n    Set RGB brightness\n    :param percent int: brightness percentage: 0-100\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :return dict: rgb status - states: R, G, B, S\n    ",
@@ -716,7 +731,7 @@
             "param(s)": ""
         },
         "load_n_init": {
-            "doc": "There is no current event loop in thread 'Thread-2'.",
+            "doc": "\n    Initiate roboarm module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": ""
         },
         "pinmap": {

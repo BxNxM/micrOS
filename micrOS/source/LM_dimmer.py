@@ -1,5 +1,7 @@
 from sys import platform
 from LogicalPins import physical_pin, pinmap_dump
+from Common import transition
+from utime import sleep_ms
 
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
@@ -74,17 +76,35 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(__PERSISTENT_CACHE)
 
 
-def set_value(value=None):
+def set_value(value=None, smooth=True):
     """
     Set dimmer values with PWM signal
     :param value int: value 0-1000 default: None (set cached value)
+    :param smooth bool: run channel change with smooth effect
     :return dict: X, S
     """
     global __DIMMER_CACHE
+
+    def __buttery(c_from, c_to):
+        step_ms = 2
+        interval_sec = 0.2
+        if __DIMMER_CACHE[0] == 0:
+            # Turn from OFF to on (to whites)
+            c_from = 0
+        gen = transition(from_val=c_from, to_val=c_to, step_ms=step_ms, interval_sec=interval_sec)
+        for _t in gen:
+            __dimmer_init().duty(_t)
+            sleep_ms(step_ms)
+
     # restore data from cache if it was not provided
     value = int(__DIMMER_CACHE[1] if value is None else value)
     if 0 <= value <= 1000:
-        __dimmer_init().duty(value)
+        if smooth:
+            __buttery(__DIMMER_CACHE[1], value)
+        else:
+            # Set value
+            __dimmer_init().duty(value)
+        # State handling
         if value == 0:
             __DIMMER_CACHE[0] = 0        # SAVE STATE TO CACHE
         else:
@@ -95,17 +115,18 @@ def set_value(value=None):
     return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)
 
 
-def toggle(state=None):
+def toggle(state=None, smooth=True):
     """
     Toggle dimmer state based on the stored state
     :param state bool: True(1)/False(0)/None(default - automatic toggle)
+    :param smooth bool: run channel change with smooth effect
     :return dict: X, S
     """
     if state is not None:
         __DIMMER_CACHE[0] = 0 if state else 1
     if __DIMMER_CACHE[0] == 1:
-        return set_value(0)         # Set value to 0 - OFF
-    return set_value()              # Set value to the cached - ON
+        return set_value(0, smooth=smooth)         # Set value to 0 - OFF
+    return set_value(smooth=smooth)                # Set value to the cached - ON
 
 
 def subscribe_presence():
@@ -150,5 +171,5 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'set_value value=<0-1000>', 'toggle state=None', 'load_n_init',\
+    return 'set_value value=<0-1000> smooth=True', 'toggle state=None smooth=True', 'load_n_init',\
            'subscribe_presence', 'status', 'pinmap'

@@ -87,13 +87,13 @@ def white(c=None, w=None, smooth=True, force=True):
     Set CCT values with PWM signal
     :param c int: cold white value   0-1000
     :param w int: warm white value 0-1000
-    :param smooth int: runs white channels change with smooth effect
+    :param smooth bool: runs white channels change with smooth effect
     :param force bool: clean fade generators and set color
     :return dict: cct status - states: CW, WW, S
     """
     def __buttery(ww_from, cw_from, ww_to, cw_to):
         step_ms = 2
-        interval_sec = 0.3
+        interval_sec = 0.2
         if Data.CWWW_CACHE[2] == 0:
             # Turn from OFF to on (to whites)
             ww_from, cw_from = 0, 0

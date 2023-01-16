@@ -91,7 +91,7 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
 
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
         step_ms = 2
-        interval_sec = 0.3
+        interval_sec = 0.2
         if Data.DCACHE[3] == 0:
             # Turn from OFF to on (to colors)
             r_from, g_from, b_from = 0, 0, 0

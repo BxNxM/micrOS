@@ -22,12 +22,15 @@ def app(devfid=None, itr=80):
     # EDIT YOUR COMMAND
     cmd_list = []
     for k in range(0, itr, 2):
-        cmd_list += ['dimmer set_value {} >json'.format(k)]
+        cmd_list += ['dimmer set_value {} smooth=False >json'.format(k)]
     execute(cmd_list)
 
     cmd_list = []
     for k in range(itr, 0, -2):
-        cmd_list += ['dimmer set_value {} >json'.format(k)]
+        cmd_list += ['dimmer set_value {} smooth=False >json'.format(k)]
+    execute(cmd_list)
+
+    cmd_list = ['dimmer set_value 300', 'dimmer toggle False', 'dimmer toggle True']
     execute(cmd_list)
 
 

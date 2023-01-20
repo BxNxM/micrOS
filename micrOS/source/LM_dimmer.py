@@ -1,6 +1,7 @@
 from sys import platform
 from LogicalPins import physical_pin, pinmap_dump
-from Common import transition
+from Common import transition, micro_task
+import uasyncio as asyncio
 from utime import sleep_ms
 
 #########################################
@@ -10,6 +11,7 @@ __DIMMER_OBJ = None
 # DATA: state:ON/OFF, value:0-1000
 __DIMMER_CACHE = [0, 500]
 __PERSISTENT_CACHE = False
+__DIMM_TASK_TAG = "dimmer._transition"
 
 
 #########################################
@@ -122,11 +124,55 @@ def toggle(state=None, smooth=True):
     :param smooth bool: run channel change with smooth effect
     :return dict: X, S
     """
+    # Set state directly (inverse) + check change
     if state is not None:
+        if bool(state) is bool(__DIMMER_CACHE[0]):
+            return status()
         __DIMMER_CACHE[0] = 0 if state else 1
+
     if __DIMMER_CACHE[0] == 1:
         return set_value(0, smooth=smooth)         # Set value to 0 - OFF
     return set_value(smooth=smooth)                # Set value to the cached - ON
+
+
+def run_transition(value, sec):
+    """
+    Set transition color change for long dimming periods < 30sec
+    - creates the dimming generators
+    :param value: value   0-1000
+    :param sec: transition length in sec
+    :return: info msg string
+    """
+    global __DIMM_TASK_TAG
+
+    async def __task(ms_period, iterable):
+        # ASYNC TASK ADAPTER [*2] with automatic state management
+        #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
+        with micro_task(tag=__DIMM_TASK_TAG) as my_task:
+            for i in iterable:
+                __dimmer_init().duty(i)
+                my_task.out = "Dimming {}".format(i)
+                await asyncio.sleep_ms(ms_period)
+            # State handling
+            if i == 0:
+                __DIMMER_CACHE[0] = 0  # SAVE STATE TO CACHE
+            else:
+                __DIMMER_CACHE[1] = i  # SAVE VALUE TO CACHE
+                __DIMMER_CACHE[0] = 1  # SAVE STATE TO CACHE
+            __persistent_cache_manager('s')
+
+    __DIMMER_CACHE[0] = 1           # Set state ON on state cache
+    from_dim = __DIMMER_CACHE[1]    # Get current value
+    if from_dim == value:
+        return "Already set: {}".format(value)
+
+    step_size_ms = 100              # Step ms (with smooth on anyhow)
+    dimmer_gen = transition(from_val=from_dim, to_val=value, step_ms=step_size_ms, interval_sec=sec)
+
+    # ASYNC TASK CREATION [1*] with async callback
+    create_task = micro_task()
+    state = create_task(callback=__task(ms_period=step_size_ms, iterable=dimmer_gen), tag=__DIMM_TASK_TAG)
+    return "Starting transition" if state else "Transition already running"
 
 
 def subscribe_presence():
@@ -172,4 +218,4 @@ def help():
     :return tuple: list of functions implemented by this application
     """
     return 'set_value value=<0-1000> smooth=True', 'toggle state=None smooth=True', 'load_n_init',\
-           'subscribe_presence', 'status', 'pinmap'
+           'subscribe_presence', 'run_transition value=<0-1000> sec', 'status', 'pinmap'

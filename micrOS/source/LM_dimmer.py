@@ -97,14 +97,27 @@ def set_value(value=None, smooth=True):
     :return dict: X, S
     """
 
+    def __buttery(from_val, to_val):
+        step_ms = 2
+        interval_sec = 0.2
+        if Data.DIMMER_CACHE[0] == 0:
+            # Turn from OFF to on (to whites)
+            from_val = 0
+            Data.DIMMER_CACHE[0] = 1
+        val_gen = transition(from_val=from_val, to_val=to_val, step_ms=step_ms, interval_sec=interval_sec)
+        for _val in val_gen:
+            __dimmer_init().duty(_val)
+            sleep_ms(step_ms)
+
     # restore data from cache if it was not provided
     value = int(Data.DIMMER_CACHE[1] if value is None else value)
     if 0 <= value <= 1000:
         if smooth:
-            # Set state with smooth effect (aka fade)
-            return fade(value, 0.3)
-        # Set value immediately
-        __dimmer_init().duty(value)
+            # Set real-time smooth transition
+            __buttery(Data.DIMMER_CACHE[1], value)
+        else:
+            # Set value immediately
+            __dimmer_init().duty(value)
         __state_machine(value)
         return status()
     return "DIMMER ERROR, VALUE 0-1000 ONLY, GIVEN: {}".format(value)

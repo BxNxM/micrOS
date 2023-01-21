@@ -243,8 +243,8 @@
     },
     "dimmer": {
         "fade": {
-            "doc": "\n    Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param value: value 0-1000\n    :param sec: fade/transition length in sec\n    :return: info msg string\n    ",
-            "param(s)": "value sec=1.0"
+            "doc": "\n    Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param value: value 0-1000\n    :param sec: fade/transition length in sec\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
+            "param(s)": "value sec=1.0 wake=False"
         },
         "help": {
             "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",

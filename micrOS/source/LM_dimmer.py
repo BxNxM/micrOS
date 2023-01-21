@@ -55,10 +55,10 @@ def __persistent_cache_manager(mode='r'):
 def __state_machine(value):
     # State handling
     if value == 0:
-        Data.DIMMER_CACHE[0] = 0  # SAVE STATE TO CACHE
+        Data.DIMMER_CACHE[0] = 0                            # SAVE STATE TO CACHE
     else:
-        Data.DIMMER_CACHE[1] = value  # SAVE VALUE TO CACHE > 0 ! because toggle
-        Data.DIMMER_CACHE[0] = 1  # SAVE STATE TO CACHE
+        Data.DIMMER_CACHE[1] = value if value > 5 else 5    # SAVE VALUE TO CACHE > 5 ! because toggle
+        Data.DIMMER_CACHE[0] = 1                            # SAVE STATE TO CACHE
     __persistent_cache_manager('s')
 
 
@@ -141,12 +141,13 @@ def toggle(state=None, smooth=True):
     return set_value(smooth=smooth)                # Set value to the cached - ON
 
 
-def fade(value, sec=1.0):
+def fade(value, sec=1.0, wake=False):
     """
     Set transition color change for long dimming periods < 30sec
     - creates the dimming generators
     :param value: value 0-1000
     :param sec: fade/transition length in sec
+    :param wake: bool, wake on setup (auto run on periphery)
     :return: info msg string
     """
 
@@ -155,10 +156,15 @@ def fade(value, sec=1.0):
         #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
         with micro_task(tag=Data.DIMM_TASK_TAG) as my_task:
             for i in iterable:
-                __dimmer_init().duty(i)
+                if Data.DIMMER_CACHE[0] == 1 or wake:
+                    # Write periphery
+                    __dimmer_init().duty(i)
+                # Update periphery cache (value check due to toggle ON value minimum)
+                Data.DIMMER_CACHE[1] = i if i > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 my_task.out = "Dimming ... {}".format(i)
                 await asyncio.sleep_ms(ms_period)
-            __state_machine(i)
+            if Data.DIMMER_CACHE[0] == 1 or wake:
+                __state_machine(i)
             my_task.out = "Dimming DONE {}".format(i)
 
     fade_step_ms = 10 if sec < 2 else 50
@@ -213,4 +219,4 @@ def help():
     :return tuple: list of functions implemented by this application
     """
     return 'set_value value=<0-1000> smooth=True', 'toggle state=None smooth=True', 'load_n_init',\
-           'subscribe_presence', 'fade value=<0-1000> sec', 'status', 'pinmap'
+           'subscribe_presence', 'fade value=<0-1000> sec wake=False', 'status', 'pinmap'

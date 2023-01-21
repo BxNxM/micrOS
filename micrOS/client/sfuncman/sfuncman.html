@@ -542,10 +542,11 @@ pin&nbsp;map:&nbsp;mic,&nbsp;irq1</td></tr></table></td></tr><tr><th>help</th><t
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S</td></tr></table></td></tr><tr><th>toggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;dimmer&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state&nbsp;bool:&nbsp;True(1)/False(0)/None(default&nbsp;-&nbsp;automatic&nbsp;toggle)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;run&nbsp;channel&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S</td></tr></table></td></tr><tr><th>fade</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>value sec=1.0</td></tr><tr><th>doc</th><td>Set&nbsp;transition&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S</td></tr></table></td></tr><tr><th>fade</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>value sec=1.0 wake=False</td></tr><tr><th>doc</th><td>Set&nbsp;transition&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;creates&nbsp;the&nbsp;dimming&nbsp;generators<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;value:&nbsp;value&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sec:&nbsp;fade/transition&nbsp;length&nbsp;in&nbsp;sec<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool,&nbsp;wake&nbsp;on&nbsp;setup&nbsp;(auto&nbsp;run&nbsp;on&nbsp;periphery)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;info&nbsp;msg&nbsp;string</td></tr></table></td></tr><tr><th>subscribe_presence</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Initialize&nbsp;LM&nbsp;presence&nbsp;module&nbsp;with&nbsp;ON/OFF&nbsp;callback&nbsp;functions<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;None</td></tr></table></td></tr><tr><th>status</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>lmf=None</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Load&nbsp;Module&nbsp;state&nbsp;machine<br>

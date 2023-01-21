@@ -202,9 +202,8 @@ def play(*args, s=None, delay=None, deinit=True):
     args = RoboArm.MOVE_RECORD if len(args) < 2 else args
 
     # Start play - servo XY in async task
-    # ASYNC TASK CREATION [1*] with async callback
-    create_task = micro_task()
-    state = create_task(callback=_play(args, deinit, delay), tag=RoboArm.PLAY_TAG)
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag=RoboArm.PLAY_TAG, task=_play(args, deinit, delay))
     if state:
         return 'Play: {} steps'.format(int(len(args)/2))
     return 'Play - already running'

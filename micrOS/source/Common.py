@@ -84,20 +84,30 @@ class SmartADC:
         return SmartADC.OBJS[pin]
 
 
-def micro_task(tag=None):
+def micro_task(tag, task=None):
     """
     Async task creation from Load Modules
     - Indirect interface
-    [1] tag=None: return task generator object
-    [2] tag=taskID: return existing task object by tag
+    tag:
+        [1] tag=None: return task generator object
+        [2] tag=taskID: return existing task object by tag
+    task: coroutine to execute (built in overload protection and lcm)
     """
-    # Check dependecies
+    # [0] Check dependencies
     if Task is None or Manager is None:
+        # RETURN: None - cannot utilize async task functionality
         return None
-    # Create mode - return create task object (async function input!)
-    if tag is None:
-        task_gen_obj = Manager().create_task
-        return task_gen_obj
-    # Get / state mode - return async_task (done, out attributes)
-    async_task = Task.TASKS.get(tag, None)
-    return async_task
+    if task is None:
+        # [1] Task is None -> Get task mode by tag
+        # RETURN task obj (access obj.out + obj.done (automatic - with keyword arg))
+        async_task = Task.TASKS.get(tag, None)
+        return async_task
+    elif Task.task_is_busy(tag):
+        # [2] Shortcut: Check task state by tag
+        # RETURN: None - if task is already running
+        return None
+    else:
+        # [3] Create task (not running) + task coroutine was provided
+        # RETURN task creation state - success (True) / fail (False)
+        state = Manager().create_task(callback=task, tag=tag)
+        return state

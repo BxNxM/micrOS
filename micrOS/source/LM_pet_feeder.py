@@ -36,9 +36,8 @@ def serve(portion=1, posmin=65, posmax=97):
     :param posmin: servo "start" position
     :param posmax: servo "stop" position
     """
-    # ASYNC TASK CREATION [1*] with async callback
-    create_task = micro_task()
-    state = create_task(callback=__portion_task(portion=portion, posmin=posmin, posmax=posmax), tag=Data.TASK_TAG)
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag=Data.TASK_TAG, task=__portion_task(portion=portion, posmin=posmin, posmax=posmax))
     return "Starting" if state else "Already running"
 
 

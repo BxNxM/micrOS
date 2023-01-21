@@ -191,9 +191,8 @@ def motion_trig(sample_ms=20, buff_size=15):
     Data.OFF_EV_TIMER = Data.TIMER_VALUE
 
     # [3] Start mic sampling in async task
-    # ASYNC TASK CREATION [1*] with async callback
-    create_task = micro_task()
-    state = create_task(callback=__task(ms_period=sample_ms, buff_size=buff_size), tag=Data.TASK_TAG)
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag=Data.TASK_TAG, task=__task(ms_period=sample_ms, buff_size=buff_size))
     return "Starting" if state else "Already running"
 
 

@@ -40,7 +40,7 @@ class Task:
         self.tag = None         # [LM] Task tag for identification
 
     @staticmethod
-    def __task_busy(tag):
+    def task_is_busy(tag):
         """
         Check task is busy by tag in TASKS
         - exists + running = busy
@@ -49,7 +49,7 @@ class Task:
         if task is not None and not task.done:
             # is busy
             return True
-        # is busy
+        # is NOT busy
         return False
 
     def __task_del(self):
@@ -85,7 +85,7 @@ class Task:
         """
         # Create task tag
         self.tag = "aio{}".format(len(Task.TASKS)) if tag is None else tag
-        if Task.__task_busy(self.tag):
+        if Task.task_is_busy(self.tag):
             # Skip task if already running
             return False
 
@@ -106,7 +106,7 @@ class Task:
         """
         # Create task tag
         self.tag = '.'.join(callback[0:2])
-        if Task.__task_busy(self.tag):
+        if Task.task_is_busy(self.tag):
             # Skip task if already running
             return False
 

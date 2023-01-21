@@ -37,10 +37,12 @@ class Timer:
 
 
 class Pin:
-    IN = 'DUMMY'
-    OUT = 'DUMMY'
-    PULL_UP = 'DUMMY'
-    IRQ_RISING = 'DUMMY'
+    IN = 0
+    OUT = 0
+    PULL_UP = 0
+    PULL_DOWN = 0
+    IRQ_RISING = 0
+    IRQ_FALLING = 0
 
     def __init__(self, *args, **kwargs):
         console("[Pin] object constructor")

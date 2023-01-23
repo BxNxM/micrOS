@@ -1,6 +1,6 @@
 from sys import platform
 from LogicalPins import physical_pin, pinmap_dump
-from Common import transition, micro_task
+from Common import transition_gen, micro_task
 import uasyncio as asyncio
 from utime import sleep_ms
 
@@ -13,7 +13,7 @@ class Data:
     # DIMMER_CACHE: state:ON/OFF, value:0-1000
     DIMMER_CACHE = [0, 500]
     PERSISTENT_CACHE = False
-    DIMM_TASK_TAG = "dimmer._fade"
+    DIMM_TASK_TAG = "dimmer._transition"
 
 
 #########################################
@@ -98,13 +98,13 @@ def set_value(value=None, smooth=True):
     """
 
     def __buttery(from_val, to_val):
-        step_ms = 2
         interval_sec = 0.2
         if Data.DIMMER_CACHE[0] == 0:
             # Turn from OFF to on (to whites)
             from_val = 0
             Data.DIMMER_CACHE[0] = 1
-        val_gen = transition(from_val=from_val, to_val=to_val, step_ms=step_ms, interval_sec=interval_sec)
+        # Create transition generator and calculate step_ms
+        val_gen, step_ms = transition_gen(from_val, to_val, interval_sec=interval_sec)
         for _val in val_gen:
             __dimmer_init().duty(_val)
             sleep_ms(step_ms)
@@ -141,12 +141,12 @@ def toggle(state=None, smooth=True):
     return set_value(smooth=smooth)                # Set value to the cached - ON
 
 
-def fade(value, sec=1.0, wake=False):
+def transition(value, sec=1.0, wake=False):
     """
     Set transition color change for long dimming periods < 30sec
     - creates the dimming generators
     :param value: value 0-1000
-    :param sec: fade/transition length in sec
+    :param sec: transition length in sec
     :param wake: bool, wake on setup (auto run on periphery)
     :return: info msg string
     """
@@ -167,10 +167,9 @@ def fade(value, sec=1.0, wake=False):
                 __state_machine(i)
             my_task.out = "Dimming DONE {}".format(i)
 
-    fade_step_ms = 10 if sec < 2 else 50
     from_dim = __dimmer_init().duty()    # Get current value
-    # Create fade/transition generator
-    fade_gen = transition(from_val=from_dim, to_val=value, step_ms=fade_step_ms, interval_sec=sec)
+    # Create transition generator and calculate step_ms
+    fade_gen, fade_step_ms = transition_gen(from_dim, value, interval_sec=sec)
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     state = micro_task(tag=Data.DIMM_TASK_TAG, task=_task(ms_period=fade_step_ms, iterable=fade_gen))
     return "Starting transition" if state else "Transition already running"
@@ -219,4 +218,4 @@ def help():
     :return tuple: list of functions implemented by this application
     """
     return 'set_value value=<0-1000> smooth=True', 'toggle state=None smooth=True', 'load_n_init',\
-           'subscribe_presence', 'fade value=<0-1000> sec wake=False', 'status', 'pinmap'
+           'subscribe_presence', 'transition value=<0-1000> sec wake=False', 'status', 'pinmap'

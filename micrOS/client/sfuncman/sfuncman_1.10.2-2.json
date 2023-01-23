@@ -242,10 +242,6 @@
         }
     },
     "dimmer": {
-        "fade": {
-            "doc": "\n    Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param value: value 0-1000\n    :param sec: fade/transition length in sec\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
-            "param(s)": "value sec=1.0 wake=False"
-        },
         "help": {
             "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
             "param(s)": ""
@@ -274,6 +270,10 @@
         "toggle": {
             "doc": "\n    Toggle dimmer state based on the stored state\n    :param state bool: True(1)/False(0)/None(default - automatic toggle)\n    :param smooth bool: run channel change with smooth effect\n    :return dict: X, S\n    ",
             "param(s)": "state=None smooth=True"
+        },
+        "transition": {
+            "doc": "\n    Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param value: value 0-1000\n    :param sec: transition length in sec\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
+            "param(s)": "value sec=1.0 wake=False"
         }
     },
     "distance": {

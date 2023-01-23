@@ -32,11 +32,12 @@ def socket_stream(func):
 
 def transition(from_val, to_val, step_ms, interval_sec):
     """
+    transition v1 (core)
     Generator for color transitions:
     :param from_val: from value - start from
     :param to_val: to value - target value
     :param step_ms: step to reach to_val - timirq_seq
-    :param interval_sec: full interval
+    :param interval_sec: full intervals
     """
     if interval_sec > 0:
         step_cnt = round((interval_sec*1000)/step_ms)
@@ -46,6 +47,27 @@ def transition(from_val, to_val, step_ms, interval_sec):
             yield round(from_val + (cnt * delta) * direc)
     else:
         yield round(to_val)
+
+
+def transition_gen(*args, interval_sec=1.0):
+    """
+    transition v2
+    Create multiple transition generators
+    - calculate minimum step count -> step_ms
+    - autofill and use use transition(from_val, to_val, step_ms, interval_sec)
+    :param args: ch1_from, ch1_to, ch2_from, ch2_to, etc...
+    :param interval_sec: interval in sec to calculate optimal fade/transition effect
+    return: gen, step_ms OR gen list, step_ms
+    """
+    step_ms_min = 20            # min calculated step is 20 ms - good enough
+    delta = [abs(args[ch_from_i] - args[ch_from_i+1]) for ch_from_i in range(0, len(args)-1, 2)]
+    step_ms = int(interval_sec*1000 / max(delta))
+    step_ms = step_ms_min if step_ms < step_ms_min else step_ms
+    print("step_ms: {} interval_sec: {} delta_max: {}".format(step_ms, interval_sec, max(delta)))
+    transitions = list([transition(args[ch_from_i], args[ch_from_i+1], step_ms, interval_sec) for ch_from_i in range(0, len(args)-1, 2)])
+    if len(transitions) == 1:
+        return transitions[0], step_ms
+    return list(transitions), step_ms
 
 
 class SmartADC:

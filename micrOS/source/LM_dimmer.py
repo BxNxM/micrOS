@@ -14,6 +14,7 @@ class Data:
     DIMMER_CACHE = [0, 500]
     PERSISTENT_CACHE = False
     DIMM_TASK_TAG = "dimmer._transition"
+    TASK_STATE = False
 
 
 #########################################
@@ -89,11 +90,12 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
-def set_value(value=None, smooth=True):
+def set_value(value=None, smooth=True, force=True):
     """
     Set dimmer values with PWM signal
-    :param value int: value 0-1000 default: None (set cached value)
-    :param smooth bool: run channel change with smooth effect
+    :param value: (int) value 0-1000 default: None (set cached value)
+    :param smooth: (bool) run channel change with smooth effect
+    :param force: (bool) clean fade generators and set value
     :return dict: X, S
     """
 
@@ -108,6 +110,9 @@ def set_value(value=None, smooth=True):
         for _val in val_gen:
             __dimmer_init().duty(_val)
             sleep_ms(step_ms)
+
+    if force:
+        Data.TASK_STATE = False  # STOP TRANSITION TASK, SOFT KILL - USER INPUT PRIO
 
     # restore data from cache if it was not provided
     value = int(Data.DIMMER_CACHE[1] if value is None else value)
@@ -137,8 +142,8 @@ def toggle(state=None, smooth=True):
         Data.DIMMER_CACHE[0] = 0 if state else 1
 
     if Data.DIMMER_CACHE[0] == 1:
-        return set_value(0, smooth=smooth)         # Set value to 0 - OFF
-    return set_value(smooth=smooth)                # Set value to the cached - ON
+        return set_value(0, smooth=smooth, force=False)         # Set value to 0 - OFF
+    return set_value(smooth=smooth, force=False)                # Set value to the cached - ON
 
 
 def transition(value, sec=1.0, wake=False):
@@ -156,6 +161,8 @@ def transition(value, sec=1.0, wake=False):
         #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
         with micro_task(tag=Data.DIMM_TASK_TAG) as my_task:
             for i in iterable:
+                if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
+                    break
                 if Data.DIMMER_CACHE[0] == 1 or wake:
                     # Write periphery
                     __dimmer_init().duty(i)
@@ -165,8 +172,9 @@ def transition(value, sec=1.0, wake=False):
                 await asyncio.sleep_ms(ms_period)
             if Data.DIMMER_CACHE[0] == 1 or wake:
                 __state_machine(i)
-            my_task.out = "Dimming DONE {}".format(i)
+            my_task.out = "Dimming DONE{}: {}".format('' if Data.TASK_STATE else ' ,killed', i)
 
+    Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     from_dim = __dimmer_init().duty()    # Get current value
     # Create transition generator and calculate step_ms
     fade_gen, fade_step_ms = transition_gen(from_dim, value, interval_sec=sec)
@@ -217,5 +225,5 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'set_value value=<0-1000> smooth=True', 'toggle state=None smooth=True', 'load_n_init',\
+    return 'set_value value=<0-1000> smooth=True force=True', 'toggle state=None smooth=True', 'load_n_init',\
            'subscribe_presence', 'transition value=<0-1000> sec wake=False', 'status', 'pinmap'

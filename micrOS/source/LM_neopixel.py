@@ -2,7 +2,8 @@ from neopixel import NeoPixel
 from machine import Pin
 from sys import platform
 from utime import sleep_ms
-from Common import transition
+from Common import transition_gen, micro_task
+import uasyncio as asyncio
 from ConfigHandler import cfgget
 from LogicalPins import physical_pin, pinmap_dump
 from random import randint
@@ -17,7 +18,8 @@ class Data:
     CH_MAX = 255
     NEOPIXEL_OBJ = None
     PERSISTENT_CACHE = False
-    FADE_OBJ = (None, None, None)
+    RGB_TASK_TAG = "neopixel._transition"
+    TASK_STATE = False
 
 
 #########################################
@@ -58,6 +60,19 @@ def __persistent_cache_manager(mode):
         pass
 
 
+def __state_machine(r, g, b):
+    # Set cache
+    if r > 0 or g > 0 or b > 0:
+        Data.DCACHE = [r, g, b, 1]                         # Cache colors + state (True-ON)
+    else:
+        Data.DCACHE[3] = 0                                 # State - False - OFF
+    __persistent_cache_manager('s')                        # Save cache - Data.DCACHE -  to file
+
+
+#########################################
+#             USER FUNCTIONS            #
+#########################################
+
 def load_n_init(cache=None, ledcnt=24):
     """
     Initiate NeoPixel RGB module
@@ -81,37 +96,37 @@ def load_n_init(cache=None, ledcnt=24):
 def color(r=None, g=None, b=None, smooth=True, force=True):
     """
     Set NEOPIXEL RGB values
-    :param r: red value   0-254
-    :param g: green value 0-254
-    :param b: blue value  0-254
+    :param r: red value   0-255
+    :param g: green value 0-255
+    :param b: blue value  0-255
     :param smooth: runs colors change with smooth effect
     :param force: clean fade generators and set color
     :return dict: rgb status - states: R, G, B, S
     """
 
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
-        step_ms = 2
         interval_sec = 0.2
         if Data.DCACHE[3] == 0:
             # Turn from OFF to on (to colors)
             r_from, g_from, b_from = 0, 0, 0
             Data.DCACHE[3] = 1
-        r_gen = transition(from_val=r_from, to_val=r_to, step_ms=step_ms, interval_sec=interval_sec)
-        g_gen = transition(from_val=g_from, to_val=g_to, step_ms=step_ms, interval_sec=interval_sec)
-        b_gen = transition(from_val=b_from, to_val=b_to, step_ms=step_ms, interval_sec=interval_sec)
+        rgb_gen_obj, step_ms = transition_gen(r_from, r_to, g_from, g_to, b_from, b_to, interval_sec=interval_sec)
+        r_gen = rgb_gen_obj[0]
+        g_gen = rgb_gen_obj[1]
+        b_gen = rgb_gen_obj[2]
         for _r in r_gen:
             _g = g_gen.__next__()
             _b = b_gen.__next__()
             for lcnt in range(0, __init_NEOPIXEL().n):
                 Data.NEOPIXEL_OBJ[lcnt] = (_r, _g, _b)
             Data.NEOPIXEL_OBJ.write()
-            sleep_ms(1)
+            sleep_ms(step_ms)
+    if force:
+        Data.TASK_STATE = False  # STOP TRANSITION TASK, SOFT KILL - USER INPUT PRIO
 
     r = Data.DCACHE[0] if r is None else r
     g = Data.DCACHE[1] if g is None else g
     b = Data.DCACHE[2] if b is None else b
-    if force and Data.FADE_OBJ[0]:
-        Data.FADE_OBJ = (None, None, None)
     # Set each LED for the same color
     if smooth:
         __buttery(r_from=Data.DCACHE[0], g_from=Data.DCACHE[1], b_from=Data.DCACHE[2], r_to=r, g_to=g, b_to=b)
@@ -120,19 +135,15 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
             Data.NEOPIXEL_OBJ[element] = (r, g, b)             # Set LED element color
         Data.NEOPIXEL_OBJ.write()                              # Send data to device
     # Set cache
-    if r > 0 or g > 0 or b > 0:
-        Data.DCACHE = [r, g, b, 1]                         # Cache colors + state (True-ON)
-    else:
-        Data.DCACHE[3] = 0                                 # State - False - OFF
-    __persistent_cache_manager('s')                        # Save cache - Data.DCACHE -  to file
+    __state_machine(r, g, b)
     return status()
 
 
 def brightness(percent=None, smooth=True):
     """
     Set neopixel brightness
-    :param percent int: brightness percentage: 0-100
-    :param smooth bool: enable smooth color transition: True(default)/False
+    :param percent: (int) brightness percentage: 0-100
+    :param smooth: (bool) enable smooth color transition: True(default)/False
     :return dict: rgb status - states: R, G, B, S
     """
     # Get color (channel) max brightness
@@ -163,9 +174,9 @@ def brightness(percent=None, smooth=True):
 def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
     """
     Set single segment by index on neopixel
-    :param r: red value 0-254
-    :param g: green value 0-254
-    :param b: blue value 0-254
+    :param r: red value 0-255
+    :param g: green value 0-255
+    :param b: blue value 0-255
     :param s: segment - index 0-ledcnt
     :param cache: cache color (update .pds file)
     :param write: send color buffer to neopixel (update LEDs)
@@ -217,53 +228,59 @@ def toggle(state=None, smooth=True):
     return color(smooth=smooth, force=False)
 
 
-def set_transition(r, g, b, sec):
+def transition(r=None, g=None, b=None, sec=1.0, wake=False):
     """
     Set transition color change for long dimming periods < 30sec
-    - creates the color dimming generators
-    :param r: red value   0-255
-    :param g: green value 0-255
-    :param b: blue value  0-255
+    - creates the dimming generators
+    :param r: red channel 0-255
+    :param g: green channel 0-255
+    :param b: blue channel 0-255
     :param sec: transition length in sec
+    :param wake: bool, wake on setup (auto run on periphery)
     :return: info msg string
     """
-    Data.DCACHE[3] = 1
-    timirqseq = cfgget('timirqseq')
-    from_red = Data.DCACHE[0]
-    from_green = Data.DCACHE[1]
-    from_blue = Data.DCACHE[2]
-    # Generate RGB color transition object (generator)
-    Data.FADE_OBJ = (transition(from_val=from_red, to_val=r, step_ms=timirqseq, interval_sec=sec),
-                     transition(from_val=from_green, to_val=g, step_ms=timirqseq, interval_sec=sec),
-                     transition(from_val=from_blue, to_val=b, step_ms=timirqseq, interval_sec=sec))
-    return 'Settings was applied... wait for: run_transition'
+
+    async def _task(ms_period, iterable):
+        # [!] ASYNC TASK ADAPTER [*2] with automatic state management
+        #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
+        r_gen, g_gen, b_gen = iterable[0], iterable[1], iterable[2]
+        with micro_task(tag=Data.RGB_TASK_TAG) as my_task:
+            for r_val in r_gen:
+                if not Data.TASK_STATE:
+                    break
+                g_val = g_gen.__next__()
+                b_val = b_gen.__next__()
+                if Data.DCACHE[3] == 1 or wake:
+                    # Write periphery
+                    for element in range(0, __init_NEOPIXEL().n):           # Iterate over led string elements
+                        Data.NEOPIXEL_OBJ[element] = (r_val, g_val, b_val)  # Set LED element color
+                    Data.NEOPIXEL_OBJ.write()                               # Send data to device
+                # Update periphery cache (value check due to toggle ON value minimum)
+                Data.DCACHE[0] = r_val if r_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                Data.DCACHE[1] = g_val if g_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                Data.DCACHE[2] = b_val if b_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                my_task.out = "Dimming ... R: {} G: {} B: {}".format(r_val, g_val, b_val)
+                await asyncio.sleep_ms(ms_period)
+            if Data.DCACHE[3] == 1 or wake:
+                __state_machine(r=r_val, g=g_val, b=b_val)
+            my_task.out = "Dimming ... DONE{}: R: {} G: {} B: {}".format('' if Data.TASK_STATE else ' ,killed', r_val, g_val, b_val)
+
+    Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
+    r_from, g_from, b_from = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]
+    r_to = Data.DCACHE[0] if r is None else r
+    g_to = Data.DCACHE[1] if g is None else g
+    b_to = Data.DCACHE[2] if b is None else b
+    # Create transition generator and calculate step_ms
+    rgb_gen, step_ms = transition_gen(r_from, r_to, g_from, g_to, b_from, b_to, interval_sec=sec)
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag=Data.RGB_TASK_TAG, task=_task(ms_period=step_ms, iterable=rgb_gen))
+    return "Starting transition" if state else "Transition already running"
 
 
-def run_transition():
-    """
-    Transition execution - color change for long dimming periods
-    - runs the generated color dimming generators
-    :return str: Execution verdict: Run / No Run
-    """
-    if None not in Data.FADE_OBJ:
-        try:
-            r = Data.FADE_OBJ[0].__next__()
-            g = Data.FADE_OBJ[1].__next__()
-            b = Data.FADE_OBJ[2].__next__()
-            if Data.DCACHE[3] == 1:
-                color(int(r), int(g), int(b), smooth=False, force=False)
-                return 'Run R{}R{}B{}'.format(r, g, b)
-            return 'Run deactivated'
-        except:
-            Data.FADE_OBJ = (None, None, None)
-            return 'GenEnd.'
-    return 'Nothing to run.'
-
-
-def random(smooth=True, max_val=254):
+def random(smooth=True, max_val=255):
     """
     Demo function: implements random color change
-    :param smooth bool: enable smooth color transition: True(default)/False
+    :param smooth: (bool) enable smooth color transition: True(default)/False
     :param max_val: set channel maximum generated value: 0-1000
     :return dict: rgb status - states: R, G, B, S
     """
@@ -317,5 +334,5 @@ def help():
     """
     return 'color r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
            'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
-           'set_transition r=<0-255> g b sec', 'run_transition',\
+           'transition r=None g=None b=None sec=1.0 wake=False',\
            'random smooth=True max_val=254', 'status', 'subscribe_presence', 'pinmap'

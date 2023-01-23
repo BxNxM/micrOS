@@ -16,8 +16,8 @@ class Data:
     CWWW_CACHE = [500, 500, 0]           # cold white / warm white / state
     CH_MAX = 1000
     PERSISTENT_CACHE = False
-    FADE_OBJS = (None, None)
     CCT_TASK_TAG = 'cct._transition'
+    TASK_STATE = False
 
 
 #########################################
@@ -117,9 +117,9 @@ def white(cw=None, ww=None, smooth=True, force=True):
             Data.CWWW_OBJS[0].duty(cw_gen.__next__())
             sleep_ms(step_ms)
 
+    if force:
+        Data.TASK_STATE = False  # STOP TRANSITION TASK, SOFT KILL - USER INPUT PRIO
     __cwww_init()
-    if force and Data.FADE_OBJS[0]:
-        Data.FADE_OBJS = (None, None)
     cw = Data.CWWW_CACHE[0] if cw is None else cw
     ww = Data.CWWW_CACHE[1] if ww is None else ww
     if smooth:
@@ -205,6 +205,8 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
         cw_gen, ww_gen = iterable[0], iterable[1]
         with micro_task(tag=Data.CCT_TASK_TAG) as my_task:
             for cw_val in cw_gen:
+                if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
+                    break
                 ww_val = ww_gen.__next__()
                 if Data.CWWW_CACHE[2] == 1 or wake:
                     # Write periphery
@@ -217,8 +219,9 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
                 await asyncio.sleep_ms(ms_period)
             if Data.CWWW_CACHE[2] == 1 or wake:
                 __state_machine(c=cw_val, w=ww_val)
-            my_task.out = "Dimming ... DONE CW: {} WW: {}".format(cw_val, ww_val)
+            my_task.out = "Dimming ... DONE{}: CW: {} WW: {}".format('' if Data.TASK_STATE else ' ,killed', cw_val, ww_val)
 
+    Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     cw_from, ww_from = __cwww_init()[0].duty(), __cwww_init()[1].duty()
     cw_to = Data.CWWW_CACHE[0] if cw is None else cw
     ww_to = Data.CWWW_CACHE[1] if ww is None else ww

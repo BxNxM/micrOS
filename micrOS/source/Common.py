@@ -60,8 +60,8 @@ def transition_gen(*args, interval_sec=1.0):
     return: gen, step_ms OR gen list, step_ms
     """
     step_ms_min = 5            # min calculated step is 5 ms - good enough
-    delta = [abs(args[ch_from_i] - args[ch_from_i+1]) for ch_from_i in range(0, len(args)-1, 2)]
-    step_ms = int(interval_sec*1000 / max(delta))
+    delta = max([abs(args[ch_from_i] - args[ch_from_i+1]) for ch_from_i in range(0, len(args)-1, 2)])
+    step_ms = 0 if delta == 0 else int(interval_sec*1000 / delta)
     step_ms = step_ms_min if step_ms < step_ms_min else step_ms
     transitions = list([transition(args[ch_from_i], args[ch_from_i+1], step_ms, interval_sec) for ch_from_i in range(0, len(args)-1, 2)])
     if len(transitions) == 1:

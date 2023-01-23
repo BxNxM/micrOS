@@ -59,11 +59,10 @@ def transition_gen(*args, interval_sec=1.0):
     :param interval_sec: interval in sec to calculate optimal fade/transition effect
     return: gen, step_ms OR gen list, step_ms
     """
-    step_ms_min = 20            # min calculated step is 20 ms - good enough
+    step_ms_min = 5            # min calculated step is 5 ms - good enough
     delta = [abs(args[ch_from_i] - args[ch_from_i+1]) for ch_from_i in range(0, len(args)-1, 2)]
     step_ms = int(interval_sec*1000 / max(delta))
     step_ms = step_ms_min if step_ms < step_ms_min else step_ms
-    print("step_ms: {} interval_sec: {} delta_max: {}".format(step_ms, interval_sec, max(delta)))
     transitions = list([transition(args[ch_from_i], args[ch_from_i+1], step_ms, interval_sec) for ch_from_i in range(0, len(args)-1, 2)])
     if len(transitions) == 1:
         return transitions[0], step_ms

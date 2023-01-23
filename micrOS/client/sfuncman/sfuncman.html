@@ -329,25 +329,24 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table b
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>white</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>c=None w=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;c&nbsp;int:&nbsp;cold&nbsp;white&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;w&nbsp;int:&nbsp;warm&nbsp;white&nbsp;value&nbsp;0-1000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;runs&nbsp;white&nbsp;channels&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;force&nbsp;bool:&nbsp;clean&nbsp;fade&nbsp;generators&nbsp;and&nbsp;set&nbsp;color<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>white</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cw=None ww=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cw:&nbsp;cold&nbsp;white&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ww:&nbsp;warm&nbsp;white&nbsp;value&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;(bool)&nbsp;runs&nbsp;white&nbsp;channels&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;force:&nbsp;(bool)&nbsp;clean&nbsp;fade&nbsp;generators&nbsp;and&nbsp;set&nbsp;color<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>brightness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;brightness<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;percent&nbsp;int:&nbsp;brightness&nbsp;percentage:&nbsp;0-100<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>toggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;led&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state&nbsp;bool:&nbsp;True(1)/False(0)/None(default&nbsp;-&nbsp;automatic&nbsp;toggle)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>set_transition</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cw ww sec</td></tr><tr><th>doc</th><td>Set&nbsp;transition&nbsp;white&nbsp;channel&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;creates&nbsp;the&nbsp;2&nbsp;white&nbsp;dimming&nbsp;generators<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cw:&nbsp;cold&nbsp;white&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ww:&nbsp;warm&nbsp;white&nbsp;value&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>transition</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cw=None ww=None sec=1.0 wake=False</td></tr><tr><th>doc</th><td>Set&nbsp;transition&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;creates&nbsp;the&nbsp;dimming&nbsp;generators<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cw:&nbsp;cold&nbsp;white&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ww:&nbsp;warm&nbsp;white&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sec:&nbsp;transition&nbsp;length&nbsp;in&nbsp;sec<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;info&nbsp;msg&nbsp;string</td></tr></table></td></tr><tr><th>run_transition</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Transition&nbsp;execution&nbsp;-&nbsp;white&nbsp;channels&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;runs&nbsp;the&nbsp;generated&nbsp;2&nbsp;white&nbsp;dimming&nbsp;generators&nbsp;in&nbsp;timirq<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;Execution&nbsp;verdict</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>smooth=True max_val=1000</td></tr><tr><th>doc</th><td>Demo&nbsp;function:&nbsp;implements&nbsp;random&nbsp;hue&nbsp;change<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool,&nbsp;wake&nbsp;on&nbsp;setup&nbsp;(auto&nbsp;run&nbsp;on&nbsp;periphery)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;info&nbsp;msg&nbsp;string</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>smooth=True max_val=1000</td></tr><tr><th>doc</th><td>Demo&nbsp;function:&nbsp;implements&nbsp;random&nbsp;hue&nbsp;change<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;max_val:&nbsp;set&nbsp;channel&nbsp;maximum&nbsp;generated&nbsp;value:&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>subscribe_presence</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Initialize&nbsp;LM&nbsp;presence&nbsp;module&nbsp;with&nbsp;ON/OFF&nbsp;callback&nbsp;functions<br>

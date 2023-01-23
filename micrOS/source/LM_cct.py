@@ -4,7 +4,8 @@
 from machine import Pin, PWM
 from sys import platform
 from utime import sleep_ms
-from Common import transition
+from Common import transition_gen, micro_task
+import uasyncio as asyncio
 from ConfigHandler import cfgget
 from LogicalPins import physical_pin, pinmap_dump
 from random import randint
@@ -16,6 +17,7 @@ class Data:
     CH_MAX = 1000
     PERSISTENT_CACHE = False
     FADE_OBJS = (None, None)
+    CCT_TASK_TAG = 'cct._transition'
 
 
 #########################################
@@ -56,6 +58,16 @@ def __persistent_cache_manager(mode):
         pass
 
 
+def __state_machine(c, w):
+    # Cache channel duties if ON
+    if c > 0 or w > 0:
+        Data.CWWW_CACHE = [Data.CWWW_OBJS[0].duty(), Data.CWWW_OBJS[1].duty(), 1]
+    else:
+        Data.CWWW_CACHE[2] = 0
+    # Save config
+    __persistent_cache_manager('s')
+
+
 #########################
 # Application functions #
 #########################
@@ -82,24 +94,24 @@ def load_n_init(cache=None):
     return "CACHE: {}".format(Data.PERSISTENT_CACHE)
 
 
-def white(c=None, w=None, smooth=True, force=True):
+def white(cw=None, ww=None, smooth=True, force=True):
     """
     Set CCT values with PWM signal
-    :param c int: cold white value   0-1000
-    :param w int: warm white value 0-1000
-    :param smooth bool: runs white channels change with smooth effect
-    :param force bool: clean fade generators and set color
+    :param cw: cold white value   0-1000
+    :param ww: warm white value 0-1000
+    :param smooth: (bool) runs white channels change with smooth effect
+    :param force: (bool) clean fade generators and set color
     :return dict: cct status - states: CW, WW, S
     """
     def __buttery(ww_from, cw_from, ww_to, cw_to):
-        step_ms = 2
         interval_sec = 0.2
         if Data.CWWW_CACHE[2] == 0:
             # Turn from OFF to on (to whites)
             ww_from, cw_from = 0, 0
             Data.CWWW_CACHE[2] = 1
-        ww_gen = transition(from_val=ww_from, to_val=ww_to, step_ms=step_ms, interval_sec=interval_sec)
-        cw_gen = transition(from_val=cw_from, to_val=cw_to, step_ms=step_ms, interval_sec=interval_sec)
+        gen_list, step_ms = transition_gen(ww_from, ww_to, cw_from, cw_to, interval_sec=interval_sec)
+        ww_gen = gen_list[0]
+        cw_gen = gen_list[1]
         for _ww in ww_gen:
             Data.CWWW_OBJS[1].duty(_ww)
             Data.CWWW_OBJS[0].duty(cw_gen.__next__())
@@ -108,20 +120,14 @@ def white(c=None, w=None, smooth=True, force=True):
     __cwww_init()
     if force and Data.FADE_OBJS[0]:
         Data.FADE_OBJS = (None, None)
-    c = Data.CWWW_CACHE[0] if c is None else c
-    w = Data.CWWW_CACHE[1] if w is None else w
+    cw = Data.CWWW_CACHE[0] if cw is None else cw
+    ww = Data.CWWW_CACHE[1] if ww is None else ww
     if smooth:
-        __buttery(ww_from=Data.CWWW_CACHE[1], cw_from=Data.CWWW_CACHE[0], ww_to=w, cw_to=c)
+        __buttery(ww_from=Data.CWWW_CACHE[1], cw_from=Data.CWWW_CACHE[0], ww_to=ww, cw_to=cw)
     else:
-        Data.CWWW_OBJS[0].duty(c)
-        Data.CWWW_OBJS[1].duty(w)
-    # Cache channel duties if ON
-    if c > 0 or w > 0:
-        Data.CWWW_CACHE = [Data.CWWW_OBJS[0].duty(), Data.CWWW_OBJS[1].duty(), 1]
-    else:
-        Data.CWWW_CACHE[2] = 0
-    # Save config
-    __persistent_cache_manager('s')
+        Data.CWWW_OBJS[0].duty(cw)
+        Data.CWWW_OBJS[1].duty(ww)
+    __state_machine(c=cw, w=ww)
     return status()
 
 
@@ -181,43 +187,46 @@ def toggle(state=None, smooth=True):
     return white(smooth=smooth, force=False)
 
 
-def set_transition(cw, ww, sec):
+def transition(cw=None, ww=None, sec=1.0, wake=False):
     """
-    Set transition white channel change for long dimming periods < 30sec
-    - creates the 2 white dimming generators
-    :param cw: cold white value   0-1000
-    :param ww: warm white value 0-1000
+    Set transition color change for long dimming periods < 30sec
+    - creates the dimming generators
+    :param cw: cold white 0-1000
+    :param ww: warm white 0-1000
     :param sec: transition length in sec
+    :param wake: bool, wake on setup (auto run on periphery)
     :return: info msg string
     """
-    Data.CWWW_CACHE[2] = 1
-    timirqseq = cfgget('timirqseq')
-    from_cw = Data.CWWW_CACHE[0]
-    from_ww = Data.CWWW_CACHE[1]
-    # Generate cold white + warm white transition object (generator)
-    Data.FADE_OBJS = (transition(from_val=from_cw, to_val=cw, step_ms=timirqseq, interval_sec=sec),
-                      transition(from_val=from_ww, to_val=ww, step_ms=timirqseq, interval_sec=sec))
-    return 'Settings was applied... wait for: run_transition'
 
+    async def _task(ms_period, iterable):
+        # [!] ASYNC TASK ADAPTER [*2] with automatic state management
+        #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
+        cw_obj, ww_obj = __cwww_init()[0], __cwww_init()[1]
+        cw_gen, ww_gen = iterable[0], iterable[1]
+        with micro_task(tag=Data.CCT_TASK_TAG) as my_task:
+            for cw_val in cw_gen:
+                ww_val = ww_gen.__next__()
+                if Data.CWWW_CACHE[2] == 1 or wake:
+                    # Write periphery
+                    cw_obj.duty(cw_val)
+                    ww_obj.duty(ww_val)
+                # Update periphery cache (value check due to toggle ON value minimum)
+                Data.CWWW_CACHE[0] = cw_val if cw_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                Data.CWWW_CACHE[1] = ww_val if ww_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                my_task.out = "Dimming ... CW: {} WW: {}".format(cw_val, ww_val)
+                await asyncio.sleep_ms(ms_period)
+            if Data.CWWW_CACHE[2] == 1 or wake:
+                __state_machine(c=cw_val, w=ww_val)
+            my_task.out = "Dimming ... DONE CW: {} WW: {}".format(cw_val, ww_val)
 
-def run_transition():
-    """
-    Transition execution - white channels change for long dimming periods
-    - runs the generated 2 white dimming generators in timirq
-    :return: Execution verdict
-    """
-    if None not in Data.FADE_OBJS:
-        try:
-            cw = Data.FADE_OBJS[0].__next__()
-            ww = Data.FADE_OBJS[1].__next__()
-            if Data.CWWW_CACHE[2] == 1:
-                white(int(cw), int(ww), smooth=False, force=False)
-                return "SET : CW{} WW{}".format(cw, ww)
-            return 'Run deactivated'
-        except:
-            Data.FADE_OBJS = (None, None)
-            return 'GenEnd.'
-    return 'Nothing to run.'
+    cw_from, ww_from = __cwww_init()[0].duty(), __cwww_init()[1].duty()
+    cw_to = Data.CWWW_CACHE[0] if cw is None else cw
+    ww_to = Data.CWWW_CACHE[1] if ww is None else ww
+    # Create transition generator and calculate step_ms
+    cct_gen, step_ms = transition_gen(cw_from, cw_to, ww_from, ww_to, interval_sec=sec)
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag=Data.CCT_TASK_TAG, task=_task(ms_period=step_ms, iterable=cct_gen))
+    return "Starting transition" if state else "Transition already running"
 
 
 def random(smooth=True, max_val=1000):
@@ -229,7 +238,7 @@ def random(smooth=True, max_val=1000):
     """
     cold = randint(0, max_val)
     warm = randint(0, max_val)
-    return white(c=cold, w=warm, smooth=smooth)
+    return white(cw=cold, ww=warm, smooth=smooth)
 
 
 def subscribe_presence():
@@ -273,7 +282,7 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'white c=<0-1000> w=<0-1000> smooth=True force=True',\
+    return 'white cw=<0-1000> ww=<0-1000> smooth=True force=True', \
            'toggle state=None smooth=True', 'load_n_init', 'brightness percent=<0-100> smooth=True', \
-           'set_transition cw=<0-1000> ww=<0-1000> sec', 'run_transition',\
+           'transition cw=None ww=None sec=1.0 wake=False', \
            'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'

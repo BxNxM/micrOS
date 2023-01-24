@@ -3,7 +3,8 @@
 #########################################
 from machine import Pin, PWM
 from sys import platform
-from Common import transition
+from Common import transition_gen, micro_task
+import uasyncio as asyncio
 from ConfigHandler import cfgget
 from utime import sleep_ms
 from LogicalPins import physical_pin, pinmap_dump
@@ -17,8 +18,9 @@ class Data:
     RGB_OBJS = (None, None, None)
     RGB_CACHE = [197, 35, 10, 0]           # R, G, B (default color) + RGB state (default: off)
     PERSISTENT_CACHE = False
-    FADE_OBJS = (None, None, None)
     CH_MAX = 1000                          # maximum value per channel
+    TASK_STATE = False
+    RGB_TASK_TAG = "rgb._transition"
 
 
 #########################################
@@ -95,15 +97,15 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
     :return dict: rgb status - states: R, G, B, S
     """
     def __buttery(r_from, g_from, b_from, r_to, g_to, b_to):
-        step_ms = 2
         interval_sec = 0.2
         if Data.RGB_CACHE[3] == 0:
             # Turn from OFF to on (to colors)
             r_from, g_from, b_from = 0, 0, 0
             Data.RGB_CACHE[3] = 1
-        r_gen = transition(from_val=r_from, to_val=r_to, step_ms=step_ms, interval_sec=interval_sec)
-        g_gen = transition(from_val=g_from, to_val=g_to, step_ms=step_ms, interval_sec=interval_sec)
-        b_gen = transition(from_val=b_from, to_val=b_to, step_ms=step_ms, interval_sec=interval_sec)
+        rgb_gen, step_ms = transition_gen(r_from, r_to, g_from, g_to, b_from, b_to, interval_sec=interval_sec)
+        r_gen = rgb_gen[0]
+        g_gen = rgb_gen[1]
+        b_gen = rgb_gen[2]
         for _r in r_gen:
             Data.RGB_OBJS[0].duty(_r)
             Data.RGB_OBJS[1].duty(g_gen.__next__())
@@ -111,8 +113,8 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
             sleep_ms(step_ms)
 
     __RGB_init()
-    if force and Data.FADE_OBJS[0]:
-        Data.FADE_OBJS = (None, None, None)
+    if force:
+        Data.TASK_STATE = False  # STOP TRANSITION TASK, SOFT KILL - USER INPUT PRIO
     # Dynamic input handling: user/cache
     r = Data.RGB_CACHE[0] if r is None else r
     g = Data.RGB_CACHE[1] if g is None else g
@@ -191,49 +193,56 @@ def toggle(state=None, smooth=True):
     return color(smooth=smooth, force=False)
 
 
-def set_transition(r, g, b, sec):
+def transition(r=None, g=None, b=None, sec=1.0, wake=False):
     """
     Set transition color change for long dimming periods < 30sec
-    - creates the color dimming generators
-    :param r int: red value   0-1000
-    :param g int: green value 0-1000
-    :param b int: blue value  0-1000
-    :param sec int: transition length in sec
-    :return str: info msg string
+    - creates the dimming generators
+    :param r: value 0-1000
+    :param g: value 0-1000
+    :param b: value 0-1000
+    :param sec: transition length in sec
+    :param wake: bool, wake on setup (auto run on periphery)
+    :return: info msg string
     """
-    # Set by cron OR manual "effect"
-    Data.RGB_CACHE[3] = 1
-    timirqseq = cfgget('timirqseq')
-    from_red = Data.RGB_CACHE[0]
-    from_green = Data.RGB_CACHE[1]
-    from_blue = Data.RGB_CACHE[2]
-    # Generate RGB color transition object (generator)
-    Data.FADE_OBJS = (transition(from_val=from_red, to_val=r, step_ms=timirqseq, interval_sec=sec),
-                      transition(from_val=from_green, to_val=g, step_ms=timirqseq, interval_sec=sec),
-                      transition(from_val=from_blue, to_val=b, step_ms=timirqseq, interval_sec=sec))
-    return 'Settings was applied... wait for: run_transition'
 
+    async def _task(ms_period, iterable):
+        # [!] ASYNC TASK ADAPTER [*2] with automatic state management
+        #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
+        with micro_task(tag=Data.RGB_TASK_TAG) as my_task:
+            ro, go, bo = __RGB_init()
+            r_gen, g_gen, b_gen = iterable[0], iterable[1], iterable[2]
+            for _r in r_gen:
+                _g = g_gen.__next__()
+                _b = b_gen.__next__()
+                if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
+                    my_task.out = "Dimming cancelled"
+                    return
+                if Data.RGB_CACHE[3] == 1 or wake:
+                    # Write periphery
+                    ro.duty(_r)
+                    go.duty(_g)
+                    bo.duty(_b)
+                # Update periphery cache (value check due to toggle ON value minimum)
+                Data.RGB_CACHE[0] = _r if _r > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                Data.RGB_CACHE[1] = _g if _g > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                Data.RGB_CACHE[2] = _b if _b > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
+                my_task.out = "Dimming ... R:{} G:{} B:{}".format(_r, _g, _b)
+                await asyncio.sleep_ms(ms_period)
+            if Data.RGB_CACHE[3] == 1 or wake:
+                __state_machine(i)
+            my_task.out = "Dimming DONE: R:{} G:{} B:{}".format(_r, _g, _b)
 
-def run_transition():
-    """
-    Transition execution - color change for long dimming periods
-    - runs the generated color dimming generators
-    :return str: Execution verdict: Run / No Run
-    """
-    if None not in Data.FADE_OBJS:
-        try:
-            r = Data.FADE_OBJS[0].__next__()
-            g = Data.FADE_OBJS[1].__next__()
-            b = Data.FADE_OBJS[2].__next__()
-            # Check output enabled - LED is ON
-            if Data.RGB_CACHE[3] == 1:
-                color(int(r), int(g), int(b), smooth=False, force=False)
-                return 'Transition R{}R{}B{}'.format(r, g, b)
-            return 'Transition deactivated'
-        except:
-            Data.FADE_OBJS = (None, None, None)
-            return 'Transition done'
-    return 'Nothing to run.'
+    Data.TASK_STATE = True  # Save transition task is stared (kill param to overwrite task with user input)
+    # Dynamic input handling: user/cache
+    r = Data.RGB_CACHE[0] if r is None else r
+    g = Data.RGB_CACHE[1] if g is None else g
+    b = Data.RGB_CACHE[2] if b is None else b
+    r_from, g_from, b_from = __RGB_init()[0].duty(), __RGB_init()[1].duty(), __RGB_init()[2].duty() # Get current values
+    # Create transition generator and calculate step_ms
+    rgb_gen, step_ms = transition_gen(r_from, r, g_from, g, b_from, b, interval_sec=sec)
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag=Data.RGB_TASK_TAG, task=_task(ms_period=step_ms, iterable=rgb_gen))
+    return "Starting transition" if state else "Transition already running"
 
 
 def random(smooth=True, max_val=1000):
@@ -293,5 +302,5 @@ def help():
     return 'color r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
            'brightness percent=<0-100> smooth=True',\
-           'set_transition r=<0-1000> g b sec', 'run_transition',\
+           'transition r=None g=None b=None sec=1.0 wake=False',\
            'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'

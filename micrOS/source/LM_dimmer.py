@@ -162,7 +162,8 @@ def transition(value, sec=1.0, wake=False):
         with micro_task(tag=Data.DIMM_TASK_TAG) as my_task:
             for i in iterable:
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
-                    break
+                    my_task.out = "Dimming cancelled"
+                    return
                 if Data.DIMMER_CACHE[0] == 1 or wake:
                     # Write periphery
                     __dimmer_init().duty(i)
@@ -172,7 +173,7 @@ def transition(value, sec=1.0, wake=False):
                 await asyncio.sleep_ms(ms_period)
             if Data.DIMMER_CACHE[0] == 1 or wake:
                 __state_machine(i)
-            my_task.out = "Dimming DONE{}: {}".format('' if Data.TASK_STATE else ' ,killed', i)
+            my_task.out = "Dimming DONE: {}".format(i)
 
     Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     from_dim = __dimmer_init().duty()    # Get current value

@@ -206,7 +206,8 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
         with micro_task(tag=Data.CCT_TASK_TAG) as my_task:
             for cw_val in cw_gen:
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
-                    break
+                    my_task.out = "Dimming cancelled"
+                    return
                 ww_val = ww_gen.__next__()
                 if Data.CWWW_CACHE[2] == 1 or wake:
                     # Write periphery
@@ -219,7 +220,7 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
                 await asyncio.sleep_ms(ms_period)
             if Data.CWWW_CACHE[2] == 1 or wake:
                 __state_machine(c=cw_val, w=ww_val)
-            my_task.out = "Dimming ... DONE{}: CW: {} WW: {}".format('' if Data.TASK_STATE else ' ,killed', cw_val, ww_val)
+            my_task.out = "Dimming ... DONE: CW: {} WW: {}".format(cw_val, ww_val)
 
     Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     cw_from, ww_from = __cwww_init()[0].duty(), __cwww_init()[1].duty()

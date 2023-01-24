@@ -478,15 +478,14 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>toggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;led&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state&nbsp;bool:&nbsp;True(1)/False(0)/None(default&nbsp;-&nbsp;automatic&nbsp;toggle)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>set_transition</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r g b sec</td></tr><tr><th>doc</th><td>Set&nbsp;transition&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;creates&nbsp;the&nbsp;color&nbsp;dimming&nbsp;generators<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r&nbsp;int:&nbsp;red&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g&nbsp;int:&nbsp;green&nbsp;value&nbsp;0-1000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b&nbsp;int:&nbsp;blue&nbsp;value&nbsp;&nbsp;0-1000<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sec&nbsp;int:&nbsp;transition&nbsp;length&nbsp;in&nbsp;sec<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;info&nbsp;msg&nbsp;string</td></tr></table></td></tr><tr><th>run_transition</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Transition&nbsp;execution&nbsp;-&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;runs&nbsp;the&nbsp;generated&nbsp;color&nbsp;dimming&nbsp;generators<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Execution&nbsp;verdict:&nbsp;Run&nbsp;/&nbsp;No&nbsp;Run</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>smooth=True max_val=1000</td></tr><tr><th>doc</th><td>Demo&nbsp;function:&nbsp;implements&nbsp;random&nbsp;color&nbsp;change<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>transition</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None sec=1.0 wake=False</td></tr><tr><th>doc</th><td>Set&nbsp;transition&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;creates&nbsp;the&nbsp;dimming&nbsp;generators<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r:&nbsp;value&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g:&nbsp;value&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b:&nbsp;value&nbsp;0-1000<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sec:&nbsp;transition&nbsp;length&nbsp;in&nbsp;sec<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool,&nbsp;wake&nbsp;on&nbsp;setup&nbsp;(auto&nbsp;run&nbsp;on&nbsp;periphery)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;info&nbsp;msg&nbsp;string</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>smooth=True max_val=1000</td></tr><tr><th>doc</th><td>Demo&nbsp;function:&nbsp;implements&nbsp;random&nbsp;color&nbsp;change<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;max_val:&nbsp;set&nbsp;channel&nbsp;maximum&nbsp;generated&nbsp;value:&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>subscribe_presence</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Initialize&nbsp;LM&nbsp;presence&nbsp;module&nbsp;with&nbsp;ON/OFF&nbsp;callback&nbsp;functions<br>

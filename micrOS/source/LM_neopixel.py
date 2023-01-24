@@ -247,7 +247,8 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
         with micro_task(tag=Data.RGB_TASK_TAG) as my_task:
             for r_val in r_gen:
                 if not Data.TASK_STATE:
-                    break
+                    my_task.out = "Dimming cancelled"
+                    return
                 g_val = g_gen.__next__()
                 b_val = b_gen.__next__()
                 if Data.DCACHE[3] == 1 or wake:
@@ -263,7 +264,7 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
                 await asyncio.sleep_ms(ms_period)
             if Data.DCACHE[3] == 1 or wake:
                 __state_machine(r=r_val, g=g_val, b=b_val)
-            my_task.out = "Dimming ... DONE{}: R: {} G: {} B: {}".format('' if Data.TASK_STATE else ' ,killed', r_val, g_val, b_val)
+            my_task.out = "Dimming ... DONE: R: {} G: {} B: {}".format(r_val, g_val, b_val)
 
     Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     r_from, g_from, b_from = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]

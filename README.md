@@ -2,7 +2,7 @@
 
 ### micropython based smart edge IoT platform
 
-`#telnet #wifi #esp32 #RaspberryPiPicoW #ota #GPIO #RTC/NTP #AP/STA #IRQ #thread #cron`
+`#telnet #wifi #esp32 #RaspberryPiPicoW(beta) #ota #GPIO #RTC/NTP #AP/STA #IRQ #thread #cron`
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
@@ -262,6 +262,7 @@ LogicalPin lookup tables:
 - [tinypico](./micrOS/source/LP_tinypico.py)
 - [esp32](./micrOS/source/LP_esp32.py)
 - [esp32s2](./micrOS/source/LP_esp32s2.py)
+- [raspberryPicoW](./micrOS/source/LP_rp2.py) NO STABILE MICROPYTHON YET: [micropython for rpw](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 

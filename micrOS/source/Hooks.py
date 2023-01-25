@@ -30,6 +30,7 @@ from machine import freq
 
 
 def software_migration():
+    # TODO: remove
     print("[MIG?] boot.py -> main.py")
     from os import listdir, remove
     if "boot.py" in listdir() and "main.py" in listdir():
@@ -53,14 +54,17 @@ def bootup_hook():
 
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:
-        console_write("[BOOT HOOKS] Set up CPU 16MHz/24MHz - boostmd: {}".format(cfgget('boostmd')))
+        console_write("[BOOT HOOKS] Set up CPU high Hz - boostmd: {}".format(cfgget('boostmd')))
         if detect_platform() == 'esp8266':
             freq(160000000)
         if detect_platform() == 'esp32':
             freq(240000000)
     else:
-        console_write("[BOOT HOOKS] Set up CPU 8MHz - boostmd: {}".format(cfgget('boostmd')))
-        freq(80000000)
+        console_write("[BOOT HOOKS] Set up CPU low Hz - boostmd: {}".format(cfgget('boostmd')))
+        if detect_platform() == 'esp8266':
+            freq(80000000)
+        if detect_platform() == 'esp32':
+            freq(80000000)
 
     # Scripts for file structure changes
     software_migration()

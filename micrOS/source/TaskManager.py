@@ -191,7 +191,7 @@ class Manager:
             # Set async event loop
             Manager.__instance.loop = asyncio.get_event_loop()
             Manager.__instance.loop.set_exception_handler(cls.async_exception)
-            Manager.__instance.idle_task = Manager.__instance.create_task(callback=Manager.idle_task(), tag="idle")
+            Manager.__instance.create_task(callback=Manager.idle_task(), tag="idle")
             # [LM] Set limit for async task creation
             # ---         ----
         return Manager.__instance
@@ -226,12 +226,16 @@ class Manager:
         Create IDLE task - fix IRQ task start
         - Try to measure system load - based on idle task latency
         """
-        period_ms = 2000
+        period_ms = 1000
+        my_task = Task.TASKS.get('idle')
+        my_task.out = "Idling & Monitoring..."
         while True:
             t = ticks_ms()
             await asyncio.sleep_ms(period_ms)
             delta_rate = int(((ticks_diff(ticks_ms(), t) / period_ms)-1) * 100)
             Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)
+            #my_task.out = "Idling... dT: {}".format(round(ticks_diff(ticks_ms(), t) / period_ms, 3))
+        #my_task.done = True
 
     def create_task(cls, callback, tag=None, loop=False, delay=None):
         """
@@ -260,22 +264,35 @@ class Manager:
         return output
 
     @staticmethod
+    def _parse__tag(tag):
+        """GET TASK(s) BY TAG - module.func or module.*"""
+        task = Task.TASKS.get(tag, None)
+        if task is None:
+            _tasks = []
+            tag_parts = tag.split('.')
+            for t in Task.TASKS.keys():
+                if t.startswith(tag_parts[0]) and len(tag_parts) > 1 and tag_parts[1] == '*':
+                    _tasks.append(t)
+            if len(_tasks) == 0:
+                return []
+            return _tasks
+        return [tag]
+
+    @staticmethod
     def show(tag):
         """
         Primary interface
             Show buffered task output
         """
-        task = Task.TASKS.get(tag, None)
-        if task is None:
-            out_buf = []
-            for t in Task.TASKS.keys():
-                tag_parts = tag.split('.')
-                if t.startswith(tag_parts[0]) and len(tag_parts) > 1 and tag_parts[1] == '*':
-                    out_buf.append('{}: {}'.format(t, Task.TASKS[t].out))
-            if len(out_buf) == 0:
-                return "No task found: {}".format(tag)
-            return '\n'.join(out_buf)
-        return task.out
+        tasks = Manager._parse__tag(tag)
+        if len(tasks) == 0:
+            return "No task found: {}".format(tag)
+        if len(tasks) == 1:
+            return Task.TASKS[tasks[0]].out
+        output = []
+        for t in tasks:
+            output.append('{}: {}'.format(t, Task.TASKS[t].out))
+        return '\n'.join(output)
 
     @staticmethod
     def kill(tag):
@@ -288,21 +305,27 @@ class Manager:
 
         def terminate(_tag):
             to_kill = Task.TASKS.get(_tag, None)
-            if to_kill is None:
+            try:
+                return False if to_kill is None else to_kill.cancel()
+            except Exception as e:
+                errlog_add("[ERR] Task kill: {}".format(e))
                 return False
-            to_kill.cancel()
-            return True
 
         # Handle task group kill (module.*)
-        if tag.endswith('.*'):
-            state = True
-            sub_tag = tag.replace('*', '')
-            kill_all = [t for t in Task.TASKS if t.startswith(sub_tag)]
-            for k in kill_all:
-                state &= terminate(k)
-            return state
-        # Simple task kill (by explicit tag: module.function)
-        return terminate(tag)
+        kill_all = Manager._parse__tag(tag)
+        state = True
+        if len(kill_all) == 0:
+            return state, "No task found: {}".format(', '.join(tag))
+        if len(kill_all) == 1:
+            state = terminate(kill_all[0])
+            msg = "Kill: {}|{}".format(kill_all[0], state)
+            return state, msg
+        output = []
+        for k in kill_all:
+            state &= terminate(k)
+            output.append("{}|{}".format(k, state))
+        msg = "Kill: {}".format(', '.join(output))
+        return state, msg
 
     def run_forever(cls):
         """
@@ -373,8 +396,7 @@ def exec_lm_core(arg_list, msgobj=None):
                 msgobj(tasks)
             elif msg_len > 2:
                 if 'kill' == msg_list[1]:
-                    state = Manager().kill(msg_list[2])
-                    msg = "Kill: {}".format(msg_list[2]) if state else "Task not found: {}".format(msg_list[2])
+                    state, msg = Manager().kill(msg_list[2])
                     msgobj(msg)
                 elif 'show' == msg_list[1]:
                     msgobj(Manager().show(tag=msg_list[2]))
@@ -405,6 +427,7 @@ def exec_lm_core(arg_list, msgobj=None):
             return True
         # Not valid task command
         return False
+    '''_________________________________________________'''
 
     # [1] Run task command: start (&), list, kill, show
     if task_manager(arg_list):

@@ -17,6 +17,7 @@ class Data:
     CH_MAX = 1000
     PERSISTENT_CACHE = False
     CCT_TASK_TAG = 'cct._transition'
+    HUE_TASK_TAG = 'cct._hue'
     TASK_STATE = False
 
 
@@ -82,7 +83,7 @@ def load_n_init(cache=None):
     """
     from sys import platform
     if cache is None:
-        Data.PERSISTENT_CACHE = True if platform == 'esp32' else False
+        Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
     else:
         Data.PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')        # recover data cache
@@ -159,6 +160,11 @@ def brightness(percent=None, smooth=True):
     target_br = Data.CH_MAX * (percent / 100)
     new_cct = (target_br * float(Data.CWWW_CACHE[0] / ch_max),
                target_br * float(Data.CWWW_CACHE[1] / ch_max))
+    # Handle background task update
+    hue_task = micro_task(Data.HUE_TASK_TAG)
+    if hue_task is not None and not hue_task.done:
+        return white(ww=round(new_cct[1], 3), smooth=smooth, force=False)
+    # Forced (default) output write + cancel task in background
     return white(round(new_cct[0], 3), round(new_cct[1], 3), smooth=smooth)
 
 
@@ -233,6 +239,58 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
     return "Starting transition" if state else "Transition already running"
 
 
+def hue_transition(percent, sec=1.0, wake=False):
+    """
+    Set HUE transition independently from brightness
+    - Running warm and cold white ratio change
+    - USE cct brightness function to set brightness besides this transition (running)
+    :param percent: warm channel ratio in percent 0-100
+    :param sec: transition length
+    :param wake: bool, wake on setup (auto run on periphery)
+    :return: info msg string
+    """
+
+    async def _task(ms_period, iterable):
+        cw_obj, ww_obj = __cwww_init()[0], __cwww_init()[1]
+        with micro_task(tag=Data.HUE_TASK_TAG) as my_task:
+            for hue_precent in iterable:
+                if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
+                    my_task.out = "HUE Dimming cancelled"
+                    return
+                # Set brightness percentage
+                target_cold = 1000 - hue_precent
+                #print("CW: {}% WW: {}%".format(target_cold, hue_precent))
+                all_ch_br = Data.CWWW_CACHE[0] + Data.CWWW_CACHE[1]
+                cold = int(all_ch_br * target_cold * 0.001)
+                warm = int(all_ch_br * hue_precent * 0.001)
+                #print("C: {}   W: {}".format(cold, warm))
+                if Data.CWWW_CACHE[2] == 1 or wake:
+                    # Write periphery
+                    cw_obj.duty(cold)
+                    ww_obj.duty(warm)
+                Data.CWWW_CACHE[0] = cold if cold > 5 else 5
+                Data.CWWW_CACHE[1] = warm if warm > 5 else 5
+                my_task.out = "HUE {}%w - CW: {} WW: {}".format(int(hue_precent*0.1), cold, warm)
+                # Feed async loop
+                await asyncio.sleep_ms(ms_period)
+            __state_machine(cold, warm)
+            my_task.out = "HUE DONE {}%w - CW: {} WW: {}".format(int(hue_precent*0.001), cold, warm)
+
+    if 0 <= percent <= 100:
+        Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
+        # Calculate actual brightness
+        hue_ch = Data.CWWW_CACHE[1]
+        hue_curr_percent = int((hue_ch / Data.CH_MAX) * 1000)
+        # Create transition generator and calculate step_ms --- warm channel based dimming in time - aka automatic hue
+        #print("Actual percent: {}, target percent: {}".format(actual_percent, warm_percent))
+        hue_gen, step_ms = transition_gen(hue_curr_percent, percent*10, interval_sec=sec)
+        # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+        state = micro_task(tag=Data.HUE_TASK_TAG, task=_task(ms_period=step_ms, iterable=hue_gen))
+        return "Starting transition" if state else "Transition already running"
+    else:
+        return "Invalid range, percent=<0-100>"
+
+
 def random(smooth=True, max_val=1000):
     """
     Demo function: implements random hue change
@@ -288,5 +346,6 @@ def help():
     """
     return 'white cw=<0-1000> ww=<0-1000> smooth=True force=True', \
            'toggle state=None smooth=True', 'load_n_init', 'brightness percent=<0-100> smooth=True', \
-           'transition cw=None ww=None sec=1.0 wake=False', \
+           'transition cw=None ww=None sec=1.0 wake=False',\
+           'hue_transition percent=<0-100> sec=1.0 wake=False',\
            'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'

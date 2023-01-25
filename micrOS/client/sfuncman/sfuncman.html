@@ -345,6 +345,12 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table b
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ww:&nbsp;warm&nbsp;white&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sec:&nbsp;transition&nbsp;length&nbsp;in&nbsp;sec<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool,&nbsp;wake&nbsp;on&nbsp;setup&nbsp;(auto&nbsp;run&nbsp;on&nbsp;periphery)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;info&nbsp;msg&nbsp;string</td></tr></table></td></tr><tr><th>hue_transition</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent sec=1.0 wake=False</td></tr><tr><th>doc</th><td>Set&nbsp;HUE&nbsp;transition&nbsp;independently&nbsp;from&nbsp;brightness<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Running&nbsp;warm&nbsp;and&nbsp;cold&nbsp;white&nbsp;ratio&nbsp;change<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;USE&nbsp;cct&nbsp;brightness&nbsp;function&nbsp;to&nbsp;set&nbsp;brightness&nbsp;besides&nbsp;this&nbsp;transition&nbsp;(running)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;percent:&nbsp;warm&nbsp;channel&nbsp;ratio&nbsp;in&nbsp;percent&nbsp;0-100<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sec:&nbsp;transition&nbsp;length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool,&nbsp;wake&nbsp;on&nbsp;setup&nbsp;(auto&nbsp;run&nbsp;on&nbsp;periphery)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;info&nbsp;msg&nbsp;string</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>smooth=True max_val=1000</td></tr><tr><th>doc</th><td>Demo&nbsp;function:&nbsp;implements&nbsp;random&nbsp;hue&nbsp;change<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;max_val:&nbsp;set&nbsp;channel&nbsp;maximum&nbsp;generated&nbsp;value:&nbsp;0-1000<br>

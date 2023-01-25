@@ -267,7 +267,14 @@ class Manager:
         """
         task = Task.TASKS.get(tag, None)
         if task is None:
-            return "No task found: {}".format(tag)
+            out_buf = []
+            for t in Task.TASKS.keys():
+                tag_parts = tag.split('.')
+                if t.startswith(tag_parts[0]) and len(tag_parts) > 1 and tag_parts[1] == '*':
+                    out_buf.append('{}: {}'.format(t, Task.TASKS[t].out))
+            if len(out_buf) == 0:
+                return "No task found: {}".format(tag)
+            return '\n'.join(out_buf)
         return task.out
 
     @staticmethod

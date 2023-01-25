@@ -64,6 +64,16 @@ def __persistent_cache_manager(mode):
         pass
 
 
+def __state_machine(r, g, b):
+    # Save channel duties if LED on
+    if r > 0 or g > 0 or b > 0:
+        Data.RGB_CACHE = [r, g, b, 1]
+    else:
+        Data.RGB_CACHE[3] = 0
+    # Save state machine (cache)
+    __persistent_cache_manager('s')
+
+
 def load_n_init(cache=None):
     """
     Initiate RGB module
@@ -126,13 +136,8 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
         Data.RGB_OBJS[0].duty(int(r))
         Data.RGB_OBJS[1].duty(int(g))
         Data.RGB_OBJS[2].duty(int(b))
-    # Save channel duties if LED on
-    if r > 0 or g > 0 or b > 0:
-        Data.RGB_CACHE = [r, g, b, 1]
-    else:
-        Data.RGB_CACHE[3] = 0
-    # Save state machine (cache)
-    __persistent_cache_manager('s')
+    # Save channels data
+    __state_machine(r, g, b)
     return status()
 
 
@@ -229,7 +234,7 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
                 my_task.out = "Dimming ... R:{} G:{} B:{}".format(_r, _g, _b)
                 await asyncio.sleep_ms(ms_period)
             if Data.RGB_CACHE[3] == 1 or wake:
-                __state_machine(i)
+                __state_machine(_r, _g, _b)
             my_task.out = "Dimming DONE: R:{} G:{} B:{}".format(_r, _g, _b)
 
     Data.TASK_STATE = True  # Save transition task is stared (kill param to overwrite task with user input)

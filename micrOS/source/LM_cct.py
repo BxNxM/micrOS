@@ -163,9 +163,9 @@ def brightness(percent=None, smooth=True):
     # Handle background task update
     hue_task = micro_task(Data.HUE_TASK_TAG)
     if hue_task is not None and not hue_task.done:
-        return white(ww=round(new_cct[1], 3), smooth=smooth, force=False)
+        return white(int(new_cct[0]), int(new_cct[1]), smooth=False, force=False)
     # Forced (default) output write + cancel task in background
-    return white(round(new_cct[0], 3), round(new_cct[1], 3), smooth=smooth)
+    return white(int(new_cct[0]), int(new_cct[1]), smooth=smooth)
 
 
 def toggle(state=None, smooth=True):
@@ -279,7 +279,7 @@ def hue_transition(percent, sec=1.0, wake=False):
     if 0 <= percent <= 100:
         Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
         # Calculate actual brightness
-        hue_ch = Data.CWWW_CACHE[1]
+        hue_ch = __cwww_init()[1].duty()
         hue_curr_percent = int((hue_ch / Data.CH_MAX) * 1000)
         # Create transition generator and calculate step_ms --- warm channel based dimming in time - aka automatic hue
         #print("Actual percent: {}, target percent: {}".format(actual_percent, warm_percent))

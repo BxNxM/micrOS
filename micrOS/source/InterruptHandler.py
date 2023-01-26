@@ -17,7 +17,7 @@ Reference: https://docs.micropython.org/en/latest/library/machine.Pin.html
 #                            IMPORTS                            #
 #################################################################
 from machine import Pin
-from utime import ticks_us, ticks_diff
+from utime import ticks_ms, ticks_diff
 from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
 from TaskManager import exec_lm_pipe_schedule
@@ -106,17 +106,17 @@ def initEventIRQs():
         :return: None
         """
         pin = str(pin)
-        # Get stored tick by pin - last executed
+        # Get stored tick by pin - last triggered
         last = resolver.get(pin)[1]
         # Calculate trigger diff in ms (from now)
-        diff = ticks_diff(int(ticks_us() * 0.001), last)
+        diff = ticks_diff(ticks_ms(), last)
         # console_write("[IRQ] Event {} - tick diff: {}".format(pin, diff))
         # Threshold between ext. irq evens
         if abs(diff) > resolver.get('prell_ms'):
             # [!] Execute LM(s)
             exec_lm_pipe_schedule(resolver.get(pin)[0])
-            # Save now tick - last executed
-            resolver[pin][1] = int(ticks_us() * 0.001)
+        # Save now tick - last triggered
+        resolver[pin][1] = ticks_ms()
 
     # External IRQ execution data set from node config
     # ((irq, trig, lm_cbf), (irq, trig, lm_cbf), (irq, trig, lm_cbf), ...)

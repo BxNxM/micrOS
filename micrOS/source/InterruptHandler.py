@@ -106,7 +106,7 @@ def initEventIRQs():
         :return: None
         """
         pin = str(pin)
-        # Get stored tick by pin - last triggered
+        # Get stored tick by pin - last successful trigger
         last = resolver.get(pin)[1]
         # Calculate trigger diff in ms (from now)
         diff = ticks_diff(ticks_ms(), last)
@@ -115,8 +115,8 @@ def initEventIRQs():
         if abs(diff) > resolver.get('prell_ms'):
             # [!] Execute LM(s)
             exec_lm_pipe_schedule(resolver.get(pin)[0])
-        # Save now tick - last triggered
-        resolver[pin][1] = ticks_ms()
+            # Save now tick - last successful trigger
+            resolver[pin][1] = ticks_ms()
 
     # External IRQ execution data set from node config
     # ((irq, trig, lm_cbf), (irq, trig, lm_cbf), (irq, trig, lm_cbf), ...)

@@ -312,16 +312,15 @@ class Manager:
                 return False
 
         # Handle task group kill (module.*)
-        kill_all = Manager._parse__tag(tag)
+        tasks = Manager._parse__tag(tag)
         state = True
-        if len(kill_all) == 0:
-            return state, "No task found: {}".format(', '.join(tag))
-        if len(kill_all) == 1:
-            state = terminate(kill_all[0])
-            msg = "Kill: {}|{}".format(kill_all[0], state)
-            return state, msg
+        if len(tasks) == 0:
+            return state, "No task found: {}".format(tag)
+        if len(tasks) == 1:
+            msg = "Kill: {}|{}".format(tasks[0], state)
+            return terminate(tasks[0]), msg
         output = []
-        for k in kill_all:
+        for k in tasks:
             state &= terminate(k)
             output.append("{}|{}".format(k, state))
         msg = "Kill: {}".format(', '.join(output))
@@ -388,21 +387,24 @@ def exec_lm_core(arg_list, msgobj=None):
 
     def task_manager(msg_list):
         msg_len = len(msg_list)
-        # [1] Handle task manipulation commands: list, kill, show
+        # [1] Handle task manipulation commands: list, kill, show - return True -> Command handled
         if 'task' == msg_list[0]:
+            # task list
             if msg_len == 2 and 'list' == msg_list[1]:
                 tasks = '\n'.join(Manager().list_tasks())
                 tasks = '{}\n'.format(tasks)
                 msgobj(tasks)
-            elif msg_len > 2:
+                return True
+            # task kill <taskID> / task show <taskID>
+            if msg_len > 2:
                 if 'kill' == msg_list[1]:
-                    state, msg = Manager().kill(msg_list[2])
+                    state, msg = Manager().kill(tag=msg_list[2])
                     msgobj(msg)
-                elif 'show' == msg_list[1]:
+                    return True
+                if 'show' == msg_list[1]:
                     msgobj(Manager().show(tag=msg_list[2]))
-            else:
-                msgobj("Invalid task cmd! Help: task list / kill <taskID> / show <taskID>")
-            # Handled task manipulation command
+                    return True
+            msgobj("Invalid task cmd! Help: task list / kill <taskID> / show <taskID>")
             return True
         # [2] Start async task, postfix: &, &&
         if msg_len > 2 and '&' in arg_list[-1]:
@@ -474,11 +476,10 @@ def _exec_lm_core(arg_list, msgobj):
 
     # Check json mode for LM execution
     json_mode = arg_list[-1] == '>json'
-    if json_mode:
-        del arg_list[-1]
+    cmd_list = arg_list[0:-1] if json_mode else arg_list
     # LoadModule execution
-    if len(arg_list) >= 2:
-        lm_mod, lm_func, lm_params = "LM_{}".format(arg_list[0]), arg_list[1], __conv_func_params(' '.join(arg_list[2:]))
+    if len(cmd_list) >= 2:
+        lm_mod, lm_func, lm_params = "LM_{}".format(cmd_list[0]), cmd_list[1], __conv_func_params(' '.join(cmd_list[2:]))
         try:
             # --- LM LOAD & EXECUTE --- #
             # [1] LOAD MODULE

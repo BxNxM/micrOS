@@ -256,10 +256,11 @@ class Manager:
             List tasks - micrOS top :D
         """
         q = Manager.QUEUE_SIZE - Manager._queue_free()
-        output = ["----- micrOS  top -----", "#queue: {} #overload: {}%\n".format(q, Manager.OLOAD), "#isDONE   #taskID"]
+        output = ["----- micrOS  top -----", "#queue: {} #overload: {}%\n".format(q, Manager.OLOAD), "#Active   #taskID"]
         for tag, task in Task.TASKS.items():
-            spcr = " " * (10 - len(str(task.done)))
-            task_view = "{}{}{}".format(task.done, spcr, tag)
+            is_running = 'No' if task.done else 'Yes'
+            spcr = " " * (10 - len(is_running))
+            task_view = "{}{}{}".format(is_running, spcr, tag)
             output.append(task_view)
         return output
 

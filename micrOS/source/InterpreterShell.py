@@ -12,6 +12,7 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from os import listdir
+from sys import modules
 from ConfigHandler import cfgget, cfgput
 from TaskManager import exec_lm_core
 from Debug import console_write, errlog_add
@@ -28,7 +29,7 @@ except:
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.10.7-0'
+    __socket_interpreter_version = '1.10.8-0'
 
     def __init__(self, msg_obj=None):
         """
@@ -177,10 +178,10 @@ class Shell:
             self.msg("  task kill <tag>   - stop task")
             self.msg("  task show <tag>   - show task output")
             self.msg("[EXEC] Command mode (LMs):")
-            self.msg("    help lm  - list LoadModule functions")
+            self.msg("   help lm  - list all LoadModules")
             if "lm" in str(msg_list):
                 return self.__show_LM_functions()
-            return True
+            return self.__show_LM_functions(active_only=True)
 
         # [2] EXECUTE:
         # @1 Configure mode
@@ -239,28 +240,37 @@ class Shell:
     #################################################################
     #                   COMMAND MODE & LMS HANDLER                  #
     #################################################################
-    def __show_LM_functions(self):
+    def __show_LM_functions(self, active_only=False):
         """
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
         """
-        for lm_path in (i for i in listdir() if i.startswith('LM_') and (i.endswith('py'))):
-            lm_name = lm_path.replace('LM_', '').split('.')[0]
-            try:
-                self.msg("   {}".format(lm_name))
-                if lm_path.endswith('.mpy'):
-                    self.msg("   {}help".format(" " * len(lm_path.replace('LM_', '').split('.')[0])))
-                    continue
-                with open(lm_path, 'r') as f:
-                    line = "micrOSisTheBest"
-                    while line:
-                        line = f.readline()
-                        if line.strip().startswith('def') and '__' not in line and 'self' not in line:
-                            self.msg("   {}{}".format(" " * len(lm_name), line.replace('def ', '').split('(')[0]))
-            except Exception as e:
-                self.msg("[{}] SHOW LM PARSER WARNING: {}".format(lm_path, e))
-                return False
-        return True
+        def _offline_help(module_list):
+            for lm_path in (i for i in module_list if i.startswith('LM_') and (i.endswith('py'))):
+                lm_name = lm_path.replace('LM_', '').split('.')[0]
+                try:
+                    self.msg("   {}".format(lm_name))
+                    if lm_path.endswith('.mpy'):
+                        self.msg("   {}help".format(" " * len(lm_path.replace('LM_', '').split('.')[0])))
+                        continue
+                    with open(lm_path, 'r') as f:
+                        line = "micrOSisTheBest"
+                        while line:
+                            line = f.readline()
+                            if line.strip().startswith('def') and '_' not in line and 'self' not in line:
+                                self.msg("   {}{}".format(" " * len(lm_name), line.replace('def ', '').split('(')[0]))
+                except Exception as e:
+                    self.msg("[{}] SHOW LM PARSER WARNING: {}".format(lm_path, e))
+                    return False
+            return True
+
+        # [1] list active modules (default in shell)
+        if active_only:
+            mod_keys = modules.keys()
+            active_modules = (dir_mod for dir_mod in listdir() if dir_mod.split('.')[0] in mod_keys)
+            return _offline_help(active_modules)
+        # [2] list all LMs on file system (ALL - help lm) - manual
+        return _offline_help(listdir())
 
     def micropython_webrepl(self, update=False):
         self.msg(" Start micropython WEBREPL for interpreter web access and file transferring.")

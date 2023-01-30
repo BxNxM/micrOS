@@ -239,17 +239,20 @@ class SocketServer:
         cls.client.send(cls.client.shell.prompt())
         # Run async connection handling
         while cls.client.connected:
-            # Read request msg from client
-            state, request = await cls.client.read()
-            if state:
+            try:
+                # Read request msg from client
+                state, request = await cls.client.read()
+                if state:
+                    break
+
+                state = await cls.client.shell_cmd(request)
+                if not state:
+                    cls.client.send("[HA] Critical error - disconnect & hard reset")
+                    errlog_add("[ERR] Socket critical error - reboot")
+                    cls.client.shell.reboot()
+            except Exception as e:
+                errlog_add("[ERR] handle_client: {}".format(e))
                 break
-
-            state = await cls.client.shell_cmd(request)
-            if not state:
-                cls.client.send("[HA] Critical error - disconnect & hard reset")
-                errlog_add("[ERR] Socket critical error - reboot")
-                cls.client.shell.reboot()
-
         # Close connection
         await cls.client.close()
 

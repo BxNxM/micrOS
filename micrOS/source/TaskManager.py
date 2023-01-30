@@ -482,11 +482,24 @@ def _exec_lm_core(arg_list, msgobj):
     if len(cmd_list) >= 2:
         lm_mod, lm_func, lm_params = "LM_{}".format(cmd_list[0]), cmd_list[1], __conv_func_params(' '.join(cmd_list[2:]))
         try:
-            # --- LM LOAD & EXECUTE --- #
-            # [1] LOAD MODULE
-            exec("import {}".format(lm_mod))
-            # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
-            lm_output = eval("{}.{}({})".format(lm_mod, lm_func, lm_params))
+            # ------------- LM LOAD & EXECUTE ------------- #
+            # [1] LOAD MODULE - OPTIMIZED by sys.modules
+            if lm_mod not in modules:
+                exec("import {}".format(lm_mod))
+            try:
+                # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
+                lm_output = eval("{}.{}({})".format(lm_mod, lm_func, lm_params))
+            except Exception as e:
+                # Handle not proper module load (simulator), note: module in sys.modules BUT not available
+                if lm_mod in str(e):
+                    errlog_add("_exec_lm_core re-import {}!".format(lm_mod))
+                    # [2.1] LOAD MODULE - FORCED
+                    exec("import {}".format(lm_mod))
+                    # [2.2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
+                    lm_output = eval("{}.{}({})".format(lm_mod, lm_func, lm_params))
+                else:
+                    raise Exception(e)
+            # ---------------------------------------------- #
             # Handle output data stream
             lm_output = __format_out(json_mode, lm_func, lm_output)
             # Return LM exec result via msgobj

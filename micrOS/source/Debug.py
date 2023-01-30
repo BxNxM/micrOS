@@ -49,79 +49,98 @@ def console_write(msg):
             return
         TinyPLed.step()
 
+
+#############################################
+#        LOGGING WITH DATA ROTATION         #
+#############################################
+
+def logger(data, f_name, limit):
+    """
+    Create generic logger function
+    - implements log line rotation
+    - automatic time stump
+    :param data: input string data to log
+    :param f_name: file name to use
+    :param limit: line limit for log rotation
+    return write verdict - true / false
+    INFO: hardcoded max data number = 30
+    """
+    def _logger(_data, _f_name, _limit, f_mode='r+'):
+        _limit = 30 if _limit > 30 else _limit
+        # [1] GET TIME STUMP
+        ts_buff = [str(k) for k in localtime()]
+        ts = ".".join(ts_buff[0:3]) + "-" + ":".join(ts_buff[3:6])
+        # [2] OPEN FILE - WRITE DATA WITH TS
+        with open(_f_name, f_mode) as f:
+            _data = "{} {}\n".format(ts, _data)
+            # read file lines and filter by time stump chunks (hack for replace truncate)
+            lines = [_l for _l in f.readlines() if '-' in _l and '.' in _l]
+            # get file params
+            lines_len = len(lines)
+            lines.append(_data)
+            f.seek(0)
+            # line data rotate
+            if lines_len >= _limit:
+                lines = lines[-_limit:]
+                lines_str = ''.join(lines)
+            else:
+                lines_str = ''.join(lines)
+            # write file
+            f.write(lines_str)
+
+    # Run logger
+    try:
+        # There is file - append 'r+'
+        _logger(data, f_name, limit)
+    except:
+        try:
+            # There is no file - create 'a+'
+            _logger(data, f_name, limit, 'a+')
+        except:
+            return False
+    return True
+
+
+def log_get(f_name, msgobj=None):
+    """
+    Get and stream (ver osocket/stdout) .log file's content and count "critical" errors
+    - critical error tag in log line: [ERR]
+    """
+    err_cnt = 0
+    try:
+        with open(f_name, 'r') as f:
+            eline = f.readline().strip()
+            while eline:
+                # GET error from log line (tag: [ERR])
+                err_cnt += 1 if "[ERR]" in eline else 0
+                # GIVE BACK .log file contents
+                if msgobj is None:
+                    console_write(eline)
+                else:
+                    msgobj(eline)
+                eline = f.readline().strip()
+    except:
+        pass
+    return err_cnt
+
+
 #############################################
 #               ERROR LOGGING               #
 #############################################
 
 
-def errlog_add(data, limit=12):
+def errlog_add(data):
     """
     :param data: msg string / data
-    :param limit: line limit to rotate
     :return: is ok
     """
-    fname = 'err.log'
-
-    # ADD LINE TO LOG
-    with open(fname, 'a+') as f:
-        buff = [str(k) for k in localtime()]
-        ts = ".".join(buff[0:3]) + " " + ":".join(buff[3:6])
-        try:
-            f.write('{ts} {data}\n'.format(ts=ts, data=data))
-        except:
-            pass
-
-    # LOG ROTATE
-    try:
-        with open(fname) as f:
-            flen = sum(1 for _ in f)
-    except:
-        flen = 0
-    if flen >= int(limit / 2):
-        try:
-            # Rotate log
-            with open(fname, 'r') as f:
-                with open('{}.pre.log'.format(fname.split('.')[0]), 'w') as ff:
-                    l = f.readline()
-                    while l:
-                        ff.write(l)
-                        l = f.readline()
-            os.remove(fname)
-        except Exception as e:
-            print("LogRotate error: {}".format(e))
+    f_name = 'err.log'
+    return logger(data, f_name, limit=8)
 
 
 def errlog_get(msgobj=None):
-    errcnt = 0
-
-    def stream_records(fname):
-        """
-        Get and stream (ver osocket/stdout) .log file's content and count "critical" errors
-        - critical error tag in log line: [ERR]
-        """
-        err_cnt = 0
-        try:
-            with open(fname, 'r') as f:
-                eline = f.readline().strip()
-                while eline:
-                    # GET error from log line (tag: [ERR])
-                    if "[ERR]" in eline:
-                        err_cnt += 1
-                    # GIVE BACK .log file contents
-                    if msgobj is None:
-                        console_write(eline)
-                    else:
-                        msgobj(eline)
-                    eline = f.readline().strip()
-        except:
-            pass
-        return err_cnt
-
-    # List all .log files on the board
-    to_list = [file for file in os.listdir() if file.endswith('.log')]
-    for log in to_list:
-        # Get specific .log file contact
-        errcnt += stream_records(log)
+    f_name = 'err.log'
+    errcnt = log_get(f_name, msgobj)
     # Return error number
     return errcnt
 

@@ -13,6 +13,7 @@ from SocketServer import SocketServer
 from machine import Pin, ADC
 from sys import platform
 from LogicalPins import physical_pin
+from Debug import logger, log_get
 try:
     from TaskManager import Task, Manager
 except Exception as e:
@@ -132,3 +133,17 @@ def micro_task(tag, task=None):
         # RETURN task creation state - success (True) / fail (False)
         state = Manager().create_task(callback=task, tag=tag)
         return state
+
+
+@socket_stream
+def data_logger(f_name, data=None, limit=24, msgobj=None):
+    # TODO: test!!!
+    ext = '.dat'
+    f_name = f_name if f_name.endswith(ext) else '{}{}'.format(f_name, ext)
+    # GET LOGGED DATA
+    if data is None:
+        # return log as msg stream
+        log_get(f_name, msgobj=msgobj)
+        return ''
+    # ADD DATA TO LOG
+    return logger(data, f_name, limit)

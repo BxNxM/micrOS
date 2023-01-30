@@ -29,7 +29,7 @@ except:
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.10.8-0'
+    __socket_interpreter_version = '1.11.0-0'
 
     def __init__(self, msg_obj=None):
         """
@@ -165,7 +165,7 @@ class Shell:
             self.msg("   hello   - hello msg - for device identification")
             self.msg("   version - returns micrOS version")
             self.msg("   exit    - exit from shell socket prompt")
-            self.msg("   reboot  - system safe reboot (vm), hard reset (hw): reboot -h")
+            self.msg("   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h")
             self.msg("   webrepl - start webrepl, for file transfers use with --update")
             self.msg("[CONF] Configure mode - built-in shell commands")
             self.msg("  conf       - Enter conf mode")

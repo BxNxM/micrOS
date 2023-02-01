@@ -1,8 +1,37 @@
 from utime import localtime
+from os import statvfs, getcwd, uname
 from Common import socket_stream
 from Network import get_mac
 from Time import ntptime, settime, suntime, Sun, uptime
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
+
+
+def memory_usage():
+    """
+    Calculate used micropython memory (ram)
+    return: memory usage %, memory usage in bytes
+    """
+    try:
+        from gc import mem_free, mem_alloc
+    except:
+        from simgc import mem_free, mem_alloc  # simulator mode
+    total_memory = mem_free() + mem_alloc()
+    used_memory = mem_alloc()
+    used_mem_percent = round(used_memory / total_memory * 100, 2)
+    return {'percent': used_mem_percent, 'mem_used': used_memory}
+
+
+def disk_usage():
+    """
+    Calculate used disk space
+    return: memory usage %, disk usage in bytes
+    """
+    fs_stat = statvfs(getcwd())
+    fs_size = fs_stat[0] * fs_stat[2]
+    fs_free = fs_stat[0] * fs_stat[3]
+    used_space = fs_size - fs_free
+    used_fs_percent = round(used_space / fs_size * 100, 2)
+    return {'percent': used_fs_percent, 'fs_used': used_space}
 
 
 @socket_stream
@@ -11,13 +40,7 @@ def info(msgobj=None):
     Show system info message
     - cpu clock, ram, free fs, upython, board, mac addr, uptime
     """
-    try:
-        from gc import mem_free
-    except:
-        from simgc import mem_free  # simulator mode
-    from os import statvfs, getcwd, uname
     from machine import freq
-
     msg_buffer = []
 
     def _reply(msg):
@@ -27,16 +50,15 @@ def info(msgobj=None):
         else:
             msgobj(msg)
 
-    fs_stat = statvfs(getcwd())
-    fs_size = fs_stat[0] * fs_stat[2]
-    fs_free = fs_stat[0] * fs_stat[3]
-    mem = mem_free()
     _reply('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
-    _reply('Free RAM: {} kB {} byte'.format(int(mem / 1024), int(mem % 1024)))
-    _reply('Free fs: {} %'.format(int((fs_free / fs_size) * 100)))
+    _reply('Mem usage: {} %'.format(memory_usage()['percent']))
+    _reply('FS usage: {} %'.format(disk_usage()['percent']))
     _reply('upython: {}'.format(uname()[3]))
     _reply('board: {}'.format(uname()[4]))
-    _reply('mac: {}'.format(get_mac()))
+    try:
+        _reply('mac: {}'.format(get_mac()))
+    except:
+        _reply('mac: n/a')
     _reply('uptime: {}'.format(uptime()))
     return '\n'.join(msg_buffer)
 
@@ -276,4 +298,4 @@ def help():
            'ntp', 'module unload="LM_rgb/None"', \
            'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
            'pinmap key="dhtpin"/None', 'ha_sta', 'alarms clean=False',\
-           'sun refresh=False', 'ifconfig', 'micros_checksum'
+           'sun refresh=False', 'ifconfig', 'memory_usage', 'disk_usage', 'micros_checksum'

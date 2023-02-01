@@ -152,7 +152,7 @@ class SoftSPI:
 
 
 def freq(*args, **kwargs):
-    pass
+    return 1
 
 
 def reset():

@@ -1,7 +1,4 @@
-try:
-    from gc import mem_free
-except:
-    from simgc import mem_free  # simulator mode
+from LM_system import memory_usage
 from Common import socket_stream
 
 
@@ -23,14 +20,14 @@ def memory_leak(cnt=160, msgobj=None):
     :return: verdict
     """
     dict_test = {}
-    mem_start = mem_free()
+    mem_start = memory_usage()['mem_used']
     for k in range(cnt):
-        mem = mem_free()
-        data = "micrOS memory: Free RAM: {} kB {} byte".format(int(mem / 1024), int(mem % 1024))
+        mem = memory_usage()['percent']
+        data = "micrOS memory usage: {} %".format(mem)
         if msgobj is not None:
             msgobj("[{}] gen: {}".format(k, data))
         dict_test[k] = data
-    mem_end = mem_free()
+    mem_end = memory_usage()['mem_used']
     delta = mem_start - mem_end
     return '[{}] RAM Alloc.: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024))
 

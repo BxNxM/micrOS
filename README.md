@@ -2,7 +2,7 @@
 
 ### micropython based smart edge IoT platform
 
-`#telnet #wifi #esp32 #RaspberryPiPicoW(beta) #ota #GPIO #RTC/NTP #AP/STA #IRQ #thread #cron`
+`#telnet #wifi #esp32 #tinypico #RaspberryPiPicoW(beta) #ota #GPIO #RTC/NTP #AP/STA #IRQ #async-tasks #cron`
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
@@ -75,7 +75,7 @@ Link for python 3.9 [download](https://www.python.org/downloads/release/python-3
 
 ##### 2.1. Download and install **micrOS devToolKit** python package:
 
-```
+```bash
 python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.com/BxNxM/micrOS.git
 ```
 
@@ -100,7 +100,7 @@ Open Windows **PowerShell**, press `windows+R` + type: `powershell` + press `ent
 
 Copy the following lines to the PowerShell and press enter.
 
-```
+```bash
 python -m pip install --upgrade pip
 python -m pip install git+https://github.com/BxNxM/micrOS.git
 ```
@@ -127,8 +127,7 @@ It will open a graphical user interface for micrOS device management, like usb d
 
 ```
 1. Select BOARD TYPE
-2. Select MICROPYTHON VERSION
-3. Click on [Deploy (USB)] button
+2. Click on [Deploy (USB)] button -> presss YES
 ```
 
 It will install your board via USB with default settings. **Continue with micrOS Client app...**
@@ -232,9 +231,11 @@ It will install your board via USB with default settings. **Continue with micrOS
 		- Invoke with single execution `&` or loop execution `&&`
 		- Example:
 			- In loop: `system heartbeat &&`
+				- Loop frequency conrol: `system heartbeat &&1000`, it will execute every sec 
 			- Single call: `system heartbeat &`
-		- Stop thread: `task kill system.heartbeat`
-		- Show thread ouput and status: `task show system.heartbeat`
+				- Delayed execution (ms): `system heartbeat &1000`, waits 1 sec before execution.
+		- Stop task: `task kill system.heartbeat`
+		- Show task live ouput: `task show system.heartbeat`
 
 
 ⌘ DevToolKit CLI feature:
@@ -375,7 +376,7 @@ def load_n_init():
 
 def lmdep():
    """
-   [IN CASE OF LM DEPENDENCY]
+   [OPTIONAL] [IN CASE OF LM DEPENDENCY]
    Function to return Load Module dependencies (tuple)
    - example: if this module uses LM_rgb.py, you should
    				 return 'rgb'
@@ -559,113 +560,83 @@ hello:slim01:0x500x20x910x680xc0xf7
 
 ### Get help
 
-```
+```bash
 devToolKit.py -c -p '--dev BedLamp help'
 
-Device was found: BedLamp
-node01 $  help
-[MICROS]   - commands (SocketServer built-in)
-   hello   - default hello msg - identify device
-   version - shows micrOS version
+[MICROS]   - built-in shell commands
+   hello   - hello msg - for device identification
+   version - returns micrOS version
    exit    - exit from shell socket prompt
-   reboot  - system safe reboot
-   webrepl - start web repl for file transfers - update
-[CONF] Configure mode (InterpreterShell built-in):
+   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h
+   webrepl - start webrepl, for file transfers use with --update
+[CONF] Configure mode - built-in shell commands
   conf       - Enter conf mode
     dump       - Dump all data
     key        - Get value
     key value  - Set value
   noconf     - Exit conf mode
+[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]
+  task list         - list tasks with <tag>s
+  task kill <tag>   - stop task
+  task show <tag>   - show task output
 [EXEC] Command mode (LMs):
-   L298N_DCmotor
-                help
-   bme280
-         help
+   help lm  - list ALL LoadModules
+   cct
+      help
    co2
       help
-   dht11
-        help
    dht22
         help
-   dimmer
-         help
-   distance_HCSR04
-                  distance_mm
-                  distance_cm
-                  deinit
-                  help
    intercon
            help
-   light_sensor
-               help
-   motion_sensor
-                get_PIR_state
-                PIR_deinit
-                help
-   neopixel
-           help
-   rgb
-      help
-   rgbfader
-           help
-   servo
-        help
-   switch
-         help
+   robustness
+             help
    system
          help
-   tinyrgb
-          help
-   tinyrgb
-          setrgb
-          getstate
-          toggle
-          wheel
-          help
 ```
  
 ### Embedded config handler
  
 ```  
 devToolKit.py -c -p '--dev BedLamp conf <a> dump'
-
-[configure] BedLamp
-stapwd    :          <your-wifi-passwd>
+  
+  staessid  :        <your-wifi-passwd>
+  devip     :        10.0.1.204
+  version   :        1.11.0-1
+  devfid    :        BedLamp
+  cron      :        True
+  cronseq   :        3000
+  soctout   :        10
+  irq2_cbf  :        n/a
+  stapwd    :        <your-wifi-name>
+  dbg       :        False
   irq2      :        False
-  irq1      :        True
+  irq1      :        False
+  irq1_cbf  :        n/a
+  appwd     :        ADmin123
+  irq2_trig :        n/a
+  hwuid     :        micr7c9ebd623ff8OS
+  crontasks :        sunset!cct toggle True;*:0:30:0!cct toggle False;*:5:0:0!cct toggle False
   timirq    :        True
   irq3      :        False
+  irq3_cbf  :        n/a
   irq4      :        False
-  hwuid     :        micrf008d1d2ac30OS
-  devip     :        192.168.1.78
-  irq4_trig :        n/a
-  auth      :        False
-  cron      :        True
-  irq1_cbf  :        neopixel toggle
-  timirqcbf :        neopixel run_transition
-  devfid    :        BedLamp
-  irq1_trig :        n/a
   irq4_cbf  :        n/a
-  boothook  :        neopixel load_n_init ledcnt=8
-  utc       :        120
-  irqmreq   :        6000
-  socport   :        9008
-  timirqseq :        1000
+  irq4_trig :        n/a
   nwmd      :        STA
-  cronseq   :        3000
-  appwd     :        ADmin123
-  crontasks :        *:7:30:0!neopixel set_transition 255 56 5 1800;*:9:10:0!neopixel set_transition 3 58 156;*:12:0:0!neopixel set_transition 0 14 38 400;*:16:12:0!neopixel set_transition 181 54 0 180;*:0:0:0!neopixel set_transition 0 0 0 900;*:*:*:10!system ha_sta
+  timirqcbf :        system ha_sta
+  irq_prell_ms:      300
+  boothook  :        cct load_n_init
+  aioqueue  :        3
+  auth      :        False
+  timirqseq :        60000
+  utc       :        60
   boostmd   :        True
-  irq2_trig :        n/a
-  version   :        1.4.0-1
-  soctout   :        100
+  socport   :        9008
   irq3_trig :        n/a
+  irq1_trig :        n/a
   guimeta   :        ...
   cstmpmap  :        n/a
-  dbg       :        True
-  irq2_cbf  :        n/a
-  irq3_cbf  :        n/a
-  staessid  :        <your-wifi-name>
 ```
 
 ### Load Modules - User defined functions
@@ -674,11 +645,12 @@ stapwd    :          <your-wifi-passwd>
 devToolKit.py -c -p '--dev BedLamp system info'
 
 CPU clock: 24 [MHz]
-Free RAM: 14 kB 256 byte
-Free fs: 87 %
-upython: v1.17 on 2021-09-02
+Mem usage: 60.75 %
+FS usage: 13.48 %
+upython: v1.19.1 on 2022-06-18
 board: ESP32 module with ESP32
-mac: f0:08:d1:d2:ac:30
+mac: 7c:9e:bd:62:3f:f8
+uptime: 1 23:20:38
 ```
 
 ## SocketClient
@@ -689,63 +661,70 @@ micrOS/toolkit/user_data/device_conn_cache.json
 
 ```json
 {
-	"__devuid__": [
-		"192.168.4.1",
-		9008,
-		"__device_on_AP__"
-	],
-	"__localhost__": [
-		"127.0.0.1",
-		9008,
-		"__simulator__"
-	],
-	"micr240ac4f679e8OS": [
-		"192.168.1.74",
-		9008,
-		"Chillight"
-	]
+    "__devuid__": [
+        "192.168.4.1",
+        9008,
+        "__device_on_AP__"
+    ],
+    "__localhost__": [
+        "127.0.0.1",
+        9008,
+        "__simulator__"
+    ],
+    "micr500291863428OS": [
+        "10.0.1.72",
+        9008,
+        "BedLamp"
+    ]
 }
 ```
 
 #### Interactive mode
 
 ```
-./devToolKit.py -c 
+devToolKit.py -c 
 or
-./devToolKit.py -connect
-Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
-Activate MicrOS device connection address
+devToolKit.py -connect
+
 [i]         FUID        IP               UID
-[0] Device: node01 - 10.0.1.119 - 0x500x20x910x680xc0xf7
-Choose a device index: 0
-Device IP was set: 10.0.1.119
-node01 $  help
-[MICROS]   - commands (SocketServer built-in)
-   hello   - default hello msg - identify device
-   version - shows micrOS version
+[0] Device: __device_on_AP__ - 192.168.4.1 - __devuid__
+[1] Device: __simulator__ - 127.0.0.1 - __localhost__
+[2] Device: BedLamp - 10.0.1.72 - micr500291863428OS
+
+Choose a device index: 5
+Device was selected: ['10.0.1.204', 9008, 'Cabinet']
+BedLamp $ help
+[MICROS]   - built-in shell commands
+   hello   - hello msg - for device identification
+   version - returns micrOS version
    exit    - exit from shell socket prompt
-   reboot  - system safe reboot
-   webrepl - start web repl for file transfers - update
-[CONF] Configure mode (InterpreterShell built-in):
+   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h
+   webrepl - start webrepl, for file transfers use with --update
+[CONF] Configure mode - built-in shell commands
   conf       - Enter conf mode
     dump       - Dump all data
     key        - Get value
     key value  - Set value
   noconf     - Exit conf mode
+[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]
+  task list         - list tasks with <tag>s
+  task kill <tag>   - stop task
+  task show <tag>   - show task output
 [EXEC] Command mode (LMs):
-   L298N_DCmotor
-                help
-   VL53L0X
-          measure
-          help
-   adc
-      measure
-      action_fltr
+   help lm  - list ALL LoadModules
+   cct
       help
-   air
+   co2
       help
-   ...
-node01 $  exit
+   dht22
+        help
+   intercon
+           help
+   robustness
+             help
+   system
+         help
+BedLamp $  exit
 Bye!
 
 ```

@@ -16,7 +16,7 @@ class Data:
     Runtime static state machine class
     """
     RGB_OBJS = (None, None, None)
-    RGB_CACHE = [197, 35, 10, 0]           # R, G, B (default color) + RGB state (default: off)
+    RGB_CACHE = [197.0, 35.0, 10.0, 0]     # R, G, B (default color) + RGB state (default: off)
     PERSISTENT_CACHE = False
     CH_MAX = 1000                          # maximum value per channel
     TASK_STATE = False
@@ -168,16 +168,16 @@ def brightness(percent=None, smooth=True, wake=True):
 
     # Set brightness percentage
     target_br = Data.CH_MAX * (percent / 100)
-    new_rgb = (target_br * float(Data.RGB_CACHE[0] / ch_max),
-               target_br * float(Data.RGB_CACHE[1] / ch_max),
-               target_br * float(Data.RGB_CACHE[2]) / ch_max)
+    new_rgb = (round(target_br * float(Data.RGB_CACHE[0] / ch_max), 3),
+               round(target_br * float(Data.RGB_CACHE[1] / ch_max), 3),
+               round(target_br * float(Data.RGB_CACHE[2] / ch_max), 3))
     # Update RGB output
-    if Data.RGB_CACHE[2] == 1 or wake:
-        return color(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
+    if Data.RGB_CACHE[3] == 1 or wake:
+        return color(new_rgb[0], new_rgb[1], new_rgb[2], smooth=smooth)
     # Update cache only! Data.RGB_CACHE[3] == 0 and wake == False
-    Data.RGB_CACHE[0] = int(new_rgb[0])
-    Data.RGB_CACHE[1] = int(new_rgb[1])
-    Data.RGB_CACHE[2] = int(new_rgb[2])
+    Data.RGB_CACHE[0] = new_rgb[0]
+    Data.RGB_CACHE[1] = new_rgb[1]
+    Data.RGB_CACHE[2] = new_rgb[2]
     return status()
 
 

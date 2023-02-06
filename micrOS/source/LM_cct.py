@@ -159,18 +159,18 @@ def brightness(percent=None, smooth=True, wake=True):
 
     # Set brightness percentage
     target_br = Data.CH_MAX * (percent / 100)
-    new_cct = (target_br * float(Data.CWWW_CACHE[0] / ch_max),
-               target_br * float(Data.CWWW_CACHE[1] / ch_max))
+    new_cct = (int(target_br * float(Data.CWWW_CACHE[0] / ch_max)),
+               int(target_br * float(Data.CWWW_CACHE[1] / ch_max)))
     # Handle background HUE task update
     hue_task = micro_task(Data.HUE_TASK_TAG)
     if hue_task is not None and not hue_task.done:
-        return white(int(new_cct[0]), int(new_cct[1]), smooth=False, force=False)
+        return white(new_cct[0], new_cct[1], smooth=False, force=False)
     # Forced (default) output write + cancel task in background
     if Data.CWWW_CACHE[2] == 1 or wake:
-        return white(int(new_cct[0]), int(new_cct[1]), smooth=smooth)
+        return white(new_cct[0], new_cct[1], smooth=smooth)
     # Update cache only! Data.CWWW_CACHE[2] == 0 and wake == False
-    Data.CWWW_CACHE[0] = int(new_cct[0])
-    Data.CWWW_CACHE[1] = int(new_cct[1])
+    Data.CWWW_CACHE[0] = new_cct[0]
+    Data.CWWW_CACHE[1] = new_cct[1]
     return status()
 
 

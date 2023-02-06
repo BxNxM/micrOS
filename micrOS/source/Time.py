@@ -1,9 +1,8 @@
 from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM, SOCK_STREAM
 from machine import RTC
-from utime import mktime, localtime
 from network import WLAN, STA_IF
 from re import match
-from utime import sleep_ms, time
+from utime import sleep_ms, time, mktime, localtime
 from Debug import errlog_add, console_write
 from ConfigHandler import cfgput, cfgget
 
@@ -11,7 +10,7 @@ from ConfigHandler import cfgput, cfgget
 class Sun:
     TIME = {}
     UTC = cfgget('utc')  # STORED IN MINUTE
-    BOOTIME = None    # Not SUN, but for system uptime
+    BOOTIME = time()     # Initialize BOOTIME: Not SUN, but for system uptime
 
 
 def settime(year, month, mday, hour, min, sec):
@@ -25,9 +24,8 @@ def settime(year, month, mday, hour, min, sec):
     localtime(time_sec)
     # Set RTC
     RTC().datetime((year, month, mday, 0, hour, min, sec, 0))
-    # Set bootup time - first time init
-    if Sun.BOOTIME is None:
-        Sun.BOOTIME = time()
+    # (re)set uptime when settime - normally at boot time
+    Sun.BOOTIME = time()
     return True
 
 
@@ -209,10 +207,14 @@ def suntime():
 
 
 def uptime():
+    """
+    Get system uptime based on Sun.BOOTIME (time.time() stored at bootup)
+    """
     if Sun.BOOTIME is None:
         return "No time function was initialized..."
     delta = int(time() - Sun.BOOTIME)
-    return "{} {}:{}:{}".format(int(delta/60/60/24), int(delta/60/60 % 60), int(delta/60 % 60), int(delta % 60))
+    days, hours, minutes, sec = delta // 86400, (delta % 86400) // 3600, delta / 60 % 60, delta % 60
+    return "{} {}:{}:{}".format(int(days), int(hours), int(minutes), int(sec))
 
 
 # Initial suntime cache load (for AP mode)

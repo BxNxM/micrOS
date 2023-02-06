@@ -291,9 +291,10 @@ pin&nbsp;map:&nbsp;servo_1,&nbsp;servo_2</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b:&nbsp;blue&nbsp;value&nbsp;&nbsp;0-255<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;runs&nbsp;colors&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;force:&nbsp;clean&nbsp;fade&nbsp;generators&nbsp;and&nbsp;set&nbsp;color<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>brightness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;neopixel&nbsp;brightness<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>brightness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent=None smooth=True wake=True</td></tr><tr><th>doc</th><td>Set&nbsp;neopixel&nbsp;brightness<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;percent:&nbsp;(int)&nbsp;brightness&nbsp;percentage:&nbsp;0-100<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;(bool)&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool&nbsp;-&nbsp;wake&nbsp;up&nbsp;output&nbsp;/&nbsp;if&nbsp;off&nbsp;turn&nbsp;on&nbsp;with&nbsp;new&nbsp;brightness<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>segment</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None s=0 cache=False write=True</td></tr><tr><th>doc</th><td>Set&nbsp;single&nbsp;segment&nbsp;by&nbsp;index&nbsp;on&nbsp;neopixel<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r:&nbsp;red&nbsp;value&nbsp;0-255<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g:&nbsp;green&nbsp;value&nbsp;0-255<br>
@@ -335,9 +336,10 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table b
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ww:&nbsp;warm&nbsp;white&nbsp;value&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;(bool)&nbsp;runs&nbsp;white&nbsp;channels&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;force:&nbsp;(bool)&nbsp;clean&nbsp;fade&nbsp;generators&nbsp;and&nbsp;set&nbsp;color<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>brightness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;brightness<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;percent&nbsp;int:&nbsp;brightness&nbsp;percentage:&nbsp;0-100<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>brightness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent=None smooth=True wake=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;brightness<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;percent:&nbsp;int&nbsp;-&nbsp;brightness&nbsp;percentage:&nbsp;0-100<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;bool&nbsp;-&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool&nbsp;-&nbsp;wake&nbsp;up&nbsp;output&nbsp;/&nbsp;if&nbsp;off&nbsp;turn&nbsp;on&nbsp;with&nbsp;new&nbsp;brightness<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;cct&nbsp;status&nbsp;-&nbsp;states:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>toggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;led&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state&nbsp;bool:&nbsp;True(1)/False(0)/None(default&nbsp;-&nbsp;automatic&nbsp;toggle)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
@@ -480,9 +482,10 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b&nbsp;int:&nbsp;blue&nbsp;value&nbsp;&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;force&nbsp;bool:&nbsp;clean&nbsp;fade&nbsp;generators&nbsp;and&nbsp;set&nbsp;color&nbsp;(default:&nbsp;True)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>brightness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;RGB&nbsp;brightness<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;percent&nbsp;int:&nbsp;brightness&nbsp;percentage:&nbsp;0-100<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>brightness</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>percent=None smooth=True wake=True</td></tr><tr><th>doc</th><td>Set&nbsp;RGB&nbsp;brightness<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;percent:&nbsp;int&nbsp;-&nbsp;brightness&nbsp;percentage:&nbsp;0-100<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;bool&nbsp;-&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wake:&nbsp;bool&nbsp;-&nbsp;wake&nbsp;up&nbsp;output&nbsp;/&nbsp;if&nbsp;off&nbsp;turn&nbsp;on&nbsp;with&nbsp;new&nbsp;brightness<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>toggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;led&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state&nbsp;bool:&nbsp;True(1)/False(0)/None(default&nbsp;-&nbsp;automatic&nbsp;toggle)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;enable&nbsp;smooth&nbsp;color&nbsp;transition:&nbsp;True(default)/False<br>

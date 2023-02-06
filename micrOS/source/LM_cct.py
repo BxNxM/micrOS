@@ -132,11 +132,12 @@ def white(cw=None, ww=None, smooth=True, force=True):
     return status()
 
 
-def brightness(percent=None, smooth=True):
+def brightness(percent=None, smooth=True, wake=True):
     """
     Set CCT brightness
-    :param percent int: brightness percentage: 0-100
-    :param smooth bool: enable smooth color transition: True(default)/False
+    :param percent: int - brightness percentage: 0-100
+    :param smooth: bool - enable smooth color transition: True(default)/False
+    :param wake: bool - wake up output / if off turn on with new brightness
     :return dict: cct status - states: CW, WW, S
     """
     # Get color (channel) max brightness
@@ -160,12 +161,17 @@ def brightness(percent=None, smooth=True):
     target_br = Data.CH_MAX * (percent / 100)
     new_cct = (target_br * float(Data.CWWW_CACHE[0] / ch_max),
                target_br * float(Data.CWWW_CACHE[1] / ch_max))
-    # Handle background task update
+    # Handle background HUE task update
     hue_task = micro_task(Data.HUE_TASK_TAG)
     if hue_task is not None and not hue_task.done:
         return white(int(new_cct[0]), int(new_cct[1]), smooth=False, force=False)
     # Forced (default) output write + cancel task in background
-    return white(int(new_cct[0]), int(new_cct[1]), smooth=smooth)
+    if Data.CWWW_CACHE[2] == 1 or wake:
+        return white(int(new_cct[0]), int(new_cct[1]), smooth=smooth)
+    # Update cache only! Data.CWWW_CACHE[2] == 0 and wake == False
+    Data.CWWW_CACHE[0] = int(new_cct[0])
+    Data.CWWW_CACHE[1] = int(new_cct[1])
+    return status()
 
 
 def toggle(state=None, smooth=True):
@@ -345,7 +351,8 @@ def help():
     :return tuple: list of functions implemented by this application
     """
     return 'white cw=<0-1000> ww=<0-1000> smooth=True force=True', \
-           'toggle state=None smooth=True', 'load_n_init', 'brightness percent=<0-100> smooth=True', \
+           'toggle state=None smooth=True', 'load_n_init', \
+           'brightness percent=<0-100> smooth=True wake=True', \
            'transition cw=None ww=None sec=1.0 wake=False',\
            'hue_transition percent=<0-100> sec=1.0 wake=False',\
            'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'

@@ -141,11 +141,12 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
     return status()
 
 
-def brightness(percent=None, smooth=True):
+def brightness(percent=None, smooth=True, wake=True):
     """
     Set RGB brightness
-    :param percent int: brightness percentage: 0-100
-    :param smooth bool: enable smooth color transition: True(default)/False
+    :param percent: int - brightness percentage: 0-100
+    :param smooth: bool - enable smooth color transition: True(default)/False
+    :param wake: bool - wake up output / if off turn on with new brightness
     :return dict: rgb status - states: R, G, B, S
     """
     # Get color (channel) max brightness
@@ -170,7 +171,14 @@ def brightness(percent=None, smooth=True):
     new_rgb = (target_br * float(Data.RGB_CACHE[0] / ch_max),
                target_br * float(Data.RGB_CACHE[1] / ch_max),
                target_br * float(Data.RGB_CACHE[2]) / ch_max)
-    return color(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
+    # Update RGB output
+    if Data.RGB_CACHE[2] == 1 or wake:
+        return color(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
+    # Update cache only! Data.RGB_CACHE[3] == 0 and wake == False
+    Data.RGB_CACHE[0] = int(new_rgb[0])
+    Data.RGB_CACHE[1] = int(new_rgb[1])
+    Data.RGB_CACHE[2] = int(new_rgb[2])
+    return status()
 
 
 def toggle(state=None, smooth=True):
@@ -306,6 +314,6 @@ def help():
     """
     return 'color r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
            'toggle state=None smooth=True', 'load_n_init', \
-           'brightness percent=<0-100> smooth=True',\
+           'brightness percent=<0-100> smooth=True wake=True',\
            'transition r=None g=None b=None sec=1.0 wake=False',\
            'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'

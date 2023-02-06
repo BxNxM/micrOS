@@ -139,11 +139,12 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
     return status()
 
 
-def brightness(percent=None, smooth=True):
+def brightness(percent=None, smooth=True, wake=True):
     """
     Set neopixel brightness
     :param percent: (int) brightness percentage: 0-100
     :param smooth: (bool) enable smooth color transition: True(default)/False
+    :param wake: bool - wake up output / if off turn on with new brightness
     :return dict: rgb status - states: R, G, B, S
     """
     # Get color (channel) max brightness
@@ -168,7 +169,14 @@ def brightness(percent=None, smooth=True):
     new_rgb = (target_br * float(Data.DCACHE[0] / ch_max),
                target_br * float(Data.DCACHE[1] / ch_max),
                target_br * float(Data.DCACHE[2]) / ch_max)
-    return color(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
+    # Update RGB output
+    if Data.DCACHE[3] == 1 or wake:
+        return color(round(new_rgb[0], 3), round(new_rgb[1], 3), round(new_rgb[2], 3), smooth=smooth)
+    # Update cache only! Data.DCACHE[3] == 0 and wake == False
+    Data.DCACHE[0] = int(new_rgb[0])
+    Data.DCACHE[1] = int(new_rgb[1])
+    Data.DCACHE[2] = int(new_rgb[2])
+    return status()
 
 
 def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
@@ -334,6 +342,6 @@ def help():
     :return tuple: list of functions implemented by this application
     """
     return 'color r=<0-255> g b smooth=True force=True', 'toggle state=None smooth=True', \
-           'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True', 'segment r, g, b, s=<0-n>',\
-           'transition r=None g=None b=None sec=1.0 wake=False',\
+           'load_n_init ledcnt=24', 'brightness percent=<0-100> smooth=True wake=True', \
+           'segment r, g, b, s=<0-n>', 'transition r=None g=None b=None sec=1.0 wake=False',\
            'random smooth=True max_val=254', 'status', 'subscribe_presence', 'pinmap'

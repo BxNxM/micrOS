@@ -449,7 +449,12 @@ class CommandHandler:
                 if debug:
                     print('\t[DEBUG] {}'.format(output.strip()))
                 if isinstance(output, bytes):
-                    output = output.decode('utf-8')
+                    try:
+                        output = output.decode('utf-8')
+                    except Exception as e:
+                        # TODO ???? ROBUSTNESS FEATURE - COULD BE BUG!!!!
+                        print("\n\n\n[WARNING] Cannot decode utf8 {}: {}\n\n\n".format(output, e))
+                        output = ""
                 _stdout += output
         _, _stderr = proc.communicate()
         _exitcode = proc.returncode

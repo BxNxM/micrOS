@@ -547,9 +547,12 @@ class ClusterStatus:
             if status:
                 _status, hello = socketClient.run(['--dev', fuid.strip(), 'hello'])
                 if _status:
-                    hwuid = hello.strip().split(':')[2]
+                    try:
+                        hwuid = hello.strip().split(':')[2]
+                    except:
+                        hwuid = hello
             status = '🟢' if status else '🔴'
-            msg = f"{status}{hwuid}📍{devip}🏷{fuid} v:️{version}"
+            msg = f"{status}{hwuid}|{devip}🏷{fuid} v:️{version}"
             return msg
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -560,7 +563,7 @@ class ClusterStatus:
                 query_list.append(f)
 
         for q in query_list:
-            self.parent_obj.console.append_output(q.result(), maxlen=52)
+            self.parent_obj.console.append_output(q.result(), maxlen=58)
         self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEVICES.keys())}')
 
 

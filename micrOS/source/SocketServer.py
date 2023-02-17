@@ -181,7 +181,7 @@ class SocketServer:
 
             # ---- Config ---
             SocketServer.__instance.__port = cfgget("socport")
-            # ---- Set socket timeout (min 5 sec)
+            # ---- Set socket timeout (min 5 sec!!! hardcoded)
             soc_timeout = int(cfgget("soctout"))
             SocketServer.__instance.soc_timeout = 5 if soc_timeout < 5 else soc_timeout
             # ---         ----

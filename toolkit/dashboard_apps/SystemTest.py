@@ -18,6 +18,10 @@ def base_cmd():
     return ['--dev', DEVICE]
 
 
+def get_device():
+    return DEVICE
+
+
 def single_cmd_exec_check():
     info = "[ST] Run single command execution check [hello]"
     print(info)
@@ -346,8 +350,15 @@ def check_intercon(host=None):
             output_neg = 'Device was not found: "notavailable.local":{}'.format(output_neg)
             state_neg = True, output_neg
         return state[0] & state_neg[0], "{}\n\t\tNegative test: {}".format(state[1], state_neg[1])
-
     return state
+
+
+def measure_conn_metrics():
+    verdict = socketClient.connection_metrics(get_device())
+    for k in verdict:
+        print("\t\t{}".format(k))
+    state = True if len(verdict) > 0 else False
+    return state, ' || '.join(verdict)
 
 
 def app(devfid=None):
@@ -371,7 +382,8 @@ def app(devfid=None):
                'mem_alloc': check_robustness_memory(),
                'recursion': check_robustness_recursion(),
                'intercon': check_intercon(host='RingLamp.local'),
-               'micros_alarms': micros_alarm_check()
+               'micros_alarms': micros_alarm_check(),
+               'conn_metrics': measure_conn_metrics()
                }
 
     # Test Evaluation

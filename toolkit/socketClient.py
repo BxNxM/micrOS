@@ -20,12 +20,14 @@ try:
     from .lib.TerminalColors import Colors
     from .lib.LocalMachine import FileHandler
     from .lib.micrOSClient import micrOSClient
+    from .lib.micrOSClient import micros_connection_metrics
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     import lib.SearchDevices as SearchDevices
     from lib.TerminalColors import Colors
     from lib.LocalMachine import FileHandler
     from lib.micrOSClient import micrOSClient
+    from lib.micrOSClient import micros_connection_metrics
 
 
 #########################################################
@@ -406,6 +408,10 @@ def run(arg_list=[], timeout=5):
             # host, port, fid, uid
             ConnectionData.resolve_hostname(fid, uid)
     return output
+
+
+def connection_metrics(host):
+    return micros_connection_metrics(address=host)
 
 
 if __name__ == "__main__":

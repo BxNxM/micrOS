@@ -216,7 +216,7 @@ class micrOSClient:
         # Check UID?
         return None
 
-    def send_cmd(self, cmd, timeout=3):
+    def send_cmd(self, cmd, timeout=3, retry=5):
         """
         Send command function - main usage for non interactive mode
         """
@@ -231,7 +231,7 @@ class micrOSClient:
         # [SINGLE COMMAND CMD] Automatic connection handling - for single sessions
         if not self.isconn:
             self.dbg_print("Auto init connection (isconn:{})".format(self.isconn))
-            self.connect(timeout=timeout)
+            self.connect(timeout=timeout, retry=retry)
 
         # @ Run command
         try:
@@ -298,19 +298,82 @@ class micrOSClient:
             if self.spacer < 60:
                 self.spacer += 1
 
-    def load_test(self, timeout=3, cnt=20, delay=0.01):
+    def load_test(self, timeout=3, cnt=10):
+        load_test_simple = f"[CONN TEST] SEND HELLO x{cnt}\n\tDescription: Single connection testing - without " \
+                           f"waiting prompt - load test "
+        verdict = [load_test_simple]
         self.connect(timeout=timeout)
         cmd = str.encode("hello")
+        delta_t_all = 0
         for k in range(0, cnt):
+            start = time.time()
+            print("\t[{}/{}] Send hello - load test".format(k+1, cnt))
             self.conn.send(cmd)
-            time.sleep(delay)
-            print("[{}/{}] Send hello - load test".format(k+1, cnt))
+            data = self.__receive_data()
+            delta_t = time.time() - start
+            delta_t_all += delta_t
+            console_msg = "[{}s] send hello, reply: {}".format(round(delta_t, 4), data)
+            verdict.append(console_msg)
+            print(f"===>\t\t{console_msg}")
         self.close()
+        verdict.append(f"SINGLE CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {round(delta_t_all/cnt, 3)} sec\n")
+        return verdict
 
     def __del__(self):
         if self.avg_reply[1] > 0:
             print(f"Response time: {round(self.avg_reply[0]/self.avg_reply[1], 2)} sec with {self.hostname}:{self.host}")
         self.close()
+
+
+def micros_connection_metrics(address):
+
+    def multi_conn_load(addr, cnt=10):
+        all_reply = []
+        _all_delta_t = 0
+        _success = 0
+        for count in range(0, cnt):
+            start = time.time()
+            con_obj = micrOSClient(host=addr, port=9008, pwd="ADmin123", dbg=True)
+            try:
+                reply_msg = '\n'.join(con_obj.send_cmd("hello", retry=1))
+                _success += 1
+            except Exception as e:
+                reply_msg = str(e)
+            con_obj.close()
+            delta_t = time.time() - start
+            _all_delta_t += delta_t
+            _console_msg = f"[{round(delta_t, 4)}s] hello: {reply_msg}"
+            print(f"\t\t{_console_msg}")
+            all_reply.append(_console_msg)
+        success_rate = int(round(_success / cnt, 2) * 100)
+        all_reply.append(f"MULTI CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {round(_all_delta_t/cnt, 3)}s,"
+                         f"SERVER AVAILABLE: {success_rate}% ({round(_all_delta_t/_success, 3)}s)")
+        return all_reply
+
+    # ---------------------------------------------------- #
+    high_level_verdict = []
+
+    # [1] Create micrOSClient object + Run LOAD tests
+    com_obj = micrOSClient(host=address, port=9008, pwd="ADmin123", dbg=True)
+    # [1.1] Run load test in one connection
+    verdict_list = com_obj.load_test()
+    com_obj.close()
+    high_level_verdict.append(verdict_list[-1])
+
+    # [2] Run multi connection load test - reconnect - raw connection (without retry)
+    verdict_multi = multi_conn_load(address)
+    high_level_verdict.append((verdict_multi[-1]))
+
+    ############################################################################
+    print("=== TEST VERDICT ==="*20)
+    print(f"{color.WARN} #### Single connection Load test (TCP){color.NC}")
+    for k in verdict_list:
+        print(f"\t{k}")
+    print(f"{color.WARN} #### Multi connection Load test (TCP) - reconnect measurement{color.NC}")
+    for k in verdict_multi:
+        print(f"\t{k}")
+
+    return high_level_verdict
 
 
 if __name__ == "__main__":
@@ -329,6 +392,7 @@ if __name__ == "__main__":
     print("hello: {}".format(hello))
     if force_close: com_obj.close()
 
+
     print(f"{color.WARN}[2] #### Write version{color.NC}")
     version = com_obj.send_cmd_retry("version")
     print("version: {}".format(version))
@@ -341,9 +405,11 @@ if __name__ == "__main__":
     print("dbg: {}".format(dbg_value))
     print(f"conf out: {conf_mode}")
     print(f"noconf out: {noconf_mode}")
+    if force_close: com_obj.close()
 
-    print(f"{color.WARN}[4] #### Load test over TCP{color.NC}")
-    com_obj.load_test()
+    verdict = micros_connection_metrics(address=address)
+    for k in verdict:
+        print(f"+\t\t{k}")
 
     # [3] Start interactive mode
     print(f"{color.WARN}[5] #### Start micrOS telnet{color.NC}")

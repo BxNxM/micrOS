@@ -346,8 +346,8 @@ def micros_connection_metrics(address):
             print(f"\t\t{_console_msg}")
             all_reply.append(_console_msg)
         success_rate = int(round(_success / cnt, 2) * 100)
-        all_reply.append(f"MULTI CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {round(_all_delta_t/cnt, 3)}s,"
-                         f"SERVER AVAILABLE: {success_rate}% ({round(_all_delta_t/_success, 3)}s)")
+        all_reply.append(f"MULTI CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {round(_all_delta_t/cnt, 3)}s, "
+                         f"SERVER AVAILABILITY: {success_rate}% ({round(_all_delta_t/_success, 3)}s)")
         return all_reply
 
     # ---------------------------------------------------- #

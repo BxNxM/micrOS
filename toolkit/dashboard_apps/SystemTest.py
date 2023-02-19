@@ -354,10 +354,14 @@ def check_intercon(host=None):
 
 
 def measure_conn_metrics():
-    verdict = socketClient.connection_metrics(get_device())
-    for k in verdict:
-        print("\t\t{}".format(k))
-    state = True if len(verdict) > 0 else False
+    try:
+        verdict = socketClient.connection_metrics(get_device())
+        for k in verdict:
+            print("\t\t{}".format(k))
+        state = True if len(verdict) > 0 else False
+    except Exception as e:
+        state = False
+        verdict = [str(e), '']
     return state, ' || '.join(verdict)
 
 

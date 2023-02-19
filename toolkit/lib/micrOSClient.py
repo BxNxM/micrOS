@@ -44,14 +44,19 @@ class micrOSClient:
         self.hostname = self.host
         # Retrieve IP address by hostname dynamically
         if micrOSClient.CONN_MAP.get(self.hostname, None) is None:
-            self.dbg_print("\t[dhcp] Resolve IP by host name...")
-            # * Set self.host to ip address OK
-            self.host = socket.getaddrinfo(self.host, self.port)[-1][4][0]
-            if micrOSClient.validate_ipv4(self.host):
-                micrOSClient.CONN_MAP[self.hostname] = self.host
+            self.dbg_print("\t[dhcp] Resolve IP by host name... {}".format(self.host))
+            if self.host == "__simulator__":
+                # Simulator hack - due to no dhcp available
+                self.host = '127.0.0.1'
+                self.hostname = 'node01'
             else:
-                self.dbg_print("\tInvalid resolved IP")
-                raise Exception("Invalid host: {}".format(self.host))
+                # * Set self.host to ip address OK
+                self.host = socket.getaddrinfo(self.host, self.port)[-1][4][0]
+                if micrOSClient.validate_ipv4(self.host):
+                    micrOSClient.CONN_MAP[self.hostname] = self.host
+                else:
+                    self.dbg_print("\tInvalid resolved IP")
+                    raise Exception("Invalid host: {}".format(self.host))
         else:
             self.dbg_print("\t[cache] Resolve IP by host name...")
             # * Set self.host to ip address OK

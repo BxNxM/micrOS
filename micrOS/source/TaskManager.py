@@ -337,6 +337,13 @@ class Manager:
             errlog_add("[aio] loop stopped: {}".format(e))
             cls.loop.close()
 
+    @staticmethod
+    def server_task_msg(msg):
+        server_task = Task.TASKS.get('server', None)
+        if server_task is None:
+            return
+        server_task.out = msg
+
 
 #################################################################
 #                      LM EXEC CORE functions                   #

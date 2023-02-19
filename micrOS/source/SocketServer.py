@@ -18,6 +18,7 @@ from Network import ifconfig
 import uasyncio as asyncio
 from TaskManager import Manager
 from utime import ticks_ms, ticks_diff
+from gc import collect
 
 try:
     from gc import collect, mem_free
@@ -43,6 +44,7 @@ class Debug:
 
 class Client:
     TASK_MANAGER = Manager()
+    ACTIVE_CLIS = {}
 
     def __init__(self, reader, writer):
         self.connected = True
@@ -52,6 +54,7 @@ class Client:
         self.drain_event.set()
 
         self.client_id = writer.get_extra_info('peername')
+        self.client_id = "{}:{}".format('.'.join(self.client_id[0].split('.')[-2:-1]), self.client_id[1])
         self.shell = Shell(self.send)
         self.last_msg_t = ticks_ms()
         Debug().console("[Client] new conn: {}".format(self.client_id))
@@ -87,7 +90,7 @@ class Client:
             if self.shell.prompt() != response:
                 # Add new line if not prompt (?)
                 response = "{}\n".format(response)
-            #Debug().console("[Client] ----- SteamWrite: {}".format(response))
+            # Debug().console("[Client] ----- SteamWrite: {}".format(response))
             # Store data in stream buffer
             self.writer.write(response.encode('utf8'))
             # Send buffered data with async task - hacky
@@ -107,9 +110,9 @@ class Client:
         self.drain_event.clear()
         try:
             # send write buffer
-            #Debug().console("  |----- start drain")
+            # Debug().console("  |----- start drain")
             await self.writer.drain()
-            #Debug().console("  |------ stop drain")
+            # Debug().console("  |------ stop drain")
         except Exception as e:
             Debug().console("[Client] Drain error -> close conn: {}".format(e))
             await self.close()
@@ -121,7 +124,7 @@ class Client:
         # Reset shell state machine
         self.shell.reset()
         self.send("Bye!\n")
-        await asyncio.sleep_ms(100)
+        await asyncio.sleep_ms(50)
         try:
             self.writer.close()
             await self.writer.wait_closed()
@@ -129,6 +132,12 @@ class Client:
             Debug().console("[Client] Close error: {}".format(e))
         self.connected = False
         Debug.INDENT = 0
+        if Client.ACTIVE_CLIS.get(self.client_id, None) is not None:
+            Client.ACTIVE_CLIS.pop(self.client_id)
+        # Update server task output (? test ?)
+        self.TASK_MANAGER.server_task_msg(','.join(["{}:{}".format(k[0], k[1]) for k in Client.ACTIVE_CLIS.keys()]))
+        # gc.collect()
+        collect()
 
     async def shell_cmd(self, request):
         # Run micrOS shell with request string
@@ -145,6 +154,31 @@ class Client:
         collect()
         self.send("[HA] Shells cleanup: {}".format(mem_free()))
         return True
+
+    async def run_shell(self):
+        # Update server task output (? test ?)
+        self.TASK_MANAGER.server_task_msg(','.join(["{}:{}".format(k[0], k[1]) for k in Client.ACTIVE_CLIS.keys()]))
+
+        # Init prompt
+        self.send(self.shell.prompt())
+        # Run async connection handling
+        while self.connected:
+            try:
+                # Read request msg from client
+                state, request = await self.read()
+                if state:
+                    break
+
+                state = await self.shell_cmd(request)
+                if not state:
+                    self.send("[HA] Critical error - disconnect & hard reset")
+                    errlog_add("[ERR] Socket critical error - reboot")
+                    self.shell.reboot()
+            except Exception as e:
+                errlog_add("[ERR] handle_client: {}".format(e))
+                break
+        # Close connection
+        await self.close()
 
     def __del__(self):
         Debug().console("Delete client connection: {}".format(self.client_id))
@@ -177,7 +211,6 @@ class SocketServer:
             SocketServer.__instance.__host = ''
             SocketServer.__instance.server = None
             SocketServer.__instance.server_console_indent = 0
-            SocketServer.__instance.client = None
 
             # ---- Config ---
             SocketServer.__instance.__port = cfgget("socport")
@@ -192,69 +225,67 @@ class SocketServer:
     #       Socket Server Methods       #
     #####################################
 
-    async def accept_client(cls, new_client):
+    async def accept_client(cls, new_client, cli_queue=1):
+        """
+        Client handler
+        - check active connection timeouts
+        - accept new if fits in queue
+        :param new_client: new Client class object
+        :param cli_queue: active client queue size (do not set here! default: 1)
+        """
         # Get new client ID
-        client_id = new_client.client_id
-        # Check there is open connection
-        if cls.client is None:
-            return True, client_id
+        new_client_id = new_client.client_id
 
-        # Get active client timeout counter
-        client_inactive = int(ticks_diff(ticks_ms(), cls.client.last_msg_t) * 0.001)
-        Debug().console("[server] accept client {} - isconn: {}({}):{}s".format(client_id, cls.client.connected,
-                                                                          cls.client.client_id, cls.soc_timeout-client_inactive))
-        if cls.client.connected:
-            if client_inactive < cls.soc_timeout:
-                # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
-                Debug().console("------- connection busy")
-                # Handle only single connection
-                new_client.send("Connection is busy. Bye!")
-                await new_client.close()    # Play nicely - close connection
-                del new_client              # Clean up unused client
-                return False, client_id
-            else:
+        # Add new client immediately if queue not full
+        if len(list(Client.ACTIVE_CLIS.keys())) < cli_queue:
+            # Add new client to active clients dict
+            Client.ACTIVE_CLIS[new_client_id] = new_client
+            return True, new_client_id      # [!] Enable new connection
+
+        # Get active clients timeout counters - handle new client depending on active client timeouts
+        Debug().console("NEW INC. CLIENT: {}".format(new_client_id))
+        enable_new = False
+        for cli_id, cli in Client.ACTIVE_CLIS.items():
+            client_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
+            Debug().console("[server] attempt to accept_client {} - isconn: {}({}):{}s".format(new_client_id, cli.connected,
+                                                                                    cli_id,
+                                                                                    cls.soc_timeout - client_inactive))
+            if not cli.connected or client_inactive > cls.soc_timeout:
                 # OPEN CONNECTION IS INACTIVE > CLOSE
                 Debug().console("------- connection - client timeout - accept new connection")
-                await cls.client.close()
-        return True, client_id
+                await cli.close()
+                enable_new = True
+                break
+
+        # Interpret new connection is possible ...
+        if enable_new:
+            return True, new_client_id  # [!] Enable new connection
+        # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
+        Debug().console("------- connection busy")
+        # Handle only single connection
+        new_client.send("Connection is busy. Bye!")
+        await new_client.close()  # Play nicely - close connection
+        del new_client  # Clean up unused client
+        return False, new_client_id     # [!] Deny new client
 
     async def handle_client(cls, reader, writer):
         """
-        Handle async requests towards server
+        Handle incoming new async requests towards the server
+        - creates Client object with the new incoming connection
+        - Client implements micrOS shell interface over reader, sender tcp connection
         """
         # Create client object
         new_client = Client(reader, writer)
 
-        # Check incoming client
-        state, client_id = await cls.accept_client(new_client)
+        # Check incoming client - client queue limitation ###!!! 2 parallel connection support !!!###
+        state, client_id = await cls.accept_client(new_client, cli_queue=2)
         if not state:
             # Server busy, there is one active open connection - reject client
             # delete unused new_client as well!
             return
 
         # Store client object as active client
-        cls.client = new_client
-
-        # Init prompt
-        cls.client.send(cls.client.shell.prompt())
-        # Run async connection handling
-        while cls.client.connected:
-            try:
-                # Read request msg from client
-                state, request = await cls.client.read()
-                if state:
-                    break
-
-                state = await cls.client.shell_cmd(request)
-                if not state:
-                    cls.client.send("[HA] Critical error - disconnect & hard reset")
-                    errlog_add("[ERR] Socket critical error - reboot")
-                    cls.client.shell.reboot()
-            except Exception as e:
-                errlog_add("[ERR] handle_client: {}".format(e))
-                break
-        # Close connection
-        await cls.client.close()
+        await new_client.run_shell()
 
     async def run_server(cls):
         """
@@ -263,18 +294,18 @@ class SocketServer:
         addr = ifconfig()[1][0]
         Debug().console("[ socket server ] Start socket server on {}:{}".format(addr, cls.__port))
         Debug().console("- connect: telnet {} {}".format(addr, cls.__port))
-        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=1)
+        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=3)
         await cls.server
         Debug().console("-- TCP server running in background")
 
     def reply_message(cls, msg):
         """
         Only used for LM msg stream over Common.socket_stream wrapper
-        - single connection support!!!
+        - stream data to all connection...
         """
-        if cls.client is None:
-            return
-        cls.client.send(msg)
+        for cli_id, cli in Client.ACTIVE_CLIS.items():
+            if cli.connected:
+                cli.send(msg)
 
     def __del__(cls):
         Debug().console("[ socket server ] <<destructor>>")

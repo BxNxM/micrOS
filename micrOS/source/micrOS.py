@@ -62,11 +62,11 @@ def nw_time_sync():
 def micrOS():
     profiling_info(label='[memUsage] MAIN LOAD')
 
-    # BOOT HOOK: Initial LM executions
-    safe_boot_hook()
-
     # CREATE ASYNC TASK MANAGER
     aio_man = Manager()
+
+    # BOOT HOOK: Initial LM executions
+    safe_boot_hook()
 
     # SET external interrupt with extirqcbf from nodeconfig
     external_interrupt_handler()

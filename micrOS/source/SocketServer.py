@@ -54,10 +54,11 @@ class Client:
         self.drain_event.set()
 
         self.client_id = writer.get_extra_info('peername')
-        self.client_id = "{}:{}".format('.'.join(self.client_id[0].split('.')[-2:-1]), self.client_id[1])
+        Debug().console("[Client] new conn: {}".format(self.client_id))
+        client_tag = "{}:{}".format('.'.join(self.client_id[0].split('.')[-2:]), str(self.client_id[1]))
+        self.client_id = client_tag
         self.shell = Shell(self.send)
         self.last_msg_t = ticks_ms()
-        Debug().console("[Client] new conn: {}".format(self.client_id))
 
     async def read(self):
         """
@@ -135,7 +136,7 @@ class Client:
         if Client.ACTIVE_CLIS.get(self.client_id, None) is not None:
             Client.ACTIVE_CLIS.pop(self.client_id)
         # Update server task output (? test ?)
-        self.TASK_MANAGER.server_task_msg(','.join(["{}:{}".format(k[0], k[1]) for k in Client.ACTIVE_CLIS.keys()]))
+        self.TASK_MANAGER.server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
         # gc.collect()
         collect()
 
@@ -157,7 +158,7 @@ class Client:
 
     async def run_shell(self):
         # Update server task output (? test ?)
-        self.TASK_MANAGER.server_task_msg(','.join(["{}:{}".format(k[0], k[1]) for k in Client.ACTIVE_CLIS.keys()]))
+        self.TASK_MANAGER.server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
 
         # Init prompt
         self.send(self.shell.prompt())

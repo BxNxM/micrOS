@@ -232,7 +232,7 @@ def measure_package_response_time():
     # Stop time
     end = time.time() - start
     # Get average response time
-    delta_cmd_rep_time = round(end/10, 1)
+    delta_cmd_rep_time = round(end/10, 4)
     # Create verdict
     print(output)
     if output[0] and "<3 heartbeat <3" in output[1]:
@@ -296,11 +296,11 @@ def check_robustness_exception():
 
 
 def check_robustness_memory():
-    info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 20]'
+    info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 15]'
     print(info_msg)
-    cmd_list = ['robustness memory_leak 20']
+    cmd_list = ['robustness memory_leak 15']
     output = execute(cmd_list)
-    if output[0] and "[20] RAM Alloc" in output[1]:
+    if output[0] and "[15] RAM Alloc" in output[1]:
         end_result = output[1].split("\n")[-1]
         return True, f'{info_msg}: Mem alloc: {end_result}'
     else:

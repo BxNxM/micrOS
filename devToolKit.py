@@ -27,6 +27,7 @@ def arg_parse():
                                             os.path.join(TOOLKIT_PATH, 'socketClient.py')))
 
     base_group = parser.add_argument_group("Base commands")
+    base_group.add_argument("-pupdate", "--pip_update", action="store_true", help="Update micrOS devToolKit (pip) package - app")
     base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (micrOS) & Install (micrOS)")
     base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) micrOS. - node config will be restored")
     base_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
@@ -171,17 +172,35 @@ def __execute_app(api_obj, app_name):
     print(api_obj.exec_app(app_name, dev_name))
 
 
-def init_gui():
-    if len(sys.argv) == 1:
+def init_gui(cmdargs):
+    if len(sys.argv) == 1 or cmdargs.pip_update:
         from toolkit import micrOSdashboard
         print("Init GUI")
         micrOSdashboard.main()
 
 
-if __name__ == "__main__":
-    init_gui()
+def update_pip_package():
+    print("[PIP] Check package update and update")
+    import subprocess
+    try:
+        # Update the package using pip
+        out = subprocess.check_call(['pip', 'install', '--upgrade', 'git+https://github.com/BxNxM/micrOS.git'])
+    except Exception as e:
+        print("ERROR update_pip_package: {}".format(e))
+        out = 1
+    return True if out == 0 else False
 
+
+if __name__ == "__main__":
+    # Arg parse
     cmd_args = arg_parse()
+
+    # Check update
+    if cmd_args.pip_update:
+        update_pip_package()
+
+    # Init GUI
+    init_gui(cmd_args)
 
     # Socket interface module
     if cmd_args.connect:

@@ -1,7 +1,7 @@
 from utime import localtime
 from os import statvfs, getcwd, uname
 from Common import socket_stream
-from Network import get_mac
+from Network import get_mac, sta_high_avail
 from Time import ntptime, settime, suntime, Sun, uptime
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
@@ -233,15 +233,8 @@ def pinmap(key='builtin'):
 def ha_sta():
     """
     Check and repair STA network mode
-    - able to restart the system -> wifi reconnect
     """
-    from ConfigHandler import cfgget
-    from network import STA_IF, WLAN
-    # IF NWMD STA AND NOT CONNECTED => REBOOT
-    if cfgget('nwmd') == 'STA' and not WLAN(STA_IF).isconnected():
-        from machine import reset
-        reset()
-    return '{} mode, OK'.format(cfgget('nwmd'))
+    return sta_high_avail()
 
 
 @socket_stream

@@ -62,7 +62,8 @@ class Data:
                     "utc": +60,
                     "boostmd": True,
                     "guimeta": "...",     # special "offloaded" key indicator
-                    "cstmpmap": "n/a"}
+                    "cstmpmap": "n/a",
+                    "telegram": "n/a"}    # telegram bot token
 
     @staticmethod
     def init():

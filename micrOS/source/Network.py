@@ -218,3 +218,31 @@ def auto_network_configuration():
             # AP mode successfully  configures
             return 'AP'
     return 'Unknown'
+
+
+def sta_high_avail():
+    """
+    Check and repair STA network mode
+    - IF STA not connected and wifi network available, then auto reconnect
+    """
+    # [CHECK 1] if nwmd STA and not connected ---> repair action
+    sta_if = WLAN(STA_IF)
+    if cfgget('nwmd') == 'STA' and not sta_if.isconnected():
+        raw_essid = cfgget("staessid")
+        wifi_avail = False
+        # [CHECK 2] check known network is available
+        for idx, essid in enumerate(raw_essid.split(';')):
+            essid = essid.strip()
+            # Scan wifi network - retry workaround
+            for _ in range(0, 2):
+                if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
+                    wifi_avail = True
+
+        ap_if = WLAN(AP_IF)
+        # [CHECK 3] if known wifi available (REPAIR) or device not in AP mode ---> (FALLBACK) temporary direct access
+        if wifi_avail or not ap_if.active():
+            # ACTION: Restart micrOS node (boot phase automatically detects nw mode)
+            from machine import reset
+            reset()
+        return '{} mode NOK, wifi avail: {}'.format(cfgget('nwmd'), wifi_avail)
+    return '{} mode, OK'.format(cfgget('nwmd'))

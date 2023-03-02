@@ -34,6 +34,7 @@ def request(method, url, data=None, json=None, headers={}, sock_size=1024):
 
     # [2] CONNECT - create socket object
     sock = usocket.socket()
+    sock.settimeout(2)
     # [2.1] CONNECT - resolve IP by host
     addr = usocket.getaddrinfo(host, port)[0][-1]
     # [2.2] CONNECT - if https handle ssl

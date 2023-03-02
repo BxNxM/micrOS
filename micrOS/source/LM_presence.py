@@ -7,6 +7,10 @@ try:
     import LM_intercon as InterCon
 except:
     InterCon = None
+try:
+    from Notify import Telegram
+except:
+    Telegram = None
 
 
 class Data:
@@ -24,6 +28,8 @@ class Data:
 
     ON_INTERCON_CLBK = None     # Intercon ON callback
     OFF_INTERCON_CLBK = None    # Intercon OFF callback
+
+    NOTIFY = False
 
 
 #######################################
@@ -88,6 +94,12 @@ def __run_intercon(state):
 ####################################
 
 async def __task(ms_period, buff_size):
+    if Data.NOTIFY and Telegram is not None:
+        try:
+            Telegram().send_msg("Motion detected")
+        except:
+            pass
+
     if Data.ENABLE_MIC:
         # Create ADC object
         mic_adc = SmartADC.get_singleton(physical_pin('mic'))
@@ -208,6 +220,14 @@ def subscribe_intercon(on, off):
     return {'on': Data.ON_INTERCON_CLBK, 'off': Data.OFF_INTERCON_CLBK}
 
 
+def notification(state=None):
+    """Enable/Disable motion detection notifications"""
+    if state is None:
+        return "Notifications: {}".format("enabled" if Data.NOTIFY else "disabled")
+    Data.NOTIFY = True if state else False
+    return "Set notifications: {}".format("ON" if Data.NOTIFY else "OFF")
+
+
 def get_samples():
     """
     [DEBUG] Return measured data set
@@ -238,4 +258,5 @@ def help():
     return 'load_n_init threshold=<percent> timer=<sec> mic=True',\
            'motion_trig sample_ms=20 buff_size=15', 'get_samples',\
            'subscribe_intercon on="host cmd" off="host cmd"',\
+           'notification state=None/True/False',\
            'pinmap'

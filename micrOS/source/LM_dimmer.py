@@ -176,7 +176,10 @@ def transition(value, sec=1.0, wake=False):
             my_task.out = "Dimming DONE: {}".format(i)
 
     Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
-    from_dim = __dimmer_init().duty()    # Get current value
+    if Data.DIMMER_CACHE[0] == 1:
+        from_dim = __dimmer_init().duty()    # Get current value
+    else:
+        from_dim = Data.DIMMER_CACHE[1]
     # Create transition generator and calculate step_ms
     fade_gen, fade_step_ms = transition_gen(from_dim, value, interval_sec=sec)
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling

@@ -1,5 +1,5 @@
 from LogicalPins import physical_pin, pinmap_dump
-from Common import SmartADC, micro_task
+from Common import SmartADC, micro_task, notify
 import uasyncio as asyncio
 from utime import ticks_ms
 from Debug import errlog_add
@@ -7,10 +7,6 @@ try:
     import LM_intercon as InterCon
 except:
     InterCon = None
-try:
-    from Notify import Telegram
-except:
-    Telegram = None
 
 
 class Data:
@@ -94,11 +90,9 @@ def __run_intercon(state):
 ####################################
 
 async def __task(ms_period, buff_size):
-    if Data.NOTIFY and Telegram is not None:
-        try:
-            Telegram().send_msg("Motion detected")
-        except:
-            pass
+    if Data.NOTIFY:
+        if not notify("Motion detected"):
+            errlog_add("Motion detect. notify, error...")
 
     if Data.ENABLE_MIC:
         # Create ADC object

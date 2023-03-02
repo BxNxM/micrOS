@@ -19,6 +19,11 @@ try:
 except Exception as e:
     print("Import ERROR, TaskManager: {}".format(e))
     Task, Manager = None, None
+try:
+    from Notify import Telegram
+except Exception as e:
+    print("Import ERROR, Notify.Telegram: {}".format(e))
+    Telegram = None
 
 
 def socket_stream(func):
@@ -136,7 +141,16 @@ def micro_task(tag, task=None):
 
 
 @socket_stream
-def data_logger(f_name, data=None, limit=24, msgobj=None):
+def data_logger(f_name, data=None, limit=12, msgobj=None):
+    """
+    micrOS Common Data logger solution
+    - if data None => read mode
+    - if data value => write mode
+    :param f_name: log name (without extension, automatic: .dat)
+    :param data: data to append
+    :param limit: line limit (max.: 12 with short lines: limited disk speed!)
+    :param msgobj: socket stream object (set automatically!)
+    """
     # TODO: test!!!
     ext = '.dat'
     f_name = f_name if f_name.endswith(ext) else '{}{}'.format(f_name, ext)
@@ -144,6 +158,24 @@ def data_logger(f_name, data=None, limit=24, msgobj=None):
     if data is None:
         # return log as msg stream
         log_get(f_name, msgobj=msgobj)
-        return ''
+        return True
     # ADD DATA TO LOG
     return logger(data, f_name, limit)
+
+
+def notify(text):
+    """
+    micrOS common notification handler (Telegram)
+    :param text: notification text
+    return: verdict: True/False
+    """
+    if Telegram is None:
+        return False
+    try:
+        out = Telegram().send_msg(text)
+    except Exception as e:
+        print("Notify ERROR: {}".format(e))
+        out = str(e)
+    if out is not None and out == 'Sent':
+        return True
+    return False

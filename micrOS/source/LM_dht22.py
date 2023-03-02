@@ -1,10 +1,12 @@
 from LM_co2 import measure_mq135
 from LogicalPins import physical_pin, pinmap_dump
+from Common import data_logger
 
 #########################################
 #  DHT22 temperature & humidity sensor  #
 #########################################
 __DHT_OBJ = None
+_LOG_NAME = "dht22"
 
 
 def __init_DHT22():
@@ -25,22 +27,36 @@ def __temp_hum():
 # Application functions #
 #########################
 
-def measure():
+def measure(log=False):
     """
     Measure with dht22
     :return dict: temp, hum
     """
     _temp, _hum = __temp_hum()
-    return {'temp [ºC]': _temp, 'hum [%]': _hum}
+    data = {'temp [ºC]': round(_temp, 2), 'hum [%]': round(_hum, 2)}
+    if log:
+        data_logger(_LOG_NAME, data=str(data))
+    return data
 
 
-def measure_w_co2():
+def measure_w_co2(log=False):
     """
     Measure with dht22 and mq135 (CO2)
     :return dict: temp, hum, co2
     """
     _temp, _hum = __temp_hum()
-    return {'temp [ºC]': _temp, 'hum [%]': _hum, 'co2 [ppm]': measure_mq135(_temp, _hum)}
+    data = {'temp [ºC]': round(_temp, 2), 'hum [%]': round(_hum, 2), 'co2 [ppm]': measure_mq135(_temp, _hum)}
+    if log:
+        data_logger(_LOG_NAME, data=str(data))
+    return data
+
+
+def logger():
+    """
+    Return temp, hum, (co2) logged data
+    """
+    data_logger(_LOG_NAME)
+    return ''
 
 
 #######################
@@ -72,4 +88,4 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'measure', 'measure_w_co2', 'lmdep', 'pinmap'
+    return 'measure log=False', 'measure_w_co2 log=False', 'logger', 'lmdep', 'pinmap'

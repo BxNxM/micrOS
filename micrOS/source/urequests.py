@@ -8,22 +8,40 @@ except ImportError:
     import json as ujson
 
 
-def request(method, url, data=None, json=None, headers={}):
-    # Parse URL
+#############################################
+#   Implement micropython request function  #
+#############################################
+
+
+def request(method, url, data=None, json=None, headers={}, sock_size=1024):
+    """
+    Micropython HTTP request function for REST API handling
+    :param method: GET/POST
+    :param url: URL for REST API
+    :param data: string body
+    :param json: json body
+    :param headers: define headers
+    :param sock_size: socket buffer size, default 1024 byte (micropython)
+    """
+
+    # [1] PARSE URL -> proto (http/https), host, path + SET PORT
     proto, _, host, path = url.split('/', 3)
     port = 443 if proto == 'https:' else 80
+    # [1.1] PARSE HOST - handle direct port number as input after :
     if ':' in host:
         host, port = host.split(':', 1)
         port = int(port)
 
-    # Connect to host
+    # [2] CONNECT - create socket object
     sock = usocket.socket()
+    # [2.1] CONNECT - resolve IP by host
     addr = usocket.getaddrinfo(host, port)[0][-1]
+    # [2.2] CONNECT - if https handle ssl
     sock.connect(addr)
     if proto == 'https:':
         sock = ussl.wrap_socket(sock)
 
-    # Build request
+    # [3] BUILD REQUEST: body, headers
     if data is not None:
         body = data.encode('utf-8')
         headers['Content-Length'] = len(body)
@@ -33,6 +51,7 @@ def request(method, url, data=None, json=None, headers={}):
         headers['Content-Type'] = 'application/json'
     else:
         body = None
+    # [3.1] Create request lines list (body)
     lines = [f'{method} /{path} HTTP/1.1']
     for k, v in headers.items():
         lines.append(f'{k}: {v}')
@@ -42,25 +61,26 @@ def request(method, url, data=None, json=None, headers={}):
     if body is not None:
         request += body.decode('utf-8')
 
+    # [4] SEND REQUEST
     if proto == 'https:':
         sock.write(request.encode('utf-8'))
     else:
         # Send request
         sock.send(request.encode('utf-8'))
 
-    # Receive response
-    #response = sock.recv(4096)
-    response = sock.read(4096)
+    # [5] RECEIVE RESPONSE
+    #response = sock.recv(sock_size)
+    response = sock.read(sock_size)
     while True:
-        #data = sock.recv(4096)
-        data = sock.read(4096)
+        #data = sock.recv(sock_size)
+        data = sock.read(sock_size)
         if not data:
             break
         response += data
-        print(data)
+        print("RAW DATA STREAM: {}".format(data))
     sock.close()
 
-    # Parse response
+    # [6] PARSE RESPONSE
     headers, body = response.split(b'\r\n\r\n', 1)
     status_code = int(headers.split(b' ')[1])
     headers = dict(h.split(b': ') for h in headers.split(b'\r\n')[1:])
@@ -71,15 +91,16 @@ def request(method, url, data=None, json=None, headers={}):
     return Response(status_code, headers, body)
 
 
-def get(url, headers={}):
-    return request('GET', url, headers=headers)
-
-
-def post(url, data=None, json=None, headers={}):
-    return request('POST', url, data=data, json=json, headers=headers)
-
-
 class Response:
+    """
+    micropython Request response data structure
+    Data:
+    - status_code
+    - headers
+    - text
+    Method:
+    - json parser function
+    """
     def __init__(self, status_code, headers, text):
         self.status_code = status_code
         self.headers = headers
@@ -89,34 +110,14 @@ class Response:
         return ujson.loads(self.text)
 
 
-def telegram_chat_id(token):
-    host = "api.telegram.org"
-    endpoint = "bot{token}/getUpdates".format(token=token)
-    request = "GET /{} HTTP/1.0\r\nHost: {}\r\n\r\n".format(endpoint, host)
+#############################################
+#      Implement http get/post functions    #
+#############################################
 
-    sock = usocket.socket()
-    sock.connect((host, 443))
-    sock = ussl.wrap_socket(sock)
-    sock.write(request.encode())
 
-    data = b""
-    while True:
-        part = sock.read(1024)
-        if not part:
-            break
-        data += part
-    sock.close()
+def get(url, headers={}):
+    return request('GET', url, headers=headers)
 
-    #print(data)
-    raw_response = data.decode()
-    body_start = raw_response.find('{')
-    body = raw_response[body_start:]
-    response = ujson.loads(body)
 
-    if response["ok"]:
-        if len(response["result"]) > 0:
-            chat_id = response["result"][-1]["message"]["chat"]["id"]
-            return chat_id
-    else:
-        error_message = response.get("description", "Unknown error")
-        raise Exception("Error retrieving chat ID: {}".format(error_message))
+def post(url, data=None, json=None, headers={}):
+    return request('POST', url, data=data, json=json, headers=headers)

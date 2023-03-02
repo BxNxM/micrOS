@@ -4,16 +4,18 @@ from Notify import Telegram
 #          micrOS Notifications         #
 #########################################
 
+TELEGRAM_OBJ = Telegram()
+
 
 def send(text):
-    verdict = Telegram.send_msg(text)
+    verdict = TELEGRAM_OBJ.send_msg(text)
     if verdict is None:
         return "Telegram not available,\ncheck your bot token or try later..."
     return verdict
 
 
 def receive():
-    verdict = Telegram.get_msg()
+    verdict = TELEGRAM_OBJ.get_msg()
     if verdict is None:
         return "Telegram not available, \ncheck your bot token or try later..."
     return verdict

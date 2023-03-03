@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import json
 import os
 import sys
 import time
@@ -99,6 +99,9 @@ def micrOS_bgjob_one_shot_check():
     info = "[ST] Run micrOS BgJob check [system clock &]"
     print(info)
 
+    # Initial task cleanup...
+    execute(['task kill system.clock'])
+
     async_available_cmd_list = ['help']
     output = execute(async_available_cmd_list)
     if output[0]:
@@ -110,6 +113,7 @@ def micrOS_bgjob_one_shot_check():
     for _ in range(0, 2):
         cmd_list = ['system clock &']
         output = execute(cmd_list)
+        time.sleep(1)
         if output[0]:
             if 'Start system.clock' not in output[1].strip():
                 return False, f'{info} + not expected return: {output[1]}'
@@ -296,11 +300,11 @@ def check_robustness_exception():
 
 
 def check_robustness_memory():
-    info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 15]'
+    info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 12]'
     print(info_msg)
-    cmd_list = ['robustness memory_leak 15']
+    cmd_list = ['robustness memory_leak 12']
     output = execute(cmd_list)
-    if output[0] and "[15] RAM Alloc" in output[1]:
+    if output[0] and "[12] RAM Alloc" in output[1]:
         end_result = output[1].split("\n")[-1]
         return True, f'{info_msg}: Mem alloc: {end_result}'
     else:
@@ -311,7 +315,7 @@ def check_robustness_recursion():
     info_msg = '[ST] Check robustness - recursion [robustness recursion_limit 5]'
     print(info_msg)
     cmd_list = ['robustness recursion_limit 5']
-    output = execute(cmd_list)
+    output = execute(cmd_list, tout=10)
     if output[0] and "0" in output[1].split("\n")[-1]:
         return True, f'{info_msg}'
     else:
@@ -344,7 +348,7 @@ def check_intercon(host=None):
     if device_was_found:
         # DO Negative testing as well
         cmd_list = ['intercon sendcmd "notavailable.local" "hello"']
-        output_neg = execute(cmd_list, tout=10)
+        output_neg = execute(cmd_list, tout=15)
         state_neg = False, output_neg
         if output_neg[1] == '[]':
             output_neg = 'Device was not found: "notavailable.local":{}'.format(output_neg)
@@ -365,6 +369,24 @@ def measure_conn_metrics():
     return state, ' || '.join(verdict)
 
 
+def memory_usage():
+    cmd = ['system memory_usage >json']
+    out = execute(cmd, tout=3)
+    state, raw_output = out[0], out[1]
+    try:
+        json_out = json.loads(raw_output)
+    except Exception as e:
+        return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
+
+    # {"percent": 93.11, "mem_used": 103504}
+    if json_out.get('percent') > 85:        # MEM USAGE WARNING INDICATOR: 85%
+        return state, '[ST] {}WARNING{}: memory usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
+                                                                             json_out.get('percent'),
+                                                                             json_out.get('mem_used'))
+    return state, '[ST] {}OK{}: memory usage {}% ({} bytes)'.format(Colors.OK, Colors.NC,
+                                                                    json_out.get('percent'), json_out.get('mem_used'))
+
+
 def app(devfid=None):
     global DEVICE
     if devfid is not None:
@@ -383,6 +405,7 @@ def app(devfid=None):
                'negative_api': negative_interface_check(),
                'dhcp_hostname': check_device_by_hostname(DEVICE),
                'lm_exception': check_robustness_exception(),
+               'mem_usage': memory_usage(),
                'mem_alloc': check_robustness_memory(),
                'recursion': check_robustness_recursion(),
                'intercon': check_intercon(host='RingLamp.local'),

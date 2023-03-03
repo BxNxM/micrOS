@@ -142,15 +142,16 @@ def __mic_sample(buff_size, mic_adc, mytask):
 
     # Create average measurement sampling
     data_sum = 0
-    for _ in range(0, 20):
+    # Internal sampling for average value calculation
+    for _ in range(0, 10):
         data_sum += mic_adc.get()['percent']  # raw, percent, volt
-    data = data_sum / 20
+    data = data_sum / 10
         
     # Store data triplet
     data_triplet = [time_stump, data, 0]
 
     # Store data in task cache
-    mytask.out = "th: {} last data: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, int(Data.OFF_EV_TIMER))
+    mytask.out = "th: {} last: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, int(Data.OFF_EV_TIMER))
 
     # Store data triplet (time_stump, mic_data)
     Data.RAW_DATA.append(data_triplet)
@@ -183,7 +184,7 @@ def load_n_init(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.
     return "Init presence module: th: {} timer: {} mic: {}".format(threshold, timer, mic)
 
 
-def motion_trig(sample_ms=20, buff_size=15):
+def motion_trig(sample_ms=15, buff_size=10):
     """
     Set motion trigger by IRQx - PIR sensor
     - Reset OFF_EV_TIMER to TIMER_VALUE
@@ -250,7 +251,7 @@ def help():
     :return tuple: list of functions implemented by this application
     """
     return 'load_n_init threshold=<percent> timer=<sec> mic=True',\
-           'motion_trig sample_ms=20 buff_size=15', 'get_samples',\
+           'motion_trig sample_ms=15 buff_size=10', 'get_samples',\
            'subscribe_intercon on="host cmd" off="host cmd"',\
            'notification state=None/True/False',\
            'pinmap'

@@ -75,6 +75,7 @@ class Client:
             request = request.decode('utf8').strip()
         except Exception as e:
             Debug().console("[Client] Stream read error ({}): {}".format(self.client_id, e))
+            collect()           # gc collection: "fix" for memory allocation failed, allocating 2049 bytes
             return True, ''
 
         # Input handling
@@ -299,7 +300,8 @@ class SocketServer:
         await cls.server
         Debug().console("-- TCP server running in background")
 
-    def reply_message(cls, msg):
+    @staticmethod
+    def reply_message(msg):
         """
         Only used for LM msg stream over Common.socket_stream wrapper
         - stream data to all connection...

@@ -11,6 +11,37 @@ except ImportError:
 #############################################
 #   Implement micropython request function  #
 #############################################
+def decode_chunked(data):
+    decoded = bytearray()
+    while data:
+        # Find the end of the chunk size line
+        line_end = data.find(b"\r\n")
+        if line_end < 0:
+            break
+
+        # Extract the chunk size and convert to int
+        chunk_size_str = data[:line_end]
+        try:
+            chunk_size = int(chunk_size_str, 16)
+        except ValueError as e:
+            chunk_size = 0
+            print(f'decode_chunked error: {e}')
+
+        # Check chunk size
+        if chunk_size == 0:
+            break
+
+        # Add the chunk data to the decoded data
+        chunk_data = data[line_end + 2 : line_end + 2 + chunk_size]
+        decoded += chunk_data
+
+        # Move to the next chunk
+        data = data[line_end + 4 + chunk_size :]
+
+        # Check for end of message marker again
+        if not data.startswith(b"\r\n"):
+            break
+    return decoded
 
 
 def request(method, url, data=None, json=None, headers={}, sock_size=1024):
@@ -58,27 +89,26 @@ def request(method, url, data=None, json=None, headers={}, sock_size=1024):
         lines.append(f'{k}: {v}')
     lines.append('Host: %s' % host)
     lines.append('Connection: close')
-    request = '\r\n'.join(lines) + '\r\n\r\n'
+    http_request = '\r\n'.join(lines) + '\r\n\r\n'
     if body is not None:
-        request += body.decode('utf-8')
+        http_request += body.decode('utf-8')
 
     # [4] SEND REQUEST
     if proto == 'https:':
-        sock.write(request.encode('utf-8'))
+        sock.write(http_request.encode('utf-8'))
     else:
         # Send request
-        sock.send(request.encode('utf-8'))
+        sock.send(http_request.encode('utf-8'))
 
     # [5] RECEIVE RESPONSE
-    #response = sock.recv(sock_size)
-    response = sock.read(sock_size)
+    receive = sock.recv if proto == "http:" else sock.read
+    response = receive(sock_size)
     while True:
-        #data = sock.recv(sock_size)
-        data = sock.read(sock_size)
+        data = receive(sock_size)
         if not data:
             break
         response += data
-        print("RAW DATA STREAM: {}".format(data))
+        #print("RAW DATA STREAM: {}".format(data))
     sock.close()
 
     # [6] PARSE RESPONSE

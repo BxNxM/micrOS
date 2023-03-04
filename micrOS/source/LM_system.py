@@ -2,7 +2,7 @@ from utime import localtime
 from os import statvfs, getcwd, uname
 from Common import socket_stream
 from Network import get_mac, sta_high_avail
-from Time import ntptime, settime, suntime, Sun, uptime
+from Time import ntp_time, set_time, suntime, Sun, uptime
 from Debug import errlog_get, errlog_add, errlog_clean, console_write
 
 
@@ -101,7 +101,7 @@ def ntp():
     from ConfigHandler import cfgget
     try:
         # Automatic setup - over wifi - ntp
-        state = ntptime()
+        state = ntp_time()
         return state, localtime()
     except Exception as e:
         return False, "ntp error:{}".format(e)
@@ -131,7 +131,7 @@ def setclock(year, month, mday, hour, min, sec):
     :param sec
     :return: localtime
     """
-    settime(year, month, mday, hour, min, sec)
+    set_time(year, month, mday, hour, min, sec)
     return localtime()
 
 

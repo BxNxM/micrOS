@@ -14,7 +14,7 @@ from Hooks import bootup_hook, profiling_info
 from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
 from Debug import errlog_add
-from Time import ntptime, suntime
+from Time import ntp_time, suntime
 
 
 #################################################################
@@ -51,7 +51,7 @@ def nw_time_sync():
     # Set UTC + SUN TIMES FROM API ENDPOINTS
     suntime()
     # Set NTP - RTC + UTC shift
-    ntptime()
+    ntp_time()
 
 
 #################################################################

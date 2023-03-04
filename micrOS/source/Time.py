@@ -1,10 +1,14 @@
-from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM, SOCK_STREAM
+import re
+from re import match
+from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM
+
 from machine import RTC
 from network import WLAN, STA_IF
-from re import match
 from utime import sleep_ms, time, mktime, localtime
-from Debug import errlog_add, console_write
+
 from ConfigHandler import cfgput, cfgget
+from Debug import errlog_add, console_write
+from urequests import get as http_get
 
 
 class Sun:
@@ -13,7 +17,7 @@ class Sun:
     BOOTIME = time()     # Initialize BOOTIME: Not SUN, but for system uptime
 
 
-def settime(year, month, mday, hour, min, sec):
+def set_time(year, month, mday, hour, min, sec):
     """
     Set Localtime + RTC Clock manually
         https://docs.micropython.org/en/latest/library/machine.RTC.html
@@ -29,7 +33,7 @@ def settime(year, month, mday, hour, min, sec):
     return True
 
 
-def ntptime():
+def ntp_time():
     """
     Set NTP time with utc shift
     :param utc_shift: +/- hour (int)
@@ -42,7 +46,7 @@ def ntptime():
 
     import struct
 
-    def getntp():
+    def get_ntp():
         host = "pool.ntp.org"
         # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
         NTP_DELTA = 3155673600
@@ -63,7 +67,7 @@ def ntptime():
     for _ in range(4 if cfgget('cron') else 2):
         try:
 
-            t = getntp()
+            t = get_ntp()
             tm = localtime(t + Sun.UTC * 60)
             # Get localtime + GMT shift
             RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
@@ -77,43 +81,6 @@ def ntptime():
         sleep_ms(100)
     errlog_add("[ERR] ntptime error: {}".format(err))
     return False
-
-
-def http_get(url, bsize=512, tout=3):
-    """
-    :param url: url param for http get
-    :param bsize: buffer size for response msg
-    :param tout: timeout for response
-    :return: data string
-    """
-    data = ''
-
-    if not WLAN(STA_IF).isconnected():
-        errlog_add("[http_get] STA not connected")
-        return data
-
-    _, _, host, path = url.split('/', 3)
-    try:
-        addr = getaddrinfo(host, 80, AF_INET, SOCK_STREAM)[0][-1]
-    except Exception as e:
-        errlog_add('[http_get] resolve error: {}'.format(e))
-        return data
-    # HTTP GET
-    console_write('   [http_get] url: {} ({})'.format(url, addr))
-    s = socket()
-    try:
-        s.settimeout(tout)
-        s.connect(addr)
-        # Send the http get query
-        s.send(bytes('GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))
-        # Get last line of http response
-        data = str(s.recv(bsize), 'utf8').splitlines()[-1]
-    except Exception as e:
-        errlog_add('[http_get] {} receive error: {}'.format(url, e))
-    finally:
-        s.close()
-    console_write('   [http_get]    OK' if len(data) > 0 else '   [http_get]    NOK')
-    return data
 
 
 def __persistent_cache_manager(mode):
@@ -155,55 +122,55 @@ def suntime():
         return msg
 
     console_write('[suntime] api sync started ...')
-    # Search keys in http request response
-    location_keys = ('lat', 'lon', 'timezone', 'offset')
-    sun_keys = ('sunrise', 'sunset')
 
     # IP-API REQUEST HANDLING
     # Get latitude, longitude, timezone, utc offset by external ip
     url = 'http://ip-api.com/json/?fields=lat,lon,timezone,offset'
-    response = http_get(url, 512)
-    location = {}
+    response = {}
     try:
-        location = {key: match('.+?{}.+?([0-9.a-zA-Z/]+)'.format(key), response).group(1) for key in location_keys}
-        # Save utc offset in Sun class and micrOS config
-        Sun.UTC = int(int(location['offset']) / 60)  # IN MINUTE
+        response = http_get(url).json()
+        lat = response.get('lat')
+        lon = response.get('lon')
+        Sun.UTC = int(response.get('offset') / 60)      # IN MINUTE
         cfgput('utc', Sun.UTC, True)
     except Exception as e:
-        errlog_add('ip-api parse error: {}'.format(e))
-    # Get sunrise-sunset + utc offset
-    lat = location.get('lat', None)
-    lon = location.get('lon', None)
+        errlog_add(f'ip-api error: {e} data: {response}')
+        return Sun.TIME
 
     # SUNSET-SUNRISE API REQUEST HANDLING
-    sun = {}
+    # Get sunrise, sunset date times by lon, lat params
+    sun = {'sunrise': (), 'sunset': ()}
     if not (lat is None or lon is None):
-        url = 'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'.format(lat=lat, lon=lon)
-        response = http_get(url, 660)
+        url = f'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'
         try:
-            sun = {key: match('.+?results.+?{}.+?T([0-9:]+)'.format(key), response).group(1).split(':') for key in sun_keys}
+            response = http_get(url).json()
+            results = response.get('results')
+            time_regex = re.compile(r'T([0-9:]+)')
+            sun = {
+                'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
+                'sunset': time_regex.search(results.get('sunrise')).group(1).split(':')
+                }
         except Exception as e:
-            errlog_add('sunrise-api parse error: {} data: {}'.format(e, response))
+            errlog_add(f'sunrise-api error: {e} data: {response}')
     # Try to parse response by expected sun_keys
     try:
-        for key in sun_keys:
-            sun[key] = [int(v) for v in sun[key]]
-            sun[key][0] += int(Sun.UTC / 60)
+        for key in sun.keys():
+            sun[key] = [int(val) for val in sun[key]]
+            sun[key][0] += int(Sun.UTC / 60)                # TODO: handle minute offset as well
             sun[key] = tuple(sun[key])
-    except:
-        pass
+    except Exception as e:
+        errlog_add(f'sunrise-api parse error: {e} sun: {sun}')
+        # Retrieve cached data and return
+        __persistent_cache_manager('r')  # Using Sun.TIME
+        console_write('[suntime] loaded from cache')
+        return Sun.TIME
 
     # Save to values class static variable for later access
-    if sum([1 for _ in sun]) > 0:
-        # Save and return with updated data
-        Sun.TIME = sun
-        __persistent_cache_manager('s')              # Using Sun.TIME
-        console_write('[suntime] sync done and cached')
-        return sun
-    # Retrieve cached data and return
-    __persistent_cache_manager('r')                  # Using Sun.TIME
-    console_write('[suntime] loaded from cache')
-    return Sun.TIME
+    # Save and return with updated data
+    Sun.TIME = sun
+    __persistent_cache_manager('s')              # Using Sun.TIME
+    console_write('[suntime] sync done and cached')
+    return sun
 
 
 def uptime():

@@ -1,7 +1,7 @@
 from time import localtime
 from TaskManager import exec_lm_core_schedule
 from Debug import console_write, errlog_add
-from Time import Sun, suntime, ntptime
+from Time import Sun, suntime, ntp_time
 
 """
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
@@ -176,7 +176,7 @@ def scheduler(scheduler_input, irqperiod):
     ! - execute
     ; - cron task separator
     """
-    builtin_tasks = (("*:3:0:0", suntime), ("*:3:5:0", ntptime))
+    builtin_tasks = (("*:3:0:0", suntime), ("*:3:5:0", ntp_time))
     state = False
     time_now = localtime()[0:8]
     # time_now = GEN.__next__()   # TODO: remove after test

@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='micrOSDevToolKit',
-    version='3.2.1',
+    version='4.0.0',
     author='Marcell Ban',
     author_email='miros.framework@gmail.com',
     description='Development environment for micrOS (micropython based IoT solution)',

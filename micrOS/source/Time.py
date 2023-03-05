@@ -148,7 +148,7 @@ def suntime():
             time_regex = re.compile(r'T([0-9:]+)')
             sun = {
                 'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
-                'sunset': time_regex.search(results.get('sunrise')).group(1).split(':')
+                'sunset': time_regex.search(results.get('sunset')).group(1).split(':')
                 }
         except Exception as e:
             errlog_add(f'sunrise-api error: {e} data: {response}')

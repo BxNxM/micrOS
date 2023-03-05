@@ -49,10 +49,9 @@ class Telegram:
             response = requests.get(url)
             resp_json = response.json()
 
-            if resp_json["ok"]:
-                if len(resp_json["result"]) > 0:
-                    Telegram.CHAT_ID = resp_json["result"][-1]["message"]["chat"]["id"]
-                    Telegram.__chat_id_cache('s')
+            if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
+                Telegram.CHAT_ID = resp_json["result"][-1]["message"]["chat"]["id"]
+                Telegram.__chat_id_cache('s')
             else:
                 Telegram.__chat_id_cache('r')
                 if Telegram.CHAT_ID is None:

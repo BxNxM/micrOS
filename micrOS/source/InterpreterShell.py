@@ -23,7 +23,7 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.14.2-0'
+    __socket_interpreter_version = '1.14.2-1'
 
     def __init__(self, msg_obj=None):
         """

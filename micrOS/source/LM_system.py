@@ -1,7 +1,7 @@
 from utime import localtime
 from Common import socket_stream
 from Network import get_mac, sta_high_avail
-from Time import ntp_time, set_time, suntime, Sun, uptime
+from Time import ntp_time, set_time, uptime
 from Debug import console_write
 
 
@@ -11,9 +11,10 @@ def memory_usage():
     return: memory usage %, memory usage in bytes
     """
     try:
-        from gc import mem_free, mem_alloc
+        from gc import mem_free, mem_alloc, collect
     except:
-        from simgc import mem_free, mem_alloc  # simulator mode
+        from simgc import mem_free, mem_alloc, collect  # simulator mode
+    collect()
     total_memory = mem_free() + mem_alloc()
     used_memory = mem_alloc()
     used_mem_percent = round(used_memory / total_memory * 100, 2)
@@ -116,6 +117,7 @@ def sun(refresh=False):
     Return:
         (dict) sun time
     """
+    from Time import suntime, Sun
     if refresh:
         return suntime()
     return Sun.TIME

@@ -1,9 +1,8 @@
 from utime import localtime
-from os import statvfs, getcwd, uname
 from Common import socket_stream
 from Network import get_mac, sta_high_avail
 from Time import ntp_time, set_time, suntime, Sun, uptime
-from Debug import errlog_get, errlog_add, errlog_clean, console_write
+from Debug import console_write
 
 
 def memory_usage():
@@ -26,6 +25,7 @@ def disk_usage():
     Calculate used disk space
     return: memory usage %, disk usage in bytes
     """
+    from os import statvfs, getcwd
     fs_stat = statvfs(getcwd())
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
@@ -41,6 +41,7 @@ def info(msgobj=None):
     - cpu clock, ram, free fs, upython, board, mac addr, uptime
     """
     from machine import freq
+    from os import uname
     msg_buffer = []
 
     def _reply(msg):
@@ -245,6 +246,7 @@ def alarms(clean=False, test=False, msgobj=None):
     :param test bool: create test alarms, set True
     :return dict: verdict
     """
+    from Debug import errlog_get, errlog_add, errlog_clean
     if test:
         errlog_add('[ERR] TeSt ErRoR')
     if clean:

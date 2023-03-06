@@ -316,9 +316,10 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **`soctout`**          |   `100`      `<int>`        |      Yes        | Socket server connection timeout (because single process socket interface)
 | **`socport`**          |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility)
 | **`devip`**            |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
-| **`nwmd`**             |     `n/a`  `<str>`          |      N/A        | Prefered network mode - `AP` or `STA`
+| **`nwmd`**             |     `n/a`  `<str>`          |      Yes        | Prefered network mode - `AP` or `STA`
 | **`hwuid`**            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
 | **`guimeta`**          |      `n/a`  `str`           |      No        | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
+| **`telegram`**          |      `n/a`  `str`          |      No        | `TELEGRAM_BOT_TOKEN` to enable micrOS Notifications. **Hint**, to create bot with botfather: [click](https://blog.devgenius.io/how-to-set-up-your-telegram-bot-using-botfather-fd1896d68c02)
 
 > Note: Default empty value: `n/a` in case of string parameter.
 > Note: Cron is only available on devices with Timer(**1**): esp32

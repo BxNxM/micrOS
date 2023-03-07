@@ -1,12 +1,18 @@
 import uasyncio as asyncio
 from Notify import Telegram
 from Common import micro_task
+from Network import ifconfig
 
 #########################################
 #          micrOS Notifications         #
 #########################################
 
-TELEGRAM_OBJ = Telegram()
+# ENABLE TELEGRAM IF NW IS STA - CONNECTED TO THE WEB
+_ENABLE = True if ifconfig()[0] == "STA" else False
+if _ENABLE:
+    TELEGRAM_OBJ = Telegram()
+else:
+    TELEGRAM_OBJ = None
 
 
 def load_n_init():
@@ -16,7 +22,7 @@ def load_n_init():
     - /cmd module function (params)
     """
     if TELEGRAM_OBJ is None:
-        return "No telegram token available"
+        return "No telegram token OR network connection."
     return TELEGRAM_OBJ.set_commands()
 
 
@@ -26,9 +32,11 @@ def send(text):
     :param text: text to send
     return verdict
     """
+    if TELEGRAM_OBJ is None:
+        return "No telegram token OR network connection."
     verdict = TELEGRAM_OBJ.send_msg(text)
     if verdict is None:
-        return "Telegram not available,\ncheck your bot token or try later..."
+        return "Telegram not available."
     return verdict
 
 
@@ -38,9 +46,11 @@ def receive():
     - if all value None, then no incoming messages
     One successful msg receive is necessary to get chat_id for msg send as well!
     """
+    if TELEGRAM_OBJ is None:
+        return "No telegram token OR network connection."
     verdict = TELEGRAM_OBJ.get_msg()
     if verdict is None:
-        return "Telegram not available, \ncheck your bot token or try later..."
+        return "Telegram not available."
     return verdict
 
 
@@ -61,7 +71,7 @@ def receiver_loop():
     on the endpoint / micrOS node
     """
     if TELEGRAM_OBJ is None:
-        return "Cannot start, no telegram token."
+        return "No telegram token OR network connection."
     state = micro_task(tag='telegram._lm_loop', task=__task())
     return "Starting" if state else "Already running"
 

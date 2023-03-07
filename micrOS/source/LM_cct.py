@@ -201,7 +201,7 @@ def toggle(state=None, smooth=True):
 
 def transition(cw=None, ww=None, sec=1.0, wake=False):
     """
-    Set transition color change for long dimming periods < 30sec
+    [TASK] Set transition color change for long dimming periods < 30sec
     - creates the dimming generators
     :param cw: cold white 0-1000
     :param ww: warm white 0-1000
@@ -247,7 +247,7 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
 
 def hue_transition(percent, sec=1.0, wake=False):
     """
-    Set HUE transition independently from brightness
+    [TASK] Set HUE transition independently from brightness
     - Running warm and cold white ratio change
     - USE cct brightness function to set brightness besides this transition (running)
     :param percent: warm channel ratio in percent 0-100

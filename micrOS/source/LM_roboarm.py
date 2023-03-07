@@ -187,7 +187,7 @@ async def _play(args, deinit, delay):
 
 def play(*args, s=None, delay=None, deinit=True):
     """
-    Runs move instructions from input or RoboArm.MOVE_RECORD
+    [TASK] Runs move instructions from input or RoboArm.MOVE_RECORD
     :param args: X Y X2 Y2 ...
     :param s: SPEED_MS (delay)
     :param delay: delay in ms between steps

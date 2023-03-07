@@ -208,7 +208,7 @@ def toggle(state=None, smooth=True):
 
 def transition(r=None, g=None, b=None, sec=1.0, wake=False):
     """
-    Set transition color change for long dimming periods < 30sec
+    [TASK] Set transition color change for long dimming periods < 30sec
     - creates the dimming generators
     :param r: value 0-1000
     :param g: value 0-1000

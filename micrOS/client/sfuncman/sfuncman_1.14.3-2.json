@@ -999,20 +999,20 @@
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/telegram.png?raw=true",
-        "lm_loop": {
-            "doc": "\n    Telegram msg receiver loop - automatic execution [beta]\n    ",
-            "param(s)": ""
-        },
         "load_n_init": {
-            "doc": "Set custom chat commands for Telegram",
+            "doc": "\n    Set custom chat commands for Telegram\n    - /ping\n    - /cmd module function (params)\n    ",
             "param(s)": ""
         },
         "receive": {
             "doc": "\n    Receive Telegram message\n    - if all value None, then no incoming messages\n    One successful msg receive is necessary to get chat_id for msg send as well!\n    ",
             "param(s)": ""
         },
+        "receiver_loop": {
+            "doc": "\n    Telegram msg receiver loop - automatic LM execution\n    - Only executes module (function) if the module is already loaded\n    on the endpoint / micrOS node\n    ",
+            "param(s)": ""
+        },
         "send": {
-            "doc": "\n    Send Telegram message\n    :param text: text to send\n    return verdict\n    ",
+            "doc": "\n    Send Telegram message - micrOS notification\n    :param text: text to send\n    return verdict\n    ",
             "param(s)": "text"
         }
     },

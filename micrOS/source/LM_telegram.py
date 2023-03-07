@@ -36,7 +36,10 @@ def receive():
 async def __task():
     with micro_task(tag='telegram._lm_loop') as my_task:
         while True:
-            my_task.out = TELEGRAM_OBJ.receive_eval()
+            try:
+                my_task.out = TELEGRAM_OBJ.receive_eval()
+            except Exception as e:
+                my_task.out = str(e)
             await asyncio.sleep(5)
 
 

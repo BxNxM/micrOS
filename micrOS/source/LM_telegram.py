@@ -9,6 +9,13 @@ from Common import micro_task
 TELEGRAM_OBJ = Telegram()
 
 
+def load_n_init():
+    """Set custom chat commands for Telegram"""
+    if TELEGRAM_OBJ is None:
+        return "No telegram token available"
+    return TELEGRAM_OBJ.set_commands()
+
+
 def send(text):
     """
     Send Telegram message
@@ -47,9 +54,11 @@ def lm_loop():
     """
     Telegram msg receiver loop - automatic execution [beta]
     """
+    if TELEGRAM_OBJ is None:
+        return "Cannot start, no telegram token."
     state = micro_task(tag='telegram._lm_loop', task=__task())
     return "Starting" if state else "Already running"
 
 
 def help():
-    return 'send "text"', 'receive', 'lm_loop', 'INFO: Send & Receive messages with Telegram bot'
+    return 'send "text"', 'receive', 'lm_loop', 'load_n_init', 'INFO: Send & Receive messages with Telegram bot'

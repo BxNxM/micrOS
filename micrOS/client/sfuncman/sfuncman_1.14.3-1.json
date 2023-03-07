@@ -763,8 +763,8 @@
             "param(s)": "x_range=20 y_range=20 speed_ms=5"
         },
         "record": {
-            "doc": "\n    Record function for move automation :D\n    - Store actual X, Y\n    :param clean: clean move cache (True), default: False\n    :return: verdict\n    ",
-            "param(s)": "clean=False"
+            "doc": "\n    Record function for move automation :D\n    - Store actual X, Y\n    :param clean: clean move cache (True), default: False\n    :param rec_limit: record x,y data set limit (default: 10)\n    :return: verdict\n    ",
+            "param(s)": "clean=False rec_limit=8"
         },
         "standby": {
             "doc": "\n    Standby roboarm - OFF switch\n    ",

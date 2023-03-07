@@ -146,9 +146,9 @@ class Response:
 #############################################
 
 
-def get(url, headers={}):
-    return request('GET', url, headers=headers)
+def get(url, headers={}, sock_size=1024):
+    return request('GET', url, headers=headers, sock_size=sock_size)
 
 
-def post(url, data=None, json=None, headers={}):
-    return request('POST', url, data=data, json=json, headers=headers)
+def post(url, data=None, json=None, headers={}, sock_size=1024):
+    return request('POST', url, data=data, json=json, headers=headers, sock_size=sock_size)

@@ -54,9 +54,10 @@ Logical pin names aka pin map
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;s:&nbsp;SPEED_MS&nbsp;(delay)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;delay:&nbsp;delay&nbsp;in&nbsp;ms&nbsp;between&nbsp;steps<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;deinit:&nbsp;deinit&nbsp;servo&nbsp;after&nbsp;execution<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;verdict</td></tr></table></td></tr><tr><th>record</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>clean=False</td></tr><tr><th>doc</th><td>Record&nbsp;function&nbsp;for&nbsp;move&nbsp;automation&nbsp;:D<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;verdict</td></tr></table></td></tr><tr><th>record</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>clean=False rec_limit=8</td></tr><tr><th>doc</th><td>Record&nbsp;function&nbsp;for&nbsp;move&nbsp;automation&nbsp;:D<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Store&nbsp;actual&nbsp;X,&nbsp;Y<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;clean:&nbsp;clean&nbsp;move&nbsp;cache&nbsp;(True),&nbsp;default:&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;rec_limit:&nbsp;record&nbsp;x,y&nbsp;data&nbsp;set&nbsp;limit&nbsp;(default:&nbsp;10)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;verdict</td></tr></table></td></tr><tr><th>random</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>x_range=20 y_range=20 speed_ms=5</td></tr><tr><th>doc</th><td>Move&nbsp;to&nbsp;random&nbsp;position<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;x_range:&nbsp;+/-&nbsp;x(35)&nbsp;from&nbsp;center<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;y_range:&nbsp;+/-&nbsp;y(35)&nbsp;from&nbsp;center<br>

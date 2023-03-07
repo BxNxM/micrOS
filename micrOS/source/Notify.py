@@ -49,7 +49,7 @@ class Telegram:
         if Telegram.CHAT_ID is None:
             bot_token = Telegram.__bot_token()
             url = "https://api.telegram.org/bot{}/getUpdates{}".format(bot_token, Telegram.API_PARAMS)
-            response = requests.get(url)
+            response = requests.get(url, sock_size=768)
             resp_json = response.json()
 
             if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
@@ -74,7 +74,7 @@ class Telegram:
         if isinstance(reply_to, int):
             data['reply_to_message_id'] = reply_to
             Telegram._IN_MSG_ID = reply_to
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, json=data, sock_size=768)
         return 'Sent' if response.json()['ok'] else response.text
 
     @staticmethod
@@ -84,7 +84,7 @@ class Telegram:
         if bot_token is None:
             return None
         url = "https://api.telegram.org/bot{}/getUpdates{}".format(bot_token, Telegram.API_PARAMS)
-        response = requests.get(url)
+        response = requests.get(url, sock_size=768)
         response_json = response.json()
         if len(response_json["result"]) > 0:
             resp = response_json["result"][-1]["message"]

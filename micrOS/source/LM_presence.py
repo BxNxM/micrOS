@@ -19,8 +19,8 @@ class Data:
     OFF_EV_TIMER = 0            # Presence StateMachine
     TRIG_THRESHOLD = 3          # Presence StateMachine
 
-    ON_CALLBACKS = set()         # Presence StateMachine - ON FUNCTION CALLBACK LIST
-    OFF_CALLBACKS = set()        # Presence StateMachine - OFF FUNCTION CALLBACK LIST
+    ON_CALLBACKS = set()        # Presence StateMachine - ON FUNCTION CALLBACK LIST
+    OFF_CALLBACKS = set()       # Presence StateMachine - OFF FUNCTION CALLBACK LIST
 
     ON_INTERCON_CLBK = None     # Intercon ON callback
     OFF_INTERCON_CLBK = None    # Intercon OFF callback

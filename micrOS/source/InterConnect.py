@@ -84,7 +84,7 @@ class InterCon:
         # Collect answer data
         if select.select([self.conn], [], [], self.timeout)[0]:
             while True:
-                last_data = self.conn.recv(512).decode('utf-8').strip()
+                last_data = self.conn.recv(256).decode('utf-8').strip()
                 # First data is prompt, get it
                 prompt = last_data.strip() if prompt is None else prompt
                 data += last_data

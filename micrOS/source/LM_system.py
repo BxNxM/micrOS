@@ -2,7 +2,6 @@ from utime import localtime
 from Common import socket_stream
 from Network import get_mac, sta_high_avail
 from Time import ntp_time, set_time, uptime
-from Debug import console_write
 
 
 def memory_usage():
@@ -17,7 +16,7 @@ def memory_usage():
     collect()
     total_memory = mem_free() + mem_alloc()
     used_memory = mem_alloc()
-    used_mem_percent = round(used_memory / total_memory * 100, 2)
+    used_mem_percent = round(used_memory / total_memory * 100, 1)
     return {'percent': used_mem_percent, 'mem_used': used_memory}
 
 
@@ -31,7 +30,7 @@ def disk_usage():
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
     used_space = fs_size - fs_free
-    used_fs_percent = round(used_space / fs_size * 100, 2)
+    used_fs_percent = round(used_space / fs_size * 100, 1)
     return {'percent': used_fs_percent, 'fs_used': used_space}
 
 
@@ -81,7 +80,6 @@ def heartbeat():
     """
     Test function for built-in led blinking and test reply message
     """
-    console_write("<3 heartbeat <3")
     return "<3 heartbeat <3"
 
 

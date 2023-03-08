@@ -76,10 +76,10 @@ def ntp_time():
                 Sun.BOOTIME = time()
             return True
         except Exception as e:
-            console_write("ntptime error.:{}".format(e))
+            console_write(f"ntptime error.:{e}")
             err = e
         sleep_ms(100)
-    errlog_add("[ERR] ntptime error: {}".format(err))
+    errlog_add(f"[ERR] ntptime error: {err}")
     return False
 
 
@@ -96,7 +96,7 @@ def __persistent_cache_manager(mode):
             with open('sun.pds', 'w') as f:
                 for k, v in Sun.TIME.items():
                     temp[k] = tuple([str(t) for t in v])
-                f.write(';'.join(['{}:{}'.format(k, '-'.join(v)) for k, v in temp.items()]))
+                f.write(';'.join([f'{k}:{"-".join(v)}' for k, v in temp.items()]))
         finally:
             return
     try:
@@ -117,7 +117,7 @@ def suntime():
     """
 
     if not cfgget('cron'):
-        msg = "Cron: {} - SKIP sync".format(cfgget('cron'))
+        msg = f"Cron: {cfgget('cron')} - SKIP sync"
         console_write(msg)
         return msg
 
@@ -181,7 +181,7 @@ def uptime():
         return "No time function was initialized..."
     delta = int(time() - Sun.BOOTIME)
     days, hours, minutes, sec = delta // 86400, (delta % 86400) // 3600, delta / 60 % 60, delta % 60
-    return "{} {}:{}:{}".format(int(days), int(hours), int(minutes), int(sec))
+    return f"{int(days)} {int(hours)}:{int(minutes)}:{int(sec)}"
 
 
 # Initial suntime cache load (for AP mode)

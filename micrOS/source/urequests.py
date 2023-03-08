@@ -49,8 +49,8 @@ def request(method, url, data=None, json=None, headers={}, sock_size=1024):
     Micropython HTTP request function for REST API handling
     :param method: GET/POST
     :param url: URL for REST API
-    :param data: string body
-    :param json: json body
+    :param data: string body (handle bare string as data for POST method)
+    :param json: json body (handle json as data for POST method)
     :param headers: define headers
     :param sock_size: socket buffer size, default 1024 byte (micropython)
     """
@@ -95,13 +95,14 @@ def request(method, url, data=None, json=None, headers={}, sock_size=1024):
 
     # [4] SEND REQUEST
     if proto == 'https:':
-        sock.write(http_request.encode('utf-8'))
+        sock.write(http_request.encode('utf-8'))    # Send request (secure)
+        receive = sock.read                         # Save Read object (secure)
     else:
         # Send request
-        sock.send(http_request.encode('utf-8'))
+        sock.send(http_request.encode('utf-8'))     # Send request
+        receive = sock.recv                         # Save Read object
 
     # [5] RECEIVE RESPONSE
-    receive = sock.recv if proto == "http:" else sock.read
     response = receive(sock_size)
     while True:
         data = receive(sock_size)
@@ -147,8 +148,16 @@ class Response:
 
 
 def get(url, headers={}, sock_size=1024):
+    """
+    GENERIC HTTP GET FUNCTION
+    """
     return request('GET', url, headers=headers, sock_size=sock_size)
 
 
 def post(url, data=None, json=None, headers={}, sock_size=1024):
+    """
+    GENERIC HTTP POST FUNCTION
+    :param data: string body (handle bare string as data for POST method)
+    :param json: json body (handle json as data for POST method)
+    """
     return request('POST', url, data=data, json=json, headers=headers, sock_size=sock_size)

@@ -113,10 +113,10 @@ def initEventIRQs():
         # console_write("[IRQ] Event {} - tick diff: {}".format(pin, diff))
         # Threshold between ext. irq evens
         if abs(diff) > resolver.get('prell_ms'):
+            # Save now tick - last trigger action
+            resolver[pin][1] = ticks_ms()
             # [!] Execute LM(s)
             exec_lm_pipe_schedule(resolver.get(pin)[0])
-            # Save now tick - last successful trigger
-            resolver[pin][1] = ticks_ms()
 
     # External IRQ execution data set from node config
     # ((irq, trig, lm_cbf), (irq, trig, lm_cbf), (irq, trig, lm_cbf), ...)

@@ -11,7 +11,11 @@ from Network import ifconfig
 _ENABLE = True if ifconfig()[0] == "STA" else False
 if _ENABLE:
     TELEGRAM_OBJ = Telegram()
+    if TELEGRAM_OBJ.__bot_token() is None:
+        # NO TELEGRAM TOKEN
+        TELEGRAM_OBJ = None
 else:
+    # NO NETWORK CONNECTION (STA)
     TELEGRAM_OBJ = None
 
 

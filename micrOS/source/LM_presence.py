@@ -143,9 +143,9 @@ def __mic_sample(buff_size, mic_adc, mytask):
     # Create average measurement sampling
     data_sum = 0
     # Internal sampling for average value calculation
-    for _ in range(0, 10):
+    for _ in range(0, 15):
         data_sum += mic_adc.get()['percent']  # raw, percent, volt
-    data = data_sum / 10
+    data = data_sum / 15
         
     # Store data triplet
     data_triplet = [time_stump, data, 0]

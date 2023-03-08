@@ -48,7 +48,7 @@ class Telegram:
         """Return chat ID or None (in case of no token or cannot get ID)"""
         if Telegram.CHAT_ID is None:
             bot_token = Telegram.__bot_token()
-            url = "https://api.telegram.org/bot{}/getUpdates{}".format(bot_token, Telegram.API_PARAMS)
+            url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
             response = requests.get(url, sock_size=512)
             resp_json = response.json()
 
@@ -59,7 +59,7 @@ class Telegram:
                 Telegram.__chat_id_cache('r')
                 if Telegram.CHAT_ID is None:
                     error_message = resp_json.get("description", "Unknown error")
-                    raise Exception("Error retrieving chat ID: {}".format(error_message))
+                    raise Exception(f"Error retrieving chat ID: {error_message}")
         return Telegram.CHAT_ID
 
     @staticmethod
@@ -68,9 +68,9 @@ class Telegram:
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
-        url = "https://api.telegram.org/bot{}/sendMessage{}".format(bot_token, Telegram.API_PARAMS)
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage{Telegram.API_PARAMS}"
         headers = {"Content-Type": "application/json"}
-        data = {"chat_id": Telegram._get_chat_id(), "text": "{}⚙️ {}".format(Telegram.DEVFID, text)}
+        data = {"chat_id": Telegram._get_chat_id(), "text": f"{Telegram.DEVFID}⚙️ {text}"}
         if isinstance(reply_to, int):
             data['reply_to_message_id'] = reply_to
             Telegram._IN_MSG_ID = reply_to
@@ -83,7 +83,7 @@ class Telegram:
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
-        url = "https://api.telegram.org/bot{}/getUpdates{}".format(bot_token, Telegram.API_PARAMS)
+        url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
         response = requests.get(url, sock_size=512)
         response_json = response.json()
         if len(response_json["result"]) > 0:
@@ -129,7 +129,7 @@ class Telegram:
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
-        url = "https://api.telegram.org/bot{}/setMyCommands{}".format(bot_token, Telegram.API_PARAMS)
+        url = f"https://api.telegram.org/bot{bot_token}/setMyCommands{Telegram.API_PARAMS}"
         headers = {"Content-Type": "application/json"}
         data = {"commands": [{"command": "ping", "description": "Ping All endpoints and return active modules."},
                              {"command": "cmd", "description": "Send command to All endpoints, run if module is loaded."}]}

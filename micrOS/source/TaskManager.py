@@ -84,7 +84,7 @@ class Task:
         - other?
         """
         # Create task tag
-        self.tag = "aio{}".format(len(Task.TASKS)) if tag is None else tag
+        self.tag = f"aio{len(Task.TASKS)}" if tag is None else tag
         if Task.task_is_busy(self.tag):
             # Skip task if already running
             return False
@@ -134,12 +134,12 @@ class Task:
                     self.task.cancel()  # Try to cancel task by asyncio
                 except Exception as e:
                     if "can't cancel self" != str(e):
-                        errlog_add("[IRQ limitation] Task cancel error: {}".format(e))
+                        errlog_add(f"[IRQ limitation] Task cancel error: {e}")
                 self.__task_del()
             else:
                 return False
         except Exception as e:
-            errlog_add("[ERR] Task kill error: {}".format(e))
+            errlog_add(f"[ERR] Task kill error: {e}")
             return False
         return True
 
@@ -201,7 +201,7 @@ class Manager:
         """
         Set as async exception handler
         """
-        errlog_add("[aio] exception: {}:{}".format(loop, context))
+        errlog_add(f"[aio] exception: {loop}:{context}")
 
     @staticmethod
     def _queue_free():
@@ -216,7 +216,7 @@ class Manager:
         - when queue full raise Exception!!!
         """
         if Manager._queue_free() >= Manager.QUEUE_SIZE:
-            msg = "[aio] Task queue full: {}".format(Manager.QUEUE_SIZE)
+            msg = f"[aio] Task queue full: {Manager.QUEUE_SIZE}"
             errlog_add(msg)
             raise Exception(msg)
 
@@ -256,11 +256,11 @@ class Manager:
             List tasks - micrOS top :D
         """
         q = Manager.QUEUE_SIZE - Manager._queue_free()
-        output = ["----- micrOS  top -----", "#queue: {} #overload: {}%\n".format(q, Manager.OLOAD), "#Active   #taskID"]
+        output = ["---- micrOS  top ----", f"#queue: {q} #overload: {Manager.OLOAD}%\n", "#Active   #taskID"]
         for tag, task in Task.TASKS.items():
             is_running = 'No' if task.done else 'Yes'
             spcr = " " * (10 - len(is_running))
-            task_view = "{}{}{}".format(is_running, spcr, tag)
+            task_view = f"{is_running}{spcr}{tag}"
             output.append(task_view)
         return output
 
@@ -287,12 +287,12 @@ class Manager:
         """
         tasks = Manager._parse__tag(tag)
         if len(tasks) == 0:
-            return "No task found: {}".format(tag)
+            return f"No task found: {tag}"
         if len(tasks) == 1:
             return Task.TASKS[tasks[0]].out
         output = []
         for t in tasks:
-            output.append('{}: {}'.format(t, Task.TASKS[t].out))
+            output.append(f"{t}: {Task.TASKS[t].out}")
         return '\n'.join(output)
 
     @staticmethod
@@ -309,22 +309,22 @@ class Manager:
             try:
                 return False if to_kill is None else to_kill.cancel()
             except Exception as e:
-                errlog_add("[ERR] Task kill: {}".format(e))
+                errlog_add(f"[ERR] Task kill: {e}")
                 return False
 
         # Handle task group kill (module.*)
         tasks = Manager._parse__tag(tag)
         state = True
         if len(tasks) == 0:
-            return state, "No task found: {}".format(tag)
+            return state, f"No task found: {tag}"
         if len(tasks) == 1:
-            msg = "Kill: {}|{}".format(tasks[0], state)
+            msg = f"Kill: {tasks[0]}|{state}"
             return terminate(tasks[0]), msg
         output = []
         for k in tasks:
             state &= terminate(k)
-            output.append("{}|{}".format(k, state))
-        msg = "Kill: {}".format(', '.join(output))
+            output.append(f"{k}|{state}")
+        msg = f"Kill: {', '.join(output)}"
         return state, msg
 
     def run_forever(cls):
@@ -334,7 +334,7 @@ class Manager:
         try:
             cls.loop.run_forever()
         except Exception as e:
-            errlog_add("[aio] loop stopped: {}".format(e))
+            errlog_add(f"[aio] loop stopped: {e}")
             cls.loop.close()
 
     @staticmethod
@@ -361,10 +361,10 @@ def exec_lm_pipe(taskstr):
         # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
             if not exec_lm_core(cmd):
-                console_write("|-[LM-PIPE] task error: {}".format(cmd))
+                console_write(f"|-[LM-PIPE] task error: {cmd}")
     except Exception as e:
-        console_write("[IRQ-PIPE] error: {}\n{}".format(taskstr, e))
-        errlog_add('[ERR] exec_lm_pipe error: {}'.format(e))
+        console_write(f"[IRQ-PIPE] error: {taskstr}\n{e}")
+        errlog_add(f"[ERR] exec_lm_pipe error: {e}")
         return False
     return True
 
@@ -378,7 +378,7 @@ def exec_lm_pipe_schedule(taskstr):
         schedule(exec_lm_pipe, taskstr)
         return True
     except Exception as e:
-        errlog_add("exec_lm_pipe_schedule error: {}".format(e))
+        errlog_add(f"exec_lm_pipe_schedule error: {e}")
         return False
 
 
@@ -400,7 +400,7 @@ def exec_lm_core(arg_list, msgobj=None):
             # task list
             if msg_len == 2 and 'list' == msg_list[1]:
                 tasks = '\n'.join(Manager().list_tasks())
-                tasks = '{}\n'.format(tasks)
+                tasks = f'{tasks}\n'
                 msgobj(tasks)
                 return True
             # task kill <taskID> / task show <taskID>
@@ -430,9 +430,9 @@ def exec_lm_core(arg_list, msgobj=None):
                 return True
             tag = '.'.join(arg_list[0:2])
             if state:
-                msgobj("Start {}".format(tag))
+                msgobj(f"Start {tag}")
             else:
-                msgobj("{} is Busy".format(tag))
+                msgobj(f"{tag} is Busy")
             # Valid & handled task command
             return True
         # Not valid task command
@@ -473,13 +473,13 @@ def _exec_lm_core(arg_list, msgobj):
             if json_mode:
                 return dumps(output)
             # Format dict output - human readable
-            return '\n'.join([" {}: {}".format(key, value) for key, value in lm_output.items()])
+            return '\n'.join([f" {key}: {value}" for key, value in lm_output.items()])
         # Handle output data stream
         if lm_func == 'help':
             if json_mode:
                 return dumps(output)
             # Format help msg - human readable
-            return '\n'.join([' {},'.format(out) for out in output])
+            return '\n'.join([f" {out}," for out in output])
         return output
 
     # Check json mode for LM execution
@@ -487,23 +487,23 @@ def _exec_lm_core(arg_list, msgobj):
     cmd_list = arg_list[0:-1] if json_mode else arg_list
     # LoadModule execution
     if len(cmd_list) >= 2:
-        lm_mod, lm_func, lm_params = "LM_{}".format(cmd_list[0]), cmd_list[1], __conv_func_params(' '.join(cmd_list[2:]))
+        lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], __conv_func_params(' '.join(cmd_list[2:]))
         try:
             # ------------- LM LOAD & EXECUTE ------------- #
             # [1] LOAD MODULE - OPTIMIZED by sys.modules
             if lm_mod not in modules:
-                exec("import {}".format(lm_mod))
+                exec(f"import {lm_mod}")
             try:
                 # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
-                lm_output = eval("{}.{}({})".format(lm_mod, lm_func, lm_params))
+                lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
             except Exception as e:
                 # Handle not proper module load (simulator), note: module in sys.modules BUT not available
                 if lm_mod in str(e):
-                    errlog_add("_exec_lm_core re-import {}!".format(lm_mod))
+                    errlog_add(f"_exec_lm_core re-import {lm_mod}!")
                     # [2.1] LOAD MODULE - FORCED
-                    exec("import {}".format(lm_mod))
+                    exec(f"import {lm_mod}")
                     # [2.2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
-                    lm_output = eval("{}.{}({})".format(lm_mod, lm_func, lm_params))
+                    lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
                 else:
                     raise Exception(e)
             # ---------------------------------------------- #
@@ -514,7 +514,7 @@ def _exec_lm_core(arg_list, msgobj):
             return True
             # ------------------------- #
         except Exception as e:
-            msgobj("exec_lm_core {}->{}: {}".format(lm_mod, lm_func, e))
+            msgobj(f"exec_lm_core {lm_mod}->{lm_func}: {e}")
             if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
                 # UNLOAD MODULE IF MEMORY ERROR HAPPENED
                 if lm_mod in modules.keys():
@@ -537,5 +537,5 @@ def exec_lm_core_schedule(arg_list):
         schedule(exec_lm_core, arg_list)
         return True
     except Exception as e:
-        errlog_add("schedule_lm_exec {} error: {}".format(arg_list, e))
+        errlog_add(f"schedule_lm_exec {arg_list} error: {e}")
         return False

@@ -66,7 +66,7 @@ def bootup_hook():
         if detect_platform() == 'esp32':
             freq(80000000)
 
-    # Scripts for file structure changes
+    # Scripts for file structure / config changes
     software_migration()
 
 

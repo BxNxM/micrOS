@@ -15,7 +15,7 @@ def sendcmd(*args, **kwargs):
             out = send_cmd(_host, _cmd)
         except Exception as e:
             out = []
-            errlog_add('[intercon] sendcmd: {}'.format(e))
+            errlog_add(f'[intercon] sendcmd: {e}')
         return out
 
     host = kwargs.get('host', None)

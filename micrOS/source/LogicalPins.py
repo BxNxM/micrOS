@@ -59,11 +59,11 @@ def set_pinmap(map_data=None):
         PinMap.MAPPING = {pin.split(':')[0].strip(): int(pin.split(':')[1].strip()) for pin in parsed_data if ':' in pin}
     except Exception as e:
         # PARSE ERROR !!!
-        print("[io] custom pin key(s) parse error: {}".format(e))
+        print(f"[io] custom pin key(s) parse error: {e}")
 
     # SELECT LOOKUP TABLE BASED ON PLATFORM / User input
     if isinstance(lp_name, str) and lp_name != 'n/a':
-        if "LP_{}".format(lp_name) in [lp.split('.')[0] for lp in dir() if lp.startswith('LP_')]:
+        if f"LP_{lp_name}" in [lp.split('.')[0] for lp in dir() if lp.startswith('LP_')]:
             PinMap.MAPPING_LUT = lp_name
             return PinMap.MAPPING_LUT
     PinMap.MAPPING_LUT = detect_platform()
@@ -84,13 +84,13 @@ def physical_pin(key):
         if pin_num in PinMap.IO_USE_DICT.keys():
             key_cache = PinMap.IO_USE_DICT[pin_num]
             if key_cache == key:
-                print("[io] ReInit pin: {}:{}".format(key_cache, pin_num))
+                print(f"[io] ReInit pin: {key_cache}:{pin_num}")
                 return pin_num
-            msg = "[io] Pin {} is busy: {}:{}".format(key, key_cache, pin_num)
+            msg = f"[io] Pin {key} is busy: {key_cache}:{pin_num}"
             raise Exception(msg)
         # key: pin number, value: pin key (alias)
         PinMap.IO_USE_DICT[pin_num] = key
-        print("[io] Init pin: {}:{}".format(key, pin_num))
+        print(f"[io] Init pin: {key}:{pin_num}")
     return pin_num
 
 
@@ -134,9 +134,9 @@ def __resolve_pin_number(key):
         # [1] Handle default pin resolve from static lut
         try:
             # LOAD LOOKUP TABLE
-            exec('import LP_{}'.format(PinMap.MAPPING_LUT))
+            exec(f'import LP_{PinMap.MAPPING_LUT}')
             # GET KEY PARAM VALUE
-            out = eval('LP_{}.{}'.format(PinMap.MAPPING_LUT, key))
+            out = eval(f'LP_{PinMap.MAPPING_LUT}.{key}')
             # Workaround to support normal python (tuple output), micropython (exact output - int)
             return int(out[0]) if isinstance(out, tuple) else out
         except Exception as e:
@@ -144,6 +144,6 @@ def __resolve_pin_number(key):
             if "No module named" in str(e):
                 return None
             # Other issue (key not found, etc...)
-            raise Exception("[io-resolve] error: {}".format(e))
+            raise Exception(f"[io-resolve] error: {e}")
     # [2] Handle user custom pins from cstmpmap (overwrite default)
     return custom_pin

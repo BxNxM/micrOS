@@ -64,7 +64,10 @@ class Telegram:
 
     @staticmethod
     def send_msg(text, reply_to=None):
-        """Send a message to the Telegram chat."""
+        """
+        Send a message to the Telegram chat.
+        RETURN None when telegram bot token is missing
+        """
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
@@ -79,7 +82,10 @@ class Telegram:
 
     @staticmethod
     def get_msg():
-        """Get the last message from the Telegram chat."""
+        """
+        Get the last message from the Telegram chat.
+        RETURN None when telegram bot token is missing
+        """
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
@@ -95,12 +101,19 @@ class Telegram:
 
     @staticmethod
     def receive_eval():
+        """
+        READ - VALIDATE - EXECUTE - REPLY LOOP
+        - can be used in async loop
+        RETURN None when telegram bot token is missing
+        """
         out = {"out": "", "verdict": None}
 
         def out_msg(msg):
             out['out'] += msg
 
         data = Telegram.get_msg()
+        if data is None:
+            return data
         msg_in, m_id = data['text'], data['m_id']
         if msg_in is not None and m_id != Telegram._IN_MSG_ID:
             loaded_mods = [lm.replace('LM_', '') for lm in modules.keys() if lm.startswith('LM_')]
@@ -125,7 +138,10 @@ class Telegram:
 
     @staticmethod
     def set_commands():
-        """Set Custom Commands to the Telegram chat."""
+        """
+        Set Custom Commands to the Telegram chat.
+        RETURN None when telegram bot token is missing
+        """
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
@@ -134,4 +150,4 @@ class Telegram:
         data = {"commands": [{"command": "ping", "description": "Ping All endpoints and return active modules."},
                              {"command": "cmd", "description": "Send command to All endpoints, run if module is loaded."}]}
         response = requests.post(url, headers=headers, json=data, sock_size=512)
-        return 'Custom commands was set' if response.jsson()['ok'] else response.text
+        return 'Custom commands was set' if response.json()['ok'] else response.text

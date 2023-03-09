@@ -341,12 +341,6 @@ class OTA(Compile):
         with open(".if_mode", 'w') as f:
             f.write(lock_value)
 
-        # Wait for device reboot - TODO remove - support obsoleted backand...
-        if lock:
-            for i in range(1, 4):
-                self.console("\tWait for device: {}/4 sec".format(i))
-                time.sleep(1)
-
         self.console("Webrepl CMD: {}".format(command))
         try:
             for _ in range(0, 5):

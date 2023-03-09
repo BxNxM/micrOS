@@ -11,9 +11,6 @@ from Network import ifconfig
 _ENABLE = True if ifconfig()[0] == "STA" else False
 if _ENABLE:
     TELEGRAM_OBJ = Telegram()
-    if TELEGRAM_OBJ.__bot_token() is None:
-        # NO TELEGRAM TOKEN
-        TELEGRAM_OBJ = None
 else:
     # NO NETWORK CONNECTION (STA)
     TELEGRAM_OBJ = None
@@ -26,8 +23,9 @@ def load_n_init():
     - /cmd module function (params)
     """
     if TELEGRAM_OBJ is None:
-        return "No telegram token OR network connection."
-    return TELEGRAM_OBJ.set_commands()
+        return "Network unavailable."
+    verdict = TELEGRAM_OBJ.set_commands()
+    return "Missing telegram bot token" if verdict is None else verdict
 
 
 def send(text):
@@ -37,11 +35,9 @@ def send(text):
     return verdict
     """
     if TELEGRAM_OBJ is None:
-        return "No telegram token OR network connection."
+        return "Network unavailable."
     verdict = TELEGRAM_OBJ.send_msg(text)
-    if verdict is None:
-        return "Telegram not available."
-    return verdict
+    return "Missing telegram bot token" if verdict is None else verdict
 
 
 def receive():
@@ -51,18 +47,17 @@ def receive():
     One successful msg receive is necessary to get chat_id for msg send as well!
     """
     if TELEGRAM_OBJ is None:
-        return "No telegram token OR network connection."
+        return "Network unavailable."
     verdict = TELEGRAM_OBJ.get_msg()
-    if verdict is None:
-        return "Telegram not available."
-    return verdict
+    return "Missing telegram bot token" if verdict is None else verdict
 
 
 async def __task():
     with micro_task(tag='telegram._lm_loop') as my_task:
         while True:
             try:
-                my_task.out = TELEGRAM_OBJ.receive_eval()
+                v = TELEGRAM_OBJ.receive_eval()
+                my_task.out = "Missing telegram bot token" if v is None else v
             except Exception as e:
                 my_task.out = str(e)
             await asyncio.sleep(5)
@@ -75,7 +70,7 @@ def receiver_loop():
     on the endpoint / micrOS node
     """
     if TELEGRAM_OBJ is None:
-        return "No telegram token OR network connection."
+        return "Network unavailable."
     state = micro_task(tag='telegram._lm_loop', task=__task())
     return "Starting" if state else "Already running"
 

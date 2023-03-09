@@ -1,6 +1,6 @@
-import socket
-import select
-import re
+from socket import socket, getaddrinfo, AF_INET, SOCK_STREAM
+from select import select
+from re import match
 from Debug import errlog_add
 from ConfigHandler import cfgget
 from SocketServer import SocketServer
@@ -8,37 +8,38 @@ from SocketServer import SocketServer
 
 class InterCon:
     CONN_MAP = {}
+    PORT = cfgget('socport')
 
     def __init__(self, timeout):
-        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.conn = socket(AF_INET, SOCK_STREAM)
         self.conn.settimeout(timeout)
         self.timeout = timeout
 
     @staticmethod
     def validate_ipv4(str_in):
         pattern = "^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
-        if bool(re.match(pattern, str_in)):
+        if bool(match(pattern, str_in)):
             return True
         return False
 
-    def send_cmd(self, host, port, cmd):
+    def send_cmd(self, host, cmd):
         hostname = None
         # Check IF host is hostname (example.local) and resolve it's IP address
         if not InterCon.validate_ipv4(host):
             hostname = host
             # Retrieve IP address by hostname dynamically
             if InterCon.CONN_MAP.get(hostname, None) is None:
-                host = socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM)[-1][4][0]
+                host = getaddrinfo(host, InterCon.PORT, 0, SOCK_STREAM)[-1][4][0]
             else:
                 # Restore IP from cache by hostname
                 host = InterCon.CONN_MAP[hostname]
         # IF IP address is available send msg to the endpoint
         if InterCon.validate_ipv4(host):
-            SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, port))
+            SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, InterCon.PORT))
 
             try:
                 # Connect to host
-                self.conn.connect((host, port))
+                self.conn.connect((host, InterCon.PORT))
                 # Send command over TCP/IP
                 output = self.__run_command(cmd, hostname)
             except OSError as e:
@@ -82,7 +83,7 @@ class InterCon:
     def __receive_data(self, prompt=None):
         data = ""
         # Collect answer data
-        if select.select([self.conn], [], [], self.timeout)[0]:
+        if select([self.conn], [], [], self.timeout)[0]:
             while True:
                 last_data = self.conn.recv(256).decode('utf-8').strip()
                 # First data is prompt, get it
@@ -98,10 +99,9 @@ class InterCon:
 
 # Main command to send msg to other micrOS boards
 def send_cmd(host, cmd, timeout=1.0):
-    port = cfgget('socport')
     com_obj = InterCon(timeout)
     # send command
-    output = com_obj.send_cmd(host, port, cmd)
+    output = com_obj.send_cmd(host, cmd)
     return output
 
 

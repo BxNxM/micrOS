@@ -16,6 +16,7 @@ from sys import modules
 from ConfigHandler import cfgget, cfgput
 from TaskManager import exec_lm_core
 from Debug import console_write, errlog_add
+from machine import reset as hard_reset
 
 
 #################################################################
@@ -62,8 +63,7 @@ class Shell:
         self.msg(f"{'[HARD] ' if hard else ''}Reboot micrOS system.")
         self.msg("Bye!")
         if hard:
-            from machine import reset
-            reset()
+            hard_reset()
         from machine import soft_reset
         soft_reset()
 
@@ -286,10 +286,9 @@ class Shell:
         msg_obj(" Bye!")
         if update:
             # Set update poller by interface mode file: .if_mode
-            from machine import reset
             with open('.if_mode', 'w') as f:
                 f.write('webrepl')
-            reset()
+            hard_reset()
         try:
             import webrepl
             msg_obj(webrepl.start(password=cfgget('appwd')))

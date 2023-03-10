@@ -366,7 +366,7 @@ def measure_conn_metrics():
     except Exception as e:
         state = False
         verdict = [str(e), '']
-    return state, ' || '.join(verdict)
+    return state, f'{" "*51}'.join(verdict)
 
 
 def memory_usage():
@@ -385,6 +385,15 @@ def memory_usage():
                                                                              json_out.get('mem_used'))
     return state, '[ST] {}OK{}: memory usage {}% ({} bytes)'.format(Colors.OK, Colors.NC,
                                                                     json_out.get('percent'), json_out.get('mem_used'))
+
+
+def task_list():
+    cmd = ['task list']
+    out = execute(cmd, tout=3)
+    state, output = out[0], out[1]
+    if state:
+        return state, output.replace('\n', f'\n{" "*51}')        # TODO format output
+    return state, output
 
 
 def app(devfid=None):
@@ -410,7 +419,8 @@ def app(devfid=None):
                'recursion': check_robustness_recursion(),
                'intercon': check_intercon(host='RingLamp.local'),
                'micros_alarms': micros_alarm_check(),
-               'conn_metrics': measure_conn_metrics()
+               'conn_metrics': measure_conn_metrics(),
+               'micros_tasks': task_list()
                }
 
     # Test Evaluation

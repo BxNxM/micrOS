@@ -366,19 +366,19 @@ def main(args, host='127.0.0.1', port=9008, timeout=3):
 
 def socket_commandline_args(arg_list):
     return_action_dict = {'search': False, 'device_tag': None, 'status': False}
-    if len(arg_list) > 0 and 'scan' in arg_list[0]:
+    if len(arg_list) > 0 and arg_list[0].startswith('scan'):
         del arg_list[0]
         return_action_dict['search'] = True
-    if len(arg_list) > 0 and 'stat' in str(arg_list[0]):
+    if len(arg_list) > 0 and str(arg_list[0]).startswith('stat'):
         del arg_list[0]
         return_action_dict['status'] = True
     if len(arg_list) > 0 and "dev" in arg_list[0]:
         return_action_dict['device_tag'] = arg_list[1]
         del arg_list[0:2]
-    if len(arg_list) > 0 and 'clean' in arg_list[0]:
+    if len(arg_list) > 0 and arg_list[0].startswith('clean'):
         ConnectionData.clean_cache()
         sys.exit()
-    if len(arg_list) > 0 and 'list' in arg_list[0]:
+    if len(arg_list) > 0 and arg_list[0].startswith('list'):
         ConnectionData.list_devices()
         sys.exit()
     if len(arg_list) > 0 and ("man" in arg_list[0] or "hint" in arg_list[0]):

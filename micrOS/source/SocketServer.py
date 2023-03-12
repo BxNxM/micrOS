@@ -62,7 +62,7 @@ class Client:
 
     async def read(self):
         """
-        Implements client read function
+        Implements client read function, reader size: 2048
         - set timeout counter
         - read input from client (run: return False)
         - connection error handling (stop: return True)

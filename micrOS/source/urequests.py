@@ -44,7 +44,7 @@ def decode_chunked(data):
     return decoded
 
 
-def request(method, url, data=None, json=None, headers={}, sock_size=1024):
+def request(method, url, data=None, json=None, headers=None, sock_size=1024, jsonify=False):
     """
     Micropython HTTP request function for REST API handling
     :param method: GET/POST
@@ -53,7 +53,11 @@ def request(method, url, data=None, json=None, headers={}, sock_size=1024):
     :param json: json body (handle json as data for POST method)
     :param headers: define headers
     :param sock_size: socket buffer size, default 1024 byte (micropython)
+    :param jsonify: convert response body to json
     """
+
+    if headers is None:
+        headers = {}
 
     # [1] PARSE URL -> proto (http/https), host, path + SET PORT
     proto, _, host, path = url.split('/', 3)
@@ -120,26 +124,8 @@ def request(method, url, data=None, json=None, headers={}, sock_size=1024):
         body = decode_chunked(body)
     else:
         body = body.decode('utf-8')
-    return Response(status_code, headers, body)
-
-
-class Response:
-    """
-    micropython Request response data structure
-    Data:
-    - status_code
-    - headers
-    - text
-    Method:
-    - json parser function
-    """
-    def __init__(self, status_code, headers, text):
-        self.status_code = status_code
-        self.headers = headers
-        self.text = text
-
-    def json(self):
-        return ujson.loads(self.text)
+    # Return status code, headers and body (text or jsons)
+    return status_code, headers, ujson.loads(body) if jsonify else body
 
 
 #############################################
@@ -147,17 +133,17 @@ class Response:
 #############################################
 
 
-def get(url, headers={}, sock_size=1024):
+def get(url, headers={}, sock_size=512, jsonify=False):
     """
     GENERIC HTTP GET FUNCTION
     """
-    return request('GET', url, headers=headers, sock_size=sock_size)
+    return request('GET', url, headers=headers, sock_size=sock_size, jsonify=jsonify)
 
 
-def post(url, data=None, json=None, headers={}, sock_size=1024):
+def post(url, data=None, json=None, headers={}, sock_size=512, jsonify=False):
     """
     GENERIC HTTP POST FUNCTION
     :param data: string body (handle bare string as data for POST method)
     :param json: json body (handle json as data for POST method)
     """
-    return request('POST', url, data=data, json=json, headers=headers, sock_size=sock_size)
+    return request('POST', url, data=data, json=json, headers=headers, sock_size=sock_size, jsonify=jsonify)

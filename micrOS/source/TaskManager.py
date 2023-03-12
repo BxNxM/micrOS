@@ -352,7 +352,7 @@ class Manager:
 def exec_lm_pipe(taskstr):
     """
     Input: taskstr contains LM calls separated by ;
-    Used for execute config callback parameters (IRQs and BootHook)
+    Used for execute config callback parameters (BootHook, ...)
     """
     try:
         # Handle config default empty value (do nothing)
@@ -372,7 +372,7 @@ def exec_lm_pipe(taskstr):
 def exec_lm_pipe_schedule(taskstr):
     """
     Wrapper for exec_lm_pipe
-    - Schedule LM executions from IRQs and BootHook
+    - Schedule LM executions from IRQs (extIRQ, timIRQ)
     """
     try:
         schedule(exec_lm_pipe, taskstr)
@@ -529,9 +529,9 @@ def _exec_lm_core(arg_list, msgobj):
 
 def exec_lm_core_schedule(arg_list):
     """
-    Wrapper for exec_lm_core
+    Wrapper for exec_lm_core for Scheduler
     - micropython scheduling
-        - exec protection for cron IRQ callbacks
+        - exec protection for cron IRQ
     """
     try:
         schedule(exec_lm_core, arg_list)

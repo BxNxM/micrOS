@@ -1,5 +1,4 @@
-import re
-from re import match
+from re import compile
 from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM
 
 from machine import RTC
@@ -111,9 +110,10 @@ def __persistent_cache_manager(mode):
 
 def suntime():
     """
-    :param lat: latitude
-    :param lng: longitude
-    :return: raw string / query output
+    GET sunrise and sunset time stumps for cron scheduling
+    - url: http://ip-api.com/json
+    - url: https://api.sunrise-sunset.org
+    :return: sun dict {'sunset': (h:m:s), 'sunrise': (h:m:s)}
     """
 
     if not cfgget('cron'):
@@ -128,7 +128,7 @@ def suntime():
     url = 'http://ip-api.com/json/?fields=lat,lon,timezone,offset'
     response = {}
     try:
-        response = http_get(url).json()
+        _, _, response = http_get(url, jsonify=True)
         lat = response.get('lat')
         lon = response.get('lon')
         Sun.UTC = int(response.get('offset') / 60)      # IN MINUTE
@@ -143,9 +143,9 @@ def suntime():
     if not (lat is None or lon is None):
         url = f'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'
         try:
-            response = http_get(url).json()
+            _, _, response = http_get(url, jsonify=True)
             results = response.get('results')
-            time_regex = re.compile(r'T([0-9:]+)')
+            time_regex = compile(r'T([0-9:]+)')
             sun = {
                 'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
                 'sunset': time_regex.search(results.get('sunset')).group(1).split(':')

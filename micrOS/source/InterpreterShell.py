@@ -24,7 +24,7 @@ from machine import reset as hard_reset
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.15.0-0'
+    MICROS_VERSION = '1.15.1-0'
 
     def __init__(self, msg_obj=None):
         """
@@ -41,7 +41,7 @@ class Shell:
         self.__conf_mode = False        # session conf mode: on / off
         # Set proper micrOS version
         try:
-            cfgput('version', Shell.__socket_interpreter_version)
+            cfgput('version', Shell.MICROS_VERSION)
         except Exception as e:
             console_write(f"Export system version to config failed: {e}")
             errlog_add(f"[Shell.init][ERR] system version export error: {e}")
@@ -133,7 +133,7 @@ class Shell:
         # Version handling
         if msg_list[0] == 'version':
             # For micrOS system version info
-            self.msg(str(Shell.__socket_interpreter_version))
+            self.msg(str(Shell.MICROS_VERSION))
             return True
 
         # Reboot micropython VM
@@ -146,8 +146,8 @@ class Shell:
 
         if msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:
-                Shell.micropython_webrepl(msg_obj=self.msg, update=True)
-            Shell.micropython_webrepl(msg_obj=self.msg)
+                Shell.webrepl(msg_obj=self.msg, update=True)
+            Shell.webrepl(msg_obj=self.msg)
 
         # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
         if msg_list[0].startswith('conf'):
@@ -178,8 +178,8 @@ class Shell:
             self.msg("[EXEC] Command mode (LMs):")
             self.msg("   help lm  - list ALL LoadModules")
             if "lm" in str(msg_list):
-                return Shell._show_lm_functions(msg_obj=self.msg)
-            return Shell._show_lm_functions(msg_obj=self.msg, active_only=True)
+                return Shell._show_lm_funcs(msg_obj=self.msg)
+            return Shell._show_lm_funcs(msg_obj=self.msg, active_only=True)
 
         # [2] EXECUTE:
         # @1 Configure mode
@@ -240,7 +240,7 @@ class Shell:
     #                   COMMAND MODE & LMS HANDLER                  #
     #################################################################
     @staticmethod
-    def _show_lm_functions(msg_obj, active_only=False):
+    def _show_lm_funcs(msg_obj, active_only=False):
         """
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
@@ -273,12 +273,11 @@ class Shell:
         return _offline_help(listdir())
 
     @staticmethod
-    def micropython_webrepl(msg_obj, update=False):
+    def webrepl(msg_obj, update=False):
         from Network import ifconfig
 
-        msg_obj(" Start micropython WEBREPL for interpreter web access and file transferring.")
-        msg_obj("  [!] micrOS socket shell will be available again after reboot.")
-        msg_obj("  \trestart machine shortcut: import reset")
+        msg_obj(" Start micropython WEBREPL - file transfer and debugging")
+        msg_obj("  [i] restart machine shortcut: import reset")
         msg_obj(f"  Connect over http://micropython.org/webrepl/#{ifconfig()[1][0]}:8266/")
         msg_obj(f"  \t[!] webrepl password: {cfgget('appwd')}")
         if update:

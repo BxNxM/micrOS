@@ -1,5 +1,5 @@
 from sys import modules
-import urequests as requests
+import urequests
 from ConfigHandler import cfgget
 from TaskManager import exec_lm_core
 
@@ -49,8 +49,7 @@ class Telegram:
         if Telegram.CHAT_ID is None:
             bot_token = Telegram.__bot_token()
             url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
-            response = requests.get(url, sock_size=512)
-            resp_json = response.json()
+            _, _, resp_json = urequests.get(url, jsonify=True)
 
             if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
                 Telegram.CHAT_ID = resp_json["result"][-1]["message"]["chat"]["id"]
@@ -77,8 +76,8 @@ class Telegram:
         if isinstance(reply_to, int):
             data['reply_to_message_id'] = reply_to
             Telegram._IN_MSG_ID = reply_to
-        response = requests.post(url, headers=headers, json=data, sock_size=512)
-        return 'Sent' if response.json()['ok'] else response.text
+        _, _, resp_json = urequests.post(url, headers=headers, json=data, jsonify=True)
+        return 'Sent' if resp_json['ok'] else str(resp_json)
 
     @staticmethod
     def get_msg():
@@ -90,10 +89,9 @@ class Telegram:
         if bot_token is None:
             return None
         url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
-        response = requests.get(url, sock_size=512)
-        response_json = response.json()
-        if len(response_json["result"]) > 0:
-            resp = response_json["result"][-1]["message"]
+        _, _, resp_json = urequests.get(url, jsonify=True)
+        if len(resp_json["result"]) > 0:
+            resp = resp_json["result"][-1]["message"]
             sender, date, text, m_id = resp['chat']['username'], resp['date'], resp['text'], resp['message_id']
             return {'sender': sender, 'date': date, 'text': text, 'm_id': m_id}
         else:
@@ -173,5 +171,5 @@ class Telegram:
                              {"command": "cmd", "description": "Command to All endpoints (only loaded modules)."},
                              {"command": "cmd_select", "description": "Command to Selected endpoints: device module func"},
                              ]}
-        response = requests.post(url, headers=headers, json=data, sock_size=512)
-        return 'Custom commands was set' if response.json()['ok'] else response.text
+        _, _, resp_json = urequests.post(url, headers=headers, json=data, jsonify=True)
+        return 'Custom commands was set' if resp_json['ok'] else str(resp_json)

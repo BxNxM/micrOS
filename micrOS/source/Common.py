@@ -17,12 +17,12 @@ from Debug import logger, log_get
 try:
     from TaskManager import Task, Manager
 except Exception as e:
-    print("Import ERROR, TaskManager: {}".format(e))
+    print(f"Import ERROR, TaskManager: {e}")
     Task, Manager = None, None
 try:
     from Notify import Telegram
 except Exception as e:
-    print("Import ERROR, Notify.Telegram: {}".format(e))
+    print(f"Import ERROR, Notify.Telegram: {e}")
     Telegram = None
 
 
@@ -153,7 +153,7 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
     """
     # TODO: test!!!
     ext = '.dat'
-    f_name = f_name if f_name.endswith(ext) else '{}{}'.format(f_name, ext)
+    f_name = f_name if f_name.endswith(ext) else f'{f_name}{ext}'
     # GET LOGGED DATA
     if data is None:
         # return log as msg stream
@@ -174,7 +174,7 @@ def notify(text):
     try:
         out = Telegram().send_msg(text)
     except Exception as e:
-        print("Notify ERROR: {}".format(e))
+        print(f"Notify ERROR: {e}")
         out = str(e)
     if out is not None and out == 'Sent':
         return True

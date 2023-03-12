@@ -24,7 +24,7 @@ from machine import reset as hard_reset
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.14.5-0'
+    __socket_interpreter_version = '1.15.0-0'
 
     def __init__(self, msg_obj=None):
         """

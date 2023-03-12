@@ -72,7 +72,7 @@ def logger(data, f_name, limit):
         ts = ".".join(ts_buff[0:3]) + "-" + ":".join(ts_buff[3:6])
         # [2] OPEN FILE - WRITE DATA WITH TS
         with open(_f_name, f_mode) as f:
-            _data = "{} {}\n".format(ts, _data)
+            _data = f"{ts} {_data}\n"
             # read file lines and filter by time stump chunks (hack for replace truncate)
             lines = [_l for _l in f.readlines() if '-' in _l and '.' in _l]
             # get file params
@@ -148,7 +148,7 @@ def errlog_get(msgobj=None):
 def errlog_clean(msgobj=None):
     to_del = [file for file in os.listdir() if file.endswith('.log')]
     for _del in to_del:
-        del_msg = " Delete: {}".format(_del)
+        del_msg = f" Delete: {_del}"
         if msgobj is None:
             console_write(del_msg)
         else:

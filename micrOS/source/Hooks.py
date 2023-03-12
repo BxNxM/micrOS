@@ -46,7 +46,7 @@ def bootup_hook():
     console_write("[BOOTHOOK] EXECUTION ...")
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
-        console_write("|-[BOOTHOOK] TASKS: {}".format(bootasks))
+        console_write(f"|-[BOOTHOOK] TASKS: {bootasks}")
         if exec_lm_pipe(bootasks):
             console_write("|-[BOOTHOOK] DONE")
         else:
@@ -54,13 +54,13 @@ def bootup_hook():
 
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:
-        console_write("[BOOT HOOKS] Set up CPU high Hz - boostmd: {}".format(cfgget('boostmd')))
+        console_write(f"[BOOT HOOKS] Set up CPU high Hz - boostmd: {cfgget('boostmd')}")
         if detect_platform() == 'esp8266':
             freq(160000000)
         if detect_platform() == 'esp32':
             freq(240000000)
     else:
-        console_write("[BOOT HOOKS] Set up CPU low Hz - boostmd: {}".format(cfgget('boostmd')))
+        console_write(f"[BOOT HOOKS] Set up CPU low Hz - boostmd: {cfgget('boostmd')}")
         if detect_platform() == 'esp8266':
             freq(80000000)
         if detect_platform() == 'esp32':
@@ -75,6 +75,6 @@ def profiling_info(label=""):
     Runtime memory measurements
     """
     if cfgget('dbg'):
-        console_write("{} [PROFILING INFO] - {} {}".format('~'*5, label, '~'*5))
+        console_write(f"{'~'*5} [PROFILING INFO] - {label} {'~'*5}")
         mem_info()
         console_write("~"*30)

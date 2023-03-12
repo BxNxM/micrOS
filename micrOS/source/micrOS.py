@@ -26,8 +26,8 @@ def safe_boot_hook():
     try:
         bootup_hook()
     except Exception as e:
-        print("[micrOS main] Hooks.bootup_hook() error: {}".format(e))
-        errlog_add("[ERR] safe_boot_hook error: {}".format(e))
+        print(f"[micrOS main] Hooks.bootup_hook() error: {e}")
+        errlog_add(f"[ERR] safe_boot_hook error: {e}")
 
 
 def interrupt_handler():
@@ -35,16 +35,16 @@ def interrupt_handler():
         enableInterrupt()
         enableCron()
     except Exception as e:
-        print("[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {}".format(e))
-        errlog_add("[ERR] interrupt_handler error: {}".format(e))
+        print(f"[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {e}")
+        errlog_add(f"[ERR] interrupt_handler error: {e}")
 
 
 def external_interrupt_handler():
     try:
         initEventIRQs()
     except Exception as e:
-        print("[micrOS main] InterruptHandler.initEventIRQs error: {}".format(e))
-        errlog_add("[ERR] external_interrupt_handler error: {}".format(e))
+        print(f"[micrOS main] InterruptHandler.initEventIRQs error: {e}")
+        errlog_add(f"[ERR] external_interrupt_handler error: {e}")
 
 
 def nw_time_sync():

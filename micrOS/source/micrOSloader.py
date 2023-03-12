@@ -14,7 +14,7 @@ except:
 try:
     from Debug import errlog_add
 except Exception as e:
-    print("Import error: {}".format(e))
+    print(f"Import error: {e}")
     errlog_add = None
 
 
@@ -71,7 +71,7 @@ def __recovery_mode():
         import webrepl
         webrepl.start(password=pwd)
     except Exception as e:
-        print("Webrepl import error: {}".format(e))
+        print(f"Webrepl import error: {e}")
 
 
 def __auto_restart_event():
@@ -90,10 +90,10 @@ def __auto_restart_event():
         # Wait for micros turns to webrepl until timeout
         if __is_micrOS():
             # micrOS mode
-            print("[loader][ota auto-rebooter][micros][{}] Wait for OTA update possible start".format(wait_update_tout))
+            print(f"[loader][ota auto-rebooter][micros][{wait_update_tout}] Wait for OTA update possible start")
             wait_update_tout -= 1
         else:
-            print("[loader][ota auto-rebooter][webrepl/None][{}] Update status: InProgress".format(wait_update_tout))
+            print(f"[loader][ota auto-rebooter][webrepl/None][{wait_update_tout}] Update status: InProgress")
             # Set trigger  - if_mode changed to webrepl - ota update started - trigger wait
             trigger_is_active = True
         # Restart if trigger was activated
@@ -118,10 +118,10 @@ def main():
         except Exception as e:
             if traceback is not None: traceback.print_exc()
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
-            print("[loader][main mode] micrOS start failed: {}".format(e))
+            print(f"[loader][main mode] micrOS start failed: {e}")
             print("[loader][main mode] -> [recovery mode]")
             if errlog_add is not None:
-                errlog_add("[ERR][micrOSloader] micrOS start failed: {}".format(e))
+                errlog_add(f"[ERR][micrOSloader] micrOS start failed: {e}")
     # Recovery aka webrepl mode
     __recovery_mode()
     __auto_restart_event()

@@ -72,17 +72,18 @@ def enableInterrupt():
 def enableCron():
     """
     Set time stump based scheduler aka cron in timer1
-    Input: cron(bool), cronseq(ms), crontasks(str)
+    Input: cron(bool), crontasks(str)
     """
-    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget('cron'), cfgget("cronseq")))
+    timer_period = 3000         # Timer period ms
+    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget('cron'), timer_period))
     console_write("|- [IRQ] CRON CBF:{}".format(cfgget('crontasks')))
     if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
         from machine import Timer
         # INIT TIMER 1 IRQ with callback function wrapper
         lm_str = cfgget('crontasks')
-        sample = int(cfgget("cronseq")/1000)
+        sample = int(timer_period/1000)
         timer = Timer(1)
-        timer.init(period=int(cfgget("cronseq")), mode=Timer.PERIODIC,
+        timer.init(period=timer_period, mode=Timer.PERIODIC,
                    callback=lambda timer: scheduler(lm_str, sample))
 
 

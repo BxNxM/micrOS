@@ -106,32 +106,54 @@ class Telegram:
         - can be used in async loop
         RETURN None when telegram bot token is missing
         """
+        # Return data structure template
         out = {"out": "", "verdict": None}
 
+        # exec_lm_core msg object definition
         def out_msg(msg):
             out['out'] += msg
 
+        def lm_execute(cmd_args):
+            if cmd_args[0] in loaded_mods:
+                out['verdict'] = f'Exec: {" ".join(cmd_args)}'
+                try:
+                    exec_lm_core(cmd_args, msgobj=out_msg)
+                except Exception as e:
+                    out_msg(str(e))
+                Telegram.send_msg(out['out'], reply_to=m_id)
+            else:
+                out['verdict'] = f'NoAccess: {cmd_args[0]}'
+                Telegram._IN_MSG_ID = m_id
+
+        # Poll telegram chat
         data = Telegram.get_msg()
+        print(data)
         if data is None:
             return data
+        # Get msg and msg_id as main input data source
         msg_in, m_id = data['text'], data['m_id']
         if msg_in is not None and m_id != Telegram._IN_MSG_ID:
+            # Parse loaded modules
             loaded_mods = [lm.replace('LM_', '') for lm in modules.keys() if lm.startswith('LM_')]
-            # PING - Get auto reply from node - loaded modules
+            loaded_mods.append('task')      # add task "module" to whitelist
+            # [TELEGRAM CMD] /PING - Get auto reply from node - loaded modules
+            #               Example: /ping
             if msg_in.startswith('/ping'):
                 Telegram.send_msg(', '.join(loaded_mods), reply_to=m_id)
-            # CMD - Load Module execution handling
+            # [TELEGRAM CMD] /CMD_SELECT - Load Module execution handling - SELECTED DEV. MODE
+            #               Example: /cmd_select device module func param(s)
+            elif msg_in.startswith('/cmd_select'):
+                cmd_lm = msg_in.replace('/cmd_select', '').strip().split()
+                # [Compare] cmd selected device param with DEVFID (device/prompt name)
+                if cmd_lm[0] in Telegram.DEVFID:
+                    lm_execute(cmd_lm[1:])
+                else:
+                    out['verdict'] = f'NoSelected: {cmd_lm[0]}'
+            # [TELEGRAM CMD] /CMD - Load Module execution handling - ALL mode
+            #               Example: /cmd module func param(s)
             elif msg_in.startswith('/cmd'):
                 cmd_lm = msg_in.replace('/cmd', '').strip().split()
-                if cmd_lm[0] in loaded_mods:
-                    out['verdict'] = f'Exec: {" ".join(cmd_lm)}'
-                    try:
-                        exec_lm_core(cmd_lm, msgobj=out_msg)
-                    except Exception as e:
-                        out_msg(str(e))
-                    Telegram.send_msg(out['out'], reply_to=m_id)
-                else:
-                    out['verdict'] = f'NoAccess: {cmd_lm[0]}'
+                lm_execute(cmd_lm)
         else:
             out['verdict'] = f"NoExec: {msg_in}"
         return out['verdict']
@@ -147,7 +169,9 @@ class Telegram:
             return None
         url = f"https://api.telegram.org/bot{bot_token}/setMyCommands{Telegram.API_PARAMS}"
         headers = {"Content-Type": "application/json"}
-        data = {"commands": [{"command": "ping", "description": "Ping All endpoints and return active modules."},
-                             {"command": "cmd", "description": "Send command to All endpoints, run if module is loaded."}]}
+        data = {"commands": [{"command": "ping", "description": "Ping All endpoints, return active modules."},
+                             {"command": "cmd", "description": "Command to All endpoints (only loaded modules)."},
+                             {"command": "cmd_select", "description": "Command to Selected endpoints: device module func"},
+                             ]}
         response = requests.post(url, headers=headers, json=data, sock_size=512)
         return 'Custom commands was set' if response.json()['ok'] else response.text

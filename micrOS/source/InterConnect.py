@@ -17,7 +17,7 @@ class InterCon:
 
     @staticmethod
     def validate_ipv4(str_in):
-        pattern = "^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
+        pattern = "(?:^|\b(?<!\.))(?:1?\d\d?|2[0-4]\d|25[0-5])(?:\.(?:1?\d\d?|2[0-4]\d|25[0-5])){3}(?=$|[^\w.])"
         if bool(match(pattern, str_in)):
             return True
         return False
@@ -96,12 +96,17 @@ class InterCon:
             data = [k.strip() for k in data.strip().split('\n')]
         return data, prompt
 
+    def __del__(self):
+        del self.conn
+        del self.timeout
+
 
 # Main command to send msg to other micrOS boards
 def send_cmd(host, cmd, timeout=1.0):
     com_obj = InterCon(timeout)
     # send command
     output = com_obj.send_cmd(host, cmd)
+    del com_obj
     return output
 
 

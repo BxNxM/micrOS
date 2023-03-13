@@ -1,11 +1,11 @@
 try:
-    import usocket
-    import ussl
-    import ujson
-except ImportError:
-    import socket as usocket
-    import ssl as ussl
-    import json as ujson
+    from usocket import socket, getaddrinfo
+    from ussl import wrap_socket
+except ImportError as e:
+    print(f"[Error] import u modules: {e}")
+    from socket import socket, getaddrinfo
+    from ssl import wrap_socket
+import json as ujson
 
 
 #############################################
@@ -68,14 +68,14 @@ def request(method, url, data=None, json=None, headers=None, sock_size=1024, jso
         port = int(port)
 
     # [2] CONNECT - create socket object
-    sock = usocket.socket()
+    sock = socket()
     sock.settimeout(2)
     # [2.1] CONNECT - resolve IP by host
-    addr = usocket.getaddrinfo(host, port)[0][-1]
+    addr = getaddrinfo(host, port)[0][-1]
     # [2.2] CONNECT - if https handle ssl
     sock.connect(addr)
     if proto == 'https:':
-        sock = ussl.wrap_socket(sock)
+        sock = wrap_socket(sock)
 
     # [3] BUILD REQUEST: body, headers
     if data is not None:
@@ -125,7 +125,7 @@ def request(method, url, data=None, json=None, headers=None, sock_size=1024, jso
     else:
         body = body.decode('utf-8')
     # Return status code, headers and body (text or jsons)
-    return status_code, headers, ujson.loads(body) if jsonify else body
+    return status_code, ujson.loads(body) if jsonify else body
 
 
 #############################################

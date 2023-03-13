@@ -16,7 +16,7 @@ class Data:
     CWWW_CACHE = [500, 500, 0]           # cold white / warm white / state
     CH_MAX = 1000
     PERSISTENT_CACHE = False
-    CCT_TASK_TAG = 'cct._transition'
+    CCT_TASK_TAG = 'cct._tran'
     HUE_TASK_TAG = 'cct._hue'
     TASK_STATE = False
 
@@ -218,7 +218,7 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
         with micro_task(tag=Data.CCT_TASK_TAG) as my_task:
             for cw_val in cw_gen:
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
-                    my_task.out = "Dimming cancelled"
+                    my_task.out = "Cancelled"
                     return
                 ww_val = ww_gen.__next__()
                 if Data.CWWW_CACHE[2] == 1 or wake:
@@ -228,11 +228,11 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
                 # Update periphery cache (value check due to toggle ON value minimum)
                 Data.CWWW_CACHE[0] = cw_val if cw_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 Data.CWWW_CACHE[1] = ww_val if ww_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
-                my_task.out = "Dimming ... CW: {} WW: {}".format(cw_val, ww_val)
+                my_task.out = f"Dimming: CW:{cw_val} WW:{ww_val}"
                 await asyncio.sleep_ms(ms_period)
             if Data.CWWW_CACHE[2] == 1 or wake:
                 __state_machine(c=cw_val, w=ww_val)
-            my_task.out = "Dimming ... DONE: CW: {} WW: {}".format(cw_val, ww_val)
+            my_task.out = f"Dimming DONE: CW:{cw_val} WW:{ww_val}"
 
     Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     cw_from, ww_from = __cwww_init()[0].duty(), __cwww_init()[1].duty()
@@ -261,7 +261,7 @@ def hue_transition(percent, sec=1.0, wake=False):
         with micro_task(tag=Data.HUE_TASK_TAG) as my_task:
             for hue_precent in iterable:
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
-                    my_task.out = "HUE Dimming cancelled"
+                    my_task.out = "Cancelled"
                     return
                 # Set brightness percentage
                 target_cold = 1000 - hue_precent
@@ -276,11 +276,11 @@ def hue_transition(percent, sec=1.0, wake=False):
                     ww_obj.duty(warm)
                 Data.CWWW_CACHE[0] = cold if cold > 5 else 5
                 Data.CWWW_CACHE[1] = warm if warm > 5 else 5
-                my_task.out = "HUE {}%w - CW: {} WW: {}".format(int(hue_precent*0.1), cold, warm)
+                my_task.out = f"HUE {int(hue_precent*0.1)}%w - CW:{cold} WW:{warm}"
                 # Feed async loop
                 await asyncio.sleep_ms(ms_period)
             __state_machine(cold, warm)
-            my_task.out = "HUE DONE {}%w - CW: {} WW: {}".format(int(hue_precent*0.001), cold, warm)
+            my_task.out = f"HUE DONE {int(hue_precent*0.001)}%w - CW:{cold} WW:{warm}"
 
     if 0 <= percent <= 100:
         Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)

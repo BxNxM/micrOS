@@ -10,7 +10,6 @@ Designed by Marcell Ban aka BxNxM GitHub
 #                         IMPORTS                       #
 #########################################################
 
-# from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
 from InterpreterShell import Shell
@@ -54,8 +53,8 @@ class Client:
         self.drain_event.set()
 
         self.client_id = writer.get_extra_info('peername')
-        Debug().console("[Client] new conn: {}".format(self.client_id))
-        client_tag = "{}:{}".format('.'.join(self.client_id[0].split('.')[-2:]), str(self.client_id[1]))
+        Debug().console(f"[Client] new conn: {self.client_id}")
+        client_tag = f"{'.'.join(self.client_id[0].split('.')[-2:])}:{str(self.client_id[1])}"
         self.client_id = client_tag
         self.shell = Shell(self.send)
         self.last_msg_t = ticks_ms()
@@ -68,18 +67,18 @@ class Client:
         - connection error handling (stop: return True)
         - exit command handling (stop: return True)
         """
-        Debug().console("[Client] read {}".format(self.client_id))
+        Debug().console(f"[Client] read {self.client_id}")
         self.last_msg_t = ticks_ms()
         try:
             request = (await self.reader.read(2048))
             request = request.decode('utf8').strip()
         except Exception as e:
-            Debug().console("[Client] Stream read error ({}): {}".format(self.client_id, e))
+            Debug().console(f"[Client] Stream read error ({self.client_id}): {e}")
             collect()           # gc collection: "fix" for memory allocation failed, allocating 2049 bytes
             return True, ''
 
         # Input handling
-        Debug().console("[Client] raw request ({}): |{}|".format(self.client_id, request))
+        Debug().console(f"[Client] raw request ({self.client_id}): |{request}|")
         if request == 'exit' or request == '':
             return True, request
         return False, request
@@ -91,7 +90,7 @@ class Client:
         if self.connected:
             if self.shell.prompt() != response:
                 # Add new line if not prompt (?)
-                response = "{}\n".format(response)
+                response = f"{response}\n"
             # Debug().console("[Client] ----- SteamWrite: {}".format(response))
             # Store data in stream buffer
             self.writer.write(response.encode('utf8'))
@@ -116,13 +115,13 @@ class Client:
             await self.writer.drain()
             # Debug().console("  |------ stop drain")
         except Exception as e:
-            Debug().console("[Client] Drain error -> close conn: {}".format(e))
+            Debug().console(f"[Client] Drain error -> close conn: {e}")
             await self.close()
         # set drain free
         self.drain_event.set()
 
     async def close(self):
-        Debug().console("[Client] Close connection {}".format(self.client_id))
+        Debug().console(f"[Client] Close connection {self.client_id}")
         # Reset shell state machine
         self.shell.reset()
         self.send("Bye!\n")
@@ -131,7 +130,7 @@ class Client:
             self.writer.close()
             await self.writer.wait_closed()
         except Exception as e:
-            Debug().console("[Client] Close error: {}".format(e))
+            Debug().console(f"[Client] Close error: {e}")
         self.connected = False
         Debug.INDENT = 0
         if Client.ACTIVE_CLIS.get(self.client_id, None) is not None:
@@ -151,10 +150,10 @@ class Client:
         except Exception as e:
             if "ECONNRESET" in e:
                 await self.close()
-            Debug().console("[Client] Shell exception: {}".format(e))
+            Debug().console(f"[Client] Shell exception: {e}")
             return False
         collect()
-        self.send("[HA] Shells cleanup: {}".format(mem_free()))
+        self.send(f"[HA] Shells cleanup: {mem_free()}")
         return True
 
     async def run_shell(self):
@@ -177,13 +176,13 @@ class Client:
                     errlog_add("[ERR] Socket critical error - reboot")
                     self.shell.reboot()
             except Exception as e:
-                errlog_add("[ERR] handle_client: {}".format(e))
+                errlog_add(f"[ERR] handle_client: {e}")
                 break
         # Close connection
         await self.close()
 
     def __del__(self):
-        Debug().console("Delete client connection: {}".format(self.client_id))
+        Debug().console(f"Delete client connection: {self.client_id}")
 
 
 #########################################################
@@ -212,7 +211,6 @@ class SocketServer:
             # Socket server initial parameters
             SocketServer.__instance.__host = ''
             SocketServer.__instance.server = None
-            SocketServer.__instance.server_console_indent = 0
 
             # ---- Config ---
             SocketServer.__instance.__port = cfgget("socport")
@@ -245,16 +243,14 @@ class SocketServer:
             return True, new_client_id      # [!] Enable new connection
 
         # Get active clients timeout counters - handle new client depending on active client timeouts
-        Debug().console("NEW INC. CLIENT: {}".format(new_client_id))
+        Debug().console(f"NEW CLIENT CONN: {new_client_id}")
         enable_new = False
         for cli_id, cli in Client.ACTIVE_CLIS.items():
-            client_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
-            Debug().console("[server] attempt to accept_client {} - isconn: {}({}):{}s".format(new_client_id, cli.connected,
-                                                                                    cli_id,
-                                                                                    cls.soc_timeout - client_inactive))
-            if not cli.connected or client_inactive > cls.soc_timeout:
+            cli_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
+            Debug().console(f"[server] accept new {new_client_id} - active {cli_id} tout:{cls.soc_timeout - cli_inactive}s")
+            if not cli.connected or cli_inactive > cls.soc_timeout:
                 # OPEN CONNECTION IS INACTIVE > CLOSE
-                Debug().console("------- connection - client timeout - accept new connection")
+                Debug().console("------- client timeout - accept new connection")
                 await cli.close()
                 enable_new = True
                 break
@@ -294,11 +290,10 @@ class SocketServer:
         Define async socket server (tcp by default)
         """
         addr = ifconfig()[1][0]
-        Debug().console("[ socket server ] Start socket server on {}:{}".format(addr, cls.__port))
-        Debug().console("- connect: telnet {} {}".format(addr, cls.__port))
+        Debug().console(f"[ socket server ] Start socket server on {addr}:{cls.__port}")
         cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=3)
         await cls.server
-        Debug().console("-- TCP server running in background")
+        Debug().console(f"- TCP server ready, connect: telnet {addr} {cls.__port}")
 
     @staticmethod
     def reply_message(msg):

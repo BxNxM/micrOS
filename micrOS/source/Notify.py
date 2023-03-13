@@ -49,7 +49,7 @@ class Telegram:
         if Telegram.CHAT_ID is None:
             bot_token = Telegram.__bot_token()
             url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
-            _, _, resp_json = urequests.get(url, jsonify=True)
+            _, resp_json = urequests.get(url, jsonify=True)
 
             if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
                 Telegram.CHAT_ID = resp_json["result"][-1]["message"]["chat"]["id"]
@@ -76,7 +76,7 @@ class Telegram:
         if isinstance(reply_to, int):
             data['reply_to_message_id'] = reply_to
             Telegram._IN_MSG_ID = reply_to
-        _, _, resp_json = urequests.post(url, headers=headers, json=data, jsonify=True)
+        _, resp_json = urequests.post(url, headers=headers, json=data, jsonify=True)
         return 'Sent' if resp_json['ok'] else str(resp_json)
 
     @staticmethod
@@ -89,7 +89,7 @@ class Telegram:
         if bot_token is None:
             return None
         url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
-        _, _, resp_json = urequests.get(url, jsonify=True)
+        _, resp_json = urequests.get(url, jsonify=True)
         if len(resp_json["result"]) > 0:
             resp = resp_json["result"][-1]["message"]
             sender, date, text, m_id = resp['chat']['username'], resp['date'], resp['text'], resp['message_id']
@@ -105,27 +105,29 @@ class Telegram:
         RETURN None when telegram bot token is missing
         """
         # Return data structure template
-        out = {"out": "", "verdict": None}
+        verdict = None
+        out = ""
 
         # exec_lm_core msg object definition
         def out_msg(msg):
-            out['out'] += msg
+            nonlocal out
+            out += msg
 
         def lm_execute(cmd_args):
+            nonlocal verdict
             if cmd_args[0] in loaded_mods:
-                out['verdict'] = f'Exec: {" ".join(cmd_args)}'
+                verdict = f'Exec: {" ".join(cmd_args[0])}'
                 try:
                     exec_lm_core(cmd_args, msgobj=out_msg)
                 except Exception as e:
                     out_msg(str(e))
-                Telegram.send_msg(out['out'], reply_to=m_id)
+                Telegram.send_msg(out, reply_to=m_id)
             else:
-                out['verdict'] = f'NoAccess: {cmd_args[0]}'
+                verdict = f'NoAccess: {cmd_args[0]}'
                 Telegram._IN_MSG_ID = m_id
 
         # Poll telegram chat
         data = Telegram.get_msg()
-        print(data)
         if data is None:
             return data
         # Get msg and msg_id as main input data source
@@ -146,15 +148,15 @@ class Telegram:
                 if cmd_lm[0] in Telegram.DEVFID:
                     lm_execute(cmd_lm[1:])
                 else:
-                    out['verdict'] = f'NoSelected: {cmd_lm[0]}'
+                    verdict = f'NoSelected: {cmd_lm[0]}'
             # [TELEGRAM CMD] /CMD - Load Module execution handling - ALL mode
             #               Example: /cmd module func param(s)
             elif msg_in.startswith('/cmd'):
                 cmd_lm = msg_in.replace('/cmd', '').strip().split()
                 lm_execute(cmd_lm)
         else:
-            out['verdict'] = f"NoExec: {msg_in}"
-        return out['verdict']
+            verdict = "NoExec"
+        return verdict
 
     @staticmethod
     def set_commands():
@@ -171,5 +173,5 @@ class Telegram:
                              {"command": "cmd", "description": "Command to All endpoints (only loaded modules)."},
                              {"command": "cmd_select", "description": "Command to Selected endpoints: device module func"},
                              ]}
-        _, _, resp_json = urequests.post(url, headers=headers, json=data, jsonify=True)
+        _, resp_json = urequests.post(url, headers=headers, json=data, jsonify=True)
         return 'Custom commands was set' if resp_json['ok'] else str(resp_json)

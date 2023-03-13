@@ -13,7 +13,7 @@ class Data:
     # DIMMER_CACHE: state:ON/OFF, value:0-1000
     DIMMER_CACHE = [0, 500]
     PERSISTENT_CACHE = False
-    DIMM_TASK_TAG = "dimmer._transition"
+    DIMM_TASK_TAG = "dimmer._tran"
     TASK_STATE = False
 
 
@@ -162,18 +162,18 @@ def transition(value, sec=1.0, wake=False):
         with micro_task(tag=Data.DIMM_TASK_TAG) as my_task:
             for i in iterable:
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
-                    my_task.out = "Dimming cancelled"
+                    my_task.out = "Cancelled"
                     return
                 if Data.DIMMER_CACHE[0] == 1 or wake:
                     # Write periphery
                     __dimmer_init().duty(i)
                 # Update periphery cache (value check due to toggle ON value minimum)
                 Data.DIMMER_CACHE[1] = i if i > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
-                my_task.out = "Dimming ... {}".format(i)
+                my_task.out = f"Dimming: {i}"
                 await asyncio.sleep_ms(ms_period)
             if Data.DIMMER_CACHE[0] == 1 or wake:
                 __state_machine(i)
-            my_task.out = "Dimming DONE: {}".format(i)
+            my_task.out = f"Dimming DONE: {i}"
 
     Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     if Data.DIMMER_CACHE[0] == 1:

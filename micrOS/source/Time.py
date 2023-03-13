@@ -128,7 +128,7 @@ def suntime():
     url = 'http://ip-api.com/json/?fields=lat,lon,timezone,offset'
     response = {}
     try:
-        _, _, response = http_get(url, jsonify=True)
+        _, response = http_get(url, jsonify=True)
         lat = response.get('lat')
         lon = response.get('lon')
         Sun.UTC = int(response.get('offset') / 60)      # IN MINUTE
@@ -143,7 +143,7 @@ def suntime():
     if not (lat is None or lon is None):
         url = f'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'
         try:
-            _, _, response = http_get(url, jsonify=True)
+            _, response = http_get(url, sock_size=1024, jsonify=True)
             results = response.get('results')
             time_regex = compile(r'T([0-9:]+)')
             sun = {

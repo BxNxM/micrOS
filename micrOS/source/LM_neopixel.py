@@ -18,7 +18,7 @@ class Data:
     CH_MAX = 255
     NEOPIXEL_OBJ = None
     PERSISTENT_CACHE = False
-    RGB_TASK_TAG = "neopixel._transition"
+    RGB_TASK_TAG = "neopixel._tran"
     TASK_STATE = False
 
 
@@ -255,7 +255,7 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
         with micro_task(tag=Data.RGB_TASK_TAG) as my_task:
             for r_val in r_gen:
                 if not Data.TASK_STATE:
-                    my_task.out = "Dimming cancelled"
+                    my_task.out = "Cancelled"
                     return
                 g_val = g_gen.__next__()
                 b_val = b_gen.__next__()
@@ -268,11 +268,11 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
                 Data.DCACHE[0] = r_val if r_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 Data.DCACHE[1] = g_val if g_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 Data.DCACHE[2] = b_val if b_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
-                my_task.out = "Dimming ... R: {} G: {} B: {}".format(r_val, g_val, b_val)
+                my_task.out = f"Dimming: R:{r_val} G:{g_val} B:{b_val}"
                 await asyncio.sleep_ms(ms_period)
             if Data.DCACHE[3] == 1 or wake:
                 __state_machine(r=r_val, g=g_val, b=b_val)
-            my_task.out = "Dimming ... DONE: R: {} G: {} B: {}".format(r_val, g_val, b_val)
+            my_task.out = f"Dimming DONE: R:{r_val} G:{g_val} B:{b_val}"
 
     Data.TASK_STATE = True      # Save transition task is stared (kill param to overwrite task with user input)
     r_from, g_from, b_from = Data.DCACHE[0], Data.DCACHE[1], Data.DCACHE[2]

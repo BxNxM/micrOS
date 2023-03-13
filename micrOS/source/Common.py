@@ -129,7 +129,7 @@ def micro_task(tag, task=None):
         # RETURN task obj (access obj.out + obj.done (automatic - with keyword arg))
         async_task = Task.TASKS.get(tag, None)
         return async_task
-    elif Task.task_is_busy(tag):
+    elif Task.is_busy(tag):
         # [2] Shortcut: Check task state by tag
         # RETURN: None - if task is already running
         return None

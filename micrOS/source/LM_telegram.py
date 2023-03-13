@@ -53,11 +53,11 @@ def receive():
 
 
 async def __task():
-    with micro_task(tag='telegram._lm_loop') as my_task:
+    with micro_task(tag='telegram._loop') as my_task:
         while True:
             try:
                 v = TELEGRAM_OBJ.receive_eval()
-                my_task.out = "Missing telegram bot token" if v is None else v
+                my_task.out = "Missing bot token" if v is None else v
             except Exception as e:
                 my_task.out = str(e)
             await asyncio.sleep(5)
@@ -71,7 +71,7 @@ def receiver_loop():
     """
     if TELEGRAM_OBJ is None:
         return "Network unavailable."
-    state = micro_task(tag='telegram._lm_loop', task=__task())
+    state = micro_task(tag='telegram._loop', task=__task())
     return "Starting" if state else "Already running"
 
 

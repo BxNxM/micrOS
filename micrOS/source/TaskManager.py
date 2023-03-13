@@ -40,7 +40,7 @@ class Task:
         self.tag = None         # [LM] Task tag for identification
 
     @staticmethod
-    def task_is_busy(tag):
+    def is_busy(tag):
         """
         Check task is busy by tag in TASKS
         - exists + running = busy
@@ -85,7 +85,7 @@ class Task:
         """
         # Create task tag
         self.tag = f"aio{len(Task.TASKS)}" if tag is None else tag
-        if Task.task_is_busy(self.tag):
+        if Task.is_busy(self.tag):
             # Skip task if already running
             return False
 
@@ -106,7 +106,7 @@ class Task:
         """
         # Create task tag
         self.tag = '.'.join(callback[0:2])
-        if Task.task_is_busy(self.tag):
+        if Task.is_busy(self.tag):
             # Skip task if already running
             return False
 
@@ -190,14 +190,14 @@ class Manager:
             Manager.__instance = super().__new__(cls)
             # Set async event loop
             Manager.__instance.loop = asyncio.get_event_loop()
-            Manager.__instance.loop.set_exception_handler(cls.async_exception)
+            Manager.__instance.loop.set_exception_handler(cls.axcept)
             Manager.__instance.create_task(callback=Manager.idle_task(), tag="idle")
             # [LM] Set limit for async task creation
             # ---         ----
         return Manager.__instance
 
     @staticmethod
-    def async_exception(loop=None, context=None):
+    def axcept(loop=None, context=None):
         """
         Set as async exception handler
         """
@@ -228,7 +228,7 @@ class Manager:
         """
         period_ms = 1000
         my_task = Task.TASKS.get('idle')
-        my_task.out = "Idling & Monitoring..."
+        my_task.out = f"i.d.l.e: {period_ms}ms"
         while True:
             t = ticks_ms()
             await asyncio.sleep_ms(period_ms)
@@ -262,7 +262,7 @@ class Manager:
             spcr = " " * (10 - len(is_running))
             task_view = f"{is_running}{spcr}{tag}"
             output.append(task_view)
-        return output
+        return tuple(output)
 
     @staticmethod
     def _parse__tag(tag):

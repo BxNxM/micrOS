@@ -19,11 +19,7 @@ try:
 except Exception as e:
     print(f"Import ERROR, TaskManager: {e}")
     Task, Manager = None, None
-try:
-    from Notify import Telegram
-except Exception as e:
-    print(f"Import ERROR, Notify.Telegram: {e}")
-    Telegram = None
+TELEGRAM = None
 
 
 def socket_stream(func):
@@ -169,10 +165,16 @@ def notify(text):
     :param text: notification text
     return: verdict: True/False
     """
-    if Telegram is None:
-        return False
+    global TELEGRAM
+    if TELEGRAM is None:
+        try:
+            from Notify import Telegram
+            TELEGRAM = Telegram
+        except Exception as e:
+            print(f"Import ERROR, Notify.Telegram: {e}")
+            return False
     try:
-        out = Telegram().send_msg(text)
+        out = TELEGRAM().send_msg(text)
     except Exception as e:
         print(f"Notify ERROR: {e}")
         out = str(e)

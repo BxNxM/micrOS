@@ -126,6 +126,7 @@ class Telegram:
                 verdict = f'NoAccess: {cmd_args[0]}'
                 Telegram._IN_MSG_ID = m_id
 
+        # -------------------------- FUNCTION MAIN -------------------------- #
         # Poll telegram chat
         data = Telegram.get_msg()
         if data is None:

@@ -7,9 +7,9 @@ from Network import ifconfig
 from Debug import errlog_add
 from machine import Pin
 try:
-    from gc import mem_free
+    from LM_system import memory_usage
 except:
-    from simgc import mem_free  # simulator mode
+    memory_usage = None
 try:
     import LM_intercon as InterCon
 except:
@@ -271,10 +271,10 @@ def _sys_page():
     """
     oled.text(cfgget("devfid"), 0, 15)
     oled.text("  {}".format(ifconfig()[1][0]), 0, 25)
-    fm = mem_free()
-    kb, byte = int(fm / 1000), int(fm % 1000)
-    oled.text("  {}kb {}b".format(kb, byte), 0, 35)
-    oled.text("  V: {}".format(cfgget("version")), 0, 45)
+    if memory_usage is not None:
+        mem = memory_usage()
+        oled.text(f"  {mem['percent']}% {mem['mem_used']/1000}kb", 0, 35)
+    oled.text(f"  V: {cfgget('version')}", 0, 45)
     return True
 
 

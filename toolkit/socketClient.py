@@ -189,7 +189,7 @@ class ConnectionData:
         spr_offset1 = 30
         spr_offset2 = 57
 
-        def _dev_status(ip, port, fuid):
+        def _dev_status(ip, port, fuid, uid):
             fuid = "{}{}{}".format(Colors.HEADER, fuid, Colors.NC)
             if uid not in ['__devuid__']:
                 spacer1 = " " * (spr_offset1 - len(uid))
@@ -233,7 +233,7 @@ class ConnectionData:
                 ip = data[0]
                 port = data[1]
                 fuid = data[2]
-                future = executor.submit(_dev_status, ip, port, fuid)
+                future = executor.submit(_dev_status, ip, port, fuid, uid)
                 query_list.append(future)
 
         online_ip_addr_list = []
@@ -366,10 +366,10 @@ def main(args, host='127.0.0.1', port=9008, timeout=3):
 
 def socket_commandline_args(arg_list):
     return_action_dict = {'search': False, 'device_tag': None, 'status': False}
-    if len(arg_list) > 0 and arg_list[0].startswith('scan'):
+    if len(arg_list) > 0 and (arg_list[0].startswith('--scan') or arg_list[0].startswith('scan')):
         del arg_list[0]
         return_action_dict['search'] = True
-    if len(arg_list) > 0 and str(arg_list[0]).startswith('stat'):
+    if len(arg_list) > 0 and (str(arg_list[0]).startswith('--stat') or str(arg_list[0]).startswith('stat')):
         del arg_list[0]
         return_action_dict['status'] = True
     if len(arg_list) > 0 and "dev" in arg_list[0]:

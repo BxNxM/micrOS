@@ -256,7 +256,7 @@ class Manager:
             List tasks - micrOS top :D
         """
         q = Manager.QUEUE_SIZE - Manager._queue_free()
-        output = ["---- micrOS  top ----", f"#queue: {q} #overload: {Manager.OLOAD}%\n", "#Active   #taskID"]
+        output = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.OLOAD}%\n", "#Active   #taskID"]
         for tag, task in Task.TASKS.items():
             is_running = 'No' if task.done else 'Yes'
             spcr = " " * (10 - len(is_running))

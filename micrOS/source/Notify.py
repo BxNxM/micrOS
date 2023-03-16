@@ -13,7 +13,7 @@ from TaskManager import exec_lm_core
 class Telegram:
     # Telegram bot token and chat ID
     # https://core.telegram.org/bots/api
-    CHAT_ID = None                                  # Telegram bot chat ID - single group support - persistent caching
+    CHAT_IDS = set()                                # Telegram bot chat IDs - multi group support - persistent caching
     API_PARAMS = "?offset=-1&limit=1&timeout=1"     # Generic API params - optimization
     DEVFID = cfgget('devfid')                       # For reply message (pre text)
     _IN_MSG_ID = None
@@ -28,12 +28,12 @@ class Telegram:
         if mode == 's':
             # SAVE CACHE
             with open('telegram.pds', 'w') as f:
-                f.write(str(Telegram.CHAT_ID))
+                f.write(','.join([str(k) for k in Telegram.CHAT_IDS]))
             return
         try:
             # RESTORE CACHE
             with open('telegram.pds', 'r') as f:
-                Telegram.CHAT_ID = int(f.read().strip())
+                Telegram.CHAT_IDS = set([int(k) for k in f.read().strip().split(',')])
         except:
             pass
 
@@ -45,40 +45,47 @@ class Telegram:
         return token
 
     @staticmethod
-    def _get_chat_id():
-        """Return chat ID or None (in case of no token or cannot get ID)"""
-        if Telegram.CHAT_ID is None:
-            bot_token = Telegram.__bot_token()
-            url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
-            _, resp_json = urequests.get(url, jsonify=True)
-
-            if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
-                Telegram.CHAT_ID = resp_json["result"][-1]["message"]["chat"]["id"]
-                Telegram.__chat_id_cache('s')
-            else:
-                Telegram.__chat_id_cache('r')
-                if Telegram.CHAT_ID is None:
-                    error_message = resp_json.get("description", "Unknown error")
-                    raise Exception(f"Error retrieving chat ID: {error_message}")
-        return Telegram.CHAT_ID
-
-    @staticmethod
-    def send_msg(text, reply_to=None):
+    def send_msg(text, reply_to=None, chat_id=None):
         """
-        Send a message to the Telegram chat.
+        Send a message to the Telegram chat by chat_id
+        :param text: text to send
+        :param reply_to: reply to specific message, if None, simple reply
+        :param chat_id: chat_id to reply on, if None, reply to all known
         RETURN None when telegram bot token is missing
         """
+        def _send(chid):
+            """Send message to chat_id (chid)"""
+            data = {"chat_id": chid, "text": f"{Telegram.DEVFID}⚙️\n{text}"}
+            if isinstance(reply_to, int):
+                data['reply_to_message_id'] = reply_to
+                Telegram._IN_MSG_ID = reply_to
+            _, _resp = urequests.post(url, headers=headers, json=data, jsonify=True)
+            return _resp
+
+        def _get_chat_ids():
+            """Return chat ID or None (in case of no token or cannot get ID)"""
+            if len(Telegram.CHAT_IDS) == 0:
+                Telegram.get_msg()  # It will update the Telegram.CHAT_IDS
+            return Telegram.CHAT_IDS
+
+        # Check bot token
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage{Telegram.API_PARAMS}"
         headers = {"Content-Type": "application/json"}
-        data = {"chat_id": Telegram._get_chat_id(), "text": f"{Telegram.DEVFID}⚙️\n{text}"}
-        if isinstance(reply_to, int):
-            data['reply_to_message_id'] = reply_to
-            Telegram._IN_MSG_ID = reply_to
-        _, resp_json = urequests.post(url, headers=headers, json=data, jsonify=True)
-        return 'Sent' if resp_json['ok'] else str(resp_json)
+
+        verdict = ""
+        # Reply to ALL (notification) - chat_id was not provided
+        if chat_id is None:
+            for _chat_id in _get_chat_ids():
+                resp_json = _send(chid=_chat_id)
+                verdict += f'Sent{_chat_id};' if resp_json['ok'] else str(resp_json)
+        else:
+            # Direct reply to chat_id
+            resp_json = _send(chid=chat_id)
+            verdict = f'Sent{chat_id}' if resp_json['ok'] else str(resp_json)
+        return verdict
 
     @staticmethod
     def get_msg():
@@ -86,17 +93,42 @@ class Telegram:
         Get the last message from the Telegram chat.
         RETURN None when telegram bot token is missing
         """
+
+        def _update_chat_ids():
+            """
+            Update known chat_id-s and cache them
+            - return active chat_id frm resp_json
+            """
+            _cid = None
+            if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
+                _cid = resp_json["result"][-1]["message"]["chat"]["id"]
+                # LIMIT Telegram.CHAT_IDS NOTIFICATION CACHE TO 5 IDs
+                if len(Telegram.CHAT_IDS) < 6:
+                    _updated = len(Telegram.CHAT_IDS)
+                    Telegram.CHAT_IDS.add(_cid)
+                    if len(Telegram.CHAT_IDS) - _updated > 0:  # optimized save (slow storage access)
+                        Telegram.__chat_id_cache('s')
+            else:
+                Telegram.__chat_id_cache('r')
+                if len(Telegram.CHAT_IDS) == 0:
+                    error_message = resp_json.get("description", "Unknown error")
+                    raise Exception(f"Error retrieving chat ID: {error_message}")
+            return _cid
+
+        # --------------------- FUNCTION MAIN ------------------------ #
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
         url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram.API_PARAMS}"
         _, resp_json = urequests.get(url, jsonify=True)
         if len(resp_json["result"]) > 0:
+            chat_id = _update_chat_ids()
             resp = resp_json["result"][-1]["message"]
-            sender, date, text, m_id = resp['chat']['username'], resp['date'], resp['text'], resp['message_id']
-            return {'sender': sender, 'date': date, 'text': text, 'm_id': m_id}
+            sender = f"{resp['chat']['first_name']}{resp['chat']['last_name']}" if resp['chat'].get('username', None) is None else resp['chat']['username']
+            text, m_id = resp['text'], resp['message_id']
+            return {'sender': sender, 'text': text, 'm_id': m_id, 'c_id': chat_id}
         else:
-            return {'sender': None, 'date': None, 'text': None, 'm_id': -1}
+            return {'sender': None, 'text': None, 'm_id': -1, 'c_id': None}
 
     @staticmethod
     def receive_eval():
@@ -132,8 +164,8 @@ class Telegram:
         data = Telegram.get_msg()
         if data is None:
             return data
-        # Get msg and msg_id as main input data source
-        msg_in, m_id = data['text'], data['m_id']
+        # Get msg, msg_id, chat_id as main input data source
+        msg_in, m_id, c_id = data['text'], data['m_id'], data['c_id']
         if msg_in is not None and m_id != Telegram._IN_MSG_ID:
             # replace single/double quotation to apostrophe (str syntax for repl interpretation)
             msg_in = msg_in.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
@@ -143,7 +175,7 @@ class Telegram:
             # [TELEGRAM CMD] /PING - Get auto reply from node - loaded modules
             #               Example: /ping
             if msg_in.startswith('/ping'):
-                Telegram.send_msg(', '.join(loaded_mods), reply_to=m_id)
+                Telegram.send_msg(', '.join(loaded_mods), reply_to=m_id, chat_id=c_id)
             # [TELEGRAM CMD] /CMD_SELECT - Load Module execution handling - SELECTED DEV. MODE
             #               Example: /cmd_select device module func param(s)
             elif msg_in.startswith('/cmd_select'):

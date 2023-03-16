@@ -1,4 +1,5 @@
 from sys import modules
+
 import urequests
 from ConfigHandler import cfgget
 from TaskManager import exec_lm_core
@@ -134,6 +135,8 @@ class Telegram:
         # Get msg and msg_id as main input data source
         msg_in, m_id = data['text'], data['m_id']
         if msg_in is not None and m_id != Telegram._IN_MSG_ID:
+            # replace single/double quotation to apostrophe (str syntax for repl interpretation)
+            msg_in = msg_in.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
             # Parse loaded modules
             loaded_mods = [lm.replace('LM_', '') for lm in modules.keys() if lm.startswith('LM_')]
             loaded_mods.append('task')      # add task "module" to whitelist

@@ -73,7 +73,7 @@ class Telegram:
             return None
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage{Telegram.API_PARAMS}"
         headers = {"Content-Type": "application/json"}
-        data = {"chat_id": Telegram._get_chat_id(), "text": f"{Telegram.DEVFID}⚙️ {text}"}
+        data = {"chat_id": Telegram._get_chat_id(), "text": f"{Telegram.DEVFID}⚙️\n{text}"}
         if isinstance(reply_to, int):
             data['reply_to_message_id'] = reply_to
             Telegram._IN_MSG_ID = reply_to

@@ -195,6 +195,37 @@
             "param(s)": ""
         }
     },
+    "demo": {
+        "calculator": {
+            "doc": null,
+            "param(s)": "a b op=\"+\""
+        },
+        "dice_cube": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "hello": {
+            "doc": null,
+            "param(s)": "name=\"MrNobody\""
+        },
+        "help": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/demo.png?raw=true",
+        "links": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "source": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "yes_no": {
+            "doc": null,
+            "param(s)": ""
+        }
+    },
     "dht11": {
         "help": {
             "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",

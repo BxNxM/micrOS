@@ -11,7 +11,7 @@ import json as ujson
 #############################################
 #   Implement micropython request function  #
 #############################################
-def decode_chunked(data):
+def _chunked(data):
     decoded = bytearray()
     while data:
         # Find the end of the chunk size line
@@ -121,7 +121,7 @@ def request(method, url, data=None, json=None, headers=None, sock_size=1024, jso
     status_code = int(headers.split(b' ')[1])
     headers = dict(h.split(b': ') for h in headers.split(b'\r\n')[1:])
     if headers.get(b'Transfer-Encoding', b'') == b'chunked':
-        body = decode_chunked(body)
+        body = _chunked(body)
     else:
         body = body.decode('utf-8')
     # Return status code, headers and body (text or jsons)

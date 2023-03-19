@@ -13,12 +13,12 @@ from urequests import get as http_get
 class Sun:
     TIME = {}
     UTC = cfgget('utc')  # STORED IN MINUTE
-    BOOTIME = time()     # Initialize BOOTIME: Not SUN, but for system uptime
+    BOOTIME = None       # Initialize BOOTIME: Not SUN, but for system uptime
 
 
 def set_time(year, month, mday, hour, min, sec):
     """
-    Set Localtime + RTC Clock manually
+    Set Localtime + RTC Clock manually + update BOOTIME/uptime
         https://docs.micropython.org/en/latest/library/machine.RTC.html
     """
     # Make time from tuple to sec
@@ -28,13 +28,14 @@ def set_time(year, month, mday, hour, min, sec):
     # Set RTC
     RTC().datetime((year, month, mday, 0, hour, min, sec, 0))
     # (re)set uptime when settime - normally at boot time
-    Sun.BOOTIME = time()
+    if Sun.BOOTIME is None:
+        Sun.BOOTIME = time()
     return True
 
 
 def ntp_time():
     """
-    Set NTP time with utc shift
+    Set NTP time with utc shift + update BOOTIME/uptime
     :param utc_shift: +/- hour (int)
     :return: None
     """
@@ -173,10 +174,13 @@ def suntime():
     return sun
 
 
-def uptime():
+def uptime(update=False):
     """
     Get system uptime based on Sun.BOOTIME (time.time() stored at bootup)
+    :param update: update BOOTIME param for system uptime (AP mode)
     """
+    if update:
+        Sun.BOOTIME = time()
     if Sun.BOOTIME is None:
         return "No time function was initialized..."
     delta = int(time() - Sun.BOOTIME)

@@ -47,13 +47,6 @@ def external_interrupt_handler():
         errlog_add(f"[ERR] external_interrupt_handler error: {e}")
 
 
-def nw_time_sync():
-    # Set UTC + SUN TIMES FROM API ENDPOINTS
-    suntime()
-    # Set NTP - RTC + UTC shift
-    ntp_time()
-
-
 #################################################################
 #                      MAIN FUNCTION CALLS                      #
 #################################################################
@@ -74,7 +67,14 @@ def micrOS():
     # NETWORK setup
     nwmd = auto_network_configuration()
     if nwmd == 'STA':
-        nw_time_sync()
+        # Set UTC + SUN TIMES FROM API ENDPOINTS
+        suntime()
+        # Set NTP - RTC + UTC shift + update uptime (boot time)
+        ntp_time()
+    else:
+        # AP mode - no ntp sync set uptime anyway
+        from Time import uptime
+        uptime(update=True)
 
     # SET interrupt with timirqcbf from nodeconfig
     interrupt_handler()

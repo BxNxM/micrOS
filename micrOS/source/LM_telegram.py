@@ -60,7 +60,7 @@ async def __task():
                 my_task.out = "Missing bot token" if v is None else v
             except Exception as e:
                 my_task.out = str(e)
-            await asyncio.sleep(5)
+            await asyncio.sleep(4)
 
 
 def receiver_loop():

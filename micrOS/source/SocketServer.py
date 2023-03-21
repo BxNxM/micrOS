@@ -17,8 +17,6 @@ from Network import ifconfig
 import uasyncio as asyncio
 from TaskManager import Manager
 from utime import ticks_ms, ticks_diff
-from gc import collect
-
 try:
     from gc import collect, mem_free
 except:
@@ -32,9 +30,7 @@ class Debug:
     @staticmethod
     def console(msg):
         console_write("|" + "-" * Debug.INDENT + msg)
-        if Debug.INDENT < 50:
-            # if less then max indent
-            Debug.INDENT += 1
+        Debug.INDENT += 1 if Debug.INDENT < 50 else 0       # Auto indent
 
 
 #########################################################
@@ -140,7 +136,7 @@ class Client:
         # gc.collect()
         collect()
 
-    async def shell_cmd(self, request):
+    async def __shell_cmd(self, request):
         # Run micrOS shell with request string
         try:
             Debug().console("[CLIENT] --- #Run shell")
@@ -170,7 +166,7 @@ class Client:
                 if state:
                     break
 
-                state = await self.shell_cmd(request)
+                state = await self.__shell_cmd(request)
                 if not state:
                     self.send("[HA] Critical error - disconnect & hard reset")
                     errlog_add("[ERR] Socket critical error - reboot")
@@ -182,6 +178,7 @@ class Client:
         await self.close()
 
     def __del__(self):
+        collect()
         Debug().console(f"Delete client connection: {self.client_id}")
 
 

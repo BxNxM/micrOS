@@ -15,7 +15,7 @@ class Telegram:
     # https://core.telegram.org/bots/api
     _TOKEN = None
     _CHAT_IDS = set()                                # Telegram bot chat IDs - multi group support - persistent caching
-    _API_PARAMS = "?offset=-1&limit=1&timeout=1"     # Generic API params - optimization
+    _API_PARAMS = "?offset=-1&limit=1&timeout=2"     # Generic API params - optimization
     _DEVFID = cfgget('devfid')                       # For reply message (pre text)
     _IN_MSG_ID = None
 

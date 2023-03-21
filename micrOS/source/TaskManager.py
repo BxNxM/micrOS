@@ -265,7 +265,7 @@ class Manager:
         return tuple(output)
 
     @staticmethod
-    def _parse__tag(tag):
+    def _parse_tag(tag):
         """GET TASK(s) BY TAG - module.func or module.*"""
         task = Task.TASKS.get(tag, None)
         if task is None:
@@ -285,7 +285,7 @@ class Manager:
         Primary interface
             Show buffered task output
         """
-        tasks = Manager._parse__tag(tag)
+        tasks = Manager._parse_tag(tag)
         if len(tasks) == 0:
             return f"No task found: {tag}"
         if len(tasks) == 1:
@@ -313,7 +313,7 @@ class Manager:
                 return False
 
         # Handle task group kill (module.*)
-        tasks = Manager._parse__tag(tag)
+        tasks = Manager._parse_tag(tag)
         state = True
         if len(tasks) == 0:
             return state, f"No task found: {tag}"

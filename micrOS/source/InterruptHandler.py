@@ -99,37 +99,38 @@ def initEventIRQs():
     EVENT INTERRUPT CONFIGURATION - multiple
     """
 
-    def __edge_exec(pin, resolver):
+    def __edge_exec(_pin_obj, resolver):
         """
         Prell filter / edge detection and execution
-        :param pin: pin obj name
+        :param _pin_obj: pin obj name
         :param resolver: callback resolver dict,  LM_cbf obj by pins {PinKey: [LM_cbf, prellTimer]}
         :return: None
         """
-        pin = str(pin)
+        _pin = str(_pin_obj)
         # Get stored tick by pin - last successful trigger
-        last = resolver.get(pin)[1]
+        last = resolver.get(_pin)[1]
         # Calculate trigger diff in ms (from now)
         diff = ticks_diff(ticks_ms(), last)
-        # console_write("[IRQ] Event {} - tick diff: {}".format(pin, diff))
+        #console_write(f"[IRQ] Event {_pin} - tick diff: {diff}")
         # Threshold between ext. irq evens
         if abs(diff) > resolver.get('prell_ms'):
             # Save now tick - last trigger action
-            resolver[pin][1] = ticks_ms()
-            # [!] Execute LM(s)
-            exec_lm_pipe_schedule(resolver.get(pin)[0])
+            resolver[_pin][1] = ticks_ms()
+            # [!] Execute User Load module by pin number (with micropython.schedule wrapper)
+            #console_write(f"---> action")
+            exec_lm_pipe_schedule(resolver.get(_pin)[0])
 
-    # External IRQ execution data set from node config
+    # Load External IRQ execution data set from node config
     # ((irq, trig, lm_cbf), (irq, trig, lm_cbf), (irq, trig, lm_cbf), ...)
-    irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
-               (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
-               (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
-               (cfgget("irq4"), cfgget("irq4_trig"), cfgget("irq4_cbf")))
+    _irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
+                (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
+                (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
+                (cfgget("irq4"), cfgget("irq4_trig"), cfgget("irq4_cbf")))
 
     # [*] hardcopy parameters to be able to resolve cbf-s
     # cbf_resolver = {'Pin(1)': 'cbf;cbf', 'Pin(2)': 'cbf', ... + 'prell_ms': for example 300ms}
     cbf_resolver = {'prell_ms': cfgget("irq_prell_ms")}
-    for i, data in enumerate(irqdata):
+    for i, data in enumerate(_irqdata):
         irq, trig, lm_cbf = data
         console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i+1, irq, trig))
         console_write("|- [IRQ] EXTIRQ CBF: {}".format(lm_cbf))

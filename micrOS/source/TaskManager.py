@@ -29,8 +29,8 @@ from utime import ticks_ms, ticks_diff
 class Task:
     TASKS = {}                  # TASK OBJ list
 
-    def __init__(self, loop):
-        self.__loop = loop      # Stores async event loop
+    def __init__(self):
+        self.__loop = asyncio.get_event_loop()      # Stores async event loop
         self.__callback = None  # [LM] Task callback: list of strings (LM call)
         self.__inloop = False   # [LM] Task while loop for LM callback
         self.__sleep = 20       # [LM] Task while loop - async wait (proc feed) [ms]
@@ -243,11 +243,10 @@ class Manager:
         Generic task creator method
             Create async Task with coroutine/list(lm call) callback
         """
-        task = Task(loop=cls.loop)
         if isinstance(callback, list):
             Manager._queue_limiter()
-            return task.create_lm(callback=callback, loop=loop, sleep=delay)
-        return task.create(callback=callback, tag=tag)
+            return Task().create_lm(callback=callback, loop=loop, sleep=delay)
+        return Task().create(callback=callback, tag=tag)
 
     @staticmethod
     def list_tasks():

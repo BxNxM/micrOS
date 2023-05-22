@@ -38,7 +38,6 @@ class Debug:
 #########################################################
 
 class Client:
-    TASK_MANAGER = Manager()
     ACTIVE_CLIS = {}
 
     def __init__(self, reader, writer):
@@ -91,7 +90,7 @@ class Client:
             # Store data in stream buffer
             self.writer.write(response.encode('utf8'))
             # Send buffered data with async task - hacky
-            Client.TASK_MANAGER.loop.create_task(self.__wait_for_drain())
+            asyncio.get_event_loop().create_task(self.__wait_for_drain())
         else:
             print(response)
 
@@ -132,7 +131,7 @@ class Client:
         if Client.ACTIVE_CLIS.get(self.client_id, None) is not None:
             Client.ACTIVE_CLIS.pop(self.client_id)
         # Update server task output (? test ?)
-        self.TASK_MANAGER.server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
         # gc.collect()
         collect()
 
@@ -154,7 +153,7 @@ class Client:
 
     async def run_shell(self):
         # Update server task output (? test ?)
-        self.TASK_MANAGER.server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
 
         # Init prompt
         self.send(self.shell.prompt())

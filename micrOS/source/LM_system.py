@@ -46,10 +46,16 @@ def info(msgobj=None):
 
     def _reply(msg):
         nonlocal msg_buffer
-        if msgobj is None:
-            msg_buffer.append(msg)
-        else:
-            msgobj(msg)
+        try:
+            if msgobj is None:
+                # write buffer
+                msg_buffer.append(msg)
+            else:
+                # write socket buffer
+                msgobj(msg)
+        except Exception as e:
+            # fallback: write buffer
+            msg_buffer.append(f"{msg} ({e})")
 
     _reply('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
     _reply('Mem usage: {} %'.format(memory_usage()['percent']))

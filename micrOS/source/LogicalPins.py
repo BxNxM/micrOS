@@ -33,6 +33,8 @@ def detect_platform():
             return 'tinypico'    # esp32 family - tinypico
         if 'esp32s2' in str(board).lower():
             return 'esp32s2'     # esp32 family - esp32S2
+        if 'esp32s3' in str(board).lower():
+            return 'esp32s3'     # esp32 family - esp32s2 (octal spiram)
         return 'esp32'           # esp32 family - general
     return platform              # esp8266 or something else
 

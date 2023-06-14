@@ -1,11 +1,12 @@
 import os
 from time import localtime
 from machine import Pin
+from neopixel import NeoPixel
 
 try:
-    from LogicalPins import physical_pin, pinmap_dump
+    from LogicalPins import physical_pin, pinmap_dump, detect_platform
 except:
-    physical_pin = None
+    detect_platform = None
 
 try:
     # TinyPICO progress led plugin
@@ -22,33 +23,84 @@ except Exception as e:
 class DebugCfg:
     DEBUG = True        # DEBUG PRINT ON/OFF - SET FROM ConfigHandler
     PLED_OBJ = None     # PROGRESS LED OBJECT - init in init_pled
+    NEO_WHEEL = None
 
     @staticmethod
     def init_pled():
         # CALL FROM ConfigHandler
-        if TinyPLed is None:
-            if physical_pin is not None and pinmap_dump('builtin')['builtin'] is not None:
-                # Progress led for esp8266/esp32/etc
-                DebugCfg.PLED_OBJ = Pin(physical_pin('builtin'), Pin.OUT)
-        else:
+        if detect_platform is None:
+            # Check LogicalPins module loadable (robustness...)
+            return
+        micro_platform = detect_platform()
+        if micro_platform == "tinypico" and TinyPLed is not None:
             # Progress led for TinyPico
-            DebugCfg.PLED_OBJ = TinyPLed.init_APA102()
+            DebugCfg._init_apa102()
+        elif pinmap_dump('builtin')['builtin'] is not None:
+            if micro_platform == "esp32s3":
+                # Progress led for esp32s3
+                DebugCfg._init_ws2812()
+            else:
+                # Progress led for esp8266/esp32/etc
+                DebugCfg._init_simple()
+
+    @staticmethod
+    def _init_simple():
+        # Progress led for esp8266/esp32/etc
+        DebugCfg.PLED_OBJ = Pin(physical_pin('builtin'), Pin.OUT)
+
+    @staticmethod
+    def _init_apa102():
+        # Progress led for TinyPico
+        DebugCfg.PLED_OBJ = TinyPLed.init_APA102()
+
+    @staticmethod
+    def _init_ws2812():
+        neo_pin = Pin(physical_pin('builtin'))
+        DebugCfg.PLED_OBJ = NeoPixel(neo_pin, 1)
+
+    @staticmethod
+    def _step_ws2812():
+        def __color_wheel():
+            while True:
+                yield 10, 0, 0
+                yield 0, 10, 0
+                yield 0, 0, 10
+        if DebugCfg.NEO_WHEEL is None:
+            DebugCfg.NEO_WHEEL = __color_wheel()
+        DebugCfg.PLED_OBJ[0] = DebugCfg.NEO_WHEEL.__next__()
+        DebugCfg.PLED_OBJ.write()
+
+    @staticmethod
+    def step():
+        """
+        DEBUG LED FEEDBACK
+        - handle 3 types of builtin LEDs: analog, neopixel(ws2812), apa102
+        - automatic selection based on board type + builtin logical pin number
+        """
+        try:
+            if isinstance(DebugCfg.PLED_OBJ, Pin):
+                # Simple (analog) flashing (builtin)
+                DebugCfg.PLED_OBJ.value(not DebugCfg.PLED_OBJ.value())
+                return True
+            if isinstance(DebugCfg.PLED_OBJ, NeoPixel):
+                # Neopixel color change (builtin)
+                DebugCfg._step_ws2812()
+                return False
+            if not (TinyPLed is None or DebugCfg.PLED_OBJ is None):
+                # Tinypico APA120 color change (builtin)
+                TinyPLed.step()
+                return False
+        except Exception as e:
+            errlog_add(f"debug led step error: {e}")
+            return False
 
 
 def console_write(msg):
     if DebugCfg.DEBUG:
-        if isinstance(DebugCfg.PLED_OBJ, Pin):
-            # Simple (built-in) progress led update
-            DebugCfg.PLED_OBJ.value(not DebugCfg.PLED_OBJ.value())
-            print(msg)
-            DebugCfg.PLED_OBJ.value(not DebugCfg.PLED_OBJ.value())
-            return
-        # TinyPICO (built-in) progress led update
+        analog = DebugCfg.step()
         print(msg)
-        if TinyPLed is None or DebugCfg.PLED_OBJ is None:
-            return
-        TinyPLed.step()
-
+        if analog:
+            DebugCfg.step()
 
 #############################################
 #        LOGGING WITH DATA ROTATION         #

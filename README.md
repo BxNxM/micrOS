@@ -2,7 +2,7 @@
 
 ### micropython based smart edge IoT platform
 
-`#telnet #wifi #esp32 #tinypico #RaspberryPiPicoW(beta) #ota #GPIO #RTC/NTP #AP/STA #IRQ #async-tasks #cron`
+`#telnet #wifi #esp32 #esp32S3 #esp32s2 #tinypico #RaspberryPiPicoW(beta) #ota #GPIO #RTC/NTP #AP/STA #IRQ #async-tasks #cron`
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 

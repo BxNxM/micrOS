@@ -24,7 +24,7 @@ from machine import reset as hard_reset
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.16.0-0'
+    MICROS_VERSION = '1.16.1-0'
 
     def __init__(self, msg_obj=None):
         """

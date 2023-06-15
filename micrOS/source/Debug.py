@@ -63,8 +63,11 @@ class DebugCfg:
         def __color_wheel():
             while True:
                 yield 10, 0, 0
+                yield 5, 5, 0
                 yield 0, 10, 0
+                yield 0, 5, 5
                 yield 0, 0, 10
+                yield 5, 0, 5
         if DebugCfg.NEO_WHEEL is None:
             DebugCfg.NEO_WHEEL = __color_wheel()
         DebugCfg.PLED_OBJ[0] = DebugCfg.NEO_WHEEL.__next__()

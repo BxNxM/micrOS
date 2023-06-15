@@ -125,15 +125,20 @@ class Client:
             self.writer.close()
             await self.writer.wait_closed()
         except Exception as e:
-            Debug().console(f"[Client] Close error: {e}")
+            Debug().console(f"[Client] Close error {self.client_id}: {e}")
         self.connected = False
         Debug.INDENT = 0
-        if Client.ACTIVE_CLIS.get(self.client_id, None) is not None:
-            Client.ACTIVE_CLIS.pop(self.client_id)
-        # Update server task output (? test ?)
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+        # Maintain ACTIVE_CLIS - remove closed connection
+        Client.drop_client(self.client_id)
         # gc.collect()
         collect()
+
+    @staticmethod
+    def drop_client(client_id):
+        if Client.ACTIVE_CLIS.get(client_id, None) is not None:
+            Client.ACTIVE_CLIS.pop(client_id)
+        # Update server task output (? test ?)
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
 
     async def __shell_cmd(self, request):
         # Run micrOS shell with request string
@@ -275,7 +280,7 @@ class SocketServer:
         state, client_id = await cls.accept_client(new_client, cli_queue=2)
         if not state:
             # Server busy, there is one active open connection - reject client
-            # delete unused new_client as well!
+            # close unused new_client as well!
             return
 
         # Store client object as active client
@@ -287,7 +292,7 @@ class SocketServer:
         """
         addr = ifconfig()[1][0]
         Debug().console(f"[ socket server ] Start socket server on {addr}:{cls.__port}")
-        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=3)
+        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=2)
         await cls.server
         Debug().console(f"- TCP server ready, connect: telnet {addr} {cls.__port}")
 
@@ -298,8 +303,12 @@ class SocketServer:
         - stream data to all connection...
         """
         for cli_id, cli in Client.ACTIVE_CLIS.items():
-            if cli.connected:
-                cli.send(msg)
+            try:
+                if cli.connected:
+                    cli.send(msg)
+            except Exception as e:
+                errlog_add(f"[ERR] reply_msg -> {cli_id} (auto-drop): {e}")
+                Client.drop_client(cli_id)
 
     def __del__(cls):
         Debug().console("[ socket server ] <<destructor>>")

@@ -88,7 +88,12 @@ class Client:
                 response = f"{response}\n"
             # Debug().console("[Client] ----- SteamWrite: {}".format(response))
             # Store data in stream buffer
-            self.writer.write(response.encode('utf8'))
+            try:
+                self.writer.write(response.encode('utf8'))
+            except Exception as e:
+                # Maintain ACTIVE_CLIS - remove closed connection by peer.
+                Client.drop_client(self.client_id)
+                errlog_add(f"[WARN] Client.send (auto-drop) {self.client_id}: {e}")
             # Send buffered data with async task - hacky
             asyncio.get_event_loop().create_task(self.__wait_for_drain())
         else:
@@ -117,9 +122,9 @@ class Client:
 
     async def close(self):
         Debug().console(f"[Client] Close connection {self.client_id}")
+        self.send("Bye!\n")
         # Reset shell state machine
         self.shell.reset()
-        self.send("Bye!\n")
         await asyncio.sleep_ms(50)
         try:
             self.writer.close()
@@ -128,7 +133,7 @@ class Client:
             Debug().console(f"[Client] Close error {self.client_id}: {e}")
         self.connected = False
         Debug.INDENT = 0
-        # Maintain ACTIVE_CLIS - remove closed connection
+        # Maintain ACTIVE_CLIS - remove closed connection by peer.
         Client.drop_client(self.client_id)
         # gc.collect()
         collect()
@@ -212,6 +217,7 @@ class SocketServer:
             # Socket server initial parameters
             SocketServer.__instance.__host = ''
             SocketServer.__instance.server = None
+            SocketServer.__instance.__conn_queue = 2
 
             # ---- Config ---
             SocketServer.__instance.__port = cfgget("socport")
@@ -226,19 +232,18 @@ class SocketServer:
     #       Socket Server Methods       #
     #####################################
 
-    async def accept_client(cls, new_client, cli_queue=1):
+    async def accept_client(cls, new_client):
         """
         Client handler
         - check active connection timeouts
         - accept new if fits in queue
         :param new_client: new Client class object
-        :param cli_queue: active client queue size (do not set here! default: 1)
         """
         # Get new client ID
         new_client_id = new_client.client_id
 
         # Add new client immediately if queue not full
-        if len(list(Client.ACTIVE_CLIS.keys())) < cli_queue:
+        if len(list(Client.ACTIVE_CLIS.keys())) < cls.__conn_queue:
             # Add new client to active clients dict
             Client.ACTIVE_CLIS[new_client_id] = new_client
             return True, new_client_id      # [!] Enable new connection
@@ -276,8 +281,8 @@ class SocketServer:
         # Create client object
         new_client = Client(reader, writer)
 
-        # Check incoming client - client queue limitation ###!!! 2 parallel connection support !!!###
-        state, client_id = await cls.accept_client(new_client, cli_queue=2)
+        # Check incoming client - client queue limitation
+        state, client_id = await cls.accept_client(new_client)
         if not state:
             # Server busy, there is one active open connection - reject client
             # close unused new_client as well!
@@ -292,7 +297,7 @@ class SocketServer:
         """
         addr = ifconfig()[1][0]
         Debug().console(f"[ socket server ] Start socket server on {addr}:{cls.__port}")
-        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=2)
+        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=cls.__conn_queue)
         await cls.server
         Debug().console(f"- TCP server ready, connect: telnet {addr} {cls.__port}")
 
@@ -303,12 +308,8 @@ class SocketServer:
         - stream data to all connection...
         """
         for cli_id, cli in Client.ACTIVE_CLIS.items():
-            try:
-                if cli.connected:
-                    cli.send(msg)
-            except Exception as e:
-                errlog_add(f"[ERR] reply_msg -> {cli_id} (auto-drop): {e}")
-                Client.drop_client(cli_id)
+            if cli.connected:
+                cli.send(msg)
 
     def __del__(cls):
         Debug().console("[ socket server ] <<destructor>>")

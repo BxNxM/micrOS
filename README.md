@@ -990,5 +990,20 @@ WantedBy=multi-user.target
 
 - GitHub embed youtube link: `https://github.com/itskeshav/Add-youtube-link-in-Readme.md`
 
+- Git history visualization with Gource
+
+```bash
+gource \
+    --highlight-users \
+    --hide filenames \
+    --file-idle-time 0 \
+    --max-files 0 \
+    --seconds-per-day 0.01 \
+    --auto-skip-seconds 1 \
+    --title "micrOS Evolution" \
+    --output-ppm-stream - \
+    | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 output.mp4
+```
+
 git push -u origin master
 

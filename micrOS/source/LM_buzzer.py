@@ -1,6 +1,9 @@
 from sys import platform
 from utime import sleep
 from LogicalPins import physical_pin, pinmap_dump
+from Common import micro_task
+import uasyncio as asyncio
+
 
 #########################################
 #      BUZZER PWM CONTROLLER PARAMS     #
@@ -9,6 +12,7 @@ __BUZZER_OBJ = None
 # DATA: state:ON/OFF, freq:0-1000
 __BUZZER_CACHE = [600]
 __PERSISTENT_CACHE = False
+__TASK_TAG = "buzzer._play"
 
 #########################################
 #              BUZZER RTTL              #
@@ -206,19 +210,33 @@ def bipp(repeat=1, freq=None):
     return "Bi{} on {} Hz".format('p'*repeat, freq)
 
 
+async def _play(rtttlstr):
+    """
+    RTTTL Piezzo Player with async job
+    :param rtttlstr str: rttl string, default: 'd=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'
+    :return str: verdict
+    """
+    # https://github.com/dhylands/upy-rtttl/blob/master/songs.py
+    tune = RTTTL(rtttlstr)
+    with micro_task(tag=__TASK_TAG) as task:
+        task.out = "Play song..."
+        for freq, msec in tune.notes():
+            __play_tone(freq, msec)
+            await asyncio.sleep_ms(40)
+        task.out = "Song played successfully"
+    del tune
+
+
 def play(rtttlstr='d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'):
     """
     RTTTL Piezzo Player
     :param rtttlstr str: rttl string, default: 'd=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'
     :return str: verdict
     """
-    # https://github.com/dhylands/upy-rtttl/blob/master/songs.py
-    tune = RTTTL(rtttlstr)
-    for freq, msec in tune.notes():
-        __play_tone(freq, msec)
-        sleep(0.05)
-    del tune
-    return "Song played successfully"
+    state = micro_task(tag=__TASK_TAG, task=_play(rtttlstr))
+    if state:
+        return 'Play song'
+    return 'Song already playing'
 
 
 def load_n_init(cache=None):

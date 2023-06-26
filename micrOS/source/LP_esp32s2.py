@@ -43,8 +43,8 @@ stppr_4 = const(6)      # stepper motor pin
 
 
 # I2C BUS
-i2c_sda = const(8)       # oled - data
-i2c_scl = const(9)       # oled - clock
+i2c_sda = const(18)       # oled - data
+i2c_scl = const(16)       # oled - clock
 
 
 # EXTERNAL EVENT IRQ

@@ -1,7 +1,6 @@
 from ConfigHandler import cfgget
 from utime import localtime
 from network import WLAN, STA_IF
-import LM_oled as oled
 from LogicalPins import physical_pin, pinmap_dump
 from Network import ifconfig
 from Debug import errlog_add
@@ -26,8 +25,25 @@ except:
 
 class PageUI:
     PAGE_UI_OBJ = None
+    DISPLAY = None
 
-    def __init__(self, page_callbacks, w, h, pwr_sec=None):
+    def __init__(self, page_callbacks, w, h, pwr_sec=None, oled_type='ssd1306'):
+        """
+        :param page_callbacks: callback function list to show on UI
+        :param w: screen width
+        :param h: screen height
+        :param pwr_sec: auto screen off after this sec
+        :param oled_type: type of oled display: ssd1306 / sh1106
+        """
+        if oled_type.strip() in ('ssd1306', 'sh1106'):
+            if oled_type.strip() == 'ssd1306':
+                import LM_oled as oled
+            else:
+                import LM_oled_sh1106 as oled
+            PageUI.DISPLAY = oled
+        else:
+            errlog_add(f"Oled UI unknown oled_type: {oled_type}")
+            Exception(f"Oled UI unknown oled_type: {oled_type}")
         self.active_page = 0
         self.page_callback_list = page_callbacks
         self.width = w
@@ -57,10 +73,10 @@ class PageUI:
         def __draw_rssi():
             value = WLAN(STA_IF).status('rssi')
             show_range = round(((value + 91) / 30) * 8)  # pixel height 8
-            oled.line(self.width - 10, 8, self.width - 8, 8)
-            oled.line(self.width - 18, 1, self.width, 1)
+            PageUI.DISPLAY.line(self.width - 10, 8, self.width - 8, 8)
+            PageUI.DISPLAY.line(self.width - 17, 1, self.width, 1)
             for _h in range(0, show_range):
-                oled.line(118 - _h, 8 - _h, 120 + _h, 8 - _h)
+                PageUI.DISPLAY.line(118 - _h, 8 - _h, 120 + _h, 8 - _h)
 
         def __pwr_off():
             x_offset = 29
@@ -69,7 +85,7 @@ class PageUI:
                 return
             indicator = round(cnt / sec, 1) * 8       # pixel height 8
             for i in range(indicator):
-                oled.line(self.width-x_offset, 6-i, self.width-x_offset-2, 6-i)
+                PageUI.DISPLAY.line(self.width-x_offset, 6-i, self.width-x_offset-2, 6-i)
 
         try:
             __draw_rssi()
@@ -84,22 +100,22 @@ class PageUI:
         nwmd = ifconfig()[0]
         nwmd = nwmd[0] if len(nwmd) > 0 else "0"
         irq_ok = ' ' if self.bttn_press_callback is None else '*' if self.irq_ok else '!'
-        oled.text("{} {} {}:{}:{}".format(nwmd, irq_ok, h, m, s), 0, 0)
+        PageUI.DISPLAY.text("{} {} {}:{}:{}".format(nwmd, irq_ok, h, m, s), 0, 0)
 
     def __page_bar(self):
         """Generates page indicator bar"""
         plen = int(self.width / len(self.page_callback_list))
         # Draw page indicators
         for p in range(0, self.width, plen):
-            oled.rect(p, self.height - 4, plen - 1, 4)
+            PageUI.DISPLAY.rect(p, self.height - 5, plen - 1, 4)
         # Draw active page indicator
-        oled.rect(self.active_page * plen + 1, self.height - 3, plen - 2, 2)
+        PageUI.DISPLAY.rect(self.active_page * plen + 1, self.height - 4, plen - 2, 2)
 
     def __msgbox(self):
         def __effect():
             self.blink_effect = not self.blink_effect
-            oled.rect(106, 17, 9, 5, state=1, fill=self.blink_effect)
-            oled.rect(106, 24, 9, 9, state=1, fill=self.blink_effect)
+            PageUI.DISPLAY.rect(106, 17, 9, 5, state=1, fill=self.blink_effect)
+            PageUI.DISPLAY.rect(106, 24, 9, 9, state=1, fill=self.blink_effect)
 
         msg = self.show_msg
         if msg is None:
@@ -107,19 +123,19 @@ class PageUI:
             return False
         if not self.oled_state:
             # Turn ON oled if msg arrives
-            oled.poweron()
+            PageUI.DISPLAY.poweron()
             self.oled_state = True
 
-        oled.rect(10, 15, 108, 40, state=1)
-        # oled.rect(98, 15, 20, 20, state=1)
+        PageUI.DISPLAY.rect(10, 15, 108, 40, state=1)
+        # PageUI.DISPLAY.rect(98, 15, 20, 20, state=1)
         __effect()
         if len(msg) > 10:
             # First line
-            oled.text(msg[0:10], 15, 25)
+            PageUI.DISPLAY.text(msg[0:10], 15, 25)
             buff = msg[10:]
             msg = buff[:11] if len(buff) > 12 else buff
         # Second line
-        oled.text(msg, 15, 40)
+        PageUI.DISPLAY.text(msg, 15, 40)
         return True
 
     def __create_button_irq(self, pinkey='oleduibttn'):
@@ -158,14 +174,14 @@ class PageUI:
 
     def show_page(self):
         """Re/draw active page"""
-        oled.clean()
+        PageUI.DISPLAY.clean()
         msg_event = self.__msgbox()
         if self.oled_state:
             self.__page_header()
             self.__page_bar()
             if not msg_event:
                 self.page_callback_list[self.active_page]()         # <== Execute page functions
-            oled.show()
+            PageUI.DISPLAY.show()
             self.__power_save()
 
     def control(self, cmd):
@@ -194,10 +210,10 @@ class PageUI:
             self.bttn_press_callback = None
             self.conn_data = 'n/a'
         elif cmd.strip() == 'on':
-            oled.poweron()
+            PageUI.DISPLAY.poweron()
             self.oled_state = True
         elif cmd.strip() == 'off':
-            oled.poweroff()
+            PageUI.DISPLAY.poweroff()
             self.oled_state = False
             self.bttn_press_callback = None
         return "page: {} pwr: {}".format(self.active_page, self.oled_state)
@@ -221,8 +237,8 @@ class PageUI:
 
         # Draw button
         posx, posy = 44, 45
-        oled.rect(posx-4, posy-4, 48, 15)
-        oled.text("press", posx, posy)
+        PageUI.DISPLAY.rect(posx-4, posy-4, 48, 15)
+        PageUI.DISPLAY.text("press", posx, posy)
 
         # Draw press effect - based on button state: S
         if "S:1" in self.conn_data:
@@ -232,7 +248,7 @@ class PageUI:
         else:
             # # Draw press effect - blink
             self.blink_effect = not self.blink_effect
-        oled.rect(posx-3, posy-3, 48-2, 15-2, self.blink_effect)
+        PageUI.DISPLAY.rect(posx-3, posy-3, 48-2, 15-2, self.blink_effect)
 
     def intercon_page(self, host, cmd):
         """Generic interconnect page core - create multiple page with it"""
@@ -254,9 +270,9 @@ class PageUI:
         if host in self.open_intercons:
             return
         # Draw host + cmd details
-        oled.text(host, 0, posy)
-        oled.text(cmd, posx, posy+10)
-        oled.text(self.conn_data, posx, posy + 20)
+        PageUI.DISPLAY.text(host, 0, posy)
+        PageUI.DISPLAY.text(cmd, posx, posy+10)
+        PageUI.DISPLAY.text(self.conn_data, posx, posy + 20)
         # Set button press callback (+draw button)
         self.set_press_callback(_button)
 
@@ -269,12 +285,12 @@ def _sys_page():
     """
     System basic information page
     """
-    oled.text(cfgget("devfid"), 0, 15)
-    oled.text("  {}".format(ifconfig()[1][0]), 0, 25)
+    PageUI.DISPLAY.text(cfgget("devfid"), 0, 15)
+    PageUI.DISPLAY.text("  {}".format(ifconfig()[1][0]), 0, 25)
     if memory_usage is not None:
         mem = memory_usage()
-        oled.text(f"  {mem['percent']}% ({int(mem['mem_used']/1000)}kb)", 0, 35)
-    oled.text(f"  V: {cfgget('version')}", 0, 45)
+        PageUI.DISPLAY.text(f"  {mem['percent']}% ({int(mem['mem_used']/1000)}kb)", 0, 35)
+    PageUI.DISPLAY.text(f"  V: {cfgget('version')}", 0, 45)
     return True
 
 
@@ -284,15 +300,15 @@ def _intercon_cache():
     line_start = 15
     line_cnt = 1
     line_limit = 3
-    oled.text("InterCon cache", 0, line_start)
+    PageUI.DISPLAY.text("InterCon cache", 0, line_start)
     if sum([1 for _ in InterCon.dump()]) > 0:
         for key, val in InterCon.dump().items():
             key = key.split('.')[0]
             val = '.'.join(val.split('.')[-2:])
-            oled.text(" {} {}".format(val, key), 0, line_start+(line_cnt*10))
+            PageUI.DISPLAY.text(" {} {}".format(val, key), 0, line_start+(line_cnt*10))
             line_cnt = 1 if line_cnt > line_limit else line_cnt+1
         return True
-    oled.text("Empty", 40, line_start+20)
+    PageUI.DISPLAY.text("Empty", 40, line_start+20)
     return True
 
 
@@ -300,11 +316,11 @@ def _micros_welcome():
     """Template function"""
     def button():
         """Button callback example"""
-        oled.text('HELLO :D', 35, 29)
-        oled.show()
+        PageUI.DISPLAY.text('HELLO :D', 35, 29)
+        PageUI.DISPLAY.show()
 
     try:
-        oled.text('micrOS GUI', 30, 15)
+        PageUI.DISPLAY.text('micrOS GUI', 30, 15)
         PageUI.PAGE_UI_OBJ.set_press_callback(button)
     except Exception as e:
         return str(e)
@@ -321,14 +337,14 @@ def _adc_page():
         size = round(percent * max_w)
         size = 1 if size < 1 else size
         # Visualize percentage
-        oled.rect(0, 9, size, size, fill=True)
+        PageUI.DISPLAY.rect(0, 9, size, size, fill=True)
         # Visualize percentages scale
         steps = int(max_w/10)
         for scale in range(steps, max_w+1, steps):
             if scale < size:
-                oled.rect(0, 9, scale, scale, state=0)
+                PageUI.DISPLAY.rect(0, 9, scale, scale, state=0)
             else:
-                oled.rect(0, 9, scale, scale, state=1)
+                PageUI.DISPLAY.rect(0, 9, scale, scale, state=1)
 
     def __rgb_brightness(percent):
         from sys import modules
@@ -342,8 +358,8 @@ def _adc_page():
     if get_adc is not None:
         data = get_adc(physical_pin('genadc'))
     __visualize(p=data['percent'])
-    oled.text("{} %".format(data['percent']), 65, 20)
-    oled.text("{} V".format(data['volt']), 65, 40)
+    PageUI.DISPLAY.text("{} %".format(data['percent']), 65, 20)
+    PageUI.DISPLAY.text("{} V".format(data['volt']), 65, 40)
     __rgb_brightness(data['percent'])
     return True
 
@@ -353,15 +369,16 @@ def _adc_page():
 #################################
 
 
-def pageui(pwr_sec=None):
+def pageui(pwr_sec=None, oled_type='ssd1306'):
     """
     Init&RUN PageUI
     - add page definitions here - interface from code
     :param pwr_sec: power down oled after given sec - power safe
+    :param oled_type: oled type selection: ssd1306 or sh1106
     """
     pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]      # <== Add page function HERE
     if PageUI.PAGE_UI_OBJ is None:
-        PageUI(pages, 128, 64, pwr_sec)
+        PageUI(pages, 128, 64, pwr_sec, oled_type)
     PageUI.PAGE_UI_OBJ.show_page()
 
 
@@ -428,7 +445,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    pin_map = oled.pinmap()
+    pin_map = PageUI.DISPLAY.pinmap()
     pin_map.update(pinmap_dump('oleduibttn'))
     return pin_map
 
@@ -439,6 +456,7 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'pageui pwr_sec=None/int(sec)', 'control next/prev/press/on/off',\
+    return 'pageui pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',\
+           'control next/prev/press/on/off',\
            'msgbox "msg"', 'intercon_genpage "host cmd"',\
            'pinmap', 'INFO: OLED Module for SSD1306'

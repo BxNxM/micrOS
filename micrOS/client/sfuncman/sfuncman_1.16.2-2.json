@@ -653,6 +653,10 @@
             "doc": "module 'LM_oled_ui' has no attribute 'button'",
             "param(s)": ""
         },
+        "cmd_genpage": {
+            "doc": "\n    Create load module execution pages dynamically :)\n    - based on cmd value: load_module function (args)\n    :param cmd: 'load_module function (args)' string\n    :return: page creation verdict\n    ",
+            "param(s)": "cmd=None"
+        },
         "control": {
             "doc": "\n    OLED UI control\n    :param cmd str: next, prev, press, on, off\n    :return str: verdict\n    ",
             "param(s)": "cmd='next'"

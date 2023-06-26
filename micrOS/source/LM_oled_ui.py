@@ -5,6 +5,7 @@ from LogicalPins import physical_pin, pinmap_dump
 from Network import ifconfig
 from Debug import errlog_add
 from machine import Pin
+from TaskManager import exec_lm_core
 try:
     from LM_system import memory_usage
 except:
@@ -55,7 +56,7 @@ class PageUI:
         self.bttn_press_callback = None
         # Intercon connection state values
         self.open_intercons = []
-        self.conn_data = "n/a"
+        self.cmd_out = "n/a"
         # Create built-in event/button IRQ
         self.irq_ok = False
         self.__create_button_irq()
@@ -104,7 +105,8 @@ class PageUI:
 
     def __page_bar(self):
         """Generates page indicator bar"""
-        plen = int(self.width / len(self.page_callback_list))
+        page_cnt = len(self.page_callback_list)
+        plen = int(round(self.width / page_cnt))
         # Draw page indicators
         for p in range(0, self.width, plen):
             PageUI.DISPLAY.rect(p, self.height - 5, plen - 1, 4)
@@ -200,7 +202,7 @@ class PageUI:
                 self.active_page = 0
             self.show_page()
             self.bttn_press_callback = None
-            self.conn_data = 'n/a'
+            self.cmd_out = 'n/a'
         elif cmd.strip() == 'prev':
             """Change page - previous & Draw"""
             self.active_page -= 1
@@ -208,7 +210,7 @@ class PageUI:
                 self.active_page = len(self.page_callback_list) - 1
             self.show_page()
             self.bttn_press_callback = None
-            self.conn_data = 'n/a'
+            self.cmd_out = 'n/a'
         elif cmd.strip() == 'on':
             PageUI.DISPLAY.poweron()
             self.oled_state = True
@@ -235,25 +237,39 @@ class PageUI:
         """Button callback setter method + draw button"""
         self.bttn_press_callback = callback
 
-        # Draw button
-        posx, posy = 44, 45
-        PageUI.DISPLAY.rect(posx-4, posy-4, 48, 15)
+        # Draw button 44 45
+        posx, posy = 83, 45
+        PageUI.DISPLAY.rect(posx-4, posy-3, 48, 14)
         PageUI.DISPLAY.text("press", posx, posy)
 
         # Draw press effect - based on button state: S
-        if "S:1" in self.conn_data:
+        if "S:1" in self.cmd_out:
             self.blink_effect = True
-        elif "S:0" in self.conn_data:
+        elif "S:0" in self.cmd_out:
             self.blink_effect = False
         else:
             # # Draw press effect - blink
             self.blink_effect = not self.blink_effect
-        PageUI.DISPLAY.rect(posx-3, posy-3, 48-2, 15-2, self.blink_effect)
+        PageUI.DISPLAY.rect(posx-3, posy-2, 48-2, 14-2, self.blink_effect)
+
+    def _cmd_text(self, x, y):
+        """
+        OLED TEST WRITER
+        Char limiter and auto format into 2 lines
+        """
+        char_limit = int(round((self.width - x) / 8)) - 1
+        if len(self.cmd_out) > char_limit:
+            PageUI.DISPLAY.text(self.cmd_out[0:char_limit], x, y + 10)
+            if len(self.cmd_out[char_limit:]) > char_limit-5:
+                PageUI.DISPLAY.text(self.cmd_out[char_limit:(2*char_limit)-5], x, y + 20)
+            else:
+                PageUI.DISPLAY.text(self.cmd_out[char_limit:], x, y + 20)
+        else:
+            PageUI.DISPLAY.text(self.cmd_out, x, y + 10)
 
     def intercon_page(self, host, cmd):
         """Generic interconnect page core - create multiple page with it"""
-        posx = 5
-        posy = 12
+        posx, posy = 5, 12
 
         def _button():
             # BUTTON CALLBACK - INTERCONNECT execution
@@ -261,9 +277,9 @@ class PageUI:
             try:
                 # Send CMD to other device & show result
                 data = InterCon.send_cmd(host, cmd)
-                self.conn_data = ''.join(data).replace(' ', '')     # squish data to print
+                self.cmd_out = ''.join(data).replace(' ', '')     # squish data to print
             except Exception as e:
-                self.conn_data = str(e)
+                self.cmd_out = str(e)
             self.open_intercons.remove(host)
 
         # Check open host connection
@@ -272,7 +288,32 @@ class PageUI:
         # Draw host + cmd details
         PageUI.DISPLAY.text(host, 0, posy)
         PageUI.DISPLAY.text(cmd, posx, posy+10)
-        PageUI.DISPLAY.text(self.conn_data, posx, posy + 20)
+        self._cmd_text(posx, posy+10)
+        # Set button press callback (+draw button)
+        self.set_press_callback(_button)
+
+    def cmd_call_page(self, cmd):
+        """Generic LoadModule execution page core - create multiple page with it"""
+        posx, posy = 5, 12
+
+        def _buffer(msg):
+            try:
+                self.cmd_out = ''.join(msg.strip().split()).replace(' ', '')
+            except Exception:
+                self.cmd_out = msg.strip()
+
+        def _button():
+            nonlocal cmd
+            try:
+                cmd_list = cmd.strip().split()
+                # Send CMD to other device & show result
+                exec_lm_core(cmd_list, msgobj=_buffer)
+            except Exception as e:
+                self.cmd_out = str(e)
+
+        # Draw host + cmd details
+        PageUI.DISPLAY.text(cmd, 0, posy)
+        self._cmd_text(posx, posy)
         # Set button press callback (+draw button)
         self.set_press_callback(_button)
 
@@ -425,6 +466,28 @@ def intercon_genpage(cmd=None):
     return True
 
 
+def cmd_genpage(cmd=None):
+    """
+    Create load module execution pages dynamically :)
+    - based on cmd value: load_module function (args)
+    :param cmd: 'load_module function (args)' string
+    :return: page creation verdict
+    """
+    if not isinstance(cmd, str):
+        return False
+
+    if PageUI.PAGE_UI_OBJ is None:
+        # Auto init UI
+        pageui()
+    try:
+        # Create page for intercon command
+        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd))
+    except Exception as e:
+        print(e)
+        return str(e)
+    return True
+
+
 #######################
 # LM helper functions #
 #######################
@@ -458,5 +521,7 @@ def help():
     """
     return 'pageui pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',\
            'control next/prev/press/on/off',\
-           'msgbox "msg"', 'intercon_genpage "host cmd"',\
+           'msgbox "msg"',\
+           'intercon_genpage "host cmd"',\
+           'cmd_genpage "cmd"',\
            'pinmap', 'INFO: OLED Module for SSD1306'

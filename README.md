@@ -2,7 +2,7 @@
 
 ### micropython based smart edge IoT platform
 
-`#telnet #wifi #esp32 #esp32S3 #esp32s2 #tinypico #RaspberryPiPicoW(beta) #ota #GPIO #RTC/NTP #AP/STA #IRQ #async-tasks #cron`
+![telnet](https://img.shields.io/badge/wifi-telnet-blue) ![esp32S2](https://img.shields.io/badge/esp32-S2-olive) ![tinypico](https://img.shields.io/badge/esp32-tinypico-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-olive) ![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical) ![OTA](https://img.shields.io/badge/ota-update-blue) ![GPIO](https://img.shields.io/badge/gpio-i2c-success) ![clock](https://img.shields.io/badge/rtc-ntp-success) ![async](https://img.shields.io/badge/async-task_manager-success) ![irq](https://img.shields.io/badge/hardware-IRQs-success) ![socket](https://img.shields.io/badge/socket-STA_or_AP-blue) ![cron](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/stabile-release-success)
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
@@ -148,7 +148,8 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ## micrOS Projects
 
-![RingLamp](./media/projects/RingLamp.gif?raw=true)
+
+[![RingLamp](./media/projects/RingLamp.gif?raw=true)](https://youtu.be/BlQzAnFtpLk)
 
 ![RoboArm](./media/projects/RoboArm.gif?raw=true)
 
@@ -263,7 +264,8 @@ LogicalPin lookup tables:
 - [tinypico](./micrOS/source/LP_tinypico.py)
 - [esp32](./micrOS/source/LP_esp32.py)
 - [esp32s2](./micrOS/source/LP_esp32s2.py)
-- [raspberryPicoW](./micrOS/source/LP_rp2.py) NO STABILE MICROPYTHON YET: [micropython for rpw](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython)
+- [esp32s3](./micrOS/source/LP_esp32s3.py)
+- [raspberryPicoW](./micrOS/source/LP_rp2.py) ASYNC SERVER NOT STARTING ISSUE...
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
@@ -515,11 +517,17 @@ Output:
 ```
        [ UID ]                [ FUID ]		[ IP ]		[ STATUS ]	[ VERSION ]	[COMM SEC]
 __localhost__                 __simulator__     127.0.0.1	OFFLINE		<n/a>		n/a
-micrf008d1d2ac30OS            BedLamp           192.168.1.78	ONLINE		1.4.0-1		0.787
-micr7c9ebd07a6d0OS            LedGenisys        192.168.1.71	ONLINE		1.3.3-2		1.430
-micr240ac4f679e8OS            Chillight         192.168.1.91	ONLINE		1.4.0-0		0.780
-micr3c61052fa788OS            RoboArm           192.168.1.79	ONLINE		1.4.0-0		0.539
-micr500291863428OS            TinyDevBoard      192.168.1.73	ONLINE		1.4.0-1		1.363
+micr<ID>OS            TinyDevBoard      10.0.1.72	ONLINE		1.16.2-2		0.072
+micr<ID>OS            LivingKitchen     10.0.1.200	ONLINE		1.16.2-2		0.076
+micr<ID>OS            RoboArm           10.0.1.232	ONLINE		1.15.4-0		0.072
+micr<ID>S            Cabinet           10.0.1.204	ONLINE		1.16.2-2		0.074
+micr<ID>4OS            TestBird          10.0.1.179	ONLINE		1.16.2-1		0.083
+micr<ID>OS            RingLamp          10.0.1.75	ONLINE		1.16.2-2		0.099
+micr<ID>OS            CatFeeder         10.0.1.111	OFFLINE		<n/a>		n/a
+micr<ID>OS            ImpiGamePro       10.0.1.23	OFFLINE		<n/a>		n/a
+micr<ID>S            micrOSPublic02    10.0.1.47	ONLINE		1.16.2-2		0.101
+micr<ID>cOS            micrOSPublic01    10.0.1.197	ONLINE		1.16.2-2		0.099
+micr<ID>cOS            experipurple      10.0.1.94	OFFLINE		<n/a>		n/a
 ```
 
 **Other Developer commands**
@@ -645,12 +653,12 @@ devToolKit.py -c -p '--dev BedLamp conf <a> dump'
 devToolKit.py -c -p '--dev BedLamp system info'
 
 CPU clock: 24 [MHz]
-Mem usage: 60.75 %
-FS usage: 13.48 %
+Mem usage: 71.0 %
+FS usage: 14.6 %
 upython: v1.19.1 on 2022-06-18
 board: ESP32 module with ESP32
 mac: 7c:9e:bd:62:3f:f8
-uptime: 1 23:20:38
+uptime: 0 1:29:19
 ```
 
 ## SocketClient
@@ -737,29 +745,32 @@ Bye!
 
 ```
 micrOS/source/
-      89	Common.py
-     217	ConfigHandler.py
-     117	Debug.py
-      62	Hooks.py
-      90	InterConnect.py
-     258	InterpreterShell.py
-     148	InterruptHandler.py
+     163	Common.py
+     218	ConfigHandler.py
+     184	Debug.py
+      66	Hooks.py
+     101	InterConnect.py
+     270	InterpreterShell.py
+     152	InterruptHandler.py
       48	LP_esp32.py
-      47	LP_esp32s2.py
+      49	LP_esp32s2.py
+      51	LP_esp32s3.py
        3	LP_rp2.py
       56	LP_tinypico.py
-     131	LogicalPins.py
-     189	Network.py
-     161	Scheduler.py
-     242	SocketServer.py
-     435	TaskManager.py
-     191	Time.py
+     133	LogicalPins.py
+     214	Network.py
+     198	Notify.py
+     174	Scheduler.py
+     278	SocketServer.py
+     484	TaskManager.py
+     166	Time.py
       24	TinyPLed.py
       19	main.py
-      67	micrOS.py
+      69	micrOS.py
      118	micrOSloader.py
        9	reset.py
-SUM OF CODE LINES: 2721
+     127	urequests.py
+SUM OF CODE LINES: 3374
 ```
 
 #### micrOS Load Modules
@@ -770,13 +781,14 @@ micrOS/source/
       47	LM_L9110_DCmotor.py
      323	LM_VL53L0X.py
      299	LM_bme280.py
-     225	LM_buzzer.py
+     240	LM_buzzer.py
       60	LM_catgame.py
-     245	LM_cct.py
+     318	LM_cct.py
      122	LM_co2.py
-      58	LM_dht11.py
-      58	LM_dht22.py
-     132	LM_dimmer.py
+      60	LM_demo.py
+      72	LM_dht11.py
+      72	LM_dht22.py
+     200	LM_dimmer.py
       70	LM_distance.py
       54	LM_ds18.py
       44	LM_esp32.py
@@ -785,21 +797,24 @@ micrOS/source/
       45	LM_intercon.py
       65	LM_light_sensor.py
      283	LM_neoeffects.py
-     282	LM_neopixel.py
-     211	LM_oled.py
-     391	LM_oled_ui.py
-      40	LM_pet_feeder.py
+     305	LM_neopixel.py
+     217	LM_oled.py
+     280	LM_oled_sh1106.py
+     466	LM_oled_ui.py
+      64	LM_pet_feeder.py
       39	LM_ph_sensor.py
-     197	LM_presence.py
-     263	LM_rgb.py
-     255	LM_roboarm.py
-      56	LM_robustness.py
+     208	LM_presence.py
+      87	LM_rencoder.py
+     283	LM_rgb.py
+     258	LM_roboarm.py
+      53	LM_robustness.py
      124	LM_servo.py
      133	LM_stepper.py
      223	LM_switch.py
-     228	LM_system.py
+     260	LM_system.py
+      65	LM_telegram.py
       85	LM_tinyrgb.py
-SUM OF CODE LINES: 4888
+SUM OF CODE LINES: 5755
 ```
 
 > LM (Load Modules) - Application logic - accessable over socket server as a command

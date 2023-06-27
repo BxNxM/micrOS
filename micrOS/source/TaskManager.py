@@ -226,16 +226,25 @@ class Manager:
         Create IDLE task - fix IRQ task start
         - Try to measure system load - based on idle task latency
         """
-        period_ms = 1000
+        # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
+        period_ms = 250
+        skip = 3        # skip idle task #SysLogic block X times, every X+1*period_ms will run this block
         my_task = Task.TASKS.get('idle')
         my_task.out = f"i.d.l.e: {period_ms}ms"
-        while True:
-            t = ticks_ms()
-            await asyncio.sleep_ms(period_ms)
-            delta_rate = int(((ticks_diff(ticks_ms(), t) / period_ms)-1) * 100)
-            Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)
-            #my_task.out = "Idling... dT: {}".format(round(ticks_diff(ticks_ms(), t) / period_ms, 3))
-        #my_task.done = True
+        try:
+            while True:
+                for _ in range(0, skip):
+                    # Idle task optimization
+                    await asyncio.sleep_ms(period_ms)
+                    continue
+                t = ticks_ms()
+                await asyncio.sleep_ms(period_ms)
+                # SysLogic block
+                delta_rate = int(((ticks_diff(ticks_ms(), t) / period_ms)-1) * 100)
+                Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)
+        except Exception as e:
+            errlog_add(f"[ERR] Idle task exists: {e}")
+        my_task.done = True
 
     def create_task(cls, callback, tag=None, loop=False, delay=None):
         """

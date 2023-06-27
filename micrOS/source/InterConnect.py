@@ -1,9 +1,10 @@
-from socket import socket, getaddrinfo, AF_INET, SOCK_STREAM
-from select import select
+import uasyncio as asyncio
+from socket import getaddrinfo, AF_INET, SOCK_STREAM
 from re import match
 from Debug import errlog_add
 from ConfigHandler import cfgget
 from SocketServer import SocketServer
+from TaskManager import Task
 
 
 class InterCon:
@@ -11,9 +12,10 @@ class InterCon:
     PORT = cfgget('socport')
 
     def __init__(self, timeout):
-        self.conn = socket(AF_INET, SOCK_STREAM)
-        self.conn.settimeout(timeout)
+        self.reader = None
+        self.writer = None
         self.timeout = timeout
+        self.task = Task()
 
     @staticmethod
     def validate_ipv4(str_in):
@@ -22,38 +24,44 @@ class InterCon:
             return True
         return False
 
-    def send_cmd(self, host, cmd):
+    async def send_cmd(self, host, cmd):
         hostname = None
-        # Check IF host is hostname (example.local) and resolve it's IP address
+        # Check if host is a hostname (example.local) and resolve its IP address
         if not InterCon.validate_ipv4(host):
             hostname = host
             # Retrieve IP address by hostname dynamically
             if InterCon.CONN_MAP.get(hostname, None) is None:
-                host = getaddrinfo(host, InterCon.PORT, 0, SOCK_STREAM)[-1][4][0]
+                try:
+                    addr_info = getaddrinfo(host, InterCon.PORT, 0, SOCK_STREAM)
+                    host = addr_info[-1][4][0]
+                except OSError as e:
+                    SocketServer().reply_message("[intercon] NoHost: {}".format(e))
+                    errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
+                    return []
             else:
                 # Restore IP from cache by hostname
                 host = InterCon.CONN_MAP[hostname]
-        # IF IP address is available send msg to the endpoint
+        # If IP address is available, send msg to the endpoint
         if InterCon.validate_ipv4(host):
-            SocketServer().reply_message("[intercon] {} -> {}:{}:{}".format(cmd, hostname, host, InterCon.PORT))
-
             try:
-                # Connect to host
-                self.conn.connect((host, InterCon.PORT))
+                # Create socket object
+                print(f"\t- Create connection to ({host}:{InterCon.PORT})")
+                self.reader, self.writer = await asyncio.open_connection(host, InterCon.PORT)
                 # Send command over TCP/IP
-                output = self.__run_command(cmd, hostname)
+                print("\t- Connected, send command")
+                output = await self.__run_command(cmd, hostname)
             except OSError as e:
                 SocketServer().reply_message("[intercon] NoHost: {}".format(e))
                 errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
                 output = None
-            try:
-                self.conn.close()
-            except:
-                pass
+            finally:
+                if self.writer:
+                    self.writer.close()
+                    await self.writer.wait_closed()
 
             # Cache successful connection data (hostname:IP)
             if hostname is not None:
-                # In case of valid communication store device ip, otherwise set ip to None
+                # In case of valid communication, store device IP; otherwise, set IP to None
                 InterCon.CONN_MAP[hostname] = None if output is None else host
             # Successful communication: list of received lines / Failed communication: None
             return [] if output is None else output
@@ -61,17 +69,18 @@ class InterCon:
             errlog_add("[intercon][ERR] Invalid host: {}".format(host))
         return []
 
-    def __run_command(self, cmd, hostname):
+    async def __run_command(self, cmd, hostname):
         cmd = str.encode(cmd)
-        data, prompt = self.__receive_data()
+        data, prompt = await self.__receive_data()
         if "Connection is busy. Bye!" in prompt:
             SocketServer().reply_message("Try later...")
             return None
         # Compare prompt |node01 $| with hostname 'node01.local'
         if hostname is None or prompt is None or str(prompt).replace('$', '').strip() == str(hostname).split('.')[0]:
-            # Sun command on validated device
-            self.conn.send(cmd)
-            data, _ = self.__receive_data(prompt=prompt)
+            # Run command on validated device
+            self.writer.write(cmd)
+            await self.writer.drain()
+            data, _ = await self.__receive_data(prompt=prompt)
             if data == '\0':
                 return None
             # Successful data receive, return data
@@ -80,36 +89,53 @@ class InterCon:
         SocketServer().reply_message("[intercon] prompt mismatch, hostname: {} prompt: {} ".format(hostname, prompt))
         return None
 
-    def __receive_data(self, prompt=None):
+    async def __receive_data(self, prompt=None):
         data = ""
         # Collect answer data
-        if select([self.conn], [], [], self.timeout)[0]:
-            while True:
-                last_data = self.conn.recv(256).decode('utf-8').strip()
+        while True:
+            try:
+                last_data = await self.reader.read(256)
+                if not last_data:
+                    break
+                last_data = last_data.decode('utf-8').strip()
                 # First data is prompt, get it
                 prompt = last_data.strip() if prompt is None else prompt
                 data += last_data
-                # Wait for prompt or special cases (conf,exit)
+                # Wait for prompt or special cases (conf, exit)
                 if prompt in data.strip() or '[configure]' in data or "Bye!" in last_data:
                     break
-            data = data.replace(prompt, '')
-            data = [k.strip() for k in data.strip().split('\n')]
+            except OSError:
+                break
+        data = data.replace(prompt, '')
+        data = [k.strip() for k in data.strip().split('\n')]
         return data, prompt
 
-    def __del__(self):
-        del self.conn
-        del self.timeout
 
-
-# Main command to send msg to other micrOS boards
-def send_cmd(host, cmd, timeout=1.0):
-    com_obj = InterCon(timeout)
-    # send command
-    output = com_obj.send_cmd(host, cmd)
-    del com_obj
+# Main command to send msg to other micrOS boards (async version)
+async def _send_cmd(host, cmd, com_obj):
+    # Send command
+    with com_obj.task:
+        output = await com_obj.send_cmd(host, cmd)
+        com_obj.task.out = output
     return output
+
+
+# Main command to send msg to other micrOS boards (sync version)
+def send_cmd(host, cmd, timeout=1.0):
+
+    def _tagify():
+        nonlocal host
+        if InterCon.validate_ipv4(host):
+            return '.'.join(host.split('.')[-2:])
+        return host.replace('.local', '')
+
+    com_obj = InterCon(timeout)
+    tag = f"intercon.{_tagify()}"
+    started = com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=tag)
+    return {"verdict": f'Task started {host}:{cmd} -> task show {tag}' if started else 'Cannot start task', 'tag': tag}
 
 
 # Dump connection cache
 def dump_cache():
     return InterCon.CONN_MAP
+

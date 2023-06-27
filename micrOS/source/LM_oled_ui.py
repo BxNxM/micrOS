@@ -5,7 +5,7 @@ from LogicalPins import physical_pin, pinmap_dump
 from Network import ifconfig
 from Debug import errlog_add
 from machine import Pin
-from TaskManager import exec_lm_core
+from TaskManager import exec_lm_core, Manager
 try:
     from LM_system import memory_usage
 except:
@@ -270,14 +270,16 @@ class PageUI:
     def intercon_page(self, host, cmd):
         """Generic interconnect page core - create multiple page with it"""
         posx, posy = 5, 12
+        data_meta = {}
 
         def _button():
+            nonlocal data_meta
             # BUTTON CALLBACK - INTERCONNECT execution
             self.open_intercons.append(host)
             try:
                 # Send CMD to other device & show result
-                data = InterCon.send_cmd(host, cmd)
-                self.cmd_out = ''.join(data).replace(' ', '')     # squish data to print
+                data_meta = InterCon.send_cmd(host, cmd)
+                self.cmd_out = ''.join(data_meta['verdict']).replace(' ', '')     # squish data to print
             except Exception as e:
                 self.cmd_out = str(e)
             self.open_intercons.remove(host)
@@ -289,6 +291,10 @@ class PageUI:
         PageUI.DISPLAY.text(host, 0, posy)
         PageUI.DISPLAY.text(cmd, posx, posy+10)
         self._cmd_text(posx, posy+10)
+        # Update task output ???? TODO task result retrieve
+        #task_buffer = Manager().show(tag=data_meta["tag"])
+        #if task_buffer is not None:
+        #    self.cmd_out = task_buffer
         # Set button press callback (+draw button)
         self.set_press_callback(_button)
 

@@ -24,6 +24,13 @@ class InterCon:
         return False
 
     async def send_cmd(self, host, cmd):
+        """
+        Async Main method to implement device-device communication with
+        - dhcp host resolve and IP caching
+        - async connection with prompt check and command query and result handling (via Task cache/output)
+        :param host: hostname or IP address to connect with
+        :param cmd: command string to server socket shell
+        """
         hostname = None
         # Check if host is a hostname (example.local) and resolve its IP address
         if not InterCon.validate_ipv4(host):
@@ -67,6 +74,11 @@ class InterCon:
         return ''
 
     async def __run_command(self, cmd, hostname):
+        """
+        Implements receive data on open connection, command query and result collection
+        :param cmd: command string to server socket shell
+        :param hostname: hostname for prompt checking
+        """
         cmd = str.encode(cmd)
         data, prompt = await self.__receive_data()
         if "Connection is busy. Bye!" in prompt:
@@ -87,6 +99,10 @@ class InterCon:
         return None
 
     async def __receive_data(self, prompt=None):
+        """
+        Implements data receive loop until prompt / [configure] / Bye!
+        :param prompt: socket shell prompt
+        """
         data = ""
         # Collect answer data
         while True:
@@ -107,17 +123,29 @@ class InterCon:
         return data, prompt
 
 
-# Main command to send msg to other micrOS boards (async version)
 async def _send_cmd(host, cmd, com_obj):
+    """
+    Async send command wrapper for further async task integration and sync send_cmd usage (main)
+    :param host: hostname / IP address
+    :param cmd: command string to server socket shell
+    :param com_obj: InterCon object to utilize send_cmd method and task status updates
+    """
     # Send command
     with com_obj.task:
         com_obj.task.out = await com_obj.send_cmd(host, cmd)
-    return output
+    return com_obj.task.out
 
 
-# Main command to send msg to other micrOS boards (sync version)
 def send_cmd(host, cmd):
-
+    """
+    Main wrapper of InterCon.send_cmd with
+    - Intercon object creation
+    - tag generation
+    - task creation
+    - task creation verdict generation
+    :param host: hostname / IP address
+    :param cmd: command string to server socket shell
+    """
     def _tagify():
         nonlocal host
         if InterCon.validate_ipv4(host):
@@ -130,11 +158,13 @@ def send_cmd(host, cmd):
     if started:
         result = {"verdict": f"Task started {host}:{cmd} -> task show {tag}", "tag": tag}
     else:
-        result = {"verdict": "Task cannot start", "tag": tag}
+        result = {"verdict": "Task is Busy", "tag": tag}
     return result
 
 
-# Dump connection cache
 def dump_cache():
+    """
+    Dump InterCon connection cache
+    """
     return InterCon.CONN_MAP
 

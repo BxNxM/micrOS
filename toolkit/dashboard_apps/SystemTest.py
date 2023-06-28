@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import socket
+import ast
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(MYPATH))
 import socketClient
@@ -323,11 +324,31 @@ def check_robustness_recursion():
 
 
 def check_intercon(host=None):
+    def _convert_return_to_dict(data):
+        try:
+            data_dict = ast.literal_eval(data[1])
+        except Exception as e:
+            data_dict = {'tag': None, 'verdict': f'{data}: {str(e)}'}
+        return data[0], data_dict
+
+    def _get_intercon_output(tag):
+        _cmd_list = [f'task show {tag}']
+        _state = False
+        _output = None
+        for _ in range(0, 2):
+            time.sleep(1)
+            _output = execute(_cmd_list, tout=8)
+            if _output[0] and 'No task found:' not in _output[1]:
+                _state = True
+                break
+        return _state, _output
+
     info_msg = '[ST] Check device-device connectivity'
     print(info_msg)
     host = 'test.local' if host is None else host
-    cmd_list = ['intercon sendcmd "{}" "hello"'.format(host)]
+    cmd_list = ['intercon sendcmd "{}" "hello" >json'.format(host)]
     output = execute(cmd_list, tout=8)
+    output = _convert_return_to_dict(output)
     device_was_found = False
     if output[0] is False or output[1] is None:
         output = 'Device was not found: {}:{}'.format(host, output)
@@ -336,23 +357,25 @@ def check_intercon(host=None):
         # Valid input, device was not found
         output = 'Device was not found: {}:{}'.format(host, output)
         state = True, f'{info_msg}:\n\t\t{output}'
-    elif "hello" in output[1]:
+    elif len(output[1]) > 1 and "hello" in output[1]['verdict']:
+        response_state, response = _get_intercon_output(output[1]['tag'])
         # Valid input on online device
-        output = "Device was found: {}:{}".format(host, output)
-        output = output.split('\n')
-        state = True, f'{info_msg}:\n\t\t{output}'
+        output = "Device was found: {}:{}".format(host, f"{output}: {response}")
+        state = True & response_state, f'{info_msg}:\n\t\t{output}'
         device_was_found = True
     else:
         state = False, output
 
     if device_was_found:
         # DO Negative testing as well
-        cmd_list = ['intercon sendcmd "notavailable.local" "hello"']
+        cmd_list = ['intercon sendcmd "notavailable.local" "hello" >json']
         output_neg = execute(cmd_list, tout=15)
+        output_neg = _convert_return_to_dict(output_neg)
         state_neg = False, output_neg
-        if output_neg[1] == '[]':
-            output_neg = 'Device was not found: "notavailable.local":{}'.format(output_neg)
-            state_neg = True, output_neg
+        if len(output_neg[1]) > 1 and "hello" in output_neg[1]['verdict']:
+            response_state, response = _get_intercon_output(output_neg[1]['tag'])
+            output_neg = f'Device was not found: "notavailable.local":{output_neg}: {response}'
+            state_neg = True & response_state, output_neg
         return state[0] & state_neg[0], "{}\n\t\tNegative test: {}".format(state[1], state_neg[1])
     return state
 
@@ -422,6 +445,7 @@ def app(devfid=None):
                'conn_metrics': measure_conn_metrics(),
                'micros_tasks': task_list()
                }
+
 
     # Test Evaluation
     final_state = True

@@ -11,10 +11,9 @@ class InterCon:
     CONN_MAP = {}
     PORT = cfgget('socport')
 
-    def __init__(self, timeout):
+    def __init__(self):
         self.reader = None
         self.writer = None
-        self.timeout = timeout
         self.task = Task()
 
     @staticmethod
@@ -37,7 +36,7 @@ class InterCon:
                 except OSError as e:
                     SocketServer().reply_message("[intercon] NoHost: {}".format(e))
                     errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
-                    return []
+                    return ''
             else:
                 # Restore IP from cache by hostname
                 host = InterCon.CONN_MAP[hostname]
@@ -45,10 +44,8 @@ class InterCon:
         if InterCon.validate_ipv4(host):
             try:
                 # Create socket object
-                print(f"\t- Create connection to ({host}:{InterCon.PORT})")
                 self.reader, self.writer = await asyncio.open_connection(host, InterCon.PORT)
                 # Send command over TCP/IP
-                print("\t- Connected, send command")
                 output = await self.__run_command(cmd, hostname)
             except OSError as e:
                 SocketServer().reply_message("[intercon] NoHost: {}".format(e))
@@ -64,10 +61,10 @@ class InterCon:
                 # In case of valid communication, store device IP; otherwise, set IP to None
                 InterCon.CONN_MAP[hostname] = None if output is None else host
             # Successful communication: list of received lines / Failed communication: None
-            return [] if output is None else output
+            return '' if output is None else output
         else:
             errlog_add("[intercon][ERR] Invalid host: {}".format(host))
-        return []
+        return ''
 
     async def __run_command(self, cmd, hostname):
         cmd = str.encode(cmd)
@@ -106,8 +103,7 @@ class InterCon:
                     break
             except OSError:
                 break
-        data = data.replace(prompt, '')
-        data = [k.strip() for k in data.strip().split('\n')]
+        data = data.replace(prompt, '').replace('\n', ' ')
         return data, prompt
 
 
@@ -115,13 +111,12 @@ class InterCon:
 async def _send_cmd(host, cmd, com_obj):
     # Send command
     with com_obj.task:
-        output = await com_obj.send_cmd(host, cmd)
-        com_obj.task.out = output
+        com_obj.task.out = await com_obj.send_cmd(host, cmd)
     return output
 
 
 # Main command to send msg to other micrOS boards (sync version)
-def send_cmd(host, cmd, timeout=1.0):
+def send_cmd(host, cmd):
 
     def _tagify():
         nonlocal host
@@ -129,10 +124,14 @@ def send_cmd(host, cmd, timeout=1.0):
             return '.'.join(host.split('.')[-2:])
         return host.replace('.local', '')
 
-    com_obj = InterCon(timeout)
+    com_obj = InterCon()
     tag = f"intercon.{_tagify()}"
     started = com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=tag)
-    return {"verdict": f'Task started {host}:{cmd} -> task show {tag}' if started else 'Cannot start task', 'tag': tag}
+    if started:
+        result = {"verdict": f"Task started {host}:{cmd} -> task show {tag}", "tag": tag}
+    else:
+        result = {"verdict": "Task cannot start", "tag": tag}
+    return result
 
 
 # Dump connection cache

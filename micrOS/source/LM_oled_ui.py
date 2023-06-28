@@ -57,6 +57,7 @@ class PageUI:
         # Intercon connection state values
         self.open_intercons = []
         self.cmd_out = "n/a"
+        self.cmd_task_tag = None
         # Create built-in event/button IRQ
         self.irq_ok = False
         self.__create_button_irq()
@@ -270,16 +271,15 @@ class PageUI:
     def intercon_page(self, host, cmd):
         """Generic interconnect page core - create multiple page with it"""
         posx, posy = 5, 12
-        data_meta = {}
 
         def _button():
-            nonlocal data_meta
             # BUTTON CALLBACK - INTERCONNECT execution
             self.open_intercons.append(host)
             try:
                 # Send CMD to other device & show result
                 data_meta = InterCon.send_cmd(host, cmd)
-                self.cmd_out = ''.join(data_meta['verdict']).replace(' ', '')     # squish data to print
+                self.cmd_task_tag = data_meta['tag']
+                self.cmd_out = ''.join(data_meta['verdict'])
             except Exception as e:
                 self.cmd_out = str(e)
             self.open_intercons.remove(host)
@@ -291,10 +291,12 @@ class PageUI:
         PageUI.DISPLAY.text(host, 0, posy)
         PageUI.DISPLAY.text(cmd, posx, posy+10)
         self._cmd_text(posx, posy+10)
-        # Update task output ???? TODO task result retrieve
-        #task_buffer = Manager().show(tag=data_meta["tag"])
-        #if task_buffer is not None:
-        #    self.cmd_out = task_buffer
+        # Update task output - retrieve task result
+        if self.cmd_out != 'n/a' and self.cmd_task_tag is not None:
+            task_buffer = str(Manager().show(tag=self.cmd_task_tag)).replace(' ', '')
+            if task_buffer is not None and len(task_buffer) > 0:
+                self.cmd_out = task_buffer
+                self.cmd_task_tag = None        # ???? data gethered - remove tag from - cancel re-read
         # Set button press callback (+draw button)
         self.set_press_callback(_button)
 

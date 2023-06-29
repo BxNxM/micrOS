@@ -227,8 +227,8 @@ class Manager:
         - Try to measure system load - based on idle task latency
         """
         # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
-        period_ms = 250
-        skip = 3        # skip idle task #SysLogic block X times, every X+1*period_ms will run this block
+        period_ms = 150
+        skip = 6        # skip idle task #SysLogic block X times, every X+1*period_ms will run this block
         my_task = Task.TASKS.get('idle')
         my_task.out = f"i.d.l.e: {period_ms}ms"
         try:

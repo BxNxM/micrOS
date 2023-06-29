@@ -294,7 +294,6 @@ class PageUI:
         # Draw host + cmd details
         PageUI.DISPLAY.text(host, 0, posy)
         PageUI.DISPLAY.text(cmd, posx, posy+10)
-        self._cmd_text(posx, posy+10)
         # Update display output with retrieved task result (by TaskID)
         if self.cmd_task_tag is not None:
             task_buffer = str(Manager().show(tag=self.cmd_task_tag)).replace(' ', '')
@@ -305,6 +304,8 @@ class PageUI:
                 Manager().kill(tag=self.cmd_task_tag)
                 # data gathered - remove tag - skip re-read
                 self.cmd_task_tag = None
+        # Show self.cmd_out value on display
+        self._cmd_text(posx, posy+10)
         # Set button press callback (+draw button)
         self.set_press_callback(_button)
 

@@ -28,9 +28,10 @@ class PageUI:
     PAGE_UI_OBJ = None
     DISPLAY = None
 
-    def __init__(self, page_callbacks, w, h, pwr_sec=None, oled_type='ssd1306'):
+    def __init__(self, page_callbacks, w, h, page=0, pwr_sec=None, oled_type='ssd1306'):
         """
         :param page_callbacks: callback function list to show on UI
+        :param page: start page index, default 0 (+fallback)
         :param w: screen width
         :param h: screen height
         :param pwr_sec: auto screen off after this sec
@@ -45,8 +46,8 @@ class PageUI:
         else:
             errlog_add(f"Oled UI unknown oled_type: {oled_type}")
             Exception(f"Oled UI unknown oled_type: {oled_type}")
-        self.active_page = 0
         self.page_callback_list = page_callbacks
+        self.active_page = page
         self.width = w
         self.height = h
         self.show_msg = None
@@ -183,7 +184,10 @@ class PageUI:
             self.__page_header()
             self.__page_bar()
             if not msg_event:
-                self.page_callback_list[self.active_page]()         # <== Execute page functions
+                if self.active_page > len(self.page_callback_list) - 1:     # Index out of range
+                    self.page_callback_list[0]()    # <== Execute page functions, page not available, fallback
+                else:
+                    self.page_callback_list[self.active_page]()         # <== Execute page functions
             PageUI.DISPLAY.show()
             self.__power_save()
 
@@ -238,9 +242,9 @@ class PageUI:
         """Button callback setter method + draw button"""
         self.bttn_press_callback = callback
 
-        # Draw button 44 45
-        posx, posy = 83, 45
-        PageUI.DISPLAY.rect(posx-4, posy-3, 48, 14)
+        # Draw button
+        posx, posy = 84, 45
+        PageUI.DISPLAY.rect(posx-3, posy-3, 46, 14)
         PageUI.DISPLAY.text("press", posx, posy)
 
         # Draw press effect - based on button state: S
@@ -251,7 +255,7 @@ class PageUI:
         else:
             # # Draw press effect - blink
             self.blink_effect = not self.blink_effect
-        PageUI.DISPLAY.rect(posx-3, posy-2, 48-2, 14-2, self.blink_effect)
+        PageUI.DISPLAY.rect(posx-2, posy-2, 46-2, 14-2, self.blink_effect)
 
     def _cmd_text(self, x, y):
         """
@@ -299,7 +303,7 @@ class PageUI:
             task_buffer = str(Manager().show(tag=self.cmd_task_tag)).replace(' ', '')
             if task_buffer is not None and len(task_buffer) > 0:
                 # Set display out to task buffered data
-                self.cmd_out = task_buffer
+                self.cmd_out = task_buffer.replace('ºC', 'C')  # Workaround to eliminate ºC special character on display
                 # Kill task - clean
                 Manager().kill(tag=self.cmd_task_tag)
                 # data gathered - remove tag - skip re-read
@@ -315,7 +319,7 @@ class PageUI:
 
         def _buffer(msg):
             try:
-                self.cmd_out = ''.join(msg.strip().split()).replace(' ', '')
+                self.cmd_out = ''.join(msg.strip().split()).replace(' ', '').replace('ºC', 'C')
             except Exception:
                 self.cmd_out = msg.strip()
 
@@ -427,16 +431,17 @@ def _adc_page():
 #################################
 
 
-def pageui(pwr_sec=None, oled_type='ssd1306'):
+def pageui(pwr_sec=None, oled_type='ssd1306', page=0):
     """
     Init&RUN PageUI
     - add page definitions here - interface from code
     :param pwr_sec: power down oled after given sec - power safe
     :param oled_type: oled type selection: ssd1306 or sh1106
+    :param page: start page index, start from 0
     """
-    pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]      # <== Add page function HERE
     if PageUI.PAGE_UI_OBJ is None:
-        PageUI(pages, 128, 64, pwr_sec, oled_type)
+        pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]  # <== Add page function HERE
+        PageUI(pages, 128, 64, page=page, pwr_sec=pwr_sec, oled_type=oled_type)
     PageUI.PAGE_UI_OBJ.show_page()
 
 
@@ -536,7 +541,7 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'pageui pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',\
+    return 'pageui page=0 pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',\
            'control next/prev/press/on/off',\
            'msgbox "msg"',\
            'intercon_genpage "host cmd"',\

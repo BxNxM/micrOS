@@ -604,7 +604,7 @@ class QuickOTAUpload(QLabel):
         logo_path = os.path.join(MYPATH, '../media/dnd.png')
         pixmap = QPixmap(logo_path)
         self.setPixmap(pixmap)
-        self.setToolTip("Direct LM module upload to micrOS board via webrepl")
+        self.setToolTip(f"Direct LM module upload to micrOS board via webrepl\nSimulator path: {os.path.join(MYPATH, 'workspace/simulator')}")
         self.setAcceptDrops(True)
 
     def get_upload_callback(self):

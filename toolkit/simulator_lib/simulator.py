@@ -33,6 +33,15 @@ class micrOSIM():
         sim_path.pushd(SIM_PATH)
         console("[micrOSIM] Start micrOS loader in: {}".format(SIM_PATH))
 
+        def trace_func(frame, event, arg):
+            frame_info = str(frame).split(',')[1:]
+            file = frame.f_code.co_filename
+            line = frame.f_lineno
+            code = frame.f_code.co_name
+            if 'simulator/' in file and code != 'idle_task':
+                print(f"{' '*50}[trace][{event}] {line}: {'/'.join(file.split('/')[-2:])}.{code} {arg if arg else ''}")
+
+        sys.settrace(trace_func)
         micrOSloader.main()
 
         console("[micrOSIM] Stop micrOS ({})".format(SIM_PATH))

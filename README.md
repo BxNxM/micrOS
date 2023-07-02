@@ -429,10 +429,108 @@ def help():
 	Return help message tuple
 	"""
 	return 'load_n_init', 'pinmap', 'status', 'lmdep'
-
 ```
 
-# System Architecture 
+
+### micrOS Common module
+
+#### Common module with additinal features for LMs
+
+Module responsible for collecting additional feature definitions dedicated to the micrOS framework and LoadModules. Code: [micrOS/source/Common.py](./micrOS/source/Common.py)
+
+### socket_stream decorator
+
+Adds an extra `msgobj` to the wrapped function's argument list. The `msgobj` provides a socket message interface for the open connection.
+
+```
+@socket_stream
+def function_name(arg1, arg2, ..., msgobj=None):
+    # function body
+    msgobj("Client reply :)")
+```
+
+### transition(from_val, to\_val, step\_ms, interval_sec)
+
+Generator for color transitions.
+
+Parameters:
+
+* from_val: Starting value
+* to_val: Target value
+* step_ms: Step to reach to_val
+* interval_sec: Full intervals
+
+Returns:
+
+* A generator that yields the intermediate values between from_val and to_val in steps of step_ms.
+
+### transition_gen(*args, interval\_sec=1.0)
+
+Create multiple transition generators.
+
+Parameters:
+
+* args: Pairs of from_val and to_val values for each channel
+* interval_sec: Interval in seconds to calculate the optimal fade/transition effect
+
+Returns:
+
+* If only one transition generator is created, it returns the generator and the step size in milliseconds (gen, step_ms). If multiple transition generators are created, it returns a list of generators and the step size in milliseconds ([gen1, gen2, ...], step_ms).
+
+### class SmartADC
+
+ADC wrapper class for reading analog values.
+
+Methods:
+
+* \_\_init\_\_(self, pin): Initializes the ADC object with the specified pin.
+* get(self): Reads the analog value from the ADC and returns a dictionary with the raw value, percentage, and voltage.
+* get_singleton(pin): Returns a singleton SmartADC object for the specified pin.
+
+### micro_task(tag, task=None)
+
+Async task creation from LoadModules.
+
+Parameters:
+
+* tag: If None, returns the task generator object. If a taskID is provided, returns the existing task object by tag.
+* task: Coroutine to execute.
+
+Returns:
+
+* If tag is None, returns the task generator object. If a taskID is provided, returns the existing task object by tag. If task is provided, returns the task creation state: True for success, False for failure.
+
+### data_logger(f\_name, data=None, limit=12, msgobj=None)
+
+micrOS Common Data logger solution.
+
+Parameters:
+
+* f_name: Log name (without extension, automatically appends .dat)
+* data: Data to append to the log. If None, reads the log and returns it as a message stream.
+* limit: Line limit for the log (default: 12)
+* msgobj: Socket stream object (automatically set)
+
+Returns:
+
+* If data is None, returns the log as a message stream. If data is provided, returns True if the write operation was successful, False otherwise.
+
+### notify(text)
+
+micrOS common notification handler (Telegram).
+
+Parameters:
+
+* text: Notification text
+
+Returns:
+
+* True if the notification was sent successfully, False otherwise.
+
+----------------------------------------
+
+
+# System Architecture (obsolete)
 
 ![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
 

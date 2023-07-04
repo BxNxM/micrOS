@@ -10,15 +10,16 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='micrOSDevToolKit',
-    version='4.9.4',
+    version='1.0.0',
     author='Marcell Ban',
     author_email='miros.framework@gmail.com',
-    description='Development environment for micrOS (micropython based IoT solution)',
+    description='Development and deployment environment for micrOS, the diy micropython automation OS (IoT)',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/BxNxM/micrOS',
     project_urls={
-        "Bug Tracker": "https://github.com/BxNxM/micrOS/issues"
+        "Bug Tracker": "https://github.com/BxNxM/micrOS/issues",
+        "GitHub Discussions": "https://github.com/BxNxM/micrOS/discussions"
     },
     license='MIT',
     packages=setuptools.find_packages(),
@@ -27,6 +28,6 @@ setuptools.setup(
                       'matplotlib', 'json2html'],
     scripts=['devToolKit.py'],
     include_package_data=True,
-    use_scm_version=True,
-    setup_requires=['setuptools_scm']
+    use_scm_version=True
+    #setup_requires=['setuptools_scm']
 )

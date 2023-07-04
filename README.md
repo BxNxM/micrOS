@@ -1,5 +1,6 @@
 # ![LOGO](./media/logo_mini.png?raw=true) micrOS
 
+
 ### micropython based smart edge IoT platform
 
 ![telnet](https://img.shields.io/badge/wifi-telnet-blue) ![esp32S2](https://img.shields.io/badge/esp32-S2-olive) ![tinypico](https://img.shields.io/badge/esp32-tinypico-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-olive) ![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical) ![OTA](https://img.shields.io/badge/ota-update-blue) ![GPIO](https://img.shields.io/badge/gpio-i2c-success) ![clock](https://img.shields.io/badge/rtc-ntp-success) ![async](https://img.shields.io/badge/async-task_manager-success) ![irq](https://img.shields.io/badge/hardware-IRQs-success) ![socket](https://img.shields.io/badge/socket-STA_or_AP-blue) ![cron](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/stabile-release-success) ![upy](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/micropython-OS-gold)<br/>
@@ -10,7 +11,8 @@ Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), fo
 [![Instagram](https://img.shields.io/badge/Instagram-%40micros_framework-%23E4405F?logo=instagram&logoColor=white)](https://www.instagram.com/micros_framework/)
 [![YouTube](https://img.shields.io/badge/YouTube-micrOS_framework-red?logo=youtube&logoColor=white)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
 [![Facebook](https://img.shields.io/badge/Facebook-micrOS_framework-%231877F2?logo=facebook&logoColor=white)](https://www.facebook.com/Micros-Framework-103501302140755)
-[![Thingiverse](https://img.shields.io/badge/Thingiverse-micrOS_3Dprints-%231489FF?logo=thingiverse&logoColor=white)](https://www.thingiverse.com/micros_framework/designs)
+[![Thingiverse](https://img.shields.io/badge/Thingiverse-micrOS_3Dprints-%231489FF?logo=thingiverse&logoColor=white)](https://www.thingiverse.com/micros_framework/designs)<br/>
+[![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
 
 In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
 
@@ -54,8 +56,10 @@ In case of any technical comments or requests, please use [![GitHub Discussions]
 ----------------------------------------
 ----------------------------------------
 
-## Installing micrOS with DevToolKit #ESP32
+## Installing micrOS with DevToolKit #ESP32 and more
 **macOS / Windows / Linux to install any esp32 board**
+
+[![pypi](./media/pipy.png)](https://pypi.org/project/micrOSDevToolKit/)
 
 End-to-End solution for deployment, update, monitor and develop micrOS boards.
 
@@ -80,28 +84,24 @@ Link for python 3.9 [download](https://www.python.org/downloads/release/python-3
 
 &nbsp;Open **command line**, press: `commnd+space` + type: `terminal` + press: `enter`
 
-##### 2.1. Download and install **micrOS devToolKit** python package:
+##### Download and install **micrOS devToolKit** python package:
 
 ```bash
-python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.com/BxNxM/micrOS.git
+pip3 install --upgrade pip; pip3 install micrOSDevToolKit
 ```
 
-> Note: macOS will drop a message to install git, please follow the install guide steps. </br>
-> Use the same command abow to update micrOS devToolkit GUI </br>
-> FYI: Manual git install on macOS **`xcode-select --install; git --version`**
+> Later on you can update the package with
+
+```bash
+pip3 install --upgrade micrOSDevToolKit
+```
 
 ----------------------------------------
 <br/>
 
 #### On Windows:
 
-##### 2.1. Install git for devToolKit download
-
-&nbsp;**[download git from here](https://git-scm.com/download/win)**
-
-> **Restart Windows after python install, because it's windows :)** </br>
-
-##### 2.2. Download and install **micrOS devToolKit** python package:
+##### Download and install **micrOS devToolKit** python package:
 
 Open Windows **PowerShell**, press `windows+R` + type: `powershell` + press `enter`
 
@@ -109,11 +109,14 @@ Copy the following lines to the PowerShell and press enter.
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install git+https://github.com/BxNxM/micrOS.git
+python -m pip install micrOSDevToolKit
 ```
 
-> NOTE: Wait for the installation, it may take several minutes to finish. </br>
-> Use the same command abow to update micrOS devToolkit GUI </br>
+Later on you can update the package with
+
+```bash
+python -m pip install --upgrade micrOSDevToolKit
+```
 
 ----------------------------------------
 <br/>

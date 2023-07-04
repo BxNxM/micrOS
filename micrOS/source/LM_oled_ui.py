@@ -376,14 +376,14 @@ def _intercon_cache():
 
 def _micros_welcome():
     """Template function"""
-    def button():
+    def _button():
         """Button callback example"""
         PageUI.DISPLAY.text('HELLO :D', 35, 29)
         PageUI.DISPLAY.show()
 
     try:
         PageUI.DISPLAY.text('micrOS GUI', 30, 15)
-        PageUI.PAGE_UI_OBJ.set_press_callback(button)
+        PageUI.PAGE_UI_OBJ.set_press_callback(_button)
     except Exception as e:
         return str(e)
     return True

@@ -382,7 +382,7 @@ def check_intercon(host=None):
 
 def measure_conn_metrics():
     try:
-        verdict = socketClient.connection_metrics(get_device())
+        verdict = socketClient.connection_metrics(f"{get_device().strip()}.local")
         for k in verdict:
             print("\t\t{}".format(k))
         state = True if len(verdict) > 0 else False
@@ -445,6 +445,7 @@ def app(devfid=None):
                'conn_metrics': measure_conn_metrics(),
                'micros_tasks': task_list()
                }
+
 
 
     # Test Evaluation

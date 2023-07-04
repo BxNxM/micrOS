@@ -30,7 +30,6 @@ class Task:
     TASKS = {}                  # TASK OBJ list
 
     def __init__(self):
-        self.__loop = asyncio.get_event_loop()      # Stores async event loop
         self.__callback = None  # [LM] Task callback: list of strings (LM call)
         self.__inloop = False   # [LM] Task while loop for LM callback
         self.__sleep = 20       # [LM] Task while loop - async wait (proc feed) [ms]
@@ -91,7 +90,7 @@ class Task:
 
         # Start task with coroutine callback
         self.done = False
-        self.task = self.__loop.create_task(callback)
+        self.task = asyncio.get_event_loop().create_task(callback)
         # Store Task object by key - for task control
         Task.TASKS[tag] = self
         return True
@@ -118,7 +117,7 @@ class Task:
 
         self.done = False
 
-        self.task = self.__loop.create_task(self.task_wrapper())
+        self.task = asyncio.get_event_loop().create_task(self.task_wrapper())
         # Store Task object by key - for task control
         Task.TASKS[self.tag] = self
         return True

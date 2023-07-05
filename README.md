@@ -93,7 +93,7 @@ pip3 install --upgrade pip; pip3 install micrOSDevToolKit
 > Later on you can update the package with
 
 ```bash
-pip3 install --upgrade micrOSDevToolKit
+pip3 uninstall micrOSDevToolKit; pip3 install micrOSDevToolKit
 ```
 
 ----------------------------------------
@@ -115,7 +115,8 @@ python -m pip install micrOSDevToolKit
 Later on you can update the package with
 
 ```bash
-python -m pip install --upgrade micrOSDevToolKit
+python -m pip uninstall micrOSDevToolKit
+python -m pip install micrOSDevToolKit
 ```
 
 ----------------------------------------

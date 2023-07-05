@@ -55,16 +55,12 @@ def bootup_hook():
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:
         console_write(f"[BOOT HOOKS] Set up CPU high Hz - boostmd: {cfgget('boostmd')}")
-        if detect_platform() == 'esp8266':
-            freq(160000000)
-        if detect_platform() == 'esp32':
-            freq(240000000)
+        if 'esp32' in detect_platform():
+            freq(240_000_000)   # 240 Mhz
     else:
         console_write(f"[BOOT HOOKS] Set up CPU low Hz - boostmd: {cfgget('boostmd')}")
-        if detect_platform() == 'esp8266':
-            freq(80000000)
-        if detect_platform() == 'esp32':
-            freq(80000000)
+        if 'esp32' in detect_platform():
+            freq(160_000_000)   # 160 Mhz
 
     # Scripts for file structure / config changes
     software_migration()

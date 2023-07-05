@@ -40,12 +40,12 @@ class DebugCfg:
                 # Progress led for esp32s3
                 DebugCfg._init_ws2812()
             else:
-                # Progress led for esp8266/esp32/etc
+                # Progress led for esp32/etc
                 DebugCfg._init_simple()
 
     @staticmethod
     def _init_simple():
-        # Progress led for esp8266/esp32/etc
+        # Progress led for esp32/etc
         DebugCfg.PLED_OBJ = Pin(physical_pin('builtin'), Pin.OUT)
 
     @staticmethod

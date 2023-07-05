@@ -73,10 +73,10 @@ def transition_gen(*args, interval_sec=1.0):
 
 class SmartADC:
     """
-    ADC.ATTN_0DB: 0dB attenuation, gives a maximum input voltage of 1.00v - this is the default configuration
-    ADC.ATTN_2_5DB: 2.5dB attenuation, gives a maximum input voltage of approximately 1.34v
-    ADC.ATTN_6DB: 6dB attenuation, gives a maximum input voltage of approximately 2.00v
-    ADC.ATTN_11DB: 11dB attenuation, gives a maximum input voltage of approximately 3.6v
+    ADC.ATTN_0DB: 0 dB attenuation, resulting in a full-scale voltage range of 0-1.1V
+    ADC.ATTN_2_5DB: 2.5 dB attenuation, resulting in a full-scale voltage range of 0-1.5V
+    ADC.ATTN_6DB: 6 dB attenuation, resulting in a full-scale voltage range of 0-2.2V
+    ADC.ATTN_11DB: 11 dB attenuation, resulting in a full-scale voltage range of 0-3.3V
     """
     OBJS = {}
 
@@ -85,16 +85,12 @@ class SmartADC:
         self.adp_prop = ()
         if not isinstance(pin, int):
             pin = physical_pin(pin)
-        if 'esp8266' in platform:
-            self.adc = ADC(pin)  # 1V measure range
-            self.adp_prop = (1023, 1.0)
-        else:
-            self.adc = ADC(Pin(pin))
-            self.adc.atten(ADC.ATTN_11DB)  # 3.3V measure range
-            self.adp_prop = (4095, 3.6)
+        self.adc = ADC(Pin(pin))
+        self.adc.atten(ADC.ATTN_11DB)   # 3.3V measure range
+        self.adp_prop = (4095, 3.3)
 
     def get(self):
-        raw = self.adc.read()
+        raw = self.adc.read()           # 12-bit ADC value (0-4095)
         percent = raw / self.adp_prop[0]
         volt = round(percent * self.adp_prop[1], 1)
         return {'raw': raw, 'percent': round(percent*100, 1), 'volt': volt}

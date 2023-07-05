@@ -280,6 +280,7 @@ class USB(Compile):
         self.console("------------------------------------------")
         micropython_bins_list = []
 
+        self.console(f"Micropython bin path: {self.micropython_bin_dir_path}")
         mp_bin_list = [binary for binary in LocalMachine.FileHandler.list_dir(self.micropython_bin_dir_path) if
                        binary.endswith('.bin') or binary.endswith('.uf2')]
         for mp_bin in mp_bin_list:

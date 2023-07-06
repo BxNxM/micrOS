@@ -2,6 +2,7 @@ include micrOS/micropython/*.bin
 include micrOS/micropython/*.uf2
 graft micrOS/source
 graft toolkit/simulator_lib
+graft toolkit/workspace/precompiled
 include media/dnd.png
 include media/logo_mini.png
 include media/logo.png

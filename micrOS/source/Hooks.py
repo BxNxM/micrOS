@@ -29,15 +29,6 @@ from machine import freq
 #################################################################
 
 
-def software_migration():
-    # TODO: remove
-    print("[MIG?] boot.py -> main.py")
-    from os import listdir, remove
-    if "boot.py" in listdir() and "main.py" in listdir():
-        print("|- delete boot.py")
-        remove("boot.py")
-
-
 def bootup_hook():
     """
     Executes when system boots up.
@@ -61,9 +52,6 @@ def bootup_hook():
         console_write(f"[BOOT HOOKS] Set up CPU low Hz - boostmd: {cfgget('boostmd')}")
         if 'esp32' in detect_platform():
             freq(160_000_000)   # 160 Mhz
-
-    # Scripts for file structure / config changes
-    software_migration()
 
 
 def profiling_info(label=""):

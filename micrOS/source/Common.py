@@ -73,10 +73,12 @@ def transition_gen(*args, interval_sec=1.0):
 
 class SmartADC:
     """
+    https://docs.micropython.org/en/latest/esp32/quickref.html#adc-analog-to-digital-conversion
     ADC.ATTN_0DB: 0 dB attenuation, resulting in a full-scale voltage range of 0-1.1V
     ADC.ATTN_2_5DB: 2.5 dB attenuation, resulting in a full-scale voltage range of 0-1.5V
     ADC.ATTN_6DB: 6 dB attenuation, resulting in a full-scale voltage range of 0-2.2V
-    ADC.ATTN_11DB: 11 dB attenuation, resulting in a full-scale voltage range of 0-3.3V
+    ADC.ATTN_11DB: 11 dB attenuation, resulting in a full-scale voltage range of 0-2450mV/
+    Note that the absolute maximum voltage rating for input pins is 3.6V. Going near to this boundary risks damage to the IC!
     """
     OBJS = {}
 
@@ -86,13 +88,13 @@ class SmartADC:
         if not isinstance(pin, int):
             pin = physical_pin(pin)
         self.adc = ADC(Pin(pin))
-        self.adc.atten(ADC.ATTN_11DB)   # 3.3V measure range
-        self.adp_prop = (4095, 3.3)
+        self.adc.atten(ADC.ATTN_11DB)                               # 2450mV measure range
+        self.adp_prop = (65535, 2450)                               # 2450mV so 2,45V
 
     def get(self):
-        raw = self.adc.read()           # 12-bit ADC value (0-4095)
+        raw = int((self.adc.read_u16() + self.adc.read_u16())/2)    # 16-bit ADC value (0-65535)
         percent = raw / self.adp_prop[0]
-        volt = round(percent * self.adp_prop[1], 1)
+        volt = round(percent * self.adp_prop[1] / 1000, 2)          # devide with 1000 to get V from mV
         return {'raw': raw, 'percent': round(percent*100, 1), 'volt': volt}
 
     @staticmethod

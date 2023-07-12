@@ -315,7 +315,8 @@ class USB(Compile):
             # List USB devices on Windows
             ports = list(serial_port_list.comports())
             for item in ports:
-                if "CP210" in str(item.description):
+                self.console(f'[Win] Com device: {item.description}')
+                if "CP210" in str(item.description) or "CH340" in str(item.description):
                     micros_devices.append(item.device)
                     self.console("Device was found: {}".format(item.device, state="imp"))
         # Eval device list, return with devices

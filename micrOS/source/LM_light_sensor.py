@@ -34,7 +34,7 @@ def illuminance():
     Measure light illuminance in flux
     """
     volts = __init_tempt6000().get()['volt']
-    amps = volts / 10000.0                    # across 10,000 Ohms
+    amps = volts / 10000.0                    # across 10,000 Ohms (voltage divider circuit)
     microamps = amps * 1000000
     lux = '{:.2f}'.format(microamps * 2.0)
     return {'illuminance [lux]': lux}

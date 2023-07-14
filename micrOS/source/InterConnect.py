@@ -6,6 +6,12 @@ from ConfigHandler import cfgget
 from SocketServer import SocketServer
 from TaskManager import Task
 
+try:
+    from gc import collect
+except:
+    console_write("[SIMULATOR MODE GC IMPORT]")
+    from simgc import collect
+
 
 class InterCon:
     CONN_MAP = {}
@@ -67,8 +73,8 @@ class InterCon:
             if hostname is not None:
                 # In case of valid communication, store device IP; otherwise, set IP to None
                 InterCon.CONN_MAP[hostname] = None if output is None else host
-            # Successful communication: list of received lines / Failed communication: None
-            return '' if output is None else output
+            # None: ServerBusy(or \0) or Prompt mismatch (auto delete cached IP), STR: valid comm. output
+            return output
         else:
             errlog_add("[intercon][ERR] Invalid host: {}".format(host))
         return ''
@@ -78,11 +84,11 @@ class InterCon:
         Implements receive data on open connection, command query and result collection
         :param cmd: command string to server socket shell
         :param hostname: hostname for prompt checking
+        Return None here will trigger retry mechanism... + deletes cached IP
         """
         cmd = str.encode(cmd)
         data, prompt = await self.__receive_data()
         if "Connection is busy. Bye!" in prompt:
-            SocketServer().reply_message("Try later...")
             return None
         # Compare prompt |node01 $| with hostname 'node01.local'
         if hostname is None or prompt is None or str(prompt).replace('$', '').strip() == str(hostname).split('.')[0]:
@@ -132,7 +138,14 @@ async def _send_cmd(host, cmd, com_obj):
     """
     # Send command
     with com_obj.task:
-        com_obj.task.out = await com_obj.send_cmd(host, cmd)
+        # Command send retry mechanism (retry: 3)
+        for _ in range(0, 3):
+            out = await com_obj.send_cmd(host, cmd)
+            if out is not None:
+                com_obj.task.out = out
+                break
+            await asyncio.sleep_ms(150)
+    collect()       # GC collect
     return com_obj.task.out
 
 
@@ -148,12 +161,14 @@ def send_cmd(host, cmd):
     """
     def _tagify():
         nonlocal host
+        nonlocal cmd
+        mod = cmd.split(' ')[0].strip()
         if InterCon.validate_ipv4(host):
-            return '.'.join(host.split('.')[-2:])
-        return host.replace('.local', '')
+            return f"{'.'.join(host.split('.')[-2:])}.{mod}"
+        return f"{host.replace('.local', '')}.{mod}"
 
     com_obj = InterCon()
-    tag = f"intercon.{_tagify()}"
+    tag = f"con.{_tagify()}"
     started = com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=tag)
     if started:
         result = {"verdict": f"Task started {host}:{cmd} -> task show {tag}", "tag": tag}

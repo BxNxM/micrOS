@@ -83,7 +83,7 @@ def ntp_time():
     return False
 
 
-def __persistent_cache_manager(mode):
+def __sun_cache(mode):
     """
     pds - persistent data structure
     modes:
@@ -162,14 +162,14 @@ def suntime():
     except Exception as e:
         errlog_add(f'sunrise-api parse error: {e} sun: {sun}')
         # Retrieve cached data and return
-        __persistent_cache_manager('r')  # Using Sun.TIME
+        __sun_cache('r')  # Using Sun.TIME
         console_write('[suntime] loaded from cache')
         return Sun.TIME
 
     # Save to values class static variable for later access
     # Save and return with updated data
     Sun.TIME = sun
-    __persistent_cache_manager('s')              # Using Sun.TIME
+    __sun_cache('s')              # Using Sun.TIME
     console_write('[suntime] sync done and cached')
     return sun
 
@@ -189,4 +189,4 @@ def uptime(update=False):
 
 
 # Initial suntime cache load (for AP mode)
-__persistent_cache_manager('r')
+__sun_cache('r')

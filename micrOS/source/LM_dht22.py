@@ -1,4 +1,3 @@
-from LM_co2 import measure_mq135
 from LogicalPins import physical_pin, pinmap_dump
 from Common import data_logger
 
@@ -44,6 +43,7 @@ def measure_w_co2(log=False):
     Measure with dht22 and mq135 (CO2)
     :return dict: temp, hum, co2
     """
+    from LM_co2 import measure_mq135
     _temp, _hum = __temp_hum()
     data = {'temp [ºC]': round(_temp, 2), 'hum [%]': round(_hum, 2), 'co2 [ppm]': measure_mq135(_temp, _hum)}
     if log:

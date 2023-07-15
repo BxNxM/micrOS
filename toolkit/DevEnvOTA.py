@@ -426,6 +426,11 @@ class OTA(Compile):
                 self.console("\t[{}%][SKIP UPLOAD] space in resource name ... {}".format(progress, source),
                              state='WARN')
                 continue
+            # Check no "hidden" content.
+            if os.path.basename(source).startswith('__'):
+                self.console("\t[{}%][SKIP UPLOAD] resource name starts with __ {}".format(progress, source),
+                             state='WARN')
+                continue
 
             # Change workdir
             workdir_handler = LocalMachine.SimplePopPushd()

@@ -48,7 +48,7 @@ class Client:
         self.drain_event.set()
 
         self.client_id = writer.get_extra_info('peername')
-        Debug().console(f"[Client] new conn: {self.client_id}")
+        Debug.console(f"[Client] new conn: {self.client_id}")
         client_tag = f"{'.'.join(self.client_id[0].split('.')[-2:])}:{str(self.client_id[1])}"
         self.client_id = client_tag
         self.shell = Shell(self.send)
@@ -62,18 +62,18 @@ class Client:
         - connection error handling (stop: return True)
         - exit command handling (stop: return True)
         """
-        Debug().console(f"[Client] read {self.client_id}")
+        Debug.console(f"[Client] read {self.client_id}")
         self.last_msg_t = ticks_ms()
         try:
             request = (await self.reader.read(2048))
             request = request.decode('utf8').strip()
         except Exception as e:
-            Debug().console(f"[Client] Stream read error ({self.client_id}): {e}")
+            Debug.console(f"[Client] Stream read error ({self.client_id}): {e}")
             collect()           # gc collection: "fix" for memory allocation failed, allocating 2049 bytes
             return True, ''
 
         # Input handling
-        Debug().console(f"[Client] raw request ({self.client_id}): |{request}|")
+        Debug.console(f"[Client] raw request ({self.client_id}): |{request}|")
         if request == 'exit' or request == '':
             return True, request
         return False, request
@@ -86,7 +86,7 @@ class Client:
             if self.shell.prompt() != response:
                 # Add new line if not prompt (?)
                 response = f"{response}\n"
-            # Debug().console("[Client] ----- SteamWrite: {}".format(response))
+            # Debug.console("[Client] ----- SteamWrite: {}".format(response))
             # Store data in stream buffer
             try:
                 self.writer.write(response.encode('utf8'))
@@ -111,17 +111,17 @@ class Client:
         self.drain_event.clear()
         try:
             # send write buffer
-            # Debug().console("  |----- start drain")
+            # Debug.console("  |----- start drain")
             await self.writer.drain()
-            # Debug().console("  |------ stop drain")
+            # Debug.console("  |------ stop drain")
         except Exception as e:
-            Debug().console(f"[Client] Drain error -> close conn: {e}")
+            Debug.console(f"[Client] Drain error -> close conn: {e}")
             await self.close()
         # set drain free
         self.drain_event.set()
 
     async def close(self):
-        Debug().console(f"[Client] Close connection {self.client_id}")
+        Debug.console(f"[Client] Close connection {self.client_id}")
         self.send("Bye!\n")
         # Reset shell state machine
         self.shell.reset()
@@ -130,7 +130,7 @@ class Client:
             self.writer.close()
             await self.writer.wait_closed()
         except Exception as e:
-            Debug().console(f"[Client] Close error {self.client_id}: {e}")
+            Debug.console(f"[Client] Close error {self.client_id}: {e}")
         self.connected = False
         Debug.INDENT = 0
         # Maintain ACTIVE_CLIS - remove closed connection by peer.
@@ -148,14 +148,14 @@ class Client:
     async def __shell_cmd(self, request):
         # Run micrOS shell with request string
         try:
-            Debug().console("[CLIENT] --- #Run shell")
+            Debug.console("[CLIENT] --- #Run shell")
             state = self.shell.shell(request)
             if state:
                 return True
         except Exception as e:
             if "ECONNRESET" in e:
                 await self.close()
-            Debug().console(f"[Client] Shell exception: {e}")
+            Debug.console(f"[Client] Shell exception: {e}")
             return False
         collect()
         self.send(f"[HA] Shells cleanup: {mem_free()}")
@@ -188,7 +188,7 @@ class Client:
 
     def __del__(self):
         collect()
-        Debug().console(f"Delete client connection: {self.client_id}")
+        Debug.console(f"Delete client connection: {self.client_id}")
 
 
 #########################################################
@@ -225,7 +225,7 @@ class SocketServer:
             soc_timeout = int(cfgget("soctout"))
             SocketServer.__instance.soc_timeout = 5 if soc_timeout < 5 else soc_timeout
             # ---         ----
-            Debug().console("[ socket server ] <<constructor>>")
+            Debug.console("[ socket server ] <<constructor>>")
         return SocketServer.__instance
 
     #####################################
@@ -249,14 +249,14 @@ class SocketServer:
             return True, new_client_id      # [!] Enable new connection
 
         # Get active clients timeout counters - handle new client depending on active client timeouts
-        Debug().console(f"NEW CLIENT CONN: {new_client_id}")
+        Debug.console(f"NEW CLIENT CONN: {new_client_id}")
         enable_new = False
         for cli_id, cli in Client.ACTIVE_CLIS.items():
             cli_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
-            Debug().console(f"[server] accept new {new_client_id} - active {cli_id} tout:{cls.soc_timeout - cli_inactive}s")
+            Debug.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{cls.soc_timeout - cli_inactive}s")
             if not cli.connected or cli_inactive > cls.soc_timeout:
                 # OPEN CONNECTION IS INACTIVE > CLOSE
-                Debug().console("------- client timeout - accept new connection")
+                Debug.console("------- client timeout - accept new connection")
                 await cli.close()
                 enable_new = True
                 break
@@ -265,7 +265,7 @@ class SocketServer:
         if enable_new:
             return True, new_client_id  # [!] Enable new connection
         # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
-        Debug().console("------- connection busy")
+        Debug.console("------- connection busy")
         # Handle only single connection
         new_client.send("Connection is busy. Bye!")
         await new_client.close()  # Play nicely - close connection
@@ -296,13 +296,13 @@ class SocketServer:
         Define async socket server (tcp by default)
         """
         addr = ifconfig()[1][0]
-        Debug().console(f"[ socket server ] Start socket server on {addr}:{cls.__port}")
+        Debug.console(f"[ socket server ] Start socket server on {addr}:{cls.__port}")
         cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=cls.__conn_queue)
         await cls.server
-        Debug().console(f"- TCP server ready, connect: telnet {addr} {cls.__port}")
+        Debug.console(f"- TCP server ready, connect: telnet {addr} {cls.__port}")
 
     @staticmethod
-    def reply_message(msg):
+    def reply(msg):
         """
         Only used for LM msg stream over Common.socket_stream wrapper
         - stream data to all connection...
@@ -312,5 +312,5 @@ class SocketServer:
                 cli.send(msg)
 
     def __del__(cls):
-        Debug().console("[ socket server ] <<destructor>>")
+        Debug.console("[ socket server ] <<destructor>>")
         cls.server.close()

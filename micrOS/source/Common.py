@@ -28,7 +28,7 @@ def socket_stream(func):
     (SocketServer singleton class)
     """
     def wrapper(*args, **kwargs):
-        return func(*args, **kwargs, msgobj=SocketServer().reply_message)
+        return func(*args, **kwargs, msgobj=SocketServer.reply)
     return wrapper
 
 

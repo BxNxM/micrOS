@@ -109,6 +109,7 @@ def console_write(msg):
 #        LOGGING WITH DATA ROTATION         #
 #############################################
 
+
 def logger(data, f_name, limit):
     """
     Create generic logger function
@@ -190,7 +191,7 @@ def errlog_add(data):
     :return: is ok
     """
     f_name = 'err.log'
-    return logger(data, f_name, limit=8)
+    return logger(data, f_name, limit=5)
 
 
 def errlog_get(msgobj=None):

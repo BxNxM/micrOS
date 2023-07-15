@@ -56,7 +56,7 @@ def micrOS():
     profiling_info(label='[memUsage] MAIN LOAD')
 
     # CREATE ASYNC TASK MANAGER
-    aio_man = Manager()
+    aio = Manager()
 
     # BOOT HOOK: Initial LM executions
     safe_boot_hook()
@@ -81,9 +81,9 @@ def micrOS():
     profiling_info(label='[memUsage] SYSTEM IS UP')
 
     # [SocketServer] as async task
-    aio_man.create_task(SocketServer().run_server(), tag='server')
+    aio.create_task(SocketServer().run_server(), tag='server')
     # [EVENT LOOP] Start async event loop
-    aio_man.run_forever()
+    aio.run_forever()
 
     # UNEXPECTED RESTART ???
     errlog_add("[ERR] !!! Unexpected micrOS restart")

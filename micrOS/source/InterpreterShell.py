@@ -24,12 +24,12 @@ from machine import reset as hard_reset
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.18.2-0'
+    MICROS_VERSION = '1.19.0-0'
 
     def __init__(self, msg_obj=None):
         """
         comm_obj - communication object - send messages back
-                 - comm_obj.reply_message('msg')
+                 - comm_obj.reply('msg')
         """
         self.msg_obj = msg_obj
         # Used node_config parameters
@@ -44,7 +44,7 @@ class Shell:
             cfgput('version', Shell.MICROS_VERSION)
         except Exception as e:
             console_write(f"Export system version to config failed: {e}")
-            errlog_add(f"[Shell.init][ERR] system version export error: {e}")
+            errlog_add(f"[Shell][ERR] system version export error: {e}")
 
     def msg(self, msg):
         """Message stream method"""

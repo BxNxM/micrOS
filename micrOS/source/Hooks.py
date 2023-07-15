@@ -51,7 +51,7 @@ def bootup_hook():
     else:
         console_write(f"[BOOT HOOKS] Set up CPU low Hz - boostmd: {cfgget('boostmd')}")
         if 'esp32' in detect_platform():
-            freq(160_000_000)   # 160 Mhz
+            freq(160_000_000)   # 160 Mhz / Half the max CPU clock
 
 
 def profiling_info(label=""):

@@ -42,8 +42,9 @@ class micrOSIM():
             line = frame.f_lineno
             code = frame.f_code.co_name
             if 'simulator/' in file and code != 'idle_task':
-                print(f"{' '*50}[trace][{elapsed_time}s][{event}] {line}: {'/'.join(file.split('/')[-2:])}.{code} {arg if arg else ''}")
+                print(f"{' '*50}[trace][{elapsed_time}s][{event}] {line}: {'/'.join(file.split('/')[-1:])}.{code} {arg if arg else ''}")
 
+        # Trace handling - DEBUG
         sys.settrace(trace_func)
         micrOSloader.main()
 

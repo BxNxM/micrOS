@@ -1,16 +1,10 @@
 import uasyncio as asyncio
-from socket import getaddrinfo, AF_INET, SOCK_STREAM
+from socket import getaddrinfo, SOCK_STREAM
 from re import match
 from Debug import errlog_add
 from ConfigHandler import cfgget
 from SocketServer import SocketServer
 from TaskManager import Task
-
-try:
-    from gc import collect
-except:
-    console_write("[SIMULATOR MODE GC IMPORT]")
-    from simgc import collect
 
 
 class InterCon:
@@ -47,7 +41,7 @@ class InterCon:
                     addr_info = getaddrinfo(host, InterCon.PORT, 0, SOCK_STREAM)
                     host = addr_info[-1][4][0]
                 except OSError as e:
-                    SocketServer().reply_message("[intercon] NoHost: {}".format(e))
+                    SocketServer.reply("[intercon] NoHost: {}".format(e))
                     errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
                     return ''
             else:
@@ -61,7 +55,7 @@ class InterCon:
                 # Send command over TCP/IP
                 output = await self.__run_command(cmd, hostname)
             except OSError as e:
-                SocketServer().reply_message("[intercon] NoHost: {}".format(e))
+                SocketServer.reply("[intercon] NoHost: {}".format(e))
                 errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
                 output = None
             finally:
@@ -101,7 +95,7 @@ class InterCon:
             # Successful data receive, return data
             return data
         # Skip command run: prompt and host not the same!
-        SocketServer().reply_message("[intercon] prompt mismatch, hostname: {} prompt: {} ".format(hostname, prompt))
+        SocketServer.reply("[intercon] prompt mismatch, hostname: {} prompt: {} ".format(hostname, prompt))
         return None
 
     async def __receive_data(self, prompt=None):
@@ -113,7 +107,7 @@ class InterCon:
         # Collect answer data
         while True:
             try:
-                last_data = await self.reader.read(256)
+                last_data = await self.reader.read(128)
                 if not last_data:
                     break
                 last_data = last_data.decode('utf-8').strip()
@@ -138,14 +132,14 @@ async def _send_cmd(host, cmd, com_obj):
     """
     # Send command
     with com_obj.task:
-        # Command send retry mechanism (retry: 3)
-        for _ in range(0, 3):
-            out = await com_obj.send_cmd(host, cmd)
-            if out is not None:
-                com_obj.task.out = out
-                break
+        out = await com_obj.send_cmd(host, cmd)
+        if out is None:
             await asyncio.sleep_ms(150)
-    collect()       # GC collect
+            out = await com_obj.send_cmd(host, cmd)
+            if out is None:
+                await asyncio.sleep_ms(150)
+                out = await com_obj.send_cmd(host, cmd)
+        com_obj.task.out = '' if out is None else out
     return com_obj.task.out
 
 
@@ -160,12 +154,11 @@ def send_cmd(host, cmd):
     :param cmd: command string to server socket shell
     """
     def _tagify():
-        nonlocal host
-        nonlocal cmd
-        mod = cmd.split(' ')[0].strip()
+        nonlocal host, cmd
+        _mod = cmd.split(' ')[0].strip()
         if InterCon.validate_ipv4(host):
-            return f"{'.'.join(host.split('.')[-2:])}.{mod}"
-        return f"{host.replace('.local', '')}.{mod}"
+            return f"{'.'.join(host.split('.')[-2:])}.{_mod}"
+        return f"{host.replace('.local', '')}.{_mod}"
 
     com_obj = InterCon()
     tag = f"con.{_tagify()}"

@@ -20,6 +20,11 @@ from Debug import console_write, errlog_add
 from ConfigHandler import cfgget
 from utime import ticks_ms, ticks_diff
 
+try:
+    from gc import collect
+except:
+    console_write("[SIMULATOR MODE GC IMPORT]")
+    from simgc import collect
 
 #################################################################
 #                Implement custom task class                    #
@@ -30,13 +35,13 @@ class Task:
     TASKS = {}                  # TASK OBJ list
 
     def __init__(self):
-        self.__callback = None  # [LM] Task callback: list of strings (LM call)
-        self.__inloop = False   # [LM] Task while loop for LM callback
-        self.__sleep = 20       # [LM] Task while loop - async wait (proc feed) [ms]
-        self.task = None        # [LM] Store created async task object
-        self.done = True        # [LM] Store task state
-        self.out = ""           # [LM] Store LM output
-        self.tag = None         # [LM] Task tag for identification
+        self.__callback = None       # [LM] Task callback: list of strings (LM call)
+        self.__inloop = False        # [LM] Task while loop for LM callback
+        self.__sleep = 20            # [LM] Task while loop - async wait (proc feed) [ms]
+        self.task = None             # [LM] Store created async task object
+        self.done = asyncio.Event()  # [LM] Store task state
+        self.out = ""                # [LM] Store LM output
+        self.tag = None              # [LM] Task tag for identification
 
     @staticmethod
     def is_busy(tag):
@@ -45,19 +50,23 @@ class Task:
         - exists + running = busy
         """
         task = Task.TASKS.get(tag, None)
-        if task is not None and not task.done:
+        if task is not None and not task.done.is_set():
             # is busy
             return True
         # is NOT busy
         return False
 
-    def __task_del(self):
+    def __task_del(self, keep_cache=False):
         """
         Delete task from TASKS
         """
-        self.done = True
+        print(f"++++++ __task_del keep_cache={keep_cache} ++++++")
+        self.done.set()
         if self.tag in Task.TASKS.keys():
-            del Task.TASKS[self.tag]
+            if keep_cache:
+                del Task.TASKS[self.tag]
+            del self.task
+        collect()           # GC collect
 
     def __enter__(self):
         """
@@ -65,7 +74,7 @@ class Task:
         Helper function for Task creation in Load Modules
         [HINT] Use python with feature to utilize this feature
         """
-        self.done = False
+        self.done.clear()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -74,7 +83,8 @@ class Task:
         Helper function for Task creation in Load Modules
         [HINT] Use python with feature to utilize this feature
         """
-        self.done = True
+        self.done.set()
+        collect()           # GC collect
 
     def create(self, callback=None, tag=None):
         """
@@ -89,7 +99,6 @@ class Task:
             return False
 
         # Start task with coroutine callback
-        self.done = False
         self.task = asyncio.get_event_loop().create_task(callback)
         # Store Task object by key - for task control
         Task.TASKS[tag] = self
@@ -114,8 +123,6 @@ class Task:
         self.__inloop = self.__inloop if loop is None else loop
         # Set sleep value for async loop - optional parameter with min sleep limit check (20ms)
         self.__sleep = self.__sleep if sleep is None else sleep if sleep > 19 else self.__sleep
-
-        self.done = False
 
         self.task = asyncio.get_event_loop().create_task(self.task_wrapper())
         # Store Task object by key - for task control
@@ -152,20 +159,16 @@ class Task:
         """
         while True:
             await asyncio.sleep_ms(self.__sleep)
-            _exec_lm_core(self.__callback, msgobj=self.__msg_buff)
+            _exec_lm_core(self.__callback, msgobj=lambda msg: setattr(self, 'out', msg.strip()))
             if not self.__inloop:
                 break
-        self.done = True
-
-    def __msg_buff(self, msg):
-        """
-        Dummy msg object to store output value
-        """
-        self.out = msg
+        self.done.set()
 
     def __del__(self):
-        self.done = True
-        del self.task
+        try:
+            self.__task_del(keep_cache=True)
+        except Exception as e:
+            errlog_add(f"[ERR] Task.__del__: {e}")
 
 
 #################################################################
@@ -187,11 +190,10 @@ class Manager:
         if Manager.__instance is None:
             # TaskManager singleton properties
             Manager.__instance = super().__new__(cls)
-            # Set async event loop
-            Manager.__instance.loop = asyncio.get_event_loop()
-            Manager.__instance.loop.set_exception_handler(cls.axcept)
+            # Set async event loop exception handler
+            asyncio.get_event_loop().set_exception_handler(cls.axcept)
+            # Start system idle task (IRQ(hack) + monitoring)
             Manager.__instance.create_task(callback=Manager.idle_task(), tag="idle")
-            # [LM] Set limit for async task creation
             # ---         ----
         return Manager.__instance
 
@@ -203,9 +205,9 @@ class Manager:
         errlog_add(f"[aio] exception: {loop}:{context}")
 
     @staticmethod
-    def _queue_free():
+    def _queue_len():
         # Get active Load Module tasks (tag: module.function)
-        return sum([1 for tag, task in Task.TASKS.items() if not task.done and '.' in tag])
+        return sum([1 for tag, task in Task.TASKS.items() if not task.done.is_set() and '.' in tag])
 
     @staticmethod
     def _queue_limiter():
@@ -214,7 +216,7 @@ class Manager:
         - compare with active running tasks count
         - when queue full raise Exception!!!
         """
-        if Manager._queue_free() >= Manager.QUEUE_SIZE:
+        if Manager._queue_len() >= Manager.QUEUE_SIZE:
             msg = f"[aio] Task queue full: {Manager.QUEUE_SIZE}"
             errlog_add(msg)
             raise Exception(msg)
@@ -226,32 +228,33 @@ class Manager:
         - Try to measure system load - based on idle task latency
         """
         # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
-        period_ms = 150
-        skip = 6        # skip idle task #SysLogic block X times, every X+1*period_ms will run this block
         my_task = Task.TASKS.get('idle')
-        my_task.out = f"i.d.l.e: {period_ms}ms"
+        my_task.out = f"i.d.l.e: 200ms"
         try:
             while True:
-                for _ in range(0, skip):
-                    # Idle task optimization
-                    await asyncio.sleep_ms(period_ms)
-                    continue
+                await asyncio.sleep_ms(200)     # 0.2s wake, irq
+                await asyncio.sleep_ms(200)     # 0.4s wake
+                await asyncio.sleep_ms(200)     # 0.6s wake
+                await asyncio.sleep_ms(200)     # 0.8s wake
+                # Probe system load
                 t = ticks_ms()
-                await asyncio.sleep_ms(period_ms)
-                # SysLogic block
-                delta_rate = int(((ticks_diff(ticks_ms(), t) / period_ms)-1) * 100)
-                Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)
+                await asyncio.sleep_ms(200)     # 1.0s measure load
+                # SysLogic block - sys load
+                delta_rate = int(((ticks_diff(ticks_ms(), t) / 200)-1) * 100)
+                Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)       # Average - smooth
         except Exception as e:
             errlog_add(f"[ERR] Idle task exists: {e}")
-        my_task.done = True
+        my_task.done.set()
 
-    def create_task(cls, callback, tag=None, loop=False, delay=None):
+    @staticmethod
+    def create_task(callback, tag=None, loop=False, delay=None):
         """
         Primary interface
         Generic task creator method
             Create async Task with coroutine/list(lm call) callback
         """
         if isinstance(callback, list):
+            # Check queue if task is load module
             Manager._queue_limiter()
             return Task().create_lm(callback=callback, loop=loop, sleep=delay)
         return Task().create(callback=callback, tag=tag)
@@ -262,10 +265,10 @@ class Manager:
         Primary interface
             List tasks - micrOS top :D
         """
-        q = Manager.QUEUE_SIZE - Manager._queue_free()
+        q = Manager.QUEUE_SIZE - Manager._queue_len()
         output = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.OLOAD}%\n", "#Active   #taskID"]
         for tag, task in Task.TASKS.items():
-            is_running = 'No' if task.done else 'Yes'
+            is_running = 'No' if task.done.is_set() else 'Yes'
             spcr = " " * (10 - len(is_running))
             task_view = f"{is_running}{spcr}{tag}"
             output.append(task_view)
@@ -334,15 +337,16 @@ class Manager:
         msg = f"Kill: {', '.join(output)}"
         return state, msg
 
-    def run_forever(cls):
+    @staticmethod
+    def run_forever():
         """
         Run async event loop
         """
         try:
-            cls.loop.run_forever()
+            asyncio.get_event_loop().run_forever()
         except Exception as e:
             errlog_add(f"[aio] loop stopped: {e}")
-            cls.loop.close()
+            asyncio.get_event_loop().close()
 
     @staticmethod
     def server_task_msg(msg):
@@ -406,18 +410,18 @@ def exec_lm_core(arg_list, msgobj=None):
         if 'task' == msg_list[0]:
             # task list
             if msg_len == 2 and 'list' == msg_list[1]:
-                tasks = '\n'.join(Manager().list_tasks())
+                tasks = '\n'.join(Manager.list_tasks())
                 tasks = f'{tasks}\n'
                 msgobj(tasks)
                 return True
             # task kill <taskID> / task show <taskID>
             if msg_len > 2:
                 if 'kill' == msg_list[1]:
-                    state, msg = Manager().kill(tag=msg_list[2])
+                    state, msg = Manager.kill(tag=msg_list[2])
                     msgobj(msg)
                     return True
                 if 'show' == msg_list[1]:
-                    msgobj(Manager().show(tag=msg_list[2]))
+                    msgobj(Manager.show(tag=msg_list[2]))
                     return True
             msgobj("Invalid task cmd! Help: task list / kill <taskID> / show <taskID>")
             return True
@@ -430,7 +434,7 @@ def exec_lm_core(arg_list, msgobj=None):
             delay = int(delay) if delay.isdigit() else None
             # Create and start async lm task
             try:
-                state = Manager().create_task(arg_list, loop=loop, delay=delay)
+                state = Manager.create_task(arg_list, loop=loop, delay=delay)
             except Exception as e:
                 msgobj(e)
                 # Valid & handled task command

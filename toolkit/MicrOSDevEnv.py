@@ -128,9 +128,10 @@ class MicrOSDevTool(OTA, USB):
         static_help_html_path = os.path.join(self.sfuncman_output_path, 'sfuncman.html')
 
         # [PARSING] Collect Load Module function structure buffer
+        modules_to_doc = (i.split('.')[0] for i in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path) if
+                          i.startswith('LM_') and (i.endswith('.py')))
         module_function_dict = {}
-        for LM in (i.split('.')[0] for i in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path) if
-                   i.startswith('LM_') and (i.endswith('.py'))):
+        for LM in modules_to_doc:
             LMpath = '{}/{}.py'.format(self.micrOS_dir_path, LM)
             try:
                 module_name = LM.replace('LM_', '')

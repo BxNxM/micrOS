@@ -1,6 +1,6 @@
 import uasyncio as asyncio
 from socket import getaddrinfo, SOCK_STREAM
-from re import match
+from re import compile
 from Debug import errlog_add
 from ConfigHandler import cfgget
 from SocketServer import SocketServer
@@ -18,10 +18,8 @@ class InterCon:
 
     @staticmethod
     def validate_ipv4(str_in):
-        pattern = r'^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$'
-        if bool(match(pattern, str_in)):
-            return True
-        return False
+        pattern = compile(r'^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$')
+        return bool(pattern.match(str_in))
 
     async def send_cmd(self, host, cmd):
         """
@@ -132,24 +130,20 @@ async def _send_cmd(host, cmd, com_obj):
     """
     # Send command
     with com_obj.task:
-        out = await com_obj.send_cmd(host, cmd)
+        out = await com_obj.send_cmd(host, cmd)          # Send CMD
         if out is None:
             await asyncio.sleep_ms(150)
-            out = await com_obj.send_cmd(host, cmd)
+            out = await com_obj.send_cmd(host, cmd)      # Send CMD (retry)
             if out is None:
                 await asyncio.sleep_ms(150)
-                out = await com_obj.send_cmd(host, cmd)
+                out = await com_obj.send_cmd(host, cmd)  # Send CMD (retry)
         com_obj.task.out = '' if out is None else out
     return com_obj.task.out
 
 
 def send_cmd(host, cmd):
     """
-    Main wrapper of InterCon.send_cmd with
-    - Intercon object creation
-    - tag generation
-    - task creation
-    - task creation verdict generation
+    Sync wrapper of async _send_cmd (InterCon.send_cmd consumer with retry)
     :param host: hostname / IP address
     :param cmd: command string to server socket shell
     """
@@ -164,7 +158,7 @@ def send_cmd(host, cmd):
     tag = f"con.{_tagify()}"
     started = com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=tag)
     if started:
-        result = {"verdict": f"Task started {host}:{cmd} -> task show {tag}", "tag": tag}
+        result = {"verdict": f"Task started: task show {tag}", "tag": tag}
     else:
         result = {"verdict": "Task is Busy", "tag": tag}
     return result

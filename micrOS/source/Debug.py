@@ -11,7 +11,7 @@ except:
 try:
     # TinyPICO progress led plugin
     import TinyPLed
-except Exception as e:
+except:
     TinyPLed = None
 
 

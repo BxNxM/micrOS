@@ -5,7 +5,7 @@ except ImportError as e:
     print(f"[Error] import u modules: {e}")
     from socket import socket, getaddrinfo
     from ssl import wrap_socket
-import json as ujson
+from json import loads, dumps
 
 
 #############################################
@@ -82,7 +82,7 @@ def request(method, url, data=None, json=None, headers=None, sock_size=1024, jso
         body = data.encode('utf-8')
         headers['Content-Length'] = len(body)
     elif json is not None:
-        body = ujson.dumps(json).encode('utf-8')
+        body = dumps(json).encode('utf-8')
         headers['Content-Length'] = len(body)
         headers['Content-Type'] = 'application/json'
     else:
@@ -125,7 +125,7 @@ def request(method, url, data=None, json=None, headers=None, sock_size=1024, jso
     else:
         body = body.decode('utf-8')
     # Return status code, headers and body (text or jsons)
-    return status_code, ujson.loads(body) if jsonify else body
+    return status_code, loads(body) if jsonify else body
 
 
 #############################################

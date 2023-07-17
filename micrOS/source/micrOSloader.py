@@ -60,12 +60,12 @@ def __is_micrOS():
 
 def __recovery_mode():
     # Recovery/Update mode (webrepl) - dependencies: Network, ConfigHandler
-    from Network import auto_network_configuration
+    from Network import auto_nw_config
     from ConfigHandler import cfgget
     pwd = cfgget('appwd')                       # Get pwd from config
     pwd = 'ADmin123' if pwd is None else pwd    # Default pwd if user pwd None
     # Set up network
-    auto_network_configuration()
+    auto_nw_config()
     # Start webrepl
     try:
         import webrepl

@@ -29,19 +29,19 @@ from machine import freq
 #################################################################
 
 
-def bootup_hook():
+def bootup():
     """
     Executes when system boots up.
     """
     # Execute LMs from boothook config parameter
-    console_write("[BOOTHOOK] EXECUTION ...")
+    console_write("[BOOT] EXECUTION ...")
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
-        console_write(f"|-[BOOTHOOK] TASKS: {bootasks}")
+        console_write(f"|-[BOOT] TASKS: {bootasks}")
         if exec_lm_pipe(bootasks):
-            console_write("|-[BOOTHOOK] DONE")
+            console_write("|-[BOOT] DONE")
         else:
-            console_write("|-[BOOTHOOK] ERROR")
+            console_write("|-[BOOT] ERROR")
 
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:

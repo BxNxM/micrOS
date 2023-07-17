@@ -201,7 +201,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
 #################################################################
 
 
-def auto_network_configuration():
+def auto_nw_config():
     # Retry mechanism - create some connection... prio.: STA > AP
     nwmd = cfgget('nwmd')
     for _ in range(0, 3):

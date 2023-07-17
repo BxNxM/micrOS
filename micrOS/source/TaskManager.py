@@ -12,10 +12,10 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
+import uasyncio as asyncio
+from micropython import schedule
 from sys import modules
 from json import dumps
-from micropython import schedule
-import uasyncio as asyncio
 from Debug import console_write, errlog_add
 from ConfigHandler import cfgget
 from utime import ticks_ms, ticks_diff
@@ -32,16 +32,16 @@ except:
 
 
 class Task:
-    TASKS = {}                  # TASK OBJ list
+    TASKS = {}                       # TASK OBJ list
 
     def __init__(self):
+        self.task = None             # [TASK] Store created async task object
         self.__callback = None       # [LM] Task callback: list of strings (LM call)
         self.__inloop = False        # [LM] Task while loop for LM callback
         self.__sleep = 20            # [LM] Task while loop - async wait (proc feed) [ms]
-        self.task = None             # [LM] Store created async task object
-        self.done = asyncio.Event()  # [LM] Store task state
-        self.out = ""                # [LM] Store LM output
-        self.tag = None              # [LM] Task tag for identification
+        self.done = asyncio.Event()  # [TASK] Store done state
+        self.out = ""                # [TASK] Store output
+        self.tag = None              # [TASK] Task tag (identification)
 
     @staticmethod
     def is_busy(tag):
@@ -60,13 +60,12 @@ class Task:
         """
         Delete task from TASKS
         """
-        print(f"++++++ __task_del keep_cache={keep_cache} ++++++")
         self.done.set()
         if self.tag in Task.TASKS.keys():
-            if keep_cache:
+            if keep_cache:              # True - In case of destructor
                 del Task.TASKS[self.tag]
             del self.task
-        collect()           # GC collect
+        collect()                       # GC collect
 
     def __enter__(self):
         """
@@ -177,7 +176,7 @@ class Task:
 
 
 class Manager:
-    __instance = None
+    OBJ = None                      # Manager object
     QUEUE_SIZE = cfgget('aioqueue')
     OLOAD = 0
 
@@ -187,15 +186,15 @@ class Manager:
         __new__ - Customize the instance creation
         cls     - class
         """
-        if Manager.__instance is None:
+        if Manager.OBJ is None:
             # TaskManager singleton properties
-            Manager.__instance = super().__new__(cls)
+            Manager.OBJ = super().__new__(cls)
             # Set async event loop exception handler
             asyncio.get_event_loop().set_exception_handler(cls.axcept)
             # Start system idle task (IRQ(hack) + monitoring)
-            Manager.__instance.create_task(callback=Manager.idle_task(), tag="idle")
+            Manager.OBJ.create_task(callback=Manager.idle_task(), tag="idle")
             # ---         ----
-        return Manager.__instance
+        return Manager.OBJ
 
     @staticmethod
     def axcept(loop=None, context=None):

@@ -9,8 +9,8 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from TaskManager import Manager
 from SocketServer import SocketServer
-from Network import auto_network_configuration
-from Hooks import bootup_hook, profiling_info
+from Network import auto_nw_config
+from Hooks import bootup, profiling_info
 from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
 from Debug import errlog_add
@@ -22,29 +22,29 @@ from Time import ntp_time, suntime
 #################################################################
 
 
-def safe_boot_hook():
+def safe_boot():
     try:
-        bootup_hook()
+        bootup()
     except Exception as e:
-        print(f"[micrOS main] Hooks.bootup_hook() error: {e}")
-        errlog_add(f"[ERR] safe_boot_hook error: {e}")
+        print(f"[micrOS main] Hooks.boot() error: {e}")
+        errlog_add(f"[ERR] safe_boot: {e}")
 
 
-def interrupt_handler():
+def irq_handler():
     try:
         enableInterrupt()
         enableCron()
     except Exception as e:
         print(f"[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {e}")
-        errlog_add(f"[ERR] interrupt_handler error: {e}")
+        errlog_add(f"[ERR] irq_handler error: {e}")
 
 
-def external_interrupt_handler():
+def external_irq_handler():
     try:
         initEventIRQs()
     except Exception as e:
         print(f"[micrOS main] InterruptHandler.initEventIRQs error: {e}")
-        errlog_add(f"[ERR] external_interrupt_handler error: {e}")
+        errlog_add(f"[ERR] external_irq_handler error: {e}")
 
 
 #################################################################
@@ -58,14 +58,14 @@ def micrOS():
     # CREATE ASYNC TASK MANAGER
     aio = Manager()
 
-    # BOOT HOOK: Initial LM executions
-    safe_boot_hook()
+    # BOOT TASKS: Initial LM executions
+    safe_boot()
 
     # SET external interrupt with extirqcbf from nodeconfig
-    external_interrupt_handler()
+    external_irq_handler()
 
     # NETWORK setup
-    nwmd = auto_network_configuration()
+    nwmd = auto_nw_config()
     if nwmd == 'STA':
         # Set UTC + SUN TIMES FROM API ENDPOINTS
         suntime()
@@ -77,11 +77,12 @@ def micrOS():
         uptime(update=True)
 
     # SET interrupt with timirqcbf from nodeconfig
-    interrupt_handler()
-    profiling_info(label='[memUsage] SYSTEM IS UP')
+    irq_handler()
 
     # [SocketServer] as async task
     aio.create_task(SocketServer().run_server(), tag='server')
+    profiling_info(label='[memUsage] SYSTEM IS UP')
+
     # [EVENT LOOP] Start async event loop
     aio.run_forever()
 

@@ -16,7 +16,7 @@ from sys import modules
 from ConfigHandler import cfgget, cfgput
 from TaskManager import exec_lm_core
 from Debug import console_write, errlog_add
-from machine import reset as hard_reset
+from machine import reset as hard_reset, soft_reset
 
 
 #################################################################
@@ -24,7 +24,7 @@ from machine import reset as hard_reset
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.19.0-0'
+    MICROS_VERSION = '1.20.0-0'
 
     def __init__(self, msg_obj=None):
         """
@@ -64,7 +64,6 @@ class Shell:
         self.msg("Bye!")
         if hard:
             hard_reset()
-        from machine import soft_reset
         soft_reset()
 
     def prompt(self):

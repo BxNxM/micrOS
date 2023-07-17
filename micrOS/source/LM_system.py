@@ -142,22 +142,6 @@ def setclock(year, month, mday, hour, min, sec):
     return localtime()
 
 
-def module(unload=None):
-    """
-    List / unload Load Modules
-    :param unload str: module name to unload
-    :param unload None: list active modules
-    :return str: verdict
-    """
-    from sys import modules
-    if unload is None:
-        return list(modules.keys())
-    if unload in modules.keys():
-        del modules[unload]
-        return "Module unload {} done.".format(unload)
-    return "Module unload {} failed.".format(unload)
-
-
 @socket_stream
 def cachedump(cdel=None, msgobj=None):
     """
@@ -198,31 +182,6 @@ def rssi():
     if value > -90:
         return {'NotGood': value}
     return {'Unusable': value}
-
-
-@socket_stream
-def lmpacman(lm_del=None, msgobj=None):
-    """
-    Load module package manager
-    :param lm_del str: LM_<loadmodulename.py/.mpy>
-    :param lm_del None: list available load modules
-    - Add name without LM_ but with extension!
-    """
-    from os import listdir, remove
-    if lm_del is not None and lm_del.endswith('py'):
-        # Check LM is in use
-        if 'system.' in lm_del:
-            return 'Load module {} is in use, skip delete.'.format(lm_del)
-        remove('LM_{}'.format(lm_del))
-        return 'Delete module: {}'.format(lm_del)
-    # Dump available LMs
-    msg_buf = []
-    for k in (res.replace('LM_', '') for res in listdir() if 'LM_' in res):
-        if msgobj is None:
-            msg_buf.append('   {}'.format(k))
-        else:
-            msgobj('   {}'.format(k))
-    return msg_buf if len(msg_buf) > 0 else ''
 
 
 def pinmap(key='builtin'):
@@ -269,21 +228,6 @@ def ifconfig():
     return ifconfig()
 
 
-@socket_stream
-def micros_checksum(msgobj=None):
-    from hashlib import sha1
-    from binascii import hexlify
-    from os import listdir
-    from ConfigHandler import cfgget
-
-    for f_name in (_pds for _pds in listdir() if _pds.endswith('py')):
-        with open(f_name, 'rb') as f:
-            cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
-        msgobj("{} {}".format(cs, f_name))
-        gclean()
-    return "micrOS version: {}".format(cfgget('version'))
-
-
 #######################
 # LM helper functions #
 #######################
@@ -296,7 +240,6 @@ def help():
     """
     return 'info', 'gclean', 'heartbeat', 'clock',\
            'setclock year month mday hour min sec',\
-           'ntp', 'module unload="LM_rgb/None"', \
-           'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
+           'ntp', 'rssi', 'cachedump cdel="rgb.pds/None"',\
            'pinmap key="dhtpin"/None', 'ha_sta', 'alarms clean=False',\
-           'sun refresh=False', 'ifconfig', 'memory_usage', 'disk_usage', 'micros_checksum'
+           'sun refresh=False', 'ifconfig', 'memory_usage', 'disk_usage'

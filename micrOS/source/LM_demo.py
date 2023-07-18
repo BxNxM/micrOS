@@ -12,12 +12,12 @@ def _debug(func):
     - console logging
     - handled cmd counter (exec_info to get the value)
     """
-    def wrapper(*args, **kwargs):
+    def __wrapper(*args, **kwargs):
         global CNT
         CNT += 1
         console_write("debug module cmd executed")     # + Progress LED
         return func(*args, **kwargs)
-    return wrapper
+    return __wrapper
 
 
 @_debug

@@ -4,7 +4,7 @@ from sys import modules
 
 
 @socket_stream
-def list(msgobj=None):
+def listlm(msgobj=None):
     """
     Load module package manager
     - list all load modules
@@ -19,7 +19,7 @@ def list(msgobj=None):
     return msg_buf if len(msg_buf) > 0 else ''
 
 
-def delm(lm=None):
+def dellm(lm=None):
     """
     Load module package manager
     - delete load module
@@ -54,8 +54,8 @@ def del_duplicates():
                 remove(to_delete)
             except:
                 state = False
-            msg_buf.append('Delete {} {}'.format(to_delete, state))
-    return msg_buf if len(msg_buf) > 0 else 'Nothing to delete.'
+            msg_buf.append('   Delete {} {}'.format(to_delete, state))
+    return '\n'.join(msg_buf) if len(msg_buf) > 0 else 'Nothing to delete.'
 
 
 def module(unload=None):
@@ -89,5 +89,5 @@ def micros_checksum(msgobj=None):
 
 
 def help():
-    return 'list', 'delm lm=<module>.py/.mpy', 'del_duplicates',\
+    return 'listlm', 'dellm lm=<module>.py/.mpy', 'del_duplicates',\
            'module unload="LM_rgb/None"', 'micros_checksum'

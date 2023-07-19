@@ -225,10 +225,6 @@
             "doc": null,
             "param(s)": ""
         },
-        "wrapper": {
-            "doc": "module 'LM_demo' has no attribute 'wrapper'",
-            "param(s)": "*args **kwargs"
-        },
         "yes_no": {
             "doc": null,
             "param(s)": ""

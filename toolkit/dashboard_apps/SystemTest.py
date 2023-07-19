@@ -268,7 +268,7 @@ def micros_alarm_check():
 
 
 def oled_msg_end_result(result):
-    cmd_list = ['system module >json']
+    cmd_list = ['lmpacman module >json']
     output = execute(cmd_list)
     if output[0] and 'LM_oled_ui' in output[1]:
         cmd_list = [f'oled_ui msgbox "{result} %"']
@@ -402,12 +402,33 @@ def memory_usage():
         return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
 
     # {"percent": 93.11, "mem_used": 103504}
-    if json_out.get('percent') > 85:        # MEM USAGE WARNING INDICATOR: 85%
+    if json_out.get('percent') > 80:        # MEM USAGE WARNING INDICATOR: 85%
         return state, '[ST] {}WARNING{}: memory usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
                                                                              json_out.get('percent'),
                                                                              json_out.get('mem_used'))
     return state, '[ST] {}OK{}: memory usage {}% ({} bytes)'.format(Colors.OK, Colors.NC,
                                                                     json_out.get('percent'), json_out.get('mem_used'))
+
+
+def disk_usage():
+    """
+    Check disk usage - manually defined 16% (336_000 byte) - check degradations...
+    """
+    cmd = ['system disk_usage >json']
+    out = execute(cmd, tout=3)
+    state, raw_output = out[0], out[1]
+    try:
+        json_out = json.loads(raw_output)
+    except Exception as e:
+        return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
+
+    # {"percent": 15.4, "fs_used": 323_584}
+    if json_out.get('fs_used') > 336_000:        # MEM USAGE WARNING INDICATOR: 336_000 bytes
+        return state, '[ST] {}WARNING{}: disk usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
+                                                                             json_out.get('percent'),
+                                                                             json_out.get('fs_used'))
+    return state, '[ST] {}OK{}: disk usage {}% ({} bytes)'.format(Colors.OK, Colors.NC,
+                                                                  json_out.get('percent'), json_out.get('fs_used'))
 
 
 def task_list():
@@ -438,6 +459,7 @@ def app(devfid=None):
                'dhcp_hostname': check_device_by_hostname(DEVICE),
                'lm_exception': check_robustness_exception(),
                'mem_usage': memory_usage(),
+               'disk_usage': disk_usage(),
                'mem_alloc': check_robustness_memory(),
                'recursion': check_robustness_recursion(),
                'intercon': check_intercon(host='RingLamp.local'),
@@ -445,8 +467,6 @@ def app(devfid=None):
                'conn_metrics': measure_conn_metrics(),
                'micros_tasks': task_list()
                }
-
-
 
     # Test Evaluation
     final_state = True

@@ -381,7 +381,7 @@ def socket_commandline_args(arg_list):
     if len(arg_list) > 0 and arg_list[0].startswith('list'):
         ConnectionData.list_devices()
         sys.exit()
-    if len(arg_list) > 0 and ("man" in arg_list[0] or "hint" in arg_list[0]):
+    if len(arg_list) > 0 and ("man" == arg_list[0] or "manual" == arg_list[0] or "hint" in arg_list[0]):
         print("--scan / scan\t\t- scan devices")
         print("--dev / dev\t\t- select device - value should be: fuid or uid or devip")
         print("--stat / stat\t\t- show devides online/offline - and memory data")

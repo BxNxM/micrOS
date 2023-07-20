@@ -125,8 +125,9 @@ def initEventIRQs():
             exec_lm_pipe_schedule(_cbf)
 
     def __core(_pin, _trig, _lm_cbf):
+        """Run External/Event IRQ setup with __edge_exec callback handler"""
         nonlocal prell_last
-        if _pin and _lm_cbf != 'n/a':
+        if _pin:
             # [*] update resolver dict by pin number (available in irq callback):
             # PinKey: [CallbackFunction, PrellTimer]  (prell: contact recurrence - fake event filtering... :D)
             prell_last['Pin({})'.format(_pin)] = 0
@@ -138,15 +139,21 @@ def initEventIRQs():
             if _trig == 'down':
                 _pin_obj.irq(trigger=Pin.IRQ_FALLING,
                              handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
-            elif _trig == 'both':
+                return
+            if _trig == 'both':
                 _pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
                              handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
-            else:
-                # Default - 'up'
-                _pin_obj.irq(trigger=Pin.IRQ_RISING,
-                             handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
+                return
+            # Default - 'up'
+            _pin_obj.irq(trigger=Pin.IRQ_RISING,
+                         handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
+            return
+        console_write("|-- [IRQ] invalid pin: {}".format(_pin))
 
     def __get_pin(_p):
+        """
+        Resolve pin by name
+        """
         try:
             return physical_pin(_p)
         except Exception as e:
@@ -155,15 +162,18 @@ def initEventIRQs():
             errlog_add(msg)
         return None
 
-    # Load External IRQ execution data set from node config
-    if cfgget("irq1"):
-        __core(_pin=__get_pin('irq1'), _trig=cfgget("irq1_trig"), _lm_cbf=cfgget("irq1_cbf"))
-    if cfgget("irq2"):
-        __core(_pin=__get_pin('irq2'), _trig=cfgget("irq2_trig"), _lm_cbf=cfgget("irq2_cbf"))
-    if cfgget("irq3"):
-        __core(_pin=__get_pin('irq3'), _trig=cfgget("irq3_trig"), _lm_cbf=cfgget("irq3_cbf"))
-    if cfgget("irq4"):
-        __core(_pin=__get_pin('irq4'), _trig=cfgget("irq4_trig"), _lm_cbf=cfgget("irq4_cbf"))
+    # Load External IRQ (1-4) execution data set from node config
+    for i in range(1, 5):
+        # load IRQx params
+        irq_en = cfgget(f"irq{i}")
+        irq_p = __get_pin(f"irq{i}")
+        irq_cbf = cfgget(f"irq{i}_cbf")
+        irq_trig = cfgget(f"irq{i}_trig")
+        console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i, irq_en, irq_trig))
+        console_write("|- [IRQ] EXTIRQ CBF: {}".format(irq_cbf))
+        # Init external IRQx
+        if irq_en and irq_cbf.strip() != "n/a":
+            __core(_pin=irq_p, _trig=irq_trig, _lm_cbf=irq_cbf)
 
 #################################################################
 #                         INIT MODULE                           #

@@ -166,14 +166,13 @@ def initEventIRQs():
     for i in range(1, 5):
         # load IRQx params
         irq_en = cfgget(f"irq{i}")
-        irq_p = __get_pin(f"irq{i}")
         irq_cbf = cfgget(f"irq{i}_cbf")
         irq_trig = cfgget(f"irq{i}_trig")
         console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i, irq_en, irq_trig))
         console_write("|- [IRQ] EXTIRQ CBF: {}".format(irq_cbf))
         # Init external IRQx
         if irq_en and irq_cbf.strip() != "n/a":
-            __core(_pin=irq_p, _trig=irq_trig, _lm_cbf=irq_cbf)
+            __core(_pin=__get_pin(f"irq{i}"), _trig=irq_trig, _lm_cbf=irq_cbf)
 
 #################################################################
 #                         INIT MODULE                           #

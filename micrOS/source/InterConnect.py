@@ -130,13 +130,11 @@ async def _send_cmd(host, cmd, com_obj):
     """
     # Send command
     with com_obj.task:
-        out = await com_obj.send_cmd(host, cmd)          # Send CMD
-        if out is None:
-            await asyncio.sleep_ms(150)
-            out = await com_obj.send_cmd(host, cmd)      # Send CMD (retry)
-            if out is None:
-                await asyncio.sleep_ms(150)
-                out = await com_obj.send_cmd(host, cmd)  # Send CMD (retry)
+        for _ in range(0, 4):                           # Retry mechanism
+            out = await com_obj.send_cmd(host, cmd)     # Send CMD
+            if out is not None:                         # Retry mechanism
+                break
+            await asyncio.sleep_ms(100)                 # Retry mechanism
         com_obj.task.out = '' if out is None else out
     return com_obj.task.out
 

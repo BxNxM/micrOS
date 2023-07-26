@@ -231,11 +231,12 @@ class Manager:
         my_task.out = f"i.d.l.e: 200ms"
         try:
             while True:
+                await asyncio.sleep_ms(300)
                 # Probe system load
                 t = ticks_ms()
-                await asyncio.sleep_ms(500)
+                await asyncio.sleep_ms(300)
                 # SysLogic block - sys load
-                delta_rate = int(((ticks_diff(ticks_ms(), t) / 500)-1) * 100)
+                delta_rate = int(((ticks_diff(ticks_ms(), t) / 300)-1) * 100)
                 Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)       # Average - smooth
         except Exception as e:
             errlog_add(f"[ERR] Idle task exists: {e}")

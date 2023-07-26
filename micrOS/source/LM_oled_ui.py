@@ -1,5 +1,5 @@
 from ConfigHandler import cfgget
-from utime import localtime
+from utime import localtime, sleep
 from network import WLAN, STA_IF
 from LogicalPins import physical_pin, pinmap_dump
 from Network import ifconfig
@@ -275,7 +275,7 @@ class PageUI:
     #####################################
     #           PAGE GENERATORS         #
     #####################################
-    def intercon_page(self, host, cmd):
+    def intercon_page(self, host, cmd, run=False):
         """Generic interconnect page core - create multiple page with it"""
         posx, posy = 5, 12
 
@@ -286,7 +286,7 @@ class PageUI:
                 # Send CMD to other device & show result
                 data_meta = InterCon.send_cmd(host, cmd)
                 self.cmd_task_tag = data_meta['tag']
-                if "Busy" in data_meta['verdict']:
+                if "Task is Busy" in data_meta['verdict'] and not run:
                     self.cmd_out = data_meta['verdict']     # Otherwise the task start output not relevant on UI
             except Exception as e:
                 self.cmd_out = str(e)
@@ -312,8 +312,11 @@ class PageUI:
         self._cmd_text(posx, posy+10)
         # Set button press callback (+draw button)
         self.set_press_callback(_button)
+        # Run button event at page init
+        if run:
+            _button()
 
-    def cmd_call_page(self, cmd):
+    def cmd_call_page(self, cmd, run=False):
         """Generic LoadModule execution page core - create multiple page with it"""
         posx, posy = 5, 12
 
@@ -337,6 +340,9 @@ class PageUI:
         self._cmd_text(posx, posy)
         # Set button press callback (+draw button)
         self.set_press_callback(_button)
+        # Run button event at page init
+        if run:
+            _button()
 
 
 #################################
@@ -356,19 +362,20 @@ def _sys_page():
     return True
 
 
-def _intercon_cache():
+def _intercon_cache(line_limit=3):
     if InterCon is None:
         return False
     line_start = 15
     line_cnt = 1
-    line_limit = 3
     PageUI.DISPLAY.text("InterCon cache", 0, line_start)
     if sum([1 for _ in InterCon.dump()]) > 0:
         for key, val in InterCon.dump().items():
             key = key.split('.')[0]
             val = '.'.join(val.split('.')[-2:])
             PageUI.DISPLAY.text(" {} {}".format(val, key), 0, line_start+(line_cnt*10))
-            line_cnt = 1 if line_cnt > line_limit else line_cnt+1
+            line_cnt += 1
+            if line_cnt > line_limit:
+                break
         return True
     PageUI.DISPLAY.text("Empty", 40, line_start+20)
     return True
@@ -467,11 +474,12 @@ def msgbox(msg='micrOS msg'):
     return 'Show msg'
 
 
-def intercon_genpage(cmd=None):
+def intercon_genpage(cmd=None, run=False):
     """
     Create intercon pages dynamically :)
     - based on cmd value.
     :param cmd: 'host hello' or 'host system clock'
+    :param run: run button event at page init: True/False
     :return: page creation verdict
     """
     raw = cmd.split()
@@ -482,17 +490,18 @@ def intercon_genpage(cmd=None):
         pageui()
     try:
         # Create page for intercon command
-        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(host, cmd))
+        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(host, cmd, run=run))
     except Exception as e:
         return str(e)
     return True
 
 
-def cmd_genpage(cmd=None):
+def cmd_genpage(cmd=None, run=False):
     """
     Create load module execution pages dynamically :)
     - based on cmd value: load_module function (args)
     :param cmd: 'load_module function (args)' string
+    :param run: run button event at page init: True/False
     :return: page creation verdict
     """
     if not isinstance(cmd, str):
@@ -503,7 +512,7 @@ def cmd_genpage(cmd=None):
         pageui()
     try:
         # Create page for intercon command
-        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd))
+        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd, run=run))
     except Exception as e:
         print(e)
         return str(e)
@@ -544,6 +553,6 @@ def help():
     return 'pageui page=0 pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',\
            'control next/prev/press/on/off',\
            'msgbox "msg"',\
-           'intercon_genpage "host cmd"',\
-           'cmd_genpage "cmd"',\
-           'pinmap', 'INFO: OLED Module for SSD1306'
+           'intercon_genpage "host" "cmd" run=False',\
+           'cmd_genpage "cmd" run=False',\
+           'pinmap'

@@ -158,7 +158,20 @@ then
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
       help
+    elif [[ "${CMD_ARGS[0]}" == "distribute" ]]
+    then
+        echo -e "Create a source distribution"
+        if python3.9 setup.py sdist;
+        then
+            echo -e "Create a wheel distribution."
+            if python3.9 setup.py bdist_wheel;
+            then
+                twine upload dist/* --verbose
+            fi
+        fi
     fi
+
+
 else
     help
     # Start devToolKit.py GUI

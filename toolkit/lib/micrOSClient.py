@@ -325,7 +325,7 @@ class micrOSClient:
         return verdict
 
     def __del__(self):
-        if self.avg_reply[1] > 0:
+        if self.dbg and self.avg_reply[1] > 0:
             print(f"Response time: {round(self.avg_reply[0]/self.avg_reply[1], 2)} sec with {self.hostname}:{self.host}")
         self.close()
 

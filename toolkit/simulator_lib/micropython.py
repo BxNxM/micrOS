@@ -32,5 +32,13 @@ def schedule(callback, arg):
     return callback(arg)
 
 
+def heap_lock():
+    pass
+
+
+def heap_unlock():
+    pass
+
+
 if __name__ == "__main__":
     mem_info()

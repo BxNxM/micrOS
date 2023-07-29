@@ -1,9 +1,7 @@
 from utime import localtime
-from os import statvfs, getcwd, uname
 from Common import socket_stream
 from Network import get_mac, sta_high_avail
-from Time import ntptime, settime, suntime, Sun, uptime
-from Debug import errlog_get, errlog_add, errlog_clean, console_write
+from Time import ntp_time, set_time, uptime
 
 
 def memory_usage():
@@ -12,12 +10,13 @@ def memory_usage():
     return: memory usage %, memory usage in bytes
     """
     try:
-        from gc import mem_free, mem_alloc
+        from gc import mem_free, mem_alloc, collect
     except:
-        from simgc import mem_free, mem_alloc  # simulator mode
+        from simgc import mem_free, mem_alloc, collect  # simulator mode
+    collect()
     total_memory = mem_free() + mem_alloc()
     used_memory = mem_alloc()
-    used_mem_percent = round(used_memory / total_memory * 100, 2)
+    used_mem_percent = round(used_memory / total_memory * 100, 1)
     return {'percent': used_mem_percent, 'mem_used': used_memory}
 
 
@@ -26,11 +25,12 @@ def disk_usage():
     Calculate used disk space
     return: memory usage %, disk usage in bytes
     """
+    from os import statvfs, getcwd
     fs_stat = statvfs(getcwd())
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
     used_space = fs_size - fs_free
-    used_fs_percent = round(used_space / fs_size * 100, 2)
+    used_fs_percent = round(used_space / fs_size * 100, 1)
     return {'percent': used_fs_percent, 'fs_used': used_space}
 
 
@@ -41,14 +41,21 @@ def info(msgobj=None):
     - cpu clock, ram, free fs, upython, board, mac addr, uptime
     """
     from machine import freq
+    from os import uname
     msg_buffer = []
 
     def _reply(msg):
         nonlocal msg_buffer
-        if msgobj is None:
-            msg_buffer.append(msg)
-        else:
-            msgobj(msg)
+        try:
+            if msgobj is None:
+                # write buffer
+                msg_buffer.append(msg)
+            else:
+                # write socket buffer
+                msgobj(msg)
+        except Exception as e:
+            # fallback: write buffer
+            msg_buffer.append(f"{msg} ({e})")
 
     _reply('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
     _reply('Mem usage: {} %'.format(memory_usage()['percent']))
@@ -79,7 +86,6 @@ def heartbeat():
     """
     Test function for built-in led blinking and test reply message
     """
-    console_write("<3 heartbeat <3")
     return "<3 heartbeat <3"
 
 
@@ -101,7 +107,7 @@ def ntp():
     from ConfigHandler import cfgget
     try:
         # Automatic setup - over wifi - ntp
-        state = ntptime()
+        state = ntp_time()
         return state, localtime()
     except Exception as e:
         return False, "ntp error:{}".format(e)
@@ -115,6 +121,7 @@ def sun(refresh=False):
     Return:
         (dict) sun time
     """
+    from Time import suntime, Sun
     if refresh:
         return suntime()
     return Sun.TIME
@@ -131,24 +138,8 @@ def setclock(year, month, mday, hour, min, sec):
     :param sec
     :return: localtime
     """
-    settime(year, month, mday, hour, min, sec)
+    set_time(year, month, mday, hour, min, sec)
     return localtime()
-
-
-def module(unload=None):
-    """
-    List / unload Load Modules
-    :param unload str: module name to unload
-    :param unload None: list active modules
-    :return str: verdict
-    """
-    from sys import modules
-    if unload is None:
-        return list(modules.keys())
-    if unload in modules.keys():
-        del modules[unload]
-        return "Module unload {} done.".format(unload)
-    return "Module unload {} failed.".format(unload)
 
 
 @socket_stream
@@ -193,31 +184,6 @@ def rssi():
     return {'Unusable': value}
 
 
-@socket_stream
-def lmpacman(lm_del=None, msgobj=None):
-    """
-    Load module package manager
-    :param lm_del str: LM_<loadmodulename.py/.mpy>
-    :param lm_del None: list available load modules
-    - Add name without LM_ but with extension!
-    """
-    from os import listdir, remove
-    if lm_del is not None and lm_del.endswith('py'):
-        # Check LM is in use
-        if 'system.' in lm_del:
-            return 'Load module {} is in use, skip delete.'.format(lm_del)
-        remove('LM_{}'.format(lm_del))
-        return 'Delete module: {}'.format(lm_del)
-    # Dump available LMs
-    msg_buf = []
-    for k in (res.replace('LM_', '') for res in listdir() if 'LM_' in res):
-        if msgobj is None:
-            msg_buf.append('   {}'.format(k))
-        else:
-            msgobj('   {}'.format(k))
-    return msg_buf if len(msg_buf) > 0 else ''
-
-
 def pinmap(key='builtin'):
     """
     Get Logical pin by key runtime
@@ -245,6 +211,7 @@ def alarms(clean=False, test=False, msgobj=None):
     :param test bool: create test alarms, set True
     :return dict: verdict
     """
+    from Debug import errlog_get, errlog_add, errlog_clean
     if test:
         errlog_add('[ERR] TeSt ErRoR')
     if clean:
@@ -261,21 +228,6 @@ def ifconfig():
     return ifconfig()
 
 
-@socket_stream
-def micros_checksum(msgobj=None):
-    from hashlib import sha1
-    from binascii import hexlify
-    from os import listdir
-    from ConfigHandler import cfgget
-
-    for f_name in (_pds for _pds in listdir() if _pds.endswith('py')):
-        with open(f_name, 'rb') as f:
-            cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
-        msgobj("{} {}".format(cs, f_name))
-        gclean()
-    return "micrOS version: {}".format(cfgget('version'))
-
-
 #######################
 # LM helper functions #
 #######################
@@ -288,7 +240,6 @@ def help():
     """
     return 'info', 'gclean', 'heartbeat', 'clock',\
            'setclock year month mday hour min sec',\
-           'ntp', 'module unload="LM_rgb/None"', \
-           'rssi', 'cachedump cdel="rgb.pds/None"', 'lmpacman lm_del="LM_rgb.py/None"',\
+           'ntp', 'rssi', 'cachedump cdel="rgb.pds/None"',\
            'pinmap key="dhtpin"/None', 'ha_sta', 'alarms clean=False',\
-           'sun refresh=False', 'ifconfig', 'memory_usage', 'disk_usage', 'micros_checksum'
+           'sun refresh=False', 'ifconfig', 'memory_usage', 'disk_usage'

@@ -1,8 +1,21 @@
 # ![LOGO](./media/logo_mini.png?raw=true) micrOS
 
+
 ### micropython based smart edge IoT platform
 
-`#telnet #wifi #esp32 #tinypico #RaspberryPiPicoW(beta) #ota #GPIO #RTC/NTP #AP/STA #IRQ #async-tasks #cron`
+![telnet](https://img.shields.io/badge/wifi-telnet-blue) ![esp32S2](https://img.shields.io/badge/esp32-S2-olive) ![tinypico](https://img.shields.io/badge/esp32-tinypico-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-olive) ![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical) ![OTA](https://img.shields.io/badge/ota-update-blue) ![GPIO](https://img.shields.io/badge/gpio-i2c-success) ![clock](https://img.shields.io/badge/rtc-ntp-success) ![async](https://img.shields.io/badge/async-task_manager-success) ![irq](https://img.shields.io/badge/hardware-IRQs-success) ![socket](https://img.shields.io/badge/socket-STA_or_AP-blue) ![cron](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/stabile-release-success) ![upy](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/micropython-OS-gold)<br/>
+
+
+Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), follow us on:
+
+[![Instagram](https://img.shields.io/badge/Instagram-%40micros_framework-%23E4405F?logo=instagram&logoColor=white)](https://www.instagram.com/micros_framework/)
+[![YouTube](https://img.shields.io/badge/YouTube-micrOS_framework-red?logo=youtube&logoColor=white)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
+[![Facebook](https://img.shields.io/badge/Facebook-micrOS_framework-%231877F2?logo=facebook&logoColor=white)](https://www.facebook.com/Micros-Framework-103501302140755)
+[![Thingiverse](https://img.shields.io/badge/Thingiverse-micrOS_3Dprints-%231489FF?logo=thingiverse&logoColor=white)](https://www.thingiverse.com/micros_framework/designs)<br/>
+[![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
+
+In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
+
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
@@ -33,10 +46,6 @@
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 7. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
 
-Thingiverse 3D print projects: [link](https://www.thingiverse.com/micros_framework/designs)</br>
-Youtube: [link](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)</br>
-Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/)
-
 ----------------------------------------
 ----------------------------------------
 
@@ -47,8 +56,10 @@ Facebook page: [link](https://www.facebook.com/Micros-Framework-103501302140755/
 ----------------------------------------
 ----------------------------------------
 
-## Installing micrOS with DevToolKit #ESP32
+## Installing micrOS with DevToolKit #ESP32 and more
 **macOS / Windows / Linux to install any esp32 board**
+
+[![pypi](./media/pipy.png)](https://pypi.org/project/micrOSDevToolKit/)
 
 End-to-End solution for deployment, update, monitor and develop micrOS boards.
 
@@ -73,28 +84,24 @@ Link for python 3.9 [download](https://www.python.org/downloads/release/python-3
 
 &nbsp;Open **command line**, press: `commnd+space` + type: `terminal` + press: `enter`
 
-##### 2.1. Download and install **micrOS devToolKit** python package:
+##### Download and install **micrOS devToolKit** python package:
 
 ```bash
-python3 -m pip install --upgrade pip; python3 -m pip install git+https://github.com/BxNxM/micrOS.git
+pip3 install --upgrade pip; pip3 install micrOSDevToolKit
 ```
 
-> Note: macOS will drop a message to install git, please follow the install guide steps. </br>
-> Use the same command abow to update micrOS devToolkit GUI </br>
-> FYI: Manual git install on macOS **`xcode-select --install; git --version`**
+> Later on you can update the package with
+
+```bash
+pip3 uninstall micrOSDevToolKit; pip3 install micrOSDevToolKit
+```
 
 ----------------------------------------
 <br/>
 
 #### On Windows:
 
-##### 2.1. Install git for devToolKit download
-
-&nbsp;**[download git from here](https://git-scm.com/download/win)**
-
-> **Restart Windows after python install, because it's windows :)** </br>
-
-##### 2.2. Download and install **micrOS devToolKit** python package:
+##### Download and install **micrOS devToolKit** python package:
 
 Open Windows **PowerShell**, press `windows+R` + type: `powershell` + press `enter`
 
@@ -102,11 +109,15 @@ Copy the following lines to the PowerShell and press enter.
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install git+https://github.com/BxNxM/micrOS.git
+python -m pip install micrOSDevToolKit
 ```
 
-> NOTE: Wait for the installation, it may take several minutes to finish. </br>
-> Use the same command abow to update micrOS devToolkit GUI </br>
+Later on you can update the package with
+
+```bash
+python -m pip uninstall micrOSDevToolKit
+python -m pip install micrOSDevToolKit
+```
 
 ----------------------------------------
 <br/>
@@ -148,7 +159,8 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ## micrOS Projects
 
-![RingLamp](./media/projects/RingLamp.gif?raw=true)
+
+[![RingLamp](./media/projects/RingLamp.gif?raw=true)](https://youtu.be/BlQzAnFtpLk)
 
 ![RoboArm](./media/projects/RoboArm.gif?raw=true)
 
@@ -263,7 +275,8 @@ LogicalPin lookup tables:
 - [tinypico](./micrOS/source/LP_tinypico.py)
 - [esp32](./micrOS/source/LP_esp32.py)
 - [esp32s2](./micrOS/source/LP_esp32s2.py)
-- [raspberryPicoW](./micrOS/source/LP_rp2.py) NO STABILE MICROPYTHON YET: [micropython for rpw](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html#drag-and-drop-micropython)
+- [esp32s3](./micrOS/source/LP_esp32s3.py)
+- [raspberryPicoW](./micrOS/source/LP_rp2.py) ASYNC SERVER NOT STARTING ISSUE...
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
@@ -296,7 +309,6 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **`timirqcbf`**        |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
 | **`timirqseq`**        |    `1000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
 | **`cron`**             |     `False`  `<bool>`       |       Yes       | Cron enabler, Timer(1) interrupt enabler - time based task scheduler.
-| **`cronseq`**          |    `3000`   `<int>`         |       Yes        | Cron (Timer(1)) interrupt period in ms, default: `3000` ms (for `cron` infinite loop timer value) 
 | **`crontasks`**        |     `n/a`  `<str>`          |       Yes        | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*` **Note**: If the value was `n/a` default, then reboot required.
 | **`irq1`**           |     `False`  `<bool>`       |      Yes        | External event interrupt enabler - Triggers when desired signal state detected - button press happens / motion detection / etc
 | **`irq1_cbf`**        |     `n/a`  `<str>`          |      Yes        | `irq1` enabled, calls the given Load Modules, e.x.: `module function optional_parameter(s)` when external trigger happens
@@ -316,9 +328,10 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **`soctout`**          |   `100`      `<int>`        |      Yes        | Socket server connection timeout (because single process socket interface)
 | **`socport`**          |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility)
 | **`devip`**            |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
-| **`nwmd`**             |     `n/a`  `<str>`          |      N/A        | Prefered network mode - `AP` or `STA`
+| **`nwmd`**             |     `n/a`  `<str>`          |      Yes        | Prefered network mode - `AP` or `STA`
 | **`hwuid`**            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
 | **`guimeta`**          |      `n/a`  `str`           |      No        | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
+| **`telegram`**          |      `n/a`  `str`          |      No        | `TELEGRAM_BOT_TOKEN` to enable micrOS Notifications. **Hint**, to create bot with botfather: [click](https://blog.devgenius.io/how-to-set-up-your-telegram-bot-using-botfather-fd1896d68c02)
 
 > Note: Default empty value: `n/a` in case of string parameter.
 > Note: Cron is only available on devices with Timer(**1**): esp32
@@ -420,10 +433,108 @@ def help():
 	Return help message tuple
 	"""
 	return 'load_n_init', 'pinmap', 'status', 'lmdep'
-
 ```
 
-# System Architecture 
+
+### micrOS Common module
+
+#### Common module with additinal features for LMs
+
+Module responsible for collecting additional feature definitions dedicated to the micrOS framework and LoadModules. Code: [micrOS/source/Common.py](./micrOS/source/Common.py)
+
+### socket_stream decorator
+
+Adds an extra `msgobj` to the wrapped function's argument list. The `msgobj` provides a socket message interface for the open connection.
+
+```
+@socket_stream
+def function_name(arg1, arg2, ..., msgobj=None):
+    # function body
+    msgobj("Client reply :)")
+```
+
+### transition(from_val, to\_val, step\_ms, interval_sec)
+
+Generator for color transitions.
+
+Parameters:
+
+* from_val: Starting value
+* to_val: Target value
+* step_ms: Step to reach to_val
+* interval_sec: Full intervals
+
+Returns:
+
+* A generator that yields the intermediate values between from_val and to_val in steps of step_ms.
+
+### transition_gen(*args, interval\_sec=1.0)
+
+Create multiple transition generators.
+
+Parameters:
+
+* args: Pairs of from_val and to_val values for each channel
+* interval_sec: Interval in seconds to calculate the optimal fade/transition effect
+
+Returns:
+
+* If only one transition generator is created, it returns the generator and the step size in milliseconds (gen, step_ms). If multiple transition generators are created, it returns a list of generators and the step size in milliseconds ([gen1, gen2, ...], step_ms).
+
+### class SmartADC
+
+ADC wrapper class for reading analog values.
+
+Methods:
+
+* \_\_init\_\_(self, pin): Initializes the ADC object with the specified pin.
+* get(self): Reads the analog value from the ADC and returns a dictionary with the raw value, percentage, and voltage.
+* get_singleton(pin): Returns a singleton SmartADC object for the specified pin.
+
+### micro_task(tag, task=None)
+
+Async task creation from LoadModules.
+
+Parameters:
+
+* tag: If None, returns the task generator object. If a taskID is provided, returns the existing task object by tag.
+* task: Coroutine to execute.
+
+Returns:
+
+* If tag is None, returns the task generator object. If a taskID is provided, returns the existing task object by tag. If task is provided, returns the task creation state: True for success, False for failure.
+
+### data_logger(f\_name, data=None, limit=12, msgobj=None)
+
+micrOS Common Data logger solution.
+
+Parameters:
+
+* f_name: Log name (without extension, automatically appends .dat)
+* data: Data to append to the log. If None, reads the log and returns it as a message stream.
+* limit: Line limit for the log (default: 12)
+* msgobj: Socket stream object (automatically set)
+
+Returns:
+
+* If data is None, returns the log as a message stream. If data is provided, returns True if the write operation was successful, False otherwise.
+
+### notify(text)
+
+micrOS common notification handler (Telegram).
+
+Parameters:
+
+* text: Notification text
+
+Returns:
+
+* True if the notification was sent successfully, False otherwise.
+
+----------------------------------------
+
+
+# System Architecture (obsolete)
 
 ![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
 
@@ -515,11 +626,17 @@ Output:
 ```
        [ UID ]                [ FUID ]		[ IP ]		[ STATUS ]	[ VERSION ]	[COMM SEC]
 __localhost__                 __simulator__     127.0.0.1	OFFLINE		<n/a>		n/a
-micrf008d1d2ac30OS            BedLamp           192.168.1.78	ONLINE		1.4.0-1		0.787
-micr7c9ebd07a6d0OS            LedGenisys        192.168.1.71	ONLINE		1.3.3-2		1.430
-micr240ac4f679e8OS            Chillight         192.168.1.91	ONLINE		1.4.0-0		0.780
-micr3c61052fa788OS            RoboArm           192.168.1.79	ONLINE		1.4.0-0		0.539
-micr500291863428OS            TinyDevBoard      192.168.1.73	ONLINE		1.4.0-1		1.363
+micr<ID>OS            TinyDevBoard      10.0.1.72	ONLINE		1.16.2-2		0.072
+micr<ID>OS            LivingKitchen     10.0.1.200	ONLINE		1.16.2-2		0.076
+micr<ID>OS            RoboArm           10.0.1.232	ONLINE		1.15.4-0		0.072
+micr<ID>S            Cabinet           10.0.1.204	ONLINE		1.16.2-2		0.074
+micr<ID>4OS            TestBird          10.0.1.179	ONLINE		1.16.2-1		0.083
+micr<ID>OS            RingLamp          10.0.1.75	ONLINE		1.16.2-2		0.099
+micr<ID>OS            CatFeeder         10.0.1.111	OFFLINE		<n/a>		n/a
+micr<ID>OS            ImpiGamePro       10.0.1.23	OFFLINE		<n/a>		n/a
+micr<ID>S            micrOSPublic02    10.0.1.47	ONLINE		1.16.2-2		0.101
+micr<ID>cOS            micrOSPublic01    10.0.1.197	ONLINE		1.16.2-2		0.099
+micr<ID>cOS            experipurple      10.0.1.94	OFFLINE		<n/a>		n/a
 ```
 
 **Other Developer commands**
@@ -645,12 +762,12 @@ devToolKit.py -c -p '--dev BedLamp conf <a> dump'
 devToolKit.py -c -p '--dev BedLamp system info'
 
 CPU clock: 24 [MHz]
-Mem usage: 60.75 %
-FS usage: 13.48 %
+Mem usage: 71.0 %
+FS usage: 14.6 %
 upython: v1.19.1 on 2022-06-18
 board: ESP32 module with ESP32
 mac: 7c:9e:bd:62:3f:f8
-uptime: 1 23:20:38
+uptime: 0 1:29:19
 ```
 
 ## SocketClient
@@ -737,29 +854,32 @@ Bye!
 
 ```
 micrOS/source/
-      89	Common.py
-     217	ConfigHandler.py
-     117	Debug.py
-      62	Hooks.py
-      90	InterConnect.py
-     258	InterpreterShell.py
-     148	InterruptHandler.py
+     163	Common.py
+     218	ConfigHandler.py
+     184	Debug.py
+      66	Hooks.py
+     101	InterConnect.py
+     270	InterpreterShell.py
+     152	InterruptHandler.py
       48	LP_esp32.py
-      47	LP_esp32s2.py
+      49	LP_esp32s2.py
+      51	LP_esp32s3.py
        3	LP_rp2.py
       56	LP_tinypico.py
-     131	LogicalPins.py
-     189	Network.py
-     161	Scheduler.py
-     242	SocketServer.py
-     435	TaskManager.py
-     191	Time.py
+     133	LogicalPins.py
+     214	Network.py
+     198	Notify.py
+     174	Scheduler.py
+     278	SocketServer.py
+     484	TaskManager.py
+     166	Time.py
       24	TinyPLed.py
       19	main.py
-      67	micrOS.py
+      69	micrOS.py
      118	micrOSloader.py
        9	reset.py
-SUM OF CODE LINES: 2721
+     127	urequests.py
+SUM OF CODE LINES: 3374
 ```
 
 #### micrOS Load Modules
@@ -770,13 +890,14 @@ micrOS/source/
       47	LM_L9110_DCmotor.py
      323	LM_VL53L0X.py
      299	LM_bme280.py
-     225	LM_buzzer.py
+     240	LM_buzzer.py
       60	LM_catgame.py
-     245	LM_cct.py
+     318	LM_cct.py
      122	LM_co2.py
-      58	LM_dht11.py
-      58	LM_dht22.py
-     132	LM_dimmer.py
+      60	LM_demo.py
+      72	LM_dht11.py
+      72	LM_dht22.py
+     200	LM_dimmer.py
       70	LM_distance.py
       54	LM_ds18.py
       44	LM_esp32.py
@@ -785,21 +906,24 @@ micrOS/source/
       45	LM_intercon.py
       65	LM_light_sensor.py
      283	LM_neoeffects.py
-     282	LM_neopixel.py
-     211	LM_oled.py
-     391	LM_oled_ui.py
-      40	LM_pet_feeder.py
+     305	LM_neopixel.py
+     217	LM_oled.py
+     280	LM_oled_sh1106.py
+     466	LM_oled_ui.py
+      64	LM_pet_feeder.py
       39	LM_ph_sensor.py
-     197	LM_presence.py
-     263	LM_rgb.py
-     255	LM_roboarm.py
-      56	LM_robustness.py
+     208	LM_presence.py
+      87	LM_rencoder.py
+     283	LM_rgb.py
+     258	LM_roboarm.py
+      53	LM_robustness.py
      124	LM_servo.py
      133	LM_stepper.py
      223	LM_switch.py
-     228	LM_system.py
+     260	LM_system.py
+      65	LM_telegram.py
       85	LM_tinyrgb.py
-SUM OF CODE LINES: 4888
+SUM OF CODE LINES: 5755
 ```
 
 > LM (Load Modules) - Application logic - accessable over socket server as a command
@@ -989,6 +1113,21 @@ WantedBy=multi-user.target
 - File change list: `git diff --name-only fbb4875609a3c0ee088b6a118ebf9f8a500be0fd HEAD | grep 'mpy-MicrOS'`
 
 - GitHub embed youtube link: `https://github.com/itskeshav/Add-youtube-link-in-Readme.md`
+
+- Git history visualization with Gource
+
+```bash
+gource \
+    --highlight-users \
+    --hide filenames \
+    --file-idle-time 0 \
+    --max-files 0 \
+    --seconds-per-day 0.01 \
+    --auto-skip-seconds 1 \
+    --title "micrOS Evolution" \
+    --output-ppm-stream - \
+    | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 output.mp4
+```
 
 git push -u origin master
 

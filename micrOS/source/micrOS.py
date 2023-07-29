@@ -9,12 +9,12 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from TaskManager import Manager
 from SocketServer import SocketServer
-from Network import auto_network_configuration
-from Hooks import bootup_hook, profiling_info
+from Network import auto_nw_config
+from Hooks import bootup, profiling_info
 from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
 from Debug import errlog_add
-from Time import ntptime, suntime
+from Time import ntp_time, suntime
 
 
 #################################################################
@@ -22,36 +22,29 @@ from Time import ntptime, suntime
 #################################################################
 
 
-def safe_boot_hook():
+def safe_boot():
     try:
-        bootup_hook()
+        bootup()
     except Exception as e:
-        print("[micrOS main] Hooks.bootup_hook() error: {}".format(e))
-        errlog_add("[ERR] safe_boot_hook error: {}".format(e))
+        print(f"[micrOS main] Hooks.boot() error: {e}")
+        errlog_add(f"[ERR] safe_boot: {e}")
 
 
-def interrupt_handler():
+def irq_handler():
     try:
         enableInterrupt()
         enableCron()
     except Exception as e:
-        print("[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {}".format(e))
-        errlog_add("[ERR] interrupt_handler error: {}".format(e))
+        print(f"[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {e}")
+        errlog_add(f"[ERR] irq_handler error: {e}")
 
 
-def external_interrupt_handler():
+def external_irq_handler():
     try:
         initEventIRQs()
     except Exception as e:
-        print("[micrOS main] InterruptHandler.initEventIRQs error: {}".format(e))
-        errlog_add("[ERR] external_interrupt_handler error: {}".format(e))
-
-
-def nw_time_sync():
-    # Set UTC + SUN TIMES FROM API ENDPOINTS
-    suntime()
-    # Set NTP - RTC + UTC shift
-    ntptime()
+        print(f"[micrOS main] InterruptHandler.initEventIRQs error: {e}")
+        errlog_add(f"[ERR] external_irq_handler error: {e}")
 
 
 #################################################################
@@ -63,27 +56,35 @@ def micrOS():
     profiling_info(label='[memUsage] MAIN LOAD')
 
     # CREATE ASYNC TASK MANAGER
-    aio_man = Manager()
+    aio = Manager()
 
-    # BOOT HOOK: Initial LM executions
-    safe_boot_hook()
+    # BOOT TASKS: Initial LM executions
+    safe_boot()
 
     # SET external interrupt with extirqcbf from nodeconfig
-    external_interrupt_handler()
+    external_irq_handler()
 
     # NETWORK setup
-    nwmd = auto_network_configuration()
+    nwmd = auto_nw_config()
     if nwmd == 'STA':
-        nw_time_sync()
+        # Set UTC + SUN TIMES FROM API ENDPOINTS
+        suntime()
+        # Set NTP - RTC + UTC shift + update uptime (boot time)
+        ntp_time()
+    else:
+        # AP mode - no ntp sync set uptime anyway
+        from Time import uptime
+        uptime(update=True)
 
     # SET interrupt with timirqcbf from nodeconfig
-    interrupt_handler()
-    profiling_info(label='[memUsage] SYSTEM IS UP')
+    irq_handler()
 
     # [SocketServer] as async task
-    aio_man.create_task(SocketServer().run_server(), tag='server')
+    aio.create_task(SocketServer().run_server(), tag='server')
+    profiling_info(label='[memUsage] SYSTEM IS UP')
+
     # [EVENT LOOP] Start async event loop
-    aio_man.run_forever()
+    aio.run_forever()
 
     # UNEXPECTED RESTART ???
     errlog_add("[ERR] !!! Unexpected micrOS restart")

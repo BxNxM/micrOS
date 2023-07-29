@@ -7,6 +7,11 @@ from LogicalPins import physical_pin, pinmap_dump
 
 __INVERT = False
 
+
+###################################
+#   SSD1306 class implementation  #
+###################################
+
 # register definitions
 SET_CONTRAST = const(0x81)
 SET_ENTIRE_ON = const(0xA4)
@@ -134,6 +139,10 @@ class SSD1306_I2C(SSD1306):
         self.write_list[1] = buf
         self.i2c.writevto(self.addr, self.write_list)
 
+
+###################################
+#  SSD1306 interface functions    #
+###################################
 
 def __init():
     if SSD1306_I2C.OLED_OBJ is None:

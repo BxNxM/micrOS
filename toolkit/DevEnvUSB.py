@@ -57,6 +57,12 @@ class USB(Compile):
                   'connect': 'screen {dev}',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
                   'cmd_line_info': '[!!!] Experimental device - no stable micropython yet'},
+             'esp32s3_spiram_oct':
+                 {'erase': 'esptool.py --chip esp32s3 --port {dev} erase_flash',
+                  'deploy': 'esptool.py --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
+                  'connect': 'screen {dev} 115200',
+                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'cmd_line_info': '[!!!] Experimental device, no pinmap was adapted (fallback to esp32)'},
              }
         if not USB.usb_driver_ok:
             # Optimization - driver check
@@ -274,6 +280,7 @@ class USB(Compile):
         self.console("------------------------------------------")
         micropython_bins_list = []
 
+        self.console(f"Micropython bin path: {self.micropython_bin_dir_path}")
         mp_bin_list = [binary for binary in LocalMachine.FileHandler.list_dir(self.micropython_bin_dir_path) if
                        binary.endswith('.bin') or binary.endswith('.uf2')]
         for mp_bin in mp_bin_list:
@@ -308,7 +315,8 @@ class USB(Compile):
             # List USB devices on Windows
             ports = list(serial_port_list.comports())
             for item in ports:
-                if "CP210" in str(item.description):
+                self.console(f'[Win] Com device: {item.description}')
+                if "CP210" in str(item.description) or "CH340" in str(item.description):
                     micros_devices.append(item.device)
                     self.console("Device was found: {}".format(item.device, state="imp"))
         # Eval device list, return with devices
@@ -374,9 +382,12 @@ class USB(Compile):
         self.console("[ INFO ] To edit your config, open: {}".format(target_path))
         input("[ QUESTION ] To continue, press enter.")
         # Dump config content
-        with open(target_path, 'r') as f:
-            self.console(
-                "[ INFO ] Deployment with config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
+        try:
+            with open(target_path, 'r') as f:
+                self.console(
+                    "[ INFO ] Deployment with config:\n{}".format(json.dumps(json.load(f), indent=4, sort_keys=True)))
+        except Exception as e:
+            self.console(f"[SKIP] Local config generation: {e}")
 
     def _inject_profile(self, target_path):
         profile_list = [profile for profile in LocalMachine.FileHandler.list_dir(self.node_config_profiles_path) if

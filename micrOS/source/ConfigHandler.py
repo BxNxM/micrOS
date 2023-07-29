@@ -19,7 +19,7 @@ from Debug import DebugCfg, console_write, errlog_add
 try:
     from LogicalPins import set_pinmap
 except:
-    errlog_add("[ERR] LogicalPins import error: set_pinmap")
+    errlog_add("[ERR] LogicalPins import: set_pinmap")
     set_pinmap = None
 
 
@@ -40,7 +40,6 @@ class Data:
                     "devip": "n/a",
                     "cron": False,
                     "crontasks": "n/a",
-                    "cronseq": 3000,
                     "timirq": False,
                     "timirqcbf": "n/a",
                     "timirqseq": 1000,
@@ -72,7 +71,7 @@ class Data:
         # [!!!] Init selected pinmap - default pinmap calculated by platform
         if set_pinmap is not None:
             pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
-            console_write("[PIN MAP] {}".format(pinmap))
+            console_write(f"[PIN MAP] {pinmap}")
         # SET dbg based on config settings (inject user conf)
         DebugCfg.DEBUG = cfgget('dbg')
         if Data.CONFIG_CACHE['dbg']:
@@ -80,7 +79,7 @@ class Data:
             DebugCfg.init_pled()
         else:
             # Show info message - dbg OFF
-            console_write("[micrOS] debug print was turned off")
+            console_write("[micrOS] debug print - turned off")
 
 
     @staticmethod
@@ -90,22 +89,22 @@ class Data:
         # Remove obsolete keys from conf
         try:
             remove('cleanup.pds')       # Try to remove cleanup.pds (cleanup indicator by micrOSloader)
-            console_write("[CONFIGHANDLER] Purge obsolete keys")
+            console_write("[CONF] Purge obsolete keys")
             for key in (key for key in liveconf.keys() if key not in Data.CONFIG_CACHE.keys()):
                 liveconf.pop(key, None)
+            # TODO: dynamic ... key in new config - re-store value in offloaded mode.
         except Exception:
-            console_write("[CONFIGHANDLER] SKIP obsolete keys check (no cleanup.pds)")
-        # Merge template to live conf
+            console_write("[CONF] SKIP obsolete keys check (no cleanup.pds)")
+        # Merge template to live conf (store active conf in Data.CONFIG_CACHE)
         Data.CONFIG_CACHE.update(liveconf)
-        # Run conf injection and store
-        console_write("[CONFIGHANDLER] Inject user config ...")  # Data.CONFIG_CACHE
+        console_write("[CONF] User config injection done")
         try:
             # [LOOP] Only returns True
             Data.write_cfg_file()
-            console_write("[CONFIGHANDLER] Save conf struct successful")
+            console_write("[CONF] Save conf struct successful")
         except Exception as e:
-            console_write("[CONFIGHANDLER] Save conf struct failed: {}".format(e))
-            errlog_add('[ERR] __inject_default_conf error: {}'.format(e))
+            console_write(f"[CONF] Save conf struct failed: {e}")
+            errlog_add(f"[ERR] __inject_default_conf error: {e}")
         finally:
             del liveconf
 
@@ -118,12 +117,12 @@ class Data:
                     conf = load(f)
                 break
             except Exception as e:
-                console_write("[CONFIGHANDLER] read_cfg_file error {} (json): {}".format(conf, e))
+                console_write(f"[CONF] read_cfg_file error {conf} (json): {e}")
                 # Write out initial config, if no config exists.
                 if nosafe:
                     break
                 sleep(0.2)
-                errlog_add('[ERR] read_cfg_file error: {}'.format(e))
+                errlog_add(f'[ERR] read_cfg_file error: {e}')
         # Return config cache
         return conf
 
@@ -136,8 +135,8 @@ class Data:
                     dump(Data.CONFIG_CACHE, f)
                 break
             except Exception as e:
-                console_write("[CONFIGHANDLER] __write_cfg_file error {} (json): {}".format(Data.CONFIG_PATH, e))
-                errlog_add('[ERR] write_cfg_file error: {}'.format(e))
+                console_write(f"[CONF] __write_cfg_file error {Data.CONFIG_PATH} (json): {e}")
+                errlog_add(f'[ERR] write_cfg_file error: {e}')
             sleep(0.2)
         return True
 
@@ -162,7 +161,7 @@ class Data:
                 del value_in_cfg
                 return float(value)
         except Exception as e:
-            console_write("Input value type error! {}".format(e))
+            console_write(f"Input value type error! {e}")
         return None
 
     @staticmethod
@@ -174,14 +173,14 @@ class Data:
         # Write str value to file
         if isinstance(value, str) and key in Data.CONFIG_CACHE.keys():
             try:
-                with open('.{}.key'.format(key), 'w') as f:
+                with open(f'.{key}.key', 'w') as f:
                     f.write(value)
                 return True
             except Exception:
                 return False
         # Read str value from file
         try:
-            with open('.{}.key'.format(key), 'r') as f:
+            with open(f'.{key}.key', 'r') as f:
                 return f.read().strip()
         except Exception:
             # Return default value if key not exists
@@ -203,8 +202,8 @@ def cfgget(key=None):
             return Data.disk_keys(key)
         return val
     except Exception as e:
-        console_write("[CONFIGHANDLER] Get config value error: {}".format(e))
-        errlog_add('[ERR] cfgget {} error: {}'.format(key, e))
+        console_write(f"[CONF] Get config value error: {e}")
+        errlog_add(f'[ERR] cfgget {key} error: {e}')
     return None
 
 
@@ -226,12 +225,13 @@ def cfgput(key, value, type_check=False):
         del value
         return True
     except Exception as e:
-        errlog_add('[ERR] cfgput {} error: {}'.format(key, e))
+        errlog_add(f'[ERR] cfgput {key} error: {e}')
         return False
 
 #################################################################
 #                       MODULE AUTO INIT                        #
 #################################################################
+
 
 # [!!!] Validate / update / create user config + sidecar functions
 Data.init()

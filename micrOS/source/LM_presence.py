@@ -1,5 +1,5 @@
 from LogicalPins import physical_pin, pinmap_dump
-from Common import SmartADC, micro_task
+from Common import SmartADC, micro_task, notify
 import uasyncio as asyncio
 from utime import ticks_ms
 from Debug import errlog_add
@@ -19,11 +19,13 @@ class Data:
     OFF_EV_TIMER = 0            # Presence StateMachine
     TRIG_THRESHOLD = 3          # Presence StateMachine
 
-    ON_CALLBACKS = set()         # Presence StateMachine - ON FUNCTION CALLBACK LIST
-    OFF_CALLBACKS = set()        # Presence StateMachine - OFF FUNCTION CALLBACK LIST
+    ON_CALLBACKS = set()        # Presence StateMachine - ON FUNCTION CALLBACK LIST
+    OFF_CALLBACKS = set()       # Presence StateMachine - OFF FUNCTION CALLBACK LIST
 
     ON_INTERCON_CLBK = None     # Intercon ON callback
     OFF_INTERCON_CLBK = None    # Intercon OFF callback
+
+    NOTIFY = False
 
 
 #######################################
@@ -88,6 +90,10 @@ def __run_intercon(state):
 ####################################
 
 async def __task(ms_period, buff_size):
+    if Data.NOTIFY:
+        if not notify("Motion detected"):
+            errlog_add("Motion detect. notify, error...")
+
     if Data.ENABLE_MIC:
         # Create ADC object
         mic_adc = SmartADC.get_singleton(physical_pin('mic'))
@@ -136,15 +142,16 @@ def __mic_sample(buff_size, mic_adc, mytask):
 
     # Create average measurement sampling
     data_sum = 0
-    for _ in range(0, 20):
+    # Internal sampling for average value calculation
+    for _ in range(0, 15):
         data_sum += mic_adc.get()['percent']  # raw, percent, volt
-    data = data_sum / 20
+    data = data_sum / 15
         
     # Store data triplet
     data_triplet = [time_stump, data, 0]
 
     # Store data in task cache
-    mytask.out = "th: {} last data: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, int(Data.OFF_EV_TIMER))
+    mytask.out = "th: {} last: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, int(Data.OFF_EV_TIMER))
 
     # Store data triplet (time_stump, mic_data)
     Data.RAW_DATA.append(data_triplet)
@@ -177,7 +184,7 @@ def load_n_init(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.
     return "Init presence module: th: {} timer: {} mic: {}".format(threshold, timer, mic)
 
 
-def motion_trig(sample_ms=20, buff_size=15):
+def motion_trig(sample_ms=15, buff_size=10):
     """
     Set motion trigger by IRQx - PIR sensor
     - Reset OFF_EV_TIMER to TIMER_VALUE
@@ -208,6 +215,14 @@ def subscribe_intercon(on, off):
     return {'on': Data.ON_INTERCON_CLBK, 'off': Data.OFF_INTERCON_CLBK}
 
 
+def notification(state=None):
+    """Enable/Disable motion detection notifications"""
+    if state is None:
+        return "Notifications: {}".format("enabled" if Data.NOTIFY else "disabled")
+    Data.NOTIFY = True if state else False
+    return "Set notifications: {}".format("ON" if Data.NOTIFY else "OFF")
+
+
 def get_samples():
     """
     [DEBUG] Return measured data set
@@ -236,6 +251,7 @@ def help():
     :return tuple: list of functions implemented by this application
     """
     return 'load_n_init threshold=<percent> timer=<sec> mic=True',\
-           'motion_trig sample_ms=20 buff_size=15', 'get_samples',\
+           'motion_trig sample_ms=15 buff_size=10', 'get_samples',\
            'subscribe_intercon on="host cmd" off="host cmd"',\
+           'notification state=None/True/False',\
            'pinmap'

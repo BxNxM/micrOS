@@ -32,7 +32,20 @@ class micrOSIM():
         sim_path = LocalMachine.SimplePopPushd()
         sim_path.pushd(SIM_PATH)
         console("[micrOSIM] Start micrOS loader in: {}".format(SIM_PATH))
+        prev_t = time.time()
 
+        def trace_func(frame, event, arg):
+            nonlocal prev_t
+            elapsed_time = "{:.2e}".format(time.time() - prev_t)
+            prev_t = time.time()
+            file = frame.f_code.co_filename
+            line = frame.f_lineno
+            code = frame.f_code.co_name
+            if 'simulator/' in file and code != 'idle_task':
+                print(f"{' '*50}[trace][{elapsed_time}s][{event}] {line}: {'/'.join(file.split('/')[-1:])}.{code} {arg if arg else ''}")
+
+        # Trace handling - DEBUG
+        sys.settrace(trace_func)
         micrOSloader.main()
 
         console("[micrOSIM] Stop micrOS ({})".format(SIM_PATH))

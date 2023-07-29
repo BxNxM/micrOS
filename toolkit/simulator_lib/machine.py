@@ -2,6 +2,7 @@ from threading import Thread
 import time
 import micropython
 from sim_console import console
+import sys
 
 
 def machine(*args, **kwargs):
@@ -157,6 +158,11 @@ def freq(*args, **kwargs):
 
 def reset():
     print("[SIM] Dummy machine.reset")
+    return True
+
+
+def soft_reset():
+    print("[SIM] Dummy machine.soft_reset")
     return True
 
 

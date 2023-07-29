@@ -29,45 +29,29 @@ from machine import freq
 #################################################################
 
 
-def software_migration():
-    # TODO: remove
-    print("[MIG?] boot.py -> main.py")
-    from os import listdir, remove
-    if "boot.py" in listdir() and "main.py" in listdir():
-        print("|- delete boot.py")
-        remove("boot.py")
-
-
-def bootup_hook():
+def bootup():
     """
     Executes when system boots up.
     """
     # Execute LMs from boothook config parameter
-    console_write("[BOOTHOOK] EXECUTION ...")
+    console_write("[BOOT] EXECUTION ...")
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
-        console_write("|-[BOOTHOOK] TASKS: {}".format(bootasks))
+        console_write(f"|-[BOOT] TASKS: {bootasks}")
         if exec_lm_pipe(bootasks):
-            console_write("|-[BOOTHOOK] DONE")
+            console_write("|-[BOOT] DONE")
         else:
-            console_write("|-[BOOTHOOK] ERROR")
+            console_write("|-[BOOT] ERROR")
 
     # Set boostmd (boost mode)
     if cfgget('boostmd') is True:
-        console_write("[BOOT HOOKS] Set up CPU high Hz - boostmd: {}".format(cfgget('boostmd')))
-        if detect_platform() == 'esp8266':
-            freq(160000000)
-        if detect_platform() == 'esp32':
-            freq(240000000)
+        console_write(f"[BOOT HOOKS] Set up CPU high Hz - boostmd: {cfgget('boostmd')}")
+        if 'esp32' in detect_platform():
+            freq(240_000_000)   # 240 Mhz
     else:
-        console_write("[BOOT HOOKS] Set up CPU low Hz - boostmd: {}".format(cfgget('boostmd')))
-        if detect_platform() == 'esp8266':
-            freq(80000000)
-        if detect_platform() == 'esp32':
-            freq(80000000)
-
-    # Scripts for file structure changes
-    software_migration()
+        console_write(f"[BOOT HOOKS] Set up CPU low Hz - boostmd: {cfgget('boostmd')}")
+        if 'esp32' in detect_platform():
+            freq(160_000_000)   # 160 Mhz / Half the max CPU clock
 
 
 def profiling_info(label=""):
@@ -75,6 +59,6 @@ def profiling_info(label=""):
     Runtime memory measurements
     """
     if cfgget('dbg'):
-        console_write("{} [PROFILING INFO] - {} {}".format('~'*5, label, '~'*5))
+        console_write(f"{'~'*5} [PROFILING INFO] - {label} {'~'*5}")
         mem_info()
         console_write("~"*30)

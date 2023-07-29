@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-
+import json
 import os
 import sys
 import time
 import socket
+import ast
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(MYPATH))
 import socketClient
@@ -99,6 +100,9 @@ def micrOS_bgjob_one_shot_check():
     info = "[ST] Run micrOS BgJob check [system clock &]"
     print(info)
 
+    # Initial task cleanup...
+    execute(['task kill system.clock'])
+
     async_available_cmd_list = ['help']
     output = execute(async_available_cmd_list)
     if output[0]:
@@ -110,6 +114,7 @@ def micrOS_bgjob_one_shot_check():
     for _ in range(0, 2):
         cmd_list = ['system clock &']
         output = execute(cmd_list)
+        time.sleep(1)
         if output[0]:
             if 'Start system.clock' not in output[1].strip():
                 return False, f'{info} + not expected return: {output[1]}'
@@ -263,7 +268,7 @@ def micros_alarm_check():
 
 
 def oled_msg_end_result(result):
-    cmd_list = ['system module >json']
+    cmd_list = ['lmpacman module >json']
     output = execute(cmd_list)
     if output[0] and 'LM_oled_ui' in output[1]:
         cmd_list = [f'oled_ui msgbox "{result} %"']
@@ -296,11 +301,11 @@ def check_robustness_exception():
 
 
 def check_robustness_memory():
-    info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 15]'
+    info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 12]'
     print(info_msg)
-    cmd_list = ['robustness memory_leak 15']
+    cmd_list = ['robustness memory_leak 12']
     output = execute(cmd_list)
-    if output[0] and "[15] RAM Alloc" in output[1]:
+    if output[0] and "[12] RAM Alloc" in output[1]:
         end_result = output[1].split("\n")[-1]
         return True, f'{info_msg}: Mem alloc: {end_result}'
     else:
@@ -311,7 +316,7 @@ def check_robustness_recursion():
     info_msg = '[ST] Check robustness - recursion [robustness recursion_limit 5]'
     print(info_msg)
     cmd_list = ['robustness recursion_limit 5']
-    output = execute(cmd_list)
+    output = execute(cmd_list, tout=10)
     if output[0] and "0" in output[1].split("\n")[-1]:
         return True, f'{info_msg}'
     else:
@@ -319,11 +324,31 @@ def check_robustness_recursion():
 
 
 def check_intercon(host=None):
+    def _convert_return_to_dict(data):
+        try:
+            data_dict = ast.literal_eval(data[1])
+        except Exception as e:
+            data_dict = {'tag': None, 'verdict': f'{data}: {str(e)}'}
+        return data[0], data_dict
+
+    def _get_intercon_output(tag):
+        _cmd_list = [f'task show {tag}']
+        _state = False
+        _output = None
+        for _ in range(0, 2):
+            time.sleep(1)
+            _output = execute(_cmd_list, tout=8)
+            if _output[0] and 'No task found:' not in _output[1]:
+                _state = True
+                break
+        return _state, _output
+
     info_msg = '[ST] Check device-device connectivity'
     print(info_msg)
     host = 'test.local' if host is None else host
-    cmd_list = ['intercon sendcmd "{}" "hello"'.format(host)]
+    cmd_list = ['intercon sendcmd "{}" "hello" >json'.format(host)]
     output = execute(cmd_list, tout=8)
+    output = _convert_return_to_dict(output)
     device_was_found = False
     if output[0] is False or output[1] is None:
         output = 'Device was not found: {}:{}'.format(host, output)
@@ -332,37 +357,87 @@ def check_intercon(host=None):
         # Valid input, device was not found
         output = 'Device was not found: {}:{}'.format(host, output)
         state = True, f'{info_msg}:\n\t\t{output}'
-    elif "hello" in output[1]:
+    elif len(output[1]) > 1 and "hello" in output[1]['verdict']:
+        response_state, response = _get_intercon_output(output[1]['tag'])
         # Valid input on online device
-        output = "Device was found: {}:{}".format(host, output)
-        output = output.split('\n')
-        state = True, f'{info_msg}:\n\t\t{output}'
+        output = "Device was found: {}:{}".format(host, f"{output}: {response}")
+        state = True & response_state, f'{info_msg}:\n\t\t{output}'
         device_was_found = True
     else:
         state = False, output
 
     if device_was_found:
         # DO Negative testing as well
-        cmd_list = ['intercon sendcmd "notavailable.local" "hello"']
-        output_neg = execute(cmd_list, tout=10)
+        cmd_list = ['intercon sendcmd "notavailable.local" "hello" >json']
+        output_neg = execute(cmd_list, tout=15)
+        output_neg = _convert_return_to_dict(output_neg)
         state_neg = False, output_neg
-        if output_neg[1] == '[]':
-            output_neg = 'Device was not found: "notavailable.local":{}'.format(output_neg)
-            state_neg = True, output_neg
+        if len(output_neg[1]) > 1 and "hello" in output_neg[1]['verdict']:
+            response_state, response = _get_intercon_output(output_neg[1]['tag'])
+            output_neg = f'Device was not found: "notavailable.local":{output_neg}: {response}'
+            state_neg = True & response_state, output_neg
         return state[0] & state_neg[0], "{}\n\t\tNegative test: {}".format(state[1], state_neg[1])
     return state
 
 
 def measure_conn_metrics():
     try:
-        verdict = socketClient.connection_metrics(get_device())
+        verdict = socketClient.connection_metrics(f"{get_device().strip()}.local")
         for k in verdict:
             print("\t\t{}".format(k))
         state = True if len(verdict) > 0 else False
     except Exception as e:
         state = False
         verdict = [str(e), '']
-    return state, ' || '.join(verdict)
+    return state, f'{" "*51}'.join(verdict)
+
+
+def memory_usage():
+    cmd = ['system memory_usage >json']
+    out = execute(cmd, tout=3)
+    state, raw_output = out[0], out[1]
+    try:
+        json_out = json.loads(raw_output)
+    except Exception as e:
+        return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
+
+    # {"percent": 93.11, "mem_used": 103504}
+    if json_out.get('percent') > 80:        # MEM USAGE WARNING INDICATOR: 85%
+        return state, '[ST] {}WARNING{}: memory usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
+                                                                             json_out.get('percent'),
+                                                                             json_out.get('mem_used'))
+    return state, '[ST] {}OK{}: memory usage {}% ({} bytes)'.format(Colors.OK, Colors.NC,
+                                                                    json_out.get('percent'), json_out.get('mem_used'))
+
+
+def disk_usage():
+    """
+    Check disk usage - manually defined 16% (336_000 byte) - check degradations...
+    """
+    cmd = ['system disk_usage >json']
+    out = execute(cmd, tout=3)
+    state, raw_output = out[0], out[1]
+    try:
+        json_out = json.loads(raw_output)
+    except Exception as e:
+        return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
+
+    # {"percent": 15.4, "fs_used": 323_584}
+    if json_out.get('fs_used') > 336_000:        # MEM USAGE WARNING INDICATOR: 336_000 bytes
+        return state, '[ST] {}WARNING{}: disk usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
+                                                                             json_out.get('percent'),
+                                                                             json_out.get('fs_used'))
+    return state, '[ST] {}OK{}: disk usage {}% ({} bytes)'.format(Colors.OK, Colors.NC,
+                                                                  json_out.get('percent'), json_out.get('fs_used'))
+
+
+def task_list():
+    cmd = ['task list']
+    out = execute(cmd, tout=3)
+    state, output = out[0], out[1]
+    if state:
+        return state, output.replace('\n', f'\n{" "*51}')        # TODO format output
+    return state, output
 
 
 def app(devfid=None):
@@ -383,11 +458,14 @@ def app(devfid=None):
                'negative_api': negative_interface_check(),
                'dhcp_hostname': check_device_by_hostname(DEVICE),
                'lm_exception': check_robustness_exception(),
+               'mem_usage': memory_usage(),
+               'disk_usage': disk_usage(),
                'mem_alloc': check_robustness_memory(),
                'recursion': check_robustness_recursion(),
                'intercon': check_intercon(host='RingLamp.local'),
                'micros_alarms': micros_alarm_check(),
-               'conn_metrics': measure_conn_metrics()
+               'conn_metrics': measure_conn_metrics(),
+               'micros_tasks': task_list()
                }
 
     # Test Evaluation

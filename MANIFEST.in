@@ -1,0 +1,10 @@
+include micrOS/micropython/*.bin
+include micrOS/micropython/*.uf2
+graft micrOS/source
+graft toolkit/simulator_lib
+graft toolkit/workspace/precompiled
+recursive-include toolkit/user_data .include
+recursive-include toolkit/user_data/node_config_archive/.include
+include media/dnd.png
+include media/logo_mini.png
+include media/logo.png

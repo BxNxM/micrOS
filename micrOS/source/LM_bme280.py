@@ -6,7 +6,6 @@ https://randomnerdtutorials.com/micropython-bme280-esp32-esp8266/
 
 import utime as time
 from machine import Pin, I2C
-from LM_co2 import measure_mq135
 from LogicalPins import physical_pin, pinmap_dump
 
 # BME280 default address.
@@ -321,6 +320,7 @@ def measure_w_co2():
     Measure with bme280 and mq135 (CO2)
     :return dict: temp, hum, pressure, co2
     """
+    from LM_co2 import measure_mq135
     data = measure()
     data['co2 [ppm]'] = measure_mq135(data['temp [ºC]'], data['hum [%]'])
     return data

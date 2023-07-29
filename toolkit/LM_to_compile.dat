@@ -23,3 +23,6 @@ LM_neoeffects.py
 LM_stepper.py
 LM_cct.py
 LM_presence.py
+LM_telegram.py
+LM_oled_sh1106.py
+LM_lmpacman.py

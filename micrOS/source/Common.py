@@ -1,40 +1,34 @@
 """
-Module is responsible for collect the additional
-feature definition dedicated to micrOS framework towards LoadModules
-
-socket_stream decorator
-- adds an extra msgobj to the wrapped function arg list
-- msgobj provides socket msg interface for the open connection
-
-Designed by Marcell Ban aka BxNxM
+micrOS Load Module programming API-s
+    Designed by Marcell Ban aka BxNxM
 """
 
 from SocketServer import SocketServer
 from machine import Pin, ADC
-from sys import platform
 from LogicalPins import physical_pin
 from Debug import logger, log_get
 try:
     from TaskManager import Task, Manager
 except Exception as e:
-    print("Import ERROR, TaskManager: {}".format(e))
+    print(f"Import ERROR, TaskManager: {e}")
     Task, Manager = None, None
+TELEGRAM = None
 
 
 def socket_stream(func):
     """
-    Provide socket message object as [msgobj]
-    (SocketServer singleton class)
+    [LM] Socket message streamer - adds msgobj to the decorated function arg list.
+    Use msgobj as print function: msgobj("hello")
+    (SocketServer singleton class - reply all bug/feature)
     """
     def wrapper(*args, **kwargs):
-        return func(*args, **kwargs, msgobj=SocketServer().reply_message)
+        return func(*args, **kwargs, msgobj=SocketServer.reply)
     return wrapper
 
 
 def transition(from_val, to_val, step_ms, interval_sec):
     """
-    transition v1 (core)
-    Generator for color transitions:
+    [LM] Single Generator for color/value transition:
     :param from_val: from value - start from
     :param to_val: to value - target value
     :param step_ms: step to reach to_val - timirq_seq
@@ -52,8 +46,7 @@ def transition(from_val, to_val, step_ms, interval_sec):
 
 def transition_gen(*args, interval_sec=1.0):
     """
-    transition v2
-    Create multiple transition generators
+    [LM] Multiple Generator for color/value transitions:
     - calculate minimum step count -> step_ms
     - autofill and use use transition(from_val, to_val, step_ms, interval_sec)
     :param args: ch1_from, ch1_to, ch2_from, ch2_to, etc...
@@ -72,30 +65,28 @@ def transition_gen(*args, interval_sec=1.0):
 
 class SmartADC:
     """
-    ADC.ATTN_0DB: 0dB attenuation, gives a maximum input voltage of 1.00v - this is the default configuration
-    ADC.ATTN_2_5DB: 2.5dB attenuation, gives a maximum input voltage of approximately 1.34v
-    ADC.ATTN_6DB: 6dB attenuation, gives a maximum input voltage of approximately 2.00v
-    ADC.ATTN_11DB: 11dB attenuation, gives a maximum input voltage of approximately 3.6v
+    [LM] General ADC implementation for auto scaled output: raw, percent, volt
+    https://docs.micropython.org/en/latest/esp32/quickref.html#adc-analog-to-digital-conversion
+        ADC.ATTN_0DB: 0 dB attenuation, resulting in a full-scale voltage range of 0-1.1V
+        ADC.ATTN_2_5DB: 2.5 dB ... of 0-1.5V
+        ADC.ATTN_6DB: 6 dB ... of 0-2.2V
+        ADC.ATTN_11DB: 11 dB ... of 0-2450mV/
+    Note that the absolute maximum voltage rating for input pins is 3.6V. Going near to this boundary risks damage to the IC!
     """
     OBJS = {}
 
     def __init__(self, pin):
+        self.adp_prop = (65535, 2450)                               # 2450mV so 2,45V
         self.adc = None
-        self.adp_prop = ()
         if not isinstance(pin, int):
             pin = physical_pin(pin)
-        if 'esp8266' in platform:
-            self.adc = ADC(pin)  # 1V measure range
-            self.adp_prop = (1023, 1.0)
-        else:
-            self.adc = ADC(Pin(pin))
-            self.adc.atten(ADC.ATTN_11DB)  # 3.3V measure range
-            self.adp_prop = (4095, 3.6)
+        self.adc = ADC(Pin(pin))
+        self.adc.atten(ADC.ATTN_11DB)                               # 2450mV measure range
 
     def get(self):
-        raw = self.adc.read()
+        raw = int((self.adc.read_u16() + self.adc.read_u16())/2)    # 16-bit ADC value (0-65535)
         percent = raw / self.adp_prop[0]
-        volt = round(percent * self.adp_prop[1], 1)
+        volt = round(percent * self.adp_prop[1] / 1000, 2)          # devide with 1000 to get V from mV
         return {'raw': raw, 'percent': round(percent*100, 1), 'volt': volt}
 
     @staticmethod
@@ -108,7 +99,7 @@ class SmartADC:
 
 def micro_task(tag, task=None):
     """
-    Async task creation from Load Modules
+    [LM] Async task creation
     - Indirect interface
     tag:
         [1] tag=None: return task generator object
@@ -124,7 +115,7 @@ def micro_task(tag, task=None):
         # RETURN task obj (access obj.out + obj.done (automatic - with keyword arg))
         async_task = Task.TASKS.get(tag, None)
         return async_task
-    elif Task.task_is_busy(tag):
+    elif Task.is_busy(tag):
         # [2] Shortcut: Check task state by tag
         # RETURN: None - if task is already running
         return None
@@ -136,14 +127,47 @@ def micro_task(tag, task=None):
 
 
 @socket_stream
-def data_logger(f_name, data=None, limit=24, msgobj=None):
+def data_logger(f_name, data=None, limit=12, msgobj=None):
+    """
+    [LM] micrOS Common Data logger solution
+    - if data None => read mode
+    - if data value => write mode
+    :param f_name: log name (without extension, automatic: .dat)
+    :param data: data to append
+    :param limit: line limit (max.: 12 with short lines: limited disk speed!)
+    :param msgobj: socket stream object (set automatically!)
+    """
     # TODO: test!!!
     ext = '.dat'
-    f_name = f_name if f_name.endswith(ext) else '{}{}'.format(f_name, ext)
+    f_name = f_name if f_name.endswith(ext) else f'{f_name}{ext}'
     # GET LOGGED DATA
     if data is None:
         # return log as msg stream
         log_get(f_name, msgobj=msgobj)
-        return ''
+        return True
     # ADD DATA TO LOG
     return logger(data, f_name, limit)
+
+
+def notify(text):
+    """
+    micrOS common notification handler (Telegram)
+    :param text: notification text
+    return: verdict: True/False
+    """
+    global TELEGRAM
+    if TELEGRAM is None:
+        try:
+            from Notify import Telegram
+            TELEGRAM = Telegram
+        except Exception as e:
+            print(f"Import ERROR, Notify.Telegram: {e}")
+            return False
+    try:
+        out = TELEGRAM().send_msg(text)
+    except Exception as e:
+        print(f"Notify ERROR: {e}")
+        out = str(e)
+    if out is not None and out == 'Sent':
+        return True
+    return False

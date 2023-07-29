@@ -341,12 +341,6 @@ class OTA(Compile):
         with open(".if_mode", 'w') as f:
             f.write(lock_value)
 
-        # Wait for device reboot - TODO remove - support obsoleted backand...
-        if lock:
-            for i in range(1, 4):
-                self.console("\tWait for device: {}/4 sec".format(i))
-                time.sleep(1)
-
         self.console("Webrepl CMD: {}".format(command))
         try:
             for _ in range(0, 5):
@@ -430,6 +424,11 @@ class OTA(Compile):
             # Check no space in the file name
             if ' ' in os.path.basename(source):
                 self.console("\t[{}%][SKIP UPLOAD] space in resource name ... {}".format(progress, source),
+                             state='WARN')
+                continue
+            # Check no "hidden" content.
+            if os.path.basename(source).startswith('__'):
+                self.console("\t[{}%][SKIP UPLOAD] resource name starts with __ {}".format(progress, source),
                              state='WARN')
                 continue
 

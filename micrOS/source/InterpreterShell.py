@@ -16,12 +16,7 @@ from sys import modules
 from ConfigHandler import cfgget, cfgput
 from TaskManager import exec_lm_core
 from Debug import console_write, errlog_add
-from Network import ifconfig
-
-try:
-    from gc import collect, mem_free
-except:
-    from simgc import collect, mem_free  # simulator mode
+from machine import reset as hard_reset, soft_reset
 
 
 #################################################################
@@ -29,12 +24,12 @@ except:
 #################################################################
 
 class Shell:
-    __socket_interpreter_version = '1.13.0-0'
+    MICROS_VERSION = '1.21.0-0'
 
     def __init__(self, msg_obj=None):
         """
         comm_obj - communication object - send messages back
-                 - comm_obj.reply_message('msg')
+                 - comm_obj.reply('msg')
         """
         self.msg_obj = msg_obj
         # Used node_config parameters
@@ -46,10 +41,10 @@ class Shell:
         self.__conf_mode = False        # session conf mode: on / off
         # Set proper micrOS version
         try:
-            cfgput('version', Shell.__socket_interpreter_version)
+            cfgput('version', Shell.MICROS_VERSION)
         except Exception as e:
-            console_write("Export system version to config failed: {}".format(e))
-            errlog_add('[Shell.init][ERR] system version export error: {}'.format(e))
+            console_write(f"Export system version to config failed: {e}")
+            errlog_add(f"[Shell][ERR] system version export error: {e}")
 
     def msg(self, msg):
         """Message stream method"""
@@ -65,19 +60,17 @@ class Shell:
 
     def reboot(self, hard=False):
         """Reboot micropython VM"""
-        self.msg("{}Reboot micrOS system.".format("[HARD] " if hard else ""))
+        self.msg(f"{'[HARD] ' if hard else ''}Reboot micrOS system.")
         self.msg("Bye!")
         if hard:
-            from machine import reset
-            reset()
-        from machine import soft_reset
+            hard_reset()
         soft_reset()
 
     def prompt(self):
         """Generate prompt"""
         auth = "[password] " if self.__auth_mode and not self.__auth_ok else ""
         mode = "[configure] " if self.__conf_mode else ""
-        return "{}{}{} $ ".format(auth, mode, self.__devfid)
+        return f"{auth}{mode}{self.__devfid} $ "
 
     def __authentication(self, msg_list):
         """Authorize user"""
@@ -94,6 +87,10 @@ class Shell:
         return True, msg_list
 
     def shell(self, msg):
+        """
+        micrOS Shell main - input string handling
+        :param msg: incoming shell command (command or load module call)
+        """
         state = self.__shell(msg)
         self.msg(self.prompt())
         return state
@@ -123,7 +120,7 @@ class Shell:
         # Hello message
         if msg_list[0] == 'hello':
             # For low level device identification - hello msg
-            self.msg("hello:{}:{}".format(self.__devfid, self.__hwuid))
+            self.msg(f"hello:{self.__devfid}:{self.__hwuid}")
             return True
 
         state, msg_list = self.__authentication(msg_list)
@@ -135,7 +132,7 @@ class Shell:
         # Version handling
         if msg_list[0] == 'version':
             # For micrOS system version info
-            self.msg("{}".format(Shell.__socket_interpreter_version))
+            self.msg(str(Shell.MICROS_VERSION))
             return True
 
         # Reboot micropython VM
@@ -148,8 +145,8 @@ class Shell:
 
         if msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:
-                self.micropython_webrepl(update=True)
-            self.micropython_webrepl()
+                Shell.webrepl(msg_obj=self.msg, update=True)
+            Shell.webrepl(msg_obj=self.msg)
 
         # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
         if msg_list[0].startswith('conf'):
@@ -180,14 +177,14 @@ class Shell:
             self.msg("[EXEC] Command mode (LMs):")
             self.msg("   help lm  - list ALL LoadModules")
             if "lm" in str(msg_list):
-                return self.__show_LM_functions()
-            return self.__show_LM_functions(active_only=True)
+                return Shell._show_lm_funcs(msg_obj=self.msg)
+            return Shell._show_lm_funcs(msg_obj=self.msg, active_only=True)
 
         # [2] EXECUTE:
         # @1 Configure mode
         if self.__conf_mode and len(msg_list) > 0:
             # Lock thread under config handling is threads available
-            return self.__configure(msg_list)
+            return Shell._configure(self.msg, msg_list)
         # @2 Command mode
         """
         INPUT MSG STRUCTURE
@@ -198,16 +195,17 @@ class Shell:
             # Execute command via InterpreterCore
             return exec_lm_core(arg_list=msg_list, msgobj=self.msg)
         except Exception as e:
-            self.msg("[ERROR] exec_lm_shell internal error: {}".format(e))
+            self.msg(f"[ERROR] exec_lm_shell internal error: {e}")
             return False
 
     #################################################################
     #                     CONFIGURE MODE HANDLER                    #
     #################################################################
-    def __configure(self, attributes):
+    @staticmethod
+    def _configure(msg_obj, attributes):
         """
+        :param msg_obj: shell output stream function pointer (write object)
         :param attributes: socket input param list
-        :param sso: socket server object
         :return: execution status
         """
         # [CONFIG] Get value
@@ -216,10 +214,10 @@ class Shell:
                 # DUMP DATA
                 for key, value in cfgget().items():
                     spcr = (10 - len(key))
-                    self.msg("  {}{}:{} {}".format(key, " " * spcr, " " * 7, value))
+                    msg_obj(f"  {key}{' ' * spcr}:{' ' * 7} {value}")
                 return True
             # GET SINGLE PARAMETER VALUE
-            self.msg(cfgget(attributes[0]))
+            msg_obj(cfgget(attributes[0]))
             return True
         # [CONFIG] Set value
         if len(attributes) >= 2:
@@ -230,17 +228,18 @@ class Shell:
             try:
                 output = cfgput(key, value, type_check=True)
             except Exception as e:
-                self.msg("node_config write error: {}".format(e))
+                msg_obj(f"node_config write error: {e}")
                 output = False
             # Evaluation and reply
             issue_msg = 'Invalid key' if cfgget(key) is None else 'Failed to save'
-            self.msg('Saved' if output else issue_msg)
+            msg_obj('Saved' if output else issue_msg)
         return True
 
     #################################################################
     #                   COMMAND MODE & LMS HANDLER                  #
     #################################################################
-    def __show_LM_functions(self, active_only=False):
+    @staticmethod
+    def _show_lm_funcs(msg_obj, active_only=False):
         """
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
@@ -249,18 +248,18 @@ class Shell:
             for lm_path in (i for i in module_list if i.startswith('LM_') and (i.endswith('py'))):
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
-                    self.msg("   {}".format(lm_name))
+                    msg_obj(f"   {lm_name}")
                     if lm_path.endswith('.mpy'):
-                        self.msg("   {}help".format(" " * len(lm_path.replace('LM_', '').split('.')[0])))
+                        msg_obj(f"   {' ' * len(lm_path.replace('LM_', '').split('.')[0])}help")
                         continue
                     with open(lm_path, 'r') as f:
                         line = "micrOSisTheBest"
                         while line:
                             line = f.readline()
                             if line.strip().startswith('def') and '_' not in line and 'self' not in line:
-                                self.msg("   {}{}".format(" " * len(lm_name), line.replace('def ', '').split('(')[0]))
+                                msg_obj(f"   {' ' * len(lm_name)}{line.replace('def ', '').split('(')[0]}")
                 except Exception as e:
-                    self.msg("[{}] SHOW LM PARSER WARNING: {}".format(lm_path, e))
+                    msg_obj(f"[{lm_path}] SHOW LM PARSER WARNING: {e}")
                     return False
             return True
 
@@ -272,23 +271,26 @@ class Shell:
         # [2] list all LMs on file system (ALL - help lm) - manual
         return _offline_help(listdir())
 
-    def micropython_webrepl(self, update=False):
-        self.msg(" Start micropython WEBREPL for interpreter web access and file transferring.")
-        self.msg("  [!] micrOS socket shell will be available again after reboot.")
-        self.msg("  \trestart machine shortcut: import reset")
-        self.msg("  Connect over http://micropython.org/webrepl/#{}:8266/".format(ifconfig()[1][0]))
-        self.msg("  \t[!] webrepl password: {}".format(cfgget('appwd')))
+    @staticmethod
+    def webrepl(msg_obj, update=False):
+        from Network import ifconfig
+
+        msg_obj(" Start micropython WEBREPL - file transfer and debugging")
+        msg_obj("  [i] restart machine shortcut: import reset")
+        msg_obj(f"  Connect over http://micropython.org/webrepl/#{ifconfig()[1][0]}:8266/")
+        msg_obj(f"  \t[!] webrepl password: {cfgget('appwd')}")
         if update:
-            self.msg('  Restart node then start webrepl...')
-        self.msg(" Bye!")
+            msg_obj('  Restart node then start webrepl...')
+        msg_obj(" Bye!")
         if update:
-            from machine import reset
+            # Set update poller by interface mode file: .if_mode
             with open('.if_mode', 'w') as f:
                 f.write('webrepl')
-            reset()
+            hard_reset()
         try:
             import webrepl
-            self.msg(webrepl.start(password=cfgget('appwd')))
+            msg_obj(webrepl.start(password=cfgget('appwd')))
         except Exception as e:
-            self.msg("Error while starting webrepl: {}".format(e))
-            errlog_add('[ERR] Start Webrepl error: {}'.format(e))
+            _err_msg = f"[ERR] while starting webrepl: {e}"
+            msg_obj(_err_msg)
+            errlog_add(_err_msg)

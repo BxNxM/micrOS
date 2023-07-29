@@ -20,7 +20,7 @@ class Data:
     PERSISTENT_CACHE = False
     CH_MAX = 1000                          # maximum value per channel
     TASK_STATE = False
-    RGB_TASK_TAG = "rgb._transition"
+    RGB_TASK_TAG = "rgb._tran"
 
 
 #########################################
@@ -208,7 +208,7 @@ def toggle(state=None, smooth=True):
 
 def transition(r=None, g=None, b=None, sec=1.0, wake=False):
     """
-    Set transition color change for long dimming periods < 30sec
+    [TASK] Set transition color change for long dimming periods < 30sec
     - creates the dimming generators
     :param r: value 0-1000
     :param g: value 0-1000
@@ -228,7 +228,7 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
                 _g = g_gen.__next__()
                 _b = b_gen.__next__()
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
-                    my_task.out = "Dimming cancelled"
+                    my_task.out = "Cancelled"
                     return
                 if Data.RGB_CACHE[3] == 1 or wake:
                     # Write periphery
@@ -239,11 +239,11 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
                 Data.RGB_CACHE[0] = _r if _r > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 Data.RGB_CACHE[1] = _g if _g > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 Data.RGB_CACHE[2] = _b if _b > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
-                my_task.out = "Dimming ... R:{} G:{} B:{}".format(_r, _g, _b)
+                my_task.out = f"Dimming: R:{_r} G:{_g} B:{_b}"
                 await asyncio.sleep_ms(ms_period)
             if Data.RGB_CACHE[3] == 1 or wake:
                 __state_machine(_r, _g, _b)
-            my_task.out = "Dimming DONE: R:{} G:{} B:{}".format(_r, _g, _b)
+            my_task.out = f"Dimming DONE: R:{_r} G:{_g} B:{_b}"
 
     Data.TASK_STATE = True  # Save transition task is stared (kill param to overwrite task with user input)
     # Dynamic input handling: user/cache

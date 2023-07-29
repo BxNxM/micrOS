@@ -72,17 +72,18 @@ def enableInterrupt():
 def enableCron():
     """
     Set time stump based scheduler aka cron in timer1
-    Input: cron(bool), cronseq(ms), crontasks(str)
+    Input: cron(bool), crontasks(str)
     """
-    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget('cron'), cfgget("cronseq")))
+    timer_period = 3000         # Timer period ms
+    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget('cron'), timer_period))
     console_write("|- [IRQ] CRON CBF:{}".format(cfgget('crontasks')))
     if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
         from machine import Timer
         # INIT TIMER 1 IRQ with callback function wrapper
         lm_str = cfgget('crontasks')
-        sample = int(cfgget("cronseq")/1000)
+        sample = int(timer_period/1000)
         timer = Timer(1)
-        timer.init(period=int(cfgget("cronseq")), mode=Timer.PERIODIC,
+        timer.init(period=timer_period, mode=Timer.PERIODIC,
                    callback=lambda timer: scheduler(lm_str, sample))
 
 
@@ -97,72 +98,81 @@ def initEventIRQs():
     """
     EVENT INTERRUPT CONFIGURATION - multiple
     """
+    # prell_last = {'Pin(1)': 'pin last call time', 'Pin(2)': 'pin last call time', ...}
+    prell_last = {}
+    prell_ms = cfgget("irq_prell_ms")
 
-    def __edge_exec(pin, resolver):
+    def __edge_exec(_pin_obj, _p_last, _cbf):
         """
         Prell filter / edge detection and execution
-        :param pin: pin obj name
+        :param _pin_obj: pin obj name
         :param resolver: callback resolver dict,  LM_cbf obj by pins {PinKey: [LM_cbf, prellTimer]}
         :return: None
         """
-        pin = str(pin)
+        nonlocal prell_ms
+        _pin = str(_pin_obj)
         # Get stored tick by pin - last successful trigger
-        last = resolver.get(pin)[1]
+        last = _p_last.get(_pin)
         # Calculate trigger diff in ms (from now)
         diff = ticks_diff(ticks_ms(), last)
-        # console_write("[IRQ] Event {} - tick diff: {}".format(pin, diff))
+        # console_write(f"[IRQ] Event {_pin} - tick diff: {diff}")
         # Threshold between ext. irq evens
-        if abs(diff) > resolver.get('prell_ms'):
-            # [!] Execute LM(s)
-            exec_lm_pipe_schedule(resolver.get(pin)[0])
-            # Save now tick - last successful trigger
-            resolver[pin][1] = ticks_ms()
+        if abs(diff) > prell_ms:
+            # Save now tick - last trigger action
+            _p_last[_pin] = ticks_ms()
+            # [!] Execute User Load module by pin number (with micropython.schedule wrapper)
+            # console_write(f"---> action")
+            exec_lm_pipe_schedule(_cbf)
 
-    # External IRQ execution data set from node config
-    # ((irq, trig, lm_cbf), (irq, trig, lm_cbf), (irq, trig, lm_cbf), ...)
-    irqdata = ((cfgget("irq1"), cfgget("irq1_trig"), cfgget("irq1_cbf")),
-               (cfgget("irq2"), cfgget("irq2_trig"), cfgget("irq2_cbf")),
-               (cfgget("irq3"), cfgget("irq3_trig"), cfgget("irq3_cbf")),
-               (cfgget("irq4"), cfgget("irq4_trig"), cfgget("irq4_cbf")))
+    def __core(_pin, _trig, _lm_cbf):
+        """Run External/Event IRQ setup with __edge_exec callback handler"""
+        nonlocal prell_last
+        if _pin:
+            # [*] update resolver dict by pin number (available in irq callback):
+            # PinKey: [CallbackFunction, PrellTimer]  (prell: contact recurrence - fake event filtering... :D)
+            prell_last['Pin({})'.format(_pin)] = 0
+            _trig = _trig.strip().lower()
+            # Init event irq with callback function wrapper
+            # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP) ?TODO?: expose built in resistor parameter ?
+            _pin_obj = Pin(_pin, Pin.IN, Pin.PULL_DOWN)
+            # [IRQ] - event type setup
+            if _trig == 'down':
+                _pin_obj.irq(trigger=Pin.IRQ_FALLING,
+                             handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
+                return
+            if _trig == 'both':
+                _pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
+                             handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
+                return
+            # Default - 'up'
+            _pin_obj.irq(trigger=Pin.IRQ_RISING,
+                         handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
+            return
+        console_write("|-- [IRQ] invalid pin: {}".format(_pin))
 
-    # [*] hardcopy parameters to be able to resolve cbf-s
-    # cbf_resolver = {'Pin(1)': 'cbf;cbf', 'Pin(2)': 'cbf', ... + 'prell_ms': for example 300ms}
-    cbf_resolver = {'prell_ms': cfgget("irq_prell_ms")}
-    for i, data in enumerate(irqdata):
-        irq, trig, lm_cbf = data
-        console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i+1, irq, trig))
-        console_write("|- [IRQ] EXTIRQ CBF: {}".format(lm_cbf))
-        if irq:
-            try:
-                pin = physical_pin('irq{}'.format(i + 1))  # irq1, irq2, etc.
-            except Exception as e:
-                msg = '[ERR] EVENT IRQ{} IO error: {}'.format(i+1, e)
-                pin = None
-                console_write("|-- [!] {}".format(msg))
-                errlog_add(msg)
-            if pin:
-                # [*] update resolver dict by pin number (available in irq callback):
-                # PinKey: [CallbackFunction, PrellTimer]  (prell: contact recurrence - fake event filtering... :D)
-                cbf_resolver['Pin({})'.format(pin)] = [lm_cbf, 0]
-                trig = trig.strip().lower()
-                # Init event irq with callback function wrapper
-                # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)            #TODO: expose built in resistor parameter ?
-                pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
-                # [IRQ] - event type setup
-                if trig == 'down':
-                    # pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: print("[down] {}:{}".format(pin, cbf_resolver[str(pin)])))
-                    pin_obj.irq(trigger=Pin.IRQ_FALLING,
-                                handler=lambda pin: __edge_exec(pin, cbf_resolver))
-                    continue
-                if trig == 'both':
-                    # pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=lambda pin: print("[both] {}:{}".format(pin, cbf_resolver[str(pin)])))
-                    pin_obj.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
-                                handler=lambda pin: __edge_exec(pin, cbf_resolver))
-                    continue
-                # Default - 'up'
-                # pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: print("[up] {}:{}".format(pin, cbf_resolver[str(pin)])))
-                pin_obj.irq(trigger=Pin.IRQ_RISING,
-                            handler=lambda pin: __edge_exec(pin, cbf_resolver))
+    def __get_pin(_p):
+        """
+        Resolve pin by name
+        """
+        try:
+            return physical_pin(_p)
+        except Exception as e:
+            msg = f'[ERR] EVENT {_p} IO error: {e}'
+            console_write("|-- [!] {}".format(msg))
+            errlog_add(msg)
+        return None
+
+    # Load External IRQ (1-4) execution data set from node config
+    for i in range(1, 5):
+        # load IRQx params
+        irq_en = cfgget(f"irq{i}")
+        irq_cbf = cfgget(f"irq{i}_cbf")
+        irq_trig = cfgget(f"irq{i}_trig")
+        console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i, irq_en, irq_trig))
+        console_write("|- [IRQ] EXTIRQ CBF: {}".format(irq_cbf))
+        # Init external IRQx
+        if irq_en and irq_cbf.strip() != "n/a":
+            __core(_pin=__get_pin(f"irq{i}"), _trig=irq_trig, _lm_cbf=irq_cbf)
 
 #################################################################
 #                         INIT MODULE                           #

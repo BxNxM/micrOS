@@ -187,7 +187,7 @@ async def _play(args, deinit, delay):
 
 def play(*args, s=None, delay=None, deinit=True):
     """
-    Runs move instructions from input or RoboArm.MOVE_RECORD
+    [TASK] Runs move instructions from input or RoboArm.MOVE_RECORD
     :param args: X Y X2 Y2 ...
     :param s: SPEED_MS (delay)
     :param delay: delay in ms between steps
@@ -209,22 +209,26 @@ def play(*args, s=None, delay=None, deinit=True):
     return 'Play - already running'
 
 
-def record(clean=False):
+def record(clean=False, rec_limit=8):
     """
     Record function for move automation :D
     - Store actual X, Y
     :param clean: clean move cache (True), default: False
+    :param rec_limit: record x,y data set limit (default: 10)
     :return: verdict
     """
     if clean:
         RoboArm.MOVE_RECORD = []
         __persistent_cache_manager('s')
         return 'Record was cleaned'
-    x, y = RoboArm.ACTUAL_XY
-    RoboArm.MOVE_RECORD.append(x)
-    RoboArm.MOVE_RECORD.append(y)
-    __persistent_cache_manager('s')
-    return 'Record[{}]: X:{} Y:{}'.format(int(len(RoboArm.MOVE_RECORD)/2), x, y)
+    coord_len = int(len(RoboArm.MOVE_RECORD)/2)
+    if coord_len < rec_limit:
+        x, y = RoboArm.ACTUAL_XY
+        RoboArm.MOVE_RECORD.append(x)
+        RoboArm.MOVE_RECORD.append(y)
+        __persistent_cache_manager('s')
+        return f'Record[{coord_len}]: X:{x} Y:{y}'
+    return f'Record[{coord_len}]: limit exceeded: {rec_limit}'
 
 
 def random(x_range=20, y_range=20, speed_ms=5):

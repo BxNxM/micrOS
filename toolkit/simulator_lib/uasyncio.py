@@ -1,6 +1,18 @@
 import asyncio
 
 
+def open_connection(host, port):
+    return asyncio.open_connection(host, port)
+
+
+class Lock(asyncio.Lock):
+    pass
+
+
+class Event(asyncio.Event):
+    pass
+
+
 async def sleep(sec):
     await asyncio.sleep(sec)
 

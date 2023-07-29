@@ -184,7 +184,7 @@ def update_pip_package():
     import subprocess
     try:
         # Update the package using pip
-        out = subprocess.check_call(['pip', 'install', '--upgrade', 'git+https://github.com/BxNxM/micrOS.git'])
+        out = subprocess.check_call(['pip', 'install', '--upgrade', 'micrOSDevToolKit'])
     except Exception as e:
         print("ERROR update_pip_package: {}".format(e))
         out = 1

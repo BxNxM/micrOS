@@ -28,7 +28,7 @@ class micrOSIM():
             self.pid = None
             micrOSIM.SIM_PROCESS_LIST.append(self.process)
 
-    def micrOS_sim_worker(self):
+    def micrOS_sim_worker(self, trace=False):
         sim_path = LocalMachine.SimplePopPushd()
         sim_path.pushd(SIM_PATH)
         console("[micrOSIM] Start micrOS loader in: {}".format(SIM_PATH))
@@ -44,8 +44,9 @@ class micrOSIM():
             if 'simulator/' in file and code != 'idle_task':
                 print(f"{' '*50}[trace][{elapsed_time}s][{event}] {line}: {'/'.join(file.split('/')[-1:])}.{code} {arg if arg else ''}")
 
-        # Trace handling - DEBUG
-        sys.settrace(trace_func)
+        if trace:
+            # Trace handling - DEBUG
+            sys.settrace(trace_func)
         micrOSloader.main()
 
         console("[micrOSIM] Stop micrOS ({})".format(SIM_PATH))

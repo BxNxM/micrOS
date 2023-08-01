@@ -11,15 +11,14 @@ from binascii import hexlify
 __AHT10_OBJ = None
 
 
-def handle_connection_error(f):
-    def decorated(*args, **kwargs):
+def _handle_connection_error(f):
+    def _decorated(*args, **kwargs):
         try:
             result = f(*args, **kwargs)
             return result
         except Exception as e:
             errlog_add("[ERR] {}: {}".format(f.__name__, e))
-
-    return decorated
+    return _decorated
 
 
 class AHT10:
@@ -40,7 +39,7 @@ class AHT10:
         sensor_data = self.i2c.readfrom(self.address, nbytes)
         return sensor_data
 
-    @handle_connection_error
+    @_handle_connection_error
     def measure(self):
         """
         Send measurement trigger command and apply conversion to the result
@@ -70,14 +69,14 @@ class AHT10:
 
         return temp, hum
 
-    @handle_connection_error
+    @_handle_connection_error
     def init_sensor(self):
         """
         Send initialization command
         """
         return self._send_sensor(b'\xE1\x08\x00')
 
-    @handle_connection_error
+    @_handle_connection_error
     def reset(self):
         """
         Send soft reset command

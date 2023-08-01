@@ -100,10 +100,13 @@ class DebugCfg:
 
 def console_write(msg):
     if DebugCfg.DEBUG:
-        analog = DebugCfg.step()
-        print(msg)
-        if analog:
-            DebugCfg.step()
+        try:
+            analog = DebugCfg.step()
+            print(msg)
+            if analog:
+                DebugCfg.step()
+        except Exception as e:
+            errlog_add(f"[ERR] console_write: {e}")
 
 #############################################
 #        LOGGING WITH DATA ROTATION         #

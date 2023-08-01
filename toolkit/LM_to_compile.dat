@@ -26,3 +26,4 @@ LM_presence.py
 LM_telegram.py
 LM_oled_sh1106.py
 LM_lmpacman.py
+LM_aht10.py

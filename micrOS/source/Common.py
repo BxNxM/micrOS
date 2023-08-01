@@ -32,7 +32,7 @@ def transition(from_val, to_val, step_ms, interval_sec):
     :param from_val: from value - start from
     :param to_val: to value - target value
     :param step_ms: step to reach to_val - timirq_seq
-    :param interval_sec: full intervals
+    :param interval_sec: time of full interval
     """
     if interval_sec > 0:
         step_cnt = round((interval_sec*1000)/step_ms)

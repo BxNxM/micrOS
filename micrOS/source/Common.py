@@ -76,7 +76,7 @@ class SmartADC:
     OBJS = {}
 
     def __init__(self, pin):
-        self.adp_prop = (65535, 2450)                               # 2450mV so 2,45V
+        self.adp_prop = (65535, 2450)                               # raw value, 2450mV (so 2,45V)
         self.adc = None
         if not isinstance(pin, int):
             pin = physical_pin(pin)

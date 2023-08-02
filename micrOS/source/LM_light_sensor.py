@@ -5,8 +5,14 @@ ADC.ATTN_2_5DB — the full range voltage: 1.5V
 ADC.ATTN_6DB — the full range voltage: 2.0V
 ADC.ATTN_11DB — the full range voltage: 3.3V
 """
+import uasyncio as asyncio
+from Common import SmartADC, micro_task
+try:
+    import LM_intercon as InterCon
+except:
+    InterCon = None
 from LogicalPins import physical_pin, pinmap_dump
-from Common import SmartADC
+
 
 ADC = None
 
@@ -40,6 +46,48 @@ def illuminance():
     return {'illuminance [lux]': lux}
 
 
+async def _task(on, off, threshold):
+    adc = __init_tempt6000()
+    last_ev = ""
+    on = on.split()
+    off = off.split()
+    with micro_task(tag="light_sensor.intercon") as my_task:
+        my_task.out = f"threshold: {threshold} - starting"
+        while True:
+            percent = adc.get()['percent']
+            if percent < threshold:
+                if on != last_ev:
+                    if InterCon is not None:
+                        host = on[0]
+                        cmd = ' '.join(on[1:])
+                        InterCon.send_cmd(host, cmd)
+                    my_task.out = f"threshold: {threshold}% - ON"
+                    last_ev = on
+            else:
+                if off != last_ev:
+                    if InterCon is not None:
+                        host = off[0]
+                        cmd = ' '.join(off[1:])
+                        InterCon.send_cmd(host, cmd)
+                    my_task.out = f"threshold: {threshold}% - OFF"
+                    last_ev = off
+            await asyncio.sleep_ms(5000)        # Sample every 5 sec
+
+
+def subscribe_intercon(on, off, threshold=1):
+    """
+    :param on: on callback to send: host cmd
+    :param off: off callback to send: host cmd
+    :param threshold: percentage value for on(under) /off(above)
+    """
+    # Start play - servo XY in async task
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag="light_sensor.intercon", task=_task(on, off, threshold))
+    if state:
+        return 'Light sensor remote trigger starts'
+    return 'Light sensor remote trigger - already running'
+
+
 #######################
 # LM helper functions #
 #######################
@@ -60,5 +108,5 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'intensity', 'illuminance', 'pinmap', 'INFO sensor:TEMP600'
+    return 'intensity', 'illuminance', 'subscribe_intercon on off threshold=1', 'pinmap', 'INFO sensor:TEMP600'
 

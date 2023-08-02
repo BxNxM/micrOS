@@ -105,7 +105,17 @@ class ADC:
     WIDTH_10BIT = 'dummy'
 
     def __init__(self, pin=None):
-        pass
+        self.pin = pin
+        self.value = self.__gen()
+
+    def __gen(self):
+        while True:
+            for k in range(0, 65535, 500):
+                console(f"ADC({self.pin}): {k}")
+                yield k
+            for k in range(65535, 0, 500):
+                console(f"ADC({self.pin}): {k}")
+                yield k
 
     def atten(self, *args, **kwargs):
         pass
@@ -114,7 +124,10 @@ class ADC:
         pass
 
     def read(self):
-        return 420
+        return self.value.__next__()
+
+    def read_u16(self):
+        return self.value.__next__()
 
 
 class I2C:

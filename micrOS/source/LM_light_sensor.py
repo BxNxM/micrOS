@@ -55,7 +55,8 @@ async def _task(on, off, threshold):
         my_task.out = f"threshold: {threshold} - starting"
         while True:
             percent = adc.get()['percent']
-            if percent < threshold:
+            # TURN ON
+            if percent <= threshold:
                 if on != last_ev:
                     if InterCon is not None:
                         host = on[0]
@@ -63,7 +64,7 @@ async def _task(on, off, threshold):
                         InterCon.send_cmd(host, cmd)
                     my_task.out = f"threshold: {threshold}% - ON"
                     last_ev = on
-            else:
+            elif percent > threshold+2:     # +2 to avoid "on/off/on/off" on threshold limit
                 if off != last_ev:
                     if InterCon is not None:
                         host = off[0]
@@ -74,10 +75,11 @@ async def _task(on, off, threshold):
             await asyncio.sleep_ms(5000)        # Sample every 5 sec
 
 
-def subscribe_intercon(on, off, threshold=1):
+def subscribe_intercon(on, off, threshold=4):
     """
-    :param on: on callback to send: host cmd
-    :param off: off callback to send: host cmd
+    [TASK] ON/OFF command sender over intercon on given threshold
+    :param on: on callback to send: "host cmd"
+    :param off: off callback to send: "host cmd"
     :param threshold: percentage value for on(under) /off(above)
     """
     # Start play - servo XY in async task

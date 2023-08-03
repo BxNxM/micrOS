@@ -8,3 +8,4 @@ recursive-include toolkit/user_data/node_config_archive/.include
 include media/dnd.png
 include media/logo_mini.png
 include media/logo.png
+graft env/driver_cp210x/

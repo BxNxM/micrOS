@@ -84,7 +84,7 @@ def load_n_init(cache=None):
     """
     from sys import platform
     if cache is None:
-        Data.PERSISTENT_CACHE = True if platform == 'esp32' else False
+        Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
     else:
         Data.PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')     # recover data cache if enabled

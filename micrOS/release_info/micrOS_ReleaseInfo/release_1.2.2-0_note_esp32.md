@@ -1,8 +1,10 @@
 # Release validation
-
-measurement error of baseload: 9344 byte, 14%
-
 ### VERSION: 1.2.2-0
+
+|  version  |       memory usage    | board type  |     config    |
+| :------:  | :-------------------: | :---------: | :-----------: |
+| 1.2.2-0   | **48,6%** 54 032 byte |    esp32    |   `default`   |
+
 
 ## Deployment command
 
@@ -19,18 +21,12 @@ measurement error of baseload: 9344 byte, 14%
 
 # Validation & Measurements
 
-### CORE BASELOAD TESTING
+### [1] CORE BASELOAD TESTING
 
 + SocketServer with socketshell: True
 + Interrputs: False
 + Communication testing: False
 + Config: default_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    |
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.2.2-0   |  **10,6%** 6736 byte |    esp32    | [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -102,18 +98,23 @@ GC: total: 111168, used: 54032, free: 57136
 |----[ socket server ] wait to accept a connection
 ```
 
-### CORE LOAD WITH INPTERRUPTS
+|   stage   |       memory usage     |    all memory   |                   details              |
+| :------:  | :--------------------: | :-------------: |  :-----------------------------------: |
+|  inital   |  **43,0%** 47 840 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`               |
+|  step1    |  **43,0%** 47 840 byte |  111 168 byte   |   `[2] AFTER SAFE BOOT HOOK`           |
+|  step2    |  **43,6%** 48 464 byte |  111 168 byte   |   `[3] AFTER EXTERNAL INTERRUPT SETUP` |
+|  step3    |  **47,2%** 52 496 byte |  111 168 byte   |   `[4] AFTER NETWORK CONFIGURATION`    |
+|  step4    |  **47,8%** 53 168 byte |  111 168 byte   |   `[5] AFTER SOCKET SERVER CREATION`   |
+|  running  |  **48,6%** 54 032 byte |  111 168 byte   |   `[6] AFTER TIMER INTERRUPT SETUP`    |
+
+Config: [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)
+
+### [2] CORE LOAD WITH INPTERRUPTS
 
 + SocketServer with socketshell: True
 + Interrputs: True
 + Communication testing: False
 + Config: heartbeat_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    | 
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.2.2-0   |   **23.1%** 14496 byte |   esp32     |     [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -187,20 +188,24 @@ GC: total: 111168, used: 63072, free: 48096
 |----[ socket server ] wait to accept a connection
 ```
 
+|   stage   |       memory usage     |    all memory   |                   details              |
+| :------:  | :--------------------: | :-------------: |  :-----------------------------------: |
+|  inital   |  **43,7%** 48 576 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`               |
+|  step1    |  **50,9%** 56 688 byte |  111 168 byte   |   `[2] AFTER SAFE BOOT HOOK`           |
+|  step2    |  **51,5%** 57 312 byte |  111 168 byte   |   `[3] AFTER EXTERNAL INTERRUPT SETUP` |
+|  step3    |  **55,2%** 61 376 byte |  111 168 byte   |   `[4] AFTER NETWORK CONFIGURATION`    |
+|  step4    |  **55,8%** 62 048 byte |  111 168 byte   |   `[5] AFTER SOCKET SERVER CREATION`   |
+|  running  |  **56,7%** 63 072 byte |  111 168 byte   |   `[6] AFTER TIMER INTERRUPT SETUP`    |
 
-### RESPONSE COMMUNICATION TEST WITH APPLICATION 
+Config: [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)
+
+### [3] RESPONSE COMMUNICATION TEST WITH APPLICATION 
 
 
 + SocketServer with socketshell: True
 + Interrputs: True
 + Communication testing: True
 + Config: neopixel_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    | 
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.2.2-0   | **25,3%** 15904 byte |    esp32    |     [neopixel_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -277,7 +282,18 @@ GC: total: 111168, used: 64416, free: 46752
 |----[ socket server ] wait to accept a connection
 ```
 
-#### COMMUNICATION TEST LOG - under load
+|   stage   |       memory usage     |    all memory   |                   details              |
+| :------:  | :--------------------: | :-------------: |  :-----------------------------------: |
+|  inital   |  **43,6%** 48512 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`               |
+|  step1    |  **51,1%** 56816 byte |  111 168 byte   |   `[2] AFTER SAFE BOOT HOOK`           |
+|  step2    |  **52,0%** 57808 byte |  111 168 byte   |   `[3] AFTER EXTERNAL INTERRUPT SETUP` |
+|  step3    |  **56,5%** 62816 byte |  111 168 byte   |   `[4] AFTER NETWORK CONFIGURATION`    |
+|  step4    |  **57,1%** 63488 byte |  111 168 byte   |   `[5] AFTER SOCKET SERVER CREATION`   |
+|  running  |  **57,9%** 64416 byte |  111 168 byte   |   `[6] AFTER TIMER INTERRUPT SETUP`    |
+
+Config: [neopixel_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)
+
+#### [4] COMMUNICATION TEST LOG - under load
 
 > NOTE: under load measurement doesn't indicate any memory degradation under high load.
 

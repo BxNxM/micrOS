@@ -1,8 +1,11 @@
 # Release validation
+## VERSION: 1.5.0-1
 
-measurement error of baseload: 1168 byte, 1.9%
 
-### VERSION: 1.5.0-1
+|  version  |       memory usage    | board type  |     config    |
+| :------:  | :-------------------: | :---------: | :-----------: |
+| 1.5.0-1   | **58,2%** 64 704 byte |    esp32    |   `default`   |
+
 
 ## Deployment command
 
@@ -19,18 +22,12 @@ measurement error of baseload: 1168 byte, 1.9%
 
 # Validation & Measurements
 
-### CORE BASELOAD TESTING
+### [1] CORE BASELOAD TESTING
 
 + SocketServer with socketshell: True
 + Interrputs: False
 + Communication testing: False
 + Config: default_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    |
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.5.0-1   |  **5,5%** 6176 byte |    esp32    | [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -82,19 +79,20 @@ GC: total: 111168, used: 64704, free: 46464
 |---[ socket server ] Socket now listening
 |----[ socket server ] wait to accept a connection
 ```
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **52,6%** 58 528 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **58,2%** 64 704 byte |  111 168 byte   |   `[memUsage] SYSTEM IS UP` |
 
-### CORE LOAD WITH INPTERRUPTS
+Config: [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)
+
+
+### [2] CORE LOAD WITH INPTERRUPTS
 
 + SocketServer with socketshell: True
 + Interrputs: True
 + Communication testing: False
 + Config: heartbeat_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    | 
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.5.0-1   |   **13,7%** 15268 byte |   esp32     |     [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -152,20 +150,20 @@ GC: total: 111168, used: 74960, free: 36208
 <3 heartbeat <3
 ```
 
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **53,7%** 59 696 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **67,4%** 74 960 byte |  111 168 byte   |   `[memUsage] SYSTEM IS UP` |
 
-### RESPONSE COMMUNICATION TEST WITH APPLICATION 
+Config: [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)
 
+
+### [3] RESPONSE COMMUNICATION TEST WITH APPLICATION 
 
 + SocketServer with socketshell: True
 + Interrputs: True
 + Communication testing: True
 + Config: neopixel_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    | 
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.5.0-1   | **14,5%** 16192 byte |    esp32    |     [neopixel_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -219,6 +217,13 @@ GC: total: 111168, used: 74848, free: 36320
 |---[ socket server ] Socket now listening
 |----[ socket server ] wait to accept a connection
 ```
+
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **52,7** 58 656 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **67,3%** 74 848 byte |  111 168 byte   |   `[memUsage] SYSTEM IS UP` |
+
+Config: [neopixel_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)
 
 #### COMMUNICATION TEST LOG - under load
 

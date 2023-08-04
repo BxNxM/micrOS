@@ -50,20 +50,25 @@ class PageUI:
         self.active_page = page
         self.width = w
         self.height = h
+        self.oled_state = True      # ON-True, OFF-False
+
+        # Message box - message text and msgbox blink effect
         self.show_msg = None
         self.blink_effect = False
-        self.oled_state = True
-        # OK/CENTER button state values
-        self.bttn_press_callback = None
+
         # Intercon connection state values
         self.open_intercons = []
         self.cmd_out = "n/a"
         self.cmd_task_tag = None
-        # Create built-in event/button IRQ
+
+        # Create built-in button IRQ - OK button (center)
+        self.bttn_press_callback = None
         self.irq_ok = False
         self.__create_button_irq()
+
         # Power saver state machine - turn off sec, deltaT (timirq executor seq loop), counter
         self.pwr_saver_state = [pwr_sec, round(cfgget('timirqseq') / 1000, 2), pwr_sec]
+
         # Store instance - use as singleton
         PageUI.PAGE_UI_OBJ = self
 
@@ -73,8 +78,7 @@ class PageUI:
     def __page_header(self):
         """Generates header bar with NW mode + Clock + wifi rssi"""
 
-        def __draw_rssi():
-            value = WLAN(STA_IF).status('rssi')
+        def __draw_rssi(value):
             show_range = round(((value + 91) / 30) * 8)  # pixel height 8
             PageUI.DISPLAY.line(self.width - 10, 8, self.width - 8, 8)
             PageUI.DISPLAY.line(self.width - 17, 1, self.width, 1)
@@ -91,7 +95,7 @@ class PageUI:
                 PageUI.DISPLAY.line(self.width-x_offset, 6-i, self.width-x_offset-2, 6-i)
 
         try:
-            __draw_rssi()
+            __draw_rssi(value=WLAN(STA_IF).status('rssi'))
             __pwr_off()
         except:
             pass
@@ -157,6 +161,9 @@ class PageUI:
             self.irq_ok = True
 
     def __power_save(self):
+        """
+        Automatically put screen to off after self.pwr_saver_state[2] (counter) is 0
+        """
         sec, dt, cnt = self.pwr_saver_state
         if sec is None:
             # Power saver off - no auto turn off
@@ -176,7 +183,7 @@ class PageUI:
         self.page_callback_list.append(page_callback)
         return True
 
-    def show_page(self):
+    def render_page(self):
         """Re/draw active page"""
         PageUI.DISPLAY.clean()
         msg_event = self.__msgbox()
@@ -205,7 +212,7 @@ class PageUI:
             self.active_page += 1
             if self.active_page > len(self.page_callback_list) - 1:
                 self.active_page = 0
-            self.show_page()
+            self.render_page()
             self.bttn_press_callback = None
             self.cmd_out = 'n/a'
         elif cmd.strip() == 'prev':
@@ -213,7 +220,7 @@ class PageUI:
             self.active_page -= 1
             if self.active_page < 0:
                 self.active_page = len(self.page_callback_list) - 1
-            self.show_page()
+            self.render_page()
             self.bttn_press_callback = None
             self.cmd_out = 'n/a'
         elif cmd.strip() == 'on':
@@ -449,7 +456,7 @@ def pageui(pwr_sec=None, oled_type='ssd1306', page=0):
     if PageUI.PAGE_UI_OBJ is None:
         pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]  # <== Add page function HERE
         PageUI(pages, 128, 64, page=page, pwr_sec=pwr_sec, oled_type=oled_type)
-    PageUI.PAGE_UI_OBJ.show_page()
+    PageUI.PAGE_UI_OBJ.render_page()
 
 
 def control(cmd='next'):
@@ -470,7 +477,7 @@ def msgbox(msg='micrOS msg'):
     :param msg: message string
     """
     PageUI.PAGE_UI_OBJ.show_msg = msg
-    PageUI.PAGE_UI_OBJ.show_page()
+    PageUI.PAGE_UI_OBJ.render_page()
     return 'Show msg'
 
 

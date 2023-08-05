@@ -1,11 +1,9 @@
 # Release validation
+### VERSION: 1.21.0-4
 
 |  version  |       memory usage    | board type  |     config    |
 | :------:  | :-------------------: | :---------: | :-----------: |
 | 1.21.0-4  | **57.3%** 63 728 byte |    esp32    |   `default`   |
-
-
-### VERSION: 1.21.0-4
 
 ## Deployment
 

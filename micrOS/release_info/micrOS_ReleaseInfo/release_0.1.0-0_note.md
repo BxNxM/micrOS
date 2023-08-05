@@ -1,8 +1,9 @@
 # Release validation
-
-measurement error of baseload: 144 byte, 1,5%
-
 ### VERSION: 0.1.0-0
+
+|  version  |       memory usage    | board type  |     config    |
+| :------:  | :-------------------: | :---------: | :-----------: |
+| 0.1.0-0   | **78,4%** 29 776 byte |    esp8266    |   `default`  |
 
 ## Deployment command
 
@@ -25,12 +26,6 @@ measurement error of baseload: 144 byte, 1,5%
 + Interrputs: False
 + Communication testing: False
 + Config: default_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    |
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 0.1.0-0   |   **~13%** 1216 byte  |  esp8266    |     [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -98,6 +93,13 @@ GC: total: 37952, used: 29776, free: 8176
 |----[ socket server ] wait to accept a connection - blocking call...
 ```
 
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **75,2%** 28 560 byte |  37 952 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **78,4%** 29 776 byte |  37 952 byte   |   `[memUsage] SYSTEM IS UP` |
+
+Config: [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)
+
 ### CORE LOAD WITH INPTERRUPTS
 
 + SocketServer with socketshell: True
@@ -105,11 +107,6 @@ GC: total: 37952, used: 29776, free: 8176
 + Communication testing: False
 + Config: heartbeat_profile-node_config.json
 
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    | 
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 0.1.0-0   |   **~28%** 2544 byte  |  esp8266    |     [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -172,6 +169,13 @@ GC: total: 37952, used: 31152, free: 6800
 |----[ socket server ] wait to accept a connection - blocking call...
 ```
 
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **75,3%** 28 608 byte |  37 952 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **82,0%** 31 152 byte |  37 952 byte   |   `[memUsage] SYSTEM IS UP` |
+
+Config: [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)
+
 
 ### RESPONSE COMMUNICATION TEST WITH APPLICATION 
 
@@ -180,12 +184,6 @@ GC: total: 37952, used: 31152, free: 6800
 + Interrputs: True
 + Communication testing: True
 + Config: lamp_profile-node_config.json
-
-#### EVALATION
-
-|  version  |   memory usage   | board type  |     config    | 
-| :------:  | :--------------: | :---------: | :-----------: |
-| 0.1.0-0   |**~38%** 3520 byte|  esp8266    |     [lamp_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/lamp_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -278,12 +276,14 @@ GC: total: 37952, used: 32224, free: 5728
 |----[ socket server ] wait to accept a connection - blocking call...
 ```
 
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **75,6%** 28 704 byte |  37 952 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **84,9%** 32 224 byte |  37 952 byte   |   `[memUsage] SYSTEM IS UP` |
+
+Config: [lamp_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/lamp_profile-node_config.json)
+
 #### COMMUNICATION TEST LOG
-
-|  version  |       memory usage    | board type  |              communication           | 
-| :------:  | :-------------------: | :---------: | :----------------------------------: |
-| 0.1.0-0   |   **~49%** 4544 byte  |  esp8266    |     100% success rate. in 64 call    |
-
 
 Server log snippet
 

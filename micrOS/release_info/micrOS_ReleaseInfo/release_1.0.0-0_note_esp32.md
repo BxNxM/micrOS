@@ -1,8 +1,10 @@
 # Release validation
-
-measurement error of baseload: 1424 byte, 2.08%
-
 ### VERSION: 1.0.0-0
+
+|  version  |       memory usage    | board type  |     config    |
+| :------:  | :-------------------: | :---------: | :-----------: |
+| 1.0.0-0   | **47,9%** 53 280 byte  |    esp32    |   `default`   |
+
 
 ## Deployment command
 
@@ -25,12 +27,6 @@ measurement error of baseload: 1424 byte, 2.08%
 + Interrputs: False
 + Communication testing: False
 + Config: default_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    |
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.0.0-0   |  **15,2%**  10394 byte |    esp32    | [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -114,18 +110,19 @@ GC: total: 111168, used: 53280, free: 57888
 |----[ socket server ] wait to accept a connection
 ```
 
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **38,6%** 42 976 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **47,9%** 53 280 byte |  111 168 byte   |   `[memUsage] SYSTEM IS UP` |
+
+Config: [default_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/default_profile-node_config.json)
+
 ### CORE LOAD WITH INPTERRUPTS
 
 + SocketServer with socketshell: True
 + Interrputs: True
 + Communication testing: False
 + Config: heartbeat_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    | 
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.0.0-0   |   **~23,9%** 16048 byte |   esp32     |     [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -211,6 +208,13 @@ GC: total: 111168, used: 60336, free: 50832
 |----[ socket server ] wait to accept a connection
 ```
 
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **39,8** 44288 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **54,2%** 60336 byte |  111 168 byte   |   `[memUsage] SYSTEM IS UP` |
+
+Config: [heartbeat_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/heartbeat_profile-node_config.json)
+
 
 ### RESPONSE COMMUNICATION TEST WITH APPLICATION 
 
@@ -219,12 +223,6 @@ GC: total: 111168, used: 60336, free: 50832
 + Interrputs: True
 + Communication testing: True
 + Config: neopixel_profile-node_config.json
-
-#### EVALATION
-
-|  version  |       memory usage    | board type  |     config    | 
-| :------:  | :-------------------: | :---------: | :-----------: |
-| 1.0.0-0   | **~23,2%** 15488 byte |    esp32    |     [neopixel_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)      |
 
 #### ATTACHED BOOT (SERIAL) LOG
 
@@ -314,11 +312,14 @@ GC: total: 111168, used: 59888, free: 51280
 |----[ socket server ] wait to accept a connection
 ```
 
-#### COMMUNICATION TEST LOG - under load
+|   stage   |       memory usage     |    all memory   |             details         |
+| :------:  | :--------------------: | :-------------: |  :------------------------: |
+|  inital   |  **39,9%** 44400 byte |  111 168 byte   |   `[memUsage] MAIN LOAD`    |
+|  running  |  **53,8%** 59888 byte |  111 168 byte   |   `[memUsage] SYSTEM IS UP` |
 
-|  version  |       memory usage    | board type  |              communication           | 
-| :------:  | :-------------------: | :---------: | :----------------------------------: |
-| 0.4.0-0   |  **~23%** 15488 byte   |   esp32     |     100% success rate. in 64 call    |
+Config: [neopixel_profile](https://github.com/BxNxM/micrOS/tree/master/micrOS/release_info/node_config_profiles/neopixel_profile-node_config.json)
+
+#### COMMUNICATION TEST LOG - under load
 
 > NOTE: under load measurement doesn't indicate any memory degradation under high load.
 

@@ -62,10 +62,9 @@ class Task:
         """
         self.done.set()
         if self.tag in Task.TASKS.keys():
-            if keep_cache:              # True - In case of destructor
+            if not keep_cache:              # True - In case of destructor
                 del Task.TASKS[self.tag]
-            del self.task
-        collect()                       # GC collect
+        collect()                           # GC collect
 
     def __enter__(self):
         """
@@ -100,7 +99,7 @@ class Task:
         # Start task with coroutine callback
         self.task = asyncio.get_event_loop().create_task(callback)
         # Store Task object by key - for task control
-        Task.TASKS[tag] = self
+        Task.TASKS[self.tag] = self
         return True
 
     def create_lm(self, callback=None, loop=None, sleep=None):
@@ -307,7 +306,7 @@ class Manager:
         Primary interface
         Kill/terminate async task
         - by tag: module.function
-        - by killall, module-tag: module.*
+        - by tag module.*, kill all for selected module
         """
 
         def terminate(_tag):

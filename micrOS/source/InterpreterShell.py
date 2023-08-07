@@ -24,14 +24,13 @@ from machine import reset as hard_reset, soft_reset
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.21.1-0'
+    MICROS_VERSION = '1.22.0-0'
 
-    def __init__(self, msg_obj=None):
+    def __init__(self):
         """
         comm_obj - communication object - send messages back
                  - comm_obj.reply('msg')
         """
-        self.msg_obj = msg_obj
         # Used node_config parameters
         self.__devfid = cfgget('devfid')
         self.__auth_mode = cfgget('auth')
@@ -46,12 +45,9 @@ class Shell:
             console_write(f"Export system version to config failed: {e}")
             errlog_add(f"[Shell][ERR] system version export error: {e}")
 
-    def msg(self, msg):
-        """Message stream method"""
-        try:
-            self.msg_obj(msg)
-        except:
-            print(msg)
+    def send(self, msg):
+        # Placeholder method, it will be overwritten by SocektServer.send
+        print(msg)
 
     def reset(self):
         """Reset shell state"""
@@ -60,8 +56,8 @@ class Shell:
 
     def reboot(self, hard=False):
         """Reboot micropython VM"""
-        self.msg(f"{'[HARD] ' if hard else ''}Reboot micrOS system.")
-        self.msg("Bye!")
+        self.send(f"{'[HARD] ' if hard else ''}Reboot micrOS system.")
+        self.send("Bye!")
         if hard:
             hard_reset()
         soft_reset()
@@ -80,9 +76,9 @@ class Shell:
             usrpwd = cfgget('appwd')
             if usrpwd == msg_list[0].strip():
                 self.__auth_ok = True
-                self.msg("AuthOk")
+                self.send("AuthOk")
                 return True, []
-            self.msg("AuthFailed\nBye!")
+            self.send("AuthFailed\nBye!")
             return False, []
         return True, msg_list
 
@@ -92,7 +88,7 @@ class Shell:
         :param msg: incoming shell command (command or load module call)
         """
         state = self.__shell(msg)
-        self.msg(self.prompt())
+        self.send(self.prompt())
         return state
 
     def __shell(self, msg):
@@ -120,7 +116,7 @@ class Shell:
         # Hello message
         if msg_list[0] == 'hello':
             # For low level device identification - hello msg
-            self.msg(f"hello:{self.__devfid}:{self.__hwuid}")
+            self.send(f"hello:{self.__devfid}:{self.__hwuid}")
             return True
 
         state, msg_list = self.__authentication(msg_list)
@@ -132,7 +128,7 @@ class Shell:
         # Version handling
         if msg_list[0] == 'version':
             # For micrOS system version info
-            self.msg(str(Shell.MICROS_VERSION))
+            self.send(str(Shell.MICROS_VERSION))
             return True
 
         # Reboot micropython VM
@@ -145,8 +141,8 @@ class Shell:
 
         if msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:
-                Shell.webrepl(msg_obj=self.msg, update=True)
-            Shell.webrepl(msg_obj=self.msg)
+                Shell.webrepl(msg_obj=self.send, update=True)
+            Shell.webrepl(msg_obj=self.send)
 
         # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
         if msg_list[0].startswith('conf'):
@@ -158,33 +154,33 @@ class Shell:
 
         # HELP MSG
         if msg_list[0] == "help":
-            self.msg("[MICROS]   - built-in shell commands")
-            self.msg("   hello   - hello msg - for device identification")
-            self.msg("   version - returns micrOS version")
-            self.msg("   exit    - exit from shell socket prompt")
-            self.msg("   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h")
-            self.msg("   webrepl - start webrepl, for file transfers use with --update")
-            self.msg("[CONF] Configure mode - built-in shell commands")
-            self.msg("  conf       - Enter conf mode")
-            self.msg("    dump       - Dump all data")
-            self.msg("    key        - Get value")
-            self.msg("    key value  - Set value")
-            self.msg("  noconf     - Exit conf mode")
-            self.msg("[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]")
-            self.msg("  task list         - list tasks with <tag>s")
-            self.msg("  task kill <tag>   - stop task")
-            self.msg("  task show <tag>   - show task output")
-            self.msg("[EXEC] Command mode (LMs):")
-            self.msg("   help lm  - list ALL LoadModules")
+            self.send("[MICROS]   - built-in shell commands")
+            self.send("   hello   - hello msg - for device identification")
+            self.send("   version - returns micrOS version")
+            self.send("   exit    - exit from shell socket prompt")
+            self.send("   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h")
+            self.send("   webrepl - start webrepl, for file transfers use with --update")
+            self.send("[CONF] Configure mode - built-in shell commands")
+            self.send("  conf       - Enter conf mode")
+            self.send("    dump       - Dump all data")
+            self.send("    key        - Get value")
+            self.send("    key value  - Set value")
+            self.send("  noconf     - Exit conf mode")
+            self.send("[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]")
+            self.send("  task list         - list tasks with <tag>s")
+            self.send("  task kill <tag>   - stop task")
+            self.send("  task show <tag>   - show task output")
+            self.send("[EXEC] Command mode (LMs):")
+            self.send("   help lm  - list ALL LoadModules")
             if "lm" in str(msg_list):
-                return Shell._show_lm_funcs(msg_obj=self.msg)
-            return Shell._show_lm_funcs(msg_obj=self.msg, active_only=True)
+                return Shell._show_lm_funcs(msg_obj=self.send)
+            return Shell._show_lm_funcs(msg_obj=self.send, active_only=True)
 
         # [2] EXECUTE:
         # @1 Configure mode
         if self.__conf_mode and len(msg_list) > 0:
             # Lock thread under config handling is threads available
-            return Shell._configure(self.msg, msg_list)
+            return Shell._configure(self.send, msg_list)
         # @2 Command mode
         """
         INPUT MSG STRUCTURE
@@ -193,9 +189,9 @@ class Shell:
         """
         try:
             # Execute command via InterpreterCore
-            return exec_lm_core(arg_list=msg_list, msgobj=self.msg)
+            return exec_lm_core(arg_list=msg_list, msgobj=self.send)
         except Exception as e:
-            self.msg(f"[ERROR] exec_lm_shell internal error: {e}")
+            self.send(f"[ERROR] exec_lm_shell internal error: {e}")
             return False
 
     #################################################################

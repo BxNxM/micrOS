@@ -37,7 +37,7 @@ class Debug:
 #          SOCKET SERVER-CLIENT HANDLER CLASS           #
 #########################################################
 
-class Client:
+class Client(Shell):
     ACTIVE_CLIS = {}
 
     def __init__(self, reader, writer):
@@ -51,7 +51,8 @@ class Client:
         Debug.console(f"[Client] new conn: {self.client_id}")
         client_tag = f"{'.'.join(self.client_id[0].split('.')[-2:])}:{str(self.client_id[1])}"
         self.client_id = client_tag
-        self.shell = Shell(self.send)
+        #self.shell = Shell(self.send)
+        super().__init__()
         self.last_msg_t = ticks_ms()
 
     async def read(self):
@@ -83,7 +84,7 @@ class Client:
         Send response to client with non-async function
         """
         if self.connected:
-            if self.shell.prompt() != response:
+            if self.prompt() != response:
                 # Add new line if not prompt (?)
                 response = f"{response}\n"
             # Debug.console("[Client] ----- SteamWrite: {}".format(response))
@@ -124,7 +125,7 @@ class Client:
         Debug.console(f"[Client] Close connection {self.client_id}")
         self.send("Bye!\n")
         # Reset shell state machine
-        self.shell.reset()
+        self.reset()
         await asyncio.sleep_ms(50)
         try:
             self.writer.close()
@@ -149,7 +150,7 @@ class Client:
         # Run micrOS shell with request string
         try:
             Debug.console("[CLIENT] --- #Run shell")
-            state = self.shell.shell(request)
+            state = self.shell(request)
             if state:
                 return True
         except Exception as e:
@@ -166,7 +167,7 @@ class Client:
         Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
 
         # Init prompt
-        self.send(self.shell.prompt())
+        self.send(self.prompt())
         # Run async connection handling
         while self.connected:
             try:
@@ -179,7 +180,7 @@ class Client:
                 if not state:
                     self.send("[HA] Critical error - disconnect & hard reset")
                     errlog_add("[ERR] Socket critical error - reboot")
-                    self.shell.reboot()
+                    self.reboot()
             except Exception as e:
                 errlog_add(f"[ERR] handle_client: {e}")
                 break

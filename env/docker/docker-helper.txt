@@ -7,8 +7,12 @@ docker build -t micros-gateway:1.0 .
 docker images
 
 # [3] Start container (image id)
-docker run --name micros-gateway --network host -e GATEWAYIP="10.0.1.1" -e HOSTIP="10.0.1.61" -d micros-gateway:1.0
-Other way: docker run -d -p 5000:5000 19ccd40a3985
+docker run --name micros-gateway -p 5000:5000 -p 9008:9008 -e GATEWAYIP="10.0.1.1" -d micros-gateway:1.0
+
+docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -e HOSTIP="10.0.1.61" -d micros-gateway:1.0
+
+    Other way (problematic): docker run --name micros-gateway --network host -e GATEWAYIP="10.0.1.1" -e HOSTIP="10.0.1.61" -d micros-gateway:1.0
+    Other way: docker run -d -p 5000:5000 19ccd40a3985
 
 # List all containers
 docker ps -a

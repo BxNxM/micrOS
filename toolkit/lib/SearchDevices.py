@@ -49,12 +49,8 @@ def my_local_ip():
     """
     Get local machine local IP + Running in container addition with HOSTIP
     """
-    env_ip_address = os.environ.get("HOSTIP", None)          # Handle IP mapping in a container (docker) via env var
-    ip_address = env_ip_address
-    if ip_address is None:
-        h_name = socket.gethostname()
-        ip_address = socket.gethostbyname(h_name)
-    print(f"[i] HOST IP: {ip_address} injected: {False if env_ip_address is None else True}")
+    h_name = socket.gethostname()
+    ip_address = socket.gethostbyname(h_name)
     return ip_address
 
 

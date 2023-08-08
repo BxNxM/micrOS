@@ -307,7 +307,7 @@ def gateway():
     print("\n############### START MICROS GATEWAY ###############")
     print("#             {}            #".format(API_URL_CACHE))
     print("####################################################\n")
-    app.run(debug=True, host=my_local_ip(), port=5000)
+    app.run(debug=True, host='', port=5000)     # host='' automatic, manual: host=my_local_ip()
 
 
 # driver function

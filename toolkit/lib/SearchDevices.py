@@ -47,10 +47,14 @@ def __get_all_hosts(net, subnet=24):
 
 def my_local_ip():
     """
-    Get local machine local IP
+    Get local machine local IP + Running in container addition with HOSTIP
     """
-    h_name = socket.gethostname()
-    ip_address = socket.gethostbyname(h_name)
+    env_ip_address = os.environ.get("HOSTIP", None)          # Handle IP mapping in a container (docker) via env var
+    ip_address = env_ip_address
+    if ip_address is None:
+        h_name = socket.gethostname()
+        ip_address = socket.gethostbyname(h_name)
+    print(f"[i] HOST IP: {ip_address} injected: {False if env_ip_address is None else True}")
     return ip_address
 
 
@@ -58,7 +62,8 @@ def __gateway_ip():
     """
     Get router IP + Running in container addition with GATEWAYIP
     """
-    local_ip_address = os.environ.get("GATEWAYIP", None)        # Handle IP mapping in a container (docker) via env var
+    env_local_ip_address = os.environ.get("GATEWAYIP", None)  # Handle IP mapping in a container (docker) via env var
+    local_ip_address = env_local_ip_address
     if local_ip_address is None:
         # Create a temporary UDP socket
         temp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -71,7 +76,7 @@ def __gateway_ip():
         ip_addr_hack = local_ip_address.split('.')
         ip_addr_hack[-1] = '1'
         local_ip_address = '.'.join(ip_addr_hack)
-    print(f"GATEWAY IP: {local_ip_address}, injected: {False if local_ip_address is None else True}")
+    print(f"[i] GATEWAY IP: {local_ip_address}, injected: {False if env_local_ip_address is None else True}")
     return ipaddress.ip_address(local_ip_address)
 
 

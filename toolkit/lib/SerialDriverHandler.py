@@ -108,7 +108,6 @@ def check_serial_driver_is_installed():
     else:
         # TODO
         print("{}Check USB serial driver on Linux:\n\tPlease install serial usb driver manually.{}".format(Colors.ERR,Colors.NC))
-
         return None, 'linux'
 
 

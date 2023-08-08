@@ -1,5 +1,6 @@
 
 # [1] Create docker image
+docker build --no-cache -t micros-gateway:1.0 .
 docker build -t micros-gateway:1.0 .
 
 # [2] List docker image

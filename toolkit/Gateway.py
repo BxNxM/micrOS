@@ -5,14 +5,15 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 import threading
 import time
-import socket
 import concurrent.futures
 
 try:
     from . import socketClient
+    from .lib.SearchDevices import my_local_ip
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     import socketClient
+    from lib.SearchDevices import my_local_ip
 
 API_URL_CACHE = ""
 
@@ -20,15 +21,6 @@ API_URL_CACHE = ""
 app = Flask(__name__)
 # creating an API object
 api = Api(app)
-
-
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    local_ip = s.getsockname()[0]
-    s.close()
-    return local_ip
-
 
 # making a class for a particular resource
 # the get, post methods correspond to get and post requests
@@ -311,11 +303,11 @@ api.add_resource(SendCmd, '/sendcmd/<string:device>/<string:cmd>')
 
 def gateway():
     global API_URL_CACHE
-    API_URL_CACHE = f"http://{get_local_ip()}:5000"
+    API_URL_CACHE = f"http://{my_local_ip()}:5000"
     print("\n############### START MICROS GATEWAY ###############")
     print("#             {}            #".format(API_URL_CACHE))
     print("####################################################\n")
-    app.run(debug=True, host=get_local_ip(), port=5000)
+    app.run(debug=True, host=my_local_ip(), port=5000)
 
 
 # driver function

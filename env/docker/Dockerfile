@@ -1,7 +1,9 @@
 FROM python:3.9
 
 # Debug programs
-RUN apt update && apt install -y iputils-ping
+RUN apt update
+RUN apt install -y iputils-ping
+RUN apt install -y telnet
 
 # micrOS install via pip
 RUN python3 -m pip install --upgrade pip

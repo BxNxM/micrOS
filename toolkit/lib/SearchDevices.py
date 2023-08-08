@@ -71,6 +71,7 @@ def __gateway_ip():
         ip_addr_hack = local_ip_address.split('.')
         ip_addr_hack[-1] = '1'
         local_ip_address = '.'.join(ip_addr_hack)
+    print(f"GATEWAY IP: {local_ip_address}, injected: {False if local_ip_address is None else True}")
     return ipaddress.ip_address(local_ip_address)
 
 

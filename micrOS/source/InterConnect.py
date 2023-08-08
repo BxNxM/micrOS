@@ -85,6 +85,7 @@ class InterCon:
         # Compare prompt |node01 $| with hostname 'node01.local'
         if hostname is None or prompt is None or str(prompt).replace('$', '').strip() == str(hostname).split('.')[0]:
             # Run command on validated device
+            # TODO: Handle multiple cmd as input, separated by ; (????)
             self.writer.write(cmd)
             await self.writer.drain()
             data, _ = await self.__receive_data(prompt=prompt)

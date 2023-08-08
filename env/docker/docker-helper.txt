@@ -1,12 +1,13 @@
 
 # [1] Create docker image
-docker build -t micros/gateway:v0.1 .
+docker build -t micros-gateway:1.0 .
 
 # [2] List docker image
 docker images
 
 # [3] Start container (image id)
-docker run -d -p 5000:5000 19ccd40a3985
+docker run --name micros-gateway --network host -p 5000:5000 -p 9008:9008 -e GATEWAYIP="10.0.1.1" -d micros-gateway:1.0
+Other way: docker run -d -p 5000:5000 19ccd40a3985
 
 # List all containers
 docker ps -a
@@ -16,7 +17,14 @@ docker stop <container_id>
 docker start <container_id>
 
 # Interactive "log-in" to container (container id)
+docker exec -it micros-gateway /bin/bash
 docker exec -it f3a1f13e0817 /bin/bash
 
 # Remove docker image
 docker image rm <image_id>
+
+# List docker network info
+docker network ls
+docker network inspect bridge
+
+docker network create --driver=bridge --subnet=10.0.1.0/24 --gateway=10.0.1.1 --attachable --opt com.docker.network.bridge.name=en0 local_network

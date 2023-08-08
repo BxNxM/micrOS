@@ -56,21 +56,22 @@ def my_local_ip():
 
 def __gateway_ip():
     """
-    Get router IP
+    Get router IP + Running in container addition with GATEWAYIP
     """
-    # Create a temporary UDP socket
-    temp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    temp_socket.connect(("8.8.8.8", 80))  # Connecting to a known external IP
+    local_ip_address = os.environ.get("GATEWAYIP", None)        # Handle IP mapping in a container (docker) via env var
+    if local_ip_address is None:
+        # Create a temporary UDP socket
+        temp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        temp_socket.connect(("8.8.8.8", 80))  # Connecting to a known external IP
 
-    # Retrieve the local IP address
-    local_ip_address = temp_socket.getsockname()[0]
-    temp_socket.close()
+        # Retrieve the local IP address
+        local_ip_address = temp_socket.getsockname()[0]
+        temp_socket.close()
 
-    ip_addr_hack = local_ip_address.split('.')
-    ip_addr_hack[-1] = '1'
-    local_ip_address = '.'.join(ip_addr_hack)
-    local_ip_address = ipaddress.ip_address(local_ip_address)
-    return local_ip_address
+        ip_addr_hack = local_ip_address.split('.')
+        ip_addr_hack[-1] = '1'
+        local_ip_address = '.'.join(ip_addr_hack)
+    return ipaddress.ip_address(local_ip_address)
 
 
 def __guess_net_address(gateway_ip, subnet=24):

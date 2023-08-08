@@ -129,7 +129,7 @@ class ConnectionData:
         print("Write micrOS device cache: {}".format(cache_path))
         with open(cache_path, 'w') as f:
             ConnectionData.DEFAULT_CONFIG_FRAGMNENT.update(ConnectionData.MICROS_DEVICES)
-            json.dump(ConnectionData.MICROS_DEVICES, f, indent=4)
+            json.dump(ConnectionData.DEFAULT_CONFIG_FRAGMNENT, f, indent=4)
 
     @staticmethod
     def read_micrOS_device_cache():
@@ -142,7 +142,7 @@ class ConnectionData:
                 ConnectionData.MICROS_DEVICES = cache_content
         else:
             print("Load micrOS device cache not found: {}".format(cache_path))
-            ConnectionData.MICROS_DEVICES = ConnectionData.DEFAULT_CONFIG_FRAGMNENT
+            #ConnectionData.MICROS_DEVICES = ConnectionData.DEFAULT_CONFIG_FRAGMNENT
         return ConnectionData.MICROS_DEVICES
 
     @staticmethod

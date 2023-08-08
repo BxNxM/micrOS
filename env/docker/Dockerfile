@@ -7,7 +7,7 @@ RUN apt install -y telnet
 
 # micrOS install via pip
 RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install micrOSDevToolKit
+RUN python3 -m pip install micrOSDevToolKit==1.22.2
 #RUN python3 -m pip install git+https://github.com/BxNxM/micrOS.git
 
 EXPOSE 5000

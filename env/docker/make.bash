@@ -6,6 +6,8 @@ if [ "$VERSION" = "" ]
 then
     echo -e "Missing version number"
     exit 1
+else
+    echo -e "$VERSION" >> versions.txt
 fi
 
 IMAGE="bxnxm/micros-gateway:${VERSION}"

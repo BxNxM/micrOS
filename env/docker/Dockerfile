@@ -7,11 +7,16 @@ RUN apt install -y telnet
 
 # micrOS install via pip
 RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install micrOSDevToolKit==1.22.2
+
+# [A] Build with specific PYPI version
+RUN python3 -m pip install micrOSDevToolKit==1.22.3
+# [B] Build with development version from github
 #RUN python3 -m pip install git+https://github.com/BxNxM/micrOS.git
 
 EXPOSE 5000
 
 # Run start command
-#ENTRYPOINT devToolKit.py -gw -sim
-ENTRYPOINT devToolKit.py -gw
+# Search and start gateway and start simulator (beta)
+#ENTRYPOINT devToolKit.py -s -gw -sim
+# Search and start gateway
+ENTRYPOINT devToolKit.py -s -gw

@@ -1,7 +1,9 @@
 # https://www.geeksforgeeks.org/python-build-a-rest-api-using-flask/
 # https://stackoverflow.com/questions/48095713/accepting-multiple-parameters-in-flask-restful-add-resource
 # using flask_restful
-from flask import Flask, jsonify
+import json
+
+from flask import Flask, jsonify, Response
 from flask_restful import Resource, Api
 import threading
 import time
@@ -37,7 +39,8 @@ class Hello(Resource):
                   '/search': 'Search devices',
                   '/status': 'Get all device status - node info',
                   '/sendcmd/<device>/<cmd>': f'Send command to the selected device. Use + instead of space. \
-Example: {API_URL_CACHE}/sendcmd/__simulator__/system+clock'}
+Example: {API_URL_CACHE}/sendcmd/__simulator__/system+clock',
+                  '/metrics/<device>/<cmd>': 'REST API endpoint for Prometheus scraping, (prometheus format)'}
         return jsonify(manual)
 
 
@@ -66,6 +69,10 @@ class SendCmd(Resource):
     """
 
     def get(self, device, cmd):
+        return jsonify(self.runcmd(device, cmd))
+
+    @staticmethod
+    def runcmd(device, cmd):
         cmd_list = cmd.split('+')
         cmd_str = ' '.join(cmd_list)
 
@@ -87,8 +94,7 @@ class SendCmd(Resource):
             # FORMAT (strip) response
             if response is not None:
                 response = [k.strip() for k in response.splitlines()] if '\n' in response else response.strip()
-        return jsonify({'cmd': cmd_list, 'device': device_detailed, 'response': response, 'latency': diff})
-
+        return {'cmd': cmd_list, 'device': device_detailed, 'response': response, 'latency': diff}
 
 class ListDevices(Resource):
     DEVICE_CACHE = {}
@@ -293,12 +299,66 @@ class DeviceStatus(Resource):
                         'gateway_metrics': gateway_metrics})
 
 
+class Prometheus(Resource):
+
+    # corresponds to the GET request.
+    # this function is called whenever there
+    # is a GET request for this resource
+
+    def resonse_converter(self, response):
+        try:
+            response = json.loads(response)
+        except Exception as e:
+            print(f"Prometheus resonse_converter non json response {response}: {e}")
+            # TODO: string convertion.... to dict... hack
+            response = {'Unknown': -1}
+
+        resp_key = list(response.keys())[0]
+        resp_value = response[resp_key]
+        description = f"Dynamic content: {resp_key}"
+        return resp_value, description
+
+    def eval_rest_response(self, output):
+        """Convert json string / string to tag, value and description"""
+        try:
+            _board = output['device'][3]
+        except Exception as e:
+            print(f"Prometheus responder _board extract error: {e}")
+            _board = None
+
+        try:
+            if len(output['cmd']) > 1:
+                _cmd_short = '_'.join(output['cmd'][0:2])
+            else:
+                _cmd_short = output['cmd'][0]
+            value, description = self.resonse_converter(output['response'])
+            tag = f"micrOS_{_board}__{_cmd_short}"
+        except Exception as e:
+            print(f"Prometheus responder tag, description and value extract error: {e}")
+            tag, value, description = None, None, None
+        print(f"[eval_rest_response debug] \ntag: {tag}\ndespcription: {description}\nvalue: {value}\n")
+        return tag, value, description
+    def get(self, device, cmd):
+        if not cmd.endswith('>json'):
+            # Add json formatting to cmd request (due to parsing)
+            cmd = f"{cmd}+>json"
+        output = self.execution(device, cmd)
+        tag, value, description = self.eval_rest_response(output)
+        print(f"\ntag: {tag}\ndespcription: {description}\nvalue: {value}\n")
+        manual = f"# TYPE python_info gauge\n# HELP {tag} {description}\n# TYPE {tag} gauge\n{tag} {value}"
+        return Response(manual, mimetype='text/plain')
+
+    def execution(self, device, cmd):
+        return SendCmd.runcmd(device, cmd)
+
+
 # adding the defined resources along with their corresponding urls
 api.add_resource(Hello, '/')
 api.add_resource(ListDevices, '/list/')
 api.add_resource(SearchDevices, '/search/')
 api.add_resource(DeviceStatus, '/status')
 api.add_resource(SendCmd, '/sendcmd/<string:device>/<string:cmd>')
+api.add_resource(Prometheus, '/metrics/<string:device>/<string:cmd>')
 
 
 def gateway():

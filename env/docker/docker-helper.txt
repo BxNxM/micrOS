@@ -1,8 +1,6 @@
 
 # [1] Create docker image
 docker build --no-cache -t micros-gateway:1.0 .
-    OR
-    docker build -t micros-gateway:1.0 .
 
 # [2] List docker image
 docker images
@@ -10,9 +8,8 @@ docker images
 # [3] Start container (image id)
 docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -d micros-gateway:1.0
 
-
-    Other way (problematic): docker run --name micros-gateway --network host -e GATEWAYIP="10.0.1.1" -e HOSTIP="10.0.1.61" -d micros-gateway:1.0
-    Other way: docker run -d -p 5000:5000 19ccd40a3985
+# Get container IP
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' micros-gateway
 
 # List all containers
 docker ps -a
@@ -23,7 +20,6 @@ docker start <container_id>
 
 # Interactive "log-in" to container (container id)
 docker exec -it micros-gateway /bin/bash
-docker exec -it f3a1f13e0817 /bin/bash
 
 # Remove docker image
 docker image rm <image_id>
@@ -32,4 +28,9 @@ docker image rm <image_id>
 docker network ls
 docker network inspect bridge
 
-docker network create --driver=bridge --subnet=10.0.1.0/24 --gateway=10.0.1.1 --attachable --opt com.docker.network.bridge.name=en0 local_network
+# Prometheus:
+docker run --name prometheus -d -p 9090:9090 -p 5000:5000 -v ./prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' prometheus
+
+http://10.0.1.61:9090
+http://10.0.1.61:5000/sendcmd/TinyDevBoard/esp32+temp

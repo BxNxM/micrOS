@@ -15,6 +15,7 @@ services:
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_valume:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
@@ -26,3 +27,5 @@ networks:
   micros_nw:
     driver: bridge
 
+volumes:
+  prometheus_valume:

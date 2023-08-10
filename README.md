@@ -47,7 +47,8 @@ In case of any technical comments or requests, please use [![GitHub Discussions]
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS#built-in-periphery-support)
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
-7. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
+7. micrOS gateway with Prometheus: [link](https://github.com/BxNxM/micrOS#micrOS-Gateway-in-docker) 
+8. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
 
 ----------------------------------------
 ----------------------------------------
@@ -345,6 +346,23 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 # Networking - automatic network modes
 
 ![MICROSNWMODES](./media/micrOSNetworking.png?raw=true)
+
+# micrOS Gateway in docker
+
+With prometheus database.
+Check the micrOS Gateway docker [README](./env/docker/README.md) for details.
+
+Resources:
+
+* [docker-compose](./env/docker/docker-compose.yaml)
+* [prometheus config](./env/docker/prometheus.yaml)
+
+```bash
+cd ./env/docker
+docker-compose -p gateway up -d
+```
+
+Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gateway/general)
 
 # micrOS Customization
 

@@ -39,3 +39,12 @@ docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' pro
 # Docker external service access:
 Prometheus: http://10.0.1.61:9090
 micrOS gateway for Prometheus: http://10.0.1.61:5000/metrics/TinyDevBoard/esp32+temp
+
+
+# Docker compose
+    # In the background:
+        docker-compose up -d
+docker-compose up
+
+docker-compose restart prometheus
+

@@ -6,12 +6,18 @@ scrape_configs:
     metrics_path: /metrics/Cabinet/dht22+measure
     scheme: http
     static_configs:
-      - targets: ['10.0.1.61:5000']
+      - targets: ['micros-gateway:5000']
 
-  - job_name: 'micros_gw_tinydevboard'
+  - job_name: 'micros_gw_terracesensor'
     metrics_path: /metrics/TerraceSensor/dht22+measure
     scheme: http
     static_configs:
-      - targets: ['10.0.1.61:5000']
+      - targets: ['micros-gateway:5000']
+
+  - job_name: 'micros_gw_tinydevboard'
+    metrics_path: /metrics/TinyDevBoard/system+info
+    scheme: http
+    static_configs:
+      - targets: ['micros-gateway:5000']
 
 

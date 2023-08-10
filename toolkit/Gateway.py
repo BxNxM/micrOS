@@ -305,18 +305,53 @@ class Prometheus(Resource):
     # this function is called whenever there
     # is a GET request for this resource
 
-    def resonse_converter(self, response):
+    def list_string_to_dict_hack(self, list_resp):
+        special_chars = ['%', '&', '-', '[', ']', '{', '}', ':']
+        output_dict = {}
+        for line in list_resp:
+            _var = ""
+            _val = ""
+            for ch in line:
+                if ch.isdigit() or '.' == ch:
+                    _val += ch
+                elif ch not in special_chars:
+                    _var += ch
+            _var = _var.strip().replace(' ', '_')
+            try:
+                output_dict[_var] = float(_val)
+                #print(f"{_var} == {_val}")
+            except Exception as e:
+                print(f"Invalid value to float {_var} == {_val}: {e}")
+        if len(output_dict.keys()) == 0:
+            output_dict = {'Unknown': -1}       # Error value -1
+        return output_dict
+
+    def response_converter(self, response, tag):
+        """
+        Convert micrOS cmd execution response to prometheus format
+        """
+        response_out = []
         try:
+            # Normally expected dict (json) format as cmd output
             response = json.loads(response)
         except Exception as e:
-            print(f"Prometheus resonse_converter non json response {response}: {e}")
-            # TODO: string convertion.... to dict... hack
-            response = {'Unknown': -1}
+            print(f"Prometheus response_converter non json error: {e}\n->Response:\n{response}")
+            try:
+                # Handle multi line raw string as input
+                response = self.list_string_to_dict_hack(response)
+            except Exception as e:
+                print(f"\tlist_string_to_dict_hack error: {e}")
+                response = {'Unknown': -1}
 
-        resp_key = list(response.keys())[0]
-        resp_value = response[resp_key]
-        description = f"Dynamic content: {resp_key}"
-        return resp_value, description
+        # Generate Prometheus reply based on micrOS REST API parsed response
+        for resp_key in response.keys():
+            value = response[resp_key]
+            doc = f"Dynamic content: {resp_key}"
+            c_tag = f"{tag}_{resp_key.split()[0]}"    # [custom tag] Add returned value key to tag to make it unique by response
+            response_out.append(f"# TYPE python_info gauge\n# HELP {c_tag} {doc}\n# TYPE {c_tag} gauge\n{c_tag} {value}")
+        response_out = '\n'.join(response_out).strip()
+        print(f"Generate Prometheus (multi value) output:\n---\n{response_out}\n---")
+        return response_out
 
     def eval_rest_response(self, output):
         """Convert json string / string to tag, value and description"""
@@ -331,22 +366,19 @@ class Prometheus(Resource):
                 _cmd_short = '_'.join(output['cmd'][0:2])
             else:
                 _cmd_short = output['cmd'][0]
-            value, description = self.resonse_converter(output['response'])
             tag = f"micrOS_{_board}__{_cmd_short}"
+            prometheus_response = self.response_converter(output['response'], tag)
         except Exception as e:
             print(f"Prometheus responder tag, description and value extract error: {e}")
-            tag, value, description = None, None, None
-        print(f"[eval_rest_response debug] \ntag: {tag}\ndespcription: {description}\nvalue: {value}\n")
-        return tag, value, description
+            prometheus_response = -1
+        return prometheus_response
     def get(self, device, cmd):
         if not cmd.endswith('>json'):
             # Add json formatting to cmd request (due to parsing)
             cmd = f"{cmd}+>json"
         output = self.execution(device, cmd)
-        tag, value, description = self.eval_rest_response(output)
-        print(f"\ntag: {tag}\ndespcription: {description}\nvalue: {value}\n")
-        manual = f"# TYPE python_info gauge\n# HELP {tag} {description}\n# TYPE {tag} gauge\n{tag} {value}"
-        return Response(manual, mimetype='text/plain')
+        prometheus_response = self.eval_rest_response(output)
+        return Response(prometheus_response, mimetype='text/plain')
 
     def execution(self, device, cmd):
         return SendCmd.runcmd(device, cmd)

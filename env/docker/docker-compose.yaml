@@ -1,0 +1,28 @@
+version: '3'
+services:
+  micros-gateway:
+    image: bxnxm/micros-gateway:1.22.5
+    container_name: micros-gateway
+    environment:
+      - GATEWAYIP=10.0.1.1
+    ports:
+      - "5000:5000"  # Expose Flask REST API port to host
+    networks:
+      - micros_nw
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"  # Expose Prometheus UI port to host
+    networks:
+      - micros_nw
+
+networks:
+  micros_nw:
+    driver: bridge
+

@@ -9,7 +9,7 @@ RUN apt install -y telnet
 RUN python3 -m pip install --upgrade pip
 
 # [A] Build with specific PYPI version
-RUN python3 -m pip install micrOSDevToolKit==1.22.4
+RUN python3 -m pip install micrOSDevToolKit==1.22.5
 # [B] Build with development version from github
 #RUN python3 -m pip install git+https://github.com/BxNxM/micrOS.git
 

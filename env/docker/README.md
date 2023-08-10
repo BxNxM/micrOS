@@ -85,6 +85,13 @@ docker run --name prometheus -d -p 9090:9090 -p 5000:5000 -v ./prometheus.yml:/e
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' prometheus
 ```
 
+Graphana
+
+```
+docker run -d --name grafana -p 3000:3000   -e "GF_SERVER_ROOT_URL=http://localhost:3000"   --network micros_micros_nw --link prometheus:prometheus grafana/grafana
+```
+
+
 ```                                                                                
   ,----..                        ____                                                 
  /   /   \                     ,'  , `. ,-.----.                                      

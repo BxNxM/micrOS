@@ -349,10 +349,14 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 
 # micrOS Gateway in docker
 
+![MICROSVISUALIZATION](./media/micrOS_gateway.png?raw=true)
+
 With prometheus database.
 Check the micrOS Gateway docker [README](./env/docker/README.md) for details.
 
 Resources:
+
+> modify `prometheus.yml` regarding what sensors on which endpoint do you want to scrapre data from.
 
 * [docker-compose](./env/docker/docker-compose.yaml)
 * [prometheus config](./env/docker/prometheus.yml)

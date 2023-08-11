@@ -119,6 +119,10 @@ docker-compose -p micros up -d
 docker-compose up --force-recreate -p micros -d
 ```
 
+```
+docker-compose -p micros down
+```
+
 ```bash
 docker-compose -p micros up
 ```

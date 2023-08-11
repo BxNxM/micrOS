@@ -18,10 +18,21 @@ services:
       - prometheus_valume:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=90d'
     ports:
       - "9090:9090"  # Expose Prometheus UI port to host
     networks:
       - micros_nw
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"  # Expose Grafana UI port to host
+    networks:
+      - micros_nw
+    volumes:
+      - grafana_data:/var/lib/grafana  # Persist Grafana data
 
 networks:
   micros_nw:
@@ -29,3 +40,4 @@ networks:
 
 volumes:
   prometheus_valume:
+  grafana_data:

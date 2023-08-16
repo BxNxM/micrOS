@@ -9,6 +9,7 @@ import uasyncio as asyncio
 
 class RoboArm:
     CENTER_XY = 77                          # Store XY center servo position 40+(115-40)/2 ~ 77
+    RANGE = (40, 115)                       # Save servo duty range (normally 0-180 degree)
     ACTUAL_XY = [CENTER_XY, CENTER_XY]      # Set default XY position
     SPEED_MS = 10                           # Set default speed between steps (ms)
     MOVE_RECORD = []                        # Buffer for XY move record/replay
@@ -38,10 +39,7 @@ def __persistent_cache_manager(mode):
 def load_n_init():
     """
     Initiate roboarm module
-    :param cache bool: file state machine cache: True/False/None(default: automatic True)
-    - Load .pds (state machine cache) for this load module
-    - Apply loaded states to gpio pins (boot function)
-    :return str: Cache state
+    - move servo motors to middle position
     """
     # Initial positioning
     x, y = RoboArm.CENTER_XY, RoboArm.CENTER_XY
@@ -51,14 +49,14 @@ def load_n_init():
     RoboArm.ACTUAL_XY[1] = y
     # Load move records
     __persistent_cache_manager('r')
-    return 'Move to home'
+    return f'Init and Move to home X{x}, Y{y}'
 
 
 def control(x_new, y_new, speed_ms=None, smooth=True):
     """
     Control robot arm function
-    :param x_new: new x position
-    :param y_new: new y position
+    :param x_new: new x position (40-115)
+    :param y_new: new y position (40-115)
     :param speed_ms: speed - step wait in ms
     :param smooth: smooth transition, default True
     :return str: move verdict
@@ -79,10 +77,10 @@ def control(x_new, y_new, speed_ms=None, smooth=True):
 
     # Skip if new XY is the same as current
     if RoboArm.ACTUAL_XY[0] == x_new and RoboArm.ACTUAL_XY[1] == y_new:
-        return 'Already on X:{} Y:{}'.format(x_new, y_new)
+        return f"Already on X:{x_new} Y:{y_new}"
     # Check input parameter range
-    if 40 > x_new > 115 or 40 > y_new > 115:
-        return "X{}/Y{} out of range... range: 40-115".format(x_new, y_new)
+    if RoboArm.RANGE[0] > x_new > RoboArm.RANGE[1] or RoboArm.RANGE[0] > y_new > RoboArm.RANGE[1]:
+        return f"X{x_new}/Y{y_new} out of range... range: {RoboArm.RANGE[0]}-{RoboArm.RANGE[1]}"
 
     # Set arm speed
     RoboArm.SPEED_MS = speed_ms if isinstance(speed_ms, int) else RoboArm.SPEED_MS
@@ -96,12 +94,10 @@ def control(x_new, y_new, speed_ms=None, smooth=True):
         RoboArm.ACTUAL_XY = [x_new, y_new]
     else:
         # Fast move robaorm to position
-        if x_new is not None:
-            servo.sduty(x_new)
-            RoboArm.ACTUAL_XY[0] = x_new
-        if y_new is not None:
-            servo.s2duty(y_new)
-            RoboArm.ACTUAL_XY[1] = y_new
+        servo.sduty(x_new)
+        servo.s2duty(y_new)
+        RoboArm.ACTUAL_XY[0] = x_new
+        RoboArm.ACTUAL_XY[1] = y_new
     return 'Move X{}->{} Y{}->{}'.format(x_prev, RoboArm.ACTUAL_XY[0], y_prev, RoboArm.ACTUAL_XY[1])
 
 
@@ -116,49 +112,54 @@ def boot_move(speed_ms=None):
     load_n_init()
     sleep_ms(RoboArm.SPEED_MS*2)
     # Test X
-    control(40, RoboArm.CENTER_XY)
-    control(115, RoboArm.CENTER_XY)
+    control(RoboArm.RANGE[0], RoboArm.CENTER_XY)
+    control(RoboArm.RANGE[1], RoboArm.CENTER_XY)
     control(RoboArm.CENTER_XY, RoboArm.CENTER_XY)
     sleep_ms(RoboArm.SPEED_MS*2)
     # Test Y
-    control(RoboArm.CENTER_XY, 40)
-    control(RoboArm.CENTER_XY, 115)
+    control(RoboArm.CENTER_XY, RoboArm.RANGE[0])
+    control(RoboArm.CENTER_XY, RoboArm.RANGE[1])
     control(RoboArm.CENTER_XY, RoboArm.CENTER_XY)
     sleep_ms(RoboArm.SPEED_MS*2)
     # Test multiple
-    control(40, 40)     # left top
-    control(115, 115)    # right bottom
-    control(115, 40)    # right top
-    control(40, 115)     # left bottom
+    control(RoboArm.RANGE[0], RoboArm.RANGE[0])     # left top
+    control(RoboArm.RANGE[1], RoboArm.RANGE[1])    # right bottom
+    control(RoboArm.RANGE[1], RoboArm.RANGE[0])    # right top
+    control(RoboArm.RANGE[0], RoboArm.RANGE[1])     # left bottom
     sleep_ms(RoboArm.SPEED_MS*2)
     # Enter to home
     control(RoboArm.CENTER_XY, RoboArm.CENTER_XY)     # Move home
+    sleep_ms(RoboArm.SPEED_MS)
+    # Enter to calibration laser holder mode
+    control(RoboArm.CENTER_XY, RoboArm.RANGE[1])      # Move to X (middle) and Y (most down) for holder positioning.
+
     servo.deinit()
-    return 'Boot move'
+    return 'Boot sequence: init + end ranges + laser positioning'
 
 
-def standby():
+def standby(y_pos=45):
     """
-    Standby roboarm - OFF switch
+    Standby roboarm - OFF laser switch
     """
     set_state(False)
-    control(RoboArm.CENTER_XY, 45)
+    control(RoboArm.CENTER_XY, y_pos)
     servo.deinit()
     return 'Standby mode'
 
 
-def jiggle():
+def jiggle(delta=2):
     """
     Joggle roboarm in small range
+    :param delta: jiggle delta from current position (full range: 40-115)
     """
     x, y = RoboArm.ACTUAL_XY
     for _ in range(5):
-        jx = randint(-2, 2)
-        jy = randint(-2, 2)
+        jx = randint(-delta, delta)
+        jy = randint(-delta, delta)
         control(x+jx, y+jy)
         sleep_ms(RoboArm.SPEED_MS)
     control(x, y)
-    return 'JJiggle :)'
+    return f'JJiggle: {delta} :)'
 
 
 async def _play(args, deinit, delay):
@@ -288,7 +289,11 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True', 'boot_move', 'standby',\
-           'jiggle', 'play 40 40 115 115 s=<speed ms> delay=<ms> deinit=True',\
-           'record clean=False', 'random x_range=20 y_range=20 speed_ms=5',\
+    return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True',\
+           'boot_move speed_ms',\
+           'standby y_pos=45',\
+           'jiggle delta=2',\
+           'play 40 40 115 115 s=<speed ms> delay=<ms> deinit=True',\
+           'record clean=False rec_limit=8',\
+           'random x_range=20 y_range=20 speed_ms=5',\
            'load_n_init', 'pinmap', 'status', 'lmdep'

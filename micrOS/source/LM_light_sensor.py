@@ -30,16 +30,26 @@ def __init_tempt6000():
 def intensity():
     """
     Measure light intensity in %
+    - result is 20 result average (noise reduction)
     """
-    percent = __init_tempt6000().get()['percent']
+    percent = 0
+    adc = __init_tempt6000()
+    for _ in range(20):
+        percent += adc.get()['percent']
+    percent = round(percent/20, 1)
     return {'light intensity [%]': percent}
 
 
 def illuminance():
     """
     Measure light illuminance in flux
+    - result is 20 result average (noise reduction)
     """
-    volts = __init_tempt6000().get()['volt']
+    volts = 0
+    adc = __init_tempt6000()
+    for _ in range(20):
+        volts += adc.get()['volt']
+    volts = round(volts/20, 1)
     amps = volts / 10000.0                    # across 10,000 Ohms (voltage divider circuit)
     microamps = amps * 1000000
     lux = '{:.2f}'.format(microamps * 2.0)

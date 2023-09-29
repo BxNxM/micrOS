@@ -1,6 +1,6 @@
 from utime import localtime
 from Common import socket_stream
-from Network import get_mac, sta_high_avail
+from Network import get_mac
 from Time import ntp_time, set_time, uptime
 
 
@@ -195,14 +195,6 @@ def pinmap(key='builtin'):
     map[key] = pinmap_dump(key)[key]
     return map
 
-
-def ha_sta():
-    """
-    Check and repair STA network mode
-    """
-    return sta_high_avail()
-
-
 @socket_stream
 def alarms(clean=False, test=False, msgobj=None):
     """
@@ -241,5 +233,5 @@ def help():
     return 'info', 'gclean', 'heartbeat', 'clock',\
            'setclock year month mday hour min sec',\
            'ntp', 'rssi', 'cachedump cdel="rgb.pds/None"',\
-           'pinmap key="dhtpin"/None', 'ha_sta', 'alarms clean=False',\
+           'pinmap key="dhtpin"/None', 'alarms clean=False',\
            'sun refresh=False', 'ifconfig', 'memory_usage', 'disk_usage'

@@ -19,6 +19,7 @@ from json import dumps
 from Debug import console_write, errlog_add
 from ConfigHandler import cfgget
 from utime import ticks_ms, ticks_diff
+from Network import sta_high_avail
 
 try:
     from gc import collect
@@ -191,7 +192,8 @@ class Manager:
             # Set async event loop exception handler
             asyncio.get_event_loop().set_exception_handler(cls.axcept)
             # Start system idle task (IRQ(hack) + monitoring)
-            Manager.OBJ.create_task(callback=Manager.idle_task(), tag="idle")
+            Manager.OBJ.idle_counter = 0        # For idle task rare action scheduling
+            Manager.OBJ.create_task(callback=Manager.OBJ.idle_task(), tag="idle")
             # ---         ----
         return Manager.OBJ
 
@@ -219,24 +221,30 @@ class Manager:
             errlog_add(msg)
             raise Exception(msg)
 
-    @staticmethod
-    async def idle_task():
+    async def idle_task(cls):
         """
         Create IDLE task - fix IRQ task start
         - Try to measure system load - based on idle task latency
         """
+
         # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
         my_task = Task.TASKS.get('idle')
         my_task.out = f"i.d.l.e: 200ms"
         try:
             while True:
                 await asyncio.sleep_ms(300)
-                # Probe system load
+                # PROBE SYSTEM LOAD
                 t = ticks_ms()
                 await asyncio.sleep_ms(300)
                 # SysLogic block - sys load
                 delta_rate = int(((ticks_diff(ticks_ms(), t) / 300)-1) * 100)
                 Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)       # Average - smooth
+                # NETWORK AUTO REPAIR
+                if cls.idle_counter > 50:       # ~30 sec
+                    cls.idle_counter = 0        # Reset counter
+                    # Check and fix STA network (example: after power outage - micrOS boards boots faster then router)
+                    sta_high_avail()
+                cls.idle_counter += 1           # Increase counter
         except Exception as e:
             errlog_add(f"[ERR] Idle task exists: {e}")
         my_task.done.set()

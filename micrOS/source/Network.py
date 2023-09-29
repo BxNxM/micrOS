@@ -237,6 +237,7 @@ def sta_high_avail():
             for _ in range(0, 2):
                 if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
                     wifi_avail = True
+                    break
 
         ap_if = WLAN(AP_IF)
         # [CHECK 3] if known wifi available (REPAIR) or device not in AP mode ---> (FALLBACK) temporary direct access
@@ -245,4 +246,4 @@ def sta_high_avail():
             from machine import reset
             reset()
         return f'{cfgget("nwmd")} mode NOK, wifi avail: {wifi_avail}'
-    return f'{cfgget("nwmd")} mode, OK'
+    return f'{cfgget("nwmd")} mode OK'

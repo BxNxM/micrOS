@@ -56,7 +56,7 @@ def illuminance():
     return {'illuminance [lux]': lux}
 
 
-async def _task(on, off, threshold):
+async def _task(on, off, threshold, tolerance=2):
     adc = __init_tempt6000()
     last_ev = ""
     on = on.split()
@@ -74,7 +74,7 @@ async def _task(on, off, threshold):
                         InterCon.send_cmd(host, cmd)
                     my_task.out = f"threshold: {threshold}% - ON"
                     last_ev = on
-            elif percent > threshold+2:     # +2 to avoid "on/off/on/off" on threshold limit
+            elif percent > threshold+tolerance:     # +tolerance to avoid "on/off/on/off" on threshold limit
                 if off != last_ev:
                     if InterCon is not None:
                         host = off[0]
@@ -85,16 +85,17 @@ async def _task(on, off, threshold):
             await asyncio.sleep_ms(5000)        # Sample every 5 sec
 
 
-def subscribe_intercon(on, off, threshold=4):
+def subscribe_intercon(on, off, threshold=4, tolerance=2):
     """
     [TASK] ON/OFF command sender over intercon on given threshold
     :param on: on callback to send: "host cmd"
     :param off: off callback to send: "host cmd"
     :param threshold: percentage value for on(under) /off(above)
+    :param tolerance: off tolerance value -> off event: threshold+tolerance
     """
     # Start play - servo XY in async task
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag="light_sensor.intercon", task=_task(on, off, threshold))
+    state = micro_task(tag="light_sensor.intercon", task=_task(on, off, threshold, tolerance=tolerance))
     if state:
         return 'Light sensor remote trigger starts'
     return 'Light sensor remote trigger - already running'
@@ -120,5 +121,6 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'intensity', 'illuminance', 'subscribe_intercon on off threshold=1', 'pinmap', 'INFO sensor:TEMP600'
+    return 'intensity', 'illuminance', 'subscribe_intercon on off threshold=1 tolerance=2',\
+           'pinmap', 'INFO sensor:TEMP600'
 

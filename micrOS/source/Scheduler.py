@@ -1,4 +1,3 @@
-import re
 from time import localtime
 from TaskManager import exec_lm_core_schedule
 from Debug import console_write, errlog_add
@@ -8,10 +7,10 @@ from re import compile
 """
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
 # SCHEDULER TIME FORMAT: WD, H, M, S
-WD: 1-7
-H: 0-23
-M: 0-59
-S: 0-59
+WD: 0-6
+H:  0-23
+M:  0-59
+S:  0-59
 * - means in every place - every time
 """
 
@@ -114,6 +113,31 @@ def __resolve_time_tag(check_time, crontask):
     return check_time
 
 
+def __check_wd(wd, wd_now):
+    """
+    Check weekday param
+    :param wd: could be given in 3 syntax
+        *           -> select all day 0 ... 6
+        0 ... 6     -> exact value, 0=Monday - 6=Sunday
+        {from}-{to} -> range, example: 0-3 means Monday to Wednesday
+    :param wd_now: actual (now) workday
+    """
+    # Handle WD range syntax
+    wd_regex = compile(r"(\d+)([-]\d+)")
+    match_obj = wd_regex.search(wd)
+    if match_obj:
+        wd_from = int(match_obj.group(1))
+        wd_to = int(match_obj.group(2).replace('-', ''))
+        # Check incremental range: 4-6
+        if wd_from < wd_to and wd_now in range(wd_from, wd_to+1):
+            return True
+        # Check decremental range: 5-1
+        if wd_from > wd_to and wd_now in list(range(wd_from, 7)) + list(range(0, wd_to+1)):
+            return True
+    # Handle WD * and exact values
+    return wd == '*' or wd == wd_now
+
+
 def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
     """
     SchedulerCore logic
@@ -145,7 +169,7 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
     task_id = "{}:{}|{}".format(check_time[0], check_time_scheduler_sec, str(crontask[1]).replace(' ', ''))
 
     # Check WD - WEEK DAY
-    if check_time[0] == '*' or check_time[0] == cron_time_now[0]:
+    if __check_wd(wd=check_time[0], wd_now=cron_time_now[0]):
         # Check H, M, S in sec format between tolerance range
         if tolerance_min_sec <= check_time_scheduler_sec <= tolerance_max_sec:
             __cron_task_cache_manager(check_time_now_sec, deltasec)
@@ -177,8 +201,22 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
 
 
 def deserialize_raw_input(raw_cron_input):
+    """
+    Scheduler/Cron input string format
+    :param raw_cron_input: cron, time based task execution
+        example: WD:H:M:S!LM func;WD:H:M:S!LM func; ...
+
+        time_tag: timestamp / time-tag aka suntime
+                timestamp: WD:H:M:S
+                    WD: 0...6, 0=Monday, 6=Sunday
+                        optional range handling: 0-2 means Monday to Wednesday
+                time-tag: sunrise, sunset
+                    optional minute offset (+/-): sunrise+30
+        task: LoadModule function args
+    Returns tuple: (("WD:H:M:S", 'LM FUNC'), ("WD:H:M:S", 'LM FUNC'), ...)
+    """
     try:
-        # Returns (("WD:H:M:S", 'LM FUNC'), ("WD:H:M:S", 'LM FUNC'), ...)
+        # Parse and create return
         return tuple(tuple(cron.split('!')) for cron in raw_cron_input.split(';'))
     except Exception as e:
         console_write("[cron] deserialize: syntax error: {}".format(e))

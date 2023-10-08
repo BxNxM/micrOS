@@ -106,7 +106,8 @@ function help {
     echo -e "gateway    :start micrOS gateway service over devToolKit.py"
     echo -e "sim        :start micrOS simulator on host OS"
     echo -e "gitclean   :cleans untracked files, with -f cleans ignored too"
-    echo -e "<no param> :run devToolKit.py without params -> GUI\n"
+    echo -e "<no param> :run devToolKit.py without params -> GUI"
+    echo -e "distribute :create and distribute pip package\n"
 }
 
 

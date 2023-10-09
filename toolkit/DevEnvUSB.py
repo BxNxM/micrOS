@@ -633,7 +633,7 @@ class USB(Compile):
         return True
 
     def list_micros_filesystem(self):
-        self.__initialize_dev_env_for_deployment_vis_usb()
+        self.select_board_n_micropython()
         ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.get_devices()[0]
         command = ampy_cmd.format(dev=device, args='ls')

@@ -123,11 +123,11 @@ def __check_wd(wd, wd_now):
     :param wd_now: actual (now) workday
     """
     # Handle WD range syntax
-    wd_regex = compile(r"(\d+)([-]\d+)")
+    wd_regex = compile(r"(\d+)-(\d+)")
     match_obj = wd_regex.search(wd)
     if match_obj:
         wd_from = int(match_obj.group(1))
-        wd_to = int(match_obj.group(2).replace('-', ''))
+        wd_to = int(match_obj.group(2))
         # Check incremental range: 4-6
         if wd_from < wd_to and wd_now in range(wd_from, wd_to+1):
             return True

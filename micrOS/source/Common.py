@@ -8,10 +8,10 @@ from machine import Pin, ADC
 from LogicalPins import physical_pin
 from Debug import logger, log_get
 try:
-    from TaskManager import Task, Manager
+    from TaskManager import TaskBase, Manager
 except Exception as e:
     print(f"Import ERROR, TaskManager: {e}")
-    Task, Manager = None, None
+    TaskBase, Manager = None, None
 TELEGRAM = None
 
 
@@ -107,15 +107,15 @@ def micro_task(tag, task=None):
     task: coroutine to execute (built in overload protection and lcm)
     """
     # [0] Check dependencies
-    if Task is None or Manager is None:
+    if TaskBase is None or Manager is None:
         # RETURN: None - cannot utilize async task functionality
         return None
     if task is None:
         # [1] Task is None -> Get task mode by tag
         # RETURN task obj (access obj.out + obj.done (automatic - with keyword arg))
-        async_task = Task.TASKS.get(tag, None)
+        async_task = TaskBase.TASKS.get(tag, None)
         return async_task
-    elif Task.is_busy(tag):
+    elif TaskBase.is_busy(tag):
         # [2] Shortcut: Check task state by tag
         # RETURN: None - if task is already running
         return None

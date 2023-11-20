@@ -4,7 +4,7 @@ from re import compile
 from Debug import errlog_add
 from ConfigHandler import cfgget
 from SocketServer import SocketServer
-from TaskManager import Task
+from TaskManager import NativeTask
 
 
 class InterCon:
@@ -14,7 +14,7 @@ class InterCon:
     def __init__(self):
         self.reader = None
         self.writer = None
-        self.task = Task()
+        self.task = NativeTask()
 
     @staticmethod
     def validate_ipv4(str_in):

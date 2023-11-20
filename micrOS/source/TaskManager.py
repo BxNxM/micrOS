@@ -29,17 +29,18 @@ except:
 
 #################################################################
 #                Implement custom task class                    #
+#              TaskBase, NativeTask, MagicTask                  #
 #################################################################
 
 
-class Task:
+class TaskBase:
+    """
+    Async task base definition for common features
+    """
     TASKS = {}                       # TASK OBJ list
 
     def __init__(self):
         self.task = None             # [TASK] Store created async task object
-        self.__callback = None       # [LM] Task callback: list of strings (LM call)
-        self.__inloop = False        # [LM] Task while loop for LM callback
-        self.__sleep = 20            # [LM] Task while loop - async wait (proc feed) [ms]
         self.done = asyncio.Event()  # [TASK] Store done state
         self.out = ""                # [TASK] Store output
         self.tag = None              # [TASK] Task tag (identification)
@@ -50,22 +51,75 @@ class Task:
         Check task is busy by tag in TASKS
         - exists + running = busy
         """
-        task = Task.TASKS.get(tag, None)
+        task = TaskBase.TASKS.get(tag, None)
         if task is not None and not task.done.is_set():
             # is busy
             return True
         # is NOT busy
         return False
 
+    def cancel(self):
+        """
+        Cancel task (+cleanup)
+        """
+        try:
+            if self.task is not None:
+                try:
+                    self.task.cancel()  # Try to cancel task by asyncio
+                except Exception as e:
+                    if "can't cancel self" != str(e):
+                        errlog_add(f"[IRQ limitation] Task cancel error: {e}")
+                self.__task_del()
+            else:
+                return False
+        except Exception as e:
+            errlog_add(f"[ERR] Task kill error: {e}")
+            return False
+        return True
+
     def __task_del(self, keep_cache=False):
         """
         Delete task from TASKS
         """
         self.done.set()
-        if self.tag in Task.TASKS.keys():
+        if self.tag in TaskBase.TASKS.keys():
             if not keep_cache:              # True - In case of destructor
-                del Task.TASKS[self.tag]
+                del TaskBase.TASKS[self.tag]
         collect()                           # GC collect
+
+    def __del__(self):
+        try:
+            self.__task_del(keep_cache=True)
+        except Exception as e:
+            errlog_add(f"[ERR] TaskBase.__del__: {e}")
+
+
+class NativeTask(TaskBase):
+    """
+    Run native async task from code
+    - could be built in function or custom code from load modules
+    """
+    def __init__(self):
+        super().__init__()
+
+    def create(self, callback=None, tag=None):
+        """
+        Create async task with coroutine callback (no queue limit check!)
+        + async socket server task
+        + async idle task start
+        - other...
+        """
+        # Create task tag
+        self.tag = f"aio{len(TaskBase.TASKS)}" if tag is None else tag
+        if TaskBase.is_busy(self.tag):
+            # Skip task if already running
+            return False
+
+        # Start task with coroutine callback
+        self.task = asyncio.get_event_loop().create_task(callback)
+        # Store Task object by key - for task control
+        TaskBase.TASKS[self.tag] = self
+        return True
 
     def __enter__(self):
         """
@@ -85,25 +139,20 @@ class Task:
         self.done.set()
         collect()           # GC collect
 
-    def create(self, callback=None, tag=None):
-        """
-        Create async task with coroutine callback (no queue limit check!)
-        - async socket server task start
-        - other?
-        """
-        # Create task tag
-        self.tag = f"aio{len(Task.TASKS)}" if tag is None else tag
-        if Task.is_busy(self.tag):
-            # Skip task if already running
-            return False
 
-        # Start task with coroutine callback
-        self.task = asyncio.get_event_loop().create_task(callback)
-        # Store Task object by key - for task control
-        Task.TASKS[self.tag] = self
-        return True
+class MagicTask(TaskBase):
+    """
+    Run LoadModule calls as async function
+    - wrap sync code into async context
+    """
 
-    def create_lm(self, callback=None, loop=None, sleep=None):
+    def __init__(self):
+        super().__init__()
+        self.__callback = None       # [LM] Task callback: list of strings (LM call)
+        self.__inloop = False        # [LM] Task while loop for LM callback
+        self.__sleep = 20            # [LM] Task while loop - async wait (proc feed) [ms]
+
+    def create(self, callback=None, loop=None, sleep=None):
         """
         Create async task with function callback (with queue limit check)
         - wrap (sync) function into async task (task_wrapper)
@@ -113,7 +162,7 @@ class Task:
         """
         # Create task tag
         self.tag = '.'.join(callback[0:2])
-        if Task.is_busy(self.tag):
+        if TaskBase.is_busy(self.tag):
             # Skip task if already running
             return False
 
@@ -123,32 +172,12 @@ class Task:
         # Set sleep value for async loop - optional parameter with min sleep limit check (20ms)
         self.__sleep = self.__sleep if sleep is None else sleep if sleep > 19 else self.__sleep
 
-        self.task = asyncio.get_event_loop().create_task(self.task_wrapper())
+        self.task = asyncio.get_event_loop().create_task(self.__task_wrapper())
         # Store Task object by key - for task control
-        Task.TASKS[self.tag] = self
+        TaskBase.TASKS[self.tag] = self
         return True
 
-    def cancel(self):
-        """
-        Cancel task (+cleanup)
-        """
-        try:
-            if self.task is not None:
-                self.__inloop = False   # Soft stop LM task
-                try:
-                    self.task.cancel()  # Try to cancel task by asyncio
-                except Exception as e:
-                    if "can't cancel self" != str(e):
-                        errlog_add(f"[IRQ limitation] Task cancel error: {e}")
-                self.__task_del()
-            else:
-                return False
-        except Exception as e:
-            errlog_add(f"[ERR] Task kill error: {e}")
-            return False
-        return True
-
-    async def task_wrapper(self):
+    async def __task_wrapper(self):
         """
         Implements async wrapper around Load Module call
         - self.__callback: list - contains LM command strings
@@ -163,11 +192,9 @@ class Task:
                 break
         self.done.set()
 
-    def __del__(self):
-        try:
-            self.__task_del(keep_cache=True)
-        except Exception as e:
-            errlog_add(f"[ERR] Task.__del__: {e}")
+    def cancel(self):
+        self.__inloop = False  # Set soft stop (LM task)
+        return super().cancel()
 
 
 #################################################################
@@ -176,9 +203,12 @@ class Task:
 
 
 class Manager:
+    """
+    micrOS async task handler
+    """
     OBJ = None                      # Manager object
-    QUEUE_SIZE = cfgget('aioqueue')
-    OLOAD = 0
+    QUEUE_SIZE = cfgget('aioqueue') # QUEUE size from config
+    OLOAD = 0                       # CPU overload measure
 
     def __new__(cls):
         """
@@ -207,7 +237,7 @@ class Manager:
     @staticmethod
     def _queue_len():
         # Get active Load Module tasks (tag: module.function)
-        return sum([1 for tag, task in Task.TASKS.items() if not task.done.is_set() and '.' in tag])
+        return sum([1 for tag, task in TaskBase.TASKS.items() if not task.done.is_set() and '.' in tag])
 
     @staticmethod
     def _queue_limiter():
@@ -228,7 +258,7 @@ class Manager:
         """
 
         # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
-        my_task = Task.TASKS.get('idle')
+        my_task = TaskBase.TASKS.get('idle')
         my_task.out = f"i.d.l.e: 200ms"
         try:
             while True:
@@ -259,8 +289,8 @@ class Manager:
         if isinstance(callback, list):
             # Check queue if task is load module
             Manager._queue_limiter()
-            return Task().create_lm(callback=callback, loop=loop, sleep=delay)
-        return Task().create(callback=callback, tag=tag)
+            return MagicTask().create(callback=callback, loop=loop, sleep=delay)
+        return NativeTask().create(callback=callback, tag=tag)
 
     @staticmethod
     def list_tasks():
@@ -270,7 +300,7 @@ class Manager:
         """
         q = Manager.QUEUE_SIZE - Manager._queue_len()
         output = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.OLOAD}%\n", "#Active   #taskID"]
-        for tag, task in Task.TASKS.items():
+        for tag, task in TaskBase.TASKS.items():
             is_running = 'No' if task.done.is_set() else 'Yes'
             spcr = " " * (10 - len(is_running))
             task_view = f"{is_running}{spcr}{tag}"
@@ -280,11 +310,11 @@ class Manager:
     @staticmethod
     def _parse_tag(tag):
         """GET TASK(s) BY TAG - module.func or module.*"""
-        task = Task.TASKS.get(tag, None)
+        task = TaskBase.TASKS.get(tag, None)
         if task is None:
             _tasks = []
             tag_parts = tag.split('.')
-            for t in Task.TASKS.keys():
+            for t in TaskBase.TASKS.keys():
                 if t.startswith(tag_parts[0]) and len(tag_parts) > 1 and tag_parts[1] == '*':
                     _tasks.append(t)
             if len(_tasks) == 0:
@@ -302,10 +332,10 @@ class Manager:
         if len(tasks) == 0:
             return f"No task found: {tag}"
         if len(tasks) == 1:
-            return Task.TASKS[tasks[0]].out
+            return TaskBase.TASKS[tasks[0]].out
         output = []
         for t in tasks:
-            output.append(f"{t}: {Task.TASKS[t].out}")
+            output.append(f"{t}: {TaskBase.TASKS[t].out}")
         return '\n'.join(output)
 
     @staticmethod
@@ -318,7 +348,7 @@ class Manager:
         """
 
         def terminate(_tag):
-            to_kill = Task.TASKS.get(_tag, None)
+            to_kill = TaskBase.TASKS.get(_tag, None)
             try:
                 return False if to_kill is None else to_kill.cancel()
             except Exception as e:
@@ -353,7 +383,7 @@ class Manager:
 
     @staticmethod
     def server_task_msg(msg):
-        server_task = Task.TASKS.get('server', None)
+        server_task = TaskBase.TASKS.get('server', None)
         if server_task is None:
             return
         server_task.out = msg

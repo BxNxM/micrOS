@@ -220,6 +220,16 @@ def ifconfig():
     return ifconfig()
 
 
+def urequests_host_cache():
+    """
+    Debug function for urequests address caching
+    - returns all known http(s) host addresses
+    - cache only in memory
+    """
+    from urequests import host_cache
+    return host_cache()
+
+
 #######################
 # LM helper functions #
 #######################
@@ -234,4 +244,5 @@ def help():
            'setclock year month mday hour min sec',\
            'ntp', 'rssi', 'cachedump cdel="rgb.pds/None"',\
            'pinmap key="dhtpin"/None', 'alarms clean=False',\
-           'sun refresh=False', 'ifconfig', 'memory_usage', 'disk_usage'
+           'sun refresh=False', 'ifconfig', 'memory_usage',\
+           'disk_usage', 'urequests_host_cache'

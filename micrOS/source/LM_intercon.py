@@ -1,4 +1,4 @@
-from InterConnect import send_cmd, dump_cache
+from InterConnect import send_cmd, host_cache
 from Debug import errlog_add
 
 
@@ -32,12 +32,12 @@ def sendcmd(*args, **kwargs):
     return __send(host, cmd)
 
 
-def dump():
+def addr_cache():
     """
     Dump intercon connection cache
     :return dict: device-ip pairs
     """
-    return dump_cache()
+    return host_cache()
 
 
 #######################
@@ -50,6 +50,7 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'sendcmd "hello" host="IP/hostname.local") OR sendcmd host="IP/hostname.local" cmd="system rssi")', \
+    return 'sendcmd "hello" host="IP/hostname.local")',\
+           'sendcmd host="IP/hostname.local" cmd="system rssi")',\
            'example: intercon sendcmd "10.0.1.84" "system rssi" OR intercon sendcmd "system rssi" host="node01.local"', \
-           'dump (dump host cache)'
+           'addr_cache'

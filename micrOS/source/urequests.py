@@ -8,6 +8,8 @@ except ImportError as e:
 from json import loads, dumps
 
 
+ADDR_CACHE = {}
+
 #############################################
 #   Implement micropython request function  #
 #############################################
@@ -92,9 +94,20 @@ def _parse_response(response):
     return status_code, body
 
 
+def _host_to_addr(host, port, force=False):
+    """
+    Cache host address to avoid getaddrinfo (slow)
+    """
+    addr = ADDR_CACHE.get(host, None)
+    if addr is None or force:
+        addr = getaddrinfo(host, port)[0][-1]
+        ADDR_CACHE[host] = addr
+    return addr
+
+
 def request(method, url, data=None, json=None, headers=None, sock_size=1024, jsonify=False):
     """
-    Micropython HTTP request function for REST API handling
+    Micropython syncronous HTTP request function for REST API handling
     :param method: GET/POST
     :param url: URL for REST API
     :param data: string body (handle bare string as data for POST method)
@@ -111,9 +124,14 @@ def request(method, url, data=None, json=None, headers=None, sock_size=1024, jso
     sock = socket()
     sock.settimeout(2)
     # [1.1] CONNECT - resolve IP by host
-    addr = getaddrinfo(host, port)[0][-1]
+    addr = _host_to_addr(host, port)
     # [1.2] CONNECT - if https handle ssl
-    sock.connect(addr)
+    try:
+        sock.connect(addr)
+    except Exception:
+        # Refresh host address & reconnect
+        addr = _host_to_addr(host, port, force=True)
+        sock.connect(addr)
     if proto == 'https:':
         sock = wrap_socket(sock)
 
@@ -165,3 +183,10 @@ def post(url, data=None, json=None, headers={}, sock_size=512, jsonify=False):
     :param json: json body (handle json as data for POST method)
     """
     return request('POST', url, data=data, json=json, headers=headers, sock_size=sock_size, jsonify=jsonify)
+
+
+def host_cache():
+    """
+    Return address cache
+    """
+    return ADDR_CACHE

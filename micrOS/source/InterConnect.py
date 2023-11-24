@@ -163,7 +163,7 @@ def send_cmd(host, cmd):
     return result
 
 
-def dump_cache():
+def host_cache():
     """
     Dump InterCon connection cache
     """

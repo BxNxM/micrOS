@@ -1,5 +1,5 @@
 from ConfigHandler import cfgget
-from utime import localtime, sleep
+from utime import localtime
 from network import WLAN, STA_IF
 from LogicalPins import physical_pin, pinmap_dump
 from Network import ifconfig
@@ -375,8 +375,8 @@ def _intercon_cache(line_limit=3):
     line_start = 15
     line_cnt = 1
     PageUI.DISPLAY.text("InterCon cache", 0, line_start)
-    if sum([1 for _ in InterCon.dump()]) > 0:
-        for key, val in InterCon.dump().items():
+    if sum([1 for _ in InterCon.host_cache()]) > 0:
+        for key, val in InterCon.host_cache().items():
             key = key.split('.')[0]
             val = '.'.join(val.split('.')[-2:])
             PageUI.DISPLAY.text(" {} {}".format(val, key), 0, line_start+(line_cnt*10))

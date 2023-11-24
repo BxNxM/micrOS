@@ -44,7 +44,7 @@ class MicrOSDevTool(OTA, USB):
         self.LM_functions_static_dump_gen()
         return state
 
-    def simulator(self, prepare_only=False, stop=False, restart=False):
+    def simulator(self, prepare_only=False, stop=False, restart=False):          # <<<<------ SIM hack here... (default: False)
         if (not stop or prepare_only) and not restart:
             ######################  Preparation phase  ######################
             self.console("[SIM] Clean sim workspace: {}".format(self.micros_sim_workspace))

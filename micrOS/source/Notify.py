@@ -36,7 +36,8 @@ class Telegram:
             # RESTORE CACHE
             console_write("[NTFY] Restore chatIDs cache...")
             with open('telegram.pds', 'r') as f:
-                Telegram._CHAT_IDS = set([int(k) for k in f.read().strip().split(',')])
+                # set() comprehension
+                Telegram._CHAT_IDS = {int(k) for k in f.read().strip().split(',')}
         except:
             pass
 

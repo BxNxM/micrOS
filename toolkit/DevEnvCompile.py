@@ -87,7 +87,7 @@ class Compile:
 
     def get_micros_version_from_repo(self):
         # Get repo version
-        with open(os.path.join(self.micrOS_dir_path, 'InterpreterShell.py'), 'r') as f:
+        with open(os.path.join(self.micrOS_dir_path, 'Shell.py'), 'r') as f:
             code_lines_string = f.read()
         regex = r"\d+.\d+.\d+-\d+"
         repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]

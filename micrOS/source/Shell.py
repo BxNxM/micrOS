@@ -24,7 +24,7 @@ from machine import reset as hard_reset, soft_reset
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.25.1-0'
+    MICROS_VERSION = '1.26.0-0'
 
     def __init__(self):
         """
@@ -45,7 +45,8 @@ class Shell:
             console_write(f"Export system version to config failed: {e}")
             errlog_add(f"[Shell][ERR] system version export error: {e}")
 
-    def send(self, msg):
+    @staticmethod
+    def send(msg):
         # Placeholder method, it will be overwritten by SocektServer.send
         print(msg)
 

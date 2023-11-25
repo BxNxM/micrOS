@@ -135,7 +135,7 @@ def __check_wd(wd, wd_now):
         if wd_from > wd_to and wd_now in list(range(wd_from, 7)) + list(range(0, wd_to+1)):
             return True
     # Handle WD * and exact values
-    return wd == '*' or wd == wd_now
+    return wd in ('*', wd_now)
 
 
 def __scheduler_trigger(cron_time_now, crontask, deltasec=2):

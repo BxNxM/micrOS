@@ -12,7 +12,7 @@ Designed by Marcell Ban aka BxNxM GitHub
 
 from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
-from InterpreterShell import Shell
+from Shell import Shell
 from Network import ifconfig
 import uasyncio as asyncio
 from TaskManager import Manager
@@ -75,7 +75,7 @@ class Client(Shell):
 
         # Input handling
         Debug.console(f"[Client] raw request ({self.client_id}): |{request}|")
-        if request == 'exit' or request == '':
+        if request in ('exit', ''):
             return True, request
         return False, request
 
@@ -154,7 +154,7 @@ class Client(Shell):
             if state:
                 return True
         except Exception as e:
-            if "ECONNRESET" in e:
+            if "ECONNRESET" in str(e):
                 await self.close()
             Debug.console(f"[Client] Shell exception: {e}")
             return False
@@ -201,8 +201,7 @@ class SocketServer:
     Socket message data packet layer - send and receive
     Embedded command interpretation:
     - exit
-    - reboot
-    InterpreterShell invocation with msg data
+    Handle user requests/commands with Shell (bash like experience)
     """
     __instance = None
 
@@ -212,28 +211,33 @@ class SocketServer:
         __new__ - Customize the instance creation
         cls     - class
         """
-        if SocketServer.__instance is None:
+        if not cls.__instance:
             # SocketServer singleton properties
-            SocketServer.__instance = super().__new__(cls)
+            cls.__instance = super(SocketServer, cls).__new__(cls)
+            cls.__instance._initialized = False
+        return cls.__instance
+
+    def __init__(self):
+        if not self._initialized:
             # Socket server initial parameters
-            SocketServer.__instance.__host = ''
-            SocketServer.__instance.server = None
-            SocketServer.__instance.__conn_queue = 2
+            self.server = None
+            self._host = ''
+            self._conn_queue = 2
 
             # ---- Config ---
-            SocketServer.__instance.__port = cfgget("socport")
+            self._port = cfgget("socport")
             # ---- Set socket timeout (min 5 sec!!! hardcoded)
             soc_timeout = int(cfgget("soctout"))
-            SocketServer.__instance.soc_timeout = 5 if soc_timeout < 5 else soc_timeout
+            self._timeout = 5 if soc_timeout < 5 else soc_timeout
             # ---         ----
+            self._initialized = True
             Debug.console("[ socket server ] <<constructor>>")
-        return SocketServer.__instance
 
     #####################################
     #       Socket Server Methods       #
     #####################################
 
-    async def accept_client(cls, new_client):
+    async def accept_client(self, new_client):
         """
         Client handler
         - check active connection timeouts
@@ -244,7 +248,7 @@ class SocketServer:
         new_client_id = new_client.client_id
 
         # Add new client immediately if queue not full
-        if len(list(Client.ACTIVE_CLIS.keys())) < cls.__conn_queue:
+        if len(list(Client.ACTIVE_CLIS.keys())) < self._conn_queue:
             # Add new client to active clients dict
             Client.ACTIVE_CLIS[new_client_id] = new_client
             return True, new_client_id      # [!] Enable new connection
@@ -254,8 +258,8 @@ class SocketServer:
         enable_new = False
         for cli_id, cli in Client.ACTIVE_CLIS.items():
             cli_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
-            Debug.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{cls.soc_timeout - cli_inactive}s")
-            if not cli.connected or cli_inactive > cls.soc_timeout:
+            Debug.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{self._timeout - cli_inactive}s")
+            if not cli.connected or cli_inactive > self._timeout:
                 # OPEN CONNECTION IS INACTIVE > CLOSE
                 Debug.console("------- client timeout - accept new connection")
                 await cli.close()
@@ -273,7 +277,7 @@ class SocketServer:
         del new_client  # Clean up unused client
         return False, new_client_id     # [!] Deny new client
 
-    async def handle_client(cls, reader, writer):
+    async def handle_client(self, reader, writer):
         """
         Handle incoming new async requests towards the server
         - creates Client object with the new incoming connection
@@ -283,7 +287,7 @@ class SocketServer:
         new_client = Client(reader, writer)
 
         # Check incoming client - client queue limitation
-        state, client_id = await cls.accept_client(new_client)
+        state, client_id = await self.accept_client(new_client)
         if not state:
             # Server busy, there is one active open connection - reject client
             # close unused new_client as well!
@@ -292,15 +296,15 @@ class SocketServer:
         # Store client object as active client
         await new_client.run_shell()
 
-    async def run_server(cls):
+    async def run_server(self):
         """
         Define async socket server (tcp by default)
         """
         addr = ifconfig()[1][0]
-        Debug.console(f"[ socket server ] Start socket server on {addr}:{cls.__port}")
-        cls.server = asyncio.start_server(cls.handle_client, cls.__host, cls.__port, backlog=cls.__conn_queue)
-        await cls.server
-        Debug.console(f"- TCP server ready, connect: telnet {addr} {cls.__port}")
+        Debug.console(f"[ socket server ] Start socket server on {addr}:{self._port}")
+        self.server = asyncio.start_server(self.handle_client, self._host, self._port, backlog=self._conn_queue)
+        await self.server
+        Debug.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
 
     @staticmethod
     def reply(msg):
@@ -312,6 +316,6 @@ class SocketServer:
             if cli.connected:
                 cli.send(msg)
 
-    def __del__(cls):
+    def __del__(self):
         Debug.console("[ socket server ] <<destructor>>")
-        cls.server.close()
+        self.server.close()

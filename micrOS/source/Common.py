@@ -119,11 +119,10 @@ def micro_task(tag, task=None):
         # [2] Shortcut: Check task state by tag
         # RETURN: None - if task is already running
         return None
-    else:
-        # [3] Create task (not running) + task coroutine was provided
-        # RETURN task creation state - success (True) / fail (False)
-        state = Manager().create_task(callback=task, tag=tag)
-        return state
+    # [3] Create task (not running) + task coroutine was provided
+    # RETURN task creation state - success (True) / fail (False)
+    state = Manager().create_task(callback=task, tag=tag)
+    return state
 
 
 @socket_stream

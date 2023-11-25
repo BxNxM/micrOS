@@ -2,7 +2,7 @@
 Module is responsible for user executables invocation
 - Wraps LM execution into async tasks
 Used in:
-- InterpreterShell (SocketServer)
+- Shell (SocketServer)
 - InterruptHandler
 - Hooks
 
@@ -206,7 +206,7 @@ class Manager:
     """
     micrOS async task handler
     """
-    OBJ = None                      # Manager object
+    INSTANCE = None                      # Manager object
     QUEUE_SIZE = cfgget('aioqueue') # QUEUE size from config
     OLOAD = 0                       # CPU overload measure
 
@@ -216,16 +216,21 @@ class Manager:
         __new__ - Customize the instance creation
         cls     - class
         """
-        if Manager.OBJ is None:
+        if not Manager.INSTANCE:
             # TaskManager singleton properties
-            Manager.OBJ = super().__new__(cls)
+            cls.INSTANCE = super(Manager, cls).__new__(cls)
+            cls.INSTANCE._initialized = False
             # Set async event loop exception handler
             asyncio.get_event_loop().set_exception_handler(cls.axcept)
+        return cls.INSTANCE
+
+    def __init__(self):
+        if not self._initialized:
             # Start system idle task (IRQ(hack) + monitoring)
-            Manager.OBJ.idle_counter = 0        # For idle task rare action scheduling
-            Manager.OBJ.create_task(callback=Manager.OBJ.idle_task(), tag="idle")
-            # ---         ----
-        return Manager.OBJ
+            self.idle_counter = 0  # For idle task rare action scheduling
+            self.create_task(callback=self.idle_task(), tag="idle")
+            self._initialized = True
+            console_write("[TASK MANAGER] <<constructor>>")
 
     @staticmethod
     def axcept(loop=None, context=None):
@@ -251,7 +256,7 @@ class Manager:
             errlog_add(msg)
             raise Exception(msg)
 
-    async def idle_task(cls):
+    async def idle_task(self):
         """
         Create IDLE task - fix IRQ task start
         - Try to measure system load - based on idle task latency
@@ -270,11 +275,11 @@ class Manager:
                 delta_rate = int(((ticks_diff(ticks_ms(), t) / 300)-1) * 100)
                 Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)       # Average - smooth
                 # NETWORK AUTO REPAIR
-                if cls.idle_counter > 50:       # ~30 sec
-                    cls.idle_counter = 0        # Reset counter
+                if self.idle_counter > 50:       # ~30 sec
+                    self.idle_counter = 0        # Reset counter
                     # Check and fix STA network (example: after power outage - micrOS boards boots faster then router)
                     sta_high_avail()
-                cls.idle_counter += 1           # Increase counter
+                self.idle_counter += 1           # Increase counter
         except Exception as e:
             errlog_add(f"[ERR] Idle task exists: {e}")
         my_task.done.set()
@@ -462,7 +467,7 @@ def exec_lm_core(arg_list, msgobj=None):
         if msg_len > 2 and '&' in arg_list[-1]:
             # Evaluate task mode: loop + delay
             mode = arg_list.pop(-1)
-            loop = True if mode.count('&') == 2 else False
+            loop = mode.count('&') == 2
             delay = mode.replace('&', '').strip()
             delay = int(delay) if delay.isdigit() else None
             # Create and start async lm task
@@ -502,7 +507,7 @@ def _exec_lm_core(arg_list, msgobj):
     def __conv_func_params(param):
         buf = None
         if "'" in param or '"' in param:
-            str_index = [i for i, c in enumerate(param) if c == '"' or c == "'"]
+            str_index = [i for i, c in enumerate(param) if c in ('"', "'")]
             buf = [param[str_index[str_i]:str_index[str_i + 1] + 1] for str_i in range(0, len(str_index), 2)]
             for substr in buf:
                 param = param.replace(substr, '{}')

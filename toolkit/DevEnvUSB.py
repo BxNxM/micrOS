@@ -3,7 +3,6 @@ import sys
 import json
 import time
 import pprint
-import serial.tools.list_ports as serial_port_list
 MYPATH = os.path.dirname(__file__)
 print("Module [DevEnvOTA] path: {} __package__: {} __name__: {} __file__: {}".format(
     sys.path[0], __package__, __name__, MYPATH))
@@ -300,7 +299,16 @@ class USB(Compile):
         if self.dry_run:
             return ['dummy_device']
 
-        if not sys.platform.startswith('win'):
+        if sys.platform.startswith('win'):
+            # List USB devices on Windows
+            import serial.tools.list_ports as serial_port_list      # Import here (only windows...), package not exists on some platforms
+            ports = list(serial_port_list.comports())
+            for item in ports:
+                self.console(f'[Win] Com device: {item.description}')
+                if "CP210" in str(item.description) or "CH340" in str(item.description):
+                    micros_devices.append(item.device)
+                    self.console("Device was found: {}".format(item.device, state="imp"))
+        else:
             # List USB devices on macOS and Linux
             dev_path = '/dev/'
             content_list = [dev for dev in LocalMachine.FileHandler.list_dir(dev_path) if "tty" in dev]
@@ -311,14 +319,7 @@ class USB(Compile):
                         micros_devices.append(dev_abs_path)
                         self.console("Device was found: {}".format(dev_abs_path), state="imp")
                         break
-        else:
-            # List USB devices on Windows
-            ports = list(serial_port_list.comports())
-            for item in ports:
-                self.console(f'[Win] Com device: {item.description}')
-                if "CP210" in str(item.description) or "CH340" in str(item.description):
-                    micros_devices.append(item.device)
-                    self.console("Device was found: {}".format(item.device, state="imp"))
+
         # Eval device list, return with devices
         if len(micros_devices) > 0:
             self.console("Device was found. :)", state="ok")

@@ -58,7 +58,6 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
                 break
         return decoded
 
-
     def _parse_url(url, headers=None):
         if headers is None:
             headers = {}
@@ -70,7 +69,6 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
             host, port = host.split(':', 1)
             port = int(port)
         return proto, host, port, path, headers
-
 
     def _build_request(data, headers, method, path, host, json):
         # BUILD REQUEST: body, headers
@@ -94,7 +92,6 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
             http_request += body.decode('utf-8')
         return http_request
 
-
     def _parse_response(response):
         # PARSE RESPONSE
         headers, body = response.split(b'\r\n\r\n', 1)
@@ -105,7 +102,6 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
         else:
             body = body.decode('utf-8')
         return status_code, body
-
 
     def _host_to_addr(host, port, force=False):
         """

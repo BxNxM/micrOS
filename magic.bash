@@ -45,8 +45,8 @@ function venv_create {
         if [[ ! -d "$venv_path" ]]
         then
             console_log "${GREEN}    Create venv: $venv_path${NC}"
-            python3.9 -m venv "${venv_path}"
-            "${venv_path}/bin/python3.9" -m pip install --upgrade pip
+            python3 -m venv "${venv_path}"
+            "${venv_path}/bin/python3" -m pip install --upgrade pip
             install_req=1
         else
             install_req=0
@@ -60,7 +60,7 @@ function venv_requirements {
     if [[ -f "${requirements}" ]]
     then
         console_log "${GREEN}    Install requirements: ${requirements}${NC}"
-        python3.9 -m pip install -r "${requirements}"
+        python3 -m pip install -r "${requirements}"
     else
         console_log "${RED}    No requirements file: ${requirements}${NC}"
     fi
@@ -125,12 +125,12 @@ then
       if [[ "$OSTYPE" == "linux"* ]]
       then
           # TODO [!!!!] Raspbian workaround
-          console_log "[gateway][!!!] Raspberry workaround: venc deactivate and use python3.9"
+          console_log "[gateway][!!!] Raspberry workaround: venc deactivate and use python3"
           deactivate
-          python3.9 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
+          python3 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
       else
           # Execution in virtual env
-          python3.9 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
+          python3 "${MY_PATH}/devToolKit.py" -gw | tee -a "${log_file}"
       fi
   elif [[ "${CMD_ARGS[0]}" == "gitclean" ]]
   then
@@ -149,12 +149,12 @@ then
       if [[ "$OSTYPE" == "linux"* ]]
       then
           # TODO [!!!!] Raspbian workaround
-          console_log "[simulator][!!!] Raspberry workaround: venc deactivate and use python3.9"
+          console_log "[simulator][!!!] Raspberry workaround: venc deactivate and use python3"
           deactivate
-          python3.9 "${MY_PATH}/devToolKit.py" -sim
+          python3 "${MY_PATH}/devToolKit.py" -sim
        else
           # Execution in virtual env
-          python3.9 "${MY_PATH}/devToolKit.py" -sim
+          python3 "${MY_PATH}/devToolKit.py" -sim
        fi
     elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
     then
@@ -162,10 +162,10 @@ then
     elif [[ "${CMD_ARGS[0]}" == "distribute" ]]
     then
         echo -e "Create a source distribution"
-        if python3.9 setup.py sdist;
+        if python3 setup.py sdist;
         then
             echo -e "Create a wheel distribution."
-            if python3.9 setup.py bdist_wheel;
+            if python3 setup.py bdist_wheel;
             then
                 twine upload dist/* --verbose
             fi
@@ -177,5 +177,5 @@ else
     help
     # Start devToolKit.py GUI
     console_log "Start devToolKit GUI: ${MY_PATH}/devToolKit.py"
-    python3.9 "${MY_PATH}/devToolKit.py"
+    python3 "${MY_PATH}/devToolKit.py"
 fi

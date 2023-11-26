@@ -57,6 +57,8 @@ async def __task():
     with micro_task(tag='telegram._loop') as my_task:
         my_task.out = "[UP] Running"
         while True:
+            # Normal task period
+            await asyncio.sleep(5)
             try:
                 v = TELEGRAM_OBJ.receive_eval()
                 my_task.out = "Missing bot token" if v is None else v
@@ -69,9 +71,7 @@ async def __task():
                     my_task.out = f"[DOWN] {e}"
                     cancel_cnt = 5
                     # SLOW DOWN - hibernate task
-                    asyncio.sleep(55)
-            # Normal task period
-            await asyncio.sleep(5)
+                    asyncio.sleep(115)
 
 
 def receiver_loop():

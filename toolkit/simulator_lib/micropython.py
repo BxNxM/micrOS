@@ -21,7 +21,8 @@ def mem_info(*args, **kwargs):
         console("Max RAM usage: {:.2f} Mb".format(max_mem))
     else:
         console("Max RAM usage: {} Mb".format(max_mem))
-    return max_mem
+    total_heap, used_heap, free_heap = -1, max_mem, -1
+    return total_heap, used_heap, free_heap
 
 
 def const(*args):

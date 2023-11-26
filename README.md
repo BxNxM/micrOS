@@ -1105,7 +1105,7 @@ core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in 
 
 - Create service: [micrOS gateway service](https://domoticproject.com/creating-raspberry-pi-service/)
 
-- create `micros-gw.service` file:
+- [1] create `micros-gw.service` file:
 
 ```
 [Unit]
@@ -1124,11 +1124,13 @@ User=<raspbian user>
 WantedBy=multi-user.target
 ```
 
-- start service: sudo systemctl start micros_gw.service
+- [2] copy service to `sudo cp micros-gw.service /lib/systemd/system/`
 
-- enable serice at bootup: sudo systemctl enable micros_gw.service
+- [3] start service: `sudo systemctl start micros_gw.service`
 
-- show service state: sudo systemctl status micros_gw.service
+- [4] enable service at bootup: `sudo systemctl enable micros_gw.service`
+
+- [5] show service state: `sudo systemctl status micros_gw.service`
 
 
 ### GIT

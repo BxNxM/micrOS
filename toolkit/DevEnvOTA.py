@@ -239,7 +239,7 @@ class OTA(Compile):
         # Parse files from precompiled dir
         resource_list_to_upload = [os.path.join(self.precompiled_micrOS_dir_path, pysource) for pysource in
                                    LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
-                                   if pysource.endswith('.py') or pysource.endswith('.mpy')]
+                                   if pysource.endswith('.py') or pysource.endswith('.mpy') or pysource.endswith('.html')]
         # Apply upload settings on parsed resources
         for index, source in enumerate(resource_list_to_upload):
             source_name = os.path.basename(source)
@@ -442,7 +442,7 @@ class OTA(Compile):
             source_name_target = source_name
 
             # Force LM update - user load modules - drag n drop files
-            if force_lm and not source_name.startswith('LM_'):
+            if force_lm and not source_name.startswith('LM_') and source_name.endswith('.py'):
                 source_name_target = 'LM_{}'.format(source_name)
 
             command = '{python} {api} -p {pwd} {input_file} {host}:{target_path}'.format(

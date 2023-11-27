@@ -37,6 +37,7 @@ class Data:
                     "hwuid": "n/a",
                     "soctout": 100,
                     "socport": 9008,
+                    "webui": False,
                     "devip": "n/a",
                     "cron": False,
                     "crontasks": "n/a",

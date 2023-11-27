@@ -34,30 +34,25 @@ class Debug:
 
 
 #########################################################
-#          SOCKET SERVER-CLIENT HANDLER CLASS           #
+#         SOCKET SERVER-CLIENT HANDLER CLASSES          #
+#           Client (Base), ShellCli, WebCli             #
 #########################################################
 
-class Client(Shell):
+class Client:
     ACTIVE_CLIS = {}
 
     def __init__(self, reader, writer):
         self.connected = True
         self.reader = reader
         self.writer = writer
-        self.drain_event = asyncio.Event()
-        self.drain_event.set()
-
-        self.client_id = writer.get_extra_info('peername')
-        Debug.console(f"[Client] new conn: {self.client_id}")
-        client_tag = f"{'.'.join(self.client_id[0].split('.')[-2:])}:{str(self.client_id[1])}"
-        self.client_id = client_tag
-        #self.shell = Shell(self.send)
-        super().__init__()
+        # Set client ID
+        client_id = writer.get_extra_info('peername')
+        self.client_id = f"{'.'.join(client_id[0].split('.')[-2:])}:{str(client_id[1])}"
         self.last_msg_t = ticks_ms()
 
     async def read(self):
         """
-        Implements client read function, reader size: 2048
+        [Base] Implements client read function, reader size: 2048
         - set timeout counter
         - read input from client (run: return False)
         - connection error handling (stop: return True)
@@ -79,13 +74,131 @@ class Client(Shell):
             return True, request
         return False, request
 
+    async def a_send(self, response):
+        """
+        [Base] Async socket send method
+        """
+        if self.connected:
+            # Debug.console("[Client] ----- SteamWrite: {}".format(response))
+            # Store data in stream buffer
+            try:
+                self.writer.write(response.encode('utf8'))
+            except Exception as e:
+                # Maintain ACTIVE_CLIS - remove closed connection by peer.
+                await self.close()
+                errlog_add(f"[WARN] Client.a_send (auto-drop) {self.client_id}: {e}")
+            # Send buffered data with async task - hacky
+            try:
+                # send write buffer
+                # Debug.console("  |----- start drain")
+                await self.writer.drain()
+                # Debug.console("  |------ stop drain")
+            except Exception as e:
+                Debug.console(f"[Client] Drain error -> close conn: {e}")
+                await self.close()
+        else:
+            console_write(f"[Client] NoCon: {response}")
+
+    def send(self, response):
+        # Implement in child class
+        pass
+
+    async def close(self):
+        """
+        [Base] Async socket close method
+        """
+        Debug.console(f"[Client] Close connection {self.client_id}")
+        try:
+            self.writer.close()
+            await self.writer.wait_closed()
+        except Exception as e:
+            Debug.console(f"[Client] Close error {self.client_id}: {e}")
+        self.connected = False
+        Debug.INDENT = 0
+        # Maintain ACTIVE_CLIS - remove closed connection by peer.
+        Client.drop_client(self.client_id)
+        # gc.collect()
+        collect()
+
+    @staticmethod
+    def drop_client(client_id):
+        """
+        [Base] Generic client connection remove from task cache
+        """
+        if Client.ACTIVE_CLIS.get(client_id, None) is not None:
+            Client.ACTIVE_CLIS.pop(client_id)
+        # Update server task output (? test ?)
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+
+    def __del__(self):
+        """Client GC collect"""
+        collect()
+        Debug.console(f"[Client] del: {self.client_id}")
+
+
+class WebCli(Client):
+
+    def __init__(self, reader, writer):
+        Client.__init__(self, reader, writer)
+
+    async def load_content(self, content):
+        try:
+            with open(content, 'r') as file:
+                html_content = file.read()
+                response = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(html_content)}\r\n\r\n{html_content}"
+        except OSError:
+            response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found"
+        await self.a_send(response)
+
+    async def response(self, request):
+        """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
+        if request.startswith('GET'):
+            Debug.console("[WebCli] --- HTTP REQUEST DETECTED")
+            if request.startswith('GET /rest HTTP/1.1'):
+                Debug.console("[WebCli] --- /REST accept")
+                await self.load_content(content='rest.html')            # REST ENDPOINT
+            else:
+                Debug.console("[WebCli] --- / accept")                  # HOMEPAGE ENDPOINT (fallback)
+                await self.load_content(content='index.html')
+        else:
+            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request"
+            await self.a_send(response)
+
+    async def run_web(self):
+        # Update server task output (? test ?)
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+
+        # Run async connection handling
+        while self.connected:
+            try:
+                # Read request msg from client
+                state, request = await self.read()
+                if state:
+                    break
+                await self.response(request)
+            except Exception as e:
+                errlog_add(f"[ERR] Client.run_web: {e}")
+                break
+        # Close connection
+        await self.close()
+
+
+class ShellCli(Client, Shell):
+
+    def __init__(self, reader, writer):
+        Client.__init__(self, reader, writer)
+        Debug.console(f"[ShellCli] new conn: {self.client_id}")
+        self.drain_event = asyncio.Event()
+        self.drain_event.set()
+        Shell.__init__(self)
+
     def send(self, response):
         """
         Send response to client with non-async function
         """
         if self.connected:
             if self.prompt() != response:
-                # Add new line if not prompt (?)
+                # [format] Add new line if not prompt
                 response = f"{response}\n"
             # Debug.console("[Client] ----- SteamWrite: {}".format(response))
             # Store data in stream buffer
@@ -94,11 +207,11 @@ class Client(Shell):
             except Exception as e:
                 # Maintain ACTIVE_CLIS - remove closed connection by peer.
                 Client.drop_client(self.client_id)
-                errlog_add(f"[WARN] Client.send (auto-drop) {self.client_id}: {e}")
+                errlog_add(f"[WARN] ShellCli.send (auto-drop) {self.client_id}: {e}")
             # Send buffered data with async task - hacky
             asyncio.get_event_loop().create_task(self.__wait_for_drain())
         else:
-            print(response)
+            console_write(f"[ShellCli] NoCon: {response}")
 
     async def __wait_for_drain(self):
         """
@@ -116,47 +229,35 @@ class Client(Shell):
             await self.writer.drain()
             # Debug.console("  |------ stop drain")
         except Exception as e:
-            Debug.console(f"[Client] Drain error -> close conn: {e}")
+            Debug.console(f"[ShellCli] Drain error -> close conn: {e}")
             await self.close()
         # set drain free
         self.drain_event.set()
 
     async def close(self):
-        Debug.console(f"[Client] Close connection {self.client_id}")
+        Debug.console(f"[ShellCli] Close connection {self.client_id}")
         self.send("Bye!\n")
         # Reset shell state machine
         self.reset()
         await asyncio.sleep_ms(50)
-        try:
-            self.writer.close()
-            await self.writer.wait_closed()
-        except Exception as e:
-            Debug.console(f"[Client] Close error {self.client_id}: {e}")
-        self.connected = False
-        Debug.INDENT = 0
-        # Maintain ACTIVE_CLIS - remove closed connection by peer.
-        Client.drop_client(self.client_id)
-        # gc.collect()
-        collect()
-
-    @staticmethod
-    def drop_client(client_id):
-        if Client.ACTIVE_CLIS.get(client_id, None) is not None:
-            Client.ACTIVE_CLIS.pop(client_id)
-        # Update server task output (? test ?)
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+        # Used from Client parent class
+        await super().close()
 
     async def __shell_cmd(self, request):
+        """
+        Handle micrOS shell and /web http endpoints
+        """
         # Run micrOS shell with request string
         try:
-            Debug.console("[CLIENT] --- #Run shell")
+            # Handle micrOS shell
+            Debug.console("[ShellCli] --- #Run shell")
             state = self.shell(request)
             if state:
                 return True
         except Exception as e:
             if "ECONNRESET" in str(e):
                 await self.close()
-            Debug.console(f"[Client] Shell exception: {e}")
+            Debug.console(f"[ShellCli] Shell exception: {e}")
             return False
         collect()
         self.send(f"[HA] Shells cleanup: {mem_free()}")
@@ -186,10 +287,6 @@ class Client(Shell):
                 break
         # Close connection
         await self.close()
-
-    def __del__(self):
-        collect()
-        Debug.console(f"Delete client connection: {self.client_id}")
 
 
 #########################################################
@@ -272,19 +369,19 @@ class SocketServer:
         # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
         Debug.console("------- connection busy")
         # Handle only single connection
-        new_client.send("Connection is busy. Bye!")
+        await new_client.a_send("Connection is busy. Bye!")
         await new_client.close()  # Play nicely - close connection
         del new_client  # Clean up unused client
         return False, new_client_id     # [!] Deny new client
 
-    async def handle_client(self, reader, writer):
+    async def shell_cli(self, reader, writer):
         """
         Handle incoming new async requests towards the server
-        - creates Client object with the new incoming connection
+        - creates ShellCli object with the new incoming connection
         - Client implements micrOS shell interface over reader, sender tcp connection
         """
         # Create client object
-        new_client = Client(reader, writer)
+        new_client = ShellCli(reader, writer)
 
         # Check incoming client - client queue limitation
         state, client_id = await self.accept_client(new_client)
@@ -296,14 +393,36 @@ class SocketServer:
         # Store client object as active client
         await new_client.run_shell()
 
+    async def web_cli(self, reader, writer):
+        """
+        Handle incoming new async requests towards the server
+        - creates WebCli object with the new incoming connection
+        - WebCli handles simple http get requests over tcp connection
+        """
+        # Create client object
+        new_client = WebCli(reader, writer)
+
+        # Check incoming client - client queue limitation
+        state, client_id = await self.accept_client(new_client)
+        if not state:
+            # Server busy, there is one active open connection - reject client
+            # close unused new_client as well!
+            return
+
+        # Run web (http) cli
+        await new_client.run_web()
+
     async def run_server(self):
         """
         Define async socket server (tcp by default)
         """
         addr = ifconfig()[1][0]
         Debug.console(f"[ socket server ] Start socket server on {addr}:{self._port}")
-        self.server = asyncio.start_server(self.handle_client, self._host, self._port, backlog=self._conn_queue)
+        self.server = asyncio.start_server(self.shell_cli, self._host, self._port, backlog=self._conn_queue)
         await self.server
+        if cfgget('webui'):
+            web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._conn_queue)
+            await web
         Debug.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
 
     @staticmethod

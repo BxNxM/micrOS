@@ -191,6 +191,8 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ## micrOS Framework Features💡
 
+![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
+
 - 🕯**micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
 	- **OTA update** - push update over wifi (webrepl automation) / monitor update and auto restart node
 - 📄**Config handling** - user config - **node_config.json**
@@ -559,14 +561,7 @@ Returns:
 
 * True if the notification was sent successfully, False otherwise.
 
-----------------------------------------
-
-
-# System Architecture (obsolete)
-
-![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
-
-> Secure Core (OTA static modules): `boot.py`, `micrOSloader.mpy`, `Network.mpy`, `ConfigHandler.mpy`, `Debug.mpy`
+----------------------------------------s
 
 
 ### RELESE NOTE
@@ -588,6 +583,10 @@ Returns:
 
 
 ## Developer Quick guide
+
+Note:
+
+> Secure Core (OTA static modules) (GUI): `boot.py`, `micrOSloader.mpy`, `Network.mpy`, `ConfigHandler.mpy`, `Debug.mpy`
 
 
 #### Erase device & Deploy micropython & Install micrOS 

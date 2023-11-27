@@ -191,7 +191,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ## micrOS Framework Features💡
 
-![MICROSARCHITECTURE](./media/MicrOSArchitecture.png?raw=true)
+![MICROSARCHITECTURE](./media/micrOSArchitecture.png?raw=true)
 
 - 🕯**micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
 	- **OTA update** - push update over wifi (webrepl automation) / monitor update and auto restart node

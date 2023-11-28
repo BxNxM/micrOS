@@ -8,5 +8,53 @@
 <body>
     <h1>Hello from MicroPython Web Server!</h1>
     <p>This is a basic HTML page served by your MicroPython web server.</p>
+
+    <h2>REST API</h2>
+
+    <!-- Input field for string -->
+    <label for="inputString">Enter String:</label>
+    <input type="text" id="inputString">
+
+    <!-- Button to send data -->
+    <button onclick="sendData()">Send Data</button>
+
+    <!-- Display generated URL -->
+    <p id="generatedUrl"></p>
+    <div id="responseContainer"></div>
+
+    <script>
+        function sendData() {
+            // Get the current hostname from the URL
+            const currentHostname = window.location.hostname;
+
+            // Construct the base URL for the REST API
+            const baseUrl = `http://${currentHostname}`;
+
+            // Get the input string from the input field
+            const inputString = document.getElementById('inputString').value;
+            // Replace whitespaces with "/" characters
+            const sanitizedInput = inputString.replace(/\s+/g, '/');
+            // Concatenate the sanitized input string to the API endpoint
+            const apiUrl = `${baseUrl}/rest/${sanitizedInput}`;
+
+            // Display the generated URL on the webpage
+            document.getElementById('generatedUrl').innerHTML = `Generated URL: ${apiUrl}`;
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Handle the data received from the server
+                    document.getElementById('responseContainer').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
 </body>
 </html>

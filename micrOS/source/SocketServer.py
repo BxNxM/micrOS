@@ -45,7 +45,7 @@ class Client:
         self.connected = True
         self.reader = reader
         self.writer = writer
-        # Set client ID
+        # Set client ID - TODO: set prefix by child type (ShellCli or WebCli)
         client_id = writer.get_extra_info('peername')
         self.client_id = f"{'.'.join(client_id[0].split('.')[-2:])}:{str(client_id[1])}"
         self.last_msg_t = ticks_ms()
@@ -141,28 +141,32 @@ class WebCli(Client):
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer)
 
-    async def load_content(self, content):
-        try:
-            with open(content, 'r') as file:
-                html_content = file.read()
-                response = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(html_content)}\r\n\r\n{html_content}"
-        except OSError:
-            response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found"
-        await self.a_send(response)
-
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
-        if request.startswith('GET'):
-            Debug.console("[WebCli] --- HTTP REQUEST DETECTED")
-            if request.startswith('GET /rest HTTP/1.1'):
-                Debug.console("[WebCli] --- /REST accept")
-                await self.load_content(content='rest.html')            # REST ENDPOINT
-            else:
-                Debug.console("[WebCli] --- / accept")                  # HOMEPAGE ENDPOINT (fallback)
-                await self.load_content(content='index.html')
-        else:
-            response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request"
+        Debug.console("[WebCli] --- HTTP REQUEST DETECTED")
+        if request.startswith('GET /rest'):
+            Debug.console("[WebCli] --- /REST accept")      # REST API (GET)
+            try:
+                await self.a_send(self.rest(request))
+            except Exception as e:
+                response = f"HTTP/1.1 404 {e}\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found"
+                await self.a_send(response)
+            return
+
+        if request.startswith('GET /'):
+            Debug.console("[WebCli] --- / accept")          # HOMEPAGE ENDPOINT (fallback as well)
+            try:
+                with open('index.html', 'r') as file:
+                    html = file.read()
+                response = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(html)}\r\n\r\n{html}"
+            except OSError:
+                response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found"
             await self.a_send(response)
+            return
+
+        # Neither GET / or /rest request - handle error message
+        response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request"
+        await self.a_send(response)
 
     async def run_web(self):
         # Update server task output (? test ?)
@@ -181,6 +185,21 @@ class WebCli(Client):
                 break
         # Close connection
         await self.close()
+
+    def rest(self, request):
+        resp_schema = {'result': None, 'state': False}
+        cmd = request.split()[1].replace('/rest', '')
+        if len(cmd) > 1:
+            # REST sub-parameter handling (rest commands)
+            cmd = cmd.replace('/', ' ').strip()
+            # TODO: call LM
+            resp_schema['result'] = f"Exec: {cmd}"
+            resp_schema['state'] = True
+        else:
+            resp_schema['result'] = f"Homepage"
+            resp_schema['state'] = True
+        response = f"'{resp_schema}'"
+        return f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(response)}\r\n\r\n{response}"
 
 
 class ShellCli(Client, Shell):
@@ -319,7 +338,7 @@ class SocketServer:
             # Socket server initial parameters
             self.server = None
             self._host = ''
-            self._conn_queue = 2
+            self._conn_queue = 2            # CONNECTION QUEUE SIZE, common for both interface
 
             # ---- Config ---
             self._port = cfgget("socport")

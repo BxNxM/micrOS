@@ -447,7 +447,7 @@ def exec_lm_core(arg_list, msgobj=None):
         # [1] Handle task manipulation commands: list, kill, show - return True -> Command handled
         if 'task' == msg_list[0]:
             # task list
-            if msg_len == 2 and 'list' == msg_list[1]:
+            if msg_len > 1 and 'list' == msg_list[1]:
                 tasks = '\n'.join(Manager.list_tasks())
                 tasks = f'{tasks}\n'
                 msgobj(tasks)

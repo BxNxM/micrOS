@@ -79,7 +79,7 @@ class Compile:
     def __cleanup_precompiled_dir(self):
         self.console("Delete precompiled components: {}".format(self.precompiled_micrOS_dir_path))
         for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
-                       if pysource.endswith('.py') or pysource.endswith('.mpy')]:
+                       if pysource.endswith('.py') or pysource.endswith('.mpy') or pysource.endswith('.html')]:
             to_remove_path = os.path.join(self.precompiled_micrOS_dir_path, source)
             self.console("\t|-remove: {}".format(to_remove_path), state='imp')
             if not self.dry_run:
@@ -171,6 +171,26 @@ class Compile:
             sys.exit(4)
         else:
             return True
+
+    def copy_other_resources_to_precompiled(self):
+        """micrOS resource formats to copy to board: html"""
+        # Change workdir
+        workdir_handler = LocalMachine.SimplePopPushd()
+        workdir_handler.pushd(self.micrOS_dir_path)
+
+        self.console("COPY additional resources")
+        # Filter component source
+        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path) if
+                       pysource.endswith('.html')]:
+            source_path = os.path.join(self.micrOS_dir_path, source)
+            if self.dry_run:
+                state = True
+            else:
+                state = LocalMachine.FileHandler.copy(source_path, self.precompiled_micrOS_dir_path)
+            if not state:
+                self.console("Copy error", state='err')
+        workdir_handler.popd()
+
 
     def get_micrOS_version(self, config_string=None):
         # Get repo version

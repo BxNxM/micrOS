@@ -23,6 +23,7 @@ In case of any technical comments or requests, please use [![GitHub Discussions]
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 
 📲 💻 Communication over WiFi: Generic communication API <br/>
+📲 Apple shortcuts compatible http REST API<br/>
 &nbsp;&nbsp; ✉️ Expose upython module functions - telnet TCP/IP <br/>
 ⚙️ 📝 Device initialization from user config <br/>
 🧩  Codeless end user experience via phone client <br/>
@@ -339,8 +340,9 @@ GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
 | **`devip`**            |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you are able to provide specific static IP here.
 | **`nwmd`**             |     `n/a`  `<str>`          |      Yes        | Prefered network mode - `AP` or `STA`
 | **`hwuid`**            |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
-| **`guimeta`**          |      `n/a`  `str`           |      No        | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
-| **`telegram`**          |      `n/a`  `str`          |      No        | `TELEGRAM_BOT_TOKEN` to enable micrOS Notifications. **Hint**, to create bot with botfather: [click](https://blog.devgenius.io/how-to-set-up-your-telegram-bot-using-botfather-fd1896d68c02). After enabling this, send `/ping` to telegram chat for chat ID sync.
+| **`guimeta`**          |      `n/a`  `str`           |      No         | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data.
+| **`telegram`**          |      `n/a`  `str`          |      No          | `TELEGRAM_BOT_TOKEN` to enable micrOS Notifications. **Hint**, to create bot with botfather: [click](https://blog.devgenius.io/how-to-set-up-your-telegram-bot-using-botfather-fd1896d68c02). After enabling this, send `/ping` to telegram chat for chat ID sync.
+| **`webui`**            |       `False`  `bool`        |      Yes        | Launch http rest server on port 80 (in parallel with micrOS shell on port 9008 aka `socport`). It has 2 endpoints: / aka main page (index.html) and /rest aka rest (json) interface for load module execution. Example: `<devfid>.local` or `<devfid>.local/rest` + optional parameters: `/rgb/toggle`. **Apple shortcuts compatible**
 
 > Note: Default empty value: `n/a` in case of string parameter.
 > Note: Cron is only available on devices with Timer(**1**): esp32

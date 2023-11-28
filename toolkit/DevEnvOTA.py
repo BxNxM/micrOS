@@ -165,6 +165,7 @@ class OTA(Compile):
 
         # Precompile micrOS
         self.precompile_micros()
+        self.copy_other_resources_to_precompiled()  # html for example (set for more types...)
 
         # Get device IP and friendly name
         if device is None:

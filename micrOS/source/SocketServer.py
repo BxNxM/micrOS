@@ -25,15 +25,6 @@ except:
     from simgc import collect, mem_free
 
 
-class Debug:
-    INDENT = 0
-
-    @staticmethod
-    def console(msg):
-        console_write("|" + "-" * Debug.INDENT + msg)
-        Debug.INDENT += 1 if Debug.INDENT < 50 else 0       # Auto indent
-
-
 #########################################################
 #         SOCKET SERVER-CLIENT HANDLER CLASSES          #
 #           Client (Base), ShellCli, WebCli             #
@@ -41,14 +32,20 @@ class Debug:
 
 class Client:
     ACTIVE_CLIS = {}
+    INDENT = 0
+
+    @staticmethod
+    def console(msg):
+        console_write("|" + "-" * Client.INDENT + msg)
+        Client.INDENT += 1 if Client.INDENT < 50 else 0       # Auto indent
 
     def __init__(self, reader, writer):
         self.connected = True
         self.reader = reader
         self.writer = writer
-        # Set client ID - TODO: set prefix by child type (ShellCli or WebCli)
+        # Set client ID
         client_id = writer.get_extra_info('peername')
-        self.client_id = f"{'.'.join(client_id[0].split('.')[-2:])}:{str(client_id[1])}"
+        self.client_id = f"{type(self).__name__[0]}{'.'.join(client_id[0].split('.')[-2:])}:{str(client_id[1])}"
         self.last_msg_t = ticks_ms()
 
     async def read(self):
@@ -59,18 +56,18 @@ class Client:
         - connection error handling (stop: return True)
         - exit command handling (stop: return True)
         """
-        Debug.console(f"[Client] read {self.client_id}")
+        Client.console(f"[Client] read {self.client_id}")
         self.last_msg_t = ticks_ms()
         try:
             request = (await self.reader.read(2048))
             request = request.decode('utf8').strip()
         except Exception as e:
-            Debug.console(f"[Client] Stream read error ({self.client_id}): {e}")
+            Client.console(f"[Client] Stream read error ({self.client_id}): {e}")
             collect()           # gc collection: "fix" for memory allocation failed, allocating 2049 bytes
             return True, ''
 
         # Input handling
-        Debug.console(f"[Client] raw request ({self.client_id}): |{request}|")
+        Client.console(f"[Client] raw request ({self.client_id}): |{request}|")
         if request in ('exit', ''):
             return True, request
         return False, request
@@ -80,7 +77,7 @@ class Client:
         [Base] Async socket send method
         """
         if self.connected:
-            # Debug.console("[Client] ----- SteamWrite: {}".format(response))
+            # Client.console("[Client] ----- SteamWrite: {}".format(response))
             # Store data in stream buffer
             try:
                 self.writer.write(response.encode('utf8'))
@@ -91,11 +88,11 @@ class Client:
             # Send buffered data with async task - hacky
             try:
                 # send write buffer
-                # Debug.console("  |----- start drain")
+                # Client.console("  |----- start drain")
                 await self.writer.drain()
-                # Debug.console("  |------ stop drain")
+                # Client.console("  |------ stop drain")
             except Exception as e:
-                Debug.console(f"[Client] Drain error -> close conn: {e}")
+                Client.console(f"[Client] Drain error -> close conn: {e}")
                 await self.close()
         else:
             console_write(f"[Client] NoCon: {response}")
@@ -108,14 +105,14 @@ class Client:
         """
         [Base] Async socket close method
         """
-        Debug.console(f"[Client] Close connection {self.client_id}")
+        Client.console(f"[Client] Close connection {self.client_id}")
         try:
             self.writer.close()
             await self.writer.wait_closed()
         except Exception as e:
-            Debug.console(f"[Client] Close error {self.client_id}: {e}")
+            Client.console(f"[Client] Close error {self.client_id}: {e}")
         self.connected = False
-        Debug.INDENT = 0
+        Client.INDENT = 0
         # Maintain ACTIVE_CLIS - remove closed connection by peer.
         Client.drop_client(self.client_id)
         # gc.collect()
@@ -134,7 +131,7 @@ class Client:
     def __del__(self):
         """Client GC collect"""
         collect()
-        Debug.console(f"[Client] del: {self.client_id}")
+        Client.console(f"[Client] del: {self.client_id}")
 
 
 class WebCli(Client):
@@ -144,9 +141,9 @@ class WebCli(Client):
 
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
-        Debug.console("[WebCli] --- HTTP REQUEST DETECTED")
+        Client.console("[WebCli] --- HTTP REQUEST DETECTED")
         if request.startswith('GET /rest'):
-            Debug.console("[WebCli] --- /REST accept")      # REST API (GET)
+            Client.console("[WebCli] --- /REST accept")      # REST API (GET)
             try:
                 await self.a_send(self.rest(request))
             except Exception as e:
@@ -155,7 +152,7 @@ class WebCli(Client):
             return
 
         if request.startswith('GET /'):
-            Debug.console("[WebCli] --- / accept")          # HOMEPAGE ENDPOINT (fallback as well)
+            Client.console("[WebCli] --- / accept")          # HOMEPAGE ENDPOINT (fallback as well)
             try:
                 with open('index.html', 'r') as file:
                     html = file.read()
@@ -215,7 +212,7 @@ class ShellCli(Client, Shell):
 
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer)
-        Debug.console(f"[ShellCli] new conn: {self.client_id}")
+        Client.console(f"[ShellCli] new conn: {self.client_id}")
         self.drain_event = asyncio.Event()
         self.drain_event.set()
         Shell.__init__(self)
@@ -228,7 +225,7 @@ class ShellCli(Client, Shell):
             if self.prompt() != response:
                 # [format] Add new line if not prompt
                 response = f"{response}\n"
-            # Debug.console("[Client] ----- SteamWrite: {}".format(response))
+            # Client.console("[Client] ----- SteamWrite: {}".format(response))
             # Store data in stream buffer
             try:
                 self.writer.write(response.encode('utf8'))
@@ -253,17 +250,17 @@ class ShellCli(Client, Shell):
         self.drain_event.clear()
         try:
             # send write buffer
-            # Debug.console("  |----- start drain")
+            # Client.console("  |----- start drain")
             await self.writer.drain()
-            # Debug.console("  |------ stop drain")
+            # Client.console("  |------ stop drain")
         except Exception as e:
-            Debug.console(f"[ShellCli] Drain error -> close conn: {e}")
+            Client.console(f"[ShellCli] Drain error -> close conn: {e}")
             await self.close()
         # set drain free
         self.drain_event.set()
 
     async def close(self):
-        Debug.console(f"[ShellCli] Close connection {self.client_id}")
+        Client.console(f"[ShellCli] Close connection {self.client_id}")
         self.send("Bye!\n")
         # Reset shell state machine
         self.reset()
@@ -278,14 +275,14 @@ class ShellCli(Client, Shell):
         # Run micrOS shell with request string
         try:
             # Handle micrOS shell
-            Debug.console("[ShellCli] --- #Run shell")
+            Client.console("[ShellCli] --- #Run shell")
             state = self.shell(request)
             if state:
                 return True
         except Exception as e:
             if "ECONNRESET" in str(e):
                 await self.close()
-            Debug.console(f"[ShellCli] Shell exception: {e}")
+            Client.console(f"[ShellCli] Shell exception: {e}")
             return False
         collect()
         self.send(f"[HA] Shells cleanup: {mem_free()}")
@@ -356,7 +353,7 @@ class SocketServer:
             self._timeout = 5 if soc_timeout < 5 else soc_timeout
             # ---         ----
             self._initialized = True
-            Debug.console("[ socket server ] <<constructor>>")
+            Client.console("[ socket server ] <<constructor>>")
 
     #####################################
     #       Socket Server Methods       #
@@ -379,14 +376,14 @@ class SocketServer:
             return True, new_client_id      # [!] Enable new connection
 
         # Get active clients timeout counters - handle new client depending on active client timeouts
-        Debug.console(f"NEW CLIENT CONN: {new_client_id}")
+        Client.console(f"NEW CLIENT CONN: {new_client_id}")
         enable_new = False
         for cli_id, cli in Client.ACTIVE_CLIS.items():
             cli_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
-            Debug.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{self._timeout - cli_inactive}s")
+            Client.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{self._timeout - cli_inactive}s")
             if not cli.connected or cli_inactive > self._timeout:
                 # OPEN CONNECTION IS INACTIVE > CLOSE
-                Debug.console("------- client timeout - accept new connection")
+                Client.console("------- client timeout - accept new connection")
                 await cli.close()
                 enable_new = True
                 break
@@ -395,7 +392,7 @@ class SocketServer:
         if enable_new:
             return True, new_client_id  # [!] Enable new connection
         # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
-        Debug.console("------- connection busy")
+        Client.console("------- connection busy")
         # Handle only single connection
         await new_client.a_send("Connection is busy. Bye!")
         await new_client.close()  # Play nicely - close connection
@@ -445,13 +442,14 @@ class SocketServer:
         Define async socket server (tcp by default)
         """
         addr = ifconfig()[1][0]
-        Debug.console(f"[ socket server ] Start socket server on {addr}:{self._port}")
+        Client.console(f"[ socket server ] Start socket server on {addr}:{self._port}")
         self.server = asyncio.start_server(self.shell_cli, self._host, self._port, backlog=self._conn_queue)
         await self.server
+        Client.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
         if cfgget('webui'):
             web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._conn_queue)
             await web
-        Debug.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
+            Client.console(f"- HTTP server ready, connect: http://{addr}")
 
     @staticmethod
     def reply(msg):
@@ -464,5 +462,5 @@ class SocketServer:
                 cli.send(msg)
 
     def __del__(self):
-        Debug.console("[ socket server ] <<destructor>>")
+        Client.console("[ socket server ] <<destructor>>")
         self.server.close()

@@ -15,7 +15,8 @@ from Debug import console_write, errlog_add
 from Shell import Shell
 from Network import ifconfig
 import uasyncio as asyncio
-from TaskManager import Manager
+from json import dumps
+from TaskManager import Manager, exec_lm_core
 from utime import ticks_ms, ticks_diff
 try:
     from gc import collect, mem_free
@@ -187,18 +188,26 @@ class WebCli(Client):
         await self.close()
 
     def rest(self, request):
+        result = ''
+
+        def _msg_buff(msg):
+            nonlocal result
+            result += msg
+
         resp_schema = {'result': None, 'state': False}
         cmd = request.split()[1].replace('/rest', '')
         if len(cmd) > 1:
             # REST sub-parameter handling (rest commands)
-            cmd = cmd.replace('/', ' ').strip()
-            # TODO: call LM
-            resp_schema['result'] = f"Exec: {cmd}"
-            resp_schema['state'] = True
+            cmd = cmd.replace('/', ' ').strip().split()
+            cmd.append('>json')                             # request json format instead of string
+            # EXECUTE COMMAND - LoadModule
+            state = exec_lm_core(cmd, msgobj=_msg_buff)
+            resp_schema['result'] = result
+            resp_schema['state'] = state
         else:
             resp_schema['result'] = f"Homepage"
             resp_schema['state'] = True
-        response = f"'{resp_schema}'"
+        response = dumps(resp_schema)
         return f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(response)}\r\n\r\n{response}"
 
 

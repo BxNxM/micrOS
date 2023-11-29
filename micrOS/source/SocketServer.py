@@ -10,14 +10,14 @@ Designed by Marcell Ban aka BxNxM GitHub
 #                         IMPORTS                       #
 #########################################################
 
-from ConfigHandler import cfgget
-from Debug import console_write, errlog_add
-from Shell import Shell
-from Network import ifconfig
 import uasyncio as asyncio
 from json import dumps
-from TaskManager import Manager, exec_lm_core
 from utime import ticks_ms, ticks_diff
+from ConfigHandler import cfgget
+from Debug import console_write, errlog_add
+from Network import ifconfig
+from TaskManager import Manager, exec_lm_core
+from Shell import Shell
 try:
     from gc import collect, mem_free
 except:
@@ -34,19 +34,26 @@ class Client:
     ACTIVE_CLIS = {}
     INDENT = 0
 
-    @staticmethod
-    def console(msg):
-        console_write("|" + "-" * Client.INDENT + msg)
-        Client.INDENT += 1 if Client.INDENT < 50 else 0       # Auto indent
-
-    def __init__(self, reader, writer):
+    def __init__(self, reader, writer, r_size):
+        """
+        Base class for async client handling
+        :param reader: async reader stream object
+        :param writer: async writer stream object
+        :param r_size: async socket read size
+        """
         self.connected = True
         self.reader = reader
         self.writer = writer
+        self.read_bytes = r_size       # bytes to read on async socket (default: micrOS shell size)
         # Set client ID
         client_id = writer.get_extra_info('peername')
         self.client_id = f"{type(self).__name__[0]}{'.'.join(client_id[0].split('.')[-2:])}:{str(client_id[1])}"
         self.last_msg_t = ticks_ms()
+
+    @staticmethod
+    def console(msg):
+        console_write("|" + "-" * Client.INDENT + msg)
+        Client.INDENT += 1 if Client.INDENT < 50 else 0       # Auto indent
 
     async def read(self):
         """
@@ -59,7 +66,7 @@ class Client:
         Client.console(f"[Client] read {self.client_id}")
         self.last_msg_t = ticks_ms()
         try:
-            request = (await self.reader.read(2048))
+            request = (await self.reader.read(self.read_bytes))
             request = request.decode('utf8').strip()
         except Exception as e:
             Client.console(f"[Client] Stream read error ({self.client_id}): {e}")
@@ -98,7 +105,7 @@ class Client:
             console_write(f"[Client] NoCon: {response}")
 
     def send(self, response):
-        # Implement in child class
+        # Implement in child class - synchronous send method
         pass
 
     async def close(self):
@@ -137,7 +144,7 @@ class Client:
 class WebCli(Client):
 
     def __init__(self, reader, writer):
-        Client.__init__(self, reader, writer)
+        Client.__init__(self, reader, writer, r_size=256)
 
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
@@ -145,13 +152,13 @@ class WebCli(Client):
         if request.startswith('GET /rest'):
             Client.console("[WebCli] --- /REST accept")      # REST API (GET)
             try:
-                await self.a_send(self.rest(request))
+                await self.a_send(WebCli.rest(request))
             except Exception as e:
                 response = f"HTTP/1.1 404 {e}\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found"
                 await self.a_send(response)
             return
 
-        if request.startswith('GET /'):
+        if request.startswith('GET / HTTP'):
             Client.console("[WebCli] --- / accept")          # HOMEPAGE ENDPOINT (fallback as well)
             try:
                 with open('index.html', 'r') as file:
@@ -162,7 +169,7 @@ class WebCli(Client):
             await self.a_send(response)
             return
 
-        # Neither GET / or /rest request - handle error message
+        # INVALID REQUEST: Not home page / OR Not /rest endpoint
         response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request"
         await self.a_send(response)
 
@@ -184,7 +191,8 @@ class WebCli(Client):
         # Close connection
         await self.close()
 
-    def rest(self, request):
+    @staticmethod
+    def rest(request):
         result = ''
 
         def _msg_buff(msg):
@@ -211,7 +219,7 @@ class WebCli(Client):
 class ShellCli(Client, Shell):
 
     def __init__(self, reader, writer):
-        Client.__init__(self, reader, writer)
+        Client.__init__(self, reader, writer, r_size=2048)          # r_size: 2048 default on ShellCli!
         Client.console(f"[ShellCli] new conn: {self.client_id}")
         self.drain_event = asyncio.Event()
         self.drain_event.set()
@@ -442,7 +450,7 @@ class SocketServer:
         Define async socket server (tcp by default)
         """
         addr = ifconfig()[1][0]
-        Client.console(f"[ socket server ] Start socket server on {addr}:{self._port}")
+        Client.console(f"[ socket server ] Start socket server on {addr}")
         self.server = asyncio.start_server(self.shell_cli, self._host, self._port, backlog=self._conn_queue)
         await self.server
         Client.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
@@ -454,8 +462,8 @@ class SocketServer:
     @staticmethod
     def reply(msg):
         """
+        Reply All - stream data to all connection...
         Only used for LM msg stream over Common.socket_stream wrapper
-        - stream data to all connection...
         """
         for cli_id, cli in Client.ACTIVE_CLIS.items():
             if cli.connected:

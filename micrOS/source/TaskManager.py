@@ -221,7 +221,8 @@ class Manager:
             cls.INSTANCE = super(Manager, cls).__new__(cls)
             cls.INSTANCE._initialized = False
             # Set async event loop exception handler
-            asyncio.get_event_loop().set_exception_handler(cls.axcept)
+            asyncio.get_event_loop().set_exception_handler(lambda loop=None, context=None:
+                                                           errlog_add(f"[aio] exception: {loop}:{context}"))
         return cls.INSTANCE
 
     def __init__(self):
@@ -231,13 +232,6 @@ class Manager:
             self.create_task(callback=self.idle_task(), tag="idle")
             self._initialized = True
             console_write("[TASK MANAGER] <<constructor>>")
-
-    @staticmethod
-    def axcept(loop=None, context=None):
-        """
-        Set as async exception handler
-        """
-        errlog_add(f"[aio] exception: {loop}:{context}")
 
     @staticmethod
     def _queue_len():
@@ -519,16 +513,12 @@ def _exec_lm_core(arg_list, msgobj):
     # Dict output user format / jsonify
     def __format_out(json_mode, lm_func, output):
         if isinstance(output, dict):
-            if json_mode:
-                return dumps(output)
-            # Format dict output - human readable
-            return '\n'.join([f" {key}: {value}" for key, value in lm_output.items()])
+            # json True: output->json else Format dict output "human readable"
+            return dumps(output) if json_mode else '\n'.join([f" {key}: {value}" for key, value in lm_output.items()])
         # Handle output data stream
         if lm_func == 'help':
-            if json_mode:
-                return dumps(output)
-            # Format help msg - human readable
-            return '\n'.join([f" {out}," for out in output])
+            # Special case for help command: json True: output->json else Format dict output "human readable"
+            return dumps(output) if json_mode else '\n'.join([f" {out}," for out in output])
         return output
 
     # Check json mode for LM execution

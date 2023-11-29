@@ -26,118 +26,97 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
     #############################################
     # micropython request - internal functions  #
     #############################################
-    def _chunked(data):
+    def _chunked(_body):
         decoded = bytearray()
-        while data:
+        while _body:
             # Find the end of the chunk size line
-            line_end = data.find(b"\r\n")
+            line_end = _body.find(b"\r\n")
             if line_end < 0:
                 break
 
             # Extract the chunk size and convert to int
-            chunk_size_str = data[:line_end]
+            chunk_size_str = _body[:line_end]
             try:
                 chunk_size = int(chunk_size_str, 16)
             except ValueError as e:
                 chunk_size = 0
-                print(f'decode_chunked error: {e}')
 
             # Check chunk size
             if chunk_size == 0:
                 break
 
             # Add the chunk data to the decoded data
-            chunk_data = data[line_end + 2 : line_end + 2 + chunk_size]
+            chunk_data = _body[line_end + 2: line_end + 2 + chunk_size]
             decoded += chunk_data
 
             # Move to the next chunk
-            data = data[line_end + 4 + chunk_size :]
+            _body = _body[line_end + 4 + chunk_size:]
 
             # Check for end of message marker again
-            if not data.startswith(b"\r\n"):
+            if not _body.startswith(b"\r\n"):
                 break
         return decoded
 
-    def _parse_url(url, headers=None):
-        if headers is None:
-            headers = {}
-        # PARSE URL -> proto (http/https), host, path + SET PORT
-        proto, _, host, path = url.split('/', 3)
-        port = 443 if proto == 'https:' else 80
-        # PARSE HOST - handle direct port number as input after :
-        if ':' in host:
-            host, port = host.split(':', 1)
-            port = int(port)
-        return proto, host, port, path, headers
-
-    def _build_request(data, headers, method, path, host, json):
-        # BUILD REQUEST: body, headers
-        if data is not None:
-            body = data.encode('utf-8')
-            headers['Content-Length'] = len(body)
-        elif json is not None:
-            body = dumps(json).encode('utf-8')
-            headers['Content-Length'] = len(body)
-            headers['Content-Type'] = 'application/json'
-        else:
-            body = None
-        # [3.1] Create request lines list (body)
-        lines = [f'{method} /{path} HTTP/1.1']
-        for k, v in headers.items():
-            lines.append(f'{k}: {v}')
-        lines.append('Host: %s' % host)
-        lines.append('Connection: close')
-        http_request = '\r\n'.join(lines) + '\r\n\r\n'
-        if body is not None:
-            http_request += body.decode('utf-8')
-        return http_request
-
-    def _parse_response(response):
-        # PARSE RESPONSE
-        headers, body = response.split(b'\r\n\r\n', 1)
-        status_code = int(headers.split(b' ')[1])
-        headers = dict(h.split(b': ') for h in headers.split(b'\r\n')[1:])
-        if headers.get(b'Transfer-Encoding', b'') == b'chunked':
-            body = _chunked(body)
-        else:
-            body = body.decode('utf-8')
-        return status_code, body
-
-    def _host_to_addr(host, port, force=False):
+    def _host_to_addr(force=False):
         """
         Cache host address to avoid getaddrinfo (slow)
         """
-        addr = ADDR_CACHE.get(host, None)
-        if addr is None or force:
-            addr = getaddrinfo(host, port)[0][-1]
-            ADDR_CACHE[host] = addr
-        return addr
-
+        nonlocal host, port
+        _addr = ADDR_CACHE.get(host, None)
+        if _addr is None or force:
+            _addr = getaddrinfo(host, port)[0][-1]
+            ADDR_CACHE[host] = _addr
+        return _addr
 
     #############################################
     #           micropython request main        #
     #############################################
 
-    # Parse URL
-    proto, host, port, path, headers = _parse_url(url, headers)
+    # [_parse_url] Parse HTTP(S) URL
+    headers = {} if headers is None else headers
+    # PARSE URL -> proto (http/https), host, path + SET PORT
+    proto, _, host, path = url.split('/', 3)
+
+    port = 443 if proto == 'https:' else 80
+    # PARSE HOST - handle direct port number as input after :
+    if ':' in host:
+        host, port = host.split(':', 1)
+        port = int(port)
 
     # [1] CONNECT - create socket object
     sock = socket()
     sock.settimeout(2)
     # [1.1] CONNECT - resolve IP by host
-    addr = _host_to_addr(host, port)
+    addr = _host_to_addr()
     # [1.2] CONNECT - if https handle ssl
     try:
         sock.connect(addr)
     except Exception:
         # Refresh host address & reconnect
-        addr = _host_to_addr(host, port, force=True)
+        addr = _host_to_addr(force=True)
         sock.connect(addr)
-    if proto == 'https:':
-        sock = wrap_socket(sock)
 
-    # Create request
-    http_request = _build_request(data, headers, method, path, host, json)
+    sock = wrap_socket(sock) if proto == 'https:' else sock
+
+    # [_build_request] Create request (body, headers)
+    body = None
+    if data:
+        body = data.encode('utf-8')
+        headers['Content-Length'] = len(body)
+    elif json:
+        body = dumps(json).encode('utf-8')
+        headers['Content-Length'] = len(body)
+        headers['Content-Type'] = 'application/json'
+
+    # [3.1] Create request lines list (body)
+    lines = [f'{method} /{path} HTTP/1.1']
+    for k, v in headers.items():
+        lines.append(f'{k}: {v}')
+    lines.append('Host: %s' % host)
+    lines.append('Connection: close')
+    http_request = '\r\n'.join(lines) + '\r\n\r\n'
+    if body:
+        http_request += body.decode('utf-8')
 
     # [2] SEND REQUEST
     if proto == 'https:':
@@ -155,11 +134,16 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
         if not data:
             break
         response += data
-        #print("RAW DATA STREAM: {}".format(data))
     sock.close()
 
-    # Parse response
-    status_code, body = _parse_response(response)
+    # [_parse_response] Parse response - get body
+    headers, body = response.split(b'\r\n\r\n', 1)
+    status_code = int(headers.split(b' ')[1])
+    headers = dict(h.split(b': ') for h in headers.split(b'\r\n')[1:])
+    if headers.get(b'Transfer-Encoding', b'') == b'chunked':
+        body = _chunked(body)
+    else:
+        body = body.decode('utf-8')
 
     # Return status code, headers and body (text or jsons)
     return status_code, loads(body) if jsonify else body

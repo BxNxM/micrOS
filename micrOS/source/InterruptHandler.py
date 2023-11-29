@@ -171,7 +171,7 @@ def initEventIRQs():
         console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i, irq_en, irq_trig))
         console_write("|- [IRQ] EXTIRQ CBF: {}".format(irq_cbf))
         # Init external IRQx
-        if irq_en and irq_cbf.strip() != "n/a":
+        if irq_en and irq_cbf != b'n/a':
             __core(_pin=__get_pin(f"irq{i}"), _trig=irq_trig, _lm_cbf=irq_cbf)
 
 #################################################################

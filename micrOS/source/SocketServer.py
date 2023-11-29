@@ -203,7 +203,8 @@ class WebCli(Client):
         cmd = request.split()[1].replace('/rest', '')
         if len(cmd) > 1:
             # REST sub-parameter handling (rest commands)
-            cmd = cmd.replace('/', ' ').strip().split()
+            cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"').replace('%E2%80%9D', '"')
+                   .replace('-', ' ').strip().split())
             cmd.append('>json')                             # request json format instead of string
             # EXECUTE COMMAND - LoadModule
             state = exec_lm_core(cmd, msgobj=_msg_buff)

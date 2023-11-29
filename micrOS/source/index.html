@@ -10,12 +10,12 @@
     <h1>Hello from MicroPython Web Server!</h1>
     <p>This is a basic HTML page served by your micrOS web server.</p>
 
-    <h2>REST API v0.1</h2>
-    <p>LIMITATIONS: NO PYTHON string casting like "hello word" over url AND Load module task launch with "&" </p>
-    <p>:D EXAMPLE: system heartbeat</p>
+    <h2>⇥ REST API v1.0</h2>
+    <p>❌LIMITATIONS: cannot start background task from rest api (&/&&) </p>
+    <p>EXAMPLE: system heartbeat</p>
 
     <!-- Input field for string -->
-    <label for="inputString">Enter micrOS command:</label>
+    <label for="inputString">⚙️Enter micrOS command:</label>
     <input type="text" id="inputString">
 
     <!-- Button to send data -->
@@ -23,7 +23,8 @@
 
     <!-- Display generated URL -->
     <p id="generatedUrl"></p>
-    <div id="rest_response"></div>
+    <pre id="rest_response"></pre>          <!-- Using <pre> for preformatted text -->
+    <p id="rest_response_time"></p>
 
     <script>
         function sendData() {
@@ -43,16 +44,27 @@
             // Display the generated URL on the webpage
             document.getElementById('generatedUrl').innerHTML = `Generated URL: ${apiUrl}`;
 
+            // Record the start time
+            const startTime = performance.now();
+            let endTime;
+
             fetch(apiUrl)
                 .then(response => {
+                    // Record the end time
+                    endTime = performance.now();
+
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }
-                    return response.text();
+                    return response.json();
                 })
                 .then(data => {
                     // Handle the data received from the server
-                    document.getElementById('rest_response').innerHTML = data;
+                    document.getElementById('rest_response').innerHTML = JSON.stringify(data, null, 4);
+
+                    // Calculate and print the communication time (delta)
+                    const delta = (endTime - startTime).toFixed(0);
+                    document.getElementById('rest_response_time').innerHTML = `⏱Response time: ${delta} ms`;
                 })
                 .catch(error => {
                     console.error('Error:', error);

@@ -207,8 +207,8 @@ class Manager:
     micrOS async task handler
     """
     INSTANCE = None                      # Manager object
-    QUEUE_SIZE = cfgget('aioqueue') # QUEUE size from config
-    OLOAD = 0                       # CPU overload measure
+    QUEUE_SIZE = cfgget('aioqueue')      # QUEUE size from config
+    OLOAD = 0                            # CPU overload measure
 
     def __new__(cls):
         """
@@ -286,9 +286,10 @@ class Manager:
             Create async Task with coroutine/list(lm call) callback
         """
         if isinstance(callback, list):
-            # Check queue if task is load module
+            # Check queue if task is Load Module
             Manager._queue_limiter()
             return MagicTask().create(callback=callback, loop=loop, sleep=delay)
+        # No limit for Native tasks!!!
         return NativeTask().create(callback=callback, tag=tag)
 
     @staticmethod

@@ -36,14 +36,11 @@ def set_time(year, month, mday, hour, min, sec):
 def ntp_time():
     """
     Set NTP time with utc shift + update BOOTIME/uptime
-    :param utc_shift: +/- hour (int)
-    :return: None
+    :return: ntp date struct
     """
-
     if not WLAN(STA_IF).isconnected():
         errlog_add("STA not connected: ntptime")
         return False
-
     import struct
 
     def get_ntp():

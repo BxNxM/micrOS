@@ -36,10 +36,10 @@ def system_time_generator(max=100000000):
     return generator
 
 
-def dummyirq_sec(raw_cron_input, irqperiod):
+def dummyirq_sec(cron_data, irqperiod):
     from time import sleep
     while True:
-        scheduler(raw_cron_input, irqperiod)
+        scheduler(cron_data, irqperiod)
         sleep(0.00001)
 
 
@@ -103,13 +103,13 @@ def __resolve_time_tag(check_time, crontask):
             return ()
 
         # Update check_time with resolved value by tag
-        if not offset:
-            check_time = ('*', value[0], value[1], value[2])
-        else:
+        if offset:
             offset_time = ((value[0]*60 + value[1]) + offset)
             offset_time = offset_time if offset_time > 0 else 1440 + offset_time        # 1440 -> 24h in minutes
             h, m, _ = __convert_sec_to_time(offset_time * 60)
             check_time = ('*', h, m, value[2])
+            return check_time
+        check_time = ('*', value[0], value[1], value[2])
     return check_time
 
 
@@ -200,10 +200,10 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
     return False
 
 
-def deserialize_raw_input(raw_cron_input):
+def deserialize_raw_input(cron_data):
     """
     Scheduler/Cron input string format
-    :param raw_cron_input: cron, time based task execution
+    :param cron_data: raw cron tasks, time based task execution input (bytearray)
         example: WD:H:M:S!LM func;WD:H:M:S!LM func; ...
 
         time_tag: timestamp / time-tag aka suntime
@@ -216,17 +216,18 @@ def deserialize_raw_input(raw_cron_input):
     Returns tuple: (("WD:H:M:S", 'LM FUNC'), ("WD:H:M:S", 'LM FUNC'), ...)
     """
     try:
-        # Parse and create return
-        return tuple(tuple(cron.split('!')) for cron in raw_cron_input.split(';'))
+        # Parse and create return - convert cron_data (bytearray) to string
+        return (tuple(cron.split('!')) for cron in str(cron_data, 'utf-8').split(';'))
     except Exception as e:
         console_write("[cron] deserialize: syntax error: {}".format(e))
         errlog_add("[cron][ERR] deserialize: syntax error: {}".format(e))
-    return tuple()
+    return ()
 
 
-def scheduler(scheduler_input, irqperiod):
+def scheduler(cron_data, irqperiod):
     """
-    irqperiod - in sec
+    :param cron_data: bytearray data (check syntax down below)
+    :param irqperiod: - in sec
     RAW INPUT SYNTAX:
         'WD:H:M:S!CMD;WD:H:M:S!CMD2;...'
     RAW INPUT SYNTAX TAG SUPPORT:
@@ -247,7 +248,7 @@ def scheduler(scheduler_input, irqperiod):
         for cron in builtin_tasks:
             state |= __scheduler_trigger(cron_time_now, cron, deltasec=irqperiod)
         # Check user tasks (str)
-        for cron in deserialize_raw_input(scheduler_input):
+        for cron in deserialize_raw_input(cron_data):
             state |= __scheduler_trigger(cron_time_now, cron, deltasec=irqperiod)
         return state
     except Exception as e:

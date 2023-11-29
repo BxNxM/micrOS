@@ -144,7 +144,7 @@ class Client:
 class WebCli(Client):
 
     def __init__(self, reader, writer):
-        Client.__init__(self, reader, writer, r_size=256)
+        Client.__init__(self, reader, writer, r_size=512)
 
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""

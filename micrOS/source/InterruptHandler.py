@@ -59,10 +59,10 @@ def enableInterrupt():
     if cfgget("timirq"):
         from machine import Timer
         # INIT TIMER IRQ with callback function wrapper
-        lm_str = cfgget('timirqcbf')
+        lm_byte = bytearray(cfgget('timirqcbf'), 'utf-8')                   # Store as bytearray (optimization?)
         timer = Timer(0)
         timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC,
-                   callback=lambda timer: exec_lm_pipe_schedule(lm_str))
+                   callback=lambda timer: exec_lm_pipe_schedule(str(lm_byte, 'utf-8')))
 
 
 #############################################
@@ -80,11 +80,11 @@ def enableCron():
     if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
         from machine import Timer
         # INIT TIMER 1 IRQ with callback function wrapper
-        lm_str = cfgget('crontasks')
+        lm_byte = bytearray(cfgget('crontasks'), 'utf-8')           # store as bytearray (cache optimization)
         sample = int(timer_period/1000)
         timer = Timer(1)
         timer.init(period=timer_period, mode=Timer.PERIODIC,
-                   callback=lambda timer: scheduler(lm_str, sample))
+                   callback=lambda timer: scheduler(lm_byte, sample))
 
 
 #################################################################
@@ -122,7 +122,7 @@ def initEventIRQs():
             _p_last[_pin] = ticks_ms()
             # [!] Execute User Load module by pin number (with micropython.schedule wrapper)
             # console_write(f"---> action")
-            exec_lm_pipe_schedule(_cbf)
+            exec_lm_pipe_schedule(str(_cbf, 'utf-8'))
 
     def __core(_pin, _trig, _lm_cbf):
         """Run External/Event IRQ setup with __edge_exec callback handler"""
@@ -166,7 +166,7 @@ def initEventIRQs():
     for i in range(1, 5):
         # load IRQx params
         irq_en = cfgget(f"irq{i}")
-        irq_cbf = cfgget(f"irq{i}_cbf")
+        irq_cbf = bytearray(cfgget(f"irq{i}_cbf"), 'utf-8')         # Store as bytearray (optimization?)
         irq_trig = cfgget(f"irq{i}_trig")
         console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i, irq_en, irq_trig))
         console_write("|- [IRQ] EXTIRQ CBF: {}".format(irq_cbf))

@@ -4,14 +4,14 @@ from sys import modules
 
 
 @socket_stream
-def listlm(msgobj=None):
+def listmods(msgobj=None):
     """
     Load module package manager
     - list all load modules
     """
     # Dump available LMs
     msg_buf = []
-    for k in (res.replace('LM_', '') for res in listdir() if 'LM_' in res):
+    for k in (res.replace('LM_', '') for res in listdir() if res.startswith('LM_') or res.endswith('.html')):
         if msgobj is None:
             msg_buf.append('   {}'.format(k))
         else:
@@ -35,6 +35,24 @@ def dellm(lm=None):
         except Exception as e:
             return f'Cannot delete: {lm}: {e}'
     return f'Invalid value: {lm}'
+
+
+def delhtml(html=None):
+    """
+    Load module package manager
+    - delete load module
+    :param lm: Delete Load Module with full name: module.py or module.mpy
+    """
+    if html is not None and html.endswith('.html'):
+        # LM exception list - system and lmpacman cannot be deleted
+        if 'index.html' == html.strip():
+            return f'Main page {html} is protected, skip delete.'
+        try:
+            remove(f'{html}')
+            return f'Delete html: {html}'
+        except Exception as e:
+            return f'Cannot html: {html}: {e}'
+    return f'Invalid value: {html}'
 
 
 def del_duplicates():
@@ -84,10 +102,10 @@ def micros_checksum(msgobj=None):
         with open(f_name, 'rb') as f:
             cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
         msgobj("{} {}".format(cs, f_name))
-        gclean()
+    # GC collect?
     return "micrOS version: {}".format(cfgget('version'))
 
 
 def help():
-    return 'listlm', 'dellm lm=<module>.py/.mpy', 'del_duplicates',\
-           'module unload="LM_rgb/None"', 'micros_checksum'
+    return 'listmods', 'dellm lm=<module>.py/.mpy', 'del_duplicates',\
+           'module unload="LM_rgb/None"', 'delhtml html=<page>.html', 'micros_checksum'

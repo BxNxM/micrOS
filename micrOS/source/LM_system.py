@@ -34,40 +34,21 @@ def disk_usage():
     return {'percent': used_fs_percent, 'fs_used': used_space}
 
 
-@socket_stream
-def info(msgobj=None):
+def info():
     """
     Show system info message
     - cpu clock, ram, free fs, upython, board, mac addr, uptime
     """
     from machine import freq
     from os import uname
-    msg_buffer = []
-
-    def _reply(msg):
-        nonlocal msg_buffer
-        try:
-            if msgobj is None:
-                # write buffer
-                msg_buffer.append(msg)
-            else:
-                # write socket buffer
-                msgobj(msg)
-        except Exception as e:
-            # fallback: write buffer
-            msg_buffer.append(f"{msg} ({e})")
-
-    _reply('CPU clock: {} [MHz]'.format(int(freq() * 0.0000001)))
-    _reply('Mem usage: {} %'.format(memory_usage()['percent']))
-    _reply('FS usage: {} %'.format(disk_usage()['percent']))
-    _reply('upython: {}'.format(uname()[3]))
-    _reply('board: {}'.format(uname()[4]))
+    buffer = {'CPU clock [MHz]': int(freq() * 0.0000001), 'Mem usage [%]': memory_usage()['percent'],
+              'FS usage [%]': disk_usage()['percent'], 'upython': uname()[3], 'board': uname()[4]}
     try:
-        _reply('mac: {}'.format(get_mac()))
+        buffer['mac'] = get_mac()
     except:
-        _reply('mac: n/a')
-    _reply('uptime: {}'.format(uptime()))
-    return '\n'.join(msg_buffer)
+        buffer['mac'] = 'n/a'
+    buffer['uptime'] = uptime()
+    return buffer
 
 
 def gclean():

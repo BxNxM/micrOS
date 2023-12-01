@@ -110,10 +110,15 @@ class OTA(Compile):
             status, answer_msg = socketClient.run(['--dev', device, 'system info'])
         if status:
             try:
-                upython = [upython for upython in answer_msg.split("\n") if "upython" in upython][0]
-                upython_version = upython.split(" ")[1].replace('v', '')
+                upython = [version for version in answer_msg.split("\n") if "upython" in version][0]
+                upython_version = upython.split(":")[1].replace('v', '').strip()
             except Exception as e:
-                self.console("Cannot get upython version from board {}: {}".format(device, e))
+                self.console("[2.0] Cannot get upython version from board {}: {}".format(device, e))
+                try:
+                    upython = [upython for upython in answer_msg.split("\n") if "upython" in upython][0]
+                    upython_version = upython.split(" ")[1].replace('v', '')
+                except Exception as e2:
+                    self.console("[1.0] Cannot get upython version from board {}: {}".format(device, e2))
 
         self.console("|- mpy-cross version: {}".format(mpy_cross_version))
         self.console("|- upython version on {}: {}".format(device, upython_version))

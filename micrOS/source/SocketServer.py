@@ -11,18 +11,22 @@ Designed by Marcell Ban aka BxNxM GitHub
 #########################################################
 
 import uasyncio as asyncio
-from json import dumps
 from utime import ticks_ms, ticks_diff
 from ConfigHandler import cfgget
 from Debug import console_write, errlog_add
 from Network import ifconfig
-from TaskManager import Manager, exec_lm_core
+from TaskManager import Manager
 from Shell import Shell
 try:
     from gc import collect, mem_free
 except:
     console_write("[SIMULATOR MODE GC IMPORT]")
     from simgc import collect, mem_free
+
+# Module load optimization, needed only for webui
+if cfgget('webui'):
+    from json import dumps, loads
+    from TaskManager import exec_lm_core
 
 
 #########################################################
@@ -208,10 +212,13 @@ class WebCli(Client):
             cmd.append('>json')                             # request json format instead of string
             # EXECUTE COMMAND - LoadModule
             state = exec_lm_core(cmd, msgobj=_msg_buff)
-            resp_schema['result'] = result
+            try:
+                resp_schema['result'] = loads(result)           # Load again ... hack for embedded shell json converter...
+            except:
+                resp_schema['result'] = result
             resp_schema['state'] = state
         else:
-            resp_schema['result'] = f"Homepage"
+            resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid')}
             resp_schema['state'] = True
         response = dumps(resp_schema)
         return f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(response)}\r\n\r\n{response}"

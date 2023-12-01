@@ -2,74 +2,121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
     <title>MicroPython Web Server</title>
+    <style>
+        @keyframes backgroundAnimation {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}}
+        body {
+            height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            margin: 40px;
+            background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
+            background-size: 400% 400%;
+            animation: backgroundAnimation 15s infinite;
+            color: #d9d9d9;
+            font-family: 'Arial', sans-serif;
+        }
+    </style>
 </head>
 <body>
-    <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo">
-    <h1>Hello from MicroPython Web Server!</h1>
-    <p>This is a basic HTML page served by your micrOS web server.</p>
 
-    <h2>⇥ REST API v1.0</h2>
-    <p>❌LIMITATIONS: cannot start background task from rest api (&/&&) </p>
-    <p>EXAMPLE: system heartbeat</p>
+    <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
+    <h1> microWeb server </h1>
+    <!-- Display SysApiCall output -->
+    <p id="SysApiCall"></p>
+
+    <h2>⇥ 🚀REST API v1.1</h2>
+    <p>Clickable examples 🕹</p>
+    <button onclick="usrApiCall('system/info')">SysInfo</button>
+    <button onclick="usrApiCall('system/alarms')">Alarms</button>
+    <button onclick="usrApiCall('system/clock')">Clock</button>
 
     <!-- Input field for string -->
-    <label for="inputString">⚙️Enter micrOS command:</label>
-    <input type="text" id="inputString">
+    <label for="inputApiCmd"> <h3>⚙️ Enter micrOS command:</h3> </label>
+    <input type="text" id="inputApiCmd">
 
     <!-- Button to send data -->
-    <button onclick="sendData()">Send</button>
+    <button onclick="usrApiCall()">Send</button>
 
-    <!-- Display generated URL -->
-    <p id="generatedUrl"></p>
-    <pre id="rest_response"></pre>          <!-- Using <pre> for preformatted text -->
+    <!-- Display usrApiCallUrl generated from inputApiCmd -->
+    <p id="usrApiCallUrl"></p>
+
+    <!-- Display usrApiCallUrl ap call output / response -->
+    <pre id="usrApiCallResponse"></pre>
+
+    <!-- Display response time in ms -->
     <p id="rest_response_time"></p>
 
     <script>
-        function sendData() {
-            // Get the current hostname from the URL
+        function restApi(cmd = '') {
+            // Get the current hostname and create the REST API URL
             const currentHostname = window.location.hostname;
+            const apiUrl = `http://${currentHostname}/rest/${cmd}`;
 
-            // Construct the base URL for the REST API
-            const baseUrl = `http://${currentHostname}`;
+            // Run rest call - promise
+            return new Promise((resolve, reject) => {
+                fetch(apiUrl).then(response => {
+                    if (!response.ok) {throw new Error('Network response was not ok');}
+                    return response.json();
+                }).then(data => {
+                    // Resolve the promise with the data and apiUrl
+                    resolve({ data, apiUrl });
+                }).catch(error => {
+                    // Reject the promise with the error
+                    reject(error);
+                });
+            });
+        }
+        function usrApiCall(cmd = '') {
+            // Input handling
+            let inputApiCmd = ''
+            if (cmd == '') {inputApiCmd = document.getElementById('inputApiCmd').value;
+            } else {inputApiCmd = cmd;}
+            const sanitizedInput = inputApiCmd.trim().replace(/\s+/g, '/');
 
-            // Get the input string from the input field
-            const inputString = document.getElementById('inputString').value;
-            // Replace whitespaces with "/" characters
-            const sanitizedInput = inputString.replace(/\s+/g, '/');
-            // Concatenate the sanitized input string to the API endpoint
-            const apiUrl = `${baseUrl}/rest/${sanitizedInput}`;
-
-            // Display the generated URL on the webpage
-            document.getElementById('generatedUrl').innerHTML = `Generated URL: ${apiUrl}`;
-
-            // Record the start time
             const startTime = performance.now();
             let endTime;
 
-            fetch(apiUrl)
-                .then(response => {
-                    // Record the end time
-                    endTime = performance.now();
+            // Call rest api with command parameter
+            restApi(sanitizedInput).then(result => {
+                endTime = performance.now();
 
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Handle the data received from the server
-                    document.getElementById('rest_response').innerHTML = JSON.stringify(data, null, 4);
+                // Access the returned variables
+                const { data, apiUrl } = result;
 
-                    // Calculate and print the communication time (delta)
-                    const delta = (endTime - startTime).toFixed(0);
-                    document.getElementById('rest_response_time').innerHTML = `⏱Response time: ${delta} ms`;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+                // Display the generated URL on the webpage
+                document.getElementById('usrApiCallUrl').innerHTML =
+                `<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
+
+                // Handle the data received from the server
+                document.getElementById('usrApiCallResponse').innerHTML = JSON.stringify(data, null, 4);
+
+                const delta = (endTime - startTime).toFixed(0);
+                document.getElementById('rest_response_time').innerHTML = `⏱ Response time: ${delta} ms`;
+            }).catch(error => {
+                console.error('Error:', error);
+            });
         }
+        function SysApiCall() {
+            // Call rest api without command param /rest
+            restApi().then(result => {
+                // Access the returned variables
+                const { data, apiUrl } = result;
+
+                // Handle the data received from the server
+                document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
+                                                     .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                                                     .join('  ❖  ').replace(/"/g, '');
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        // Init basic info from board
+        SysApiCall()
     </script>
 </body>
 </html>

@@ -74,13 +74,13 @@ class Data:
             pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
             console_write(f"[PIN MAP] {pinmap}")
         # SET dbg based on config settings (inject user conf)
-        DebugCfg.DEBUG = cfgget('dbg')
-        if Data.CONFIG_CACHE['dbg']:
+        DebugCfg.DEBUG = Data.CONFIG_CACHE['dbg']
+        if DebugCfg.DEBUG:
             # if debug ON, set progress led
             DebugCfg.init_pled()
         else:
             # Show info message - dbg OFF
-            console_write("[micrOS] debug print - turned off")
+            print("[micrOS] debug print - turned off")
 
 
     @staticmethod

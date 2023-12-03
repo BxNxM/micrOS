@@ -52,7 +52,7 @@
 
         function restApi(cmd = '') {
             let inputApiCmd = ''
-            if (cmd == '') {inputApiCmd = document.getElementById('inputApiCmd').value;
+            if (cmd == '') {inputApiCmd=document.getElementById('inputApiCmd').value;
             } else {inputApiCmd = cmd;}
             cmd = inputApiCmd.trim().replace(/\s+/g, '/');
 
@@ -66,23 +66,22 @@
             // Call rest api with command parameter
             fetch(apiUrl).then(response => {
                 // Check if the request was successful (status code 200)
-                if (!response.ok) {throw new Error('Network response was not ok: ' + response.status);}
+                if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
                 // Parse the JSON response
                 endTime = performance.now();
                 return response.json();
             }).then(data => {
                 // Display the generated URL on the webpage
-                document.getElementById('usrApiCallUrl').innerHTML =
-                `<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
+                document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
 
                 // Handle the data received from the server
-                document.getElementById('usrApiCallResponse').innerHTML = JSON.stringify(data, null, 4);
+                document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
                 const delta = (endTime - startTime).toFixed(0);
-                document.getElementById('rest_response_time').innerHTML = `⏱ Response time: ${delta} ms`;
+                document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
 
                 // Update sys info
-                if (cmd == '') {document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
-                                                     .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                if (cmd == '') {document.getElementById('SysApiCall').innerHTML=Object.entries(data['result'])
+                                                     .map(([key, value])=>`${key}: ${JSON.stringify(value)}`)
                                                      .join('  ❖  ').replace(/"/g, '');}
             }).catch(error => {console.error('Fetch error:', error);});
         }

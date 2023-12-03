@@ -17,8 +17,8 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from LogicalPins import detect_platform
 from ConfigHandler import cfgget
+from LogicalPins import detect_platform
 from Debug import console_write
 from TaskManager import exec_lm_pipe
 from micropython import mem_info

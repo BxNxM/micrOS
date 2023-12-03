@@ -33,20 +33,17 @@
     <button onclick="restApi('system/info')">SysInfo</button>
     <button onclick="restApi('system/alarms')">Alarms</button>
     <button onclick="restApi('system/clock')">Clock</button>
+    <button onclick="restApi('task/list')">Tasks</button>
 
     <!-- Input field for string -->
     <label for="inputApiCmd"> <h3>⚙️ Enter micrOS command:</h3> </label>
     <input type="text" id="inputApiCmd">
-
     <!-- Button to send data -->
     <button onclick="restApi()">Send</button>
-
     <!-- Display usrApiCallUrl generated from inputApiCmd -->
     <p id="usrApiCallUrl"></p>
-
-    <!-- Display usrApiCallUrl ap call output / response -->
+    <!-- Display api response -->
     <pre id="usrApiCallResponse"></pre>
-
     <!-- Display response time in ms -->
     <p id="rest_response_time"></p>
 
@@ -54,7 +51,6 @@
         const currentHostname = window.location.hostname;
 
         function restApi(cmd = '') {
-            // Input handling
             let inputApiCmd = ''
             if (cmd == '') {inputApiCmd = document.getElementById('inputApiCmd').value;
             } else {inputApiCmd = cmd;}
@@ -70,9 +66,7 @@
             // Call rest api with command parameter
             fetch(apiUrl).then(response => {
                 // Check if the request was successful (status code 200)
-                if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.status);
-                }
+                if (!response.ok) {throw new Error('Network response was not ok: ' + response.status);}
                 // Parse the JSON response
                 endTime = performance.now();
                 return response.json();
@@ -83,20 +77,14 @@
 
                 // Handle the data received from the server
                 document.getElementById('usrApiCallResponse').innerHTML = JSON.stringify(data, null, 4);
-
                 const delta = (endTime - startTime).toFixed(0);
                 document.getElementById('rest_response_time').innerHTML = `⏱ Response time: ${delta} ms`;
 
-                if (cmd == '') {
-                    // Update sys info
-                    document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
+                // Update sys info
+                if (cmd == '') {document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
                                                      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-                                                     .join('  ❖  ').replace(/"/g, '');
-                }
-            }).catch(error => {
-                // Handle errors
-                console.error('Fetch error:', error);
-            });
+                                                     .join('  ❖  ').replace(/"/g, '');}
+            }).catch(error => {console.error('Fetch error:', error);});
         }
         // Init basic info from board
         restApi()

@@ -22,7 +22,7 @@ def socket_stream(func):
     (SocketServer singleton class - reply all bug/feature)
     """
     def wrapper(*args, **kwargs):
-        return func(*args, **kwargs, msgobj=SocketServer.reply)
+        return func(*args, **kwargs, msgobj=SocketServer.reply_all)
     return wrapper
 
 

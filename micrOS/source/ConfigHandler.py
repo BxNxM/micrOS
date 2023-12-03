@@ -102,9 +102,9 @@ class Data:
         try:
             # [LOOP] Only returns True
             Data.write_cfg_file()
-            console_write("[CONF] Save conf struct successful")
+            console_write("[CONF] Save conf successful")
         except Exception as e:
-            console_write(f"[CONF] Save conf struct failed: {e}")
+            console_write(f"[CONF] Save conf failed: {e}")
             errlog_add(f"[ERR] __inject_default_conf error: {e}")
         finally:
             del liveconf

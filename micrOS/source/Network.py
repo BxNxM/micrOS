@@ -21,7 +21,9 @@ from machine import unique_id
 from ConfigHandler import cfgget, cfgput
 from Debug import console_write, errlog_add
 
-NW_IF = None
+
+class NW:
+    NIF = None
 
 #################################################################
 #                 NW INTERFACE STATUS FUNCTIONS                 #
@@ -32,10 +34,10 @@ def ifconfig():
     """
     :return: network mode (AP/STA), ifconfig tuple
     """
-    if NW_IF is None:
+    if NW.NIF is None:
         return '', ("0.0.0.0", "0.0.0.0", "0.0.0.0", "0.0.0.0")
     nw_mode = 'STA'
-    if_tuple = NW_IF.ifconfig()
+    if_tuple = NW.NIF.ifconfig()
     if if_tuple[0] == if_tuple[2]:
         nw_mode = 'AP'
     return nw_mode, if_tuple
@@ -82,7 +84,6 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
 
 
 def set_wifi(essid, pwd, timeout=60):
-    global NW_IF
     console_write(f'[NW: STA] SET WIFI STA NW {essid}')
 
     # Disable AP mode
@@ -131,7 +132,7 @@ def set_wifi(essid, pwd, timeout=60):
     # Store STA IP (make it static ip)
     cfgput("devip", str(sta_if.ifconfig()[0]))
     set_dev_uid()
-    NW_IF = sta_if
+    NW.NIF = sta_if
     return sta_if.isconnected()
 
 
@@ -164,7 +165,6 @@ def __set_wifi_dev_static_ip(sta_if):
 
 
 def set_access_point(_essid, _pwd, _authmode=3):
-    global NW_IF
     console_write(f"[NW: AP] SET AP MODE: {_essid} - {_pwd} - auth mode: {_authmode} (if possible)")
 
     sta_if = WLAN(STA_IF)
@@ -192,7 +192,7 @@ def set_access_point(_essid, _pwd, _authmode=3):
         errlog_add("[ERR][SET AP] config error")
     console_write(f"\t|\t| [NW: AP] network config: {str(ap_if.ifconfig())}")
     set_dev_uid()
-    NW_IF = ap_if
+    NW.NIF = ap_if
     return ap_if.active()
 
 #################################################################

@@ -152,7 +152,6 @@ class WebCli(Client):
 
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
-        Client.console("[WebCli] --- HTTP REQUEST DETECTED")
         if request.startswith('GET /rest'):
             Client.console("[WebCli] --- /REST accept")      # REST API (GET)
             try:
@@ -199,7 +198,7 @@ class WebCli(Client):
     def rest(request):
         result = ''
 
-        def _msg_buff(msg):
+        def _msg(msg):
             nonlocal result
             result += msg
 
@@ -211,9 +210,9 @@ class WebCli(Client):
                    .replace('-', ' ').strip().split())
             cmd.append('>json')                             # request json format instead of string
             # EXECUTE COMMAND - LoadModule
-            state = exec_lm_core(cmd, msgobj=_msg_buff)
+            state = exec_lm_core(cmd, msgobj=_msg)
             try:
-                resp_schema['result'] = loads(result)           # Load again ... hack for embedded shell json converter...
+                resp_schema['result'] = loads(result)       # Load again ... hack for embedded shell json converter...
             except:
                 resp_schema['result'] = result
             resp_schema['state'] = state
@@ -468,7 +467,7 @@ class SocketServer:
             Client.console(f"- HTTP server ready, connect: http://{addr}")
 
     @staticmethod
-    def reply(msg):
+    def reply_all(msg):
         """
         Reply All - stream data to all connection...
         Only used for LM msg stream over Common.socket_stream wrapper

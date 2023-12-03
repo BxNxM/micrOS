@@ -8,9 +8,9 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from TaskManager import Manager
-from SocketServer import SocketServer
-from Network import auto_nw_config
 from Hooks import bootup, profiling_info
+from Network import auto_nw_config
+from SocketServer import SocketServer
 from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
 from Debug import errlog_add

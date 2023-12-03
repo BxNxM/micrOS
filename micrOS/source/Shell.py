@@ -24,12 +24,12 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.37.0-0'
+    MICROS_VERSION = '1.38.0-0'
 
     def __init__(self):
         """
-        comm_obj - communication object - send messages back
-                 - comm_obj.reply('msg')
+        Shell class for prompt based communication
+        - send method have to be defined by child class -> SocektServer.send !!!
         """
         # Used node_config parameters
         self.__devfid = cfgget('devfid')
@@ -44,11 +44,6 @@ class Shell:
         except Exception as e:
             console_write(f"Export system version to config failed: {e}")
             errlog_add(f"[Shell][ERR] system version export error: {e}")
-
-    @staticmethod
-    def send(msg):
-        # Placeholder method, it will be overwritten by SocektServer.send
-        print(msg)
 
     def reset(self):
         """Reset shell state"""
@@ -120,6 +115,7 @@ class Shell:
             self.send(f"hello:{self.__devfid}:{self.__hwuid}")
             return True
 
+        # [!] AUTH
         state, msg_list = self.__authentication(msg_list)
         if not state:
             return False
@@ -199,37 +195,34 @@ class Shell:
     #                     CONFIGURE MODE HANDLER                    #
     #################################################################
     @staticmethod
-    def _configure(msg_obj, attributes):
+    def _configure(msg_obj, msg_list):
         """
         :param msg_obj: shell output stream function pointer (write object)
-        :param attributes: socket input param list
+        :param msg_list: socket input param list
         :return: execution status
         """
         # [CONFIG] Get value
-        if len(attributes) == 1:
-            if attributes[0] == 'dump':
+        if len(msg_list) == 1:
+            if msg_list[0] == 'dump':
                 # DUMP DATA
                 for key, value in cfgget().items():
-                    spcr = (10 - len(key))
-                    msg_obj(f"  {key}{' ' * spcr}:{' ' * 7} {value}")
+                    msg_obj(f"  {key}{' ' * (10 - len(key))}:{' ' * 7} {value}")
                 return True
             # GET SINGLE PARAMETER VALUE
-            msg_obj(cfgget(attributes[0]))
+            msg_obj(cfgget(msg_list[0]))
             return True
         # [CONFIG] Set value
-        if len(attributes) >= 2:
+        if len(msg_list) >= 2:
             # Deserialize params
-            key = attributes[0]
-            value = " ".join(attributes[1:])
+            key = msg_list[0]
             # Set the parameter value in config
             try:
-                output = cfgput(key, value, type_check=True)
+                output = cfgput(key, " ".join(msg_list[1:]), type_check=True)
             except Exception as e:
                 msg_obj(f"node_config write error: {e}")
                 output = False
             # Evaluation and reply
-            issue_msg = 'Invalid key' if cfgget(key) is None else 'Failed to save'
-            msg_obj('Saved' if output else issue_msg)
+            msg_obj('Saved' if output else 'Invalid key' if cfgget(key) is None else 'Failed to save')
         return True
 
     #################################################################
@@ -241,8 +234,8 @@ class Shell:
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
         """
-        def _offline_help(module_list):
-            for lm_path in (i for i in module_list if i.startswith('LM_') and (i.endswith('py'))):
+        def _offline_help(modules):
+            for lm_path in (i for i in modules if i.startswith('LM_') and (i.endswith('py'))):
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
                     msg_obj(f"   {lm_name}")
@@ -277,10 +270,9 @@ class Shell:
         msg_obj(f"  Connect over http://micropython.org/webrepl/#{ifconfig()[1][0]}:8266/")
         msg_obj(f"  \t[!] webrepl password: {cfgget('appwd')}")
         if update:
-            msg_obj('  Restart node then start webrepl...')
-        msg_obj(" Bye!")
-        if update:
-            # Set update poller by interface mode file: .if_mode
+            msg_obj(" Restart node then start webrepl...")
+            msg_obj(" Bye!")
+            # Set .if_mode->webrepl (start webrepl after reboot and poll update status...)
             with open('.if_mode', 'w') as f:
                 f.write('webrepl')
             hard_reset()

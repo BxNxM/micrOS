@@ -42,12 +42,12 @@ def info():
     from machine import freq
     from os import uname
     buffer = {'CPU clock [MHz]': int(freq() * 0.0000001), 'Mem usage [%]': memory_usage()['percent'],
-              'FS usage [%]': disk_usage()['percent'], 'upython': uname()[3], 'board': uname()[4]}
+              'FS usage [%]': disk_usage()['percent'], 'upython': uname()[3], 'board': uname()[4],
+              'uptime': uptime()}
     try:
         buffer['mac'] = get_mac()
     except:
         buffer['mac'] = 'n/a'
-    buffer['uptime'] = uptime()
     return buffer
 
 

@@ -139,7 +139,7 @@ def suntime():
     # Get sunrise, sunset date times by lon, lat params
     sun = {'sunrise': (), 'sunset': ()}
     if not (lat is None or lon is None):
-        url = f'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'
+        url = f'http://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'
         try:
             _, response = http_get(url, sock_size=512, jsonify=True)
             results = response.get('results')

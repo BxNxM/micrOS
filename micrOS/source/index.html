@@ -83,7 +83,7 @@
                 if (cmd == '') {document.getElementById('SysApiCall').innerHTML=Object.entries(data['result'])
                                                      .map(([key, value])=>`${key}: ${JSON.stringify(value)}`)
                                                      .join('  ❖  ').replace(/"/g, '');}
-            }).catch(error => {console.error('Fetch error:', error);});
+            }).catch(error => {console.error('Fetch error:', error, data);});
         }
         // Init basic info from board
         restApi()

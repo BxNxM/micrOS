@@ -6,6 +6,7 @@ except ImportError as e:
     from socket import socket, getaddrinfo
     from ssl import wrap_socket
 from json import loads, dumps
+from Debug import errlog_add
 
 
 ADDR_CACHE = {}
@@ -85,7 +86,7 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
 
     # [1] CONNECT - create socket object
     sock = socket()
-    sock.settimeout(2)
+    sock.settimeout(3)
     # [1.1] CONNECT - resolve IP by host
     addr = _host_to_addr()
     # [1.2] CONNECT - if https handle ssl
@@ -96,7 +97,10 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
         addr = _host_to_addr(force=True)
         sock.connect(addr)
 
-    sock = wrap_socket(sock) if proto == 'https:' else sock
+    try:
+        sock = wrap_socket(sock) if proto == 'https:' else sock
+    except Exception as e:
+        errlog_add(f'[ERR] https soc-wrap: {e}')
 
     # [_build_request] Create request (body, headers)
     body = None

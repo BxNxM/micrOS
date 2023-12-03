@@ -23,7 +23,7 @@ from Debug import console_write, errlog_add
 
 
 class NW:
-    NIF = None
+    NIF = None          # NETWORK INTERFACE STA/AP OBJECT
 
 #################################################################
 #                 NW INTERFACE STATUS FUNCTIONS                 #

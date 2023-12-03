@@ -164,6 +164,7 @@ class Compile:
             if not state:
                 self.console("Copy error", state='err')
                 error_cnt += 1
+        self.copy_other_resources_to_precompiled()
         # Evaluation summary
         if error_cnt != 0:
             self.console("Some modules [{}] not compiled properly - please check the logs.".format(error_cnt),

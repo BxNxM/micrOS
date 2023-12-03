@@ -32,7 +32,7 @@ def measure(log=False):
     :return dict: temp, hum
     """
     _temp, _hum = __temp_hum()
-    data = {'temp [ºC]': round(_temp, 2), 'hum [%]': round(_hum, 2)}
+    data = {'temp[C]': round(_temp, 2), 'hum[%]': round(_hum, 2)}
     if log:
         data_logger(_LOG_NAME, data=str(data))
     return data
@@ -45,7 +45,7 @@ def measure_w_co2(log=False):
     """
     from LM_co2 import measure_mq135
     _temp, _hum = __temp_hum()
-    data = {'temp [ºC]': round(_temp, 2), 'hum [%]': round(_hum, 2), 'co2 [ppm]': measure_mq135(_temp, _hum)}
+    data = {'temp[C]': round(_temp, 2), 'hum[%]': round(_hum, 2), 'co2[ppm]': measure_mq135(_temp, _hum)}
     if log:
         data_logger(_LOG_NAME, data=str(data))
     return data

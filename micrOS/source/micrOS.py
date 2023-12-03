@@ -7,6 +7,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
+from Time import ntp_time, suntime
 from TaskManager import Manager
 from Hooks import bootup, profiling_info
 from Network import auto_nw_config
@@ -14,7 +15,6 @@ from SocketServer import SocketServer
 from InterruptHandler import enableInterrupt, enableCron
 from InterruptHandler import initEventIRQs
 from Debug import errlog_add
-from Time import ntp_time, suntime
 
 
 #################################################################
@@ -61,9 +61,6 @@ def micrOS():
     # BOOT TASKS: Initial LM executions
     safe_boot()
 
-    # SET external interrupt with extirqcbf from nodeconfig
-    external_irq_handler()
-
     # NETWORK setup
     nwmd = auto_nw_config()
     if nwmd == 'STA':
@@ -76,6 +73,8 @@ def micrOS():
         from Time import uptime
         uptime(update=True)
 
+    # SET external interrupt with extirqcbf from nodeconfig
+    external_irq_handler()
     # SET interrupt with timirqcbf from nodeconfig
     irq_handler()
 

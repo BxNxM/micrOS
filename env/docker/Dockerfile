@@ -6,10 +6,10 @@ RUN apt install -y iputils-ping
 RUN apt install -y telnet
 
 # micrOS install via pip
-RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade pip --no-cache-dir
 
 # [A] Build with specific PYPI version
-RUN python3 -m pip install micrOSDevToolKit==1.22.5
+RUN python3 -m pip install micrOSDevToolKit==1.41.0
 # [B] Build with development version from github
 #RUN python3 -m pip install git+https://github.com/BxNxM/micrOS.git
 

@@ -15,3 +15,5 @@ Flask
 Flask-RESTful
 matplotlib
 json2html
+wheel
+twine

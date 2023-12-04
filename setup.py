@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='micrOSDevToolKit',
-    version='1.40.0',
+    version='1.41.0',
     author='Marcell Ban',
     author_email='miros.framework@gmail.com',
     description='Development and deployment environment for micrOS, the diy micropython automation OS (IoT)',
@@ -23,7 +23,7 @@ setuptools.setup(
     },
     license='MIT',
     packages=setuptools.find_packages(),
-    install_requires=['adafruit-ampy==1.1.0', 'esptool==4.1', 'ipaddress', 'mpy-cross==1.19.1', 'netaddr',
+    install_requires=['adafruit-ampy', 'esptool', 'ipaddress', 'mpy-cross==1.20.0', 'netaddr',
                       'pylint', 'PyQt5', 'pyserial', 'resources', 'flask', 'flask_restful', 'numpy',
                       'matplotlib', 'json2html'],
     scripts=['devToolKit.py'],

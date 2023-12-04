@@ -131,7 +131,7 @@ class DropDownBase:
         self.dowpdown_obj.setGeometry(geometry_tuple[0], geometry_tuple[1] + 30, geometry_tuple[2], geometry_tuple[3])
 
         # GET DEVICE TYPES
-        self.selected_list_item = list(items_list)[0]
+        self.selected_list_item = list(items_list)[0] if len(list(items_list)) > 0 else None
 
         # making it editable
         self.dowpdown_obj.setEditable(False)

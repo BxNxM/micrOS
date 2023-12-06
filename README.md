@@ -21,7 +21,12 @@ In case of any technical comments or requests, please use [![GitHub Discussions]
 
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
-[![SHORTCUTS](./media/micrOS_shortcuts.png)](https://www.icloud.com/shortcuts/ba13ef0f42744b0290c35815b56e4ca6)
+[![SHORTCUTS](./media/micrOS_shortcuts.png)](https://www.icloud.com/shortcuts/898c2a8033d64ff0b7aadc46ee491a35)
+Example shortcut (usage of the API): [link](https://www.icloud.com/shortcuts/fab936abb34b45b5bda4c9f7abb256e9)<br/>
+Access rest api over browser: `http://<nodename>.local`
+
+----------------------------------------
+----------------------------------------
 
 📲 💻 Communication over WiFi: Generic communication API <br/>
 📲 Apple shortcuts compatible http REST API<br/>

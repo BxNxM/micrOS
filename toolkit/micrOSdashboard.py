@@ -190,7 +190,7 @@ class BoardTypeSelector(DropDownBase):
 
     def dropdown_board(self):
         title = "Select board"
-        geometry = (120, 30, 160, 30)
+        geometry = (80, 60, 160, 30)
         help_msg = "Select board type for USB deployment."
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
         supported_board_list = self.devtool_obj.dev_types_and_cmds.keys()
@@ -219,7 +219,7 @@ class MicropythonSelector(DropDownBase):
 
     def dropdown_micropythonbin(self, device_prefix=None):
         title = "Select micropython"
-        geometry = (290, 30, 200, 30)
+        geometry = (245, 60, 200, 30)
         help_msg = "Select micropython binary for USB deployment"
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
         self.dowpdown_obj.clear()
@@ -247,7 +247,7 @@ class MicrOSDeviceSelector(DropDownBase):
 
     def dropdown_micrOS_device(self):
         title = "Select device"
-        geometry = (500, 30, 170, 30)
+        geometry = (80, 230, 200, 30)
         help_msg = "Select micrOS device for OTA operations / APP execution."
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
 
@@ -294,7 +294,7 @@ class LocalAppSelector(DropDownBase):
 
     def dropdown_application(self):
         title = "Select app"
-        geometry = (682, 108, 150, 30)
+        geometry = (460, 325, 150, 30)
         help_msg = "[DEVICE] Select python application to execute!\napp dir: {}".format(APP_DIR)
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
 
@@ -329,7 +329,7 @@ class DevelopmentModifiers:
     def ignore_version_check_checkbox(self):
         checkbox = QCheckBox('Ignore version check', self.parent_obj)
         checkbox.setStyleSheet("QCheckBox::indicator:hover{background-color: yellow;}")
-        checkbox.move(20, self.parent_obj.height - 50)
+        checkbox.move(80, self.parent_obj.height - 45)
         checkbox.setToolTip(
             "[OTA][USB]\nIgnore version check.\nYou can force resource update on the same software version.")
         checkbox.toggled.connect(self.__on_click_ignore_version_check)
@@ -338,7 +338,7 @@ class DevelopmentModifiers:
         self.checkbox = QCheckBox('DEV+', self.parent_obj)  # ForceSystemCoreOta update
         self.checkbox.setChecked(FSCO_STATE)
         self.checkbox.setStyleSheet("QCheckBox::indicator:checked{background-color: red;} QCheckBox::indicator:hover{background-color: red;}")
-        self.checkbox.move(self.parent_obj.width - 255, self.parent_obj.height - 50)
+        self.checkbox.move(self.parent_obj.width - 670, self.parent_obj.height - 45)
         self.checkbox.setToolTip("[!][OTA] IgnoreSafeOta\nIn case of failure, USB re-deployment required!\n"
                                  "{}\n\n[!][OTA] LM_ prefix ignore for Quick OTA LM update.".format(', '.join(self.parent_obj.devtool_obj.safe_core_list())))
         self.checkbox.toggled.connect(self.__on_click_unsafe_core_update_ota)
@@ -370,13 +370,15 @@ class MyConsole(QPlainTextEdit):
     console = None
     lock = False
 
-    def __init__(self, parent_obj=None, line_limit=120):
+    def __init__(self, parent_obj=None, line_limit=120, x=240, y=132, w=420, h=210):
         super().__init__(parent=parent_obj)
+        font = QFont("Segoe UI", 12)
+        self.setFont(font)
         self.line_limit = line_limit
         self.setReadOnly(True)
         self.setMaximumBlockCount(self.line_limit)  # limit console lines
         self._cursor_output = self.textCursor()
-        self.setGeometry(240, 132, 420, 210)
+        self.setGeometry(x, y, w, h)
         MyConsole.console = self
 
     @pyqtSlot(str)
@@ -430,6 +432,8 @@ class HeaderInfo:
         self.draw_logo()
         self.venv_indicator()
         self.version_label()
+        # ADD here icons
+        self.create_usb_n_ota_icons()
 
     def draw_logo(self):
         """
@@ -446,14 +450,33 @@ class HeaderInfo:
         logo_path = os.path.join(MYPATH, '../media/logo_mini.png')
         button = QPushButton('', self.parent_obj)
         button.setIcon(QIcon(logo_path))
-        button.setIconSize(QtCore.QSize(80, 80))
-        button.setGeometry(20, 30, 80, 80)
+        button.setIconSize(QtCore.QSize(50, 50))
+        button.setGeometry(20, 5, 50, 50)
         button.setToolTip(f"Open micrOS repo documentation\n{self.url}")
         button.setStyleSheet('border: 0px solid black;')
         button.clicked.connect(self.__open_micrOS_URL)
 
+    def create_usb_n_ota_icons(self):
+        # Set USB icon
+        logo_path = os.path.join(MYPATH, '../media/usb_port_icon.png')
+        label = QLabel(self.parent_obj)
+        pixmap = QPixmap(logo_path)
+        pixmap = pixmap.scaled(50, 50)  # Adjust the width and height as needed
+        label.setPixmap(pixmap)
+        label.setGeometry(20, 90, 50, 50)
+        # Set OTA icon
+        logo_path = os.path.join(MYPATH, '../media/wifi_icon.png')
+        label = QLabel(self.parent_obj)
+        pixmap = QPixmap(logo_path)
+        pixmap = pixmap.scaled(50, 40)  # Adjust the width and height as needed
+        label.setPixmap(pixmap)
+        label.setGeometry(20, 260, 50, 50)
+
     def __open_micrOS_URL(self):
-        self.parent_obj.console.append_output("Open micrOS repo documentation")
+        try:
+            self.parent_obj.console.append_output("Open micrOS repo documentation")
+        except Exception as e:
+            print(f"Open micrOS repo documentation, error: {e}")
         if sys.platform == 'darwin':
             subprocess.Popen(['open', self.url])
         elif sys.platform.startswith('win'):
@@ -465,34 +488,36 @@ class HeaderInfo:
                 print('Please open a browser on: {}'.format(self.url))
 
     def version_label(self):
-        width = 110
+        width = 115
         repo_version, _ = self.devtool_obj.get_micrOS_version()
         label = QLabel("Version: {}".format(repo_version), self.parent_obj)
-        label.setGeometry(self.parent_obj.width - width - 20, 5, width, 20)
+        label.setGeometry(self.parent_obj.width - width - 20, 10, width, 40)
         label.setStyleSheet("background-color : gray; color: {}; border: 1px solid black;".format(micrOSGUI.TEXTCOLOR))
 
     def __detect_virtualenv(self):
         def get_base_prefix_compat():
             """Get base/real prefix, or sys.prefix if there is none."""
             return getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix
-
         def in_virtualenv():
             return get_base_prefix_compat() != sys.prefix
-
         return in_virtualenv()
 
     def venv_indicator(self):
+        x_start = 80
+        y_start = 10
+        height = 40
+        width_offset = -100
         if self.__detect_virtualenv():
             label = QLabel(' [devEnv] virtualenv active', self.parent_obj)
-            label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
+            label.setGeometry(x_start, y_start, self.parent_obj.width + width_offset, height)
             label.setStyleSheet("background-color : green; color: {};".format(micrOSGUI.TEXTCOLOR))
         elif 'site-packages' in MYPATH:
             label = QLabel(' [devEnv] pip deployment', self.parent_obj)
-            label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
+            label.setGeometry(x_start, y_start, self.parent_obj.width + width_offset, height)
             label.setStyleSheet("background-color : green; color: {};".format(micrOSGUI.TEXTCOLOR))
         else:
             label = QLabel(' [devEnv] virtualenv inactive', self.parent_obj)
-            label.setGeometry(20, 5, self.parent_obj.width - 150, 20)
+            label.setGeometry(x_start, y_start, self.parent_obj.width + width_offset, height)
             label.setStyleSheet("background-color : grey; color: {};".format(micrOSGUI.TEXTCOLOR))
             label.setToolTip("Please create your dependency environment:\nvirtualenv -p python3 venv\
             \nsource venv/bin/activate\npip install -r micrOS/tools/requirements.txt")
@@ -507,12 +532,12 @@ class InputField:
 
     def __create_input_field(self):
         appwd_label = QLabel(self.parent_obj)
-        appwd_label.setText("Fill OTA password")
-        appwd_label.setGeometry(680, 40, 120, 15)
+        appwd_label.setText("OTA PASSWORD")
+        appwd_label.setGeometry(290, 235, 120, 15)
 
         self.appwd_textbox = QLineEdit(self.parent_obj)
         self.appwd_textbox.setStyleSheet(f"border: 3px solid {self.color};")
-        self.appwd_textbox.move(680, 60)
+        self.appwd_textbox.move(290, 260)
         self.appwd_textbox.resize(150, 30)
         self.appwd_textbox.insert("ADmin123")
         self.appwd_textbox.setToolTip("[appwd] Fill password for OTA update.")
@@ -531,7 +556,7 @@ class ClusterStatus:
     def create_micrOS_status_button(self):
         button = QPushButton('Node(s) status', self.parent_obj)
         button.setToolTip('Get micrOS nodes status')
-        button.setGeometry(682, 350, 150, 20)
+        button.setGeometry(460, 430, 150, 20)
         button.setStyleSheet("QPushButton{background-color: Gray;} QPushButton::pressed{background-color : green;}")
         button.clicked.connect(self.get_status_callback)
 
@@ -575,34 +600,39 @@ class QuickOTAUpload(QLabel):
         self.contents_path = []
 
     def create_all(self):
+        start_x = 675
+        start_y = 330
+        width = 200
+        height = 15
         label = QLabel(self.parent_obj)
         label.setText("Quick LM OTA Upload")
-        label.setGeometry(682, 210, 149, 15)
+        label.setGeometry(start_x, start_y, width, height)
         label.setStyleSheet("background-color: white")
 
-        self.create_upload_button()
-        self.create_clean_button()
-        self.create_upload_icon()
+        self.create_upload_button(x=start_x, y=start_y, w=100, h=20)
+        self.create_clean_button(x=start_x, y=start_y, w=100, h=20)
+        self.create_upload_icon(x=start_x, y=start_y, w=200, h=100)
 
-    def create_upload_button(self):
+    def create_upload_button(self, x, y, w, h):
         button = QPushButton('Upload', self.parent_obj)
         button.setToolTip('Upload dropped files to the selected micrOS board.')
-        button.setGeometry(682, 290, 75, 20)
+        button.setGeometry(x-1, y+102, w, h)
         button.setStyleSheet("QPushButton{background-color: White; border: 3px solid " + self.parent_obj.ota_color_code + "} QPushButton::pressed{background-color : green; }")
         button.clicked.connect(self.get_upload_callback)
 
-    def create_clean_button(self):
+    def create_clean_button(self, x, y, w, h):
         button = QPushButton('Clean', self.parent_obj)
         button.setToolTip('Clean dropped file list.')
-        button.setGeometry(757, 290, 75, 20)
+        button.setGeometry(x+100, y+102, w, h)
         button.setStyleSheet("QPushButton{background-color: White;} QPushButton::pressed{background-color : green;}")
         button.clicked.connect(self.get_clean_callback)
 
-    def create_upload_icon(self):
-        self.setGeometry(682, 210, 149, 80)
+    def create_upload_icon(self, x, y, w, h):
+        self.setGeometry(x, y, w, h)
         self.setScaledContents(True)
         logo_path = os.path.join(MYPATH, '../media/dnd.png')
         pixmap = QPixmap(logo_path)
+        pixmap = pixmap.scaled(100, 100)
         self.setPixmap(pixmap)
         self.setToolTip(f"Direct LM module upload to micrOS board via webrepl\nSimulator path: {os.path.join(MYPATH, 'workspace/simulator')}")
         self.setAcceptDrops(True)
@@ -657,8 +687,8 @@ class micrOSGUI(QWidget):
         self.title = 'micrOS devToolKit GUI dashboard'
         self.left = 10
         self.top = 10
-        self.width = 850
-        self.height = 400
+        self.width = 900
+        self.height = 500
         self.board_dropdown = None
         self.micropython_dropdown = None
         self.micrOS_devide_dropdown = None
@@ -696,32 +726,30 @@ class micrOSGUI(QWidget):
         self.__create_console()
         self.progressbar = ProgressBar(self)
 
-        self.create_main_buttons()
-
-        self.nodes_status_button_obj = ClusterStatus(parent_obj=self)
-        self.nodes_status_button_obj.create_micrOS_status_button()
-
-        # Test:
-        self.quick_upload_obj = QuickOTAUpload(parent_obj=self)
-        self.quick_upload_obj.create_all()
-
+        # Draw USB related dropdowns
+        self.create_usb_buttons()
         self.board_dropdown = BoardTypeSelector(parent_obj=self, color=self.usb_color_code)
         self.board_dropdown.dropdown_board()
 
         self.micropython_dropdown = MicropythonSelector(parent_obj=self, color=self.usb_color_code)
-        # Without prefix, list all available binaries
         self.micropython_dropdown.dropdown_micropythonbin(device_prefix=self.board_dropdown.get())
 
+        # Draw OTA related dropdowns
+        self.create_ota_buttons()
         self.micrOS_devide_dropdown = MicrOSDeviceSelector(parent_obj=self, color=self.ota_color_code)
         self.device_conn_struct = self.micrOS_devide_dropdown.dropdown_micrOS_device()
-
-        self.application_dropdown = LocalAppSelector(parent_obj=self, color=self.ota_color_code)
-        self.application_dropdown.dropdown_application()
-
         self.appwd_textbox = InputField(self, color=self.ota_color_code)
 
         self.modifiers_obj = DevelopmentModifiers(parent_obj=self)
         self.modifiers_obj.create()
+
+        self.quick_upload_obj = QuickOTAUpload(parent_obj=self)
+        self.quick_upload_obj.create_all()
+        self.application_dropdown = LocalAppSelector(parent_obj=self, color=self.ota_color_code)
+        self.application_dropdown.dropdown_application()
+
+        self.nodes_status_button_obj = ClusterStatus(parent_obj=self)
+        self.nodes_status_button_obj.create_micrOS_status_button()
 
     def __recreate_MicrOSDeviceSelector(self):
         self.micrOS_devide_dropdown.update_elements()
@@ -763,11 +791,15 @@ class micrOSGUI(QWidget):
             time.sleep(1)
 
     def __create_console(self):
+        start_x = 460
+        start_y = 90
+        width = 420
+        height = 15
         dropdown_label = QLabel(self)
         dropdown_label.setText("Console".upper())
         dropdown_label.setStyleSheet("background-color : darkGray; color: {};".format(micrOSGUI.TEXTCOLOR))
-        dropdown_label.setGeometry(240, 117, 420, 15)
-        self.console = MyConsole(self)
+        dropdown_label.setGeometry(start_x, start_y, width, height)
+        self.console = MyConsole(self, x=start_x, y=start_y+15, w=width, h=185)
 
     def __validate_selected_device_with_micropython(self):
         selected_micropython_bin = self.micropython_dropdown.get()
@@ -791,28 +823,43 @@ class micrOSGUI(QWidget):
         else:
             return False
 
-    def create_main_buttons(self):
+    def create_usb_buttons(self):
+        start_x = 80
+        start_y = 130
         height = 35
         width = 200
         yoffset = 3
-        buttons = {
+        buttons_usb = {
             'Deploy (USB)': ['[micropython + micrOS deployment]\nInstall micropython on "empty board" with micrOS.\n  1. Clean board + deploy micropython\n  2. Install micrOS framework',
-                             20, 115, width, height, self.__on_click_usb_deploy, 'darkCyan', self.usb_color_code],
-            'Update (OTA)': ['[micrOS OTA Update]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
-                             20, 115 + height + yoffset, width, height, self.__on_click_ota_update, 'darkCyan', self.ota_color_code],
-            'LM Update (OTA)': ['[micrOS LMs OTA Update]\nUpdate LM (LoadModules) ONLY\nUpload micrOS LM resources over webrepl',
-                                20, 115 + (height + yoffset) * 2, width, height, self.__on_click_lm_update, 'darkCyan', self.ota_color_code],
+                             start_x, start_y, width, height, self.__on_click_usb_deploy, 'darkCyan', self.usb_color_code],
             'Update (USB)': ['[micropython + micrOS update]\nUpdate micrOS over USB\nIt will redeploy micropython as well) but restores micrOS config',
-                             20, 115 + (height + yoffset) * 3, width, height, self.__on_click_usb_update, 'darkCyan', self.usb_color_code],
+                             start_x, start_y + (height + yoffset) * 1, width, height, self.__on_click_usb_update, 'darkCyan', self.usb_color_code]
+        }
+        self.__create_button(buttons_usb)
+
+    def create_ota_buttons(self):
+        start_x = 80
+        start_y = 300
+        height = 35
+        width = 200
+        yoffset = 3
+        buttons_ota = {
+            'Update (OTA)': ['[micrOS OTA Update]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
+                             start_x, start_y, width, height, self.__on_click_ota_update, 'darkCyan', self.ota_color_code],
+            'LM Update (OTA)': ['[micrOS LMs OTA Update]\nUpdate LM (LoadModules) ONLY\nUpload micrOS LM resources over webrepl',
+                             start_x, start_y + (height + yoffset) * 1, width, height, self.__on_click_lm_update, 'darkCyan', self.ota_color_code],
             'Search device': ['[Search on WLAN]\nSearch online micrOS devices on 9008 port,\nOn local wifi network.',
-                              20, 115 + (height + yoffset) * 4, width, height, self.__on_click_search_devices,
+                               start_x, start_y + (height + yoffset) * 2, width, height, self.__on_click_search_devices,
                               'darkCyan', self.ota_color_code],
             'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
-                          20, 115 + (height + yoffset) * 5, width, height, self.__on_click_simulator, 'lightGreen', 'lightGreen'],
+                          start_x, start_y + (height + yoffset) * 3, width, height, self.__on_click_simulator, 'lightGreen', 'lightGreen'],
             'Execute': ['[micrOS Client] Execute selected client APP on device.\nAPP path: {}'.format(APP_DIR),
-                        682, 170, 150, 24, self.__on_click_exec_app, 'darkCyan', 'darkCyan']
+                        460, 390, 150, 24, self.__on_click_exec_app, 'darkCyan', 'darkCyan']
             }
 
+        self.__create_button(buttons_ota)
+
+    def __create_button(self, buttons):
         for key, data_struct in buttons.items():
             tool_tip = data_struct[0]
             x = data_struct[1]

@@ -143,7 +143,7 @@ It will open a graphical user interface for micrOS device management, like usb d
 
 ----------------------------------------
 
-![MICROSVISUALIZATION](./media/micrOSToolkit.gif?raw=true)
+![MICROSVISUALIZATION](./media/micrOSToolkit.png?raw=true)
 
 - Example
 

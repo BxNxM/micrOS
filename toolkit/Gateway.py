@@ -2,12 +2,13 @@
 # https://stackoverflow.com/questions/48095713/accepting-multiple-parameters-in-flask-restful-add-resource
 # using flask_restful
 import json
-
+import os
 from flask import Flask, jsonify, Response, make_response
 from flask_restful import Resource, Api
 import threading
 import time
 import concurrent.futures
+MYPATH = os.path.dirname(__file__)
 
 try:
     from . import socketClient
@@ -28,113 +29,23 @@ api = Api(app)
 # the get, post methods correspond to get and post requests
 # they are automatically mapped by flask_restful.
 # other methods include put, delete, etc.
+
+
 class Hello(Resource):
 
     # corresponds to the GET request.
     # this function is called whenever there
     # is a GET request for this resource
 
-    def built_in_html(self):
-        html = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
-    <title>Flask Web Server</title>
-    <style>
-        @keyframes backgroundAnimation {
-            0% {background-position: 0% 50%;}
-            50% {background-position: 100% 50%;}
-            100% {background-position: 0% 50%;}}
-        body {
-            height: 100vh;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            margin: 40px;
-            background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
-            background-size: 400% 400%;
-            animation: backgroundAnimation 15s infinite;
-            color: #d9d9d9;
-            font-family: 'Arial', sans-serif;
-        }
-    </style>
-</head>
-<body>
-    <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
-    <h1> micrOS GATEWAY </h1>
-    <!-- Display SysApiCall output -->
-    <p id="SysApiCall"></p>
-    <p> micrOS gateway 'v1.1' </p>
-    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/list &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; List known devices, sort by online/offline </p> 
-    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/search &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Search devices </p> 
-    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Get all device status - node info </p> 
-    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/sendcmd/&lt;device&gt;/&lt;cmd&gt &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Send command to the selected device. Use + instead of space </p> 
-    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/metrics/&lt;device&gt;/&lt;cmd&gt &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; REST API endpoint for Prometheus scraping, (prometheus format) </p> 
-
-    <h2> 🚀REST API </h2>
-    <p>Clickable examples 🕹</p>
-    <button onclick="restApi('list')">Devices</button>
-    <button onclick="restApi('status')">Status</button>
-
-    <!-- Input field for string -->
-    <label for="inputApiCmd"> <h3>⚙️ Enter micrOS command:</h3> </label>
-    <input type="text" id="inputApiCmd">
-    <!-- Button to send data -->
-    <button onclick="restApi()">Send</button>
-    <!-- Display usrApiCallUrl generated from inputApiCmd -->
-    <p id="usrApiCallUrl"></p>
-    <!-- Display api response -->
-    <pre id="usrApiCallResponse"></pre>
-    <!-- Display response time in ms -->
-    <p id="rest_response_time"></p>
-
-    <script>
-        const currentHostname = window.location.hostname;
-
-        function restApi(cmd = '') {
-            let inputApiCmd = ''
-            if (cmd == '') {inputApiCmd=document.getElementById('inputApiCmd').value;
-            } else {inputApiCmd = cmd;}
-            cmd = inputApiCmd.trim().replace(/\s+/g, '/');
-
-            // Get the current hostname and create the REST API URL
-            // const currentHostname = window.location.hostname;
-            let apiUrl = `http://${currentHostname}:5000/${cmd}`;
-
-            const startTime = performance.now();
-            let endTime;
-
-            // Call rest api with command parameter
-            fetch(apiUrl).then(response => {
-                // Check if the request was successful (status code 200)
-                if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
-                // Parse the JSON response
-                endTime = performance.now();
-                return response.json();
-            }).then(data => {
-                // Display the generated URL on the webpage
-                document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-
-                // Handle the data received from the server
-                document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
-                const delta = (endTime - startTime).toFixed(0);
-                document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
-
-                // Update sys info
-                if (cmd == '') {document.getElementById('SysApiCall').innerHTML=Object.entries(data['result'])
-                                                     .map(([key, value])=>`${key}: ${JSON.stringify(value)}`)
-                                                     .join('  ❖  ').replace(/"/g, '');}
-            }).catch(error => {console.error('Fetch error:', error, data);});
-        }
-        // Init basic info from board
-        restApi()
-    </script>
-</body>
-</html> 
-        """
-        return html
     def get(self):
-        return make_response(self.built_in_html())
+        index_html = os.path.join(MYPATH, 'index.html')
+        try:
+            with open(index_html, 'r') as file:
+                html = file.read()
+            response = html
+        except OSError:
+            response = "404 Not Found"
+        return make_response(response)
 
 
 class SendCmd(Resource):

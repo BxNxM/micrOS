@@ -11,7 +11,7 @@
             50% {background-position: 100% 50%;}
             100% {background-position: 0% 50%;}}
         body {
-            height: 100vh;
+            height: 150vh;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             margin: 40px;
             background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
@@ -51,10 +51,8 @@
         const currentHostname = window.location.hostname;
 
         function restApi(cmd = '') {
-            let inputApiCmd = ''
-            if (cmd == '') {inputApiCmd=document.getElementById('inputApiCmd').value;
-            } else {inputApiCmd = cmd;}
-            cmd = inputApiCmd.trim().replace(/\s+/g, '/');
+            if (cmd == '') {cmd=document.getElementById('inputApiCmd').value;}
+            cmd = cmd.trim().replace(/\s+/g, '/');
 
             // Get the current hostname and create the REST API URL
             // const currentHostname = window.location.hostname;

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
+    <title>Flask Web Server</title>
+    <style>
+        @keyframes backgroundAnimation {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}}
+        body {
+            height: 400vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            margin: 40px;
+            background: linear-gradient(110deg, #720000, #656565, #252525);
+            background-size: 400% 400%;
+            animation: backgroundAnimation 20s infinite;
+            color: #d9d9d9;
+            font-family: 'Arial', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
+    <h1> micrOS GATEWAY </h1>
+    <!-- Display micrOSDevices output -->
+    <p id="micrOSDevices"></p>
+    <p> micrOS gateway <b>v1.2</b> </p>
+    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/list &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; List known devices, sort by online/offline </p>
+    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/search &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Search devices </p>
+    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Get all device status - node info </p>
+    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/sendcmd/&lt;device&gt;/&lt;cmd&gt &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Send command to the selected device. Use + instead of space </p>
+    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/metrics/&lt;device&gt;/&lt;cmd&gt &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; REST API endpoint for Prometheus scraping, (prometheus format) </p>
+
+    <h2> 🚀⎈ GW REST API </h2>
+    <p>Gateway commands 🕹</p>
+    <button onclick="restApi('list')">Devices</button>
+    <button onclick="restApi('status')">Status</button>
+    <button onclick="restApi('search')">Search</button>
+
+    <!-- Input field for string -->
+    <label for="inputApiCmd"> <h3>⚙️ Enter micrOS command:</h3> </label>
+
+    <label for="dropdown">Device</label>
+    <select id="dropdown">
+    </select>
+
+
+    <input type="text" id="inputApiCmd">
+    <!-- Button to send data -->
+    <button onclick="restApi(cmd='')">Send</button>
+    <!-- Display usrApiCallUrl generated from inputApiCmd -->
+    <p id="usrApiCallUrl"></p>
+    <!-- Display api response -->
+    <pre id="usrApiCallResponse"></pre>
+    <!-- Display response time in ms -->
+    <p id="rest_response_time"></p>
+
+    <script>
+        const currentHostname = window.location.hostname;
+        var deviceLinksHTML = [];
+
+        function restApi(cmd = 'list') {
+            if (cmd == '') {cmd=document.getElementById('inputApiCmd').value;}
+            cmd = cmd.trim().replace(/\s+/g, '+');
+            // Check if the mainString does not start with any of the specified values
+            if (!cmd.startsWith("list") && !cmd.startsWith("search") && !cmd.startsWith("status")){
+                // Set device from dropdown
+                const dropdown = document.getElementById("dropdown");
+                let fuid = dropdown.value;
+                cmd = `sendcmd/${fuid}/${cmd}`
+            }
+
+            // Get the current hostname and create the REST API URL
+            // const currentHostname = window.location.hostname;
+            let apiUrl = `http://${currentHostname}:5000/${cmd}`;
+
+            const startTime = performance.now();
+            let endTime;
+
+            // Call rest api with command parameter
+            fetch(apiUrl).then(response => {
+                // Check if the request was successful (status code 200)
+                if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
+                // Parse the JSON response
+                endTime = performance.now();
+                return response.json();
+            }).then(data => {
+                // Display the generated URL on the webpage
+                document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
+
+                // Handle the data received from the server
+                document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
+                const delta = (endTime - startTime).toFixed(0);
+                document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
+
+                // Update Online Devices dropdown
+                if (cmd === 'list' && data) {
+                    deviceLinksHTML = [];
+                    if (data['online']){
+                        // Get entries from 'online' and iterate over them
+                        Object.entries(data['online']).forEach(([UID, deviceInfo]) => {
+                            // Here, you can access FUID and use it as needed
+                            //console.log(`UID: ${UID} VALUE: ${deviceInfo[2]}`);
+                            upload_device_dropdown(deviceInfo[2])
+                            // Update devices list (online)
+                            update_device_links(deviceInfo[2])
+                        });
+                    }
+                    if (data['offline']){
+                        // Get entries from 'offline' and iterate over them
+                        Object.entries(data['offline']).forEach(([UID, deviceInfo]) => {
+                            // Update devices list (offline)
+                            if (!deviceInfo[2].startsWith("__")) {
+                                // The string starts with "__" - SKIP simulator and AP mode if offline
+                                update_device_links(deviceInfo[2], color='red')
+                            }
+                        });
+                    }
+                    document.getElementById("micrOSDevices").innerHTML = deviceLinksHTML.join("");
+                }
+            }).catch(error => {console.error('Fetch error:', error, data);});
+        }
+
+        function update_device_links(fuid, color='green'){
+            var linkTemplate = `<a href="http://${fuid}.local" target="_blank" style="background-color: ${color}; color: white; padding: 6px;">${fuid}</a>`;
+            deviceLinksHTML.push(`${linkTemplate}&nbsp;`);
+
+            if (deviceLinksHTML.length % 7 === 0) {
+                deviceLinksHTML.push("<br><br>");
+            }
+        }
+
+        function upload_device_dropdown(option='-new-') {
+            // Get the dropdown element
+            var dropdown = document.getElementById("dropdown");
+
+            if (!isOptionExists(dropdown, option)) {
+                // Create a new option element
+                var newOption = document.createElement("option");
+
+                // Set the value and text of the new option
+                newOption.value = option;
+                newOption.text = option;
+
+                // Append the new option to the dropdown
+                dropdown.appendChild(newOption);
+            }
+        }
+
+        // Function to check if an option already exists in the dropdown
+        function isOptionExists(dropdown, option) {
+            for (var i = 0; i < dropdown.options.length; i++) {
+                if (dropdown.options[i].value === option) {
+                    return true;
+                }}
+            return false;
+        }
+
+        // Init basic info from board
+        restApi()
+    </script>
+</body>
+</html>

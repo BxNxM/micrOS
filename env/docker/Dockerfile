@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM python:3.11
 
 # Debug programs
 RUN apt update
@@ -9,7 +9,7 @@ RUN apt install -y telnet
 RUN python3 -m pip install --upgrade pip --no-cache-dir
 
 # [A] Build with specific PYPI version
-RUN python3 -m pip install micrOSDevToolKit==1.42.0
+RUN python3 -m pip install micrOSDevToolKit==1.42.1
 # [B] Build with development version from github
 #RUN python3 -m pip install git+https://github.com/BxNxM/micrOS.git
 

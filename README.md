@@ -1110,6 +1110,8 @@ core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in 
 
 ### micrOS gateway - Linux service template
 
+- Prerequisite: install micrOS devtoolkit **PiP package**
+
 - Create service: [micrOS gateway service](https://domoticproject.com/creating-raspberry-pi-service/)
 
 - [1] create `micros-gw.service` file:
@@ -1120,12 +1122,12 @@ Description=micrOS gateway REST API service
 After=network-online.target
 
 [Service]
-ExecStart=/bin/bash <micrOS repo root>/magic.bash gateway
-WorkingDirectory=<micrOS repo root>
+ExecStart=/usr/bin/python3 -m devToolKit -gw
+WorkingDirectory=/home/<user>/gateway
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-User=<raspbian user>
+User=<user>
 
 [Install]
 WantedBy=multi-user.target
@@ -1133,11 +1135,11 @@ WantedBy=multi-user.target
 
 - [2] copy service to `sudo cp micros-gw.service /lib/systemd/system/`
 
-- [3] start service: `sudo systemctl start micros_gw.service`
+- [3] start service: `sudo systemctl start micros-gw.service`
 
-- [4] enable service at bootup: `sudo systemctl enable micros_gw.service`
+- [4] enable service at bootup: `sudo systemctl enable micros-gw.service`
 
-- [5] show service state: `sudo systemctl status micros_gw.service`
+- [5] show service state: `sudo systemctl status micros-gw.service`
 
 
 ### GIT

@@ -17,3 +17,4 @@ matplotlib
 json2html
 wheel
 twine
+psutil

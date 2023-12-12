@@ -119,6 +119,11 @@ then
   if [[ "${CMD_ARGS[0]}" == "env" ]]
   then
       console_log "[env] Source env only, skip devToolKit start"
+  elif [[ "${CMD_ARGS[0]}" == "install" ]]
+    then
+        echo -e "Install dev package from setup.py"
+        pip3 install -e .
+        exit 0
   elif [[ "${CMD_ARGS[0]}" == "gateway" ]]
   then
       # Start devToolKit.py gateway service
@@ -144,9 +149,9 @@ then
         git clean -fdx
       fi
       popd
-    elif [[ "${CMD_ARGS[0]}" == "sim" ]]
-    then
-       console_log "[sim] Start micrOS simulator"
+  elif [[ "${CMD_ARGS[0]}" == "sim" ]]
+  then
+      console_log "[sim] Start micrOS simulator"
       if [[ "$OSTYPE" == "linux"* ]]
       then
           # TODO [!!!!] Raspbian workaround
@@ -171,13 +176,7 @@ then
                 twine upload dist/* --verbose
             fi
         fi
-    elif [[ "${CMD_ARGS[0]}" == "install" ]]
-    then
-        echo -e "Install dev package from setup.py"
-        pip3 install -e .
     fi
-
-
 else
     help
     # Start devToolKit.py GUI

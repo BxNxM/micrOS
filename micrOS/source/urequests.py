@@ -1,10 +1,5 @@
-try:
-    from usocket import socket, getaddrinfo
-    from ussl import wrap_socket
-except ImportError as e:
-    print(f"[Error] import u modules: {e}")
-    from socket import socket, getaddrinfo
-    from ssl import wrap_socket
+from usocket import socket, getaddrinfo
+from ussl import wrap_socket
 from json import loads, dumps
 from Debug import errlog_add
 

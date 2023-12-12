@@ -18,3 +18,4 @@ json2html
 wheel
 twine
 psutil
+setuptools

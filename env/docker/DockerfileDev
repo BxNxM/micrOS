@@ -1,0 +1,26 @@
+FROM python:3.11
+
+# Debug programs
+RUN apt update
+RUN apt install -y iputils-ping
+RUN apt install -y telnet
+
+# Set the working directory
+WORKDIR /gateway
+
+# micrOS install via pip
+RUN git clone https://github.com/BxNxM/micrOS.git --depth 1
+
+# Change the working directory to the scripts directory
+WORKDIR /gateway/micrOS
+
+# Build with specific PYPI version
+RUN python3 -m pip install -e .
+
+EXPOSE 5000
+
+# Run start command
+# Search and start gateway and start simulator (beta)
+#ENTRYPOINT devToolKit.py -s -gw -sim
+# Search and start gateway
+ENTRYPOINT devToolKit.py -s -gw

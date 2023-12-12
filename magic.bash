@@ -107,7 +107,8 @@ function help {
     echo -e "sim        :start micrOS simulator on host OS"
     echo -e "gitclean   :cleans untracked files, with -f cleans ignored too"
     echo -e "<no param> :run devToolKit.py without params -> GUI"
-    echo -e "distribute :create and distribute pip package\n"
+    echo -e "distribute :create and distribute pip package"
+    echo -e "install    :install micrOS DevToolKit with setup.py from repo\n"
 }
 
 
@@ -156,7 +157,7 @@ then
           # Execution in virtual env
           python3 "${MY_PATH}/devToolKit.py" -sim
        fi
-    elif [[ "${CMD_ARGS[0]}" == "help" || "${CMD_ARGS[0]}" == "-h" ]]
+    elif [[ "${CMD_ARGS[0]}" == "--help" || "${CMD_ARGS[0]}" == "-h" || "${CMD_ARGS[0]}" == "help" ]]
     then
       help
     elif [[ "${CMD_ARGS[0]}" == "distribute" ]]
@@ -170,6 +171,10 @@ then
                 twine upload dist/* --verbose
             fi
         fi
+    elif [[ "${CMD_ARGS[0]}" == "install" ]]
+    then
+        echo -e "Install dev package from setup.py"
+        pip3 install -e .
     fi
 
 

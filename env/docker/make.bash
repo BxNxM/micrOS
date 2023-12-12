@@ -36,7 +36,7 @@ if [[ "${DEV}" == "true" ]]
 then
   # DEV BUILD
   echo -e "|------- docker build -t ${IMAGE} -f DockerfileDev"
-  docker build -t "${IMAGE}" -f DockerfileDev .
+  docker build --no-cache -t "${IMAGE}" -f DockerfileDev .
 else
   # PROD BUILD
   echo -e "|------- docker build --no-cache -t ${IMAGE}"

@@ -334,6 +334,9 @@ class Prometheus(Resource):
         """
         Convert micrOS cmd execution response to prometheus format
         """
+        # Hack out special key characters
+        response = response.replace('[', '').replace(']', '').replace('%', '')
+
         response_out = []
         try:
             # Normally expected dict (json) format as cmd output

@@ -14,15 +14,6 @@ dependencies = ['adafruit-ampy', 'esptool', 'ipaddress', 'mpy-cross==1.20.0', 'n
                 'pylint', 'PyQt5', 'pyserial', 'resources', 'flask', 'flask_restful', 'numpy',
                 'matplotlib', 'json2html']
 
-def in_container():
-    try:
-        with open('/proc/1/cgroup', 'rt') as f:
-            data = f.read()
-            if '0::/' == data.strip():
-                dependencies.remove('PyQt5')
-    except FileNotFoundError:
-        pass
-
 # Hack for raspbian - remove dep: PyQt5
 if platform.system().lower() == 'linux':
     # Check if the distribution is Raspbian
@@ -33,9 +24,6 @@ if platform.system().lower() == 'linux':
                 dependencies.remove('PyQt5')
     except Exception as e:
         print(f"Non Raspberry: {e}")
-    # Container check ...
-    in_container()
-
 
 setuptools.setup(
     name='micrOSDevToolKit',

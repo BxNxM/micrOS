@@ -2,15 +2,32 @@
 # -*- coding: utf-8 -*-
 
 import setuptools
+import platform
 
 # https://towardsdatascience.com/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+# micrOS devToolKit dependencies
+dependencies = ['adafruit-ampy', 'esptool', 'ipaddress', 'mpy-cross==1.20.0', 'netaddr',
+                'pylint', 'PyQt5', 'pyserial', 'resources', 'flask', 'flask_restful', 'numpy',
+                'matplotlib', 'json2html']
+
+# Hack for raspbian - remove dep: PyQt5
+if platform.system().lower() == 'linux':
+    # Check if the distribution is Raspbian
+    try:
+        with open('/etc/os-release', 'r') as file:
+            os_release = file.read()
+            if 'raspbian' in os_release.lower():
+                dependencies.remove('PyQt5')
+    except Exception as e:
+        print(f"Non Raspberry: {e}")
+
 setuptools.setup(
     name='micrOSDevToolKit',
-    version='1.42.1',
+    version='1.42.3',
     author='Marcell Ban',
     author_email='miros.framework@gmail.com',
     description='Development and deployment environment for micrOS, the diy micropython automation OS (IoT)',
@@ -23,9 +40,7 @@ setuptools.setup(
     },
     license='MIT',
     packages=setuptools.find_packages(),
-    install_requires=['adafruit-ampy', 'esptool', 'ipaddress', 'mpy-cross==1.20.0', 'netaddr',
-                      'pylint', 'PyQt5', 'pyserial', 'resources', 'flask', 'flask_restful', 'numpy',
-                      'matplotlib', 'json2html'],
+    install_requires=dependencies,
     scripts=['devToolKit.py'],
     include_package_data=True,
     use_scm_version=True

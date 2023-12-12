@@ -216,36 +216,36 @@
     },
     "demo": {
         "calculator": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "a b op=\"+\""
         },
         "dice_cube": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "exec_info": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "hello": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "name=\"MrNobody\""
         },
         "help": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/demo.png?raw=true",
         "links": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "source": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "yes_no": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         }
     },
@@ -944,20 +944,20 @@
     },
     "robustness": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/robustness.png?raw=true",
         "memory_leak": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "cnt=160"
         },
         "raise_error": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "recursion_limit": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "cnt=14"
         }
     },
@@ -1072,68 +1072,68 @@
     },
     "system": {
         "alarms": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "clean=False test=False"
         },
         "cachedump": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "cdel=None"
         },
         "clock": {
-            "doc": "\n    Get formatted localtime value\n    Format:\n        YYYY.MM.DD  hh:mm:ss\n        WD: 0-6 YD: 0-364\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "disk_usage": {
-            "doc": "\n    Calculate used disk space\n    return: memory usage %, disk usage in bytes\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "gclean": {
-            "doc": "\n    Run micropython garbage collection\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "heartbeat": {
-            "doc": "\n    Test function for built-in led blinking and test reply message\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "ifconfig": {
-            "doc": "\n    Show network ifconfig\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true",
         "info": {
-            "doc": "\n    Show system info message\n    - cpu clock, ram, free fs, upython, board, mac addr, uptime\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "memory_usage": {
-            "doc": "\n    Calculate used micropython memory (ram)\n    return: memory usage %, memory usage in bytes\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "ntp": {
-            "doc": "\n    Trigger NTP time sync\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    Get Logical pin by key runtime\n    :param key str: logical pin name to resolve\n    :return dict: key map\n    \npin map: map, booked, custom, builtin",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "key='builtin'"
         },
         "rssi": {
-            "doc": "\n    Show Wifi RSSI - wifi strength\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "setclock": {
-            "doc": "\n    Set Localtime + RTC Clock manually\n    :param year\n    :param month\n    :param mday\n    :param hour\n    :param min\n    :param sec\n    :return: localtime\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "year month mday hour min sec"
         },
         "sun": {
-            "doc": "\n    Get sunset/sunrise time stumps\n    Parameters:\n        (bool) refresh: trigger sync with sun rest-api\n    Return:\n        (dict) sun time\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "refresh=False"
         },
         "urequests_host_cache": {
-            "doc": "\n    Debug function for urequests address caching\n    - returns all known http(s) host addresses\n    - cache only in memory\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         }
     },
@@ -1150,24 +1150,24 @@
     },
     "telegram": {
         "help": {
-            "doc": null,
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/telegram.png?raw=true",
         "load_n_init": {
-            "doc": "\n    Set custom chat commands for Telegram\n    - /ping\n    - /cmd module function (params)\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "receive": {
-            "doc": "\n    Receive Telegram message\n    - if all value None, then no incoming messages\n    One successful msg receive is necessary to get chat_id for msg send as well!\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "receiver_loop": {
-            "doc": "\n    Telegram msg receiver loop - automatic LM execution\n    - Only executes module (function) if the module is already loaded\n    on the endpoint / micrOS node\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": ""
         },
         "send": {
-            "doc": "\n    Send Telegram message - micrOS notification\n    :param text: text to send\n    return verdict\n    ",
+            "doc": "cannot import name 'wrap_socket' from 'ssl' (/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py)",
             "param(s)": "text"
         }
     },

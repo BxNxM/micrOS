@@ -50,7 +50,7 @@ class USB(Compile):
                   'connect': 'screen {dev} 115200',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
                   'cmd_line_info': ''},
-             'rp2-pico-w':
+             'rpi-pico-w':
                  {'erase': None,
                   'deploy': self._deploy_micropython_dev_usb_storage,
                   'connect': 'screen {dev}',

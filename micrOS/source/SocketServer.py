@@ -358,7 +358,7 @@ class SocketServer:
         if not self._initialized:
             # Socket server initial parameters
             self.server = None
-            self._host = ''
+            self._host = '0.0.0.0'          # listens on all available interfaces
             self._conn_queue = 2            # CONNECTION QUEUE SIZE, common for both interface
 
             # ---- Config ---

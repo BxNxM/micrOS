@@ -57,14 +57,13 @@ def illuminance():
 
 
 async def _task(on, off, threshold, tolerance=2):
-    adc = __init_tempt6000()
     last_ev = ""
     on = on.split()
     off = off.split()
     with micro_task(tag="light_sensor.intercon") as my_task:
         my_task.out = f"threshold: {threshold} - starting"
         while True:
-            percent = adc.get()['percent']
+            percent = int(tuple(intensity().values())[0])
             # TURN ON
             if percent <= threshold:
                 if on != last_ev:
@@ -72,7 +71,7 @@ async def _task(on, off, threshold, tolerance=2):
                         host = on[0]
                         cmd = ' '.join(on[1:])
                         InterCon.send_cmd(host, cmd)
-                    my_task.out = f"threshold: {threshold}% - ON"
+                    my_task.out = f"{percent}% <= threshold: {threshold}% - ON"
                     last_ev = on
             elif percent > threshold+tolerance:     # +tolerance to avoid "on/off/on/off" on threshold limit
                 if off != last_ev:
@@ -80,7 +79,7 @@ async def _task(on, off, threshold, tolerance=2):
                         host = off[0]
                         cmd = ' '.join(off[1:])
                         InterCon.send_cmd(host, cmd)
-                    my_task.out = f"threshold: {threshold}% - OFF"
+                    my_task.out = f"{percent}% > threshold: {threshold+tolerance}% - OFF"
                     last_ev = off
             await asyncio.sleep_ms(5000)        # Sample every 5 sec
 

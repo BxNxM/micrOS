@@ -264,4 +264,5 @@ def help():
            'set_state3 state=<0,1>', 'toggle3', \
            'set_state4 state=<0,1>', 'toggle4', \
            'load_n_init cache=None<True/False> ch_init=[1,2,3,4]',\
-           'status'
+           'status',\
+           'pinmap'

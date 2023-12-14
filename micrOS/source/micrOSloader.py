@@ -82,30 +82,35 @@ def __auto_restart_event():
             - value: micros     [update was successful - reboot is necessary]
     :return:
     """
+    from sys import platform
+    if platform == 'rp2':
+        print("[loader][ota-rebooter] SKIP on platform: rp2 (webrepl block)")
+        return
+
     from utime import sleep
     trigger_is_active = False
-    wait_update_tout = 8
-    # Wait after webrepl started for possible ota updates (~2*7= 14sec)
+    wait_update_tout = 5
+    # Wait after webrepl started for possible ota updates (~3s*5= 15sec)
     while wait_update_tout > 0:
         # Wait for micros turns to webrepl until timeout
         if __is_micrOS():
             # micrOS mode
-            print(f"[loader][ota auto-rebooter][micros][{wait_update_tout}] Wait for OTA update possible start")
+            print(f"[loader][ota-rebooter][micros][{wait_update_tout}] Wait for OTA update possible start")
             wait_update_tout -= 1
         else:
-            print(f"[loader][ota auto-rebooter][webrepl/None][{wait_update_tout}] Update status: InProgress")
+            print(f"[loader][ota-rebooter][webrepl/None][{wait_update_tout}] Update status: InProgress")
             # Set trigger  - if_mode changed to webrepl - ota update started - trigger wait
             trigger_is_active = True
         # Restart if trigger was activated
         if trigger_is_active and __is_micrOS():
-            print("[loader][ota auto-rebooter][micros][trigger: True] OTA was finished - reboot")
+            print("[loader][ota-rebooter][micros][trigger: True] OTA was finished - reboot")
             # Create cleanup indicator file for ConfigHandler
             with open('cleanup.pds', 'w') as f:
                 f.write('')
             # Reboot machine
             from machine import reset
             reset()
-        sleep(2)
+        sleep(3)
 
 
 def main():

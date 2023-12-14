@@ -292,7 +292,7 @@ LogicalPin lookup tables:
 - [esp32](./micrOS/source/LP_esp32.py)
 - [esp32s2](./micrOS/source/LP_esp32s2.py)
 - [esp32s3](./micrOS/source/LP_esp32s3.py)
-- [raspberryPicoW](./micrOS/source/LP_rp2.py) ASYNC SERVER NOT STARTING ISSUE...
+- [raspberryPicoW](./micrOS/source/LP_rp2.py) - reset needed after ota update (webrepl limitation)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 

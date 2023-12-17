@@ -38,6 +38,12 @@ class USB(Compile):
                   'connect': 'screen {dev} 115200',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
                   'cmd_line_info': '[!HINT!] PRESS [EN] BUTTON TO ENABLE DEVICE ERASE...'},
+             'esp32cam':
+                  {'erase': 'esptool.py --port {dev} erase_flash',
+                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
+                   'connect': 'screen {dev} 115200',
+                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                   'cmd_line_info': '[!HINT!] PRESS [EN] BUTTON TO ENABLE DEVICE ERASE...'},
              'esp32s2':
                  {'erase': 'esptool.py --chip esp32s2 --port {dev} --after no_reset erase_flash',
                   'deploy': 'esptool.py --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}',

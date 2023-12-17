@@ -406,7 +406,8 @@ class MyConsole(QPlainTextEdit):
 
     def scroll_to_last_line(self):
         cursor = self.textCursor()
-        # Problematic code part - sometimes crashes ...
+        # TODO: Problematic code part - sometimes crashes ...
+        time.sleep(0.05)
         cursor.movePosition(QTextCursor.End)
         cursor.movePosition(QTextCursor.Up if cursor.atBlockStart() else QTextCursor.StartOfLine)
         self.setTextCursor(cursor)

@@ -7,6 +7,7 @@ from SocketServer import SocketServer
 from machine import Pin, ADC
 from LogicalPins import physical_pin
 from Debug import logger, log_get
+from SocketServer import WebCli
 try:
     from TaskManager import TaskBase, Manager
 except Exception as e:
@@ -170,3 +171,10 @@ def notify(text):
     if out is not None and out == 'Sent':
         return True
     return False
+
+def rest_endpoint(endpoint, function):
+    """
+    Add test endpint <localhost.local>/endpoint from Load Modules
+    """
+    WebCli.rest_setter(endpoint=endpoint, callback=function)
+    return True

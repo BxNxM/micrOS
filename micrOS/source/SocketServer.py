@@ -146,9 +146,15 @@ class Client:
 
 
 class WebCli(Client):
+    REST_ENDPOINTS = {}
 
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer, r_size=512)
+
+    @staticmethod
+    def rest_setter(endpoint, callback):
+        WebCli.REST_ENDPOINTS[endpoint] = callback
+        #return WebCli.REST_ENDPOINTS
 
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
@@ -172,6 +178,10 @@ class WebCli(Client):
             await self.a_send(response)
             return
 
+        # Check other (dynamic) endpoints (from Load Modules)
+        if await self.endpoints(request):
+            return
+
         # INVALID REQUEST: Not home page / OR Not /rest endpoint
         response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request"
         await self.a_send(response)
@@ -193,6 +203,20 @@ class WebCli(Client):
                 break
         # Close connection
         await self.close()
+
+    async def endpoints(self, request):
+        action = False
+        for cmd in WebCli.REST_ENDPOINTS:
+            console_write(f"[WebCli] endpoints: {cmd} in? {request}")
+            if request.startswith(f'GET /{cmd}'):
+                # Registered endpoint was found - exec callback
+                try:
+                    response = WebCli.REST_ENDPOINTS[cmd]()
+                    await self.a_send(response)
+                except Exception as e:
+                    errlog_add(f"[ERR] WebCli endpoints: {e}")
+                action = True
+        return action
 
     @staticmethod
     def rest(request):
@@ -221,7 +245,6 @@ class WebCli(Client):
             resp_schema['state'] = True
         response = dumps(resp_schema)
         return f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(response)}\r\n\r\n{response}"
-
 
 class ShellCli(Client, Shell):
 
@@ -285,7 +308,7 @@ class ShellCli(Client, Shell):
 
     async def __shell_cmd(self, request):
         """
-        Handle micrOS shell and /web http endpoints
+        Handle micrOS shell commands
         """
         # Run micrOS shell with request string
         try:

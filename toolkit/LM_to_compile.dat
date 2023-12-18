@@ -28,3 +28,4 @@ LM_oled_sh1106.py
 LM_lmpacman.py
 LM_aht10.py
 LM_rgbcct.py
+LM_OV2640.py

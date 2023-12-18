@@ -6,40 +6,70 @@ import time
 from Debug import errlog_add, console_write
 from Common import rest_endpoint
 
+FLASH_LIGHT = None      # Flashlight object
+FLASH_VALUE = 700
+FLASH_LIGHT_ENABLE = True
+IN_CAPTURE = False      # Make sure single capture in progress in the same time
+CAM_INIT = False
 
-def load_n_init():
+def load_n_init(quality='medium', flight=True):
+    """
+    Load Camera module OV2640
+    :param quality: high (HD), medium (SVGA), low (240x240)
+    """
 
     if camera is None:
         errlog_add("Non supported feature - use esp32cam image!")
         return "Non supported feature - use esp32cam image!"
 
-    cam = False
+    global CAM_INIT
+    if CAM_INIT:
+        return CAM_INIT
+
     for cnt in range(0, 3):
         console_write(f"Init OV2640 cam {cnt+1}/3")
         try:
             # ESP32-CAM (default configuration) - https://bit.ly/2Ndn8tN
             cam = camera.init(0, format=camera.JPEG, fb_location=camera.PSRAM)
             if cam:
+                CAM_INIT = cam          # set to True
                 break
         except Exception as e:
             errlog_add(f"[ERR] OV2640: {e}")
         camera.deinit()
         time.sleep(1)
-    if not cam:
+    if not CAM_INIT:
         return "Cannot init OV2640 cam"
 
     # The parameters: format=camera.JPEG, xclk_freq=camera.XCLK_10MHz are standard for all cameras.
     # You can try using a faster xclk (20MHz), this also worked with the esp32-cam and m5camera
     # but the image was pixelated and somehow green.
 
-    ## Other settings:
-    # flip up side down
-    #camera.flip(1)
-    # left / right
-    #camera.mirror(1)
+    settings(quality=quality, flight=flight)
+
+    # Register rest endpoint
+    rest_endpoint('cam', _image_stream_clb)
+    return f"Endpoint created: /cam"
+
+
+def settings(quality=None, flip=None, mirror=None, flight=None):
+    """
+    Camera settings
+    :param flip: flip image True/False
+    :param mirror: mirror image True/False
+    :param flight: True/False enable/disable flashlight
+    """
+    global FLASH_LIGHT_ENABLE
+    if isinstance(flight, bool):
+        FLASH_LIGHT_ENABLE = flight
 
     # framesize
-    camera.framesize(camera.FRAME_240X240)
+    if quality == 'medium':
+        camera.framesize(camera.FRAME_SVGA)
+    elif quality == 'high':
+        camera.framesize(camera.FRAME_HD)
+    elif quality is not None:                  # low (default)
+        camera.framesize(camera.FRAME_240X240)
     # The options are the following:
     # FRAME_96X96 FRAME_QQVGA FRAME_QCIF FRAME_HQVGA FRAME_240X240
     # FRAME_QVGA FRAME_CIF FRAME_HVGA FRAME_VGA FRAME_SVGA
@@ -48,9 +78,16 @@ def load_n_init():
     # FRAME_P_FHD FRAME_QSXGA
     # Check this link for more information: https://bit.ly/2YOzizz
 
+    ## Other settings:
+    # flip up side down
+    if isinstance(flip, bool):
+        camera.flip(1 if flip else 0)
+    # left / right
+    if isinstance(mirror, bool):
+        camera.mirror(1 if mirror else 0)
+
     # special effects: EFFECT_NONE (default) EFFECT_NEG EFFECT_BW EFFECT_RED EFFECT_GREEN EFFECT_BLUE EFFECT_RETRO
     camera.speffect(camera.EFFECT_NONE)
-    # The options are the following:
 
     # white balance: WB_NONE (default) WB_SUNNY WB_CLOUDY WB_OFFICE WB_HOME
     camera.whitebalance(camera.WB_NONE)
@@ -67,23 +104,32 @@ def load_n_init():
     # quality: 10-63 lower number means higher quality
     camera.quality(10)
 
-    # Register rest endpoint
-    rest_endpoint('cam', _image_stream_clb)
-    return f"Endpoint created: /cam"
+    return 'Settings applied.'
 
 
 def capture():
     if camera is None:
         return "Non supported feature - use esp32cam image!"
-    n_try = 0
+    load_n_init()
+    global IN_CAPTURE, FLASH_VALUE
     buf = False
-    while n_try < 10:
-        # wait for sensor to start and focus before capturing image
-        buf = camera.capture()
-        if buf:
-            break
-        n_try += 1
-        time.sleep(0.1)
+    if IN_CAPTURE:
+        return buf
+    IN_CAPTURE = True
+    try:
+        flashlight(FLASH_VALUE)         # Flashlight ON
+        n_try = 0
+        while n_try < 10:
+            # wait for sensor to start and focus before capturing image
+            buf = camera.capture()
+            if buf:
+                break
+            n_try += 1
+            time.sleep(0.1)
+        flashlight(0)           # Flashlight OFF
+    except Exception as e:
+        errlog_add(f"[OV2640] Failed to capture: {e}")
+    IN_CAPTURE = False
     return buf
 
 
@@ -110,11 +156,18 @@ def _img_clb():
 
 
 def set_photo_endpoint():
+    """
+    Set photo endpoint (rest endpoint)
+    """
     rest_endpoint('photo', _img_clb)
     return "Endpoint created: /photo"
 
 
 def set_test_endpoint(endpoint='test'):
+    """
+    Set test endpoint (rest endpoint)
+    :param endpoint: /<endpoint> to have as custom endpoint
+    """
     rest_endpoint(endpoint, _test_reply_clb)
     return f"Endpoint created: /{endpoint}"
 
@@ -123,7 +176,32 @@ def _test_reply_clb():
     text = "hello world!"
     return 'text/plain', text
 
+def __dimmer_init():
+    global FLASH_LIGHT
+    if FLASH_LIGHT is None:
+        from machine import Pin, PWM
+        dimmer_pin = Pin(4)
+        FLASH_LIGHT = PWM(dimmer_pin, freq=20480)
+    return FLASH_LIGHT
+
+def flashlight(value=None, default=None):
+    """
+    Camera flashlight
+    :param value: None OR 0-1000
+    :param default: default value when value is None (ON/OFF function)
+    """
+    global FLASH_LIGHT_ENABLE, FLASH_VALUE
+    if FLASH_LIGHT_ENABLE:
+        fl = __dimmer_init()
+        if value is None:
+            val = fl.duty()
+            if default is not None:
+                FLASH_VALUE = default
+            value = 0 if val > 0 else FLASH_VALUE
+        fl.duty(value)
+    return {'value': value, 'en': FLASH_LIGHT_ENABLE}
 
 def help():
-    return 'set_test_endpoint endpoint="test"', 'set_photo_endpoint', 'load_n_init', 'capture', 'photo',\
-        'Thanks to :) https://github.com/lemariva/micropython-camera-driver'
+    return 'load_n_init quality="medium/low/high" flight=True', 'settings flip=None/True, mirror=None/True, flight=None/True/False',\
+        'capture', 'photo', 'set_test_endpoint endpoint="test"', 'set_photo_endpoint', 'flashlight value=None<0-1000>, default=700',\
+        'Thanks to :) https://github.com/lemariva/micropython-camera-driver', '[HINT] after load_n_init you can access the /cam endpint'

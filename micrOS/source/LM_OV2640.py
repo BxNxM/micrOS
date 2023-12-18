@@ -7,12 +7,10 @@ from Debug import errlog_add, console_write
 from Common import rest_endpoint
 
 FLASH_LIGHT = None      # Flashlight object
-FLASH_VALUE = 700
-FLASH_LIGHT_ENABLE = True
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
 CAM_INIT = False
 
-def load_n_init(quality='medium', flight=True):
+def load_n_init(quality='medium'):
     """
     Load Camera module OV2640
     :param quality: high (HD), medium (SVGA), low (240x240)
@@ -45,24 +43,19 @@ def load_n_init(quality='medium', flight=True):
     # You can try using a faster xclk (20MHz), this also worked with the esp32-cam and m5camera
     # but the image was pixelated and somehow green.
 
-    settings(quality=quality, flight=flight)
+    settings(quality=quality)
 
     # Register rest endpoint
     rest_endpoint('cam', _image_stream_clb)
-    return f"Endpoint created: /cam"
+    return f"Endpoint created: /cam and /cam/stream"
 
 
-def settings(quality=None, flip=None, mirror=None, flight=None):
+def settings(quality=None, flip=None, mirror=None):
     """
     Camera settings
     :param flip: flip image True/False
     :param mirror: mirror image True/False
-    :param flight: True/False enable/disable flashlight
     """
-    global FLASH_LIGHT_ENABLE
-    if isinstance(flight, bool):
-        FLASH_LIGHT_ENABLE = flight
-
     # framesize
     if quality == 'medium':
         camera.framesize(camera.FRAME_SVGA)
@@ -111,13 +104,13 @@ def capture():
     if camera is None:
         return "Non supported feature - use esp32cam image!"
     load_n_init()
-    global IN_CAPTURE, FLASH_VALUE
+    global IN_CAPTURE
+    # Capture image
     buf = False
     if IN_CAPTURE:
         return buf
     IN_CAPTURE = True
     try:
-        flashlight(FLASH_VALUE)         # Flashlight ON
         n_try = 0
         while n_try < 10:
             # wait for sensor to start and focus before capturing image
@@ -126,7 +119,6 @@ def capture():
                 break
             n_try += 1
             time.sleep(0.1)
-        flashlight(0)           # Flashlight OFF
     except Exception as e:
         errlog_add(f"[OV2640] Failed to capture: {e}")
     IN_CAPTURE = False
@@ -184,24 +176,21 @@ def __dimmer_init():
         FLASH_LIGHT = PWM(dimmer_pin, freq=20480)
     return FLASH_LIGHT
 
-def flashlight(value=None, default=None):
+def flashlight(value=None, default=100):
     """
     Camera flashlight
     :param value: None OR 0-1000
     :param default: default value when value is None (ON/OFF function)
     """
-    global FLASH_LIGHT_ENABLE, FLASH_VALUE
-    if FLASH_LIGHT_ENABLE:
-        fl = __dimmer_init()
-        if value is None:
-            val = fl.duty()
-            if default is not None:
-                FLASH_VALUE = default
-            value = 0 if val > 0 else FLASH_VALUE
-        fl.duty(value)
-    return {'value': value, 'en': FLASH_LIGHT_ENABLE}
+    fl = __dimmer_init()
+    if value is None:
+        val = fl.duty()
+        value = 0 if val > 0 else default
+    fl.duty(value)
+    return {'value': value}
 
 def help():
-    return 'load_n_init quality="medium/low/high" flight=True', 'settings flip=None/True, mirror=None/True, flight=None/True/False',\
-        'capture', 'photo', 'set_test_endpoint endpoint="test"', 'set_photo_endpoint', 'flashlight value=None<0-1000>, default=700',\
-        'Thanks to :) https://github.com/lemariva/micropython-camera-driver', '[HINT] after load_n_init you can access the /cam endpint'
+    return 'load_n_init quality="medium/low/high"', 'settings quality=None flip=None/True mirror=None/True',\
+        'capture', 'photo', 'set_test_endpoint endpoint="test"', 'set_photo_endpoint', 'flashlight value=None<0-1000>, default=100',\
+        'Thanks to :) https://github.com/lemariva/micropython-camera-driver',\
+        '[HINT] after load_n_init you can access the /cam and /cam/stream endpoints'

@@ -43,7 +43,7 @@ class USB(Compile):
                    'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                    'connect': 'screen {dev} 115200',
                    'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
-                   'cmd_line_info': '[!HINT!] PRESS [EN] BUTTON TO ENABLE DEVICE ERASE...'},
+                   'cmd_line_info': '*** [!DISCLAIMER!] ***\n\tUSB copy not works with some serial interface\n\tCopy manually: toolkit/workspace/precompiled/micrOSloader.mpy\n\tNetwork.mpy Debug.mpy ConfigHandler.mpy main.py\n\tThen push OTA update over AP mode... Then you are done'},
              'esp32s2':
                  {'erase': 'esptool.py --chip esp32s2 --port {dev} --after no_reset erase_flash',
                   'deploy': 'esptool.py --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}',

@@ -204,17 +204,19 @@ class WebCli(Client):
 
     async def endpoints(self, request):
         for cmd in WebCli.REST_ENDPOINTS:
-            if request.startswith(f'GET /{cmd} HTTP'):
+            if request.startswith(f'GET /{cmd}'):
                 console_write(f"[WebCli] endpoint: /{cmd}")
                 # Registered endpoint was found - exec callback
                 try:
                     # dtype: image/jpeg OR text/html OR text/plain
                     dtype, data = WebCli.REST_ENDPOINTS[cmd]()
+                    stream = 'Refresh: 2\r\n' if f'/{cmd}/stream' in request else ''
                     if dtype == 'image/jpeg':            # image/jpeg
-                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
+                        # Detect refresh <endpoint>/stream request
+                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{stream}\r\n".encode('utf8') + data
                         await self.a_send(resp, encode=None)
                     else:                                # text/html or text/plain
-                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
+                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{stream}\r\n{data}")
                 except Exception as e:
                     await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length:{len(str(e))}\r\n\r\n{e}")
                     errlog_add(f"[ERR] WebCli endpoints: {e}")

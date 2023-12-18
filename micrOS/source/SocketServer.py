@@ -83,15 +83,15 @@ class Client:
             return True, request
         return False, request
 
-    async def a_send(self, response):
+    async def a_send(self, response, encode='utf8'):
         """
         [Base] Async socket send method
         """
         if self.connected:
             # Client.console("[Client] ----- SteamWrite: {}".format(response))
-            # Store data in stream buffer
+            # Store data in stream buffer... then drain
             try:
-                self.writer.write(response.encode('utf8'))
+                self.writer.write(response if encode is None else response.encode(encode))
             except Exception as e:
                 # Maintain ACTIVE_CLIS - remove closed connection by peer.
                 await self.close()
@@ -106,7 +106,7 @@ class Client:
                 Client.console(f"[Client] Drain error -> close conn: {e}")
                 await self.close()
         else:
-            console_write(f"[Client] NoCon: {response}")
+            console_write(f"[Client] NoCon: response>dev/nul")
 
     def send(self, response):
         # Implement in child class - synchronous send method
@@ -154,17 +154,17 @@ class WebCli(Client):
     @staticmethod
     def rest_setter(endpoint, callback):
         WebCli.REST_ENDPOINTS[endpoint] = callback
-        #return WebCli.REST_ENDPOINTS
 
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
+        # Create short request (first line)
+        request = request.split('\n')[0]
         if request.startswith('GET /rest'):
             Client.console("[WebCli] --- /REST accept")      # REST API (GET)
             try:
                 await self.a_send(WebCli.rest(request))
             except Exception as e:
-                response = f"HTTP/1.1 404 {e}\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found"
-                await self.a_send(response)
+                await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {len(str(e))}\r\n\r\n{e}")
             return
 
         if request.startswith('GET / HTTP'):
@@ -172,10 +172,9 @@ class WebCli(Client):
             try:
                 with open('index.html', 'r') as file:
                     html = file.read()
-                response = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(html)}\r\n\r\n{html}"
+                await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(html)}\r\n\r\n{html}")
             except OSError:
-                response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found"
-            await self.a_send(response)
+                await self.a_send("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found")
             return
 
         # Check other (dynamic) endpoints (from Load Modules)
@@ -183,8 +182,7 @@ class WebCli(Client):
             return
 
         # INVALID REQUEST: Not home page / OR Not /rest endpoint
-        response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request"
-        await self.a_send(response)
+        await self.a_send("HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request")
 
     async def run_web(self):
         # Update server task output (? test ?)
@@ -205,18 +203,23 @@ class WebCli(Client):
         await self.close()
 
     async def endpoints(self, request):
-        action = False
         for cmd in WebCli.REST_ENDPOINTS:
-            console_write(f"[WebCli] endpoints: {cmd} in? {request}")
-            if request.startswith(f'GET /{cmd}'):
+            if request.startswith(f'GET /{cmd} HTTP'):
+                console_write(f"[WebCli] endpoint: /{cmd}")
                 # Registered endpoint was found - exec callback
                 try:
-                    response = WebCli.REST_ENDPOINTS[cmd]()
-                    await self.a_send(response)
+                    # dtype: image/jpeg OR text/html OR text/plain
+                    dtype, data = WebCli.REST_ENDPOINTS[cmd]()
+                    if dtype == 'image/jpeg':            # image/jpeg
+                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
+                        await self.a_send(resp, encode=None)
+                    else:                                # text/html or text/plain
+                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
                 except Exception as e:
+                    await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length:{len(str(e))}\r\n\r\n{e}")
                     errlog_add(f"[ERR] WebCli endpoints: {e}")
-                action = True
-        return action
+                return True         # I. endpoint /query no need to iterate through the full dict...
+        return False
 
     @staticmethod
     def rest(request):
@@ -274,7 +277,7 @@ class ShellCli(Client, Shell):
             # Send buffered data with async task - hacky
             asyncio.get_event_loop().create_task(self.__wait_for_drain())
         else:
-            console_write(f"[ShellCli] NoCon: {response}")
+            console_write(f"[ShellCli] NoCon: response>/dev/nul")
 
     async def __wait_for_drain(self):
         """
@@ -381,8 +384,8 @@ class SocketServer:
         if not self._initialized:
             # Socket server initial parameters
             self.server = None
-            self._host = '0.0.0.0'          # listens on all available interfaces
-            self._conn_queue = 2            # CONNECTION QUEUE SIZE, common for both interface
+            self._host = '0.0.0.0'                # listens on all available interfaces
+            self._socqueue = cfgget('socqueue')   # CONNECTION QUEUE SIZE, common for both interface
 
             # ---- Config ---
             self._port = cfgget("socport")
@@ -408,7 +411,7 @@ class SocketServer:
         new_client_id = new_client.client_id
 
         # Add new client immediately if queue not full
-        if len(list(Client.ACTIVE_CLIS.keys())) < self._conn_queue:
+        if len(list(Client.ACTIVE_CLIS.keys())) < self._socqueue:
             # Add new client to active clients dict
             Client.ACTIVE_CLIS[new_client_id] = new_client
             return True, new_client_id      # [!] Enable new connection
@@ -481,11 +484,11 @@ class SocketServer:
         """
         addr = ifconfig()[1][0]
         Client.console(f"[ socket server ] Start socket server on {addr}")
-        self.server = asyncio.start_server(self.shell_cli, self._host, self._port, backlog=self._conn_queue)
+        self.server = asyncio.start_server(self.shell_cli, self._host, self._port, backlog=self._socqueue)
         await self.server
         Client.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
         if cfgget('webui'):
-            web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._conn_queue)
+            web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._socqueue)
             await web
             Client.console(f"- HTTP server ready, connect: http://{addr}")
 

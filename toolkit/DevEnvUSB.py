@@ -135,6 +135,7 @@ class USB(Compile):
         else:
             commandline_comment = self.dev_types_and_cmds[self.selected_device_type]['cmd_line_info']
             self.console(commandline_comment, state='imp')
+            time.sleep(2)
             if self.gui_console is not None:
                 self.gui_console(commandline_comment)
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)

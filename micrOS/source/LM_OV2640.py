@@ -58,11 +58,11 @@ def settings(quality=None, flip=None, mirror=None):
     """
     # framesize
     if quality == 'medium':
-        camera.framesize(camera.FRAME_SVGA)
+        camera.framesize(camera.FRAME_SVGA)     # SVGA: 800x600
     elif quality == 'high':
-        camera.framesize(camera.FRAME_HD)
-    elif quality is not None:                  # low (default)
-        camera.framesize(camera.FRAME_240X240)
+        camera.framesize(camera.FRAME_HD)       # HD: 1280×720
+    elif quality is not None:
+        camera.framesize(camera.FRAME_HVGA)     # low (default) HVGA: 480x320
     # The options are the following:
     # FRAME_96X96 FRAME_QQVGA FRAME_QCIF FRAME_HQVGA FRAME_240X240
     # FRAME_QVGA FRAME_CIF FRAME_HVGA FRAME_VGA FRAME_SVGA
@@ -95,7 +95,7 @@ def settings(quality=None, flip=None, mirror=None):
     camera.contrast(0)
 
     # quality: 10-63 lower number means higher quality
-    camera.quality(10)
+    camera.quality(15)
 
     return 'Settings applied.'
 

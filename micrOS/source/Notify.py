@@ -3,6 +3,7 @@ import urequests
 from ConfigHandler import cfgget
 from TaskManager import exec_lm_core
 from Debug import console_write
+import binascii # TODO: photo read...
 
 #########################################
 #          micrOS Notifications         #
@@ -52,22 +53,24 @@ class Telegram:
         return Telegram._TOKEN
 
     @staticmethod
-    def send_msg(text, reply_to=None, chat_id=None):
+    def send_msg(data, reply_to=None, chat_id=None, dtype='text'):
         """
         Send a message to the Telegram chat by chat_id
-        :param text: text to send
+        :param data: send text (dtype) OR other data types like photo...
         :param reply_to: reply to specific message, if None, simple reply
         :param chat_id: chat_id to reply on, if None, reply to all known
+        :param dtype: data type to send back: text OR photo
         RETURN None when telegram bot token is missing
         """
-        def _send(chid):
-            """Send message to chat_id (chid)"""
-            data = {"chat_id": chid, "text": f"{Telegram._DEVFID}⚙️\n{text}"}
+        def _send(chat):
+            """Send message to chat_id (chat)"""
+            _data = {"chat_id": chat, dtype: f"{Telegram._DEVFID}⚙️\n{data}" if dtype == 'text' else data}
             if isinstance(reply_to, int):
-                data['reply_to_message_id'] = reply_to
+                _data['reply_to_message_id'] = reply_to
                 Telegram._IN_MSG_ID = reply_to
-            _, _resp = urequests.post(url, headers={"Content-Type": "application/json"}, json=data, jsonify=True, sock_size=128)
-            console_write(f"\tSend message:\n{data}\nresponse:\n{_resp}")
+            print(f"_______SEND: {_data}")
+            _, _resp = urequests.post(url, headers={"Content-Type": "application/json"}, json=_data, jsonify=True, sock_size=128)
+            console_write(f"\tSend {dtype}:\n{_data}\nresponse:\n{_resp}")
             return _resp
 
         def _get_chat_ids():
@@ -83,19 +86,23 @@ class Telegram:
         bot_token = Telegram.__bot_token()
         if bot_token is None:
             return None
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage{Telegram._API_PARAMS}"
+
+        # Supported telegram endpoints: sendMessage(text) AND sendPhoto(photo)
+        endpoint= f'sendMessage{Telegram._API_PARAMS}' if dtype == 'text' else 'sendPhoto'
+        url = f"https://api.telegram.org/bot{bot_token}/{endpoint}"
+        console_write(f"[TELEGRAM] API: {url}")
 
         verdict = ""
         # Reply to ALL (notification) - chat_id was not provided
         if chat_id is None:
             console_write("\tREPLY ALL")
             for _chat_id in _get_chat_ids():
-                resp_json = _send(chid=_chat_id)
+                resp_json = _send(chat=_chat_id)
                 verdict += f'Sent{_chat_id};' if resp_json['ok'] else str(resp_json)
         else:
             console_write(f"\tREPLY TO {chat_id}")
             # Direct reply to chat_id
-            resp_json = _send(chid=chat_id)
+            resp_json = _send(chat=chat_id)
             verdict = f'Sent{chat_id}' if resp_json['ok'] else str(resp_json)
         return verdict
 
@@ -208,6 +215,16 @@ class Telegram:
             elif msg_in.startswith('/cmd'):
                 cmd_lm = msg_in.replace('/cmd', '').strip().split()
                 lm_execute(cmd_lm)
+            elif msg_in.startswith('/photo'):
+                #TODO - photo reply - check LM_OV2640 was loaded + capture
+                #Telegram.send_msg('HelloBello: <photo>', reply_to=m_id, chat_id=c_id)
+                try:
+                    with open('photo.jpg', 'rb') as p:
+                        #image_data = binascii.b2a_base64(p.read()).decode('utf-8').strip()
+                        image_data = p.read()
+                        Telegram.send_msg(image_data, reply_to=m_id, chat_id=c_id, dtype='photo')
+                except Exception as e:
+                    Telegram.send_msg(str(e), reply_to=m_id, chat_id=c_id)
         else:
             verdict = "[UP] NoExec"
         console_write(f"\tREC&EVAL: {verdict}")
@@ -228,6 +245,7 @@ class Telegram:
         data = {"commands": [{"command": "ping", "description": "Ping All endpoints, return active modules."},
                              {"command": "cmd", "description": "Command to All endpoints (only loaded modules)."},
                              {"command": "cmd_select", "description": "Command to Selected endpoints: device module func"},
+                             {"command": "photo", "description": "Get OV2640 camera image."},
                              ]}
         _, resp_json = urequests.post(url, headers={"Content-Type": "application/json"}, json=data, jsonify=True, sock_size=128)
         return 'Custom commands was set' if resp_json['ok'] else str(resp_json)

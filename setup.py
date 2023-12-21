@@ -12,7 +12,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 # micrOS devToolKit dependencies
 dependencies = ['adafruit-ampy', 'esptool', 'ipaddress', 'mpy-cross==1.20.0', 'netaddr',
                 'pylint', 'PyQt5', 'pyserial', 'resources', 'flask', 'flask_restful', 'numpy',
-                'matplotlib', 'json2html', 'opencv-python']
+                'matplotlib', 'json2html', 'opencv-python', 'requests']
 
 # Hack for raspbian - remove dep: PyQt5
 if platform.system().lower() == 'linux':
@@ -28,7 +28,7 @@ if platform.system().lower() == 'linux':
 
 setuptools.setup(
     name='micrOSDevToolKit',
-    version='1.45.1',
+    version='1.45.2',
     author='Marcell Ban',
     author_email='miros.framework@gmail.com',
     description='Development and deployment environment for micrOS, the diy micropython automation OS (IoT)',

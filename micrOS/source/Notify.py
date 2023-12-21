@@ -3,7 +3,8 @@ import urequests
 from ConfigHandler import cfgget
 from TaskManager import exec_lm_core
 from Debug import console_write
-import binascii # TODO: photo read...
+import base64   # TODO: photo read...
+import binascii
 
 #########################################
 #          micrOS Notifications         #
@@ -52,6 +53,35 @@ class Telegram:
             Telegram._TOKEN = token
         return Telegram._TOKEN
 
+
+    @staticmethod
+    def _send(bot_token, data, reply_to=None, chat_id=None, dtype='text'):
+        """Send message to chat_id (chat)"""
+
+        # Supported telegram endpoints: sendMessage(text) AND sendPhoto(photo)
+        endpoint= f'sendMessage{Telegram._API_PARAMS}' if dtype == 'text' else 'sendPhoto'
+        url = f"https://api.telegram.org/bot{bot_token}/{endpoint}"
+        console_write(f"[TELEGRAM] API: {url}")
+
+        _body = None  # Initialize body to None
+
+        if dtype == 'photo':
+            # If dtype is 'photo', treat data as photo binary data
+            _header = 'multipart/form-data'
+            _body = {"chat_id": chat_id, 'photo': data}
+            _, _resp = urequests.post(url, headers={"Content-Type": _header}, json=_body, jsonify=True, sock_size=128)
+        else:
+            _header = "application/json"
+            _body = {"chat_id": chat_id, 'text': f"{Telegram._DEVFID}⚙️\n{data}"}
+            if isinstance(reply_to, int):
+                _body['reply_to_message_id'] = reply_to
+                Telegram._IN_MSG_ID = reply_to
+            _, _resp = urequests.post(url, headers={"Content-Type": "application/json"}, json=_body, jsonify=True,
+                                      sock_size=128)
+        console_write(f"\tSend {dtype}:\n{_body}\nresponse:\n{_resp}")
+        return _resp
+
+
     @staticmethod
     def send_msg(data, reply_to=None, chat_id=None, dtype='text'):
         """
@@ -62,16 +92,6 @@ class Telegram:
         :param dtype: data type to send back: text OR photo
         RETURN None when telegram bot token is missing
         """
-        def _send(chat):
-            """Send message to chat_id (chat)"""
-            _data = {"chat_id": chat, dtype: f"{Telegram._DEVFID}⚙️\n{data}" if dtype == 'text' else data}
-            if isinstance(reply_to, int):
-                _data['reply_to_message_id'] = reply_to
-                Telegram._IN_MSG_ID = reply_to
-            print(f"_______SEND: {_data}")
-            _, _resp = urequests.post(url, headers={"Content-Type": "application/json"}, json=_data, jsonify=True, sock_size=128)
-            console_write(f"\tSend {dtype}:\n{_data}\nresponse:\n{_resp}")
-            return _resp
 
         def _get_chat_ids():
             """Return chat ID or None (in case of no token or cannot get ID)"""
@@ -87,22 +107,19 @@ class Telegram:
         if bot_token is None:
             return None
 
-        # Supported telegram endpoints: sendMessage(text) AND sendPhoto(photo)
-        endpoint= f'sendMessage{Telegram._API_PARAMS}' if dtype == 'text' else 'sendPhoto'
-        url = f"https://api.telegram.org/bot{bot_token}/{endpoint}"
-        console_write(f"[TELEGRAM] API: {url}")
-
         verdict = ""
         # Reply to ALL (notification) - chat_id was not provided
         if chat_id is None:
             console_write("\tREPLY ALL")
             for _chat_id in _get_chat_ids():
-                resp_json = _send(chat=_chat_id)
+                #resp_json = _send(chat=_chat_id)
+                resp_json = Telegram._send(bot_token, data, reply_to=reply_to, chat_id=_chat_id, dtype=dtype)
                 verdict += f'Sent{_chat_id};' if resp_json['ok'] else str(resp_json)
         else:
             console_write(f"\tREPLY TO {chat_id}")
             # Direct reply to chat_id
-            resp_json = _send(chat=chat_id)
+            #resp_json = _send(chat=chat_id)
+            resp_json = Telegram._send(bot_token, data, reply_to=reply_to, chat_id=chat_id, dtype=dtype)
             verdict = f'Sent{chat_id}' if resp_json['ok'] else str(resp_json)
         return verdict
 
@@ -220,8 +237,8 @@ class Telegram:
                 #Telegram.send_msg('HelloBello: <photo>', reply_to=m_id, chat_id=c_id)
                 try:
                     with open('photo.jpg', 'rb') as p:
-                        #image_data = binascii.b2a_base64(p.read()).decode('utf-8').strip()
-                        image_data = p.read()
+                        image_data = binascii.b2a_base64(p.read()).decode('utf-8').strip()
+                        #image_data = p.read()
                         Telegram.send_msg(image_data, reply_to=m_id, chat_id=c_id, dtype='photo')
                 except Exception as e:
                     Telegram.send_msg(str(e), reply_to=m_id, chat_id=c_id)

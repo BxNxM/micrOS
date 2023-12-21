@@ -19,3 +19,5 @@ wheel
 twine
 psutil
 setuptools
+Flask-BasicAuth
+requests

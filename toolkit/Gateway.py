@@ -3,12 +3,19 @@
 # using flask_restful
 import json
 import os
-from flask import Flask, jsonify, Response, make_response
+from flask import Flask, jsonify, Response, make_response, request
 from flask_restful import Resource, Api
 import threading
 import time
 import concurrent.futures
 MYPATH = os.path.dirname(__file__)
+
+try:
+    from flask_basicauth import BasicAuth
+    from datetime import datetime
+except Exception as e:
+    print("Cannot load flask_basicauth->BasicAuth")
+    BasicAuth = None
 
 try:
     from . import socketClient
@@ -22,17 +29,41 @@ API_URL_CACHE = ""
 
 # creating the flask app
 app = Flask(__name__)
+
+# --------------------- AUTH ------------------------- #
+if BasicAuth is not None:
+    basic_auth = BasicAuth(app)
+    # Configure basic authentication
+    app.config['BASIC_AUTH_USERNAME'] = f'usr{datetime.now().day}'                      # month-day (21)
+    app.config['BASIC_AUTH_PASSWORD'] = f'pass{datetime.now().timetuple().tm_yday}'     # year-day (355)
+
+    def is_local_network():
+        # Define local network IP prefixes (adjust as needed)
+        local_network_prefixes = ['192.168.', '10.0.']
+        #local_network_prefixes = []
+        remote_ip = request.remote_addr
+        for prefix in local_network_prefixes:
+            if remote_ip.startswith(prefix):
+                print(f"[i] SKIP AUTH - LOCAL NETWORK: {prefix} match with {remote_ip}")
+                return True
+        return False
+
+    @app.before_request
+    def require_authentication():
+        if not is_local_network() and not basic_auth.authenticate():
+            return basic_auth.challenge()
+# ---------------------------------------------------- #
+
 # creating an API object
 api = Api(app)
 
-# making a class for a particular resource
-# the get, post methods correspond to get and post requests
-# they are automatically mapped by flask_restful.
-# other methods include put, delete, etc.
+
+##################################################################
+##                       ENDPOINT DEFINITIONS                   ##
+##################################################################
 
 
 class Hello(Resource):
-
     # corresponds to the GET request.
     # this function is called whenever there
     # is a GET request for this resource
@@ -323,7 +354,6 @@ class Prometheus(Resource):
             _var = _var.strip().replace(' ', '_')
             try:
                 output_dict[_var] = float(_val)
-                #print(f"{_var} == {_val}")
             except Exception as e:
                 print(f"Invalid value to float {_var} == {_val}: {e}")
         if len(output_dict.keys()) == 0:

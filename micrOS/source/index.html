@@ -12,6 +12,7 @@
             100% {background-position: 0% 50%;}}
         body {
             height: 150vh;
+            width: 150vh;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             margin: 40px;
             background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
@@ -28,7 +29,7 @@
     <!-- Display SysApiCall output -->
     <p id="SysApiCall"></p>
 
-    <h2>⇥ 🚀REST API v1.1</h2>
+    <h2>🚀 REST API v1.1</h2>
     <p>Clickable examples 🕹</p>
     <button onclick="restApi('system/info')">SysInfo</button>
     <button onclick="restApi('system/alarms')">Alarms</button>
@@ -78,9 +79,13 @@
                 document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
 
                 // Update sys info
-                if (cmd == '') {document.getElementById('SysApiCall').innerHTML=Object.entries(data['result'])
-                                                     .map(([key, value])=>`${key}: ${JSON.stringify(value)}`)
-                                                     .join('  ❖  ').replace(/"/g, '');}
+                if (cmd == '') {document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
+                                .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
+                                .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                                .join('  ❖  ').replace(/"/g, '') +
+                                (data['result']['usr_endpoints'] ? "<br>📎 " + Object.entries(data['result']['usr_endpoints'])
+                                    .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value}</a>`)
+                                    .join(' | '): '');}
             }).catch(error => {console.error('Fetch error:', error, data);});
         }
         // Init basic info from board

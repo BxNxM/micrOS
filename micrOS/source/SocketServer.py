@@ -247,6 +247,8 @@ class WebCli(Client):
             resp_schema['state'] = state
         else:
             resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid')}
+            if len(tuple(WebCli.REST_ENDPOINTS.keys())) > 0:
+                resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS.keys())
             resp_schema['state'] = True
         response = dumps(resp_schema)
         return f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(response)}\r\n\r\n{response}"

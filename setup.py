@@ -28,7 +28,7 @@ if platform.system().lower() == 'linux':
 
 setuptools.setup(
     name='micrOSDevToolKit',
-    version='1.45.2',
+    version='1.45.4',
     author='Marcell Ban',
     author_email='miros.framework@gmail.com',
     description='Development and deployment environment for micrOS, the diy micropython automation OS (IoT)',

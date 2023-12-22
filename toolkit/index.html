@@ -61,6 +61,7 @@
 
     <script>
         const currentHostname = window.location.hostname;
+        const port = `:${window.location.port}` || "";
         var deviceLinksHTML = [];
 
         function restApi(cmd = 'list') {
@@ -76,7 +77,7 @@
 
             // Get the current hostname and create the REST API URL
             // const currentHostname = window.location.hostname;
-            let apiUrl = `http://${currentHostname}:5000/${cmd}`;
+            let apiUrl = `http://${currentHostname}${port}/${cmd}`;
 
             const startTime = performance.now();
             let endTime;

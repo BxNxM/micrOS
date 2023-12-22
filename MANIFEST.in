@@ -11,4 +11,5 @@ include media/logo.png
 include media/wifi_icon.png
 include media/usb_port_icon.png
 include toolkit/index.html
+include toolkit/img_stream.html
 graft env/driver_cp210x/

@@ -34,6 +34,9 @@
     <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Get all device status - node info </p>
     <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/sendcmd/&lt;device&gt;/&lt;cmd&gt &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Send command to the selected device. Use + instead of space </p>
     <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/metrics/&lt;device&gt;/&lt;cmd&gt &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; REST API endpoint for Prometheus scraping, (prometheus format) </p>
+    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/image/&lt;device&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Get esp camera image over gateway (without device param endpoint lists cameras)</p>
+    <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/imgstream&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Get esp camera image stream (with camera endpoint detection)</p>
+    <div id="camera_stream_link">Camera stream link</div>
 
     <h2> 🚀⎈ GW REST API </h2>
     <p>Gateway commands 🕹</p>
@@ -76,7 +79,6 @@
             }
 
             // Get the current hostname and create the REST API URL
-            // const currentHostname = window.location.hostname;
             let apiUrl = `http://${currentHostname}${port}/${cmd}`;
 
             const startTime = performance.now();
@@ -161,7 +163,27 @@
             return false;
         }
 
+        function create_camera_stream_link() {
+            let apiUrl = `http://${currentHostname}${port}/imgstream`;
+
+            // Create a new anchor element
+            var link = document.createElement('a');
+
+            // Set the href attribute to the desired URL
+            link.href = apiUrl;
+            link.textContent = 'Camera 📷';
+            link.style.color = 'white';
+            link.target = '_blank';
+
+            // Get the element to be replaced
+            var elementToReplace = document.getElementById('camera_stream_link');
+
+            // Replace the existing element with the new anchor element
+            elementToReplace.parentNode.replaceChild(link, elementToReplace);
+        }
+
         // Init basic info from board
+        create_camera_stream_link()
         restApi()
     </script>
 </body>

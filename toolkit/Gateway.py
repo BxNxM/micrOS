@@ -3,12 +3,15 @@
 # using flask_restful
 import json
 import os
-from flask import Flask, jsonify, Response, make_response, request
+from flask import Flask, jsonify, Response, make_response, request, send_file
 from flask_restful import Resource, Api
 import threading
 import time
 import concurrent.futures
 MYPATH = os.path.dirname(__file__)
+import requests
+from io import BytesIO
+from socket import gethostbyname
 
 try:
     from flask_basicauth import BasicAuth
@@ -431,6 +434,92 @@ class Prometheus(Resource):
         return SendCmd.runcmd(device, cmd)
 
 
+class ForwardImg(Resource):
+    """
+    Image broadcaster endpoint
+    - list camera modules
+    - get picture from camera module
+    """
+    RESOLVED_URLS = {}
+    CAM_DEVICES = set()
+
+    @staticmethod
+    def _host_cache(url):
+        try:
+            # Extracting the hostname from the URL
+            hostname = url.split('/')[2]
+            # Resolving the IP address
+            ip_address = gethostbyname(hostname)
+            resolved_url = url.replace(hostname, ip_address)
+            ForwardImg.RESOLVED_URLS[url] = resolved_url
+        except Exception as e:
+            print(f"URL has no hostname: {url} - fallback to u resolved url: {e}")
+            ForwardImg.RESOLVED_URLS[url] = url  # fallback
+        return ForwardImg.RESOLVED_URLS[url]
+
+    def _get_image(self, device):
+        base_url = ForwardImg._host_cache(f"http://{device}.local")
+        internal_image_url = f"{base_url}/cam"
+        # Make a request to the external image URL
+        try:
+            response = requests.get(internal_image_url, timeout=10)
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Get the content of the image
+                image_content = response.content
+                # Create a BytesIO object to send the image as a file-like object
+                image_stream = BytesIO(image_content)
+                # Auto update device pool - no need to search after one successful communication (incase sensitive check)
+                if sum([1 for d in ForwardImg.CAM_DEVICES if d.lower() == device.lower()]) == 0:
+                    ForwardImg.CAM_DEVICES.add(device)
+                # Send the image as a response
+                return send_file(image_stream, mimetype='image/jpeg')
+            print(f"[ForwardImg] Image get wrong response (error): {response}")
+        except Exception as e:
+                print(f"[ForwardImg] Image get timeout (error): {e}")
+        return None
+
+    @staticmethod
+    def find_cam_endpoints():
+        if len(ListDevices.DEVICE_CACHE) == 0:
+            ListDevices().get()
+
+        if len(list(ForwardImg.CAM_DEVICES)) > 0:
+            # skip refresh  - TODO start background task ?
+            return jsonify(list(ForwardImg.CAM_DEVICES))
+
+        for devid, dev_conn_data in ListDevices.DEVICE_CACHE['online'].items():
+            # IP, PORT, FID
+            device = dev_conn_data[2]
+            response = SendCmd.runcmd(device, 'lmpacman module')['response']
+            print(f"\n\n{response}\n\n")
+            if 'LM_OV2640' in response:
+                ForwardImg.CAM_DEVICES.add(device)
+        return jsonify(list(ForwardImg.CAM_DEVICES))
+
+    def get(self, device=None):
+        if device is None:
+            return ForwardImg.find_cam_endpoints()
+        img = self._get_image(device)
+        if img is None:
+            return "Failed to retrieve image from external endpoint", 500
+        return img
+
+class ImgStream(Resource):
+    # corresponds to the GET request.
+    # this function is called whenever there
+    # is a GET request for this resource
+
+    def get(self):
+        index_html = os.path.join(MYPATH, 'img_stream.html')
+        try:
+            with open(index_html, 'r') as file:
+                html = file.read()
+            response = html
+        except OSError:
+            response = "404 Not Found"
+        return make_response(response)
+
 # adding the defined resources along with their corresponding urls
 api.add_resource(Hello, '/')
 api.add_resource(ListDevices, '/list/')
@@ -438,6 +527,8 @@ api.add_resource(SearchDevices, '/search/')
 api.add_resource(DeviceStatus, '/status')
 api.add_resource(SendCmd, '/sendcmd/<string:device>/<string:cmd>')
 api.add_resource(Prometheus, '/metrics/<string:device>/<string:cmd>')
+api.add_resource(ForwardImg, '/image', '/image/<string:device>')
+api.add_resource(ImgStream, '/imgstream')
 
 
 def gateway():

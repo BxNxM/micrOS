@@ -58,12 +58,14 @@ if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
         for prefix in local_network_prefixes:
             if remote_ip.startswith(prefix):
                 print(f"\t\t[i] SKIP AUTH - LOCAL NETWORK: {prefix} match with {remote_ip}")
-                return True
-        return False
+                return True, remote_ip
+        return False, remote_ip
 
     @app.before_request
     def require_authentication():
-        if not is_local_network() and not basic_auth.authenticate():
+        is_internal, remote_ip = is_local_network()
+        print(f"==> EXTERNAL LOGIN: {remote_ip}")
+        if not is_internal and not basic_auth.authenticate():
             return basic_auth.challenge()
 # ---------------------------------------------------- #
 

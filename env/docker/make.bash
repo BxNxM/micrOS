@@ -30,6 +30,7 @@ else
 fi
 
 IMAGE="bxnxm/micros-gateway${DEV_STR}:${VERSION}"
+IMAGE_LATEST="bxnxm/micros-gateway${DEV_STR}:latest"
 
 echo -e "[CREATE IMAGE] DEV: ${DEV}"
 if [[ "${DEV}" == "true" ]]
@@ -40,7 +41,7 @@ then
 else
   # PROD BUILD
   echo -e "|------- docker build --no-cache -t ${IMAGE}"
-  docker build --no-cache -t "${IMAGE}" .
+  docker build --no-cache -t "${IMAGE}" -t "${IMAGE_LATEST}" .
 fi
 
 echo -e "[RUN IMAGE] docker run"

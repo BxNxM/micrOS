@@ -22,7 +22,7 @@ from toolkit import Gateway
 
 def arg_parse():
     parser = argparse.ArgumentParser(prog="micrOS dev toolkit - deploy, connect, update, etc.",
-                                            description="CMDline wrapper for {}\n and for {}".format(
+                                            description="CMDline wrapper for {}\n and for {}\n USED ENV VARS: MICROS_DEV, API_AUTH, GATEWAYIP".format(
                                             os.path.join(TOOLKIT_PATH, 'MicrOSDevEnv.py'),
                                             os.path.join(TOOLKIT_PATH, 'socketClient.py')))
 
@@ -48,8 +48,8 @@ def arg_parse():
     dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")
     dev_group.add_argument("-b", "--backup_node_config", action="store_true", help="Backup usb connected node config.")
     dev_group.add_argument("-sim", "--simulate", action="store_true", help="start micrOS on your computer in simulated mode")
-    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy]")
-    dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server")
+    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy], MICROS_DEV env. var: enable compile-> True (disabled for pip deployments)")
+    dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server, Env. vars: API_AUTH='username:password' (optional), GATEWAYIP needed for container deployment only.")
     dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
 
     toolkit_group = parser.add_argument_group("Toolkit development")

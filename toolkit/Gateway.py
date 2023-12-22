@@ -31,20 +31,30 @@ API_URL_CACHE = ""
 app = Flask(__name__)
 
 # --------------------- AUTH ------------------------- #
-if BasicAuth is not None:
+try:
+    __rest_usr_name, __rest_usr_pwd = tuple(os.environ.get("API_AUTH").split(':'))
+except Exception as e:
+    print("[i] SKIP AUTH - API_AUTH ENV VAR NOT FOUND.")
+    __rest_usr_name, __rest_usr_pwd = None, None
+
+
+if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
     basic_auth = BasicAuth(app)
+
     # Configure basic authentication
-    app.config['BASIC_AUTH_USERNAME'] = f'usr{datetime.now().day}'                      # month-day (21)
-    app.config['BASIC_AUTH_PASSWORD'] = f'pass{datetime.now().timetuple().tm_yday}'     # year-day (355)
+    app.config['BASIC_AUTH_USERNAME'] = f'{__rest_usr_name}'
+    app.config['BASIC_AUTH_PASSWORD'] = f'{__rest_usr_pwd}'
+    #app.config['BASIC_AUTH_PASSWORD'] = f'{__rest_usr_pwd}{datetime.now().day}'  # month-day (21)
 
     def is_local_network():
         # Define local network IP prefixes (adjust as needed)
         local_network_prefixes = ['192.168.', '10.0.']
         #local_network_prefixes = []
         remote_ip = request.remote_addr
+        print(f"\t[i] Check incoming IP address: {remote_ip}")
         for prefix in local_network_prefixes:
             if remote_ip.startswith(prefix):
-                print(f"[i] SKIP AUTH - LOCAL NETWORK: {prefix} match with {remote_ip}")
+                print(f"\t\t[i] SKIP AUTH - LOCAL NETWORK: {prefix} match with {remote_ip}")
                 return True
         return False
 

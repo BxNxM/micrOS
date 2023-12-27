@@ -579,9 +579,9 @@ Add custom endpint `<localhost.local>/endpoint` from Load Modules to WebCli html
 
 Parameters:
 
-* endpoint: name of the http endpoint after the main address, like `localhost.local/my_endpoint`, in this calse the `my_endpoint` is the input paramater here.
+* endpoint: name of the http endpoint after the main address, like `localhost.local/my_endpoint`, in this case the `my_endpoint` is the input paramater here.
 
-* function: callback function, this will be called when endpint is called, it must return 2 values: html type, data for example `html/text, data` and data: `hello world`. Supported data types: `text/html`, `text/plain`, `image/jpeg`
+* function: callback function, this will be called when endpoint is called, it must return 2 values: html type and data for example `html/text, data` data for example: `hello world`. Supported data types: `text/html`, `text/plain`, `image/jpeg`
 
 Returns:
 

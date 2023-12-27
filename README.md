@@ -56,7 +56,7 @@ Access rest api over browser: `http://<nodename>.local`
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 7. micrOS gateway with Prometheus: [link](https://github.com/BxNxM/micrOS#micros-gateway-in-docker)
 8. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
-9. Release notes: [link](https://github.com/BxNxM/micrOS##RELESE-NOTE)
+9. Release notes: [link](https://github.com/BxNxM/micrOS#RELESE-NOTE)
 
 ----------------------------------------
 ----------------------------------------
@@ -479,7 +479,7 @@ def help():
 
 ### micrOS Common module
 
-#### Common module with additinal features for LMs
+#### Common module with additinal features for LoadModule-s
 
 Module responsible for collecting additional feature definitions dedicated to the micrOS framework and LoadModules. Code: [micrOS/source/Common.py](./micrOS/source/Common.py)
 
@@ -571,6 +571,21 @@ Parameters:
 Returns:
 
 * True if the notification was sent successfully, False otherwise.
+
+
+### rest\_endpoint(endpoint, function):
+
+Add custom endpint `<localhost.local>/endpoint` from Load Modules to WebCli html server.
+
+Parameters:
+
+* endpoint: name of the http endpoint after the main address, like `localhost.local/my_endpoint`, in this calse the `my_endpoint` is the input paramater here.
+
+* function: callback function, this will be called when endpint is called, it must return 2 values: html type, data for example `html/text, data` and data: `hello world`. Supported data types: `text/html`, `text/plain`, `image/jpeg`
+
+Returns:
+
+* True if function successfuly registered on the endpoint
 
 ----------------------------------------
 

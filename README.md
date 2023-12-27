@@ -56,6 +56,7 @@ Access rest api over browser: `http://<nodename>.local`
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 7. micrOS gateway with Prometheus: [link](https://github.com/BxNxM/micrOS#micros-gateway-in-docker)
 8. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
+9. Release notes: [link](https://github.com/BxNxM/micrOS##RELESE-NOTE)
 
 ----------------------------------------
 ----------------------------------------
@@ -270,6 +271,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 - Socket client python plugin - interactive - non interactive mode
 
+
 ## Built in periphery support
 
 `#Sensors / inputes` `#Actuators / outputs`
@@ -394,7 +396,7 @@ Aka How to write Load Modules
 
 ### LM_simple.py
 
-```python3
+```python
 
 def hello(name="Anonimus"):
 	return "Hello {}!".format(name)
@@ -407,7 +409,7 @@ def add_two_numbers(a, b):
 
 Function naming convesions for Load Modules.
 
-```python3
+```python
 
 from LogicalPins import physical_pin, pinmap_dump
 from machine import Pin
@@ -485,7 +487,7 @@ Module responsible for collecting additional feature definitions dedicated to th
 
 Adds an extra `msgobj` to the wrapped function's argument list. The `msgobj` provides a socket message interface for the open connection.
 
-```
+```python
 @socket_stream
 def function_name(arg1, arg2, ..., msgobj=None):
     # function body
@@ -498,23 +500,23 @@ Generator for color transitions.
 
 Parameters:
 
-* from_val: Starting value
-* to_val: Target value
-* step_ms: Step to reach to_val
-* interval_sec: Full intervals
+* from\_val: Starting value
+* to\_val: Target value
+* step\_ms: Step to reach to\_val
+* interval\_sec: Full intervals
 
 Returns:
 
 * A generator that yields the intermediate values between from_val and to_val in steps of step_ms.
 
-### transition_gen(*args, interval\_sec=1.0)
+### transition\_gen(*args, interval\_sec=1.0)
 
 Create multiple transition generators.
 
 Parameters:
 
 * args: Pairs of from_val and to_val values for each channel
-* interval_sec: Interval in seconds to calculate the optimal fade/transition effect
+* interval\_sec: Interval in seconds to calculate the optimal fade/transition effect
 
 Returns:
 
@@ -528,9 +530,9 @@ Methods:
 
 * \_\_init\_\_(self, pin): Initializes the ADC object with the specified pin.
 * get(self): Reads the analog value from the ADC and returns a dictionary with the raw value, percentage, and voltage.
-* get_singleton(pin): Returns a singleton SmartADC object for the specified pin.
+* get\_singleton(pin): Returns a singleton SmartADC object for the specified pin.
 
-### micro_task(tag, task=None)
+### micro\_task(tag, task=None)
 
 Async task creation from LoadModules.
 
@@ -549,7 +551,7 @@ micrOS Common Data logger solution.
 
 Parameters:
 
-* f_name: Log name (without extension, automatically appends .dat)
+* f\_name: Log name (without extension, automatically appends .dat)
 * data: Data to append to the log. If None, reads the log and returns it as a message stream.
 * limit: Line limit for the log (default: 12)
 * msgobj: Socket stream object (automatically set)
@@ -570,10 +572,32 @@ Returns:
 
 * True if the notification was sent successfully, False otherwise.
 
-----------------------------------------s
+----------------------------------------
 
 
-### RELESE NOTE
+## RELESE NOTE
+
+Next **main release** version **2.0.0.0**
+
+```
+Almost same as Current v 1.45.0 content
+	- WebCli (multiport async servers)
+	- Camera support
+	- Full async as technically possible (InterCon)
+	- Async task management
+Missing:
+	- review + optimization(?)
+	- testing with gateway (ongoing)
+```
+
+Planned features in version **2.1.0-0**
+
+```
+- micropython 1.22 integration with ShellCli (+interCon) and WebCli SSL/TLS support
+- Camera performance enhancements (WebCli) - investigation needed (techical limitations?) - but actually fine enough :D
+- telegram picture reply (? techical limitation ?)
+```
+
 
 |  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |  SUPPORTED DEVICE(S) | APP PROFILES | Load Modules  |     NOTE       |
 | :----------: | :----------------: | :------------------------:   |  :-----------------: | :------------: | :------------:| -------------- |

@@ -64,7 +64,7 @@ if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
     @app.before_request
     def require_authentication():
         is_internal, remote_ip = is_local_network()
-        print(f"==> EXTERNAL LOGIN: {remote_ip}")
+        print(f"==> {'INTERNAL' if is_internal else 'EXTERNAL'} LOGIN: {remote_ip}")
         if not is_internal and not basic_auth.authenticate():
             return basic_auth.challenge()
 # ---------------------------------------------------- #

@@ -35,38 +35,33 @@ class USB(Compile):
             {'esp32':
                  {'erase': 'esptool.py --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
-                  'connect': 'screen {dev} 115200',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'mpremote_cmd': None,
                   'cmd_line_info': '[!HINT!] PRESS [EN] BUTTON TO ENABLE DEVICE ERASE...'},
              'esp32cam':
                   {'erase': 'esptool.py --port {dev} erase_flash',
                    'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
-                   'connect': 'screen {dev} 115200',
-                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                   'mpremote_cmd': 'mpremote',
                    'cmd_line_info': '*** [!DISCLAIMER!] ***\n\tUSB copy not works with some serial interface\n\tCopy manually: toolkit/workspace/precompiled/micrOSloader.mpy\n\tNetwork.mpy Debug.mpy ConfigHandler.mpy main.py\n\tThen push OTA update over AP mode... Then you are done'},
              'esp32s2':
                  {'erase': 'esptool.py --chip esp32s2 --port {dev} --after no_reset erase_flash',
                   'deploy': 'esptool.py --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}',
-                  'connect': 'screen {dev} 115200',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!HINT!] Hold on Button 0 -> Press Button Reset -> Release Button 0 TO ENABLE DEVICE ERASE...'},
              'tinypico':
                  {'erase': 'esptool.py --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
-                  'connect': 'screen {dev} 115200',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'mpremote_cmd': 'mpremote',
                   'cmd_line_info': ''},
              'rpi-pico-w':
                  {'erase': None,
                   'deploy': self._deploy_micropython_dev_usb_storage,
-                  'connect': 'screen {dev}',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!!!] Experimental device - no stable micropython yet'},
              'esp32s3_spiram_oct':
                  {'erase': 'esptool.py --chip esp32s3 --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
-                  'connect': 'screen {dev} 115200',
-                  'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!!!] Experimental device, no pinmap was adapted (fallback to esp32)'},
              }
         if not USB.usb_driver_ok:
@@ -192,11 +187,16 @@ class USB(Compile):
                 self.console(f"... wait for reset {10-k} sec", state='imp')
                 time.sleep(1)
 
-        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
+        mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
         device = self.get_devices()[0]
         source_to_put_device = LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
         # Set source order - main, boot
         source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('main.py')))
+        try:
+            # PIP deployment generates this ...
+            source_to_put_device.remove('__pycache__')      # remove if accidentally left here
+        except:
+            pass
 
         # Change workdir
         workdir_handler = LocalMachine.SimplePopPushd()
@@ -204,14 +204,16 @@ class USB(Compile):
 
         for index, source in enumerate(source_to_put_device):
             percent = int((index + 1) / len(source_to_put_device) * 100)
-            self.console("[{}%] micrOS deploy via USB".format(percent))
-            ampy_args = 'put {from_}'.format(from_=source)
-            command = ampy_cmd.format(dev=device, args=ampy_args)
-            command = '{cmd}'.format(cmd=command)
+            self.console("[{}%] micrOS deploy via USB - {}".format(percent, device))
+            if mpremote_cmd is None:
+                # Legacy ampy command (esp32 auto reboot tolerance...)
+                command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args=f'put {source}')
+            else:
+                command = f'{mpremote_cmd} cp {source} :{source}'
             if ' ' in source:
                 self.console("[{}%][SKIP] micrOS deploy via USB: {}".format(percent, command))
                 continue
-            status &= self.__safe_execute_ampy_cmd(command, source)
+            status &= self.__safe_execute_mpremote_cmd(command, source)
             if not status:
                 self.console("MICROS INSTALL FAILED", state='err')
                 sys.exit(5)
@@ -519,7 +521,7 @@ class USB(Compile):
             is_valid = False
         return is_valid
 
-    def __safe_execute_ampy_cmd(self, command, source, retry=8):
+    def __safe_execute_mpremote_cmd(self, command, source, retry=8):
         retry_orig = retry
         status = False
         for retry in range(1, retry_orig):
@@ -551,23 +553,9 @@ class USB(Compile):
         self.console("TO EXIT: ctrl-a d OR ctrl-a ctrl-d")
         time.sleep(2)
 
-        connect_cmd = self.dev_types_and_cmds[self.selected_device_type]['connect']
-        selected_device = self.get_devices()[0]
-        command = connect_cmd.format(dev=selected_device)
-        self.console("CMD: {}".format(command))
-        if not self.dry_run:
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-        self.disconnect_dev()
-
-    def disconnect_dev(self):
-        terminate_cmd = 'kill {pid}'
-        command = terminate_cmd.format(pid=self.__dev_used_from())
-        self.console("CMD: {}".format(command))
-        if not self.dry_run:
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
-        else:
-            exitcode = 0
-        self.console("Disconnect exitcode: {}".format(exitcode))
+        connect_cmd = self.dev_types_and_cmds['esp32s2']['mpremote_cmd']
+        command = f"{connect_cmd} connect auto"
+        self.console("\n\n### RUN NATIVE MPREMOTE COMMAND ###\n\n\t{}\n\n".format(command))
 
     def __dev_used_from(self):
         fuser_cmd = 'fuser {dev}'
@@ -588,10 +576,14 @@ class USB(Compile):
         return processid
 
     def __get_node_config(self):
-        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.get_devices()[0]
-        arguments = 'get node_config.json'
-        command = ampy_cmd.format(dev=device, args=arguments)
+        self.console(f"Get node config over USB: {device}")
+        mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
+        if mpremote_cmd is None:
+            # Legacy ampy command (esp32 auto reboot tolerance...)
+            command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args='get node_config.json')
+        else:
+            command = f'{mpremote_cmd} cat node_config.json'
         if not self.dry_run:
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
             self._archive_node_config()
@@ -642,12 +634,16 @@ class USB(Compile):
 
     def list_micros_filesystem(self):
         self.select_board_n_micropython()
-        ampy_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
         device = self.get_devices()[0]
-        command = ampy_cmd.format(dev=device, args='ls')
+        mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
+        if mpremote_cmd is None:
+            # Legacy ampy command (esp32 auto reboot tolerance...)
+            command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args='ls')
+        else:
+            command = f"{mpremote_cmd} ls"
         if not self.dry_run:
             self.console("CMD: {}".format(command))
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True, debug=False)
         else:
             exitcode = 0
             stdout = 'Dummy stdout'

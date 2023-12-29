@@ -64,7 +64,7 @@
 
     <script>
         const currentHostname = window.location.hostname;
-        const port = `:${window.location.port}` || "";
+        const port = window.location.port ? `:${window.location.port}` : "";
         var deviceLinksHTML = [];
 
         function restApi(cmd = 'list') {

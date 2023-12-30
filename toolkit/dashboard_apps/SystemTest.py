@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(MYPATH))
 import socketClient
 sys.path.append(os.path.join(MYPATH, '../lib/'))
 from TerminalColors import Colors
+import requests
 
 # FILL OUT
 DEVICE = '__simulator__'
@@ -440,6 +441,39 @@ def task_list():
     return state, output
 
 
+def webcli_test():
+    endpoints = []
+    cmd = ['conf', 'webui']
+    out = execute(cmd, tout=3)
+    state, output = out[0], out[1]
+    if state:
+        verdict = f"[ST] WEBUI IS ENABLED ({output})" if output.strip() == 'True' else f"[ST] WEBUI IS DISABLED ({output})"
+        if output.strip() == 'True':
+            out = execute(['conf', 'devip'], tout=3)
+            if out[0] and out[1] is not None:
+                devip = out[1]
+                endpoints.append(f'http://{devip}')
+                endpoints.append(f'http://{devip}/rest')
+
+            for endpoint in endpoints:
+                _start_t = time.time()
+                try:
+                    response = requests.get(endpoint, timeout=5)
+                    # Check if the request was successful
+                    if not (response.status_code == 200 and ('<!DOCTYPE html>' in str(response.content) or '"micrOS"' in str(response.content))):
+                        verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({round(time.time()-_start_t, 2)}s)"
+                        print(response.content)
+                        state = False
+                    else:
+                        verdict += f" Endpoint: {endpoint} [{Colors.OK}OK{Colors.NC}]({round(time.time()-_start_t, 2)}s)"
+                except Exception as e:
+                    verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({round(time.time()-_start_t, 2)}s)"
+                    print(f"webcli_test error: {e}")
+                    state  = False
+        return state, verdict
+    return state, output
+
+
 def app(devfid=None):
     global DEVICE
     if devfid is not None:
@@ -460,6 +494,7 @@ def app(devfid=None):
                'lm_exception': check_robustness_exception(),
                'mem_usage': memory_usage(),
                'disk_usage': disk_usage(),
+               'webui_conn': webcli_test(),
                'mem_alloc': check_robustness_memory(),
                'recursion': check_robustness_recursion(),
                'intercon': check_intercon(host='RingLamp.local'),

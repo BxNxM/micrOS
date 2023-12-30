@@ -673,7 +673,7 @@ from Common import data_logger
 def log_data(data):
 	if not data_logger(f_name="mylog", data=data, limit=20):
 		return "data_logger, error... check system alarms"
-	return "notify, msg was sent."
+	return "data saved."
 
 	
 def get_data():

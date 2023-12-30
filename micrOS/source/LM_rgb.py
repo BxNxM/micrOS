@@ -5,7 +5,6 @@ from machine import Pin, PWM
 from sys import platform
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
-from ConfigHandler import cfgget
 from utime import sleep_ms
 from LogicalPins import physical_pin, pinmap_dump
 from random import randint

@@ -14,11 +14,12 @@ PyYAML
 resources
 Flask
 Flask-RESTful
-matplotlib
-json2html
 wheel
 twine
 psutil
 setuptools
 Flask-BasicAuth
+matplotlib
+json2html
 requests
+opencv-python

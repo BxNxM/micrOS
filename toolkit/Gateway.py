@@ -269,13 +269,16 @@ class DeviceStatus(Resource):
                 _, _ = socketClient.run(['--dev', fuid.strip(), 'system alarms True'])
 
             # Get system info response -> upython version
-            _status3, info = socketClient.run(['--dev', fuid.strip(), 'system info'])
-            if 'upython' in info:
+            _status3, info = socketClient.run(['--dev', fuid.strip(), 'system info >json'])
+            if _status3:
                 try:
-                    free_ram = info.splitlines()[1].split(":")[-1].strip()
-                    free_fs = info.splitlines()[2].split(":")[-1].strip()
-                    upython_version = info.splitlines()[3].split(":")[-1].strip()
-                except:
+                    info = json.loads(info)
+                    print(info)
+                    free_ram = 100 - info.get('Mem usage [%]')
+                    free_fs = 100 - info.get('FS usage [%]')
+                    upython_version = info.get('upython')
+                except Exception as e:
+                    print(f"System info query error: {e}")
                     pass
 
             # Get cpu temp

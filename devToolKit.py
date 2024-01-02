@@ -18,6 +18,11 @@ from toolkit import MicrOSDevEnv
 from toolkit import socketClient
 from toolkit.lib import LocalMachine
 from toolkit import Gateway
+try:
+    from toolkit import micrOSlint
+except Exception as e:
+    print(f"micrOS linter import error: {e}")
+    micrOSlint = None
 
 
 def arg_parse():
@@ -51,6 +56,7 @@ def arg_parse():
     dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy], MICROS_DEV env. var: enable compile-> True (disabled for pip deployments)")
     dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server, Env. vars: API_AUTH='username:password' (optional), GATEWAYIP needed for container deployment only.")
     dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
+    dev_group.add_argument("-lint", "--linter", action="store_true", help="Run micrOS system linter (pylint+)")
 
     toolkit_group = parser.add_argument_group("Toolkit development")
     toolkit_group.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")
@@ -269,5 +275,9 @@ if __name__ == "__main__":
 
     if cmd_args.gateway:
         gateway_rest_api()
+
+    if cmd_args.linter:
+        if micrOSlint is not None:
+            micrOSlint.main()
 
     sys.exit(0)

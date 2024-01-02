@@ -138,9 +138,11 @@ def core_dep_checker(categories, verbose=True):
     core_resources = categories['core']
     for core_res in core_resources:
         try:
+            categories['core'][core_res]['linter']['mlint'] = (True, 'OK')
             lm_dep = core_resources[core_res]['dependencies']['lm']
             if len(lm_dep) > 0:
                 verdict.append((core_res, False, f'Core resource has LM dep - ALERT - {lm_dep}'))
+                categories['core'][core_res]['linter']['mlint'] = (False, f'Core resource has LM dep - ALERT - {lm_dep}')
                 state = False
         except Exception as e:
             if core_res != 'linter':
@@ -151,7 +153,7 @@ def core_dep_checker(categories, verbose=True):
         print(json.dumps(verdict, sort_keys=True, indent=4))
 
     core_dep_warnings = sum([1 for v in verdict if not v[1]])
-    return state, f'{core_dep_warnings} warning(s)'
+    return state, f'{core_dep_warnings} warning(s)', categories
 
 
 def load_module_checker(categories, verbose=True):
@@ -172,15 +174,16 @@ def load_module_checker(categories, verbose=True):
     lm_resources = categories['load_module']
     for lm_res in lm_resources:
         try:
+            categories['load_module'][lm_res]['linter']['mlint'] = (True, 'OK')
             core_relation = lm_resources[lm_res]['dependencies']['core']
             core_relation = _is_allowed(core_relation)
             if len(core_relation) > 0:
                 if lm_res in lm_god_mode:
                     verdict.append((lm_res, True, f'WARNING: lm dep: {core_relation}'))
+                    categories['load_module'][lm_res]['linter']['mlint'] = (True, 'OK')
                 else:
-                    verdict.append((lm_res, False, f'WARNING: lm dep: {core_relation}'))
-                    categories['load_module'][lm_res]['linter']['mlint'] = (False, f'Core resource has LM dep - ALERT - {core_relation}')
-                    # TODO: After fixes it can be set as False in this case, if it make sense
+                    verdict.append((lm_res, False, f'ALERT: lm dep: {core_relation}'))
+                    categories['load_module'][lm_res]['linter']['mlint'] = (False, f'LM has direct-core usage (not over Common) - ALERT - {core_relation}')
                     state_lm_dep = False
         except Exception as e:
             if lm_res != 'linter':
@@ -189,23 +192,24 @@ def load_module_checker(categories, verbose=True):
 
     lm_dep_warnings = sum([1 for v in verdict if not v[1]])
     if lm_dep_warnings <= 7:  # Temporary fix, drops error if quality pattern goes down...
+        # TODO: After fixes it can be set as False in this case, if it make sense
         state_lm_dep = True
     if verbose or not state_lm_dep:
         print(f"RUN load_module_checker ({state_lm_dep})")
         print(json.dumps(verdict, sort_keys=True, indent=4))
-    return state_lm_dep, f'{lm_dep_warnings} warning(s)'
+    return state_lm_dep, f'{lm_dep_warnings} warning(s)', categories
 
 
 def _run_pylint(file_name):
     file_path = os.path.join(MICROS_SOURCE_DIR, file_name)
     # Customize pylint options
     pylint_opts = [
-        '--disable=invalid-name',                   # Disable the "invalid-name" check
-        '--disable=missing-function-docstring',     # Disable the "missing-function-docstring" check
-        '--disable=broad-exception-caught',
-        '--disable=missing-class-docstring',
-        '--disable=broad-exception-raised',
-        '--disable=import-error'                    # Ignore import error due to micropython deps
+        '--disable=import-error',                   # Ignore import error due to micropython deps
+        '--disable=missing-class-docstring',        # Disable DOCSTRING: class
+        '--disable=missing-function-docstring',     # Disable DOCSTRING: function
+        '--disable=line-too-long',                  # Disable TOO LONG
+        '--disable=broad-exception-caught',         # Disable BROAD exception
+        '--disable=broad-exception-raised'          # Disable BROAD exception
     ]
     # Run pylint on the specified file
     results = Run([file_path] + pylint_opts, exit=False)
@@ -217,21 +221,21 @@ def _run_pylint(file_name):
     return score, issues
 
 
-def run_pylint(categories, verbose=True):
+def run_pylint(categories, verbose=True, dry_run=False):
     avg_core_score = 0
     avg_lm_score = 0
     core_code = categories['core']
     lm_code = categories['load_module']
 
     for code in core_code:
-        if code == 'linter':
+        if code == 'linter' or dry_run:
             continue
         core_score, core_issue = _run_pylint(code)
         avg_core_score += core_score
         print(categories['core'][code])
         categories['core'][code]['linter']['pylint'] = (core_score, core_issue)
     for code in lm_code:
-        if code == 'linter':
+        if code == 'linter' or dry_run:
             continue
         lm_score, lm_issue = _run_pylint(code)
         avg_lm_score += lm_score
@@ -271,6 +275,11 @@ def short_report(categories, states):
     print(f"Exitcode: {exitcode}")
     return exitcode, categories
 
+def save_system_analysis_json(categories):
+    file_path = os.path.join(MYPATH, 'user_data/system_analysis.json')
+    with open(file_path, 'w') as json_file:
+        json.dump(categories, json_file, indent=4)
+    return f"system_analysis json saved to {file_path}"
 
 def main(verbose=True):
     print(f"Analyze project: {MICROS_SOURCE_DIR}")
@@ -280,12 +289,16 @@ def main(verbose=True):
     categories = combine_data_structures(core_struct, lm_struct, all_struct=resources, verbose=verbose)
 
     print("== RUN checker on parsed resources ==")
-    s1, text1 = core_dep_checker(categories, verbose=verbose)
-    s2, text2 = load_module_checker(categories, verbose=verbose)
-    categories = run_pylint(categories, verbose=verbose)
+    s1, text1, categories = core_dep_checker(categories, verbose=verbose)
+    categories['core']['linter']['mlint'] = (s1, text1)
+    s2, text2, categories = load_module_checker(categories, verbose=verbose)
+    categories['load_module']['linter']['mlint'] = (s1, text1)
+    categories = run_pylint(categories, verbose=verbose, dry_run=False)
 
     # Short report
     exitcode, categories = short_report(categories, {'core_dep_checker': (s1, text1), 'load_module_checker': (s2, text2)})
+    # Archive system_analysis_json
+    print(save_system_analysis_json(categories))
     return exitcode
 
 if __name__ == "__main__":

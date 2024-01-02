@@ -222,6 +222,7 @@ def _run_pylint(file_name):
 
 
 def run_pylint(categories, verbose=True, dry_run=False):
+    error_messages = ['syntax-error', 'undefined-variable']         # drop error if this is in pylint output
     avg_core_score = 0
     avg_lm_score = 0
     core_code = categories['core']
@@ -232,14 +233,15 @@ def run_pylint(categories, verbose=True, dry_run=False):
             continue
         core_score, core_issue = _run_pylint(code)
         avg_core_score += core_score
-        print(categories['core'][code])
-        categories['core'][code]['linter']['pylint'] = (core_score, core_issue)
+        source_is_ok = not any(key in core_issue for key in error_messages)
+        categories['core'][code]['linter']['pylint'] = (core_score, core_issue, source_is_ok)
     for code in lm_code:
         if code == 'linter' or dry_run:
             continue
         lm_score, lm_issue = _run_pylint(code)
         avg_lm_score += lm_score
-        categories['load_module'][code]['linter']['pylint'] = (lm_score, lm_issue)
+        source_is_ok = not any(key in lm_issue for key in error_messages)
+        categories['load_module'][code]['linter']['pylint'] = (lm_score, lm_issue, source_is_ok)
 
     avg_core_score = round(avg_core_score / (len(core_code)-1), 2)
     categories['core']['linter']['pylint'] = avg_core_score
@@ -251,7 +253,28 @@ def run_pylint(categories, verbose=True, dry_run=False):
     return categories
 
 
+def pylint_verdict_analyze(categories):
+    state = True
+    failed = []
+    core = categories['core']
+    lm = categories['load_module']
+    resources = {**lm, **core}
+    for res in resources:
+        if 'linter' in res:
+            continue
+        is_ok = resources[res]['linter']['pylint'][2]
+        if not is_ok:
+            failed.append(res)
+        state &= is_ok
+    return state, failed
+
+
 def short_report(categories, states):
+
+    def _spacer(_word, next_col=25):
+        return ' ' * (next_col - len(_word))
+
+
     sum_core_lines, core_cnt = categories['core']['linter']['sum_lines'], len(categories['core'])-1
     sum_lm_lines, lm_cnt = categories['load_module']['linter']['sum_lines'], len(categories['load_module'])-1
 
@@ -261,18 +284,42 @@ def short_report(categories, states):
     categories['load_module']['linter']['mlint'] = lm_dep
     core_pylint = categories['core']['linter']['pylint']
     lm_pylint = categories['load_module']['linter']['pylint']
+    pylint_check = states.get('pylint_checker')
 
     print(json.dumps(categories, sort_keys=True, indent=4))
-    print("###########        micrOS linter      ###########")
+    print("#####################        micrOS linter/scripts      #######################")
+    print("Core micrOS resources")
+    for i, core_module in enumerate(categories['core']):
+        if 'linter' != core_module:
+            lines = categories['core'][core_module]['linter']['lines']
+            mlint = categories['core'][core_module]['linter']['mlint'][0]
+            try:
+                pylint = categories['core'][core_module]['linter']['pylint'][0]
+            except Exception as e:
+                pylint = f'{e}'
+            print(f"\t{i+1}\t{lines}\t{core_module}{_spacer(core_module)}(mlint: {mlint})\t(pylint: {pylint})")
+    print("micrOS Load Module resources")
+    for i, lm_module in enumerate(categories['load_module']):
+        if 'linter' != lm_module:
+            lines = categories['load_module'][lm_module]['linter']['lines']
+            mlint = categories['load_module'][lm_module]['linter']['mlint'][0]
+            try:
+                pylint = categories['load_module'][lm_module]['linter']['pylint'][0]
+            except Exception as e:
+                pylint = f'{e}'
+            print(f"\t{i+1}\t{lines}\t{lm_module}{_spacer(lm_module)}(mlint: {mlint})\t(pylint: {pylint})")
+    print("########################        micrOS linter      ###########################")
     print(f"    core system: {sum_core_lines} lines / {core_cnt} files")
     print(f"    load modules: {sum_lm_lines} lines / {lm_cnt} files")
-    print(f"core_dep_checker:               core dependency check (no LM): {core_dep}")
-    print(f"load_module_checker:            load module dependency check (no core): {lm_dep}")
-    print(f"core pylint score:              {core_pylint}")
-    print(f"load module pylint score:       {lm_pylint}")
+    print(f"core_dep_checker:                   core dependency check (no LM): {core_dep}")
+    print(f"load_module_checker:                load module dependency check (no core): {lm_dep}")
+    print(f"core pylint score:                  {core_pylint}")
+    print(f"load module pylint score:           {lm_pylint}")
+    print(f"pylint resource check (syntax):     {pylint_check}")
+
 
     exitcode = sum([1 for k, v in states.items() if not v[0]])
-    print(f"Exitcode: {exitcode}")
+    print(f"micrOSlint verdict: {'OK' if exitcode == 0 else 'NOK'} Exitcode: {exitcode}")
     return exitcode, categories
 
 def save_system_analysis_json(categories):
@@ -294,9 +341,12 @@ def main(verbose=True):
     s2, text2, categories = load_module_checker(categories, verbose=verbose)
     categories['load_module']['linter']['mlint'] = (s1, text1)
     categories = run_pylint(categories, verbose=verbose, dry_run=False)
+    s3, pylint_verdict = pylint_verdict_analyze(categories)
 
     # Short report
-    exitcode, categories = short_report(categories, {'core_dep_checker': (s1, text1), 'load_module_checker': (s2, text2)})
+    exitcode, categories = short_report(categories, {'core_dep_checker': (s1, text1),
+                                                     'load_module_checker': (s2, text2),
+                                                     'pylint_checker': (s3, pylint_verdict)})
     # Archive system_analysis_json
     print(save_system_analysis_json(categories))
     return exitcode

@@ -1,5 +1,4 @@
 from machine import Pin, PWM
-from sys import platform
 from LogicalPins import physical_pin
 from Common import SmartADC
 from random import randint
@@ -94,7 +93,7 @@ def set_random_pwm(pin, min_duty, max_duty, freq=20480):
     :param max_duty: set max duty value (0-1000)
     :param freq: pwm frequency (board dependent)
     """
-    value = random(min_duty, max_duty)
+    value = randint(min_duty, max_duty)
     return set_pwm(pin, duty=value, freq=freq)
 
 

@@ -297,12 +297,12 @@ def add_ref_counter(categories, verbose=True):
                 continue
             dep_list = categories[master_key][res]['dependencies']['core'] + \
                        categories[master_key][res]['dependencies']['lm']
-            print(f"||{master_key}-{res} Lm&core:{dep_list}||")
+            #print(f"||{master_key}-{res} Lm&core:{dep_list}||")
             if len(dep_list) == 0:
                 continue
             for dep in dep_list:
                 dep = f'{dep}.py'
-                print(f"+++> UPDATE: {master_key}-{res}")
+                #print(f"+++> UPDATE: {master_key}-{res}")
                 _update(_m_keys=['core', 'load_module'], _dep=dep, _res=res)
     if verbose:
         print(f"RUN add_ref_counter")
@@ -327,7 +327,7 @@ def short_report(categories, states, verbose=False):
     lm_pylint = categories['load_module']['linter']['pylint']
     pylint_check = states.get('pylint_checker')
 
-    #print(json.dumps(categories, sort_keys=True, indent=4))
+    print(json.dumps(categories, sort_keys=True, indent=4))
     print("#####################        micrOS linter/scripts      #######################")
     print("Core micrOS resources")
     for i, core_module in enumerate(categories['core']):

@@ -262,14 +262,55 @@ def pylint_verdict_analyze(categories):
     for res in resources:
         if 'linter' in res:
             continue
-        is_ok = resources[res]['linter']['pylint'][2]
+        try:
+            is_ok = resources[res]['linter']['pylint'][2]
+        except Exception as e:
+            print(f"pylint_verdict_analyze error: missing key:{e} in [{res}] {resources[res]['linter']}")
+            is_ok = False
         if not is_ok:
             failed.append(res)
         state &= is_ok
     return state, failed
 
+def add_ref_counter(categories, verbose=True):
+    def _update(_m_keys, _dep, _res):
+        nonlocal categories
+        for _m_key in _m_keys:
+            try:
+                if categories[_m_key][_dep]['linter'].get('ref', None) is None:
+                    categories[_m_key][_dep]['linter']['ref'] = [0, []]
+                categories[_m_key][_dep]['linter']['ref'][0] += 1
+                categories[_m_key][_dep]['linter']['ref'][1].append(_res)
+                if verbose:
+                    print(f"\tUpdate refs: {_m_key}->{_dep}->linter: {categories[_m_key][_dep]['linter']}")
+                return True
+            except Exception as e:
+                print(f"ERROR: add_ref_counter {_m_key}->{_dep}: {e}: ")
+        return False
 
-def short_report(categories, states):
+    for master_key in categories:
+        # Skip master keys
+        if master_key in ['pin_maps', 'other']:
+            continue
+        for res in categories[master_key]:
+            if 'linter' == res:
+                continue
+            dep_list = categories[master_key][res]['dependencies']['core'] + \
+                       categories[master_key][res]['dependencies']['lm']
+            print(f"||{master_key}-{res} Lm&core:{dep_list}||")
+            if len(dep_list) == 0:
+                continue
+            for dep in dep_list:
+                dep = f'{dep}.py'
+                print(f"+++> UPDATE: {master_key}-{res}")
+                _update(_m_keys=['core', 'load_module'], _dep=dep, _res=res)
+    if verbose:
+        print(f"RUN add_ref_counter")
+        #print(json.dumps(categories, sort_keys=True, indent=4))
+    return categories
+
+
+def short_report(categories, states, verbose=False):
 
     def _spacer(_word, next_col=25):
         return ' ' * (next_col - len(_word))
@@ -286,34 +327,42 @@ def short_report(categories, states):
     lm_pylint = categories['load_module']['linter']['pylint']
     pylint_check = states.get('pylint_checker')
 
-    print(json.dumps(categories, sort_keys=True, indent=4))
+    #print(json.dumps(categories, sort_keys=True, indent=4))
     print("#####################        micrOS linter/scripts      #######################")
     print("Core micrOS resources")
     for i, core_module in enumerate(categories['core']):
         if 'linter' != core_module:
             lines = categories['core'][core_module]['linter']['lines']
+            try:
+                ref = categories['core'][core_module]['linter']['ref']
+            except:
+                ref = ['?', []]
             mlint = categories['core'][core_module]['linter']['mlint'][0]
             try:
                 pylint = categories['core'][core_module]['linter']['pylint'][0]
             except Exception as e:
                 pylint = f'{e}'
-            print(f"\t{i+1}\t{lines}\t{core_module}{_spacer(core_module)}(mlint: {mlint})\t(pylint: {pylint})")
+            print(f"\t{i+1}\t{lines}\t{core_module}{_spacer(core_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref if verbose else ref[0]})")
     print("micrOS Load Module resources")
     for i, lm_module in enumerate(categories['load_module']):
         if 'linter' != lm_module:
             lines = categories['load_module'][lm_module]['linter']['lines']
+            try:
+                ref = categories['load_module'][lm_module]['linter']['ref']
+            except:
+                ref = [0, []]
             mlint = categories['load_module'][lm_module]['linter']['mlint'][0]
             try:
                 pylint = categories['load_module'][lm_module]['linter']['pylint'][0]
             except Exception as e:
                 pylint = f'{e}'
-            print(f"\t{i+1}\t{lines}\t{lm_module}{_spacer(lm_module)}(mlint: {mlint})\t(pylint: {pylint})")
+            print(f"\t{i+1}\t{lines}\t{lm_module}{_spacer(lm_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref if verbose else ref[0]})")
     print("########################        micrOS linter      ###########################")
-    print(f"    core system: {sum_core_lines} lines / {core_cnt} files")
-    print(f"    load modules: {sum_lm_lines} lines / {lm_cnt} files")
-    print(f"core_dep_checker:                   core dependency check (no LM): {core_dep}")
+    print(f"        core system:                {sum_core_lines} lines / {core_cnt} files")
+    print(f"       load modules:                {sum_lm_lines} lines / {lm_cnt} files")
+    print(f"   core_dep_checker:                core dependency check (no LM): {core_dep}")
     print(f"load_module_checker:                load module dependency check (no core): {lm_dep}")
-    print(f"core pylint score:                  {core_pylint}")
+    print(f"  core pylint score:                {core_pylint}")
     print(f"load module pylint score:           {lm_pylint}")
     print(f"pylint resource check (syntax):     {pylint_check}")
 
@@ -342,11 +391,13 @@ def main(verbose=True):
     categories['load_module']['linter']['mlint'] = (s1, text1)
     categories = run_pylint(categories, verbose=verbose, dry_run=False)
     s3, pylint_verdict = pylint_verdict_analyze(categories)
+    categories = add_ref_counter(categories, verbose=verbose)
 
     # Short report
     exitcode, categories = short_report(categories, {'core_dep_checker': (s1, text1),
                                                      'load_module_checker': (s2, text2),
-                                                     'pylint_checker': (s3, pylint_verdict)})
+                                                     'pylint_checker': (s3, pylint_verdict)},
+                                        verbose=verbose)
     # Archive system_analysis_json
     print(save_system_analysis_json(categories))
     return exitcode

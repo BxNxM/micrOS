@@ -31,3 +31,6 @@ dist/
 
 # micrOS console log
 micros.log
+
+# Secrets
+.pypi-secret

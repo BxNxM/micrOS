@@ -173,7 +173,7 @@ then
             echo -e "Create a wheel distribution."
             if python3 setup.py bdist_wheel;
             then
-                twine upload dist/* --verbose
+                twine upload -u "__token__" -p "$(cat .pypi-secret)" dist/* --verbose
             fi
         fi
     fi

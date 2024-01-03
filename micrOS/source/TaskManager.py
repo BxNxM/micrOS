@@ -1,10 +1,6 @@
 """
 Module is responsible for user executables invocation
 - Wraps LM execution into async tasks
-Used in:
-- Shell (SocketServer)
-- InterruptHandler
-- Hooks
 
 Designed by Marcell Ban aka BxNxM
 """
@@ -12,13 +8,13 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-import uasyncio as asyncio
-from micropython import schedule
 from sys import modules
 from json import dumps
+import uasyncio as asyncio
+from micropython import schedule
+from utime import ticks_ms, ticks_diff
 from Debug import console_write, errlog_add
 from ConfigHandler import cfgget
-from utime import ticks_ms, ticks_diff
 from Network import sta_high_avail
 
 try:

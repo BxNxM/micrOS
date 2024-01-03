@@ -39,7 +39,7 @@ def sduty(duty=75):
         # duty for sduty is between 40 - 115
         s.duty(duty)
         Data.S = duty
-        return "SET SERVO1: duty: {}".format(duty)
+        return f"SET SERVO1: duty: {duty}"
     except Exception as e:
         return str(e)
 
@@ -87,7 +87,7 @@ def s2duty(duty=75):
         # duty for sduty is between 40 - 115
         s.duty(duty)
         Data.S2 = duty
-        return "SET SERVO2: duty: {}".format(duty)
+        return f"SET SERVO2: duty: {duty}"
     except Exception as e:
         return str(e)
 
@@ -122,7 +122,7 @@ def status(lmf=None):
     # Slider dedicated widget input - [OK]
     if lmf is None:
         return {'S1': Data.S, 'S2': Data.S2}
-    elif lmf.strip() == 's2duty':
+    if lmf.strip() == 's2duty':
         return {'X': Data.S2}
     else:
         return {'X': Data.S}

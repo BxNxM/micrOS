@@ -278,6 +278,6 @@ if __name__ == "__main__":
 
     if cmd_args.linter:
         if micrOSlint is not None:
-            micrOSlint.main(verbose=False)
+            sys.exit(micrOSlint.main(verbose=False))
 
     sys.exit(0)

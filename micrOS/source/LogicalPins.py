@@ -83,7 +83,7 @@ def physical_pin(key):
     pin_num = __resolve_pin_number(key)
     if isinstance(pin_num, int):
         # Check pin is already used
-        if pin_num in PinMap.IO_USE_DICT.keys():
+        if pin_num in PinMap.IO_USE_DICT:
             key_cache = PinMap.IO_USE_DICT[pin_num]
             if key_cache == key:
                 print(f"[io] ReInit pin: {key_cache}:{pin_num}")

@@ -24,7 +24,7 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.46.0-0'
+    MICROS_VERSION = '1.47.0-0'
 
     def __init__(self):
         """
@@ -44,6 +44,12 @@ class Shell:
         except Exception as e:
             console_write(f"Export system version to config failed: {e}")
             errlog_add(f"[Shell][ERR] system version export error: {e}")
+
+    def send(self, msg):
+        """
+        Must be defined by child class...
+        """
+        pass
 
     def reset(self):
         """Reset shell state"""
@@ -145,7 +151,7 @@ class Shell:
         if msg_list[0].startswith('conf'):
             self.__conf_mode = True
             return True
-        elif msg_list[0].startswith('noconf'):
+        if msg_list[0].startswith('noconf'):
             self.__conf_mode = False
             return True
 

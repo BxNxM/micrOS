@@ -85,7 +85,7 @@ class Device:
         b=bytearray(2)
         b[0]= value & 0xFF
         b[1]= (value>>8) & 0xFF
-        self.i2c.writeto_mem(self._address, register, value)
+        self._i2c.writeto_mem(self._address, register, value)
 
     def readRaw8(self):
         """Read an 8-bit value on the bus (without register)."""

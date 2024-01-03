@@ -61,24 +61,22 @@ def _parse_py_file_content(file_name, verbose=True):
 def parse_core_modules(core_resources, verbose=True):
     core_resource_struct = {}
     for file_name in core_resources:
-        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=False)
+        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose)
         core_resource_struct[file_name] = {'lines': line_cnt, 'dependencies': dependencies}
     if verbose:
         print("RUN parse_core_modules")
-        #print(json.dumps(core_resource_struct, sort_keys=True, indent=4))
-        print(core_resource_struct)
+        print(json.dumps(core_resource_struct, sort_keys=True, indent=4))
     return core_resource_struct
 
 
 def parse_load_modules(lm_resources, verbose=True):
     lm_resource_struct = {}
     for file_name in lm_resources:
-        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=False)
+        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose)
         lm_resource_struct[file_name] = {'lines': line_cnt, 'dependencies': dependencies}
     if verbose:
         print("RUN parse_load_modules")
-        #print(json.dumps(lm_resource_struct, sort_keys=True, indent=4))
-        print(lm_resource_struct)
+        print(json.dumps(lm_resource_struct, sort_keys=True, indent=4))
     return lm_resource_struct
 
 
@@ -159,14 +157,12 @@ def core_dep_checker(categories, verbose=True):
 def load_module_checker(categories, verbose=True):
 
     def _is_allowed(_relation):
-        _allowed_core_resources = ['Common', 'LogicalPins']
-        _to_remove = []
+        _allowed_whitelist = ['Common', 'LogicalPins']
+        _allowed = []
         for _allow in _relation:
-            if _allow in _allowed_core_resources:
-                _to_remove.append(_allow)
-        for rm in _to_remove:
-            _relation.remove(rm)
-        return _relation
+            if _allow in _allowed_whitelist:
+                _allowed.append(_allow)
+        return _relation, _allowed
 
     lm_god_mode = ['LM_system.py', 'LM_lmpacman.py', 'LM_intercon.py']
     state_lm_dep = True
@@ -176,8 +172,8 @@ def load_module_checker(categories, verbose=True):
         try:
             categories['load_module'][lm_res]['linter']['mlint'] = (True, 'OK')
             core_relation = lm_resources[lm_res]['dependencies']['core']
-            core_relation = _is_allowed(core_relation)
-            if len(core_relation) > 0:
+            core_relation, allowed = _is_allowed(core_relation)
+            if len(core_relation) > len(allowed):
                 if lm_res in lm_god_mode:
                     verdict.append((lm_res, True, f'WARNING: lm dep: {core_relation}'))
                     categories['load_module'][lm_res]['linter']['mlint'] = (True, 'OK')
@@ -211,6 +207,9 @@ def _run_pylint(file_name):
         '--disable=broad-exception-caught',         # Disable BROAD exception
         '--disable=broad-exception-raised'          # Disable BROAD exception
     ]
+    if file_name in ['TaskManager.py', 'LogicalPins.py']:
+        pylint_opts.append('--disable=exec-used')   # Disable micrOS execution core exec/eval warning
+        pylint_opts.append('--disable=eval-used')
     # Run pylint on the specified file
     results = Run([file_path] + pylint_opts, exit=False)
 
@@ -222,7 +221,11 @@ def _run_pylint(file_name):
 
 
 def run_pylint(categories, verbose=True, dry_run=False):
-    error_messages = ['syntax-error', 'undefined-variable']         # drop error if this is in pylint output
+    # ERROR CONFIG: drop error if this is in pylint output
+    error_msg_core = ['syntax-error', 'undefined-variable', 'no-member']
+    # BYPASS 'no-member' due to duty and sleep_ms micropython functions is drops false alarm, etc.
+    error_msg_lm = ['syntax-error', 'undefined-variable']
+
     avg_core_score = 0
     avg_lm_score = 0
     core_code = categories['core']
@@ -233,14 +236,14 @@ def run_pylint(categories, verbose=True, dry_run=False):
             continue
         core_score, core_issue = _run_pylint(code)
         avg_core_score += core_score
-        source_is_ok = not any(key in core_issue for key in error_messages)
+        source_is_ok = not any(key in core_issue for key in error_msg_core)
         categories['core'][code]['linter']['pylint'] = (core_score, core_issue, source_is_ok)
     for code in lm_code:
         if code == 'linter' or dry_run:
             continue
         lm_score, lm_issue = _run_pylint(code)
         avg_lm_score += lm_score
-        source_is_ok = not any(key in lm_issue for key in error_messages)
+        source_is_ok = not any(key in lm_issue for key in error_msg_lm)
         categories['load_module'][code]['linter']['pylint'] = (lm_score, lm_issue, source_is_ok)
 
     avg_core_score = round(avg_core_score / (len(core_code)-1), 2)
@@ -282,7 +285,8 @@ def add_ref_counter(categories, verbose=True):
                 categories[_m_key][_dep]['linter']['ref'][0] += 1
                 categories[_m_key][_dep]['linter']['ref'][1].append(_res)
                 if verbose:
-                    print(f"\tUpdate refs: {_m_key}->{_dep}->linter: {categories[_m_key][_dep]['linter']}")
+                    print(f"\tUpdate refs: {_m_key}->{_dep}->linter:")
+                    print(json.dumps(categories[_m_key][_dep]['linter'], sort_keys=True, indent=4))
                 return True
             except Exception as e:
                 print(f"ERROR: add_ref_counter {_m_key}->{_dep}: {e}: ")
@@ -297,25 +301,43 @@ def add_ref_counter(categories, verbose=True):
                 continue
             dep_list = categories[master_key][res]['dependencies']['core'] + \
                        categories[master_key][res]['dependencies']['lm']
-            #print(f"||{master_key}-{res} Lm&core:{dep_list}||")
+            print(f"||{master_key}-{res} Lm&core:{dep_list}||")
             if len(dep_list) == 0:
                 continue
             for dep in dep_list:
                 dep = f'{dep}.py'
-                #print(f"+++> UPDATE: {master_key}-{res}")
+                print(f"\t+++> UPDATE: {master_key}-{res}")
                 _update(_m_keys=['core', 'load_module'], _dep=dep, _res=res)
     if verbose:
         print(f"RUN add_ref_counter")
-        #print(json.dumps(categories, sort_keys=True, indent=4))
+        print(json.dumps(categories, sort_keys=True, indent=4))
     return categories
 
 
-def short_report(categories, states, verbose=False):
-
+def _verdict_gen(master_key, categories, verbose=True):
     def _spacer(_word, next_col=25):
         return ' ' * (next_col - len(_word))
 
+    for i, master_module in enumerate(categories[master_key]):
+        if 'linter' != master_module:
+            lines = categories[master_key][master_module]['linter']['lines']
+            try:
+                ref = categories[master_key][master_module]['linter']['ref']
+            except:
+                ref = [0, []]
+                if master_module == 'core':
+                    ref = ['?', []]
+            spacer = "\n" + " " * 98
+            ref_verdict = f'{ref[0]}:{spacer.join(ref[1])}' if verbose else ref[0]
 
+            mlint = categories[master_key][master_module]['linter']['mlint'][0]
+            try:
+                pylint = categories[master_key][master_module]['linter']['pylint'][0]
+            except Exception as e:
+                pylint = f'{e}'
+            print(f"\t{i+1}\t{lines}\t{master_module}{_spacer(master_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref_verdict})")
+
+def short_report(categories, states, verbose=True):
     sum_core_lines, core_cnt = categories['core']['linter']['sum_lines'], len(categories['core'])-1
     sum_lm_lines, lm_cnt = categories['load_module']['linter']['sum_lines'], len(categories['load_module'])-1
 
@@ -327,36 +349,13 @@ def short_report(categories, states, verbose=False):
     lm_pylint = categories['load_module']['linter']['pylint']
     pylint_check = states.get('pylint_checker')
 
-    print(json.dumps(categories, sort_keys=True, indent=4))
+    if not verbose:
+        print(json.dumps(categories, sort_keys=True, indent=4))
     print("#####################        micrOS linter/scripts      #######################")
     print("Core micrOS resources")
-    for i, core_module in enumerate(categories['core']):
-        if 'linter' != core_module:
-            lines = categories['core'][core_module]['linter']['lines']
-            try:
-                ref = categories['core'][core_module]['linter']['ref']
-            except:
-                ref = ['?', []]
-            mlint = categories['core'][core_module]['linter']['mlint'][0]
-            try:
-                pylint = categories['core'][core_module]['linter']['pylint'][0]
-            except Exception as e:
-                pylint = f'{e}'
-            print(f"\t{i+1}\t{lines}\t{core_module}{_spacer(core_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref if verbose else ref[0]})")
+    _verdict_gen(master_key='core', categories=categories, verbose=verbose)
     print("micrOS Load Module resources")
-    for i, lm_module in enumerate(categories['load_module']):
-        if 'linter' != lm_module:
-            lines = categories['load_module'][lm_module]['linter']['lines']
-            try:
-                ref = categories['load_module'][lm_module]['linter']['ref']
-            except:
-                ref = [0, []]
-            mlint = categories['load_module'][lm_module]['linter']['mlint'][0]
-            try:
-                pylint = categories['load_module'][lm_module]['linter']['pylint'][0]
-            except Exception as e:
-                pylint = f'{e}'
-            print(f"\t{i+1}\t{lines}\t{lm_module}{_spacer(lm_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref if verbose else ref[0]})")
+    _verdict_gen(master_key='load_module', categories=categories, verbose=verbose)
     print("########################        micrOS linter      ###########################")
     print(f"        core system:                {sum_core_lines} lines / {core_cnt} files")
     print(f"       load modules:                {sum_lm_lines} lines / {lm_cnt} files")
@@ -368,7 +367,7 @@ def short_report(categories, states, verbose=False):
 
 
     exitcode = sum([1 for k, v in states.items() if not v[0]])
-    print(f"micrOSlint verdict: {'OK' if exitcode == 0 else 'NOK'} Exitcode: {exitcode}")
+    print(f"micrOSlint verdict: {'OK' if exitcode == 0 else 'NOK'}\nExitcode: {exitcode}")
     return exitcode, categories
 
 def save_system_analysis_json(categories):
@@ -377,11 +376,16 @@ def save_system_analysis_json(categories):
         json.dump(categories, json_file, indent=4)
     return f"system_analysis json saved to {file_path}"
 
+def check_while_out_of_async_in_load_modules():
+    # TODO...
+    pass
+
+
 def main(verbose=True):
     print(f"Analyze project: {MICROS_SOURCE_DIR}")
     resources = parse_micros_file_categories(verbose=verbose)
     core_struct = parse_core_modules(resources['core'], verbose=verbose)
-    lm_struct = parse_core_modules(resources['load_module'], verbose=verbose)
+    lm_struct = parse_core_modules(resources['load_module'], verbose=False)
     categories = combine_data_structures(core_struct, lm_struct, all_struct=resources, verbose=verbose)
 
     print("== RUN checker on parsed resources ==")
@@ -403,5 +407,5 @@ def main(verbose=True):
     return exitcode
 
 if __name__ == "__main__":
-    sys.exit(main(verbose=False))
+    sys.exit(main(verbose=True))
 

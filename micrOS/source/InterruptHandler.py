@@ -35,7 +35,7 @@ def emergency_mbuff():
     emergency_buff_kb = 1000
     if cfgget('cron') or cfgget('extirq') or cfgget("timirq"):
         from micropython import alloc_emergency_exception_buf
-        console_write("[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={}".format(emergency_buff_kb))
+        console_write(f"[IRQ] Interrupts was enabled, alloc_emergency_exception_buf={emergency_buff_kb}")
         alloc_emergency_exception_buf(emergency_buff_kb)
     else:
         console_write("[IRQ] Interrupts disabled, skip alloc_emergency_exception_buf configuration.")
@@ -54,8 +54,8 @@ def enableInterrupt():
     Set task pool executor in interrupt timer0
     Input: timirq(bool), timirqseq(ms), timirqcbf(str)
     """
-    console_write("[IRQ] TIMIRQ SETUP: {} SEQ: {}".format(cfgget("timirq"), cfgget("timirqseq")))
-    console_write("|- [IRQ] TIMIRQ CBF:{}".format(cfgget('timirqcbf')))
+    console_write(f"[IRQ] TIMIRQ SETUP: {cfgget('timirq')} SEQ: {cfgget('timirqseq')}")
+    console_write(f"|- [IRQ] TIMIRQ CBF:{cfgget('timirqcbf')}")
     if cfgget("timirq"):
         from machine import Timer
         # INIT TIMER IRQ with callback function wrapper
@@ -75,8 +75,8 @@ def enableCron():
     Input: cron(bool), crontasks(str)
     """
     timer_period = 5000         # Timer period ms: 12 check/min
-    console_write("[IRQ] CRON IRQ SETUP: {} SEQ: {}".format(cfgget('cron'), timer_period))
-    console_write("|- [IRQ] CRON CBF:{}".format(cfgget('crontasks')))
+    console_write(f"[IRQ] CRON IRQ SETUP: {cfgget('cron')} SEQ: {timer_period}")
+    console_write(f"|- [IRQ] CRON CBF:{cfgget('crontasks')}")
     if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
         from machine import Timer
         # INIT TIMER 1 IRQ with callback function wrapper
@@ -130,7 +130,7 @@ def initEventIRQs():
         if _pin:
             # [*] update resolver dict by pin number (available in irq callback):
             # PinKey: [CallbackFunction, PrellTimer]  (prell: contact recurrence - fake event filtering... :D)
-            prell_last['Pin({})'.format(_pin)] = 0
+            prell_last[f'Pin({_pin})'] = 0
             _trig = _trig.strip().lower()
             # Init event irq with callback function wrapper
             # pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP) ?TODO?: expose built in resistor parameter ?
@@ -148,7 +148,7 @@ def initEventIRQs():
             _pin_obj.irq(trigger=Pin.IRQ_RISING,
                          handler=lambda pin: __edge_exec(pin, prell_last, _lm_cbf))
             return
-        console_write("|-- [IRQ] invalid pin: {}".format(_pin))
+        console_write(f"|-- [IRQ] invalid pin: {_pin}")
 
     def __get_pin(_p):
         """
@@ -158,7 +158,7 @@ def initEventIRQs():
             return physical_pin(_p)
         except Exception as e:
             msg = f'[ERR] EVENT {_p} IO error: {e}'
-            console_write("|-- [!] {}".format(msg))
+            console_write(f"|-- [!] {msg}")
             errlog_add(msg)
         return None
 
@@ -168,8 +168,8 @@ def initEventIRQs():
         irq_en = cfgget(f"irq{i}")
         irq_cbf = bytearray(cfgget(f"irq{i}_cbf"), 'utf-8')         # Store as bytearray (optimization?)
         irq_trig = cfgget(f"irq{i}_trig")
-        console_write("[IRQ] EXTIRQ SETUP - EXT IRQ{}: {} TRIG: {}".format(i, irq_en, irq_trig))
-        console_write("|- [IRQ] EXTIRQ CBF: {}".format(irq_cbf))
+        console_write(f"[IRQ] EXTIRQ SETUP - EXT IRQ{i}: {irq_en} TRIG: {irq_trig}")
+        console_write(f"|- [IRQ] EXTIRQ CBF: {irq_cbf}")
         # Init external IRQx
         if irq_en and irq_cbf != b'n/a':
             __core(_pin=__get_pin(f"irq{i}"), _trig=irq_trig, _lm_cbf=irq_cbf)

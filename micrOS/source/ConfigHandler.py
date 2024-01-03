@@ -12,9 +12,9 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from utime import sleep
-from json import load, dump
 from os import remove
+from json import load, dump
+from utime import sleep
 from Debug import DebugCfg, console_write, errlog_add
 try:
     from LogicalPins import set_pinmap
@@ -92,7 +92,7 @@ class Data:
         try:
             remove('cleanup.pds')       # Try to remove cleanup.pds (cleanup indicator by micrOSloader)
             console_write("[CONF] Purge obsolete keys")
-            for key in (key for key in liveconf.keys() if key not in Data.CONFIG_CACHE.keys()):
+            for key in (key for key in liveconf if key not in Data.CONFIG_CACHE):
                 liveconf.pop(key, None)
             # TODO: dynamic ... key in new config - re-store value in offloaded mode.
         except Exception:
@@ -173,7 +173,7 @@ class Data:
         These kind of parameters are not cached in memory
         """
         # Write str value to file
-        if isinstance(value, str) and key in Data.CONFIG_CACHE.keys():
+        if isinstance(value, str) and key in Data.CONFIG_CACHE:
             try:
                 with open(f'.{key}.key', 'w') as f:
                     f.write(value)

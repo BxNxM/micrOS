@@ -1,8 +1,8 @@
 from time import localtime
+from re import compile
 from TaskManager import exec_lm_core_schedule
 from Debug import console_write, errlog_add
 from Time import Sun, suntime, ntp_time
-from re import compile
 
 """
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
@@ -99,12 +99,12 @@ def __resolve_time_tag(check_time, crontask):
         # Resolve tag
         value = Sun.TIME.get(tag, None)
         if value is None or len(value) < 3:
-            errlog_add('[cron][ERR] syntax error: {}:{}'.format(tag, value))
+            errlog_add(f'[cron][ERR] syntax error: {tag}:{value}')
             return ()
 
         # Update check_time with resolved value by tag
         if offset:
-            offset_time = ((value[0]*60 + value[1]) + offset)
+            offset_time = (value[0]*60 + value[1]) + offset
             offset_time = offset_time if offset_time > 0 else 1440 + offset_time        # 1440 -> 24h in minutes
             h, m, _ = __convert_sec_to_time(offset_time * 60)
             check_time = ('*', h, m, value[2])
@@ -166,7 +166,7 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
     tolerance_min_sec = 0 if check_time_now_sec - deltasec < 0 else check_time_now_sec - deltasec
     tolerance_max_sec = check_time_now_sec + deltasec
 
-    task_id = "{}:{}|{}".format(check_time[0], check_time_scheduler_sec, str(crontask[1]).replace(' ', ''))
+    task_id = f"{check_time[0]}:{check_time_scheduler_sec}|{str(crontask[1]).replace(' ', '')}"
 
     # Check WD - WEEK DAY
     if __check_wd(wd=check_time[0], wd_now=cron_time_now[0]):
@@ -219,8 +219,8 @@ def deserialize_raw_input(cron_data):
         # Parse and create return - convert cron_data (bytearray) to string
         return (tuple(cron.split('!')) for cron in str(cron_data, 'utf-8').split(';'))
     except Exception as e:
-        console_write("[cron] deserialize: syntax error: {}".format(e))
-        errlog_add("[cron][ERR] deserialize: syntax error: {}".format(e))
+        console_write(f"[cron] deserialize: syntax error: {e}")
+        errlog_add(f"[cron][ERR] deserialize: syntax error: {e}")
     return ()
 
 
@@ -252,8 +252,8 @@ def scheduler(cron_data, irqperiod):
             state |= __scheduler_trigger(cron_time_now, cron, deltasec=irqperiod)
         return state
     except Exception as e:
-        console_write("[cron] callback error: {}".format(e))
-        errlog_add('[cron][ERR] callback error: {}'.format(e))
+        console_write(f"[cron] callback error: {e}")
+        errlog_add(f'[cron][ERR] callback error: {e}')
         return False
 
 

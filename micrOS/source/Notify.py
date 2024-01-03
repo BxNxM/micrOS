@@ -188,7 +188,7 @@ class Telegram:
             # replace single/double quotation to apostrophe (str syntax for repl interpretation)
             msg_in = msg_in.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
             # Parse loaded modules
-            loaded_mods = [lm.replace('LM_', '') for lm in modules.keys() if lm.startswith('LM_')]
+            loaded_mods = [lm.replace('LM_', '') for lm in modules if lm.startswith('LM_')]
             loaded_mods.append('task')      # add task "module" to whitelist
             # [TELEGRAM CMD] /PING - Get auto reply from node - loaded modules
             #               Example: /ping

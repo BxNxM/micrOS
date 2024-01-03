@@ -1,3 +1,11 @@
+"""
+Module is responsible for Time related functions
+- ntp, clock setup, uptime
+- time tags support (cron): sunset, sunrise
+
+Designed by Marcell Ban aka BxNxM
+"""
+
 from re import compile
 from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM
 
@@ -94,8 +102,9 @@ def __sun_cache(mode):
                 for k, v in Sun.TIME.items():
                     temp[k] = tuple([str(t) for t in v])
                 f.write(';'.join([f'{k}:{"-".join(v)}' for k, v in temp.items()]))
-        finally:
-            return
+        except:
+            errlog_add("[ERR] Cannot write sun cache")
+        return
     try:
         # RESTORE CACHE
         with open('sun.pds', 'r') as f:
@@ -152,7 +161,7 @@ def suntime():
             errlog_add(f'sunrise-api error: {e} data: {response}')
     # Try to parse response by expected sun_keys
     try:
-        for key in sun.keys():
+        for key in sun:
             sun[key] = [int(val) for val in sun[key]]
             sun[key][0] += int(Sun.UTC / 60)                # TODO: handle minute offset as well
             sun[key] = tuple(sun[key])

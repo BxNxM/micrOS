@@ -78,20 +78,20 @@ def clock():
         WD: 0-6 YD: 0-364
     """
     buff = [str(k) for k in localtime()]
-    return "{}  {}\nWD: {} YD: {}".format('.'.join(buff[0:3]), ':'.join(buff[3:6]), buff[6], buff[7])
+    date, time = '.'.join(buff[0:3]), ':'.join(buff[3:6])
+    return f"{date}  {time}\nWD: {buff[6]} YD: {buff[7]}"
 
 
 def ntp():
     """
     Trigger NTP time sync
     """
-    from ConfigHandler import cfgget
     try:
         # Automatic setup - over wifi - ntp
         state = ntp_time()
         return state, localtime()
     except Exception as e:
-        return False, "ntp error:{}".format(e)
+        return False, f"ntp error:{e}"
 
 
 def sun(refresh=False):
@@ -135,17 +135,17 @@ def cachedump(cdel=None, msgobj=None):
         for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
             with open(pds, 'r') as f:
                 if msgobj is None:
-                    msg_buf.append('{}: {}'.format(pds, f.read()))
+                    msg_buf.append(f'{pds}: {f.read()}')
                 else:
-                    msgobj('{}: {}'.format(pds, f.read()))
+                    msgobj(f'{pds}: {f.read()}')
         return msg_buf if len(msg_buf) > 0 else ''
     # Remove given pds file
     from os import remove
     try:
-        remove('{}.pds'.format(cdel))
-        return '{}.pds delete done.'.format(cdel)
+        remove(f'{cdel}.pds')
+        return f'{cdel}.pds delete done.'
     except:
-        return '{}.pds not exists'.format(cdel)
+        return f'{cdel}.pds not exists'
 
 
 def rssi():

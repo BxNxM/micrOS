@@ -88,7 +88,7 @@ class Client:
         [Base] Async socket send method
         """
         if self.connected:
-            # Client.console("[Client] ----- SteamWrite: {}".format(response))
+            # Client.console(f"[Client] ----- SteamWrite: {response}")
             # Store data in stream buffer... then drain
             try:
                 self.writer.write(response if encode is None else response.encode(encode))
@@ -270,7 +270,7 @@ class ShellCli(Client, Shell):
             if self.prompt() != response:
                 # [format] Add new line if not prompt
                 response = f"{response}\n"
-            # Client.console("[Client] ----- SteamWrite: {}".format(response))
+            # Client.console("f[Client] ----- SteamWrite: {response}")
             # Store data in stream buffer
             try:
                 self.writer.write(response.encode('utf8'))

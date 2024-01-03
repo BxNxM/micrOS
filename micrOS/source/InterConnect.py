@@ -39,8 +39,8 @@ class InterCon:
                     addr_info = getaddrinfo(host, InterCon.PORT, 0, SOCK_STREAM)
                     host = addr_info[-1][4][0]
                 except OSError as e:
-                    SocketServer.reply("[intercon] NoHost: {}".format(e))
-                    errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
+                    SocketServer.reply_all(f"[intercon] NoHost: {e}")
+                    errlog_add(f"[intercon] send_cmd {host} oserr: {e}")
                     return ''
             else:
                 # Restore IP from cache by hostname
@@ -53,8 +53,8 @@ class InterCon:
                 # Send command over TCP/IP
                 output = await self.__run_command(cmd, hostname)
             except OSError as e:
-                SocketServer.reply("[intercon] NoHost: {}".format(e))
-                errlog_add("[intercon] send_cmd {} oserr: {}".format(host, e))
+                SocketServer.reply_all(f"[intercon] NoHost: {e}")
+                errlog_add(f"[intercon] send_cmd {host} oserr: {e}")
                 output = None
             finally:
                 if self.writer:
@@ -68,7 +68,7 @@ class InterCon:
             # None: ServerBusy(or \0) or Prompt mismatch (auto delete cached IP), STR: valid comm. output
             return output
         else:
-            errlog_add("[intercon][ERR] Invalid host: {}".format(host))
+            errlog_add(f"[intercon][ERR] Invalid host: {host}")
         return ''
 
     async def __run_command(self, cmd, hostname):
@@ -94,7 +94,7 @@ class InterCon:
             # Successful data receive, return data
             return data
         # Skip command run: prompt and host not the same!
-        SocketServer.reply("[intercon] prompt mismatch, hostname: {} prompt: {} ".format(hostname, prompt))
+        SocketServer.reply_all(f"[intercon] prompt mismatch, hostname: {hostname} prompt: {prompt}")
         return None
 
     async def __receive_data(self, prompt=None):

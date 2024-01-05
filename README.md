@@ -286,7 +286,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ### Logical pin association handling
 
-[micrOS/source/LogicalPins.py](./micrOS/source/microIO.py)
+[micrOS/source/microIO.py](./micrOS/source/microIO.py)
 
 LogicalPin lookup tables:
 
@@ -1104,77 +1104,78 @@ Bye!
 #### micrOS Core
 
 ```
-micrOS/source/
-     163	Common.py
-     218	ConfigHandler.py
-     184	Debug.py
-      66	Hooks.py
-     101	InterConnect.py
-     270	InterpreterShell.py
-     152	InterruptHandler.py
-      48	IO_esp32.py
-      49	IO_esp32s2.py
-      51	IO_esp32s3.py
-       3	IO_rp2.py
-      56	IO_tinypico.py
-     133	LogicalPins.py
-     214	Network.py
-     198	Notify.py
-     174	Scheduler.py
-     278	SocketServer.py
-     484	TaskManager.py
-     166	Time.py
-      24	TinyPLed.py
-      19	main.py
-      69	micrOS.py
-     118	micrOSloader.py
-       9	reset.py
-     127	urequests.py
-SUM OF CODE LINES: 3374
+Core micrOS resources
+	1	172	Time.py                  (mlint: True)	(pylint: 8.76)	(ref.: 6)
+	2	123	micrOSloader.py          (mlint: True)	(pylint: 7.63)	(ref.: 1)
+	3	53	Hooks.py                 (mlint: True)	(pylint: 9.62)	(ref.: 1)
+	4	452	Server.py                (mlint: True)	(pylint: 9.23)	(ref.: 4)
+	5	516	Tasks.py                 (mlint: True)	(pylint: 9.46)	(ref.: 11)
+	6	220	Config.py                (mlint: True)	(pylint: 9.38)	(ref.: 12)
+	7	9	reset.py                 (mlint: True)	(pylint: 8.75)	(ref.: 0)
+	8	264	Shell.py                 (mlint: True)	(pylint: 9.4)	(ref.: 1)
+	9	213	Notify.py                (mlint: True)	(pylint: 9.57)	(ref.: 2)
+	10	161	Common.py                (mlint: True)	(pylint: 8.98)	(ref.: 19)
+	11	155	InterConnect.py          (mlint: True)	(pylint: 9.11)	(ref.: 1)
+	12	204	Debug.py                 (mlint: True)	(pylint: 8.61)	(ref.: 23)
+	13	214	Network.py               (mlint: True)	(pylint: 9.64)	(ref.: 9)
+	14	225	Scheduler.py             (mlint: True)	(pylint: 9.43)	(ref.: 1)
+	15	133	microIO.py               (mlint: True)	(pylint: 9.05)	(ref.: 35)
+	16	69	micrOS.py                (mlint: True)	(pylint: 9.3)	(ref.: 1)
+	17	159	Interrupts.py            (mlint: True)	(pylint: 9.08)	(ref.: 2)
+	18	19	main.py                  (mlint: True)	(pylint: 8.89)	(ref.: 0)
+	19	146	urequests.py             (mlint: True)	(pylint: 8.79)	(ref.: 3)
+
+SUM CODE LINES (WITH COMMENTS, WITHOUT EMPTY LINES): 3507
 ```
 
 #### micrOS Load Modules
 
 ```
-micrOS/source/
-      68	LM_L298N_DCmotor.py
-      47	LM_L9110_DCmotor.py
-     323	LM_VL53L0X.py
-     299	LM_bme280.py
-     240	LM_buzzer.py
-      60	LM_catgame.py
-     318	LM_cct.py
-     122	LM_co2.py
-      60	LM_demo.py
-      72	LM_dht11.py
-      72	LM_dht22.py
-     200	LM_dimmer.py
-      70	LM_distance.py
-      54	LM_ds18.py
-      44	LM_esp32.py
-     130	LM_genIO.py
-      33	LM_i2c.py
-      45	LM_intercon.py
-      65	LM_light_sensor.py
-     283	LM_neoeffects.py
-     305	LM_neopixel.py
-     217	LM_oled.py
-     280	LM_oled_sh1106.py
-     466	LM_oled_ui.py
-      64	LM_pet_feeder.py
-      39	LM_ph_sensor.py
-     208	LM_presence.py
-      87	LM_rencoder.py
-     283	LM_rgb.py
-     258	LM_roboarm.py
-      53	LM_robustness.py
-     124	LM_servo.py
-     133	LM_stepper.py
-     223	LM_switch.py
-     260	LM_system.py
-      65	LM_telegram.py
-      85	LM_tinyrgb.py
-SUM OF CODE LINES: 5755
+micrOS Load Module resources
+	1	262	LM_roboarm.py            (mlint: True)	(pylint: 9.18)	(ref.: 0)
+	2	133	LM_stepper.py            (mlint: True)	(pylint: 9.04)	(ref.: 1)
+	3	129	LM_genIO.py              (mlint: True)	(pylint: 7.42)	(ref.: 1)
+	4	499	LM_oled_ui.py            (mlint: False)	(pylint: 8.74)	(ref.: 0)
+	5	197	LM_system.py             (mlint: True)	(pylint: 7.48)	(ref.: 2)
+	6	53	LM_robustness.py         (mlint: True)	(pylint: 7.04)	(ref.: 0)
+	7	122	LM_co2.py                (mlint: True)	(pylint: 8.39)	(ref.: 3)
+	8	217	LM_oled.py               (mlint: True)	(pylint: 9.31)	(ref.: 1)
+	9	85	LM_tinyrgb.py            (mlint: True)	(pylint: 8.18)	(ref.: 0)
+	10	104	LM_aht10.py              (mlint: False)	(pylint: 8.39)	(ref.: 0)
+	11	299	LM_bme280.py             (mlint: True)	(pylint: 7.98)	(ref.: 0)
+	12	39	LM_ph_sensor.py          (mlint: True)	(pylint: 6.32)	(ref.: 0)
+	13	240	LM_buzzer.py             (mlint: True)	(pylint: 8.79)	(ref.: 0)
+	14	224	LM_switch.py             (mlint: True)	(pylint: 8.64)	(ref.: 2)
+	15	124	LM_servo.py              (mlint: True)	(pylint: 7.87)	(ref.: 4)
+	16	49	LM_rgbcct.py             (mlint: True)	(pylint: 8.57)	(ref.: 0)
+	17	280	LM_oled_sh1106.py        (mlint: True)	(pylint: 8.88)	(ref.: 1)
+	18	304	LM_neopixel.py           (mlint: True)	(pylint: 7.34)	(ref.: 2)
+	19	317	LM_cct.py                (mlint: True)	(pylint: 8.65)	(ref.: 1)
+	20	47	LM_L9110_DCmotor.py      (mlint: True)	(pylint: 8.08)	(ref.: 0)
+	21	283	LM_neoeffects.py         (mlint: True)	(pylint: 6.97)	(ref.: 0)
+	22	33	LM_i2c.py                (mlint: True)	(pylint: 6.43)	(ref.: 0)
+	23	72	LM_dht22.py              (mlint: True)	(pylint: 7.78)	(ref.: 0)
+	24	68	LM_L298N_DCmotor.py      (mlint: True)	(pylint: 9.02)	(ref.: 0)
+	25	44	LM_esp32.py              (mlint: True)	(pylint: 5.0)	(ref.: 0)
+	26	64	LM_pet_feeder.py         (mlint: True)	(pylint: 7.94)	(ref.: 0)
+	27	87	LM_rencoder.py           (mlint: False)	(pylint: 8.24)	(ref.: 0)
+	28	72	LM_dht11.py              (mlint: True)	(pylint: 7.78)	(ref.: 0)
+	29	76	LM_telegram.py           (mlint: False)	(pylint: 9.15)	(ref.: 0)
+	30	161	LM_OV2640.py             (mlint: False)	(pylint: 8.94)	(ref.: 0)
+	31	282	LM_rgb.py                (mlint: True)	(pylint: 8.4)	(ref.: 2)
+	32	70	LM_distance.py           (mlint: True)	(pylint: 8.37)	(ref.: 0)
+	33	323	LM_VL53L0X.py            (mlint: True)	(pylint: 9.14)	(ref.: 0)
+	34	107	LM_light_sensor.py       (mlint: True)	(pylint: 8.91)	(ref.: 0)
+	35	12	LM_rp2w.py               (mlint: True)	(pylint: 5.56)	(ref.: 0)
+	36	207	LM_presence.py           (mlint: False)	(pylint: 8.38)	(ref.: 4)
+	37	200	LM_dimmer.py             (mlint: True)	(pylint: 8.32)	(ref.: 0)
+	38	60	LM_demo.py               (mlint: False)	(pylint: 8.46)	(ref.: 0)
+	39	96	LM_lmpacman.py           (mlint: True)	(pylint: 6.98)	(ref.: 0)
+	40	60	LM_catgame.py            (mlint: True)	(pylint: 8.85)	(ref.: 0)
+	41	46	LM_intercon.py           (mlint: True)	(pylint: 8.64)	(ref.: 3)
+	42	54	LM_ds18.py               (mlint: True)	(pylint: 5.38)	(ref.: 0)
+
+SUM CODE LINES (WITH COMMENTS, WITHOUT EMPTY LINES): 6201
 ```
 
 > LM (Load Modules) - Application logic - accessable over socket server as a command

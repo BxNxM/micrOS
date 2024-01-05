@@ -12,4 +12,5 @@ include media/wifi_icon.png
 include media/usb_port_icon.png
 include toolkit/index.html
 include toolkit/img_stream.html
+include micrOS/release_info/micrOS_ReleaseInfo/system_analysis_sum.json
 graft env/driver_cp210x/

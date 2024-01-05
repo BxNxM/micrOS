@@ -24,7 +24,7 @@ def parse_micros_file_categories(verbose=True):
     for f in files:
         if f.startswith('LM_') and f.endswith('.py'):
             categories['load_module'].append(f)
-        elif f.startswith('LP_') and f.endswith('.py'):
+        elif f.startswith('IO_') and f.endswith('.py'):
             categories['pin_maps'].append(f)
         elif f.endswith('.py'):
             categories['core'].append(f)

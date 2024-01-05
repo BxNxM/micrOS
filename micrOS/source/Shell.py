@@ -14,8 +14,8 @@ Designed by Marcell Ban aka BxNxM
 from os import listdir
 from sys import modules
 from machine import reset as hard_reset, soft_reset
-from ConfigHandler import cfgget, cfgput
-from TaskManager import exec_lm_core
+from Config import cfgget, cfgput
+from Tasks import exec_lm_core
 from Debug import console_write, errlog_add
 
 
@@ -24,7 +24,7 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.47.0-0'
+    MICROS_VERSION = '1.48.0-0'
 
     def __init__(self):
         """

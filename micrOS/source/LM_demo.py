@@ -1,5 +1,5 @@
 from random import randint
-from LogicalPins import detect_platform
+from microIO import detect_platform
 from Debug import console_write
 from Time import uptime
 

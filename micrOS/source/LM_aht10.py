@@ -1,5 +1,5 @@
 from machine import I2C, Pin
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 from Debug import errlog_add
 from time import sleep
 from binascii import hexlify

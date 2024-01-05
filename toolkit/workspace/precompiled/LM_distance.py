@@ -1,6 +1,6 @@
 from machine import Pin, time_pulse_us
 from utime import sleep_us
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 __TRIGGER_OBJ = None
 __ECHO_OBJ = None

@@ -1,4 +1,4 @@
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 from Common import SmartADC, micro_task, notify
 import uasyncio as asyncio
 from utime import ticks_ms

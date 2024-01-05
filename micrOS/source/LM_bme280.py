@@ -6,7 +6,7 @@ https://randomnerdtutorials.com/micropython-bme280-esp32-esp8266/
 
 import utime as time
 from machine import Pin, I2C
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 # BME280 default address.
 BME280_I2CADDR = 0x76

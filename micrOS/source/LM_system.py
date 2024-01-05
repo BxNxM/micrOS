@@ -171,7 +171,7 @@ def pinmap(key='builtin'):
     :param key str: logical pin name to resolve
     :return dict: key map
     """
-    from LogicalPins import pinmap_dump, get_pinmap
+    from microIO import pinmap_dump, get_pinmap
     map = get_pinmap()
     map[key] = pinmap_dump(key)[key]
     return map

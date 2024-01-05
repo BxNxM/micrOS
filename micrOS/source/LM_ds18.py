@@ -1,5 +1,5 @@
 import machine, onewire, ds18x20, time
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 DS_OBJ = None
 

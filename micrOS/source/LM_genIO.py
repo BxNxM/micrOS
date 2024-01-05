@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from LogicalPins import physical_pin
+from microIO import physical_pin
 from Common import SmartADC
 from random import randint
 

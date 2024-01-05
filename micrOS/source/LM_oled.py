@@ -3,7 +3,7 @@
 from micropython import const
 import framebuf
 from machine import Pin, SoftI2C
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 __INVERT = False
 

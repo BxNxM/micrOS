@@ -2,7 +2,7 @@
 
 from utime import sleep_ms
 from machine import Pin
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 STEPPER_INST = None
 
 

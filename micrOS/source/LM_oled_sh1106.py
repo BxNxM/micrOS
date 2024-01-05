@@ -16,7 +16,7 @@ from micropython import const
 import utime as time
 import framebuf
 from machine import Pin, I2C
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 __INVERT = False
 

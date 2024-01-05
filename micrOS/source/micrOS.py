@@ -8,12 +8,12 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from Time import ntp_time, suntime
-from TaskManager import Manager
+from Tasks import Manager
 from Hooks import bootup, profiling_info
 from Network import auto_nw_config
-from SocketServer import SocketServer
-from InterruptHandler import enableInterrupt, enableCron
-from InterruptHandler import initEventIRQs
+from Server import SocketServer
+from Interrupts import enableInterrupt, enableCron
+from Interrupts import initEventIRQs
 from Debug import errlog_add
 
 

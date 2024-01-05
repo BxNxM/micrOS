@@ -1,6 +1,6 @@
 from time import localtime
 from re import compile
-from TaskManager import exec_lm_core_schedule
+from Tasks import exec_lm_core_schedule
 from Debug import console_write, errlog_add
 from Time import Sun, suntime, ntp_time
 

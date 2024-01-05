@@ -1,5 +1,5 @@
 from sys import platform
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
 from utime import sleep_ms

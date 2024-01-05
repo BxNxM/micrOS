@@ -1,5 +1,5 @@
 from machine import Pin
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 #########################################
 #           DIGITAL IO SWITCH           #

@@ -96,7 +96,7 @@ def micros_checksum(msgobj=None):
     from hashlib import sha1
     from binascii import hexlify
     from os import listdir
-    from ConfigHandler import cfgget
+    from Config import cfgget
 
     for f_name in (_pds for _pds in listdir() if _pds.endswith('py')):
         with open(f_name, 'rb') as f:

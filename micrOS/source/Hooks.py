@@ -17,10 +17,10 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from ConfigHandler import cfgget
-from LogicalPins import detect_platform
+from Config import cfgget
+from microIO import detect_platform
 from Debug import console_write
-from TaskManager import exec_lm_pipe
+from Tasks import exec_lm_pipe
 from micropython import mem_info
 from machine import freq
 

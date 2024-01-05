@@ -424,7 +424,7 @@ def disk_usage():
         return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
 
     # {"percent": 15.4, "fs_used": 323_584}
-    if json_out.get('fs_used') > 336_000:        # MEM USAGE WARNING INDICATOR: 336_000 bytes
+    if json_out.get('fs_used') > 500_000:        # MEM USAGE WARNING INDICATOR: 500_000 bytes (500kb)
         return state, '[ST] {}WARNING{}: disk usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
                                                                              json_out.get('percent'),
                                                                              json_out.get('fs_used'))

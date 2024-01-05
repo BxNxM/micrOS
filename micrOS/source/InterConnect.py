@@ -2,9 +2,9 @@ import uasyncio as asyncio
 from socket import getaddrinfo, SOCK_STREAM
 from re import compile
 from Debug import errlog_add
-from ConfigHandler import cfgget
-from SocketServer import SocketServer
-from TaskManager import NativeTask
+from Config import cfgget
+from Server import SocketServer
+from Tasks import NativeTask
 
 
 class InterCon:

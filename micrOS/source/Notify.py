@@ -1,7 +1,7 @@
 from sys import modules
 import urequests
-from ConfigHandler import cfgget
-from TaskManager import exec_lm_core
+from Config import cfgget
+from Tasks import exec_lm_core
 from Debug import console_write
 
 #########################################

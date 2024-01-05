@@ -1,11 +1,11 @@
-from ConfigHandler import cfgget
+from Config import cfgget
 from utime import localtime
 from network import WLAN, STA_IF
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 from Network import ifconfig
 from Debug import errlog_add
 from machine import Pin
-from TaskManager import exec_lm_core, Manager
+from Tasks import exec_lm_core, Manager
 try:
     from LM_system import memory_usage
 except:

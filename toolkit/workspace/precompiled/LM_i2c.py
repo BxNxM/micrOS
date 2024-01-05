@@ -1,4 +1,4 @@
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 __I2C = None
 

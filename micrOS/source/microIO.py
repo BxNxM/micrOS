@@ -42,8 +42,8 @@ def detect_platform():
 def set_pinmap(map_data=None):
     """
     Select pin map on device (init from ConfigHandler)
-    - map_data: default None (n/a), platform detection, like: esp32 -> LP_esp32.mpy
-    - map_data: string input, like: my_pinmap -> LP_my_pinmap.mpy
+    - map_data: default None (n/a), platform detection, like: esp32 -> IO_esp32.mpy
+    - map_data: string input, like: my_pinmap -> IO_my_pinmap.mpy
     Parse map_data use cases:
         u.c.1: n/a or None                  - default - platform detection
         u.c.2: dht:10; neop:15              - default + manual overwrite pins
@@ -65,7 +65,7 @@ def set_pinmap(map_data=None):
 
     # SELECT LOOKUP TABLE BASED ON PLATFORM / User input
     if isinstance(lp_name, str) and lp_name != 'n/a':
-        if f"LP_{lp_name}" in [lp.split('.')[0] for lp in dir() if lp.startswith('LP_')]:
+        if f"IO_{lp_name}" in [lp.split('.')[0] for lp in dir() if lp.startswith('IO_')]:
             PinMap.MAPPING_LUT = lp_name
             return PinMap.MAPPING_LUT
     PinMap.MAPPING_LUT = detect_platform()
@@ -136,9 +136,9 @@ def __resolve_pin_number(key):
         # [1] Handle default pin resolve from static lut
         try:
             # LOAD LOOKUP TABLE
-            exec(f'import LP_{PinMap.MAPPING_LUT}')
+            exec(f'import IO_{PinMap.MAPPING_LUT}')
             # GET KEY PARAM VALUE
-            out = eval(f'LP_{PinMap.MAPPING_LUT}.{key}')
+            out = eval(f'IO_{PinMap.MAPPING_LUT}.{key}')
             # Workaround to support normal python (tuple output), micropython (exact output - int)
             return int(out[0]) if isinstance(out, tuple) else out
         except Exception as e:

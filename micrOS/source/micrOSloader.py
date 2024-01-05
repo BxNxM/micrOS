@@ -61,7 +61,7 @@ def __is_micrOS():
 def __recovery_mode():
     # Recovery/Update mode (webrepl) - dependencies: Network, ConfigHandler
     from Network import auto_nw_config
-    from ConfigHandler import cfgget
+    from Config import cfgget
     pwd = cfgget('appwd')                       # Get pwd from config
     pwd = 'ADmin123' if pwd is None else pwd    # Default pwd if user pwd None
     # Set up network
@@ -121,7 +121,8 @@ def main():
             from micrOS import micrOS
             micrOS()
         except Exception as e:
-            if traceback is not None: traceback.print_exc()
+            if traceback is not None:
+                traceback.print_exc()
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
             print(f"[loader][main mode] micrOS start failed: {e}")
             print("[loader][main mode] -> [recovery mode]")

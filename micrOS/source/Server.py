@@ -12,10 +12,10 @@ Designed by Marcell Ban aka BxNxM GitHub
 
 import uasyncio as asyncio
 from utime import ticks_ms, ticks_diff
-from ConfigHandler import cfgget
+from Config import cfgget
 from Debug import console_write, errlog_add
 from Network import ifconfig
-from TaskManager import Manager
+from Tasks import Manager
 from Shell import Shell
 try:
     from gc import collect, mem_free
@@ -26,7 +26,7 @@ except:
 # Module load optimization, needed only for webui
 if cfgget('webui'):
     from json import dumps, loads
-    from TaskManager import exec_lm_core
+    from Tasks import exec_lm_core
 
 
 #########################################################

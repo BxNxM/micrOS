@@ -3,13 +3,13 @@ micrOS Load Module programming API-s
     Designed by Marcell Ban aka BxNxM
 """
 
-from SocketServer import SocketServer
+from Server import SocketServer
 from machine import Pin, ADC
-from LogicalPins import physical_pin
+from microIO import physical_pin
 from Debug import logger, log_get
-from SocketServer import WebCli
+from Server import WebCli
 try:
-    from TaskManager import TaskBase, Manager
+    from Tasks import TaskBase, Manager
 except Exception as e:
     print(f"Import ERROR, TaskManager: {e}")
     TaskBase, Manager = None, None

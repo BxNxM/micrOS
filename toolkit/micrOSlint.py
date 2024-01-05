@@ -157,7 +157,7 @@ def core_dep_checker(categories, verbose=True):
 def load_module_checker(categories, verbose=True):
 
     def _is_allowed(_relation):
-        _allowed_whitelist = ['Common', 'LogicalPins']
+        _allowed_whitelist = ['Common', 'microIO']
         _allowed = []
         for _allow in _relation:
             if _allow in _allowed_whitelist:
@@ -207,7 +207,7 @@ def _run_pylint(file_name):
         '--disable=broad-exception-caught',         # Disable BROAD exception
         '--disable=broad-exception-raised'          # Disable BROAD exception
     ]
-    if file_name in ['TaskManager.py', 'LogicalPins.py']:
+    if file_name in ['Tasks.py', 'microIO.py']:
         pylint_opts.append('--disable=exec-used')   # Disable micrOS execution core exec/eval warning
         pylint_opts.append('--disable=eval-used')
     # Run pylint on the specified file

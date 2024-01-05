@@ -4,7 +4,7 @@ from machine import Pin
 import micropython
 from Common import socket_stream
 from Debug import errlog_add
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 # https://www.coderdojotc.org/micropython/sensors/10-rotary-encoder/
 

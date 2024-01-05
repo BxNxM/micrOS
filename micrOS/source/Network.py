@@ -18,7 +18,7 @@ from utime import sleep_ms
 from binascii import hexlify
 from network import AP_IF, STA_IF, WLAN
 from machine import unique_id
-from ConfigHandler import cfgget, cfgput
+from Config import cfgget, cfgput
 from Debug import console_write, errlog_add
 
 

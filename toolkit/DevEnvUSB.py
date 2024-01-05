@@ -475,7 +475,7 @@ class USB(Compile):
         workdir_handler = LocalMachine.SimplePopPushd()
         workdir_handler.pushd(self.micrOS_dir_path)
 
-        create_default_config_command = "{} ConfigHandler.py".format(self.python_interpreter)
+        create_default_config_command = "{} Config.py".format(self.python_interpreter)
         if not self.dry_run:
             # Remove actual defualt config
             LocalMachine.FileHandler.remove(os.path.join(self.micrOS_dir_path, 'node_config.json'))

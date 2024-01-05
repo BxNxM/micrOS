@@ -1,7 +1,7 @@
 from math import pow
 from sys import platform
 from machine import ADC, Pin
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 #########################################
 #            MQ135 GAS SENSOR           #

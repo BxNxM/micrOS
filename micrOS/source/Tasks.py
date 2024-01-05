@@ -14,7 +14,7 @@ import uasyncio as asyncio
 from micropython import schedule
 from utime import ticks_ms, ticks_diff
 from Debug import console_write, errlog_add
-from ConfigHandler import cfgget
+from Config import cfgget
 from Network import sta_high_avail
 
 try:

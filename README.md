@@ -252,7 +252,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 		- Example: `system info`
 - 🖇**[L]ogical [P]inout** handling - lookuptables for each board
 	- Predefined pinout modules for esp32, tinyPico
-	- Create your pinout based on `LP_esp32.py`, naming convencion: `LP_<name>.py`
+	- Create your pinout based on `IO_esp32.py`, naming convencion: `IO_<name>.py`
 	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
 
 - 📍**Task manager** aka **Async LM jobs**
@@ -286,15 +286,15 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 ### Logical pin association handling
 
-[micrOS/source/LogicalPins.py](./micrOS/source/LogicalPins.py)
+[micrOS/source/LogicalPins.py](./micrOS/source/microIO.py)
 
 LogicalPin lookup tables:
 
-- [tinypico](./micrOS/source/LP_tinypico.py)
-- [esp32](./micrOS/source/LP_esp32.py)
-- [esp32s2](./micrOS/source/LP_esp32s2.py)
-- [esp32s3](./micrOS/source/LP_esp32s3.py)
-- [raspberryPicoW](./micrOS/source/LP_rp2.py) - reset needed after ota update (webrepl limitation)
+- [tinypico](./micrOS/source/IO_tinypico.py)
+- [esp32](./micrOS/source/IO_esp32.py)
+- [esp32s2](./micrOS/source/IO_esp32s2.py)
+- [esp32s3](./micrOS/source/IO_esp32s3.py)
+- [raspberryPicoW](./micrOS/source/IO_rp2.py) - reset needed after ota update (webrepl limitation)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
@@ -353,7 +353,7 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 |       Config keys   |   Default value and type    | Reboot required |               Description                      |
 | :-----------------: | :-------------------------: | :-------------: | ---------------------------------------- |
 | **`utc`**           |     `60`   `<int>`          |       Yes       | NTP-RTC - timezone setup (UTC in minute) - it is automatically calibrated in STA mode based on geolocation.
-| **`cstmpmap`**      |      `n/a`  `<str>`          |      Yes       | Default (`n/a`), select pinmap automatically based on platform (`LP_<platform>`). Manual control / customization of application pins, syntax: `pin_map_name; pin_name:pin_number; ` etc. [1][optional] `pin_map_name` [L]ogical[P]in represented as `LP_<pin_map_name>.py/.mpy` file on device. [2+][optinal] `dht:22` overwrite individual existing load module pin(s). Hint: `<module> pinmap()` to get app pins, example: `neopixel pinmap()`
+| **`cstmpmap`**      |      `n/a`  `<str>`          |      Yes       | Default (`n/a`), select pinmap automatically based on platform (`IO_<platform>`). Manual control / customization of application pins, syntax: `pin_map_name; pin_name:pin_number; ` etc. [1][optional] `pin_map_name` represented as `IO_<pin_map_name>.py/.mpy` file on device. [2+][optinal] `dht:22` overwrite individual existing load module pin(s). Hint: `<module> pinmap()` to get app pins, example: `neopixel pinmap()`
 | **`boostmd`**       |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 16Mhz-24MHz (depends on the board).
 | **`aioqueue`**      |    `4` `<int>`              |       Yes       | Set asyc task queue limit, system overload protection
 | | |
@@ -500,7 +500,7 @@ def pinmap():
 		{"rgbue": 15, "rgreenb": 12, "redgb": 14}
 	return: dict {pinkey: pinvalue}
 	
-	pinmap_dump - logical pinmap resolver based on LP_<device_tag>.py
+	pinmap_dump - logical pinmap resolver based on IO_<device_tag>.py
 	
 	Example:
 	return pinmap_dump(['redgb', 'rgreenb', 'rgbue'])
@@ -770,7 +770,7 @@ Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
 Next **main release** version **2.0.0.0**
 
 ```
-Almost same as Current v 1.45.0 content
+Almost same as Current v 1.48.0 content
 	- WebCli (multiport async servers)
 	- Camera support
 	- Full async as technically possible (InterCon)
@@ -1112,11 +1112,11 @@ micrOS/source/
      101	InterConnect.py
      270	InterpreterShell.py
      152	InterruptHandler.py
-      48	LP_esp32.py
-      49	LP_esp32s2.py
-      51	LP_esp32s3.py
-       3	LP_rp2.py
-      56	LP_tinypico.py
+      48	IO_esp32.py
+      49	IO_esp32s2.py
+      51	IO_esp32s3.py
+       3	IO_rp2.py
+      56	IO_tinypico.py
      133	LogicalPins.py
      214	Network.py
      198	Notify.py
@@ -1279,8 +1279,8 @@ micrOS/toolkit/workspace/precompiled
     │   ├── LM_switch.mpy
     │   ├── LM_system.mpy
     │   ├── LM_tinyrgb.mpy
-    │   ├── LP_esp32.mpy
-    │   ├── LP_tinypico.mpy
+    │   ├── IO_esp32.mpy
+    │   ├── IO_tinypico.mpy
     │   ├── LogicalPins.mpy
     │   ├── Network.mpy
     │   ├── Scheduler.mpy

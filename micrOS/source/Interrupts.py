@@ -18,10 +18,10 @@ Reference: https://docs.micropython.org/en/latest/library/machine.Pin.html
 #################################################################
 from machine import Pin
 from utime import ticks_ms, ticks_diff
-from ConfigHandler import cfgget
+from Config import cfgget
 from Debug import console_write, errlog_add
-from TaskManager import exec_lm_pipe_schedule
-from LogicalPins import physical_pin
+from Tasks import exec_lm_pipe_schedule
+from microIO import physical_pin
 if cfgget('cron'):
     # Only import when enabled - memory usage optimization
     from Scheduler import scheduler

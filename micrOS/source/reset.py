@@ -1,11 +1,11 @@
-import time
-import machine
-import os
+from os import listdir
+from time import sleep
+from machine import soft_reset, reset
+
 print('Device reboot now, boot micrOSloader...')
-time.sleep(1)
+sleep(1)
 
-if "main.py" in os.listdir():
-    machine.soft_reset()
+if "main.py" in listdir():
+    soft_reset()
 else:
-    machine.reset()
-
+    reset()

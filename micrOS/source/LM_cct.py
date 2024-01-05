@@ -6,7 +6,7 @@ from sys import platform
 from utime import sleep_ms
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 from random import randint
 
 

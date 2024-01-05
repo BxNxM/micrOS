@@ -1,8 +1,9 @@
 import os
 from time import localtime
+from machine import Pin
 
 try:
-    from LogicalPins import physical_pin, pinmap_dump, detect_platform
+    from microIO import physical_pin, pinmap_dump, detect_platform
 except:
     detect_platform = None
 
@@ -17,6 +18,7 @@ class DebugCfg:
     PLED_STEP = None    # PROGRESS LED OBJECT - init in init_pled
     PLED_A = False      # ANALOG "BLINK" LED FEATURE - True when analog, false when colorwheel
     NEO_WHEEL = None    # NEOPIXEL (ws2812/esp32s3) color wheel object
+    COLOR_INDEX = 0     # APA102 TinyPico color wheel counter
 
     @staticmethod
     def init_pled():
@@ -37,9 +39,24 @@ class DebugCfg:
                 DebugCfg._init_simple()
 
     @staticmethod
+    def step():
+        """
+        DEBUG LED FEEDBACK
+        - handle 3 types of builtin LEDs: analog, neopixel(ws2812), apa102
+        - automatic selection based on board type + builtin logical pin number
+        """
+        try:
+            if DebugCfg.PLED_STEP:
+                DebugCfg.PLED_STEP()
+                return DebugCfg.PLED_A      # Return non RGB indicator (True) - "double blink"
+            return False
+        except Exception as e:
+            errlog_add(f"[PLED] step error: {e}")
+            return False
+
+    @staticmethod
     def _init_simple():
         try:
-            from machine import Pin
             # Progress led for esp32/etc
             led_obj = Pin(physical_pin('builtin'), Pin.OUT)
             # Set function callback for step function (simple led - blink)
@@ -51,18 +68,30 @@ class DebugCfg:
     @staticmethod
     def _init_apa102():
         try:
-            from TinyPLed import init_APA102, step
-            # Progress led for TinyPico
-            init_APA102()
-            # Set function callback for step function (apa102 - color wheel)
-            DebugCfg.PLED_STEP = step
+            from machine import SoftSPI
+            from dotstar import DotStar
+            from tinypico import DOTSTAR_CLK, DOTSTAR_DATA, SPI_MISO, set_dotstar_power, dotstar_color_wheel
+            spi = SoftSPI(sck=Pin(DOTSTAR_CLK), mosi=Pin(DOTSTAR_DATA), miso=Pin(SPI_MISO))
+            # Create a DotStar instance
+            dotstar = DotStar(spi, 1, brightness=0.4)  # Just one DotStar, half brightness
+            # Turn on the power to the DotStar
+            set_dotstar_power(True)
+            DebugCfg.PLED_STEP = lambda: DebugCfg._step_apa102(led_obj=dotstar, color_wheel=dotstar_color_wheel)
         except Exception as e:
             errlog_add(f"[PLED] apa102 error: {e}")
 
     @staticmethod
+    def _step_apa102(led_obj, color_wheel):
+        # Get the R,G,B values of the next colour
+        r, g, b = color_wheel(DebugCfg.COLOR_INDEX*2)
+        # Set the colour on the DOTSTAR
+        led_obj[0] = (int(r * 0.6), g, b, 0.4)
+        # Increase the wheel index
+        DebugCfg.COLOR_INDEX = 0 if DebugCfg.COLOR_INDEX > 1000 else DebugCfg.COLOR_INDEX + 2
+
+    @staticmethod
     def _init_ws2812():
         try:
-            from machine import Pin
             from neopixel import NeoPixel
             neo_pin = Pin(physical_pin('builtin'))
             led_obj = NeoPixel(neo_pin, 1)
@@ -72,7 +101,7 @@ class DebugCfg:
 
     @staticmethod
     def _step_ws2812(led_obj):
-        def __color_wheel():
+        def _color_wheel():
             while True:
                 yield 10, 0, 0
                 yield 5, 5, 0
@@ -81,25 +110,9 @@ class DebugCfg:
                 yield 0, 0, 10
                 yield 5, 0, 5
         if DebugCfg.NEO_WHEEL is None:
-            DebugCfg.NEO_WHEEL = __color_wheel()
+            DebugCfg.NEO_WHEEL = _color_wheel()
         led_obj[0] = DebugCfg.NEO_WHEEL.__next__()
         led_obj.write()
-
-    @staticmethod
-    def step():
-        """
-        DEBUG LED FEEDBACK
-        - handle 3 types of builtin LEDs: analog, neopixel(ws2812), apa102
-        - automatic selection based on board type + builtin logical pin number
-        """
-        try:
-            if DebugCfg.PLED_STEP:
-                DebugCfg.PLED_STEP()
-                return DebugCfg.PLED_A      # Return analog (True) - "double blink"
-            return False
-        except Exception as e:
-            errlog_add(f"[PLED] step error: {e}")
-            return False
 
 
 def console_write(msg):

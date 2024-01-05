@@ -1,6 +1,6 @@
 from sys import platform
 from utime import sleep
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 from Common import micro_task
 import uasyncio as asyncio
 

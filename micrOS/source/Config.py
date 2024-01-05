@@ -17,7 +17,7 @@ from json import load, dump
 from utime import sleep
 from Debug import DebugCfg, console_write, errlog_add
 try:
-    from LogicalPins import set_pinmap
+    from microIO import set_pinmap
 except:
     errlog_add("[ERR] LogicalPins import: set_pinmap")
     set_pinmap = None

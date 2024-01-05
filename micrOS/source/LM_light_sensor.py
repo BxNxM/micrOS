@@ -11,7 +11,7 @@ try:
     import LM_intercon as InterCon
 except:
     InterCon = None
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 
 ADC = None

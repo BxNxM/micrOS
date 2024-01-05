@@ -2,7 +2,7 @@ from micropython import const
 import ustruct
 import utime
 from machine import I2C, Pin
-from LogicalPins import physical_pin, pinmap_dump
+from microIO import physical_pin, pinmap_dump
 
 __TOF_OBJ = None
 

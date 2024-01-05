@@ -13,7 +13,7 @@ from machine import RTC
 from network import WLAN, STA_IF
 from utime import sleep_ms, time, mktime, localtime
 
-from ConfigHandler import cfgput, cfgget
+from Config import cfgput, cfgget
 from Debug import errlog_add, console_write
 from urequests import get as http_get
 

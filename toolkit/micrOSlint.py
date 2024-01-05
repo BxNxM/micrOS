@@ -5,12 +5,17 @@ from pylint.lint import Run
 
 try:
     from .lib import LocalMachine
+    from .lib.TerminalColors import Colors
+    from .DevEnvCompile import Compile
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from lib import LocalMachine
+    from lib.TerminalColors import Colors
+    from DevEnvCompile import Compile
 
 MYPATH = os.path.dirname(__file__)
 MICROS_SOURCE_DIR = os.path.join(MYPATH, '../micrOS/source')
+RELEASE_INFO_PATH = os.path.join(MYPATH, '../micrOS/release_info/micrOS_ReleaseInfo')
 
 
 def parse_micros_file_categories(verbose=True):
@@ -64,7 +69,7 @@ def parse_core_modules(core_resources, verbose=True):
         line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose)
         core_resource_struct[file_name] = {'lines': line_cnt, 'dependencies': dependencies}
     if verbose:
-        print("RUN parse_core_modules")
+        print(f"{'_'*100}\nRUN parse_core_modules")
         print(json.dumps(core_resource_struct, sort_keys=True, indent=4))
     return core_resource_struct
 
@@ -75,7 +80,7 @@ def parse_load_modules(lm_resources, verbose=True):
         line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose)
         lm_resource_struct[file_name] = {'lines': line_cnt, 'dependencies': dependencies}
     if verbose:
-        print("RUN parse_load_modules")
+        print(f"{'_'*100}\nRUN parse_load_modules")
         print(json.dumps(lm_resource_struct, sort_keys=True, indent=4))
     return lm_resource_struct
 
@@ -124,7 +129,7 @@ def combine_data_structures(core_struct, lm_struct, all_struct, verbose=True):
     categories_other = {'pin_maps': all_struct['pin_maps'], 'other': all_struct['other']}
     categories = {**categories_core, **categories_lm, **categories_other}
     if verbose:
-        print("RUN combine_data_structures")
+        print(f"{'_'*100}\nRUN combine_data_structures")
         print(json.dumps(categories, sort_keys=True, indent=4))
     return categories
 
@@ -147,11 +152,11 @@ def core_dep_checker(categories, verbose=True):
                 state = False
                 verdict.append((core_res, True, f'res-error: {e}'))
     if verbose or not state:
-        print(f"RUN core_dep_checker ({state})")
+        print(f"{'_'*100}\nRUN core_dep_checker ({state})")
         print(json.dumps(verdict, sort_keys=True, indent=4))
 
     core_dep_warnings = sum([1 for v in verdict if not v[1]])
-    return state, f'{core_dep_warnings} warning(s)', categories
+    return state, core_dep_warnings, categories
 
 
 def load_module_checker(categories, verbose=True):
@@ -191,9 +196,9 @@ def load_module_checker(categories, verbose=True):
         # TODO: After fixes it can be set as False in this case, if it make sense
         state_lm_dep = True
     if verbose or not state_lm_dep:
-        print(f"RUN load_module_checker ({state_lm_dep})")
+        print(f"{'_'*100}\nRUN load_module_checker ({state_lm_dep})")
         print(json.dumps(verdict, sort_keys=True, indent=4))
-    return state_lm_dep, f'{lm_dep_warnings} warning(s)', categories
+    return state_lm_dep, lm_dep_warnings, categories
 
 
 def _run_pylint(file_name):
@@ -251,7 +256,7 @@ def run_pylint(categories, verbose=True, dry_run=False):
     avg_lm_score = round(avg_lm_score / (len(lm_code)-1), 2)
     categories['load_module']['linter']['pylint'] = avg_lm_score
     if verbose:
-        print(f"RUN run_pylint")
+        print(f"{'_'*100}\nRUN run_pylint")
         print(json.dumps(categories, sort_keys=True, indent=4))
     return categories
 
@@ -301,20 +306,20 @@ def add_ref_counter(categories, verbose=True):
                 continue
             dep_list = categories[master_key][res]['dependencies']['core'] + \
                        categories[master_key][res]['dependencies']['lm']
-            print(f"||{master_key}-{res} Lm&core:{dep_list}||")
             if len(dep_list) == 0:
                 continue
             for dep in dep_list:
                 dep = f'{dep}.py'
-                print(f"\t+++> UPDATE: {master_key}-{res}")
                 _update(_m_keys=['core', 'load_module'], _dep=dep, _res=res)
     if verbose:
-        print(f"RUN add_ref_counter")
+        print(f"{'_'*100}\nRUN add_ref_counter")
         print(json.dumps(categories, sort_keys=True, indent=4))
     return categories
 
 
 def _verdict_gen(master_key, categories, verbose=True):
+    long_verdict = []
+    short_result = {}
     def _spacer(_word, next_col=25):
         return ' ' * (next_col - len(_word))
 
@@ -335,40 +340,153 @@ def _verdict_gen(master_key, categories, verbose=True):
                 pylint = categories[master_key][master_module]['linter']['pylint'][0]
             except Exception as e:
                 pylint = f'{e}'
-            print(f"\t{i+1}\t{lines}\t{master_module}{_spacer(master_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref_verdict})")
+            long_verdict.append(f"\t{i+1}\t{lines}\t{master_module}{_spacer(master_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref_verdict})")
+            short_result[master_module] = [pylint, ref_verdict]
+    return  short_result, long_verdict
 
-def short_report(categories, states, verbose=True):
-    sum_core_lines, core_cnt = categories['core']['linter']['sum_lines'], len(categories['core'])-1
-    sum_lm_lines, lm_cnt = categories['load_module']['linter']['sum_lines'], len(categories['load_module'])-1
 
+def check_while_out_of_async_in_load_modules():
+    # TODO...
+    pass
+
+
+def create_summary_stat(categories, states, verbose=True):
+    summary = {'files': {}, 'summary': {'core': ['<lines>', '<files>'], 'load': ['<lines>', '<files>'],
+                                    'core_dep': [True, '<warning_cnt(s)>'], 'load_dep': [True, '<warning_cnt(s)>'],
+                                    'core_score': 0, 'load_score': 0, 'version': 0}}
+
+    try:
+        summary['summary']['version'] = Compile().get_micros_version_from_repo()
+    except Exception as e:
+        print(f"GET micrOS repo version error: {e}")
+    # Get CORE code lines (0), and CORE code files number
+    summary['summary']['core'] = [categories['core']['linter']['sum_lines'], len(categories['core'])-1]
+    # Get LM code lines (0), and LM code files number
+    summary['summary']['load'] = [categories['load_module']['linter']['sum_lines'], len(categories['load_module'])-1]
+
+    # GET CORE micrOS lint verdict (bool, warnings) + extend categories
     core_dep = states.get('core_dep_checker')
     categories['core']['linter']['mlint'] = core_dep
+    summary['summary']['core_dep'] = [core_dep[0], core_dep[1]]
+
+    # GET LM micrOS lint verdict (bool, warnings)  + extend categories
     lm_dep = states.get('load_module_checker')
     categories['load_module']['linter']['mlint'] = lm_dep
-    core_pylint = categories['core']['linter']['pylint']
-    lm_pylint = categories['load_module']['linter']['pylint']
+    summary['summary']['load_dep'] = [lm_dep[0], lm_dep[1]]
+
+    # GET CORE overall score
+    summary['summary']['core_score'] = categories['core']['linter']['pylint']
+    # GET LM overall score
+    summary['summary']['load_score'] = categories['load_module']['linter']['pylint']
+
+    if verbose:
+        print(f"{'_'*100}\nRUN create_summary_stat")
+        print(json.dumps(summary, sort_keys=True, indent=4))
+    return categories, summary
+
+
+def short_report(categories, states, verbose=True):
+    c_OK = f'{Colors.OK}OK{Colors.NC}'
+    c_NOK = f'{Colors.ERR}NOK{Colors.NC}'
+    def _vis(data):
+        if data > 0:
+            return f'({Colors.WARN}+{round(data, 1)}{Colors.NC})'
+        elif data < 0:
+            return f"({Colors.WARN}{round(data, 1)}{Colors.NC})"
+        else:
+            return ''
+    def _pyl_vis(data):
+        if data > 0:
+            return f'({Colors.OK}+{round(data, 1)}{Colors.NC})'
+        elif data < 0:
+            return f"({Colors.ERR}{round(data, 1)}{Colors.NC})"
+        else:
+            return ''
+
+    # Create summary stat
+    categories, summary = create_summary_stat(categories, states, verbose=True)
+    # Unpack result of summary stat
+    sum_core_lines, core_cnt = summary['summary']['core'][0], summary['summary']['core'][1]
+    sum_lm_lines, lm_cnt = summary['summary']['load'][0], summary['summary']['load'][1]
+    core_dep = summary['summary']['core_dep']
+    lm_dep = summary['summary']['load_dep']
+    core_pylint = summary['summary']['core_score']
+    lm_pylint = summary['summary']['load_score']
     pylint_check = states.get('pylint_checker')
+
+    # CORE and LM verdict generation
+    summary['files'], printout1 = _verdict_gen(master_key='core', categories=categories, verbose=verbose)
+    _files, printout2 = _verdict_gen(master_key='load_module', categories=categories, verbose=verbose)
+    summary['files'].update(_files)
+
+    # Generate summary DIFF
+    try:
+        summary_diff, is_better = diff_short_summary(summary, verbose=True)
+        core_diff = summary_diff['summary']['core']
+        load_diff = summary_diff['summary']['load']
+        core_score_diff = summary_diff['summary']['core_score']
+        load_score_diff = summary_diff['summary']['load_score']
+        core_dep_diff = summary_diff['summary']['core_dep'][1]
+        lm_dep_diff = summary_diff['summary']['load_dep'][1]
+    except Exception as e:
+        print(f"\n\ndiff_short_summary error: no file: {e}\n\n")
+        is_better = True    # enable save
+        core_diff, load_diff, core_score_diff, load_score_diff, core_dep_diff, lm_dep_diff = [0, 0], [0, 0], 0, 0, 0, 0
 
     if not verbose:
         print(json.dumps(categories, sort_keys=True, indent=4))
-    print("#####################        micrOS linter/scripts      #######################")
+    print(f"#####################        {Colors.BOLD}micrOS linter/scripts{Colors.NC}      #######################")
+    print(f"#########################            {Colors.UNDERLINE}v{summary['summary']['version']}{Colors.NC}      ###########################")
     print("Core micrOS resources")
-    _verdict_gen(master_key='core', categories=categories, verbose=verbose)
+    for line in printout1:
+        print(line)
     print("micrOS Load Module resources")
-    _verdict_gen(master_key='load_module', categories=categories, verbose=verbose)
+    for line in printout2:
+        print(line)
     print("########################        micrOS linter      ###########################")
-    print(f"        core system:                {sum_core_lines} lines / {core_cnt} files")
-    print(f"       load modules:                {sum_lm_lines} lines / {lm_cnt} files")
-    print(f"   core_dep_checker:                core dependency check (no LM): {core_dep}")
-    print(f"load_module_checker:                load module dependency check (no core): {lm_dep}")
-    print(f"  core pylint score:                {core_pylint}")
-    print(f"load module pylint score:           {lm_pylint}")
-    print(f"pylint resource check (syntax):     {pylint_check}")
-
+    print(f"        core system:                {sum_core_lines}{_vis(core_diff[0])} lines / {core_cnt}{_vis(core_diff[1])} files")
+    print(f"       load modules:                {sum_lm_lines}{_vis(load_diff[1])} lines / {lm_cnt}{_vis(load_diff[1])} files")
+    print(f"   core_dep_checker:                core dependency check (no LM): {c_OK if core_dep[0]  else c_NOK} {'' if core_dep[1] == 0 else f'{core_dep[1]}{_vis(core_dep_diff)} warning(s)s'}")
+    print(f"load_module_checker:                load module dependency check (no core): {c_OK if lm_dep[0] else c_NOK} {'' if lm_dep[1] == 0 else f'{lm_dep[1]}{_vis(lm_dep_diff)} warning(s)'}")
+    print(f"  core pylint score:                {core_pylint}{_pyl_vis(core_score_diff)}")
+    print(f"load module pylint score:           {lm_pylint}{_vis(load_score_diff)}")
+    print(f"pylint resource check (syntax):     {c_OK if pylint_check[0] else f'{c_NOK}: {pylint_check[1]}' }")
 
     exitcode = sum([1 for k, v in states.items() if not v[0]])
-    print(f"micrOSlint verdict: {'OK' if exitcode == 0 else 'NOK'}\nExitcode: {exitcode}")
-    return exitcode, categories
+    print(f"micrOSlint verdict: {c_OK if exitcode == 0 else c_NOK}")
+    print(f"Exitcode: {exitcode}")
+    return exitcode, categories, summary, is_better
+
+
+def diff_short_summary(summary, verbose=True):
+    is_better = True
+    diff_summary = {'files': {}, 'summary': {'core': ['<lines>', '<files>'], 'load': ['<lines>', '<files>'],
+                                    'core_dep': [True, '<warning_cnt(s)>'], 'load_dep': [True, '<warning_cnt(s)>'],
+                                    'core_score': 0, 'load_score': 0, 'version': 0}}
+    file_path = os.path.join(RELEASE_INFO_PATH, 'system_analysis_sum.json')
+    try:
+        with open(file_path, 'r') as json_file:
+            stored_summary = json.loads(json_file.read())
+    except:
+        print("NO stored summary to compare system_analysis_sum.json")
+        return
+    for f_name, data in summary['files'].items():
+        score, ref = data[0], data[1]
+        diff_summary['files'][f_name] = [score - stored_summary['files'][f_name][0], ref - stored_summary['files'][f_name][1]]
+    for tag, data in summary['summary'].items():
+        if isinstance(data, int) or isinstance(data, float):
+            diff_summary['summary'][tag] = data - stored_summary['summary'][tag]
+            is_better &= False if diff_summary['summary'][tag] < 0 else True
+        if isinstance(data, list):
+            for i, d in enumerate(data):
+                if isinstance(d, int) or isinstance(d, float):
+                    diff_summary['summary'][tag][i] = d - stored_summary['summary'][tag][i]
+                    is_better &= False if diff_summary['summary'][tag][i] < 0 else True
+    if verbose:
+        print(f"{'_'*100}\nRUN diff_short_summary")
+        print(json.dumps(diff_summary, sort_keys=True, indent=4))
+    return diff_summary, is_better
+
 
 def save_system_analysis_json(categories):
     file_path = os.path.join(MYPATH, 'user_data/system_analysis.json')
@@ -376,9 +494,11 @@ def save_system_analysis_json(categories):
         json.dump(categories, json_file, indent=4)
     return f"system_analysis json saved to {file_path}"
 
-def check_while_out_of_async_in_load_modules():
-    # TODO...
-    pass
+def save_system_summary_json(summary):
+    file_path = os.path.join(RELEASE_INFO_PATH, 'system_analysis_sum.json')
+    with open(file_path, 'w') as json_file:
+        json.dump(summary, json_file, indent=4)
+    return f"system_analysis summary json saved to {file_path}"
 
 
 def main(verbose=True):
@@ -389,23 +509,25 @@ def main(verbose=True):
     categories = combine_data_structures(core_struct, lm_struct, all_struct=resources, verbose=verbose)
 
     print("== RUN checker on parsed resources ==")
-    s1, text1, categories = core_dep_checker(categories, verbose=verbose)
-    categories['core']['linter']['mlint'] = (s1, text1)
-    s2, text2, categories = load_module_checker(categories, verbose=verbose)
-    categories['load_module']['linter']['mlint'] = (s1, text1)
+    s1, warn1, categories = core_dep_checker(categories, verbose=verbose)
+    categories['core']['linter']['mlint'] = (s1, warn1)
+    s2, warn2, categories = load_module_checker(categories, verbose=verbose)
+    categories['load_module']['linter']['mlint'] = (s1, warn2)
     categories = run_pylint(categories, verbose=verbose, dry_run=False)
     s3, pylint_verdict = pylint_verdict_analyze(categories)
     categories = add_ref_counter(categories, verbose=verbose)
 
     # Short report
-    exitcode, categories = short_report(categories, {'core_dep_checker': (s1, text1),
-                                                     'load_module_checker': (s2, text2),
+    exitcode, categories, summary, is_better = short_report(categories, {'core_dep_checker': (s1, warn1),
+                                                     'load_module_checker': (s2, warn2),
                                                      'pylint_checker': (s3, pylint_verdict)},
                                         verbose=verbose)
     # Archive system_analysis_json
     print(save_system_analysis_json(categories))
+    if is_better:
+        print(save_system_summary_json(summary))
     return exitcode
 
 if __name__ == "__main__":
-    sys.exit(main(verbose=True))
+    sys.exit(main(verbose=False))
 

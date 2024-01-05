@@ -210,7 +210,7 @@ class Compile:
 
 
 if __name__ == "__main__":
-    b = Base(dry_run=True)
+    b = Compile(dry_run=True)
     version = b.get_micros_version_from_repo()
     print('version: {}'.format(version))
     status = b.precompile_micros()

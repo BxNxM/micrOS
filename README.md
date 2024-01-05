@@ -1311,18 +1311,13 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 - Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`
 
-- **micrOS core source code** lines:
+- **micrOS core and Load Module source code info**:
 
 ```bash
-core_files=($(ls -1 | grep '.py' | grep -v 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
+devToolKit.py -lint
+OR
+devToolKit.py --linter
 ```
-
-- **micrOS Load Module-s** (application-s) source code lines:
-
-```
-core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in ${core_files[@]}; do content_lines_cnt=$(cat $coref | grep -v -e '^$' | wc -l); all_line_codes=$((all_line_codes+content_lines_cnt)); echo -e "$content_lines_cnt\t$coref"; done; echo -e "SUM OF CODE LINES: $all_line_codes"
-```
-
 
 ### micrOS gateway - Linux service template
 
@@ -1332,18 +1327,19 @@ core_files=($(ls -1 | grep '.py' | grep 'LM_')); all_line_codes=0; for coref in 
 
 - [1] create `micros-gw.service` file:
 
-```
+```bash
 [Unit]
 Description=micrOS gateway REST API service
 After=network-online.target
 
 [Service]
-ExecStart=/usr/bin/python3 -m devToolKit -gw
-WorkingDirectory=/home/<user>/gateway
+Environment="API_AUTH=<usr_name>:<password>"  <-- replace
+ExecStart=/usr/bin/python3 -m devToolKit -gw  <-- check (depends on deployment) OR /bin/bash
+WorkingDirectory=/home/gateway                <-- replace
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-User=<user>
+User=<user>                                   <-- replace
 
 [Install]
 WantedBy=multi-user.target

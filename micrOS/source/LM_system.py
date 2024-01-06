@@ -1,8 +1,8 @@
+from os import statvfs, getcwd
 from utime import localtime
 from Common import socket_stream
 from Network import get_mac
 from Time import ntp_time, set_time, uptime
-from os import statvfs, getcwd
 from Tasks import Manager
 
 try:

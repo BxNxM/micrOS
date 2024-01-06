@@ -1,6 +1,6 @@
 from os import listdir, remove
-from Common import socket_stream
 from sys import modules
+from Common import socket_stream
 
 
 @socket_stream
@@ -13,9 +13,9 @@ def listmods(msgobj=None):
     msg_buf = []
     for k in (res.replace('LM_', '') for res in listdir() if res.startswith('LM_') or res.endswith('.html')):
         if msgobj is None:
-            msg_buf.append('   {}'.format(k))
+            msg_buf.append(f'   {k}')
         else:
-            msgobj('   {}'.format(k))
+            msgobj(f'   {k}')
     return msg_buf if len(msg_buf) > 0 else ''
 
 
@@ -72,7 +72,7 @@ def del_duplicates():
                 remove(to_delete)
             except:
                 state = False
-            msg_buf.append('   Delete {} {}'.format(to_delete, state))
+            msg_buf.append(f'   Delete {to_delete} {state}')
     return '\n'.join(msg_buf) if len(msg_buf) > 0 else 'Nothing to delete.'
 
 
@@ -87,8 +87,8 @@ def module(unload=None):
         return list(modules.keys())
     if unload in modules.keys():
         del modules[unload]
-        return "Module unload {} done.".format(unload)
-    return "Module unload {} failed.".format(unload)
+        return f"Module unload {unload} done."
+    return f"Module unload {unload} failed."
 
 
 @socket_stream
@@ -98,7 +98,6 @@ def cachedump(cdel=None, msgobj=None):
     """
     if cdel is None:
         # List pds files aka application cache
-        from os import listdir
         msg_buf = []
         for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
             with open(pds, 'r') as f:
@@ -108,7 +107,6 @@ def cachedump(cdel=None, msgobj=None):
                     msgobj(f'{pds}: {f.read()}')
         return msg_buf if len(msg_buf) > 0 else ''
     # Remove given pds file
-    from os import remove
     try:
         remove(f'{cdel}.pds')
         return f'{cdel}.pds delete done.'
@@ -120,15 +118,14 @@ def cachedump(cdel=None, msgobj=None):
 def micros_checksum(msgobj=None):
     from hashlib import sha1
     from binascii import hexlify
-    from os import listdir
     from Config import cfgget
 
     for f_name in (_pds for _pds in listdir() if _pds.endswith('py')):
         with open(f_name, 'rb') as f:
             cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
-        msgobj("{} {}".format(cs, f_name))
+        msgobj(f"{cs} {f_name}")
     # GC collect?
-    return "micrOS version: {}".format(cfgget('version'))
+    return f"micrOS version: {cfgget('version')}"
 
 
 def help():

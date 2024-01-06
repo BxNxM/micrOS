@@ -449,7 +449,7 @@ def short_report(categories, states, verbose=True):
     print(f"   core_dep_checker:                core dependency check (no LM): {c_OK if core_dep[0]  else c_NOK} {'' if core_dep[1] == 0 else f'{core_dep[1]}{_vis(core_dep_diff)} warning(s)s'}")
     print(f"load_module_checker:                load module dependency check (no core): {c_OK if lm_dep[0] else c_NOK} {'' if lm_dep[1] == 0 else f'{lm_dep[1]}{_vis(lm_dep_diff)} warning(s)'}")
     print(f"  core pylint score:                {core_pylint}{_pyl_vis(core_score_diff)}")
-    print(f"load module pylint score:           {lm_pylint}{_vis(load_score_diff)}")
+    print(f"load module pylint score:           {lm_pylint}{_pyl_vis(load_score_diff)}")
     print(f"pylint resource check (syntax):     {c_OK if pylint_check[0] else f'{c_NOK}: {pylint_check[1]}' }")
 
     exitcode = sum([1 for k, v in states.items() if not v[0]])

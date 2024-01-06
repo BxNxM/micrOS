@@ -78,7 +78,7 @@ class TaskBase:
         Delete task from TASKS
         """
         self.done.set()
-        if self.tag in TaskBase.TASKS.keys():
+        if self.tag in TaskBase.TASKS:
             if not keep_cache:              # True - In case of destructor
                 del TaskBase.TASKS[self.tag]
         collect()                           # GC collect
@@ -295,13 +295,14 @@ class Manager:
             List tasks - micrOS top :D
         """
         q = Manager.QUEUE_SIZE - Manager._queue_len()
-        output = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.OLOAD}%\n", "#Active   #taskID"]
+        out_active = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.OLOAD}%\n", "#Active   #taskID"]
+        out_passive = []
         for tag, task in TaskBase.TASKS.items():
             is_running = 'No' if task.done.is_set() else 'Yes'
             spcr = " " * (10 - len(is_running))
-            task_view = f"{is_running}{spcr}{tag}"
-            output.append(task_view)
-        return tuple(output)
+            view = f"{is_running}{spcr}{tag}"
+            _ = out_passive.append(view) if task.done.is_set() else out_active.append(view)
+        return tuple(out_active), tuple(out_passive)
 
     @staticmethod
     def _parse_tag(tag):
@@ -310,7 +311,7 @@ class Manager:
         if task is None:
             _tasks = []
             tag_parts = tag.split('.')
-            for t in TaskBase.TASKS.keys():
+            for t in TaskBase.TASKS:
                 if t.startswith(tag_parts[0]) and len(tag_parts) > 1 and tag_parts[1] == '*':
                     _tasks.append(t)
             if len(_tasks) == 0:
@@ -439,9 +440,9 @@ def exec_lm_core(arg_list, msgobj=None):
         if 'task' == msg_list[0]:
             # task list
             if msg_len > 1 and 'list' == msg_list[1]:
-                tasks = '\n'.join(Manager.list_tasks())
-                tasks = f'{tasks}\n'
-                msgobj(tasks)
+                on, off = Manager.list_tasks()
+                msgobj('\n'.join(on))            # Show active tasks
+                msgobj('\n'.join(off) + '\n')    # Show passive tasks
                 return True
             # task kill <taskID> / task show <taskID>
             if msg_len > 2:
@@ -477,8 +478,8 @@ def exec_lm_core(arg_list, msgobj=None):
             return True
         # Not valid task command
         return False
-    '''_________________________________________________'''
 
+    # ================ main function ================
     # [1] Run task command: start (&), list, kill, show
     if task_manager(arg_list):
         return True
@@ -553,7 +554,7 @@ def _exec_lm_core(arg_list, msgobj):
             msgobj(f"exec_lm_core {lm_mod}->{lm_func}: {e}")
             if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
                 # UNLOAD MODULE IF MEMORY ERROR HAPPENED
-                if lm_mod in modules.keys():
+                if lm_mod in modules:
                     del modules[lm_mod]
                 # Exec FAIL -> recovery action in SocketServer
                 return False

@@ -24,7 +24,7 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.48.0-0'
+    MICROS_VERSION = '1.48.0-1'
 
     def __init__(self):
         """

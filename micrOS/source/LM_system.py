@@ -2,6 +2,13 @@ from utime import localtime
 from Common import socket_stream
 from Network import get_mac
 from Time import ntp_time, set_time, uptime
+from os import statvfs, getcwd
+from Tasks import Manager
+
+try:
+    from gc import mem_free, mem_alloc, collect
+except:
+    from simgc import mem_free, mem_alloc, collect  # simulator mode
 
 
 def memory_usage():
@@ -9,10 +16,6 @@ def memory_usage():
     Calculate used micropython memory (ram)
     return: memory usage %, memory usage in bytes
     """
-    try:
-        from gc import mem_free, mem_alloc, collect
-    except:
-        from simgc import mem_free, mem_alloc, collect  # simulator mode
     collect()
     total_memory = mem_free() + mem_alloc()
     used_memory = mem_alloc()
@@ -25,13 +28,21 @@ def disk_usage():
     Calculate used disk space
     return: memory usage %, disk usage in bytes
     """
-    from os import statvfs, getcwd
     fs_stat = statvfs(getcwd())
     fs_size = fs_stat[0] * fs_stat[2]
     fs_free = fs_stat[0] * fs_stat[3]
     used_space = fs_size - fs_free
     used_fs_percent = round(used_space / fs_size * 100, 1)
     return {'percent': used_fs_percent, 'fs_used': used_space}
+
+
+def top():
+    """
+    Mini system monitor (top)
+    """
+    return {'Mem usage [%]': memory_usage()['percent'],
+            'FS usage [%]': disk_usage()['percent'],
+            'CPU load [%]': Manager.OLOAD}
 
 
 def info():
@@ -41,9 +52,10 @@ def info():
     """
     from machine import freq
     from os import uname
-    buffer = {'CPU clock [MHz]': int(freq() * 0.0000001), 'Mem usage [%]': memory_usage()['percent'],
-              'FS usage [%]': disk_usage()['percent'], 'upython': uname()[3], 'board': uname()[4],
-              'uptime': uptime()}
+
+    buffer = top()
+    buffer.update({'CPU clock [MHz]': int(freq() * 0.0000001), 'upython': uname()[3],
+              'board': uname()[4], 'uptime': uptime()})
     try:
         buffer['mac'] = get_mac()
     except:
@@ -123,31 +135,6 @@ def setclock(year, month, mday, hour, min, sec):
     return localtime()
 
 
-@socket_stream
-def cachedump(cdel=None, msgobj=None):
-    """
-    Cache system persistent data storage files (.pds)
-    """
-    if cdel is None:
-        # List pds files aka application cache
-        from os import listdir
-        msg_buf = []
-        for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
-            with open(pds, 'r') as f:
-                if msgobj is None:
-                    msg_buf.append(f'{pds}: {f.read()}')
-                else:
-                    msgobj(f'{pds}: {f.read()}')
-        return msg_buf if len(msg_buf) > 0 else ''
-    # Remove given pds file
-    from os import remove
-    try:
-        remove(f'{cdel}.pds')
-        return f'{cdel}.pds delete done.'
-    except:
-        return f'{cdel}.pds not exists'
-
-
 def rssi():
     """
     Show Wifi RSSI - wifi strength
@@ -221,9 +208,8 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'info', 'gclean', 'heartbeat', 'clock',\
+    return 'info', 'top', 'gclean', 'heartbeat', 'clock',\
            'setclock year month mday hour min sec',\
-           'ntp', 'rssi', 'cachedump cdel="rgb.pds/None"',\
-           'pinmap key="dhtpin"/None', 'alarms clean=False',\
+           'ntp', 'rssi', 'pinmap key="dhtpin"/None', 'alarms clean=False',\
            'sun refresh=False', 'ifconfig', 'memory_usage',\
            'disk_usage', 'urequests_host_cache'

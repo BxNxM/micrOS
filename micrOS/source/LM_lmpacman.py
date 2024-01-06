@@ -92,6 +92,31 @@ def module(unload=None):
 
 
 @socket_stream
+def cachedump(cdel=None, msgobj=None):
+    """
+    Cache system persistent data storage files (.pds)
+    """
+    if cdel is None:
+        # List pds files aka application cache
+        from os import listdir
+        msg_buf = []
+        for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
+            with open(pds, 'r') as f:
+                if msgobj is None:
+                    msg_buf.append(f'{pds}: {f.read()}')
+                else:
+                    msgobj(f'{pds}: {f.read()}')
+        return msg_buf if len(msg_buf) > 0 else ''
+    # Remove given pds file
+    from os import remove
+    try:
+        remove(f'{cdel}.pds')
+        return f'{cdel}.pds delete done.'
+    except:
+        return f'{cdel}.pds not exists'
+
+
+@socket_stream
 def micros_checksum(msgobj=None):
     from hashlib import sha1
     from binascii import hexlify
@@ -108,4 +133,5 @@ def micros_checksum(msgobj=None):
 
 def help():
     return 'listmods', 'dellm lm=<module>.py/.mpy', 'del_duplicates',\
-           'module unload="LM_rgb/None"', 'delhtml html=<page>.html', 'micros_checksum'
+           'module unload="LM_rgb/None"', 'delhtml html=<page>.html',\
+           'cachedump cdel="rgb.pds/None"', 'micros_checksum'

@@ -58,7 +58,9 @@ class DebugCfg:
     def _init_simple():
         try:
             # Progress led for esp32/etc
-            led_obj = Pin(physical_pin('builtin'), Pin.OUT)
+            led_obj = Pin(abs(physical_pin('builtin')), Pin.OUT)
+            if physical_pin('builtin') < 0:     # Pin number start with (-), like -8 (means inverted output)
+                led_obj.value(1)                # Turn OFF built-in LED state invert (1:OFF)
             # Set function callback for step function (simple led - blink)
             DebugCfg.PLED_STEP = lambda: led_obj.value(not led_obj.value())
             DebugCfg.PLED_A = True

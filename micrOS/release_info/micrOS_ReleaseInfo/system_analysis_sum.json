@@ -45,7 +45,7 @@
             1
         ],
         "Debug.py": [
-            8.61,
+            8.63,
             23
         ],
         "Network.py": [
@@ -57,7 +57,7 @@
             1
         ],
         "microIO.py": [
-            9.05,
+            9.08,
             35
         ],
         "micrOS.py": [
@@ -247,7 +247,7 @@
     },
     "summary": {
         "core": [
-            3508,
+            3512,
             19
         ],
         "load": [
@@ -262,8 +262,8 @@
             true,
             7
         ],
-        "core_score": 9.09,
+        "core_score": 9.1,
         "load_score": 8.07,
-        "version": "1.48.1-0"
+        "version": "1.49.0-0"
     }
 }

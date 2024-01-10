@@ -1,7 +1,7 @@
 from micropython import const
 
 # BUILTIN LED
-builtin = const(8)     # BUILT IN LED - progress_led
+builtin = const(-8)     # BUILT IN LED - progress_led,  (-) means inverted output
 
 # ANALOG RGB + WW + CW
 redgb = const(4)      # - rgb red channel [PWM]

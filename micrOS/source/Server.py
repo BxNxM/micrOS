@@ -186,7 +186,7 @@ class WebCli(Client):
 
     async def run_web(self):
         # Update server task output (? test ?)
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
 
         # Run async connection handling
         while self.connected:

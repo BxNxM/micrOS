@@ -63,6 +63,11 @@ class USB(Compile):
                   'deploy': 'esptool.py --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!!!] Experimental device, no pinmap was adapted (fallback to esp32)'},
+             'esp32c3':
+                 {'erase': 'esptool.py --chip esp32c3 --port {dev} erase_flash',
+                  'deploy': 'esptool.py --chip esp32c3 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}',
+                  'mpremote_cmd': 'mpremote',
+                  'cmd_line_info': '[!HINT!] Fully automatic deployment...'},
              }
         if not USB.usb_driver_ok:
             # Optimization - driver check

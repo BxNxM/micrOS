@@ -34,7 +34,9 @@ def detect_platform():
         if 'esp32s2' in str(board).lower():
             return 'esp32s2'     # esp32 family - esp32S2
         if 'esp32s3' in str(board).lower():
-            return 'esp32s3'     # esp32 family - esp32s2 (octal spiram)
+            return 'esp32s3'     # esp32 family - esp32s3
+        if 'esp32c3' in str(board).lower():
+            return 'esp32c3'     # esp32 family - esp32c3
         return 'esp32'           # esp32 family - general
     return platform              # esp8266 or something else
 

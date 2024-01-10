@@ -19,7 +19,11 @@ def __init_DHT11():
 
 def __temp_hum():
     __init_DHT11().measure()
-    return __DHT_OBJ.temperature(), __DHT_OBJ.humidity()
+    temp = __DHT_OBJ.temperature()
+    if temp < -273:
+        # correction for minus celsius scale
+        temp = round(temp/1000, 1)
+    return temp, __DHT_OBJ.humidity()
 
 
 #########################

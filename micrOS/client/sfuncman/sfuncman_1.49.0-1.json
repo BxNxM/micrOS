@@ -997,7 +997,7 @@
         },
         "recursion_limit": {
             "doc": null,
-            "param(s)": "cnt=14"
+            "param(s)": "limit=14"
         }
     },
     "rp2w": {

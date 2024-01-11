@@ -31,9 +31,19 @@ def memory_leak(cnt=160, msgobj=None):
     delta = mem_start - mem_end
     return '[{}] RAM Alloc.: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024))
 
-
 @socket_stream
-def recursion_limit(cnt=14, msgobj=None):
+def recursion_limit(limit=14, msgobj=None):
+    cnt = 0
+    for cnt in range(1, limit+1):
+        try:
+            _recursion(cnt, msgobj=msgobj)
+        except Exception as e:
+            msgobj(f"ok error: {e}")
+            break
+    return f"Recursion limit: {cnt-1}"
+
+
+def _recursion(cnt, msgobj=None):
     """
     Test function - recursion test
     :param cnt: recursion depth
@@ -43,7 +53,7 @@ def recursion_limit(cnt=14, msgobj=None):
         exec_lm_core LM_robustness->recursion_limit: maximum recursion depth exceeded
     """
     if cnt > 0:
-        remain = recursion_limit(cnt-1)
+        remain = _recursion(cnt-1)
         if msgobj is not None:
             msgobj("recalled {}".format(cnt))
     else:

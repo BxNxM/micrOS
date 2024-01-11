@@ -318,10 +318,12 @@ def check_robustness_recursion():
     print(info_msg)
     cmd_list = ['robustness recursion_limit 5']
     output = execute(cmd_list, tout=10)
-    if output[0] and "0" in output[1].split("\n")[-1]:
-        return True, f'{info_msg}'
-    else:
-        return False, f'{info_msg}: {output}'
+    if output[0]:
+        last_line = output[1].split("\n")[-1]
+        if "Recursion limit:" in last_line:
+            info_msg += f'-> {last_line}'
+            return True, f'{info_msg}'
+    return False, f'{info_msg}: {output}'
 
 
 def check_intercon(host=None):

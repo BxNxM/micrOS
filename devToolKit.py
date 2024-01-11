@@ -17,7 +17,6 @@ import argparse
 from toolkit import MicrOSDevEnv
 from toolkit import socketClient
 from toolkit.lib import LocalMachine
-from toolkit import Gateway
 try:
     from toolkit import micrOSlint
 except Exception as e:
@@ -148,6 +147,7 @@ def simulate_micrOS(api_obj):
 
 
 def gateway_rest_api():
+    from toolkit import Gateway
     Gateway.gateway()
 
 

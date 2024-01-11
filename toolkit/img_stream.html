@@ -11,7 +11,7 @@
             100% {background-position: 0% 50%;}}
         body {
             height: 400vh;
-            width: 200vh;
+            width: 400vh;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             margin: 40px;
             background: linear-gradient(110deg, #720000, #656565, #252525);
@@ -115,8 +115,8 @@
     // Get Camera devices
     fetchDeviceList();
 
-    // Update the images every 2 seconds (2000 milliseconds)
-    setInterval(updateImages, 2000);
+    // Update the images every 1 seconds (1000 milliseconds)
+    setInterval(updateImages, 1000);
 
     // Initial update
     updateImages();

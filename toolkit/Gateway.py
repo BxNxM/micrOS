@@ -3,7 +3,7 @@
 # using flask_restful
 import json
 import os
-from flask import Flask, jsonify, Response, make_response, request, send_file
+from flask import Flask, jsonify, Response, make_response, request, send_file, abort
 from flask_restful import Resource, Api
 import threading
 import time
@@ -33,12 +33,22 @@ API_URL_CACHE = ""
 # creating the flask app
 app = Flask(__name__)
 
-# --------------------- AUTH ------------------------- #
+# --------------------- AUTH BEGIN ------------------------- #
+ADDRESS_CACHE = {}
 try:
-    __rest_usr_name, __rest_usr_pwd = tuple(os.environ.get("API_AUTH").split(':'))
+    print("[GW-AUTH][HINT] API_AUTH=usr:pwd:optional\toptional country codes: HU,GB,CA")
+    __conf = tuple(os.environ.get("API_AUTH").split(':'))
+    if len(__conf) == 2:
+        __rest_usr_name, __rest_usr_pwd = __conf
+        ALLOWED_COUNTRY = []
+        print("[GW-AUTH][ENABLED] NO WHITELISTED COUNTRIES (CURRENT ONLY - FALLBACK)")
+    else:
+        __rest_usr_name, __rest_usr_pwd, ALLOWED_COUNTRY = __conf
+        ALLOWED_COUNTRY = [c.strip() for c in ALLOWED_COUNTRY.split(',')]
+        print(f"[GW-AUTH][ENABLED] {ALLOWED_COUNTRY}")
 except Exception as e:
-    print("[i] SKIP AUTH - API_AUTH ENV VAR NOT FOUND.")
-    __rest_usr_name, __rest_usr_pwd = None, None
+    print("[GW-AUTH][DISABLED] API_AUTH ENV VAR NOT FOUND.")
+    __rest_usr_name, __rest_usr_pwd, ALLOWED_COUNTRY = None, None, []
 
 
 if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
@@ -49,25 +59,71 @@ if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
     app.config['BASIC_AUTH_PASSWORD'] = f'{__rest_usr_pwd}'
     #app.config['BASIC_AUTH_PASSWORD'] = f'{__rest_usr_pwd}{datetime.now().day}'  # month-day (21)
 
-    def is_local_network():
+    def _is_local_network():
         # Define local network IP prefixes (adjust as needed)
         local_network_prefixes = ['192.168.', '10.0.', '172.17.']
         #local_network_prefixes = []
         remote_ip = request.remote_addr
-        print(f"\t[i] Check incoming IP address: {remote_ip}")
+        print(f"\t[GW-AUTH] Check incoming IP address: {remote_ip}")
         for prefix in local_network_prefixes:
             if remote_ip.startswith(prefix):
-                print(f"\t\t[i] SKIP AUTH - LOCAL NETWORK: {prefix} match with {remote_ip}")
+                print(f"\t\t[GW-AUTH] SKIP AUTH - LOCAL NETWORK: {prefix} match with {remote_ip}")
                 return True, remote_ip
         return False, remote_ip
 
+
+    def allow_gateway_country():
+        global ALLOWED_COUNTRY
+        try:
+            response = requests.get('https://httpbin.org/ip')
+            gateway_extip = response.json()['origin']
+            print(f"[!][GW-AUTH][!] gw ext ip: {gateway_extip}")
+        except Exception as e:
+            print(f"[!][GW-AUTH][!] gateway_country error: {e}")
+            return None
+        _, location = _location_filter(gateway_extip)
+        if location['ok']:
+            ALLOWED_COUNTRY.append(location['Country'])
+            print(f"[!][GW-AUTH][!] extend ALLOWED_COUNTRY with {ALLOWED_COUNTRY}")
+
+
+    def _location_filter(ip_address):
+        enabled_country_codes = ALLOWED_COUNTRY
+        if ADDRESS_CACHE.get(ip_address) is None:
+            api_url = f'http://ipinfo.io/{ip_address}/json'
+            try:
+                data = requests.get(api_url).json()
+                # Extract relevant location information
+                country = data.get('country', 'N/A')
+                city = data.get('city', 'N/A')
+                region = data.get('region', 'N/A')
+                response = {"ok": True, "Country": country, "Region": region, "City": city}
+            except Exception as e:
+                response = {"ok": False, "Country": str(e)}
+            if response["ok"] and response["Country"] in enabled_country_codes:
+                print(f"\t[GW-AUTH] EXTERNAL LOGIN: ALLOW ({enabled_country_codes}) EXTERNAL IP FROM: {response}")
+                ADDRESS_CACHE[ip_address] = (True, response)
+                return True, response
+            print(f"\t[GW-AUTH] EXTERNAL LOGIN: DENY ({enabled_country_codes}) EXTERNAL IP FROM: {response}")
+            ADDRESS_CACHE[ip_address] = (False, response)
+            return False, response
+        # Return cached value:
+        print(f"\t[GW-AUTH] CACHE::: {ADDRESS_CACHE}")
+        return ADDRESS_CACHE[ip_address]
+
+
     @app.before_request
     def require_authentication():
-        is_internal, remote_ip = is_local_network()
-        print(f"==> {'INTERNAL' if is_internal else 'EXTERNAL'} LOGIN: {remote_ip}")
+        is_internal, remote_ip = _is_local_network()
+        print(f"[GW-AUTH] {'INTERNAL' if is_internal else 'EXTERNAL'} LOGIN: {remote_ip}")
         if not is_internal and not basic_auth.authenticate():
-            return basic_auth.challenge()
-# ---------------------------------------------------- #
+            if len(ALLOWED_COUNTRY) == 0:
+                allow_gateway_country()
+            allowed, _ = _location_filter(remote_ip)
+            if allowed:
+                return basic_auth.challenge()
+            return abort(401)
+# ------------------------------------ AUTH END -------------------------------------- #
 
 # creating an API object
 api = Api(app)

@@ -476,6 +476,29 @@ def webcli_test():
     return state, output
 
 
+def after_st_reboot():
+    verdict = False, 'reboot -h failed'
+    cmd = ['reboot -h']
+    out = execute(cmd, tout=3)
+    state, output = out[0], out[1]
+    if state:
+        verdict = state, f'[reboot-h] commad out: {output}'
+        for retry in range(1, 11):
+            print(f"[reboot-h] Wait for node up again ({retry}/{retry*2}sec)")
+            time.sleep(2)
+            try:
+                up, o = execute(['hello'], tout=3)
+                if up:
+                    verdict = True, f"[reboot-h][OK] successfully rebooted: {o} (boot time: ~{retry * 2}sec)"
+                    print(verdict[1])
+                    break
+            except:
+                pass
+        else:
+            verdict = False, '[NOK] reboot failed :D'
+    return verdict
+
+
 def app(devfid=None):
     global DEVICE
     if devfid is not None:
@@ -490,7 +513,7 @@ def app(devfid=None):
                'task_loop': micrOS_bgjob_loop_check(),
                'version': micrOS_get_version(),
                'json_check': json_format_check(),
-               'reponse time': measure_package_response_time(),
+               'response_time': measure_package_response_time(),
                'negative_api': negative_interface_check(),
                'dhcp_hostname': check_device_by_hostname(DEVICE),
                'lm_exception': check_robustness_exception(),
@@ -502,8 +525,10 @@ def app(devfid=None):
                'intercon': check_intercon(host='RingLamp.local'),
                'micros_alarms': micros_alarm_check(),
                'conn_metrics': measure_conn_metrics(),
-               'micros_tasks': task_list()
+               'micros_tasks': task_list(),
+               'clean-reboot': after_st_reboot()
                }
+
 
     # Test Evaluation
     final_state = True

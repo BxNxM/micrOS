@@ -15,7 +15,7 @@ from os import listdir
 from sys import modules
 from machine import reset as hard_reset, soft_reset
 from Config import cfgget, cfgput
-from Tasks import exec_lm_core
+from Tasks import lm_exec
 from Debug import console_write, errlog_add
 
 
@@ -24,7 +24,7 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.49.0-2'
+    MICROS_VERSION = '1.50.0-0'
 
     def __init__(self):
         """
@@ -192,9 +192,10 @@ class Shell:
         """
         try:
             # Execute command via InterpreterCore
-            return exec_lm_core(arg_list=msg_list, msgobj=self.send)
+            self.send(lm_exec(arg_list=msg_list)[1])
+            return True
         except Exception as e:
-            self.send(f"[ERROR] exec_lm_shell internal error: {e}")
+            self.send(f"[ERROR] shell.lm_exec internal error: {e}")
             return False
 
     #################################################################

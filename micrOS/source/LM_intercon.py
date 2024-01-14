@@ -21,12 +21,12 @@ def sendcmd(*args, **kwargs):
     host = kwargs.get('host', None)
     cmd = kwargs.get('cmd', None)
 
-    # Host correction (exec_lm_core) if keyword-arg 'host' was not found
+    # Host correction (lm_exec) if keyword-arg 'host' was not found
     if host is None:
         host = args[0]
         args = args[1:]
 
-    # Cmd correction (exec_lm_core) if keyword-arg was not found
+    # Cmd correction (lm_exec) if keyword-arg was not found
     if cmd is None:
         cmd = ''.join(args)
     return __send(host, cmd)

@@ -50,7 +50,7 @@ def _recursion(cnt, msgobj=None):
     :return: verdict
     Error example:
         node01 $  robustness recursion_limit 15
-        exec_lm_core LM_robustness->recursion_limit: maximum recursion depth exceeded
+        lm_exec LM_robustness->recursion_limit: maximum recursion depth exceeded
     """
     if cnt > 0:
         remain = _recursion(cnt-1)

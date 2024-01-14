@@ -194,7 +194,7 @@ def negative_interface_check():
     cmd_list = ['Apple']
     output = execute(cmd_list)
     if output[0]:
-        if 'SHELL: type help for single word commands' not in output[1].strip():
+        if 'Shell: for hints type help.' not in output[1].strip():
             return False, f'[Wrong single command] {info} + not expected return: {output[1]}'
 
     cmd_list = ['Apple test']
@@ -295,7 +295,7 @@ def check_robustness_exception():
     print(info_msg)
     cmd_list = ['robustness raise_error']
     output = execute(cmd_list)
-    if output[0] and "exec_lm_core LM_robustness->raise_error: Test exception" in output[1]:
+    if output[0] and "Core error: LM_robustness->raise_error: Test exception" in output[1]:
         return True, f'{info_msg}: Valid error msg: exec_lm_core *->raise_error: *'
     else:
         return False, f'{info_msg}: {output}'

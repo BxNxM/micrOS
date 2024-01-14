@@ -1,7 +1,7 @@
 from sys import modules
 import urequests
 from Config import cfgget
-from Tasks import exec_lm_core
+from Tasks import lm_exec
 from Debug import console_write
 
 #########################################
@@ -157,21 +157,15 @@ class Telegram:
 
         # Return data structure template
         verdict = None
-        out = ""
-
-        # exec_lm_core msg object definition
-        def out_msg(msg):
-            nonlocal out
-            out += msg
 
         def lm_execute(cmd_args):
             nonlocal verdict
             if cmd_args[0] in loaded_mods:
                 verdict = f'[UP] Exec: {" ".join(cmd_args[0])}'
                 try:
-                    exec_lm_core(cmd_args, msgobj=out_msg)
+                    state, out = lm_exec(cmd_args)
                 except Exception as e:
-                    out_msg(str(e))
+                    out = str(e)
                 Telegram.send_msg(out, reply_to=m_id)
             else:
                 verdict = f'[UP] NoAccess: {cmd_args[0]}'

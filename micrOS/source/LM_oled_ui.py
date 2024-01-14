@@ -5,7 +5,7 @@ from microIO import physical_pin, pinmap_dump
 from Network import ifconfig
 from Debug import errlog_add
 from machine import Pin
-from Tasks import exec_lm_core, Manager
+from Tasks import lm_exec, Manager
 try:
     from LM_system import memory_usage
 except:
@@ -327,18 +327,16 @@ class PageUI:
         """Generic LoadModule execution page core - create multiple page with it"""
         posx, posy = 5, 12
 
-        def _buffer(msg):
-            try:
-                self.cmd_out = ''.join(msg.strip().split()).replace(' ', '').replace('ºC', 'C')
-            except Exception:
-                self.cmd_out = msg.strip()
-
         def _button():
             nonlocal cmd
             try:
                 cmd_list = cmd.strip().split()
                 # Send CMD to other device & show result
-                exec_lm_core(cmd_list, msgobj=_buffer)
+                state, out = lm_exec(cmd_list)
+                try:
+                    self.cmd_out = ''.join(out.strip().split()).replace(' ', '').replace('ºC', 'C')
+                except Exception:
+                    self.cmd_out = out.strip()
             except Exception as e:
                 self.cmd_out = str(e)
 

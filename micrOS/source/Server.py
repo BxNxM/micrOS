@@ -26,7 +26,7 @@ except:
 # Module load optimization, needed only for webui
 if cfgget('webui'):
     from json import dumps, loads
-    from Tasks import exec_lm_core
+    from Tasks import lm_exec
 
 
 #########################################################
@@ -70,7 +70,7 @@ class Client:
         Client.console(f"[Client] read {self.client_id}")
         self.last_msg_t = ticks_ms()
         try:
-            request = (await self.reader.read(self.read_bytes))
+            request = await self.reader.read(self.read_bytes)
             request = request.decode('utf8').strip()
         except Exception as e:
             Client.console(f"[Client] Stream read error ({self.client_id}): {e}")
@@ -226,11 +226,6 @@ class WebCli(Client):
     @staticmethod
     def rest(request):
         result = ''
-
-        def _msg(msg):
-            nonlocal result
-            result += msg
-
         resp_schema = {'result': None, 'state': False}
         cmd = request.split()[1].replace('/rest', '')
         if len(cmd) > 1:
@@ -239,7 +234,8 @@ class WebCli(Client):
                    .replace('-', ' ').strip().split())
             cmd.append('>json')                             # request json format instead of string
             # EXECUTE COMMAND - LoadModule
-            state = exec_lm_core(cmd, msgobj=_msg)
+            state, out = lm_exec(cmd)
+            result += out
             try:
                 resp_schema['result'] = loads(result)       # Load again ... hack for embedded shell json converter...
             except:
@@ -248,7 +244,7 @@ class WebCli(Client):
         else:
             resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid')}
             if len(tuple(WebCli.REST_ENDPOINTS.keys())) > 0:
-                resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS.keys())
+                resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS)
             resp_schema['state'] = True
         response = dumps(resp_schema)
         return f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(response)}\r\n\r\n{response}"

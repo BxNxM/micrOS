@@ -183,8 +183,8 @@ class MagicTask(TaskBase):
         """
         while True:
             await asyncio.sleep_ms(self.__sleep)
-            _exec_lm_core(self.__callback, msgobj=lambda msg: setattr(self, 'out', msg.strip()))
-            if not self.__inloop:
+            state, self.out = _exec_lm_core(self.__callback)
+            if not state or not self.__inloop:
                 break
         self.done.set()
 
@@ -401,7 +401,7 @@ def exec_lm_pipe(taskstr):
             return True
         # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
-            if not exec_lm_core(cmd):
+            if not lm_exec(cmd)[0]:
                 console_write(f"|-[LM-PIPE] task error: {cmd}")
     except Exception as e:
         console_write(f"[IRQ-PIPE] error: {taskstr}\n{e}")
@@ -423,16 +423,12 @@ def exec_lm_pipe_schedule(taskstr):
         return False
 
 
-def exec_lm_core(arg_list, msgobj=None):
+def lm_exec(arg_list):
     """
     Main LM executor function wrapper
     - handle async (background) task execution
     - handle sync task execution (_exec_lm_core)
     """
-
-    # Handle default msgobj >dev/null
-    if msgobj is None:
-        msgobj = lambda msg: None
 
     def task_manager(msg_list):
         msg_len = len(msg_list)
@@ -441,20 +437,15 @@ def exec_lm_core(arg_list, msgobj=None):
             # task list
             if msg_len > 1 and 'list' == msg_list[1]:
                 on, off = Manager.list_tasks()
-                msgobj('\n'.join(on))            # Show active tasks
-                msgobj('\n'.join(off) + '\n')    # Show passive tasks
-                return True
+                return True, '\n'.join(on) + '\n' + '\n'.join(off) + '\n'  # Show active tasks and passive tasks
             # task kill <taskID> / task show <taskID>
             if msg_len > 2:
                 if 'kill' == msg_list[1]:
                     state, msg = Manager.kill(tag=msg_list[2])
-                    msgobj(msg)
-                    return True
+                    return True, msg
                 if 'show' == msg_list[1]:
-                    msgobj(Manager.show(tag=msg_list[2]))
-                    return True
-            msgobj("Invalid task cmd! Help: task list / kill <taskID> / show <taskID>")
-            return True
+                    return True, Manager.show(tag=msg_list[2])
+            return True, "Invalid task cmd! Help: task list / kill <taskID> / show <taskID>"
         # [2] Start async task, postfix: &, &&
         if msg_len > 2 and '&' in arg_list[-1]:
             # Evaluate task mode: loop + delay
@@ -466,34 +457,34 @@ def exec_lm_core(arg_list, msgobj=None):
             try:
                 state = Manager.create_task(arg_list, loop=loop, delay=delay)
             except Exception as e:
-                msgobj(e)
                 # Valid & handled task command
-                return True
+                return True, str(e)
             tag = '.'.join(arg_list[0:2])
-            if state:
-                msgobj(f"Start {tag}")
-            else:
-                msgobj(f"{tag} is Busy")
             # Valid & handled task command
-            return True
+            if state:
+                return True, f"Start {tag}"
+            return True, f"{tag} is Busy"
         # Not valid task command
-        return False
+        return False, ''
 
     # ================ main function ================
     # [1] Run task command: start (&), list, kill, show
-    if task_manager(arg_list):
-        return True
+    is_task, out = task_manager(arg_list)
+    if is_task:
+        return True, out
     # [2] Sync "realtime" task execution
-    return _exec_lm_core(arg_list, msgobj)
+    state, out = _exec_lm_core(arg_list)
+    return state, out
 
 
-def _exec_lm_core(arg_list, msgobj):
+def _exec_lm_core(cmd_list):
     """
-    MAIN FUNCTION TO RUN STRING MODULE.FUNCTION EXECUTIONS
-    [1] module name (LM)
-    [2] function
-    [3...] parameters (separator: space)
-    NOTE: msgobj - must be a function with one input param (stdout/file/stream)
+    CORE STRING REFERENCE EXECUTOR: MODULE.FUNCTION...
+    :param cmd_list: list of string paramters
+        [1] module name (LM)
+        [2] function
+        [3...] parameters (separator: space)
+    Built-in json output handler: >json
     """
 
     def __conv_func_params(param):
@@ -508,20 +499,9 @@ def _exec_lm_core(arg_list, msgobj):
             param = param.format(*buf)
         return param
 
-    # Dict output user format / jsonify
-    def __format_out(json_mode, lm_func, output):
-        if isinstance(output, dict):
-            # json True: output->json else Format dict output "human readable"
-            return dumps(output) if json_mode else '\n'.join([f" {key}: {value}" for key, value in lm_output.items()])
-        # Handle output data stream
-        if lm_func == 'help':
-            # Special case for help command: json True: output->json else Format dict output "human readable"
-            return dumps(output) if json_mode else '\n'.join([f" {out}," for out in output])
-        return output
-
     # Check json mode for LM execution
-    json_mode = arg_list[-1] == '>json'
-    cmd_list = arg_list[0:-1] if json_mode else arg_list
+    json_mode = cmd_list[-1] == '>json'
+    cmd_list = cmd_list[0:-1] if json_mode else cmd_list
     # LoadModule execution
     if len(cmd_list) >= 2:
         lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], __conv_func_params(' '.join(cmd_list[2:]))
@@ -543,35 +523,37 @@ def _exec_lm_core(arg_list, msgobj):
                     lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
                 else:
                     raise Exception(e)
-            # ---------------------------------------------- #
-            # Handle output data stream
-            lm_output = __format_out(json_mode, lm_func, lm_output)
-            # Return LM exec result via msgobj
-            msgobj(str(lm_output))
-            return True
-            # ------------------------- #
+            # ------------ LM output format: dict(jsonify) / str(raw) ------------- #
+            # Handle LM output data
+            if isinstance(lm_output, dict):
+                # json True: output->json else Format dict output "human readable"
+                lm_output = dumps(lm_output) if json_mode else '\n'.join(
+                    [f" {key}: {value}" for key, value in lm_output.items()])
+            if lm_func == 'help':
+                # Special case for help command: json True: output->json else Format dict output "human readable"
+                lm_output = dumps(lm_output) if json_mode else '\n'.join([f" {out}," for out in lm_output])
+            # Return LM exec result
+            return True, str(lm_output)
+            # ---------------------------------------------------------------------- #
         except Exception as e:
-            msgobj(f"exec_lm_core {lm_mod}->{lm_func}: {e}")
             if 'memory allocation failed' in str(e) or 'is not defined' in str(e):
-                # UNLOAD MODULE IF MEMORY ERROR HAPPENED
+                # UNLOAD MODULE IF MEMORY ERROR HAPPENED + gc.collect
                 if lm_mod in modules:
                     del modules[lm_mod]
-                # Exec FAIL -> recovery action in SocketServer
-                return False
-    msgobj("SHELL: type help for single word commands (built-in)")
-    msgobj("SHELL: for LM exec: [1](LM)module [2]function [3...]optional params")
-    # Exec OK
-    return True
+                collect()
+            # LM EXECUTION ERROR
+            return False, f"Core error: {lm_mod}->{lm_func}: {e}"
+    return False, "Shell: for hints type help.\nShell: for LM exec: [1](LM)module [2]function [3...]optional params"
 
 
 def exec_lm_core_schedule(arg_list):
     """
-    Wrapper for exec_lm_core for Scheduler
+    Wrapper for lm_exec for Scheduler
     - micropython scheduling
         - exec protection for cron IRQ
     """
     try:
-        schedule(exec_lm_core, arg_list)
+        schedule(lm_exec, arg_list)
         return True
     except Exception as e:
         errlog_add(f"schedule_lm_exec {arg_list} error: {e}")

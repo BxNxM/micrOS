@@ -61,7 +61,8 @@ def main(url):
             # Getting the resolution information
             height, width, _ = image.shape
             #print(f"Image resolution: {width}x{height}, Channels: {channels}")
-            cv2.putText(image, f"{height}x{width}", (width-80, height-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+            cv2.putText(image, f"{width}x{height}", (width-70, height-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+            cv2.putText(image, "Press q to quit.", (width-110, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
             # Display the image
             cv2.imshow(url, image)
 

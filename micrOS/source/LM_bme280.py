@@ -7,6 +7,7 @@ https://randomnerdtutorials.com/micropython-bme280-esp32-esp8266/
 import utime as time
 from machine import Pin, I2C
 from microIO import physical_pin, pinmap_dump
+from Common import notify
 
 # BME280 default address.
 BME280_I2CADDR = 0x76
@@ -306,13 +307,16 @@ def __init_bme280_i2c():
 # Application functions #
 #########################
 
-def measure():
+def measure(ntfy=False):
     """
     Measure with bme280
     :return dict: temp, hum, pressure
     """
     bme = __init_bme280_i2c()
-    return {'temp [ºC]': bme.temperature, 'hum [%]': bme.humidity, 'pressure [hPa]': bme.pressure}
+    data = {'temp[C]': bme.temperature, 'hum[%]': bme.humidity, 'pressure[hPa]': bme.pressure}
+    if ntfy:
+        notify('\n'.join([f"{k}: {v}" for k, v in data.items()]))
+    return data
 
 
 def measure_w_co2():
@@ -322,7 +326,7 @@ def measure_w_co2():
     """
     from LM_co2 import measure_mq135
     data = measure()
-    data['co2 [ppm]'] = measure_mq135(data['temp [ºC]'], data['hum [%]'])
+    data['co2[ppm]'] = measure_mq135(data['temp[C]'], data['hum[%]'])
     return data
 
 
@@ -355,4 +359,4 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'measure', 'measure_w_co2', 'lmdep', 'pinmap'
+    return 'measure ntfy=False', 'measure_w_co2', 'lmdep', 'pinmap'

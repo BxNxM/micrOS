@@ -143,6 +143,10 @@
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true",
+        "list_tones": {
+            "doc": "\n    List built-in tones\n    ",
+            "param(s)": ""
+        },
         "load_n_init": {
             "doc": "\n    Initiate buzzer module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None"
@@ -153,7 +157,7 @@
         },
         "play": {
             "doc": "\n    RTTTL Piezzo Player\n    :param rtttlstr str: rttl string, default: 'd=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'\n    :return str: verdict\n    ",
-            "param(s)": "rtttlstr='d=4o=5b=250:e8p8f8g8p1c68p.d8p8e1fp.'"
+            "param(s)": "rtttlstr='Indiana'"
         }
     },
     "catgame": {

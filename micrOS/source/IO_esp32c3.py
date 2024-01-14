@@ -27,6 +27,8 @@ switch_4 = const(20)    # - switch(4) [simple]
 
 dim_1 = const(21)        # - dimmer(1) [PWM]
 
+buzzer = const(0)        # - Buzzer pin - sound generator
+
 # EXTERNAL EVENT IRQ
 irq1 = const(5)          # event irq pin
 irq2 = const(6)          # event irq pin
@@ -37,3 +39,7 @@ oleduibttn = const(20)   # oled_ui center/ok button
 # I2C BUS
 i2c_sda = const(8)       # oled - data
 i2c_scl = const(9)       # oled - clock
+
+# SENSORS
+ds18 = const(1)          # - DS18B20 - temp. sensor
+dhtpin = const(2)        # - dht_pin 11 and 22

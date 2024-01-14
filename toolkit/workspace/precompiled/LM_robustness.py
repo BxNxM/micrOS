@@ -40,7 +40,7 @@ def recursion_limit(limit=14, msgobj=None):
         except Exception as e:
             msgobj(f"ok error: {e}")
             break
-    return f"Recursion limit: {cnt-1}"
+    return f"Recursion limit: {cnt}"
 
 
 def _recursion(cnt, msgobj=None):

@@ -314,9 +314,9 @@ def check_robustness_memory():
 
 
 def check_robustness_recursion():
-    info_msg = '[ST] Check robustness - recursion [robustness recursion_limit 5]'
+    info_msg = '[ST] Check robustness - recursion [robustness recursion_limit 8]'
     print(info_msg)
-    cmd_list = ['robustness recursion_limit 5']
+    cmd_list = ['robustness recursion_limit 8']
     output = execute(cmd_list, tout=10)
     if output[0]:
         last_line = output[1].split("\n")[-1]

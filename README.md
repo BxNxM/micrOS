@@ -90,11 +90,11 @@ Link for python 3.9 [download](https://www.python.org/downloads/release/python-3
 
 ----------------------------------------
 
-### 2. Install micrOS devToolKit GUI
+### 2. Install micrOS/Linux devToolKit GUI
 
-#### On macOS
+#### On macOS/Linux
 
-&nbsp;Open **command line**, press: `commnd+space` + type: `terminal` + press: `enter`
+&nbsp;Open **command line** on mac, press: `commnd+space` + type: `terminal` + press: `enter`
 
 ##### Download and install **micrOS devToolKit** python package:
 
@@ -102,10 +102,10 @@ Link for python 3.9 [download](https://www.python.org/downloads/release/python-3
 pip3 install --upgrade pip; pip3 install micrOSDevToolKit
 ```
 
-> Later on you can update the package with
+> Later on you can **update** the package with
 
 ```bash
-pip3 uninstall micrOSDevToolKit; pip3 install micrOSDevToolKit
+pip3 install --upgrade micrOSDevToolKit
 ```
 
 ----------------------------------------
@@ -124,11 +124,10 @@ python -m pip install --upgrade pip
 python -m pip install micrOSDevToolKit
 ```
 
-Later on you can update the package with
+Later on you can **update** the package with
 
 ```bash
-python -m pip uninstall micrOSDevToolKit
-python -m pip install micrOSDevToolKit
+python -m pip install --upgrade micrOSDevToolKit
 ```
 
 ----------------------------------------

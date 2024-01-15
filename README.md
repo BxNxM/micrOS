@@ -3,7 +3,7 @@
 
 ### micropython based smart edge IoT platform
 
-![telnet](https://img.shields.io/badge/wifi-telnet-blue) ![esp32S2](https://img.shields.io/badge/esp32-S2-olive) ![tinypico](https://img.shields.io/badge/esp32-tinypico-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-olive) ![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical) ![espCAM-esp-s](https://img.shields.io/badge/esp32-CAM_OV2640-olive) ![esp32-c3](https://img.shields.io/badge/esp32-C3_RISCV-olive) ![OTA](https://img.shields.io/badge/ota-update-blue) ![GPIO](https://img.shields.io/badge/gpio-i2c-success) ![clock](https://img.shields.io/badge/rtc-ntp-success) ![async](https://img.shields.io/badge/async-task_manager-success) ![irq](https://img.shields.io/badge/hardware-IRQs-success) ![socket](https://img.shields.io/badge/socket-STA_or_AP-blue) ![cron](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/stabile-release-success) ![upy](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/micropython-OS-gold)<br/>
+![telnet](https://img.shields.io/badge/wifi-telnet-blue) ![esp32S2](https://img.shields.io/badge/esp32-S2-olive) ![tinypico](https://img.shields.io/badge/esp32-tinypico-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-olive) ![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical) ![espCAM-esp-s](https://img.shields.io/badge/esp32-CAM_OV2640-olive) ![esp32-c3](https://img.shields.io/badge/esp32-C3_RISCV-olive) ![OTA](https://img.shields.io/badge/ota-update-blue) ![GPIO](https://img.shields.io/badge/gpio-i2c-success) ![clock](https://img.shields.io/badge/rtc-ntp-success) ![async](https://img.shields.io/badge/async-task_manager-success) ![irq](https://img.shields.io/badge/hardware-IRQs-success) ![socket](https://img.shields.io/badge/socket-STA_or_AP-blue) ![cron](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/stabile-master_HEAD-success) ![stable](https://img.shields.io/badge/micropython-OS-gold)<br/>
 
 
 Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), follow us on:
@@ -54,8 +54,8 @@ Access rest api over browser: `http://<nodename>.local`
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS#built-in-periphery-support)
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
-7. micrOS gateway with Prometheus: [link](https://github.com/BxNxM/micrOS#micros-gateway-in-docker)
-8. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
+7. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
+8. micrOS gateway with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS#micros-gateway-in-docker)
 9. Release notes: [link](https://github.com/BxNxM/micrOS#RELESE-NOTE)
 
 ----------------------------------------

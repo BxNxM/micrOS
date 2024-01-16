@@ -11,6 +11,7 @@ Designed by Marcell Ban aka BxNxM GitHub
 #########################################################
 
 import uasyncio as asyncio
+import heapq
 from utime import ticks_ms, ticks_diff
 from Config import cfgget
 from Debug import console_write, errlog_add
@@ -209,19 +210,50 @@ class WebCli(Client):
                 # Registered endpoint was found - exec callback
                 try:
                     # dtype: image/jpeg OR text/html OR text/plain
-                    dtype, data = WebCli.REST_ENDPOINTS[cmd]()
-                    stream = 'Refresh: 2\r\n' if f'/{cmd}/stream' in request else ''
-                    if dtype == 'image/jpeg':            # image/jpeg
-                        # Detect refresh <endpoint>/stream request
-                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{stream}\r\n".encode('utf8') + data
+                    dtype, data = WebCli.REST_ENDPOINTS[cmd](self)
+                    if dtype == 'image/jpeg':
+                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n".encode('utf8') + data
                         await self.a_send(resp, encode=None)
+                    if dtype == 'multipart/x-mixed-replace':
+                        while self.connected:
+                            await asyncio.sleep_ms(10)
                     else:                                # text/html or text/plain
-                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{stream}\r\n{data}")
+                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{data}")
                 except Exception as e:
                     await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length:{len(str(e))}\r\n\r\n{e}")
                     errlog_add(f"[ERR] WebCli endpoints: {e}")
                 return True         # I. endpoint /query no need to iterate through the full dict...
         return False
+
+
+    def multipart_generator(self, data_queue, content_type):
+        headers = ("HTTP/1.1 200 OK\r\n" +
+                  "Content-Type: multipart/x-mixed-replace; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
+        yield headers
+
+        while True:
+            try:
+                data = heapq.heappop(data_queue)
+                part = ("\r\n--micrOS_boundary\r\n" +
+                        f"Content-Type: {content_type}\r\n\r\n").encode('utf-8') + data
+                yield part
+            except IndexError:
+                break
+
+        closing_boundary = '\r\n--micrOS_boundary--\r\n'
+        yield closing_boundary
+
+    def init_stream(self, data_queue, content_type):
+        self.multipart_stream = self.multipart_generator(data_queue, content_type)
+
+    async def stream(self):
+        try:
+            response = next(self.multipart_stream)
+            await self.a_send(response, encode=None)
+            return self.connected
+        except StopIteration:
+            await self.close()
+            return False
 
     @staticmethod
     def rest(request):

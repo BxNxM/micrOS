@@ -3,8 +3,10 @@ try:
 except Exception as e:
     camera = None
 import time
+import heapq
 from Debug import errlog_add, console_write
-from Common import rest_endpoint
+from Common import rest_endpoint, micro_task
+import uasyncio as asyncio
 
 FLASH_LIGHT = None      # Flashlight object
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
@@ -134,11 +136,22 @@ def photo():
     return "Cannot save... photo.jpg"
 
 
-def _image_stream_clb():
-    image = capture()
-    if image:
-        return 'image/jpeg', image
-    return 'text/plain', f'capture error: {image}'
+async def __task(ms_period, task_tag, client):
+    with micro_task(tag=task_tag) as jpeg_stream:
+        data_queue = []
+        client.init_stream(data_queue,'image/jpeg')
+        jpeg_stream.out = "Initialized JPEG stream"
+        while await client.stream():
+            await asyncio.sleep_ms(ms_period)
+            jpeg_stream.out = "Streaming JPEG data"
+            heapq.heappush(data_queue,capture())
+        jpeg_stream.out = "Stream closed"
+
+
+def _image_stream_clb(client):
+    task_tag = f'OV2640.jpeg_stream_{time.time_ns()}'
+    state = micro_task(tag=task_tag, task=__task(ms_period=1, task_tag=task_tag, client=client))
+    return ('multipart/x-mixed-replace', task_tag) if state else (None, None)
 
 
 def _img_clb():

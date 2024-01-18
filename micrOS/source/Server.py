@@ -11,13 +11,13 @@ Designed by Marcell Ban aka BxNxM GitHub
 #########################################################
 
 import uasyncio as asyncio
-import heapq
 from utime import ticks_ms, ticks_diff
 from Config import cfgget
 from Debug import console_write, errlog_add
 from Network import ifconfig
 from Tasks import Manager
 from Shell import Shell
+from Tasks import NativeTask
 try:
     from gc import collect, mem_free
 except:
@@ -210,13 +210,16 @@ class WebCli(Client):
                 # Registered endpoint was found - exec callback
                 try:
                     # dtype: image/jpeg OR text/html OR text/plain
-                    dtype, data = WebCli.REST_ENDPOINTS[cmd](self)
+                    dtype, data = WebCli.REST_ENDPOINTS[cmd]()
                     if dtype == 'image/jpeg':
-                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n".encode('utf8') + data
+                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
                         await self.a_send(resp, encode=None)
-                    if dtype == 'multipart/x-mixed-replace':
-                        while self.connected:
-                            await asyncio.sleep_ms(10)
+                    elif dtype == 'multipart/x-mixed-replace':
+                        headers = ("HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: multipart/x-mixed-replace; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
+                        await self.a_send(headers, encode=None)
+                        task = self.stream_init(callback=data['callback'], content_type=data['content-type'])
+                        await task
                     else:                                # text/html or text/plain
                         await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{data}")
                 except Exception as e:
@@ -226,34 +229,32 @@ class WebCli(Client):
         return False
 
 
-    def multipart_generator(self, data_queue, content_type):
-        headers = ("HTTP/1.1 200 OK\r\n" +
-                  "Content-Type: multipart/x-mixed-replace; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
-        yield headers
+    async def stream(self, callback, task, content_type):
+        with task:
+            task.out = 'Stream started'
+            data_to_send = b''
 
-        while True:
-            try:
-                data = heapq.heappop(data_queue)
+            while self.connected and data_to_send is not None:
+                data_to_send = callback()
                 part = ("\r\n--micrOS_boundary\r\n" +
-                        f"Content-Type: {content_type}\r\n\r\n").encode('utf-8') + data
-                yield part
-            except IndexError:
-                break
+                        f"Content-Type: {content_type}\r\n\r\n").encode('utf-8') + data_to_send
+                await self.a_send(part, encode=None)
+                await asyncio.sleep_ms(10)
 
-        closing_boundary = '\r\n--micrOS_boundary--\r\n'
-        yield closing_boundary
+            # Gracefully terminate the stream
+            if self.connected:
+                closing_boundary = '\r\n--micrOS_boundary--\r\n'
+                await self.a_send(closing_boundary, encode=None)
+                self.close()
 
-    def init_stream(self, data_queue, content_type):
-        self.multipart_stream = self.multipart_generator(data_queue, content_type)
+            task.out = 'Finished stream'
 
-    async def stream(self):
-        try:
-            response = next(self.multipart_stream)
-            await self.a_send(response, encode=None)
-            return self.connected
-        except StopIteration:
-            await self.close()
-            return False
+
+    async def stream_init(self, callback, content_type):
+        task = NativeTask()
+        task.create(callback=self.stream(callback, task, content_type), tag=f"multipart_stream_{ticks_ms()}")
+        return task
+
 
     @staticmethod
     def rest(request):

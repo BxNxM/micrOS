@@ -79,6 +79,6 @@ if __name__ == "__main__":
     devfid = '10.0.1.106'       # Default for test
     if len(args) > 1:
         devfid = args[1]
-    url = f"http://{devfid}.local/cam/"
+    url = f"http://{devfid}.local/cam/snapshot"
     main(url=url)
 

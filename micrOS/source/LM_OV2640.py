@@ -3,10 +3,8 @@ try:
 except Exception as e:
     camera = None
 import time
-import heapq
 from Debug import errlog_add, console_write
-from Common import rest_endpoint, micro_task
-import uasyncio as asyncio
+from Common import rest_endpoint
 
 FLASH_LIGHT = None      # Flashlight object
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
@@ -48,8 +46,9 @@ def load_n_init(quality='medium'):
     settings(quality=quality)
 
     # Register rest endpoint
-    rest_endpoint('cam', _image_stream_clb)
-    return f"Endpoint created: /cam and /cam/stream"
+    rest_endpoint('cam/snapshot', _snapshot_clb)
+    rest_endpoint('cam/stream', _image_stream_clb)
+    return f"Endpoint created: /cam/snapshot and /cam/stream"
 
 
 def settings(quality=None, flip=None, mirror=None):
@@ -136,22 +135,15 @@ def photo():
     return "Cannot save... photo.jpg"
 
 
-async def __task(ms_period, task_tag, client):
-    with micro_task(tag=task_tag) as jpeg_stream:
-        data_queue = []
-        client.init_stream(data_queue,'image/jpeg')
-        jpeg_stream.out = "Initialized JPEG stream"
-        while await client.stream():
-            await asyncio.sleep_ms(ms_period)
-            jpeg_stream.out = "Streaming JPEG data"
-            heapq.heappush(data_queue,capture())
-        jpeg_stream.out = "Stream closed"
+def _snapshot_clb():
+    image = capture()
+    if image is not None:
+        return 'image/jpeg', image
+    return 'text/plain', f'capture error: {image}'
 
 
-def _image_stream_clb(client):
-    task_tag = f'OV2640.jpeg_stream_{time.time_ns()}'
-    state = micro_task(tag=task_tag, task=__task(ms_period=1, task_tag=task_tag, client=client))
-    return ('multipart/x-mixed-replace', task_tag) if state else (None, None)
+def _image_stream_clb():
+    return 'multipart/x-mixed-replace', {'callback': capture, 'content-type': 'image/jpeg'}
 
 
 def _img_clb():

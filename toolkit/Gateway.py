@@ -520,7 +520,7 @@ class ForwardImg(Resource):
 
     def _get_image(self, device):
         base_url = ForwardImg._host_cache(f"http://{device}.local")
-        internal_image_url = f"{base_url}/cam"
+        internal_image_url = f"{base_url}/cam/snapshot"
         # Make a request to the external image URL
         try:
             response = requests.get(internal_image_url, timeout=10)

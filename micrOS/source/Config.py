@@ -36,7 +36,6 @@ class Data:
                     "nwmd": "STA",
                     "hwuid": "n/a",
                     "soctout": 30,
-                    "socqueue": 2,
                     "socport": 9008,
                     "webui": False,
                     "devip": "n/a",

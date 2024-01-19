@@ -198,4 +198,4 @@ def help():
     return 'load_n_init quality="medium/low/high"', 'settings quality=None flip=None/True mirror=None/True',\
         'capture', 'photo', 'set_test_endpoint endpoint="test"', 'set_photo_endpoint', 'flashlight value=None<0-1000>, default=100',\
         'Thanks to :) https://github.com/lemariva/micropython-camera-driver',\
-        '[HINT] after load_n_init you can access the /cam and /cam/stream endpoints'
+        '[HINT] after load_n_init you can access the /cam/snapshot and /cam/stream endpoints'

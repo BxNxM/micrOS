@@ -138,7 +138,7 @@ class Client:
         if Client.ACTIVE_CLIS.get(client_id, None) is not None:
             Client.ACTIVE_CLIS.pop(client_id)
         # Update server task output (? test ?)
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
 
     def __del__(self):
         """Client GC collect"""
@@ -209,7 +209,7 @@ class WebCli(Client):
                 console_write(f"[WebCli] endpoint: /{cmd}")
                 # Registered endpoint was found - exec callback
                 try:
-                    # dtype: image/jpeg OR text/html OR text/plain
+                    # dtype: image/jpeg OR text/html OR text/plain, etc...
                     dtype, data = WebCli.REST_ENDPOINTS[cmd]()
                     if dtype == 'image/jpeg':
                         resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
@@ -218,13 +218,15 @@ class WebCli(Client):
                         headers = ("HTTP/1.1 200 OK\r\n" +
                             "Content-Type: multipart/x-mixed-replace; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
                         await self.a_send(headers, encode=None)
-                        task = self.stream_init(callback=data['callback'], content_type=data['content-type'])
-                        await task
+                        # Start Native stream async task
+                        task = NativeTask()
+                        task.create(callback=self.stream(data['callback'], task, data['content-type']),
+                                    tag=f"web.stream_{self.client_id.replace('W', '')}")
                     else:                                # text/html or text/plain
                         await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{data}")
                 except Exception as e:
                     await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length:{len(str(e))}\r\n\r\n{e}")
-                    errlog_add(f"[ERR] WebCli endpoints: {e}")
+                    errlog_add(f"[ERR] WebCli endpoints {cmd}: {e}")
                 return True         # I. endpoint /query no need to iterate through the full dict...
         return False
 
@@ -245,16 +247,9 @@ class WebCli(Client):
             if self.connected:
                 closing_boundary = '\r\n--micrOS_boundary--\r\n'
                 await self.a_send(closing_boundary, encode=None)
-                self.close()
+                await self.close()
 
             task.out = 'Finished stream'
-
-
-    async def stream_init(self, callback, content_type):
-        task = NativeTask()
-        task.create(callback=self.stream(callback, task, content_type), tag=f"multipart_stream_{ticks_ms()}")
-        return task
-
 
     @staticmethod
     def rest(request):
@@ -364,7 +359,7 @@ class ShellCli(Client, Shell):
 
     async def run_shell(self):
         # Update server task output (? test ?)
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS.keys())))
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
 
         # Init prompt
         self.send(self.prompt())
@@ -416,9 +411,10 @@ class SocketServer:
     def __init__(self):
         if not self._initialized:
             # Socket server initial parameters
-            self.server = None
+            self.server = None                    # ShellCli server instance
+            self.web = None                       # WebCli server instance
             self._host = '0.0.0.0'                # listens on all available interfaces
-            self._socqueue = cfgget('socqueue')   # CONNECTION QUEUE SIZE, common for both interface
+            self._socqueue = cfgget('aioqueue')   # CONNECTION QUEUE SIZE, common for both interface
 
             # ---- Config ---
             self._port = cfgget("socport")
@@ -520,9 +516,9 @@ class SocketServer:
         self.server = asyncio.start_server(self.shell_cli, self._host, self._port, backlog=self._socqueue)
         await self.server
         Client.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
-        if cfgget('webui'):
-            web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._socqueue)
-            await web
+        if cfgget('webui') or len(WebCli.REST_ENDPOINTS) > 0:
+            self.web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._socqueue)
+            await self.web
             Client.console(f"- HTTP server ready, connect: http://{addr}")
 
     @staticmethod

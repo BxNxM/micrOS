@@ -33,7 +33,8 @@ class TaskBase:
     """
     Async task base definition for common features
     """
-    TASKS = {}                       # TASK OBJ list
+    QUEUE_SIZE = cfgget('aioqueue')     # QUEUE size from config
+    TASKS = {}                          # TASK OBJ list
 
     def __init__(self):
         self.task = None             # [TASK] Store created async task object
@@ -48,11 +49,8 @@ class TaskBase:
         - exists + running = busy
         """
         task = TaskBase.TASKS.get(tag, None)
-        if task is not None and not task.done.is_set():
-            # is busy
-            return True
-        # is NOT busy
-        return False
+        # return True: busy OR False: not busy (inactive)
+        return True if task is not None and not task.done.is_set() else False
 
     def cancel(self):
         """
@@ -82,6 +80,15 @@ class TaskBase:
             if not keep_cache:              # True - In case of destructor
                 del TaskBase.TASKS[self.tag]
         collect()                           # GC collect
+
+    @staticmethod
+    def __task_gc():
+        keep  = TaskBase.QUEUE_SIZE
+        passive = tuple([task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)])
+        if len(passive) >= keep:
+            for i in range(0, len(passive)-keep+1):
+                del TaskBase.TASKS[passive[i]]
+            collect()  # GC collect
 
     def __del__(self):
         try:
@@ -132,8 +139,8 @@ class NativeTask(TaskBase):
         Helper function for Task creation in Load Modules
         [HINT] Use python with feature to utilize this feature
         """
+        self.__task_gc()    # Task pool cleanup
         self.done.set()
-        collect()           # GC collect
 
 
 class MagicTask(TaskBase):
@@ -186,6 +193,7 @@ class MagicTask(TaskBase):
             state, self.out = _exec_lm_core(self.__callback)
             if not state or not self.__inloop:
                 break
+        self.__task_gc()    # Task pool cleanup
         self.done.set()
 
     def cancel(self):
@@ -203,8 +211,7 @@ class Manager:
     micrOS async task handler
     """
     INSTANCE = None                      # Manager object
-    QUEUE_SIZE = cfgget('aioqueue')      # QUEUE size from config
-    OLOAD = 0                            # CPU overload measure
+    LOAD = 0                            # CPU overload measure
 
     def __new__(cls):
         """
@@ -241,8 +248,8 @@ class Manager:
         - compare with active running tasks count
         - when queue full raise Exception!!!
         """
-        if Manager._queue_len() >= Manager.QUEUE_SIZE:
-            msg = f"[aio] Task queue full: {Manager.QUEUE_SIZE}"
+        if Manager._queue_len() >= TaskBase.QUEUE_SIZE:
+            msg = f"[aio] Task queue full: {TaskBase.QUEUE_SIZE}"
             errlog_add(msg)
             raise Exception(msg)
 
@@ -257,19 +264,19 @@ class Manager:
         my_task.out = f"i.d.l.e: 200ms"
         try:
             while True:
+                # [0] Just chill
                 await asyncio.sleep_ms(300)
-                # PROBE SYSTEM LOAD
+                # [1] PROBE SYSTEM LOAD + 300ms
                 t = ticks_ms()
                 await asyncio.sleep_ms(300)
-                # SysLogic block - sys load
-                delta_rate = int(((ticks_diff(ticks_ms(), t) / 300)-1) * 100)
-                Manager.OLOAD = int((Manager.OLOAD + delta_rate) / 2)       # Average - smooth
-                # NETWORK AUTO REPAIR
-                if self.idle_counter > 50:       # ~30 sec
-                    self.idle_counter = 0        # Reset counter
+                delta_rate = int(((ticks_diff(ticks_ms(), t) / 300) - 1) * 100)
+                Manager.LOAD = int((Manager.LOAD + delta_rate) / 2)  # Average - smooth
+                # [2] NETWORK AUTO REPAIR
+                if self.idle_counter > 50:  # ~30 sec
+                    self.idle_counter = 0  # Reset counter
                     # Check and fix STA network (example: after power outage - micrOS boards boots faster then router)
                     sta_high_avail()
-                self.idle_counter += 1           # Increase counter
+                self.idle_counter += 1  # Increase counter
         except Exception as e:
             errlog_add(f"[ERR] Idle task exists: {e}")
         my_task.done.set()
@@ -294,8 +301,8 @@ class Manager:
         Primary interface
             List tasks - micrOS top :D
         """
-        q = Manager.QUEUE_SIZE - Manager._queue_len()
-        out_active = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.OLOAD}%\n", "#Active   #taskID"]
+        q = TaskBase.QUEUE_SIZE - Manager._queue_len()
+        out_active = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.LOAD}%\n", "#Active   #taskID"]
         out_passive = []
         for tag, task in TaskBase.TASKS.items():
             is_running = 'No' if task.done.is_set() else 'Yes'

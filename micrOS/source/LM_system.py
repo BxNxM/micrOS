@@ -42,7 +42,7 @@ def top():
     """
     return {'Mem usage [%]': memory_usage()['percent'],
             'FS usage [%]': disk_usage()['percent'],
-            'CPU load [%]': Manager.OLOAD}
+            'CPU load [%]': Manager.LOAD}
 
 
 def info():

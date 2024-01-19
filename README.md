@@ -354,12 +354,11 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 | **`utc`**           |     `60`   `<int>`          |       Yes       | NTP-RTC - timezone setup (UTC in minute) - it is automatically calibrated in STA mode based on geolocation.
 | **`cstmpmap`**      |      `n/a`  `<str>`          |      Yes       | Default (`n/a`), select pinmap automatically based on platform (`IO_<platform>`). Manual control / customization of application pins, syntax: `pin_map_name; pin_name:pin_number; ` etc. [1][optional] `pin_map_name` represented as `IO_<pin_map_name>.py/.mpy` file on device. [2+][optinal] `dht:22` overwrite individual existing load module pin(s). Hint: `<module> pinmap()` to get app pins, example: `neopixel pinmap()`
 | **`boostmd`**       |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 16Mhz-24MHz (depends on the board).
-| **`aioqueue`**      |    `4` `<int>`              |       Yes       | Set asyc task queue limit, system overload protection
+| **`aioqueue`**      |    `3` `<int>`              |       Yes       | System async performace controller. Async task limiter. `#1` Set asyc task queue limit, system overload protection, `#2` furthermore Socker server-s (webCli, ShellCli) client number limiter (it can be increased based on available resources). 4 means: 4 open connection enabled for webCli and 4 for shellCli.
 | | |
 | **`devip`**         |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you can set specific static IP address here.
 | **`nwmd`**          |     `n/a`  `<str>`          |      Yes        | Prefered network mode - `AP` or `STA`, default is `STA`.
-| **`soctout`**       |   `30`      `<int>`         |      Yes        | Socket server connection timeout. If user is passive for `soctout` sec, and new connection incoming, then close passive connection. So it is time limit per connection in the `socqueue`.
-| **`socqueue`**      |      `3`  `int`             |      Yes        | Socker server-s (webCli, ShellCli) client number limiter (it can be increased based on available resources). 3 means: 3 open connection enabled for webCli and 3 for shellCli.
+| **`soctout`**       |   `30`      `<int>`         |      Yes        | Socket server connection timeout. If user is passive for `soctout` sec, and new connection incoming, then close passive connection. So it is time limit per connection in the `aioqueue`.
 | **`socport`**       |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility).
 | **`auth`**          |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. **WARNING** OTA upade not supported in this mode (yet).
 | | |

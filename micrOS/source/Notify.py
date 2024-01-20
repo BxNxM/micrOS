@@ -163,7 +163,7 @@ class Telegram:
             if cmd_args[0] in loaded_mods:
                 verdict = f'[UP] Exec: {" ".join(cmd_args[0])}'
                 try:
-                    state, out = lm_exec(cmd_args)
+                    _, out = lm_exec(cmd_args)
                 except Exception as e:
                     out = str(e)
                 Telegram.send_msg(out, reply_to=m_id)

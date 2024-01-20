@@ -82,7 +82,7 @@ class TaskBase:
         collect()                           # GC collect
 
     @staticmethod
-    def __task_gc():
+    def task_gc():
         keep  = TaskBase.QUEUE_SIZE
         passive = tuple([task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)])
         if len(passive) >= keep:
@@ -109,11 +109,11 @@ class NativeTask(TaskBase):
         """
         Create async task with coroutine callback (no queue limit check!)
         + async socket server task
-        + async idle task start
+        + async idle task starts
         - other...
         """
         # Create task tag
-        self.tag = f"aio{len(TaskBase.TASKS)}" if tag is None else tag
+        self.tag = f"aio.{ticks_ms()}" if tag is None else tag
         if TaskBase.is_busy(self.tag):
             # Skip task if already running
             return False
@@ -139,7 +139,7 @@ class NativeTask(TaskBase):
         Helper function for Task creation in Load Modules
         [HINT] Use python with feature to utilize this feature
         """
-        self.__task_gc()    # Task pool cleanup
+        self.task_gc()    # Task pool cleanup
         self.done.set()
 
 
@@ -193,7 +193,7 @@ class MagicTask(TaskBase):
             state, self.out = _exec_lm_core(self.__callback)
             if not state or not self.__inloop:
                 break
-        self.__task_gc()    # Task pool cleanup
+        self.task_gc()    # Task pool cleanup
         self.done.set()
 
     def cancel(self):
@@ -239,7 +239,7 @@ class Manager:
     @staticmethod
     def _queue_len():
         # Get active Load Module tasks (tag: module.function)
-        return sum([1 for tag, task in TaskBase.TASKS.items() if not task.done.is_set() and '.' in tag])
+        return sum((1 for tag, task in TaskBase.TASKS.items() if not task.done.is_set() and '.' in tag))
 
     @staticmethod
     def _queue_limiter():
@@ -529,7 +529,7 @@ def _exec_lm_core(cmd_list):
                     # [2.2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
                     lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
                 else:
-                    raise Exception(e)
+                    raise e
             # ------------ LM output format: dict(jsonify) / str(raw) ------------- #
             # Handle LM output data
             if isinstance(lm_output, dict):

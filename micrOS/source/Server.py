@@ -17,7 +17,6 @@ from Debug import console_write, errlog_add
 from Network import ifconfig
 from Tasks import Manager
 from Shell import Shell
-from Tasks import NativeTask
 try:
     from gc import collect, mem_free
 except:
@@ -27,7 +26,7 @@ except:
 # Module load optimization, needed only for webui
 if cfgget('webui'):
     from json import dumps, loads
-    from Tasks import lm_exec
+    from Tasks import lm_exec, NativeTask
 
 
 #########################################################
@@ -154,6 +153,12 @@ class WebCli(Client):
 
     @staticmethod
     def rest_setter(endpoint, callback):
+        # AUTO ENABLE webui when rest_setter called and webui is False
+        if not cfgget('webui'):
+            from Config import cfgput
+            if cfgput('webui', True):        # SET webui to True
+                from machine import reset
+                reset()                                 # HARD RESET (REBOOT)
         WebCli.REST_ENDPOINTS[endpoint] = callback
 
     async def response(self, request):
@@ -478,8 +483,8 @@ class SocketServer:
         # Create client object
         new_client = ShellCli(reader, writer)
 
-        # Check incoming client - client queue limitation
-        state, client_id = await self.accept_client(new_client)
+        # Check incoming client with queue limit
+        state, _ = await self.accept_client(new_client)
         if not state:
             # Server busy, there is one active open connection - reject client
             # close unused new_client as well!
@@ -497,8 +502,8 @@ class SocketServer:
         # Create client object
         new_client = WebCli(reader, writer)
 
-        # Check incoming client - client queue limitation
-        state, client_id = await self.accept_client(new_client)
+        # Check incoming client with queue limit
+        state, _ = await self.accept_client(new_client)
         if not state:
             # Server busy, there is one active open connection - reject client
             # close unused new_client as well!
@@ -516,7 +521,7 @@ class SocketServer:
         self.server = asyncio.start_server(self.shell_cli, self._host, self._port, backlog=self._socqueue)
         await self.server
         Client.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
-        if cfgget('webui') or len(WebCli.REST_ENDPOINTS) > 0:
+        if cfgget('webui'):
             self.web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._socqueue)
             await self.web
             Client.console(f"- HTTP server ready, connect: http://{addr}")
@@ -527,7 +532,7 @@ class SocketServer:
         Reply All - stream data to all connection...
         Only used for LM msg stream over Common.socket_stream wrapper
         """
-        for cli_id, cli in Client.ACTIVE_CLIS.items():
+        for _, cli in Client.ACTIVE_CLIS.items():
             if cli.connected:
                 cli.send(msg)
 

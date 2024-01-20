@@ -6,12 +6,13 @@ Module is responsible for Time related functions
 Designed by Marcell Ban aka BxNxM
 """
 
-from re import compile
+from re import compile as re_comp
 from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM
 
 from machine import RTC
 from network import WLAN, STA_IF
 from utime import sleep_ms, time, mktime, localtime
+from struct import unpack
 
 from Config import cfgput, cfgget
 from Debug import errlog_add, console_write
@@ -49,24 +50,23 @@ def ntp_time():
     if not WLAN(STA_IF).isconnected():
         errlog_add("STA not connected: ntptime")
         return False
-    import struct
 
     def get_ntp():
         host = "pool.ntp.org"
         # (date(2000, 1, 1) - date(1900, 1, 1)).days * 24*60*60
-        NTP_DELTA = 3155673600
-        NTP_QUERY = bytearray(48)
-        NTP_QUERY[0] = 0x1B
+        _ntp_delta = 3155673600
+        _ntp_query = bytearray(48)
+        _ntp_query[0] = 0x1B
         addr = getaddrinfo(host, 123)[0][-1]
         s = socket(AF_INET, SOCK_DGRAM)
         try:
             s.settimeout(2)
-            s.sendto(NTP_QUERY, addr)       # return with sendto response
+            s.sendto(_ntp_query, addr)       # return with sendto response
             msg = s.recv(48)
         finally:
             s.close()
-        val = struct.unpack("!I", msg[40:44])[0]
-        return val - NTP_DELTA
+        val = unpack("!I", msg[40:44])[0]
+        return val - _ntp_delta
 
     err = ''
     for _ in range(4 if cfgget('cron') else 2):
@@ -152,7 +152,7 @@ def suntime():
         try:
             _, response = http_get(url, sock_size=512, jsonify=True)
             results = response.get('results')
-            time_regex = compile(r'T([0-9:]+)')
+            time_regex = re_comp(r'T([0-9:]+)')
             sun = {
                 'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
                 'sunset': time_regex.search(results.get('sunset')).group(1).split(':')
@@ -163,7 +163,7 @@ def suntime():
     try:
         for key in sun:
             sun[key] = [int(val) for val in sun[key]]
-            sun[key][0] += int(Sun.UTC / 60)                # TODO: handle minute offset as well
+            sun[key][0] += int(Sun.UTC / 60)
             sun[key] = tuple(sun[key])
     except Exception as e:
         errlog_add(f'sunrise-api parse error: {e} sun: {sun}')

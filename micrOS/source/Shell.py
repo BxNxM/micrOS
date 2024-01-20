@@ -24,7 +24,7 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.51.0-0'
+    MICROS_VERSION = '1.52.0-0'
 
     def __init__(self):
         """
@@ -241,8 +241,8 @@ class Shell:
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
         """
-        def _offline_help(modules):
-            for lm_path in (i for i in modules if i.startswith('LM_') and (i.endswith('py'))):
+        def _offline_help(mod):
+            for lm_path in (i for i in mod if i.startswith('LM_') and (i.endswith('py'))):
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
                     msg_obj(f"   {lm_name}")

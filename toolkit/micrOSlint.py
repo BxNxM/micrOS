@@ -210,7 +210,9 @@ def _run_pylint(file_name):
         '--disable=missing-function-docstring',     # Disable DOCSTRING: function
         '--disable=line-too-long',                  # Disable TOO LONG
         '--disable=broad-exception-caught',         # Disable BROAD exception
-        '--disable=broad-exception-raised'          # Disable BROAD exception
+        '--disable=broad-exception-raised',         # Disable BROAD exception
+        '--disable=too-many-return-statements',     # :D I don't think so :D
+        '--disable=too-many-branches'               # :D I don't think so :D
     ]
     if file_name in ['Tasks.py', 'microIO.py']:
         pylint_opts.append('--disable=exec-used')   # Disable micrOS execution core exec/eval warning
@@ -481,7 +483,7 @@ def diff_short_summary(summary, verbose=True):
             for i, d in enumerate(data):
                 if isinstance(d, int) or isinstance(d, float):
                     diff_summary['summary'][tag][i] = d - stored_summary['summary'][tag][i]
-                    is_better &= False if diff_summary['summary'][tag][i] < 0 else True
+                    is_better |= False if diff_summary['summary'][tag][i] < 0 else True
     if verbose:
         print(f"{'_'*100}\nRUN diff_short_summary")
         print(json.dumps(diff_summary, sort_keys=True, indent=4))

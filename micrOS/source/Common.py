@@ -137,7 +137,6 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
     :param limit: line limit (max.: 12 with short lines: limited disk speed!)
     :param msgobj: socket stream object (set automatically!)
     """
-    # TODO: test!!!
     ext = '.dat'
     f_name = f_name if f_name.endswith(ext) else f'{f_name}{ext}'
     # GET LOGGED DATA

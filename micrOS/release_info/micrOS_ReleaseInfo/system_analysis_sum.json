@@ -1,7 +1,7 @@
 {
     "files": {
         "Time.py": [
-            8.76,
+            9.09,
             6
         ],
         "micrOSloader.py": [
@@ -13,31 +13,31 @@
             1
         ],
         "Server.py": [
-            9.27,
+            9.35,
             4
         ],
         "Tasks.py": [
-            9.62,
-            13
+            9.64,
+            12
         ],
         "Config.py": [
             9.38,
-            12
+            13
         ],
         "reset.py": [
             8.75,
             0
         ],
         "Shell.py": [
-            9.41,
+            9.59,
             1
         ],
         "Notify.py": [
-            9.48,
+            9.55,
             2
         ],
         "Common.py": [
-            8.98,
+            9.09,
             20
         ],
         "InterConnect.py": [
@@ -53,7 +53,7 @@
             9
         ],
         "Scheduler.py": [
-            9.43,
+            9.62,
             1
         ],
         "microIO.py": [
@@ -73,7 +73,7 @@
             0
         ],
         "urequests.py": [
-            8.79,
+            8.9,
             3
         ],
         "LM_roboarm.py": [
@@ -149,7 +149,7 @@
             2
         ],
         "LM_cct.py": [
-            8.65,
+            8.71,
             1
         ],
         "LM_L9110_DCmotor.py": [
@@ -247,7 +247,7 @@
     },
     "summary": {
         "core": [
-            3531,
+            3522,
             19
         ],
         "load": [
@@ -262,8 +262,8 @@
             true,
             7
         ],
-        "core_score": 9.1,
+        "core_score": 9.15,
         "load_score": 8.1,
-        "version": "1.51.0-0"
+        "version": "1.52.0-0"
     }
 }

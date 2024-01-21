@@ -2,7 +2,6 @@ import uasyncio as asyncio
 from LM_servo import sduty, deinit
 from LM_stepper import step
 from Common import micro_task
-from utime import sleep_ms
 
 
 class Data:

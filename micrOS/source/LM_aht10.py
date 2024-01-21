@@ -1,6 +1,6 @@
 from machine import I2C, Pin
 from microIO import physical_pin, pinmap_dump
-from Debug import errlog_add
+from Common import syslog
 from time import sleep
 from binascii import hexlify
 
@@ -17,7 +17,7 @@ def _handle_connection_error(f):
             result = f(*args, **kwargs)
             return result
         except Exception as e:
-            errlog_add("[ERR] {}: {}".format(f.__name__, e))
+            syslog(f"[ERR] {f.__name__}: {e}")
     return _decorated
 
 
@@ -31,8 +31,7 @@ class AHT10:
     def _send_sensor(self, buf):
         i2c_ack_count = self.i2c.writeto(self.address, buf)
         if len(buf) != i2c_ack_count:
-            raise Exception("Number of ACKs does not match buffer size: {} != {}. Buffer content: {}".format(
-                len(buf), i2c_ack_count, hexlify(buf).decode()))
+            raise Exception(f"Number of ACKs does not match buffer size: {len(buf)} != {i2c_ack_count}. Buffer content: {hexlify(buf).decode()}")
         return True
 
     def _read_sensor(self, nbytes):
@@ -106,7 +105,6 @@ def reset():
     Reset the sensor
     """
     __init_AHT10().reset()
-
 
 #######################
 # Helper LM functions #

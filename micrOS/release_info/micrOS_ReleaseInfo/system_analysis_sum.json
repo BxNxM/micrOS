@@ -37,8 +37,8 @@
             2
         ],
         "Common.py": [
-            9.09,
-            20
+            9.1,
+            21
         ],
         "InterConnect.py": [
             9.11,
@@ -46,7 +46,7 @@
         ],
         "Debug.py": [
             8.63,
-            23
+            20
         ],
         "Network.py": [
             9.64,
@@ -93,7 +93,7 @@
             0
         ],
         "LM_system.py": [
-            7.68,
+            7.67,
             2
         ],
         "LM_robustness.py": [
@@ -113,7 +113,7 @@
             0
         ],
         "LM_aht10.py": [
-            8.39,
+            8.71,
             0
         ],
         "LM_bme280.py": [
@@ -177,11 +177,11 @@
             0
         ],
         "LM_pet_feeder.py": [
-            7.94,
+            8.18,
             0
         ],
         "LM_rencoder.py": [
-            8.24,
+            9.08,
             0
         ],
         "LM_dht11.py": [
@@ -217,7 +217,7 @@
             0
         ],
         "LM_presence.py": [
-            8.38,
+            9.09,
             4
         ],
         "LM_dimmer.py": [
@@ -247,11 +247,11 @@
     },
     "summary": {
         "core": [
-            3522,
+            3524,
             19
         ],
         "load": [
-            6284,
+            6290,
             42
         ],
         "core_dep": [
@@ -260,10 +260,10 @@
         ],
         "load_dep": [
             true,
-            7
+            4
         ],
-        "core_score": 9.15,
-        "load_score": 8.1,
-        "version": "1.52.0-1"
+        "core_score": 9.16,
+        "load_score": 8.15,
+        "version": "1.52.0-2"
     }
 }

@@ -1,8 +1,7 @@
 from microIO import physical_pin, pinmap_dump
-from Common import SmartADC, micro_task, notify
+from Common import SmartADC, micro_task, notify, syslog
 import uasyncio as asyncio
 from utime import ticks_ms
-from Debug import errlog_add
 try:
     import LM_intercon as InterCon
 except:
@@ -53,7 +52,7 @@ def __exec_local_callbacks(callback_list):
         try:
             clbk()
         except Exception as e:
-            errlog_add("presence->__exec_local_callbacks: {}".format(e))
+            syslog(f"presence->__exec_local_callbacks: {e}")
 
 
 def __run_intercon(state):
@@ -71,7 +70,7 @@ def __run_intercon(state):
             # Send CMD to other device & show result
             InterCon.send_cmd(host, cmd)
         except Exception as e:
-            errlog_add("__run_intercon error: {}".format(e))
+            syslog(f"__run_intercon error: {e}")
     if state.lower() == "off":
         if Data.OFF_INTERCON_CLBK is None:
             return
@@ -82,7 +81,7 @@ def __run_intercon(state):
             # Send CMD to other device & show result
             InterCon.send_cmd(host, cmd)
         except Exception as e:
-            errlog_add("__run_intercon error: {}".format(e))
+            syslog(f"__run_intercon error: {e}")
 
 
 ####################################
@@ -92,7 +91,7 @@ def __run_intercon(state):
 async def __task(ms_period, buff_size):
     if Data.NOTIFY:
         if not notify("Motion detected"):
-            errlog_add("Motion detect. notify, error...")
+            syslog("Motion detect. notify, error...")
 
     if Data.ENABLE_MIC:
         # Create ADC object
@@ -105,7 +104,7 @@ async def __task(ms_period, buff_size):
             if Data.ENABLE_MIC:
                 __mic_sample(buff_size=buff_size, mic_adc=mic_adc, mytask=my_task)
             else:
-                my_task.out = "{} sec until off event".format(int(Data.OFF_EV_TIMER)-1)
+                my_task.out = f"{int(Data.OFF_EV_TIMER)-1} sec until off event"
             Data.OFF_EV_TIMER -= round(ms_period / 1000, 3)
             # Async sleep - feed event loop
             await asyncio.sleep_ms(ms_period)
@@ -151,7 +150,7 @@ def __mic_sample(buff_size, mic_adc, mytask):
     data_triplet = [time_stump, data, 0]
 
     # Store data in task cache
-    mytask.out = "th: {} last: {} - timer: {}".format(Data.TRIG_THRESHOLD, data_triplet, int(Data.OFF_EV_TIMER))
+    mytask.out = f"th: {Data.TRIG_THRESHOLD} last: {data_triplet} - timer: {int(Data.OFF_EV_TIMER)}"
 
     # Store data triplet (time_stump, mic_data)
     Data.RAW_DATA.append(data_triplet)
@@ -181,7 +180,7 @@ def load_n_init(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.
     Data.TRIG_THRESHOLD = threshold
     Data.TIMER_VALUE = timer
     Data.ENABLE_MIC = mic
-    return "Init presence module: th: {} timer: {} mic: {}".format(threshold, timer, mic)
+    return f"Init presence module: th: {threshold} timer: {timer} mic: {mic}"
 
 
 def motion_trig(sample_ms=15, buff_size=10):
@@ -218,9 +217,9 @@ def subscribe_intercon(on, off):
 def notification(state=None):
     """Enable/Disable motion detection notifications"""
     if state is None:
-        return "Notifications: {}".format("enabled" if Data.NOTIFY else "disabled")
+        return f"Notifications: {'enabled' if Data.NOTIFY else 'disabled'}"
     Data.NOTIFY = True if state else False
-    return "Set notifications: {}".format("ON" if Data.NOTIFY else "OFF")
+    return f"Set notifications: {'ON' if Data.NOTIFY else 'OFF'}"
 
 
 def get_samples():

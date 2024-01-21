@@ -180,6 +180,20 @@ def alarms(clean=False, test=False, msgobj=None):
     return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
 
 
+def dat_dump():
+    """
+    Generic .dat file dump
+    - logged data from LMs
+    """
+    from os import listdir
+    dats = (f for f in listdir() if f.endswith('.dat'))
+    out = {}
+    for dat in dats:
+        with open(dat, 'r') as f:
+            out[dat] = f.read()
+    return out
+
+
 def ifconfig():
     """
     Show network ifconfig
@@ -212,4 +226,4 @@ def help():
            'setclock year month mday hour min sec',\
            'ntp', 'rssi', 'pinmap key="dhtpin"/None', 'alarms clean=False',\
            'sun refresh=False', 'ifconfig', 'memory_usage',\
-           'disk_usage', 'urequests_host_cache'
+           'disk_usage', 'dat_dump', 'urequests_host_cache'

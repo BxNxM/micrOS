@@ -1,9 +1,6 @@
-import machine
-import utime as time
 from machine import Pin
 import micropython
-from Common import socket_stream
-from Debug import errlog_add
+from Common import socket_stream, syslog
 from microIO import physical_pin, pinmap_dump
 
 # https://www.coderdojotc.org/micropython/sensors/10-rotary-encoder/
@@ -33,7 +30,7 @@ class Rotary:
                 micropython.schedule(self.call_handlers, Rotary.ROT_CCW)
             self.last_status = new_status
         except Exception as e:
-            errlog_add("Rotary err: {}".format(e))
+            syslog(f"Rotary err: {e}")
 
     def add_handler(self, handler):
         self.handlers.append(handler)
@@ -78,10 +75,10 @@ def read_state(msgobj=None):
     load_n_init()
     if msgobj is not None:
         if Data.EVENT:
-            msgobj("[stream] RotaryState: {}".format(Data.VAL))
+            msgobj(f"[stream] RotaryState: {Data.VAL}")
             Data.EVENT = False
     else:
-        return "RotaryState: {}".format(Data.VAL)
+        return f"RotaryState: {Data.VAL}"
     return ""
 
 
@@ -89,7 +86,7 @@ def reset_state():
     """
     Reset rotary encoder state to 0
     """
-    msg = "Reset state {} -> 0".format(Data.VAL)
+    msg = f"Reset state {Data.VAL} -> 0"
     Data.VAL = 0
     return msg
 

@@ -3,8 +3,8 @@ try:
 except Exception as e:
     camera = None
 import time
-from Debug import errlog_add, console_write
-from Common import rest_endpoint
+from Debug import console_write
+from Common import rest_endpoint, syslog
 
 FLASH_LIGHT = None      # Flashlight object
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
@@ -19,7 +19,7 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
     """
 
     if camera is None:
-        errlog_add("Non supported feature - use esp32cam image!")
+        syslog("Non supported feature - use esp32cam image!")
         return "Non supported feature - use esp32cam image!"
 
     global CAM_INIT
@@ -40,7 +40,7 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
                 CAM_INIT = cam              # set to True (store cam object)
                 break
         except Exception as e:
-            errlog_add(f"[ERR] OV2640: {e}")
+            syslog(f"[ERR] OV2640: {e}")
         camera.deinit()
         time.sleep(1)
     if not CAM_INIT:
@@ -150,7 +150,7 @@ def capture():
             n_try += 1
             time.sleep(0.1)
     except Exception as e:
-        errlog_add(f"[OV2640] Failed to capture: {e}")
+        syslog(f"[OV2640] Failed to capture: {e}")
     IN_CAPTURE = False
     return buf
 

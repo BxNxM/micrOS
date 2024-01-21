@@ -6,7 +6,7 @@ micrOS Load Module programming API-s
 from Server import SocketServer
 from machine import Pin, ADC
 from microIO import physical_pin
-from Debug import logger, log_get
+from Debug import logger, log_get, errlog_add
 from Server import WebCli
 try:
     from Tasks import TaskBase, Manager
@@ -137,8 +137,7 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
     :param limit: line limit (max.: 12 with short lines: limited disk speed!)
     :param msgobj: socket stream object (set automatically!)
     """
-    ext = '.dat'
-    f_name = f_name if f_name.endswith(ext) else f'{f_name}{ext}'
+    f_name = f_name if f_name.endswith('.dat') else f'{f_name}.dat'
     # GET LOGGED DATA
     if data is None:
         # return log as msg stream
@@ -146,6 +145,11 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
         return True
     # ADD DATA TO LOG
     return logger(data, f_name, limit)
+
+
+def syslog(msg):
+    """ Wrapper of errlog_add """
+    errlog_add(msg)
 
 
 def notify(text):

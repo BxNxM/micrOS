@@ -461,7 +461,7 @@ def short_report(categories, states, verbose=True):
 
 
 def diff_short_summary(summary, verbose=True):
-    is_better = True
+    is_better = False
     diff_summary = {'files': {}, 'summary': {'core': ['<lines>', '<files>'], 'load': ['<lines>', '<files>'],
                                     'core_dep': [True, '<warning_cnt(s)>'], 'load_dep': [True, '<warning_cnt(s)>'],
                                     'core_score': 0, 'load_score': 0, 'version': 0}}
@@ -478,7 +478,7 @@ def diff_short_summary(summary, verbose=True):
     for tag, data in summary['summary'].items():
         if isinstance(data, int) or isinstance(data, float):
             diff_summary['summary'][tag] = data - stored_summary['summary'][tag]
-            is_better &= False if diff_summary['summary'][tag] < 0 else True
+            is_better |= False if diff_summary['summary'][tag] < 0 else True
         if isinstance(data, list):
             for i, d in enumerate(data):
                 if isinstance(d, int) or isinstance(d, float):

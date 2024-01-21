@@ -56,8 +56,8 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true",
         "load_n_init": {
-            "doc": "\n    Load Camera module OV2640\n    :param quality: high (HD), medium (SVGA), low (240x240)\n    :param freq: default (not set: 10kHz) or high: 20kHz\n    ",
-            "param(s)": "quality='medium' freq='ault'"
+            "doc": "\n    Load Camera module OV2640\n    :param quality: high (HD), medium (SVGA), low (240x240)\n    :param freq: default (not set: 10kHz) or high: 20kHz\n    :param effect: NONE (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    ",
+            "param(s)": "quality='medium' freq='ault' effect=\"NONE\""
         },
         "percent_to_value": {
             "doc": "module 'LM_OV2640' has no attribute 'percent_to_value'",
@@ -72,8 +72,8 @@
             "param(s)": ""
         },
         "settings": {
-            "doc": "\n    Camera settings\n    :param flip: flip image True/False\n    :param mirror: mirror image True/False\n    :param effect: None (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    :param saturation: 0-100 %\n    :param brightness: 0-100 %\n    :param contrast:   0-100 %\n    ",
-            "param(s)": "quality=None flip=None mirror=None effect=None saturation=None brightness=None contrast=None"
+            "doc": "\n    Camera settings\n    :param flip: flip image True/False\n    :param mirror: mirror image True/False\n    :param effect: None (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    :param saturation:  0-100 %\n    :param brightness:  0-100 %\n    :param contrast:    0-100 %\n    :param whitebalace: NONE (default) SUNNY CLOUDY OFFICE HOME\n    :param q:           10-63 lower number means higher quality\n    ",
+            "param(s)": "quality=None flip=None mirror=None effect=None saturation=None brightness=None contrast=None whitebalace=None q=None"
         }
     },
     "VL53L0X": {

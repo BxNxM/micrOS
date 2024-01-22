@@ -416,10 +416,11 @@ class SocketServer:
     def __init__(self):
         if not self._initialized:
             # Socket server initial parameters
-            self.server = None                    # ShellCli server instance
-            self.web = None                       # WebCli server instance
-            self._host = '0.0.0.0'                # listens on all available interfaces
-            self._socqueue = cfgget('aioqueue')   # CONNECTION QUEUE SIZE, common for both interface
+            self.server = None                       # ShellCli server instance
+            self.web = None                          # WebCli server instance
+            self._host = '0.0.0.0'                   # listens on all available interfaces
+            _queue = cfgget('aioqueue')              # CONNECTION QUEUE SIZE, common for both interface
+            self._socqueue = 3 if _queue < 3 else _queue
 
             # ---- Config ---
             self._port = cfgget("socport")

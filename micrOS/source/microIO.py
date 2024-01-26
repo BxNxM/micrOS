@@ -8,7 +8,8 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from sys import platform
+from sys import platform, modules
+from os import listdir
 
 #################################################################
 #                        GPI/O ON DEVICE                        #
@@ -54,10 +55,7 @@ def set_pinmap(map_data=None):
 
     # HANDLE PIN MAP PARAMS (lp_name + custom pin lut)
     parsed_data = ["n/a"] if map_data is None else map_data.strip().split(';')
-    if ':' in parsed_data[0]:
-        lp_name = "n/a"
-    else:
-        lp_name = parsed_data.pop(0)
+    lp_name = "n/a" if ':' in parsed_data[0] else parsed_data.pop(0)
     # SAVE PARSED CUSTOM PIN OVERWRITE (manual mapping - MAPPING)
     try:
         PinMap.MAPPING = {pin.split(':')[0].strip(): int(pin.split(':')[1].strip()) for pin in parsed_data if ':' in pin}
@@ -67,7 +65,7 @@ def set_pinmap(map_data=None):
 
     # SELECT LOOKUP TABLE BASED ON PLATFORM / User input
     if isinstance(lp_name, str) and lp_name != 'n/a':
-        if f"IO_{lp_name}" in [lp.split('.')[0] for lp in dir() if lp.startswith('IO_')]:
+        if f"IO_{lp_name}" in [lp.split('.')[0] for lp in listdir() if lp.startswith('IO_')]:
             PinMap.MAPPING_LUT = lp_name
             return PinMap.MAPPING_LUT
     PinMap.MAPPING_LUT = detect_platform()
@@ -128,23 +126,29 @@ def pinmap_dump(keys):
     return pins_cache
 
 
-def __resolve_pin_number(key):
+def __resolve_pin_number(key, _r=False):
     """
     Dynamic const lookup table handling by var name
     :param key: logical pin name, example: neop, dht, etc.
+    :param _r: recursive call indicator (control depth) - for retry
     """
     custom_pin = PinMap.MAPPING.get(key, None)          # Get user custom pin map (if any)
     if custom_pin is None:
         # [1] Handle default pin resolve from static lut
+        mio = f'IO_{PinMap.MAPPING_LUT}'
         try:
-            # LOAD LOOKUP TABLE
-            exec(f'import IO_{PinMap.MAPPING_LUT}')
+            if mio not in modules:
+                # LOAD LOOKUP TABLE
+                exec(f'import {mio}')
             # GET KEY PARAM VALUE
-            out = eval(f'IO_{PinMap.MAPPING_LUT}.{key}')
+            out = eval(f'{mio}.{key}')
             # Workaround to support normal python (tuple output), micropython (exact output - int)
             return int(out[0]) if isinstance(out, tuple) else out
         except Exception as e:
             # Missing LP module - don't die
+            if mio in str(e) and not _r:
+                # Re-import needed (recursive fix 1x)
+                return __resolve_pin_number(key, _r=True)
             if "No module named" in str(e):
                 return None
             # Other issue (key not found, etc...)

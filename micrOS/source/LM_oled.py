@@ -144,10 +144,10 @@ class SSD1306_I2C(SSD1306):
 #  SSD1306 interface functions    #
 ###################################
 
-def __init():
+def load_n_init(width=128, height=64):
     if SSD1306_I2C.OLED_OBJ is None:
         i2c = SoftI2C(Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
-        SSD1306_I2C.OLED_OBJ = SSD1306_I2C(128, 64, i2c)
+        SSD1306_I2C.OLED_OBJ = SSD1306_I2C(width, height, i2c)
     return SSD1306_I2C.OLED_OBJ
 
 
@@ -158,7 +158,7 @@ def text(string="text", x=0, y=0):
     :param x: 0-127
     :param y: 0-63
     """
-    __init().text(string, x, y)
+    load_n_init().text(string, x, y)
     return True
 
 
@@ -167,7 +167,7 @@ def invert():
     Invert OLED display
     """
     global __INVERT
-    __init()
+    load_n_init()
     __INVERT = not __INVERT
     SSD1306_I2C.OLED_OBJ.invert(__INVERT)
     return True
@@ -178,7 +178,7 @@ def clean(state=0):
     Clean display
     :param state: 0/1
     """
-    __init().fill(state)
+    load_n_init().fill(state)
     return True
 
 
@@ -191,7 +191,7 @@ def line(sx, sy, ex, ey, state=1):
     :param ey: end y
     :param state: state 0/1
     """
-    __init().line(sx, sy, ex, ey, state)
+    load_n_init().line(sx, sy, ex, ey, state)
     return True
 
 
@@ -206,9 +206,9 @@ def rect(x, y, w, h, state=1, fill=False):
     :param fill: fill rectangle (True/False)
     """
     if fill:
-        __init().fill_rect(x, y, w, h, state)
+        load_n_init().fill_rect(x, y, w, h, state)
     else:
-        __init().rect(x, y, w, h, state)
+        load_n_init().rect(x, y, w, h, state)
     return True
 
 
@@ -216,7 +216,7 @@ def poweron():
     """
     Power ON OLED
     """
-    __init().poweron()
+    load_n_init().poweron()
     return True
 
 
@@ -224,7 +224,7 @@ def poweroff():
     """
     Power OFF OLED
     """
-    __init().poweroff()
+    load_n_init().poweroff()
     return True
 
 

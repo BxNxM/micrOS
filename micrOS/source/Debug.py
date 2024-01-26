@@ -27,16 +27,23 @@ class DebugCfg:
             # Check LogicalPins module loadable (robustness...)
             return
         micro_platform = detect_platform()
+        pled = pinmap_dump('builtin')['builtin']
         if micro_platform == "tinypico":
             # Progress led for TinyPico
             DebugCfg._init_apa102()
-        elif pinmap_dump('builtin')['builtin'] is not None:
-            if micro_platform == "esp32s3":
-                # Progress led for esp32s3
-                DebugCfg._init_ws2812()
+        elif pled is not None:
+            if isinstance(pled, int):
+                # SET PROGRESS LED WITH BUILT-IN step FUNCTION
+                if micro_platform == "esp32s3":
+                    # Progress led for esp32s3
+                    DebugCfg._init_ws2812()
+                else:
+                    # Progress led for esp32/etc
+                    DebugCfg._init_simple()
             else:
-                # Progress led for esp32/etc
-                DebugCfg._init_simple()
+                # OVERRIDE PROGRESS LED WITH CUSTOM step FUNCTION
+                DebugCfg.PLED_STEP = pled
+                DebugCfg.PLED_A = False
 
     @staticmethod
     def step():

@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 
 # mac dmg install: https://apple.stackexchange.com/questions/73926/is-there-a-command-to-install-a-dmg
 # win exe install: https://stackoverflow.com/questions/58697911/how-to-run-exe-file-from-python
@@ -16,6 +17,26 @@ MYPATH = os.path.dirname(__file__)
 print("Module [micrOSdashboard] path: {} __package__: {} __name__: {} __file__: {}".format(
     sys.path[0], __package__, __name__, MYPATH))
 USB_DRIVER_DIR = os.path.join(MYPATH, '../../env/driver_cp210x')
+DRIVER_SETUP_USER_CONF = os.path.join(MYPATH, '../user_data/driver_conf.json')
+
+
+def driver_conf():
+    conf_path = DRIVER_SETUP_USER_CONF
+    if os.path.exists(conf_path):
+        with open(conf_path, 'r') as f:
+            conf = json.loads(f.read())
+        cp210x_enabled = conf.get('cp210x_enabled')
+    else:
+        enable = input(f"{Colors.OKGREEN}Enable cp210x serial driver?{Colors.NC} {Colors.BOLD}Y/n:{Colors.NC} ")
+        cp210x_enabled = True if enable.lower() == 'y' else False
+        conf = {'cp210x_enabled': cp210x_enabled}
+        with open(conf_path, 'w') as f:
+            f.write(json.dumps(conf))
+    print("############### SERIAL DRIVER CONF ###############")
+    print(f" cp21px_enabled: {cp210x_enabled}")
+    print(f"serial driver conf: {conf_path}")
+    print("##################################################")
+    return cp210x_enabled
 
 
 def dmg_install_mac(dmg_path):
@@ -112,6 +133,10 @@ def check_serial_driver_is_installed():
 
 
 def install_usb_serial_driver():
+    is_enabled = driver_conf()
+    if not is_enabled:
+        return True
+
     driver_sub_path = {'win': 'CP210x_Universal_Windows_Driver/CP210xVCPInstaller_x64.exe',
                        'mac': 'macOS_VCP_Driver/SiLabsUSBDriverDisk.dmg',
                        'linux': ''}

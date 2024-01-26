@@ -51,7 +51,7 @@ def _parse_py_file_content(file_name, verbose=True):
         print(f"Check {file_path}")
     for line in file_content.strip().split('\n'):
         raw_line = line.strip()
-        if len(raw_line) > 0:
+        if len(raw_line) > 0 and not raw_line.startswith('#'):     # Ignore: empty lines and single line comments
             source_line_cnt += 1
             # Collect imports from module
             if raw_line.startswith('import') or raw_line.startswith('from'):

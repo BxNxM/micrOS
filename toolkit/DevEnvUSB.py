@@ -25,7 +25,7 @@ class USB(Compile):
 
     def __init__(self, dry_run=False):
         super().__init__(dry_run=dry_run)
-        self.nodemcu_device_subnames = ['SLAB_USBtoUART', 'USB0', 'usbserial', 'usbmodem']
+        self.nodemcu_device_subnames = ['wchusbserial', 'SLAB_USBtoUART', 'USB0', 'usbserial', 'usbmodem']
         self.selected_device_type = None
         self.selected_micropython_bin = None
         self.micropython_bin_dir_path = os.path.join(MYPATH, "../micrOS/micropython")

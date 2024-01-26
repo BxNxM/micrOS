@@ -126,29 +126,23 @@ def pinmap_dump(keys):
     return pins_cache
 
 
-def __resolve_pin_number(key, _r=False):
+def __resolve_pin_number(key):
     """
     Dynamic const lookup table handling by var name
     :param key: logical pin name, example: neop, dht, etc.
-    :param _r: recursive call indicator (control depth) - for retry
     """
     custom_pin = PinMap.MAPPING.get(key, None)          # Get user custom pin map (if any)
     if custom_pin is None:
         # [1] Handle default pin resolve from static lut
         mio = f'IO_{PinMap.MAPPING_LUT}'
         try:
-            if mio not in modules:
-                # LOAD LOOKUP TABLE
-                exec(f'import {mio}')
+            exec(f'import {mio}')
             # GET KEY PARAM VALUE
             out = eval(f'{mio}.{key}')
             # Workaround to support normal python (tuple output), micropython (exact output - int)
             return int(out[0]) if isinstance(out, tuple) else out
         except Exception as e:
             # Missing LP module - don't die
-            if mio in str(e) and not _r:
-                # Re-import needed (recursive fix 1x)
-                return __resolve_pin_number(key, _r=True)
             if "No module named" in str(e):
                 return None
             # Other issue (key not found, etc...)

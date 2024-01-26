@@ -57,7 +57,7 @@
             1
         ],
         "microIO.py": [
-            9.11,
+            8.95,
             35
         ],
         "micrOS.py": [
@@ -251,7 +251,7 @@
     },
     "summary": {
         "core": [
-            2961,
+            2957,
             19
         ],
         "load": [
@@ -266,8 +266,8 @@
             true,
             4
         ],
-        "core_score": 9.16,
+        "core_score": 9.15,
         "load_score": 8.14,
-        "version": "1.53.0-0"
+        "version": "1.54.0-0"
     }
 }

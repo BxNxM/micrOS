@@ -13,7 +13,7 @@ cwhite = const(0)	  # - cold white [PWM]
 
 
 # DIGITAL LED
-neop = const(5)        # - neopixel OneWire bus [PWM]
+neop = const(7)        # - neopixel OneWire bus [PWM]
 
 
 # ACTUATORS
@@ -41,5 +41,5 @@ i2c_sda = const(8)       # oled - data
 i2c_scl = const(9)       # oled - clock
 
 # SENSORS
-ds18 = const(1)          # - DS18B20 - temp. sensor
+ds18 = const(10)         # - DS18B20 - temp. sensor
 dhtpin = const(2)        # - dht_pin 11 and 22

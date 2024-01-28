@@ -1,6 +1,7 @@
 from microIO import physical_pin, pinmap_dump
 from Common import SmartADC, micro_task, notify, syslog
 import uasyncio as asyncio
+import LM_i2s_mic
 from utime import ticks_ms
 try:
     import LM_intercon as InterCon
@@ -9,10 +10,12 @@ except:
 
 
 class Data:
-    TASK_TAG = 'presence._mic'
+    TASK_TAG = 'presence._capture'
 
-    ENABLE_MIC = True           # Enable/Disable MIC periphery
+    MIC_TYPES={'NONE': 0, 'ADC':1, 'I2S': 2}
+    MIC_TYPE = MIC_TYPES['NONE']      # Enable/Disable MIC periphery ('ADC', 'I2S', None)
     RAW_DATA = []               # format [[<time>, <amplitude>, <trigger>],...]
+    MIC_ADC = None              # Initialized by micro task if sampled by ADC
 
     TIMER_VALUE = 120           # OFF action timer in sec
     OFF_EV_TIMER = 0            # Presence StateMachine
@@ -93,16 +96,19 @@ async def __task(ms_period, buff_size):
         if not notify("Motion detected"):
             syslog("Motion detect. notify, error...")
 
-    if Data.ENABLE_MIC:
+    if Data.MIC_TYPE == Data.MIC_TYPES['ADC']:
         # Create ADC object
-        mic_adc = SmartADC.get_singleton(physical_pin('mic'))
+        Data.MIC_ADC = SmartADC.get_singleton(physical_pin('mic'))
+    elif Data.MIC_TYPE == Data.MIC_TYPES['I2S']:
+        LM_i2s_mic.load_n_init(sampling_rate=2000) # High frequencies can result in slow performance
+        LM_i2s_mic.background_capture()
 
     # ASYNC TASK ADAPTER [*2] with automatic state management
     #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
     with micro_task(tag=Data.TASK_TAG) as my_task:
         while int(Data.OFF_EV_TIMER) > 0:
-            if Data.ENABLE_MIC:
-                __mic_sample(buff_size=buff_size, mic_adc=mic_adc, mytask=my_task)
+            if Data.MIC_TYPE:
+                __mic_sample(buff_size, my_task)
             else:
                 my_task.out = f"{int(Data.OFF_EV_TIMER)-1} sec until off event"
             Data.OFF_EV_TIMER -= round(ms_period / 1000, 3)
@@ -127,7 +133,7 @@ def __eval_trigger():
         return True
 
 
-def __mic_sample(buff_size, mic_adc, mytask):
+def __mic_sample(buff_size, mytask):
     """
     Async task to measure mic data
     - update OFF_EV_TIMER
@@ -135,24 +141,33 @@ def __mic_sample(buff_size, mic_adc, mytask):
         - threshold not reached -> decrease OFF_EV_TIMER with deltaT
     - when OFF_EV_TIMER == 0 -> OFF event (+ exit task)
     """
-
     # [1] Measure mic signal + get time stump (tick_ms)
-    time_stump = ticks_ms()
+    timestamp = ticks_ms()
 
-    # Create average measurement sampling
-    data_sum = 0
-    # Internal sampling for average value calculation
-    for _ in range(0, 15):
-        data_sum += mic_adc.get()['percent']  # raw, percent, volt
-    data = data_sum / 15
-        
-    # Store data triplet
-    data_triplet = [time_stump, data, 0]
+    if Data.MIC_TYPE == Data.MIC_TYPES['I2S']:
+        samples = LM_i2s_mic.get_from_buffer(LM_i2s_mic.bytes_per_second(0.25))
+        decoded_samples = LM_i2s_mic.decode(samples)
+        amplitude = 0 # 0-100 scale
+        for s in decoded_samples:
+            sample_normalized = 100 * abs(s)
+            amplitude += sample_normalized / len(decoded_samples)
+        data_triplet = [timestamp, amplitude, 0]
+
+    elif Data.MIC_TYPE == Data.MIC_TYPES['ADC']:
+        # Create average measurement sampling
+        data_sum = 0
+        # Internal sampling for average value calculation
+        for _ in range(0, 15):
+            data_sum += Data.MIC_ADC.get()['percent']  # raw, percent, volt
+        data = data_sum / 15
+
+        # Store data triplet
+        data_triplet = [timestamp, data, 0]
 
     # Store data in task cache
     mytask.out = f"th: {Data.TRIG_THRESHOLD} last: {data_triplet} - timer: {int(Data.OFF_EV_TIMER)}"
 
-    # Store data triplet (time_stump, mic_data)
+    # Store data triplet (timestamp, mic_data)
     Data.RAW_DATA.append(data_triplet)
 
     # Rotate results (based on buff size)
@@ -169,7 +184,7 @@ def __mic_sample(buff_size, mic_adc, mytask):
 #  PRESENCE PUBLIC FUNCTIONS #
 ##############################
 
-def load_n_init(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.ENABLE_MIC):
+def load_n_init(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.MIC_TYPE):
     """
     Initialize presence module
     :param threshold: trigger on relative noice change in percent
@@ -179,7 +194,7 @@ def load_n_init(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.
     threshold = threshold if threshold > 1 else 1
     Data.TRIG_THRESHOLD = threshold
     Data.TIMER_VALUE = timer
-    Data.ENABLE_MIC = mic
+    Data.MIC_TYPE = mic
     return f"Init presence module: th: {threshold} timer: {timer} mic: {mic}"
 
 
@@ -249,7 +264,7 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'load_n_init threshold=<percent> timer=<sec> mic=True',\
+    return 'load_n_init threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S)',\
            'motion_trig sample_ms=15 buff_size=10', 'get_samples',\
            'subscribe_intercon on="host cmd" off="host cmd"',\
            'notification state=None/True/False',\

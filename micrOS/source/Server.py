@@ -219,9 +219,9 @@ class WebCli(Client):
                     if dtype == 'image/jpeg':
                         resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
                         await self.a_send(resp, encode=None)
-                    elif dtype == 'multipart/x-mixed-replace':
+                    elif dtype == 'multipart/x-mixed-replace' or dtype == 'multipart/form-data':
                         headers = ("HTTP/1.1 200 OK\r\n" +
-                            "Content-Type: multipart/x-mixed-replace; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
+                            f"Content-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
                         await self.a_send(headers, encode=None)
                         # Start Native stream async task
                         task = NativeTask()
@@ -242,9 +242,10 @@ class WebCli(Client):
             data_to_send = b''
 
             while self.connected and data_to_send is not None:
-                data_to_send = callback()
+                data_to_send = await callback()
                 part = ("\r\n--micrOS_boundary\r\n" +
                         f"Content-Type: {content_type}\r\n\r\n").encode('utf-8') + data_to_send
+                task.out = 'Data sent'
                 await self.a_send(part, encode=None)
                 await asyncio.sleep_ms(10)
 

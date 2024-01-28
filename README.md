@@ -1,7 +1,7 @@
 # ![LOGO](./media/logo_mini.png?raw=true) micrOS
 
 
-### micropython based smart edge IoT platform
+### micropython based smart edge platform #IoT
 
 ![telnet](https://img.shields.io/badge/wifi-telnet-blue) ![esp32S2](https://img.shields.io/badge/esp32-S2-olive) ![tinypico](https://img.shields.io/badge/esp32-tinypico-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-olive) ![PYQT](https://img.shields.io/badge/esp32-PYQT-olive) ![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical) ![espCAM-esp-s](https://img.shields.io/badge/esp32-CAM_OV2640-olive) ![esp32-c3](https://img.shields.io/badge/esp32-C3_RISCV-olive) ![OTA](https://img.shields.io/badge/ota-update-blue) ![GPIO](https://img.shields.io/badge/gpio-i2c-success) ![clock](https://img.shields.io/badge/rtc-ntp-success) ![async](https://img.shields.io/badge/async-task_manager-success) ![irq](https://img.shields.io/badge/hardware-IRQs-success) ![socket](https://img.shields.io/badge/socket-STA_or_AP-blue) ![cron](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/stabile-master_HEAD-success) ![stable](https://img.shields.io/badge/micropython-OS-gold)<br/>
 
@@ -17,8 +17,10 @@ Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), fo
 [![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
 
 
-In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
+**micrOS** is a mini **application** execution **platform** with ShellCli (socket) and webCli (http) **servers** and several **other** embedded **features**.
+> It uses direct wifi connection to access the exposed functionalities.<br/>
 
+In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
 [![SHORTCUTS](./media/micrOS_shortcuts.png)](https://www.icloud.com/shortcuts/898c2a8033d64ff0b7aadc46ee491a35)<br/>
@@ -28,12 +30,12 @@ Access rest api over browser: `http://<nodename>.local`
 ----------------------------------------
 ----------------------------------------
 
-📲 💻 Communication over WiFi: Generic communication API <br/>
-📲 Apple shortcuts compatible http REST API<br/>
-&nbsp;&nbsp; ✉️ Expose upython module functions - telnet TCP/IP <br/>
+📲 💻 ShellCli: Generic session-based communication API <br/>
+📲 WebCli: Apple shortcuts compatible **REST API** and **http homepage** <br/>
+&nbsp;&nbsp; ✉️ Expose upython module functions - telnet **TCP/IP** and **REST API** <br/>
 ⚙️ 📝 Device initialization from user config <br/>
 🧩  Codeless end user experience via phone client <br/>
-🚪 No external server or service required for client-device communication <br/>
+⚠️  No external server or service required for client-device communication <br/>
 &nbsp;&nbsp; ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
 🛠 Easy to customize, create your own Load Modules: <br/>
 &nbsp;&nbsp; 1. Write **LM_**`<your_app>`**.py** <br/>
@@ -43,7 +45,7 @@ Access rest api over browser: `http://<nodename>.local`
 &nbsp;&nbsp; - Time stamp based <br/>
 &nbsp;&nbsp; - Geolocation based utc + sunset, sunrise rest features <br/>
 &nbsp;&nbsp; - Simple periodic <br/>
-&nbsp;&nbsp; - Async task manager <br/>
+🔄 Async **task manager** - start (&/&&) / list / kill / show <br/>
 
 🚀🎈Lightweight and high performance core system that leaves you space 😎
 
@@ -240,7 +242,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 		- Write python functions, you can call any function from that module...
 		- Upload modul with "drag&Drop" with help of devToolKit GUI `devToolKit.py`
 
-- 📨**Socket interpreter** - wireless communication interface with the nodes
+- 📨**ShellCli** - wireless communication interface with the nodes
 	- **System commands**: `help, version, reboot, webrepl, webrepl --update, etc.`
 		- After `webrepl --update` command the micrOS system reboots and waits for ota update in webrepl mode.
 	- **Config handling** SET/GET/DUMP - **node_config.json**
@@ -249,21 +251,21 @@ It will install your board via USB with default settings. **Continue with micrOS
 		- Print out all parameters and values: `dump`
 	- **LM** - Load Module function execution (application modules)
 		- Example: `system info`
-- 🖇**[L]ogical [P]inout** handling - lookuptables for each board
+- 🖇**Logical IO** pinout handling - lookuptables for each board
 	- Predefined pinout modules for esp32, tinyPico
 	- Create your pinout based on `IO_esp32.py`, naming convencion: `IO_<name>.py`
 	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
 
-- 📍**Task manager** aka **Async LM jobs**
-		- Capable of execute [L]oad [M]odules in the background
-		- Invoke with single execution `&` or loop execution `&&`
-		- Example:
-			- In loop: `system heartbeat &&`
-				- Loop frequency conrol: `system heartbeat &&1000`, it will execute every sec 
-			- Single call: `system heartbeat &`
-				- Delayed execution (ms): `system heartbeat &1000`, waits 1 sec before execution.
-		- Stop task: `task kill system.heartbeat`
-		- Show task live ouput: `task show system.heartbeat`
+- 🔄 **Task manager** aka **Async LM jobs**
+	- Capable of execute [L]oad [M]odules in the background 
+	- Invoke with single execution `&` or loop execution `&&`
+	- Example:
+		- In loop: `system heartbeat &&`
+			- Loop frequency conrol: `system heartbeat &&1000`, it will execute every sec 
+		- Single call: `system heartbeat &`
+			- Delayed execution (ms): `system heartbeat &1000`, waits 1 sec before execution.
+	- Stop task: `task kill system.heartbeat`
+	- Show task live ouput: `task show system.heartbeat`
 
 
 ⌘ DevToolKit CLI feature:

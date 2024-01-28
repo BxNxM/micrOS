@@ -130,7 +130,7 @@ def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None,
     return 'Settings applied.'
 
 
-def capture():
+async def capture():
     if camera is None:
         return "Non supported feature - use esp32cam image!"
     load_n_init()

@@ -162,7 +162,7 @@ def _record_clb():
         return 'text/plain', f'Invalid sample size configured. 16-bit representation must be used.'
     
     return 'multipart/form-data', \
-        {'callback': capture,
+        {'callback': capture, 'is_coroutine': True,
         'content-type': f'audio/l16;rate={Data.SAMPLING_RATE};channels={num_channels}'}
 
 

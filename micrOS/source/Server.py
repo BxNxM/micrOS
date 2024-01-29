@@ -219,13 +219,13 @@ class WebCli(Client):
                     if dtype == 'image/jpeg':
                         resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
                         await self.a_send(resp, encode=None)
-                    elif dtype == 'multipart/x-mixed-replace' or dtype == 'multipart/form-data':
+                    elif dtype in ('multipart/x-mixed-replace', 'multipart/form-data'):
                         headers = ("HTTP/1.1 200 OK\r\n" +
                             f"Content-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
                         await self.a_send(headers, encode=None)
                         # Start Native stream async task
                         task = NativeTask()
-                        task.create(callback=self.stream(data['callback'], task, data['content-type']),
+                        task.create(callback=self.stream(data['callback'], task, data['content-type'], data['is_coroutine']),
                                     tag=f"web.stream_{self.client_id.replace('W', '')}")
                     else:                                # text/html or text/plain
                         await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{data}")
@@ -236,13 +236,16 @@ class WebCli(Client):
         return False
 
 
-    async def stream(self, callback, task, content_type):
+    async def stream(self, callback, task, content_type, is_coroutine):
         with task:
             task.out = 'Stream started'
             data_to_send = b''
 
             while self.connected and data_to_send is not None:
-                data_to_send = await callback()
+                if is_coroutine:
+                    data_to_send = await callback()
+                else:
+                    data_to_send = callback()
                 part = ("\r\n--micrOS_boundary\r\n" +
                         f"Content-Type: {content_type}\r\n\r\n").encode('utf-8') + data_to_send
                 task.out = 'Data sent'

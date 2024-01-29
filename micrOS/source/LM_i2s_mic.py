@@ -3,7 +3,7 @@ from microIO import physical_pin, pinmap_dump
 from Common import micro_task, rest_endpoint
 from machine import I2S, Pin
 from Debug import console_write
-from Tasks import Manager
+from Tasks import TaskBase
 import uasyncio as asyncio
 
 
@@ -135,7 +135,7 @@ async def capture(capture_duration = Data.CAPTURE_DURATION,
     if not Data.MIC_ENABLED:
         return bytearray()
     
-    if Manager.is_done(Data.TASK_TAG) == False:
+    if TaskBase.is_busy(Data.TASK_TAG):
         console_write('[i2s_mic] Warning: micro task is already running, capturing directly is not possible. '\
                       'Use get_from_buffer() instead.')
         return bytearray()
@@ -316,6 +316,6 @@ def help():
            'capture capture_duration=1 channel=\'right\' downsampling=1',\
            'select_channel samples=b\'\' channel=\'right\' downsampling=1',\
            'decode samples=b\'\'',\
-           'samples_per_time t=1',\
+           'bytes_per_second t=1',\
            'set_volume shift_size=0',\
            'pinmap'

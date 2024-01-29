@@ -341,17 +341,6 @@ class Manager:
         for t in tasks:
             output.append(f"{t}: {TaskBase.TASKS[t].out}")
         return '\n'.join(output)
-    
-    @staticmethod
-    def is_done(tag):
-        """
-        Primary interface
-            show if task is done
-        """
-        tasks = Manager._parse_tag(tag)
-        if len(tasks) == 1:
-            return TaskBase.TASKS[tasks[0]].done.is_set()
-        return None
 
     @staticmethod
     def kill(tag):

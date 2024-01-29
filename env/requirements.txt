@@ -23,5 +23,5 @@ matplotlib
 json2html
 requests
 opencv-python
-urllib3
 soundfile
+PyAudio

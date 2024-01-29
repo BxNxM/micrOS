@@ -12,7 +12,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 # micrOS devToolKit dependencies
 dependencies = ['adafruit-ampy', 'mpremote', 'esptool', 'ipaddress', 'mpy-cross==1.20.0', 'netaddr',
                 'pylint', 'PyQt5', 'pyserial', 'resources', 'flask', 'flask_restful', 'numpy',
-                'matplotlib', 'json2html', 'opencv-python', 'requests', 'Flask-BasicAuth']
+                'matplotlib', 'json2html', 'opencv-python', 'requests', 'Flask-BasicAuth', 'PyAudio',
+                'soundfile']
 
 # Hack for raspbian - remove dep: PyQt5
 if platform.system().lower() == 'linux':

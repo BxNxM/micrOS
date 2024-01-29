@@ -1,16 +1,18 @@
 from LM_oled import text, show, load_n_init as oled_lni
 from LM_ds18 import measure
-from LM_neopixel import color, brightness, toggle
+from LM_neopixel import color, brightness, toggle, load_n_init as neopixel_lni
 
 INITED = False
+
 
 def load_n_init():
     """
     Init OLED display 64x32
     """
     global INITED
+    neopixel_lni(ledcnt=1)
     try:
-        oled_lni(64, 32)
+        oled_lni(128, 64)
         INITED = True
         return f'OLED INIT OK'
     except Exception as e:

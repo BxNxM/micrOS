@@ -37,7 +37,7 @@ def measure():
         data.append(ds_obj.read_temp(rom))
     # Return with single data
     if len(data) == 1:
-        return {'temp [ºC]': data[0]}
+        return {'temp[C]': data[0]}
     # Return with multiple data
     return data
 

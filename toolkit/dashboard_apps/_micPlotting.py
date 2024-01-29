@@ -13,7 +13,7 @@ import pyaudio
 
 from collections import deque
 
-OUTPUT_DEVICE = 10      # use pyaudio.PyAudio().get_default_output_device_info() to get default device index
+OUTPUT_DEVICE = None    # use pyaudio.PyAudio().get_device_info_by_index(i) to determine non-default output device
 ENCODING = 'PCM_16'     # 16-bit PCM is used for audio/l16
 PLOT_INTERVAL_MS = 50   # iterval between plot updates
 PLOT_MAX_LEN = 40000    # maximum number of samples to display on the plot

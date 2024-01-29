@@ -130,7 +130,7 @@ def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None,
     return 'Settings applied.'
 
 
-async def capture():
+def capture():
     if camera is None:
         return "Non supported feature - use esp32cam image!"
     load_n_init()
@@ -172,7 +172,8 @@ def _snapshot_clb():
 
 
 def _image_stream_clb():
-    return 'multipart/x-mixed-replace', {'callback': capture, 'content-type': 'image/jpeg'}
+    return 'multipart/x-mixed-replace', \
+        {'callback': capture, 'is_coroutine': False, 'content-type': 'image/jpeg'}
 
 
 def _img_clb(name="photo.jpg"):

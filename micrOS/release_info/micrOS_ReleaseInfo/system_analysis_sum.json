@@ -18,7 +18,7 @@
         ],
         "Tasks.py": [
             9.64,
-            12
+            13
         ],
         "Config.py": [
             9.38,
@@ -38,7 +38,7 @@
         ],
         "Common.py": [
             9.1,
-            21
+            22
         ],
         "InterConnect.py": [
             9.11,
@@ -46,7 +46,7 @@
         ],
         "Debug.py": [
             8.67,
-            20
+            21
         ],
         "Network.py": [
             9.64,
@@ -58,7 +58,7 @@
         ],
         "microIO.py": [
             8.95,
-            35
+            36
         ],
         "micrOS.py": [
             9.3,
@@ -221,7 +221,7 @@
             0
         ],
         "LM_presence.py": [
-            9.09,
+            8.88,
             4
         ],
         "LM_dimmer.py": [
@@ -247,6 +247,10 @@
         "LM_ds18.py": [
             5.38,
             2
+        ],
+        "LM_i2s_mic.py": [
+            8.77,
+            1
         ]
     },
     "summary": {
@@ -255,8 +259,8 @@
             19
         ],
         "load": [
-            5694,
-            43
+            5940,
+            44
         ],
         "core_dep": [
             true,
@@ -264,10 +268,10 @@
         ],
         "load_dep": [
             true,
-            4
+            5
         ],
         "core_score": 9.15,
-        "load_score": 8.14,
-        "version": "1.54.0-2"
+        "load_score": 8.15,
+        "version": "1.54.1-0"
     }
 }

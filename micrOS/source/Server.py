@@ -161,6 +161,24 @@ class WebCli(Client):
                 reset()                                 # HARD RESET (REBOOT)
         WebCli.REST_ENDPOINTS[endpoint] = callback
 
+    async def run_web(self):
+        # Update server task output
+        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
+
+        # Run async connection handling
+        while self.connected:
+            try:
+                # Read request msg from client
+                state, request = await self.read()
+                if state:
+                    break
+                await self.response(request)
+            except Exception as e:
+                errlog_add(f"[ERR] Client.run_web: {e}")
+                break
+        # Close connection
+        await self.close()
+
     async def response(self, request):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
         # Create short request (first line)
@@ -190,44 +208,29 @@ class WebCli(Client):
         # INVALID REQUEST: Not home page / OR Not /rest endpoint
         await self.a_send("HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request")
 
-    async def run_web(self):
-        # Update server task output (? test ?)
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
-
-        # Run async connection handling
-        while self.connected:
-            try:
-                # Read request msg from client
-                state, request = await self.read()
-                if state:
-                    break
-                await self.response(request)
-            except Exception as e:
-                errlog_add(f"[ERR] Client.run_web: {e}")
-                break
-        # Close connection
-        await self.close()
-
     async def endpoints(self, request):
         for cmd in WebCli.REST_ENDPOINTS:
             if request.startswith(f'GET /{cmd}'):
                 console_write(f"[WebCli] endpoint: /{cmd}")
                 # Registered endpoint was found - exec callback
                 try:
-                    # dtype: image/jpeg OR text/html OR text/plain, etc...
+                    # RESOLVE ENDPOINT CALLBACK
+                    # dtype:
+                    #   one-shot: image/jpeg | text/html | text/plain              - data: raw
+                    #       task: multipart/x-mixed-replace | multipart/form-data  - data: dict=callback,content-type
+                    #                   content-type: image/jpeg | audio/l16;*
                     dtype, data = WebCli.REST_ENDPOINTS[cmd]()
                     if dtype == 'image/jpeg':
                         resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
                         await self.a_send(resp, encode=None)
                     elif dtype in ('multipart/x-mixed-replace', 'multipart/form-data'):
-                        headers = ("HTTP/1.1 200 OK\r\n" +
-                            f"Content-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
+                        headers = (f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
                         await self.a_send(headers, encode=None)
                         # Start Native stream async task
                         task = NativeTask()
-                        task.create(callback=self.stream(data['callback'], task, data['content-type'], data['is_coroutine']),
+                        task.create(callback=self.stream(data['callback'], task, data['content-type']),
                                     tag=f"web.stream_{self.client_id.replace('W', '')}")
-                    else:                                # text/html or text/plain
+                    else:  # dtype: text/html or text/plain
                         await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{data}")
                 except Exception as e:
                     await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length:{len(str(e))}\r\n\r\n{e}")
@@ -236,18 +239,15 @@ class WebCli(Client):
         return False
 
 
-    async def stream(self, callback, task, content_type, is_coroutine):
+    async def stream(self, callback, task, content_type):
+        is_coroutine = 'generator' in str(type(callback))
         with task:
             task.out = 'Stream started'
             data_to_send = b''
 
             while self.connected and data_to_send is not None:
-                if is_coroutine:
-                    data_to_send = await callback()
-                else:
-                    data_to_send = callback()
-                part = ("\r\n--micrOS_boundary\r\n" +
-                        f"Content-Type: {content_type}\r\n\r\n").encode('utf-8') + data_to_send
+                data_to_send = await callback() if is_coroutine else callback()
+                part = (f"\r\n--micrOS_boundary\r\nContent-Type: {content_type}\r\n\r\n").encode('utf-8') + data_to_send
                 task.out = 'Data sent'
                 await self.a_send(part, encode=None)
                 await asyncio.sleep_ms(10)
@@ -257,7 +257,6 @@ class WebCli(Client):
                 closing_boundary = '\r\n--micrOS_boundary--\r\n'
                 await self.a_send(closing_boundary, encode=None)
                 await self.close()
-
             task.out = 'Finished stream'
 
     @staticmethod

@@ -172,8 +172,7 @@ def _snapshot_clb():
 
 
 def _image_stream_clb():
-    return 'multipart/x-mixed-replace', \
-        {'callback': capture, 'is_coroutine': False, 'content-type': 'image/jpeg'}
+    return 'multipart/x-mixed-replace', {'callback': capture, 'content-type': 'image/jpeg'}
 
 
 def _img_clb(name="photo.jpg"):

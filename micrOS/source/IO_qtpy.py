@@ -66,6 +66,10 @@ buzzer = const(26)     # A0 - Buzzer pin - sound generator
 # I2C BUS
 i2c_sda = const(4)    # D22 - oled - data
 i2c_scl = const(33)   # D21 - oled - clock
+# I2S BUS
+i2s_sck = const(26)    # Serial clock
+i2s_ws = const(25)     # Word select
+i2s_sd = const(33)     # Serial data
 
 
 # EXTERNAL EVENT IRQ

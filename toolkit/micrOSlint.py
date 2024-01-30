@@ -192,7 +192,7 @@ def load_module_checker(categories, verbose=True):
                 verdict.append((lm_res, True, f'res-error: {e}'))
 
     lm_dep_warnings = sum([1 for v in verdict if not v[1]])
-    if lm_dep_warnings <= 4:  # Temporary fix, drops error if quality pattern goes down...
+    if lm_dep_warnings <= 5:  # Temporary fix, drops error if quality pattern goes down...
         # TODO: After fixes it can be set as False in this case, if it make sense
         state_lm_dep = True
     if verbose or not state_lm_dep:

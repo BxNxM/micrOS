@@ -177,7 +177,13 @@ def notify(text):
 
 def rest_endpoint(endpoint, function):
     """
-    Add test endpint <localhost.local>/endpoint from Load Modules
+    Add test endpoint <localhost.local>/endpoint from Load Modules
+    Simple:
+        image/jpeg | text/html | text/plain, <data>
+            <data>: binary | string
+    Stream:
+        multipart/x-mixed-replace | multipart/form-data, <data>
+            <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
     """
     WebCli.rest_setter(endpoint=endpoint, callback=function)
     return True

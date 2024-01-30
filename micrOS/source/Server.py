@@ -240,7 +240,11 @@ class WebCli(Client):
 
 
     async def stream(self, callback, task, content_type):
-        is_coroutine = 'generator' in str(type(callback))
+        """
+        Async stream method
+        :param callback: sync or async function callback (auto-detect) WARNING: works for functions only (not methods!)
+        """
+        is_coroutine = 'generator' in str(type(callback))   # async function callback auto-detect
         with task:
             task.out = 'Stream started'
             data_to_send = b''

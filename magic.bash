@@ -36,9 +36,6 @@ function console_log {
 }
 
 function venv_create {
-    # Parse venv path: set / as the delimiter
-    #IFS='/'
-    #read -ra list <<< "$venv_path"
     # Check path is exists
     if [[ -d $(dirname "$venv_path") ]]
     then
@@ -46,6 +43,10 @@ function venv_create {
         then
             console_log "${GREEN}    Create venv: $venv_path${NC}"
             python3 -m venv "${venv_path}"
+            if [ $? -ne 0 ]; then
+                echo -e "${RED}Cannot prepare python venv${NC}"
+                exit 1
+            fi
             "${venv_path}/bin/python3" -m pip install --upgrade pip
             install_req=1
         else
@@ -56,11 +57,43 @@ function venv_create {
     fi
 }
 
+function _trim {
+  # Strip leading and trailing whitespace from a string
+  local var="$*"
+  var="${var#"${var%%[![:space:]]*}"}"   # remove leading whitespace characters
+  var="${var%"${var##*[![:space:]]}"}"   # remove trailing whitespace characters
+  echo -n "$var"
+}
+
+
+function fail_safe_pip_install {
+    local req_txt_path="$1"
+    local cannot_install_package=()
+
+    while IFS= read -r line; do
+        # Strip leading and trailing whitespace from the current line
+        pip_package=$(_trim "$line")
+        echo -e "Attempt to install: $pip_package"
+        python3 -m pip install "$pip_package"
+        if [ $? -ne 0 ]; then
+            cannot_install_package+=("$pip_package")
+        fi
+    done < "$req_txt_path"
+
+    if [ ${#cannot_install_package[@]} -gt 0 ]; then
+        echo -e "\n\n======================== ${RED}DEPENDENCY WARNING${NC} =========================="
+        echo -e "${RED}WARNING${NC}: cannot install package(s): ${cannot_install_package}"
+        echo -e "======================================================================\n\n"
+    fi
+}
+
 function venv_requirements {
     if [[ -f "${requirements}" ]]
     then
         console_log "${GREEN}    Install requirements: ${requirements}${NC}"
-        python3 -m pip install -r "${requirements}"
+        # python3 -m pip install -r "${requirements}"
+        # failsafe package install:
+        fail_safe_pip_install "${requirements}"
     else
         console_log "${RED}    No requirements file: ${requirements}${NC}"
     fi

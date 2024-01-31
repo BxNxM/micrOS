@@ -2,6 +2,7 @@ from sys import executable
 import os
 import subprocess
 MYPATH = os.path.dirname(__file__)
+USER_DATA_OPT_INST_DONE = os.path.join(MYPATH, '../user_data/.opt_install_done')
 INTERPRETER = executable
 
 try:
@@ -35,10 +36,19 @@ def install_package(name):
 
 
 def install_optional_dependencies(requirements):
+    print("[PIP] micrOS optional dependency installer")
+
+    # SKIP in VENV
     if os.environ.get("VIRTUAL_ENV", None) is not None:
         print("[PIP][DISABLED] IN VENV (developer mode) - please use: magic.bash")
         return True
 
+    # SKIP if it was already done
+    if os.path.exists(USER_DATA_OPT_INST_DONE):
+        print("[PIP] Already (attempted) to install optional dependencies")
+        return True
+
+    # INSTALL DEPs
     available_packages = list_packages()
     if isinstance(requirements, list):
         for dep in requirements:
@@ -47,6 +57,8 @@ def install_optional_dependencies(requirements):
                 install_package(dep)
             else:
                 print(f"[PIP] SKIP install {dep} (available)")
+        with open(USER_DATA_OPT_INST_DONE, 'r') as f:
+            f.write('done')
         return True
     return False
 

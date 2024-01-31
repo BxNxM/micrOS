@@ -1,13 +1,11 @@
 from microIO import physical_pin, pinmap_dump
 from Common import SmartADC, micro_task, notify, syslog
 import uasyncio as asyncio
-import LM_i2s_mic
 from utime import ticks_ms
 try:
     import LM_intercon as InterCon
 except:
     InterCon = None
-
 
 class Data:
     TASK_TAG = 'presence._capture'
@@ -27,6 +25,7 @@ class Data:
     ON_INTERCON_CLBK = None     # Intercon ON callback
     OFF_INTERCON_CLBK = None    # Intercon OFF callback
 
+    I2S_MIC = None              # Optional LM_i2s_mic import
     NOTIFY = False
 
 
@@ -100,8 +99,11 @@ async def __task(ms_period, buff_size):
         # Create ADC object
         Data.MIC_ADC = SmartADC.get_singleton(physical_pin('mic'))
     elif Data.MIC_TYPE == Data.MIC_TYPES['I2S']:
-        LM_i2s_mic.load_n_init(sampling_rate=2000) # High frequencies can result in slow performance
-        LM_i2s_mic.background_capture()
+        if Data.I2S_MIC is None:
+            import LM_i2s_mic
+            Data.I2S_MIC = LM_i2s_mic
+        Data.I2S_MIC.load_n_init(sampling_rate=2000) # High frequencies can result in slow performance
+        Data.I2S_MIC.background_capture()
 
     # ASYNC TASK ADAPTER [*2] with automatic state management
     #   [micro_task->Task] TaskManager access to task internals (out, done attributes)
@@ -145,8 +147,8 @@ def __mic_sample(buff_size, mytask):
     timestamp = ticks_ms()
 
     if Data.MIC_TYPE == Data.MIC_TYPES['I2S']:
-        samples = LM_i2s_mic.get_from_buffer(LM_i2s_mic.bytes_per_second(0.25))
-        decoded_samples = LM_i2s_mic.decode(samples)
+        samples = Data.I2S_MIC.get_from_buffer(Data.I2S_MIC.bytes_per_second(0.25))
+        decoded_samples = Data.I2S_MIC.decode(samples)
         amplitude = 0 # 0-100 scale
         for s in decoded_samples:
             sample_normalized = 100 * abs(s)

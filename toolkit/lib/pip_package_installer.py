@@ -57,7 +57,7 @@ def install_optional_dependencies(requirements):
                 install_package(dep)
             else:
                 print(f"[PIP] SKIP install {dep} (available)")
-        with open(USER_DATA_OPT_INST_DONE, 'r') as f:
+        with open(USER_DATA_OPT_INST_DONE, 'w') as f:
             f.write('done')
         return True
     return False

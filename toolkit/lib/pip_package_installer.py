@@ -45,7 +45,7 @@ def install_optional_dependencies(requirements):
 
     # SKIP if it was already done
     if os.path.exists(USER_DATA_OPT_INST_DONE):
-        print("[PIP] Already (attempted) to install optional dependencies")
+        print(f"[PIP] Already (attempted) to install optional dependencies: {USER_DATA_OPT_INST_DONE}")
         return True
 
     # INSTALL DEPs

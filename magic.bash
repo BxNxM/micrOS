@@ -118,9 +118,9 @@ function venv_main {
 
   # Check if venv already active if not do actions... activate
   if [[ -n "${VIRTUAL_ENV}" ]]; then
-    console_log "    Venv already prepared and active: ${VIRTUAL_ENV}"
+    console_log "\t\tVenv already prepared and active: ${VIRTUAL_ENV}"
   else
-    console_log "${GREEN}CREATE VIRTUAL ENVIRONMENT:${NC} ${env_activate}"
+    console_log "${GREEN}CREATE VIRTUAL ENVIRONMENT:${NC}"
     venv_create
     console_log "${GREEN}ACTIVATE VIRTUAL ENVIRONMENT:${NC} ${env_activate}"
     source "${env_activate}"

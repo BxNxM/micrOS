@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# INSTALL OPTIONAL DEPENDENCIES - PIP HACK
+from toolkit.lib import pip_package_installer as pip_install
+pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.20.0'])
+
+# NORMAL CODE ...
 import os
 import sys
 
@@ -8,11 +13,8 @@ MYPATH = os.path.dirname(__file__)
 print("Module [devToolKit] path: {} __package__: {} __name__: {} __file__: {}".format(
     sys.path[0], __package__, __name__, MYPATH))
 
-
 TOOLKIT_PATH = os.path.join(MYPATH, 'toolkit')
 APP_DIR = os.path.join(MYPATH, 'toolkit/dashboard_apps')
-MICROS_DIR = os.path.join(MYPATH, 'micrOS/source')
-MICROS_SIM_RESOURCES_DIR = os.path.join(MYPATH, 'toolkit/simulator_lib')
 import argparse
 from toolkit import MicrOSDevEnv
 from toolkit import socketClient

@@ -44,6 +44,11 @@ class Compile:
         else:
             self.mpy_cross_compiler_path = mpy_cross.mpy_cross
 
+
+    @staticmethod
+    def is_mpycross_available():
+        return False if mpy_cross is None else True
+
     @staticmethod
     def _read_LMs_whitelist():
         lm_to_compile_conf_path = os.path.join(MYPATH, "LM_to_compile.dat")

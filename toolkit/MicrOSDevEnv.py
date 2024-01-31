@@ -12,11 +12,13 @@ print("Module [MicrOSDevEnv] path: {} __package__: {} __name__: {} __file__: {}"
 try:
     from .DevEnvOTA import OTA
     from .DevEnvUSB import USB
+    from .DevEnvCompile import Compile
     from .lib import LocalMachine
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from DevEnvOTA import OTA
     from DevEnvUSB import USB
+    from DevEnvCompile import Compile
     from lib import LocalMachine
 
 
@@ -34,11 +36,11 @@ class MicrOSDevTool(OTA, USB):
     #                    DevEnv METHODS                 #
     #####################################################
     def precompile_micros(self):
-        micros_dev_env = os.environ.get("MICROS_DEV", None)
-        if micros_dev_env is None or 'true' not in micros_dev_env.lower():
-            self.console("SKIP PRECOMPILE - DEV ENV INACTIVE\n\t-> to activate: export MICROS_DEV=true", state='ok')
+        micros_dev_env = Compile.is_mpycross_available()
+        if not micros_dev_env:
+            self.console("SKIP PRECOMPILE - DEV ENV INACTIVE\n\t-> mpy-cross not available", state='warn')
             return True
-        self.console("PRECOMPILE - DEV ENV ACTIVE: MICROS_DEV={}".format(micros_dev_env), state='ok')
+        self.console("PRECOMPILE - DEV ENV ACTIVE: mpy-cross available", state='ok')
         state = super(MicrOSDevTool, self).precompile_micros()
         # Drops Segmentation fault: 11 error: simulator doc gen... TODO
         self.LM_functions_static_dump_gen()

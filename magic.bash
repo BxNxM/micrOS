@@ -18,9 +18,6 @@ else
   log_file="./${MY_PATH}/micros.log"
 fi
 
-# Activates precompile (mpycross) + doc generation
-export MICROS_DEV=true
-
 # Calculate if pip install was done once
 install_req=0
 
@@ -80,9 +77,16 @@ function fail_safe_pip_install {
         fi
     done < "$req_txt_path"
 
+    # Dependency install check...
     if [ ${#cannot_install_package[@]} -gt 0 ]; then
         echo -e "\n\n======================== ${RED}DEPENDENCY WARNING${NC} =========================="
         echo -e "${RED}WARNING${NC}: cannot install package(s): ${cannot_install_package}"
+        for failed_pack in "${cannot_install_package[@]}"; do
+          # Check if "mpy-cross" is in unable-to-install list
+          if [[ $failed_pack == *"mpy-cross"* ]]; then
+            echo "---> ${RED}No mpy-cross available...${NC}"
+          fi
+        done
         echo -e "======================================================================\n\n"
     fi
 }

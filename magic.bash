@@ -18,13 +18,11 @@ else
   log_file="./${MY_PATH}/micros.log"
 fi
 
-# Calculate if pip install was done once
-install_req=0
-
 # Set command line colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
+NEW_ENV=false
 
 function console_log {
   message=$1
@@ -33,24 +31,19 @@ function console_log {
 }
 
 function venv_create {
-    # Check path is exists
-    if [[ -d $(dirname "$venv_path") ]]
+    # Check venv path is exists and dir - if nodir then create venv
+    if [[ ! -d "$venv_path" ]]
     then
-        if [[ ! -d "$venv_path" ]]
-        then
-            console_log "${GREEN}    Create venv: $venv_path${NC}"
-            python3 -m venv "${venv_path}"
-            if [ $? -ne 0 ]; then
-                echo -e "${RED}Cannot prepare python venv${NC}"
-                exit 1
-            fi
-            "${venv_path}/bin/python3" -m pip install --upgrade pip
-            install_req=1
-        else
-            install_req=0
+        console_log "${GREEN}\t\tCreate VENV: ${venv_path}${NC}"
+        python3 -m venv "${venv_path}"
+        if [ $? -ne 0 ]; then
+          echo -e "${RED}\t\tCannot prepare python VENV${NC}"
+          exit 1
         fi
+        "${venv_path}/bin/python3" -m pip install --upgrade pip
+        NEW_ENV=true
     else
-        console_log "${RED}    Invalid path: ${venv_path}${NC}"
+        console_log "${GREEN}\t\tVENV already exists: ${venv_path}${NC}"
     fi
 }
 
@@ -94,42 +87,47 @@ function fail_safe_pip_install {
 function venv_requirements {
     if [[ -f "${requirements}" ]]
     then
-        console_log "${GREEN}    Install requirements: ${requirements}${NC}"
-        # python3 -m pip install -r "${requirements}"
-        # failsafe package install:
-        fail_safe_pip_install "${requirements}"
+        if [[ "${NEW_ENV}" == "true" ]]; then
+          console_log "${GREEN}\t\tInstall requirements: ${requirements}${NC}"
+          # python3 -m pip install -r "${requirements}"
+          # failsafe package install:
+          fail_safe_pip_install "${requirements}"
+        else
+          console_log "${GREEN}\t\tRequirements was already installed.${NC}"
+        fi
     else
-        console_log "${RED}    No requirements file: ${requirements}${NC}"
+        console_log "${RED}\t\tNo requirements file: ${requirements}${NC}"
     fi
+}
+
+
+function venv_recreate {
+  if [[ -d "$venv_path" ]]; then
+    echo -e "[i] RECREATE VENV"
+    rm -r "$venv_path"
+  fi
 }
 
 #################################
 #               VENV            #
 #################################
 
-# Create virtual environment
-console_log "${GREEN}CREATE MICROS DEVTOOLKIT VIRTUAL ENVIRONMENT${NC}"
-venv_create
+function venv_main {
+  # Create virtual environment
+  console_log "${GREEN}MICROS DEVTOOLKIT VIRTUAL ENVIRONMENT${NC}"
 
-
-# Check if venv already active & auto deactivate
-if [[ -n "${VIRTUAL_ENV}" ]]
-then
-    . "deactivate"
-fi
-
-# Activate venv
-console_log "${GREEN}ACTIVATE VIRTUAL ENVIRONMENT:${NC} ${env_activate}"
-source "${env_activate}"
-
-# Install requirements
-if [[ -n "${VIRTUAL_ENV}" && "${install_req}" -eq 1 ]]
-then
-    console_log "${GREEN}    Install requirements: ${VIRTUAL_ENV}${NC}"
-    venv_requirements
-else
+  # Check if venv already active if not do actions... activate
+  if [[ -n "${VIRTUAL_ENV}" ]]; then
     console_log "    Venv already prepared and active: ${VIRTUAL_ENV}"
-fi
+  else
+    console_log "${GREEN}CREATE VIRTUAL ENVIRONMENT:${NC} ${env_activate}"
+    venv_create
+    console_log "${GREEN}ACTIVATE VIRTUAL ENVIRONMENT:${NC} ${env_activate}"
+    source "${env_activate}"
+    console_log "${GREEN}INSTALL REQUIREMENTS:${NC} ${env_activate}"
+    venv_requirements
+  fi
+}
 
 #################################
 #           DEVTOOLKIT          #
@@ -140,6 +138,7 @@ function help {
     echo -e "==                  HELP MSG FOR magic.bash                =="
     echo -e "============================================================="
     echo -e "env        :activate python virtual environment and exit"
+    echo -e "recreate   :delete /env/venv and recreate venv based on requirements.txt"
     echo -e "gateway    :start micrOS gateway service over devToolKit.py"
     echo -e "sim        :start micrOS simulator on host OS"
     echo -e "gitclean   :cleans untracked files, with -f cleans ignored too"
@@ -152,7 +151,18 @@ function help {
 # CMD ARGUMENT: env
 if [[ -n "${CMD_ARGS[0]}" ]]
 then
+  echo -e "params: ${CMD_ARGS}"
 
+  # Check recreation is requested or not - optional cleanup
+  if [[ "${CMD_ARGS[0]}" == "recreate" ]]
+  then
+    venv_recreate
+  fi
+
+  # Call virtual environment creation main function
+  venv_main
+
+  # Additional magic.bash commands
   if [[ "${CMD_ARGS[0]}" == "env" ]]
   then
       console_log "[env] Source env only, skip devToolKit start"
@@ -215,6 +225,7 @@ then
         fi
     fi
 else
+    venv_main
     help
     # Start devToolKit.py GUI
     console_log "Start devToolKit GUI: ${MY_PATH}/devToolKit.py"

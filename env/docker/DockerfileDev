@@ -1,9 +1,11 @@
-FROM python:3.11
+FROM python:3.11-alpine
+
+# Upgrade PIP
+RUN python3 -m pip install --upgrade pip
 
 # Debug programs
-RUN apt update
-RUN apt install -y iputils-ping
-RUN apt install -y telnet
+RUN apk add --no-cache iputils-ping
+RUN apk add --no-cache git
 
 # Set the working directory
 WORKDIR /gateway
@@ -24,3 +26,4 @@ EXPOSE 5000
 #ENTRYPOINT devToolKit.py -s -gw -sim
 # Search and start gateway
 ENTRYPOINT devToolKit.py -s -gw
+

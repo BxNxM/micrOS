@@ -21,7 +21,7 @@ scrape_configs:
       - targets: ['micros-gateway:5000']
 
   - job_name: 'micros_gw_tinydevboard'
-    metrics_path: /metrics/TinyDevBoard/system+info
+    metrics_path: /metrics/TinyDevBoard/system+top
     scheme: http
     static_configs:
       - targets: ['micros-gateway:5000']

@@ -93,16 +93,17 @@ class OTA(Compile):
         self.console("Compare mpycross - upython version compatibility")
         mpy_cross_version = None
         upython_version = None
-        command = "{mpy_cross} --version".format(mpy_cross=self.mpy_cross_compiler_path.replace(" ", "\ "))
-        result = LocalMachine.CommandHandler.run_command(command, shell=True)
-        exitcode = result[0]
-        raw_version = result[1]
-        if exitcode == 0 and isinstance(raw_version, str):
-            try:
-                version = [v for v in raw_version.lower().split(" ") if v.startswith('v')][0]
-                mpy_cross_version = version.split('-')[0].replace('v', '')
-            except Exception as e:
-                self.console("Cannot get mpy-cross version: {}".format(e))
+        if self.mpy_cross_compiler_path is not None:
+            command = "{mpy_cross} --version".format(mpy_cross=self.mpy_cross_compiler_path.replace(" ", "\ "))
+            result = LocalMachine.CommandHandler.run_command(command, shell=True)
+            exitcode = result[0]
+            raw_version = result[1]
+            if exitcode == 0 and isinstance(raw_version, str):
+                try:
+                    version = [v for v in raw_version.lower().split(" ") if v.startswith('v')][0]
+                    mpy_cross_version = version.split('-')[0].replace('v', '')
+                except Exception as e:
+                    self.console("Cannot get mpy-cross version: {}".format(e))
 
         if self.dry_run:
             status, answer_msg = True, 'dry-run-upython: v1.19.1'
@@ -123,11 +124,15 @@ class OTA(Compile):
         self.console("|- mpy-cross version: {}".format(mpy_cross_version))
         self.console("|- upython version on {}: {}".format(device, upython_version))
 
-        if mpy_cross_version is not None and upython_version is None:
-            # TODO: Get version over webrepl in case of micrOS interface not av ailable
+        # mpy-cross version check (mpy-cross not available support)
+        if mpy_cross_version is None and upython_version is not None:
+            # No mpy-cross available - unsafe(no version check) but precompiled cache install
+            return True
+        if upython_version is None:
+            # TODO: Get version over webrepl in case of micrOS interface not available
             #       Corner case to be able to continue the update (if interrupted)
             self.console("Device upython version not available on micrOS interface ...", state="WARN")
-            if input("Do you want to continue with this mpycross {} version? (Y/N)".format(mpy_cross_version)).lower().strip() == "y":
+            if input(f"Do you want to continue with this mpycross {mpy_cross_version} version? (Y/N)").lower().strip() == "y":
                 return True
             return False
 

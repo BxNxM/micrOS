@@ -1,17 +1,20 @@
-FROM python:3.11
+FROM python:3.11-alpine
+
+# Upgrade PIP
+RUN python3 -m pip install --upgrade pip
 
 # Debug programs
-RUN apt update
-RUN apt install -y iputils-ping
-RUN apt install -y telnet
+RUN apk add --no-cache iputils-ping
+RUN apk add --no-cache git
+
+# Set the working directory
+WORKDIR /gateway
 
 # micrOS install via pip
-RUN python3 -m pip install --upgrade pip --no-cache-dir
+RUN python3 -m pip install micrOSDevToolKit==1.54.4
 
-# [A] Build with specific PYPI version
-RUN python3 -m pip install micrOSDevToolKit==1.54.3
-# [B] Build with development version from github
-#RUN python3 -m pip install git+https://github.com/BxNxM/micrOS.git
+# Change the working directory to the scripts directory
+WORKDIR /gateway/micrOS
 
 EXPOSE 5000
 
@@ -20,3 +23,4 @@ EXPOSE 5000
 #ENTRYPOINT devToolKit.py -s -gw -sim
 # Search and start gateway
 ENTRYPOINT devToolKit.py -s -gw
+

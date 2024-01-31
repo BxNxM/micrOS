@@ -36,19 +36,19 @@ echo -e "[CREATE IMAGE] DEV: ${DEV}"
 if [[ "${DEV}" == "true" ]]
 then
   # DEV BUILD
-  echo -e "|------- docker build -t ${IMAGE} -f DockerfileDev"
-  docker build --no-cache -t "${IMAGE}" -f DockerfileDev .
+  echo -e "|------- docker build --no-cache -t ${IMAGE} -f DockerfileDev"
+  docker buildx build  --no-cache -t "${IMAGE}" -f DockerfileDev .
 else
   # PROD BUILD
   echo -e "|------- docker build --no-cache -t ${IMAGE}"
-  docker build --no-cache -t "${IMAGE}" -t "${IMAGE_LATEST}" .
+  docker buildx build --no-cache -t "${IMAGE}" -t "${IMAGE_LATEST}" .
 fi
 
 echo -e "[RUN IMAGE] docker run"
 docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -d "${IMAGE}"
 
 
-if [[ "${DEV}" == "false" ]]
+if [[ $? -eq 0 && "${DEV}" == "false" ]]
 then
   echo -n "DO YOU WANT TO PUBLISH THE IMAGE ${IMAGE} (Y/n): "
   read answer

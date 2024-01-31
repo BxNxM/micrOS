@@ -8,10 +8,12 @@ import json
 try:
     from .LocalMachine import CommandHandler, FileHandler, SimplePopPushd
     from .TerminalColors import Colors
+    from .SafeInput import input_with_timeout
 except Exception as e:
     print("Import warning: {}".format(e))
     from LocalMachine import CommandHandler, FileHandler, SimplePopPushd
     from TerminalColors import Colors
+    from SafeInput import input_with_timeout
 
 MYPATH = os.path.dirname(__file__)
 print("Module [micrOSdashboard] path: {} __package__: {} __name__: {} __file__: {}".format(
@@ -27,7 +29,7 @@ def driver_conf():
             conf = json.loads(f.read())
         cp210x_enabled = conf.get('cp210x_enabled')
     else:
-        enable = input(f"{Colors.OKGREEN}Enable cp210x serial driver?{Colors.NC} {Colors.BOLD}Y/n:{Colors.NC} ")
+        enable = input_with_timeout(f"{Colors.OKGREEN}Enable cp210x serial driver?{Colors.NC} {Colors.BOLD}Y/n:{Colors.NC} ", default='n', timeout=5)
         cp210x_enabled = True if enable.lower() == 'y' else False
         conf = {'cp210x_enabled': cp210x_enabled}
         with open(conf_path, 'w') as f:
@@ -97,7 +99,7 @@ def restart():
     else:
         cmd = "sudo reboot"
     # Execute reboot, after user agrees with it
-    is_reboot = input("Restart Y/N: ")
+    is_reboot = input_with_timeout("Restart Y/N: ", default='n', timeout=10)
     if is_reboot.lower() == 'y':
         exitcode, stdout, stderr = CommandHandler.run_command(cmd, shell=True, debug=True)
         if exitcode != 0:

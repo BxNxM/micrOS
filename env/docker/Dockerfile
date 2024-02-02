@@ -11,7 +11,7 @@ RUN apk add --no-cache git
 WORKDIR /gateway
 
 # micrOS install via pip
-RUN python3 -m pip install micrOSDevToolKit==1.55.1
+RUN python3 -m pip install micrOSDevToolKit==1.55.2
 
 # Change the working directory to the scripts directory
 WORKDIR /gateway/micrOS

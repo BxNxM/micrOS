@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import sys
+import os
 
-# INSTALL OPTIONAL DEPENDENCIES - PIP HACK
-from toolkit.lib import pip_package_installer as pip_install
-pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.20.0'])
+
+if len(sys.argv) > 1 and sys.argv[1] in ['light', '--light']:
+    print('LIGHT DEPLOYMENT: skip optional dependencies')
+    sys.argv.remove(sys.argv[1])
+else:
+    # INSTALL OPTIONAL DEPENDENCIES - PIP HACK
+    from toolkit.lib import pip_package_installer as pip_install
+    pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.20.0'])
+
 
 # NORMAL CODE ...
-import os
-import sys
-
 MYPATH = os.path.dirname(__file__)
 print("Module [devToolKit] path: {} __package__: {} __name__: {} __file__: {}".format(
     sys.path[0], __package__, __name__, MYPATH))
@@ -58,6 +63,7 @@ def arg_parse():
     dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server, Env. vars: API_AUTH='username:password' (optional), GATEWAYIP needed for container deployment only.")
     dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
     dev_group.add_argument("-lint", "--linter", action="store_true", help="Run micrOS system linter (pylint+)")
+    dev_group.add_argument("--light", action="store_true", help="Skip optional dependency deployments (low level param: add this as first argument always)")
 
     toolkit_group = parser.add_argument_group("Toolkit development")
     toolkit_group.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")

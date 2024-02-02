@@ -1,9 +1,13 @@
+import sys
 from sys import executable
 import os
 import subprocess
 MYPATH = os.path.dirname(__file__)
-USER_DATA_OPT_INST_DONE = os.path.join(MYPATH, '../user_data/.opt_install_done')
+USER_DATA_OPT_INST_DONE = os.path.join(MYPATH, '../user_data/.opt_dep_install')
 INTERPRETER = executable
+
+sys.path.append(os.path.join(MYPATH, '../'))
+from DevEnvCompile import Compile
 
 try:
     from . import TerminalColors
@@ -12,6 +16,20 @@ except Exception as e:
     import TerminalColors
 
 AVAILABLE_PACKAGES = []
+
+def compare_versions():
+    print("[PIP] OPT INSTALL AUTO TRIGGER - VERSION COMPARE")
+    current_micros_version = Compile().get_micros_version_from_repo().strip()
+    last_stored_micros_version = None
+    if os.path.isfile(USER_DATA_OPT_INST_DONE):
+        with open(USER_DATA_OPT_INST_DONE, 'r') as f:
+            last_version = f.read()
+        last_stored_micros_version = last_version.strip() if '.' in last_version else '0.0.0-0'
+    print(f"\t[PIP] repo: {current_micros_version} vs. last: {last_stored_micros_version}")
+    if current_micros_version == last_stored_micros_version:
+        return True
+    return False
+
 
 def list_packages():
     global AVAILABLE_PACKAGES
@@ -44,8 +62,8 @@ def install_optional_dependencies(requirements):
         return True
 
     # SKIP if it was already done
-    if os.path.exists(USER_DATA_OPT_INST_DONE):
-        print(f"[PIP] Already (attempted) to install optional dependencies: {USER_DATA_OPT_INST_DONE}")
+    if compare_versions():
+        print(f"[PIP] Already (attempted) to install optional dependencies in this version: {USER_DATA_OPT_INST_DONE}")
         return True
 
     # INSTALL DEPs
@@ -58,7 +76,7 @@ def install_optional_dependencies(requirements):
             else:
                 print(f"[PIP] SKIP install {dep} (available)")
         with open(USER_DATA_OPT_INST_DONE, 'w') as f:
-            f.write('done')
+            f.write(Compile().get_micros_version_from_repo().strip())
         return True
     return False
 

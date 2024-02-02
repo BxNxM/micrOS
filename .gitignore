@@ -8,6 +8,7 @@
 micrOS/source/*.mpy
 micrOS/source/node_config.json
 toolkit/user_data/driver_conf.json
+toolkit/user_data/.opt_dep_install
 
 # Workspace ignore
 toolkit/workspace/precompiled/node_config.json

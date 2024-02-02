@@ -33,9 +33,10 @@ class Compile:
         self.dry_run = dry_run
         self.micrOS_dir_path = os.path.join(MYPATH, "../micrOS/source")
         self.precompiled_micrOS_dir_path = os.path.join(MYPATH, "workspace/precompiled")
+        self.precompiled_micrOS_version_path = os.path.join(MYPATH, "workspace/precompiled/_mpy.version")
         self.sfuncman_output_path = os.path.join(MYPATH, "../micrOS/client/sfuncman/")
         self.precompile_LM_whitelist = self._read_LMs_whitelist()
-        self.python_interpreter = sys.executable.replace(" ", "\ ")
+        self.python_interpreter = sys.executable
         self.micros_sim_workspace = os.path.join(MYPATH, 'workspace/simulator')
         self.execution_verdict = []
         # mpy-cross binary path for cross compilation
@@ -48,6 +49,38 @@ class Compile:
     @staticmethod
     def is_mpycross_available():
         return False if mpy_cross is None else True
+
+    @property
+    def precompiled_mpy_cross_version(self):
+        """ GET STORED MPY-CROSS VERSION UNDER PRECOMPILED DIR"""
+        mpy_version = None
+        try:
+            with open(self.precompiled_micrOS_version_path, 'r') as f:
+                mpy_version = f.read().strip()
+            self.console(f"LOAD MPY-CROSS VERSION: {mpy_version}", state="OK")
+        except Exception as e:
+            self.console(f"LOAD MPY-CROSS VERSION ERROR: {e}", state='ERR')
+        return mpy_version
+
+    def _save_precompiled_mpy_cross_version(self):
+        """ STORE MPY-CROSS VERSION UNDER PRECOMPILED DIR"""
+        if self.is_mpycross_available():
+            self.console(f"SAVE MPY-CROSS VERSION: {self.precompiled_micrOS_version_path} ({self.mpy_cross_compiler_path})")
+            command = "{mpy_cross} --version".format(mpy_cross=self.mpy_cross_compiler_path)
+            result = LocalMachine.CommandHandler.run_command(command, shell=True)
+            exitcode = result[0]
+            raw_version = result[1]
+            if exitcode == 0 and isinstance(raw_version, str):
+                try:
+                    version = [v for v in raw_version.lower().split(" ") if v.startswith('v')][0]
+                    mpy_cross_version = version.split('-')[0].replace('v', '')
+                    with open(self.precompiled_micrOS_version_path, 'w') as f:
+                        f.write(mpy_cross_version)
+                    self.console(f"\t\tmpy-cross version was successfully saved ({mpy_cross_version}) to: {self.precompiled_micrOS_version_path}", state='OK')
+                except Exception as e:
+                    self.console(f"Cannot get mpy-cross version: {e}", state="ERR")
+        else:
+            self.console(f"Cannot save mpy-cross version: {self.precompiled_micrOS_version_path}", state='ERR')
 
     @staticmethod
     def _read_LMs_whitelist():
@@ -138,9 +171,9 @@ class Compile:
 
             # Build micrOS with mpy-cross binary - handle space in path
             command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(
-                mpy_cross=self.mpy_cross_compiler_path.replace(" ", "\ "),
-                to_compile=to_compile.replace(" ", "\ "),
-                target_path=self.precompiled_micrOS_dir_path.replace(" ", "\ "),
+                mpy_cross=self.mpy_cross_compiler_path,
+                to_compile=to_compile,
+                target_path=self.precompiled_micrOS_dir_path,
                 target_name=precompiled_target_name)
             if self.dry_run:
                 exitcode, stdout, stderr = 0, 'dry-run', ''
@@ -170,6 +203,7 @@ class Compile:
                 self.console("Copy error", state='err')
                 error_cnt += 1
         self.copy_other_resources_to_precompiled()
+        self._save_precompiled_mpy_cross_version()
         # Evaluation summary
         if error_cnt != 0:
             self.console("Some modules [{}] not compiled properly - please check the logs.".format(error_cnt),

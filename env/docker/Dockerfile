@@ -11,7 +11,7 @@ RUN apk add --no-cache git
 WORKDIR /gateway
 
 # micrOS install via pip
-RUN python3 -m pip install micrOSDevToolKit==1.55.2
+RUN python3 -m pip install micrOSDevToolKit==1.55.4
 
 # Change the working directory to the scripts directory
 WORKDIR /gateway/micrOS
@@ -22,5 +22,5 @@ EXPOSE 5000
 # Search and start gateway and start simulator (beta)
 #ENTRYPOINT devToolKit.py -s -gw -sim
 # Search and start gateway
-ENTRYPOINT devToolKit.py -s -gw
+ENTRYPOINT devToolKit.py --light -s -gw
 

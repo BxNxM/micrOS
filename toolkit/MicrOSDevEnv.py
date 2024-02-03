@@ -125,6 +125,11 @@ class MicrOSDevTool(OTA, USB):
         Generate static module-function provider json description: sfuncman.json
         [!] name dependency with micrOS internal manual provider
         """
+
+        if not os.path.isdir(self.sfuncman_output_path):
+            self.console('DOC GEN DISABLED', state="WARN")
+            return
+
         repo_version = self.get_micros_version_from_repo()
         static_help_json_path = os.path.join(self.sfuncman_output_path, 'sfuncman_{}.json'.format(repo_version))
         static_help_html_path = os.path.join(self.sfuncman_output_path, 'sfuncman.html')

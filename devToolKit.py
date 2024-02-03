@@ -156,7 +156,7 @@ def simulate_micrOS(api_obj):
 
 def gateway_rest_api():
     from toolkit import Gateway
-    Gateway.gateway()
+    Gateway.gateway(debug=False)
 
 
 def applications(api_obj, app):

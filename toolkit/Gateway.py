@@ -592,13 +592,13 @@ api.add_resource(ForwardImg, '/image', '/image/<string:device>')
 api.add_resource(ImgStream, '/imgstream')
 
 
-def gateway():
+def gateway(debug=True):
     global API_URL_CACHE
     API_URL_CACHE = f"http://{my_local_ip()}:5000"
     print("\n############### START MICROS GATEWAY ###############")
     print("#             {}            #".format(API_URL_CACHE))
     print("####################################################\n")
-    app.run(debug=True, host='0.0.0.0', port=5000)     # host='0.0.0.0' automatic, manual: host=my_local_ip()
+    app.run(debug=debug, use_reloader=debug, host='0.0.0.0', port=5000)     # host='0.0.0.0' automatic, manual: host=my_local_ip()
 
 
 # driver function

@@ -23,6 +23,49 @@ micrOS   \____/ \__,_| \__| \___|  \_/\_/   \__,_| \__, |
     	                                           |___/ 
 ```
 
+# Docker Compose ALL-IN-ONE
+
+`#gateway #grafana # prometheus`
+
+## Compose all components
+
+[docker-compose.yaml](https://github.com/BxNxM/micrOS/blob/master/env/docker/docker-compose.yaml)
+
+```
+docker-compose -p gateway up -d
+```
+
+Prometheus scraper config example:
+[prometheus.yml](https://github.com/BxNxM/micrOS/blob/master/env/docker/prometheus.yml)
+
+Grafana dasboard [examples.json](https://github.com/BxNxM/micrOS/blob/master/env/docker/grafana_dashboards) 
+
+> Change GATEWAYIP=10.0.1.1 to your router IP, where the host machine and micrOS endpoints are connected.
+> Chnage API_AUTH=<usr>:<pwd> for basic auth, or remove param if you don't need basic auth.
+
+## Single Gateway container deployment
+
+Without BasicAuth
+
+```bash
+docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -d bxnxm/micros-gateway:1.55.4
+```
+
+With BasicAuth
+
+```bash
+docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -e API_AUTH=usr:pwd -d bxnxm/micros-gateway:1.55.4
+```
+
+
+-----------
+
+
+# Image creation
+
+[make.bash](https://github.com/BxNxM/micrOS/blob/master/env/docker/make.bash)
+
+
 ## Create docker `micros-gateway` image
 
 ```

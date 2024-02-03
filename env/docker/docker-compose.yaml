@@ -5,6 +5,7 @@ services:
     container_name: micros-gateway
     environment:
       - GATEWAYIP=10.0.1.1
+      - API_AUTH=usr:pwd
     ports:
       - "5000:5000"  # Expose Flask REST API port to host
     networks:

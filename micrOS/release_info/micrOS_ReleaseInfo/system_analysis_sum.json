@@ -38,7 +38,7 @@
         ],
         "Common.py": [
             9.1,
-            22
+            23
         ],
         "InterConnect.py": [
             9.11,
@@ -197,7 +197,7 @@
             0
         ],
         "LM_OV2640.py": [
-            8.95,
+            9.03,
             0
         ],
         "LM_rgb.py": [
@@ -223,6 +223,10 @@
         "LM_presence.py": [
             8.83,
             4
+        ],
+        "LM_dashboard_be.py": [
+            6.67,
+            0
         ],
         "LM_dimmer.py": [
             8.32,
@@ -259,8 +263,8 @@
             19
         ],
         "load": [
-            5943,
-            44
+            5964,
+            45
         ],
         "core_dep": [
             true,
@@ -271,7 +275,7 @@
             5
         ],
         "core_score": 9.15,
-        "load_score": 8.15,
-        "version": "1.54.1-1"
+        "load_score": 8.12,
+        "version": "1.56.0-0"
     }
 }

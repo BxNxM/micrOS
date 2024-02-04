@@ -171,9 +171,9 @@ class Compile:
 
             # Build micrOS with mpy-cross binary - handle space in path
             command = "{mpy_cross} {to_compile} -o {target_path}/{target_name} -v".format(
-                mpy_cross=self.mpy_cross_compiler_path,
+                mpy_cross=self.mpy_cross_compiler_path.replace(' ', os.sep),
                 to_compile=to_compile,
-                target_path=self.precompiled_micrOS_dir_path,
+                target_path=self.precompiled_micrOS_dir_path.replace(' ', os.sep),
                 target_name=precompiled_target_name)
             if self.dry_run:
                 exitcode, stdout, stderr = 0, 'dry-run', ''

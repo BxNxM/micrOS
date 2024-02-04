@@ -231,7 +231,7 @@ class WebCli(Client):
                         task.create(callback=self.stream(data['callback'], task, data['content-type']),
                                     tag=f"web.stream_{self.client_id.replace('W', '')}")
                     else:  # dtype: text/html or text/plain
-                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n{data}")
+                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
                 except Exception as e:
                     await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length:{len(str(e))}\r\n\r\n{e}")
                     errlog_add(f"[ERR] WebCli endpoints {cmd}: {e}")

@@ -52,7 +52,7 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
     # Register rest endpoint
     rest_endpoint('cam/snapshot', _snapshot_clb)
     rest_endpoint('cam/stream', _image_stream_clb)
-    return f"Endpoint created: /cam/snapshot and /cam/stream"
+    return "Endpoint created: /cam/snapshot and /cam/stream"
 
 
 def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None, brightness=None, contrast=None, whitebalace=None, q=None):

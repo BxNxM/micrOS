@@ -25,25 +25,10 @@
 </head>
 <body>
     <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
-    <h1> microWeb server </h1>
-    <!-- Display SysApiCall output -->
-    <p id="SysApiCall"></p>
+    <h1> micrOS dashboard </h1>
 
-    <h2>🚀 REST API v1.1</h2>
-    <p>Clickable examples 🕹</p>
-    <button onclick="restApi('system/info')">SysInfo</button>
-    <button onclick="restApi('system/alarms')">Alarms</button>
-    <button onclick="restApi('system/clock')">Clock</button>
-    <button onclick="restApi('task/list')">Tasks</button>
-
-    <!-- Input field for string -->
-    <label for="inputApiCmd"> <h3>⚙️ Enter micrOS command:</h3> </label>
-    <input type="text" id="inputApiCmd">
-    <!-- Button to send data -->
-    <button onclick="restApi()">Send</button>
-    <!-- Display usrApiCallUrl generated from inputApiCmd -->
-    <p id="usrApiCallUrl"></p>
     <!-- Display api response -->
+    <p id="usrApiCallUrl"></p>
     <pre id="usrApiCallResponse"></pre>
     <!-- Display response time in ms -->
     <p id="rest_response_time"></p>
@@ -54,15 +39,13 @@
         const port = window.location.port ? `:${window.location.port}` : "";
 
         function restApi(cmd = '') {
-            if (cmd == '') {cmd=document.getElementById('inputApiCmd').value;}
             cmd = cmd.trim().replace(/\s+/g, '/');
-            let apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
-
+            const apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
             const startTime = performance.now();
             let endTime;
 
             // Call rest api with command parameter
-            fetch(apiUrl).then(response => {
+            return fetch(apiUrl).then(response => {
                 // Check if the request was successful (status code 200)
                 if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
                 // Parse the JSON response
@@ -71,24 +54,27 @@
             }).then(data => {
                 // Display the generated URL on the webpage
                 document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-
                 // Handle the data received from the server
                 document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
                 const delta = (endTime - startTime).toFixed(0);
                 document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
-
-                // Update sys info
-                if (cmd == '') {document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
-                                .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
-                                .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-                                .join('  ❖  ').replace(/"/g, '') +
-                                (data['result']['usr_endpoints'] ? "<br>📎 " + Object.entries(data['result']['usr_endpoints'])
-                                    .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value}</a>`)
-                                    .join(' | '): '');}
+                // return result
+                return data;
             }).catch(error => {console.error('Fetch error:', error, data);});
         }
-        // Init basic info from board
-        restApi()
+
+        // Init dashboard (load active modules)
+        restApi('dashboard_be/app_list').then(app_list => {
+            console.log(app_list['result']);
+            console.log(typeof app_list['result']);
+            // Handle the app_list data here
+            for (const item of app_list['result']) {
+                console.log(item);
+            }
+        }).catch(error => {
+            // Handle errors here
+            console.error(error);
+        });
     </script>
 </body>
 </html>

@@ -26,7 +26,10 @@
 <body>
     <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
     <h1> micrOS dashboard </h1>
+    <!-- Container for the dynamically generated list -->
+    <ul id="dynamicContent"></ul>
 
+    <h2> debug </h2>
     <!-- Display api response -->
     <p id="usrApiCallUrl"></p>
     <pre id="usrApiCallResponse"></pre>
@@ -34,15 +37,19 @@
     <p id="rest_response_time"></p>
 
     <script>
+        // CONFIGURE known FE functions
+        const conf_func_fe_list = ['brightness', 'toggle'];
         // Get the current hostname and create the REST API URL
         const currentHostname = window.location.hostname;
         const port = window.location.port ? `:${window.location.port}` : "";
+        let is_api_available = true;
 
-        function restApi(cmd = '') {
+        function restApi(cmd = '', debug=true) {
             cmd = cmd.trim().replace(/\s+/g, '/');
             const apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
             const startTime = performance.now();
             let endTime;
+            is_api_available = false;
 
             // Call rest api with command parameter
             return fetch(apiUrl).then(response => {
@@ -52,24 +59,107 @@
                 endTime = performance.now();
                 return response.json();
             }).then(data => {
-                // Display the generated URL on the webpage
-                document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-                // Handle the data received from the server
-                document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
-                const delta = (endTime - startTime).toFixed(0);
-                document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
-                // return result
+                if (debug) {
+                    // Display the generated URL on the webpage
+                    document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
+                    // Handle the data received from the server
+                    document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
+                    const delta = (endTime - startTime).toFixed(0);
+                    document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
+                }
+                is_api_available = true;
                 return data;
-            }).catch(error => {console.error('Fetch error:', error, data);});
+            }).catch(error => {
+                console.error('Fetch error:', error, data);
+                is_api_available = true;
+            });
         }
 
-        // Init dashboard (load active modules)
-        restApi('dashboard_be/app_list').then(app_list => {
-            console.log(app_list['result']);
-            console.log(typeof app_list['result']);
+        function getMatchingElements(targetList, whitelist) {
+            let matchingElements = [];
+            whitelist.forEach(whitelistedItem => {
+                targetList.forEach(targetItem => {
+                    if (targetItem.includes(whitelistedItem)) {
+                        matchingElements.push(whitelistedItem);
+                    }
+            });});
+            return matchingElements;
+        }
+
+        function generateElement(type, data) {
+            // type: h1, h2, p, li, etc.
+            // data: rest command
+            var container = document.getElementById('dynamicContent');
+            var element;
+
+            if (type.toLowerCase() === 'slider') {
+                paragraph = document.createElement('p');
+                paragraph.textContent = 'brightness';
+                // Create a slider
+                element = document.createElement('input');
+                element.type = 'range';
+                element.min = 0;
+                element.max = 100;
+                element.value = 50;
+                // Add an event listener to update the displayed value
+                element.addEventListener('input', function () {
+                    console.log(`[${is_api_available}] Slider value: ${data}/${this.value}`);
+                    if (is_api_available) {
+                        restApi(`${data}/${this.value}`);
+                    }
+                });
+                container.appendChild(paragraph);
+            } else if (type.toLowerCase() === 'button') {
+                paragraph = document.createElement('p');
+                // Create a button
+                element = document.createElement('button');
+                element.textContent = 'toggle';
+
+                // Add an event listener to handle button click
+                element.addEventListener('click', function () {
+                    console.log(`[${is_api_available}] Button clicked: ${data}`);
+                    if (is_api_available) {
+                        restApi(data); // Adjust the API call based on your requirements
+                    }
+                });
+                container.appendChild(paragraph);
+            } else {
+                // Create other elements
+                element = document.createElement(type);
+                element.textContent = data;
+            }
+        // Append the element to the container
+        container.appendChild(element);
+        }
+
+        function genPage(module, functions) {
+            generateElement(type='h2', data=`${module}`);
+            for (const func of functions) {
+                let html_type='p';
+                if (func === 'brightness') {
+                    html_type='slider';
+                }
+                if (func === 'toggle') {
+                    html_type='button';
+                }
+                generateElement(type=html_type, data=`${module}/${func}`);
+            }
+        }
+
+        // INIT DASHBOARD (load active modules + build page)
+        restApi('dashboard_be/app_list').then(data => {
+            let app_list = JSON.parse(data['result'].replace(/'/g, '"'));
             // Handle the app_list data here
-            for (const item of app_list['result']) {
-                console.log(item);
+            for (const module of app_list) {
+                //console.log(module);
+                restApi(`${module}/help`, debug=false).then(data => {
+                    let module_help = data.result;
+                    let matchingElements = getMatchingElements(module_help, conf_func_fe_list);
+                    //console.log(matchingElements)
+                    if (matchingElements.length > 0) {
+                        genPage(module, matchingElements);
+                    }
+                });
             }
         }).catch(error => {
             // Handle errors here

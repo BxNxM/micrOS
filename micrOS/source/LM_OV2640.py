@@ -6,6 +6,11 @@ import time
 from Debug import console_write
 from Common import rest_endpoint, syslog
 
+try:
+    from LM_dashboard_be import custom_commands
+except:
+    custom_commands = None
+
 FLASH_LIGHT = None      # Flashlight object
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
 CAM_INIT = False
@@ -17,7 +22,6 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
     :param freq: default (not set: 10kHz) or high: 20kHz
     :param effect: NONE (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO
     """
-
     if camera is None:
         syslog("Non supported feature - use esp32cam image!")
         return "Non supported feature - use esp32cam image!"
@@ -52,6 +56,10 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
     # Register rest endpoint
     rest_endpoint('cam/snapshot', _snapshot_clb)
     rest_endpoint('cam/stream', _image_stream_clb)
+    if custom_commands is not None:
+        custom_commands({'OV2640/settings/saturation=': 'slider'})
+        custom_commands({'OV2640/settings/brightness=': 'slider'})
+        custom_commands({'OV2640/settings/contrast=': 'slider'})
     return "Endpoint created: /cam/snapshot and /cam/stream"
 
 
@@ -64,7 +72,7 @@ def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None,
     :param saturation:  0-100 %
     :param brightness:  0-100 %
     :param contrast:    0-100 %
-    :param whitebalace: NONE (default) SUNNY CLOUDY OFFICE HOME
+    :param whitebalace: NONE (default) SUNNY, CLOUDY, OFFICE, HOME
     :param q:           10-63 lower number means higher quality
     """
 

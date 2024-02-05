@@ -72,7 +72,7 @@
             "param(s)": ""
         },
         "settings": {
-            "doc": "\n    Camera settings\n    :param flip: flip image True/False\n    :param mirror: mirror image True/False\n    :param effect: None (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    :param saturation:  0-100 %\n    :param brightness:  0-100 %\n    :param contrast:    0-100 %\n    :param whitebalace: NONE (default) SUNNY CLOUDY OFFICE HOME\n    :param q:           10-63 lower number means higher quality\n    ",
+            "doc": "\n    Camera settings\n    :param flip: flip image True/False\n    :param mirror: mirror image True/False\n    :param effect: None (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    :param saturation:  0-100 %\n    :param brightness:  0-100 %\n    :param contrast:    0-100 %\n    :param whitebalace: NONE (default) SUNNY, CLOUDY, OFFICE, HOME\n    :param q:           10-63 lower number means higher quality\n    ",
             "param(s)": "quality=None flip=None mirror=None effect=None saturation=None brightness=None contrast=None whitebalace=None q=None"
         }
     },
@@ -255,12 +255,16 @@
     },
     "dashboard_be": {
         "app_list": {
-            "doc": null,
+            "doc": "\n    API HELPER: return loaded application modules\n    ",
             "param(s)": ""
         },
         "create_dashboard": {
-            "doc": null,
+            "doc": "\n    Create dashboard endpoint\n    ",
             "param(s)": ""
+        },
+        "custom_commands": {
+            "doc": "\n    :param widget: {'OV2640/settings/saturation=': 'slider'}\n    API HELPER: return {'rest/command': <type>}\n    <type>: slider, button, box, h1, h2, p, etc...\n    ",
+            "param(s)": "widget=None"
         },
         "help": {
             "doc": null,

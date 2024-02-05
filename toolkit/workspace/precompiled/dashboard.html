@@ -48,7 +48,7 @@
         const port = window.location.port ? `:${window.location.port}` : "";
         let is_api_available = true;
 
-        function restApi(cmd = '', debug=true) {
+        function restApi(cmd='', debug=true) {
             cmd = cmd.trim().replace(/\s+/g, '/');
             const apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
             const startTime = performance.now();
@@ -83,7 +83,7 @@
             let matchingElementsSet = new Set();
             whitelist.forEach(whitelistedItem => {
                 targetList.forEach(targetItem => {
-                    if (targetItem.includes(whitelistedItem)) {
+                    if (targetItem.startsWith(whitelistedItem)) {
                         matchingElementsSet.add(whitelistedItem);
                     }
                 });
@@ -94,14 +94,14 @@
         }
 
         function generateElement(type, data) {
-            // type: h1, h2, p, li, etc.
+            // type: slider, button, box, h1, h2, p, li, etc.
             // data: rest command
             var container = document.getElementById('dynamicContent');
             var element;
 
             if (type.toLowerCase() === 'slider') {
                 paragraph = document.createElement('p');
-                paragraph.textContent = 'brightness';
+                paragraph.textContent = data.split('/').slice(1).join('-').replace(/=/g, '');
                 // Create a slider
                 element = document.createElement('input');
                 element.type = 'range';
@@ -113,7 +113,11 @@
                 element.addEventListener('input', function () {
                     console.log(`[${is_api_available}] Slider value: ${data}/${this.value}`);
                     if (is_api_available) {
-                        restApi(`${data}/${this.value}`);
+                        if (data.endsWith("=")) {
+                            restApi(`${data}${this.value}`);
+                        } else {
+                            restApi(`${data}/${this.value}`);
+                        }
                     }
                 });
                 container.appendChild(paragraph);
@@ -172,7 +176,7 @@
             }
         }
 
-        // INIT DASHBOARD (load active modules + build page)
+        // INIT DASHBOARD (load active modules -> build page)
         restApi('dashboard_be/app_list').then(data => {
             let app_list = JSON.parse(data['result'].replace(/'/g, '"'));
             // Handle the app_list data here
@@ -188,7 +192,18 @@
                 });
             }
         }).catch(error => {
-            // Handle errors here
+            console.error(error);
+        });
+        // INIT DASHBOARD (load custom commands -> build page)
+        restApi('dashboard_be/custom_commands').then(commands => {
+            console.log(commands.result)
+            for (let key in commands.result) {
+                api_cmd = key;
+                api_type = commands.result[key];
+                console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
+                generateElement(type=api_type, data=api_cmd);
+            }
+        }).catch(error => {
             console.error(error);
         });
     </script>

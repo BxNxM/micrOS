@@ -49,15 +49,13 @@
     <p id="rest_response_time"></p>
 
     <script>
+        // Get the current hostname and create the REST API URL
         const currentHostname = window.location.hostname;
         const port = window.location.port ? `:${window.location.port}` : "";
 
         function restApi(cmd = '') {
             if (cmd == '') {cmd=document.getElementById('inputApiCmd').value;}
             cmd = cmd.trim().replace(/\s+/g, '/');
-
-            // Get the current hostname and create the REST API URL
-            // const currentHostname = window.location.hostname;
             let apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
 
             const startTime = performance.now();

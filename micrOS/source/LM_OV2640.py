@@ -15,6 +15,7 @@ FLASH_LIGHT = None      # Flashlight object
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
 CAM_INIT = False
 
+
 def load_n_init(quality='medium', freq='default', effect="NONE"):
     """
     Load Camera module OV2640
@@ -25,6 +26,8 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
     if camera is None:
         syslog("Non supported feature - use esp32cam image!")
         return "Non supported feature - use esp32cam image!"
+
+    _set_web_endpoints()
 
     global CAM_INIT
     if CAM_INIT:
@@ -52,14 +55,18 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
 
     # Apply (default) camera settings
     settings(quality=quality, effect=effect, saturation=50, brightness=50, contrast=50, whitebalace="NONE", q=15)
+    return "Endpoint created: /cam/snapshot and /cam/stream"
+
+
+def _set_web_endpoints():
     # Register rest endpoint
     rest_endpoint('cam/snapshot', _snapshot_clb)
     rest_endpoint('cam/stream', _image_stream_clb)
+    # Add custom widgets to /dashboard (generated frontend)
     if widget_add is not None:
         widget_add({'OV2640': {'settings/saturation=': 'slider',
                                'settings/brightness=': 'slider',
                                'settings/contrast=': 'slider'}})
-    return "Endpoint created: /cam/snapshot and /cam/stream"
 
 
 def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None, brightness=None, contrast=None, whitebalace=None, q=None):
@@ -75,7 +82,7 @@ def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None,
     :param q:           10-63 lower number means higher quality
     """
 
-    def percent_to_value(percent):
+    def _percent_to_value(percent):
         # Ensure the input is within the valid range (0-100)
         percent = max(0, min(100, percent))
         # Convert the percentage to a value between -2 and 2
@@ -120,15 +127,15 @@ def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None,
 
     # saturation: -2,2 (default 0). -2 grayscale
     if saturation is not None and isinstance(saturation, int):
-        camera.saturation(percent_to_value(saturation))
+        camera.saturation(_percent_to_value(saturation))
 
     # brightness: -2,2 (default 0). 2 brightness
     if brightness is not None and isinstance(brightness, int):
-        camera.brightness(percent_to_value(brightness))
+        camera.brightness(_percent_to_value(brightness))
 
     # contrast: -2,2 (default 0). 2 highcontrast
     if contrast is not None and isinstance(contrast, int):
-        camera.contrast(percent_to_value(contrast))
+        camera.contrast(_percent_to_value(contrast))
 
     # quality: 10-63 lower number means higher quality
     if q is not None and isinstance(q, int) and 10 <= q <=63:

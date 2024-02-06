@@ -46,14 +46,12 @@
         // Get the current hostname and create the REST API URL
         const currentHostname = window.location.hostname;
         const port = window.location.port ? `:${window.location.port}` : "";
-        let is_api_available = true;
 
         function restApi(cmd='', debug=true) {
             cmd = cmd.trim().replace(/\s+/g, '/');
             const apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
             const startTime = performance.now();
             let endTime;
-            is_api_available = false;
 
             // Call rest api with command parameter
             return fetch(apiUrl).then(response => {
@@ -71,11 +69,9 @@
                     const delta = (endTime - startTime).toFixed(0);
                     document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
                 }
-                is_api_available = true;
                 return data;
             }).catch(error => {
                 console.error('Fetch error:', error, data);
-                is_api_available = true;
             });
         }
 
@@ -99,8 +95,8 @@
             var container = document.getElementById('dynamicContent');
             var element;
 
+            paragraph = document.createElement('p');
             if (type.toLowerCase() === 'slider') {
-                paragraph = document.createElement('p');
                 paragraph.textContent = data.split('/').slice(1).join('-').replace(/=/g, '');
                 // Create a slider
                 element = document.createElement('input');
@@ -111,50 +107,40 @@
                 element.value = 50;
                 // Add an event listener to update the displayed value
                 element.addEventListener('input', function () {
-                    console.log(`[${is_api_available}] Slider value: ${data}/${this.value}`);
-                    if (is_api_available) {
-                        if (data.endsWith("=")) {
-                            restApi(`${data}${this.value}`);
-                        } else {
-                            restApi(`${data}/${this.value}`);
-                        }
+                    console.log(`Slider value: ${data}/${this.value}`);
+                    if (data.endsWith("=")) {
+                        restApi(`${data}${this.value}`);
+                    } else {
+                        restApi(`${data}/${this.value}`);
                     }
                 });
-                container.appendChild(paragraph);
             } else if (type.toLowerCase() === 'button') {
-                paragraph = document.createElement('p');
                 // Create a button
                 element = document.createElement('button');
                 element.textContent = 'toggle';
                 // Add an event listener to handle button click
                 element.addEventListener('click', function () {
-                    console.log(`[${is_api_available}] Button clicked: ${data}`);
-                    if (is_api_available) {
-                        restApi(data); // Adjust the API call based on your requirements
-                    }
+                    console.log(`Button clicked: ${data}`);
+                    restApi(data);
                 });
-                container.appendChild(paragraph);
             } else if (type.toLowerCase() === 'box') {
-                paragraph = document.createElement('p');
                 paragraph.textContent = 'measure';
                 // Create a small box (div)
                 element = document.createElement('div');
                 element.style.width = '400px';
                 element.style.height = '60px';
                 element.style.border = '1px solid #000';
-                console.log(`[${is_api_available}] box update: ${data}`);
-                if (is_api_available) {
-                    restApi(data).then(resp => {
-                        console.log(resp.result);
-                        element.textContent = JSON.stringify(resp.result, null, 4);});
-                }
-                // end paragraph
-                container.appendChild(paragraph);
+                console.log(`Box update: ${data}`);
+                restApi(data).then(resp => {
+                    console.log(resp.result);
+                    element.textContent = JSON.stringify(resp.result, null, 4);});
             } else {
                 // Create other elements
                 element = document.createElement(type);
                 element.textContent = data;
             }
+        // End paragraph
+        container.appendChild(paragraph);
         // Append the element to the container
         container.appendChild(element);
         }

@@ -11,8 +11,8 @@
             50% {background-position: 100% 50%;}
             100% {background-position: 0% 50%;}}
         body {
-            height: 150vh;
-            width: 150vh;
+            height: 200vh;
+            width: 200vh;
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
             margin: 40px;
             background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
@@ -29,7 +29,7 @@
     <!-- Display SysApiCall output -->
     <p id="SysApiCall"></p>
 
-    <h2>🚀 REST API v1.1</h2>
+    <h2>🚀 REST API</h2>
     <p>Clickable examples 🕹</p>
     <button onclick="restApi('system/info')">SysInfo</button>
     <button onclick="restApi('system/alarms')">Alarms</button>
@@ -37,7 +37,7 @@
     <button onclick="restApi('task/list')">Tasks</button>
 
     <!-- Input field for string -->
-    <label for="inputApiCmd"> <h3>⚙️ Enter micrOS command:</h3> </label>
+    <h3><label for="inputApiCmd">⚙️ Enter micrOS command: </label></h3>
     <input type="text" id="inputApiCmd">
     <!-- Button to send data -->
     <button onclick="restApi()">Send</button>
@@ -46,7 +46,7 @@
     <!-- Display api response -->
     <pre id="usrApiCallResponse"></pre>
     <!-- Display response time in ms -->
-    <p id="rest_response_time"></p>
+    <p id="restResponseTime"></p>
 
     <script>
         // Get the current hostname and create the REST API URL
@@ -75,7 +75,7 @@
                 // Handle the data received from the server
                 document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
                 const delta = (endTime - startTime).toFixed(0);
-                document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
+                document.getElementById('restResponseTime').innerHTML=`⏱ Response time: ${delta} ms`;
 
                 // Update sys info
                 if (cmd == '') {document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])

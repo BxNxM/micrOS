@@ -33,12 +33,15 @@
     <br>
     <br>
 
-    <h2> debug </h2>
-    <!-- Display api response -->
-    <p id="usrApiCallUrl"></p>
-    <pre id="usrApiCallResponse"></pre>
-    <!-- Display response time in ms -->
-    <p id="rest_response_time"></p>
+    <button id="toggleDebugSection">console</button>
+    <div id="debugSection" style="display: none;">
+        <h2>🚀 REST API</h2>
+        <!-- Display api response -->
+        <p id="usrApiCallUrl"></p>
+        <pre id="usrApiCallResponse"></pre>
+        <!-- Display response time in ms -->
+        <p id="rest_response_time"></p>
+    </div>
 
     <script>
         // CONFIGURE known FE functions
@@ -89,6 +92,15 @@
             return matchingElements;
         }
 
+        function containerAppendChild(elements, container) {
+            // Append list of elements into the container aka draw elements :D
+            if (!elements || !container) {
+                console.error("Inputs array or container element is missing.");
+                return;}
+            elements.forEach(function(element) {
+                container.appendChild(element);});
+        }
+
         function generateElement(type, data) {
             // type: slider, button, box, h1, h2, p, li, etc.
             // data: rest command
@@ -105,8 +117,15 @@
                 element.max = 100;
                 element.step = 5;
                 element.value = 50;
-                // Add an event listener to update the displayed value
+
+                // Create a span to display the slider value
+                var valueDisplay = document.createElement('span');
+                valueDisplay.textContent = element.value;
                 element.addEventListener('input', function () {
+                    valueDisplay.textContent = this.value;
+                });
+                // Add an event listener for API CALL
+                element.addEventListener('change', function () {
                     console.log(`Slider value: ${data}/${this.value}`);
                     if (data.endsWith("=")) {
                         restApi(`${data}${this.value}`);
@@ -114,35 +133,37 @@
                         restApi(`${data}/${this.value}`);
                     }
                 });
+                containerAppendChild([paragraph, element, valueDisplay], container);
             } else if (type.toLowerCase() === 'button') {
                 // Create a button
                 element = document.createElement('button');
                 element.textContent = 'toggle';
-                // Add an event listener to handle button click
+                // Add an event listener for API CALL
                 element.addEventListener('click', function () {
                     console.log(`Button clicked: ${data}`);
                     restApi(data);
                 });
+                containerAppendChild([paragraph, element], container);
             } else if (type.toLowerCase() === 'box') {
                 paragraph.textContent = 'measure';
                 // Create a small box (div)
                 element = document.createElement('div');
-                element.style.width = '400px';
+                element.style.width = '300px';
                 element.style.height = '60px';
-                element.style.border = '1px solid #000';
+                element.style.paddingTop = '10px';
+                element.style.paddingLeft = '10px';
+                element.style.border = '2px solid #1E0654';
                 console.log(`Box update: ${data}`);
                 restApi(data).then(resp => {
                     console.log(resp.result);
                     element.textContent = JSON.stringify(resp.result, null, 4);});
+                containerAppendChild([paragraph, element], container);
             } else {
                 // Create other elements
                 element = document.createElement(type);
                 element.textContent = data;
+                containerAppendChild([paragraph, element], container);
             }
-        // End paragraph
-        container.appendChild(paragraph);
-        // Append the element to the container
-        container.appendChild(element);
         }
 
         function genPage(module, functions) {
@@ -195,13 +216,20 @@
                             const api_cmd = `${module}/${func}`;
                             console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
                             generateElement(type=api_type, data=api_cmd);
-                        }
-                    }
-                }
-            }
+            };};};}
         }).catch(error => {
             console.error(error);
         });
+        // INIT [hidden] debug section
+        document.getElementById('toggleDebugSection').addEventListener('click', function() {
+            var debugSection = document.getElementById('debugSection');
+            if (debugSection.style.display === 'none') {
+                debugSection.style.display = 'block';
+            } else {
+                debugSection.style.display = 'none';
+            }
+        });
+
     </script>
 </body>
 </html>

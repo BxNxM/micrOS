@@ -194,14 +194,24 @@
         }).catch(error => {
             console.error(error);
         });
-        // INIT DASHBOARD (load custom commands -> build page)
-        restApi('dashboard_be/custom_commands').then(commands => {
+        // INIT DASHBOARD (load custom widget commands -> build page)
+        restApi('dashboard_be/widget_list').then(commands => {
             console.log(commands.result)
-            for (let key in commands.result) {
-                api_cmd = key;
-                api_type = commands.result[key];
-                console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
-                generateElement(type=api_type, data=api_cmd);
+            const widget_dict=commands.result;
+            for (const module in widget_dict) {
+                if (Object.hasOwnProperty.call(widget_dict, module)) {
+                    const innerObject = widget_dict[module];
+                    generateElement(type='h2', data=`🧬 ${module}`);
+                    // Iterate through the inner object
+                    for (const func in innerObject) {
+                        if (Object.hasOwnProperty.call(innerObject, func)) {
+                            const api_type = innerObject[func];
+                            const api_cmd = `${module}/${func}`;
+                            console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
+                            generateElement(type=api_type, data=api_cmd);
+                        }
+                    }
+                }
             }
         }).catch(error => {
             console.error(error);

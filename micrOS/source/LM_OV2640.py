@@ -7,9 +7,9 @@ from Debug import console_write
 from Common import rest_endpoint, syslog
 
 try:
-    from LM_dashboard_be import custom_commands
+    from LM_dashboard_be import widget_add
 except:
-    custom_commands = None
+    widget_add = None
 
 FLASH_LIGHT = None      # Flashlight object
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
@@ -52,14 +52,13 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
 
     # Apply (default) camera settings
     settings(quality=quality, effect=effect, saturation=50, brightness=50, contrast=50, whitebalace="NONE", q=15)
-
     # Register rest endpoint
     rest_endpoint('cam/snapshot', _snapshot_clb)
     rest_endpoint('cam/stream', _image_stream_clb)
-    if custom_commands is not None:
-        custom_commands({'OV2640/settings/saturation=': 'slider'})
-        custom_commands({'OV2640/settings/brightness=': 'slider'})
-        custom_commands({'OV2640/settings/contrast=': 'slider'})
+    if widget_add is not None:
+        widget_add({'OV2640': {'settings/saturation=': 'slider',
+                               'settings/brightness=': 'slider',
+                               'settings/contrast=': 'slider'}})
     return "Endpoint created: /cam/snapshot and /cam/stream"
 
 
@@ -217,6 +216,14 @@ def flashlight(value=None, default=100):
         value = 0 if val > 0 else default
     fl.duty(value)
     return {'value': value}
+
+def lmdep():
+    """
+    Show Load Module dependency
+    - List of load modules used by this application
+    :return: tuple
+    """
+    return 'dashboard_be'
 
 def help():
     return 'load_n_init quality="medium/low/high" freq="default/high"',\

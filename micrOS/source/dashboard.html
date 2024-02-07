@@ -77,7 +77,6 @@
                 console.error('Fetch error:', error, data);
             });
         }
-
         function getMatchingElements(targetList, whitelist) {
             let matchingElementsSet = new Set();
             whitelist.forEach(whitelistedItem => {
@@ -91,7 +90,6 @@
             let matchingElements = Array.from(matchingElementsSet);
             return matchingElements;
         }
-
         function containerAppendChild(elements, container) {
             // Append list of elements into the container aka draw elements :D
             if (!elements || !container) {
@@ -100,13 +98,11 @@
             elements.forEach(function(element) {
                 container.appendChild(element);});
         }
-
         function generateElement(type, data) {
             // type: slider, button, box, h1, h2, p, li, etc.
             // data: rest command
             var container = document.getElementById('dynamicContent');
             var element;
-
             paragraph = document.createElement('p');
             if (type.toLowerCase() === 'slider') {
                 paragraph.textContent = data.split('/').slice(1).join('-').replace(/=/g, '');
@@ -165,7 +161,6 @@
                 containerAppendChild([paragraph, element], container);
             }
         }
-
         function genPage(module, functions) {
             generateElement(type='h2', data=`🧬 ${module}`);
             for (const func of functions) {
@@ -229,7 +224,6 @@
                 debugSection.style.display = 'none';
             }
         });
-
     </script>
 </body>
 </html>

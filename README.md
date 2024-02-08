@@ -37,13 +37,13 @@ Access rest api over browser: `http://<nodename>.local`
 🧩  Codeless end user experience via phone client <br/>
 ⚠️  No external server or service required for client-device communication <br/>
 &nbsp;&nbsp; ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
-🛠 Easy to customize, create your own Load Modules: <br/>
+🛠 Easy to create custom application(s) aka create your own Load Modules: <br/>
 &nbsp;&nbsp; 1. Write **LM_**`<your_app>`**.py** <br/>
-&nbsp;&nbsp; 2. Copy (OTA/USB) python script to your device (drap&drop)<br/>
+&nbsp;&nbsp; 2. Copy (OTA/USB) python script to your device (drag&drop)<br/>
 &nbsp;&nbsp; 3. Call any function from **`<your_app>`** module <br/>
 🦾 Built-in scheduling (IRQs):<br/>
 &nbsp;&nbsp; - Time stamp based <br/>
-&nbsp;&nbsp; - Geolocation based utc + sunset, sunrise rest features <br/>
+&nbsp;&nbsp; - Geolocation based clock setup + time tags: sunset, sunrise <br/>
 &nbsp;&nbsp; - Simple periodic <br/>
 🔄 Async **task manager** - start (&/&&) / list / kill / show <br/>
 
@@ -92,7 +92,7 @@ Link for python 3.9 [download](https://www.python.org/downloads/release/python-3
 
 ----------------------------------------
 
-### 2. Install micrOS/Linux devToolKit GUI
+### 2. Install micrOS devToolKit GUI
 
 #### On macOS/Linux
 

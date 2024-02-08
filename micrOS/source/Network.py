@@ -14,8 +14,8 @@ https://docs.micropython.org/en/latest/library/network.html
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from utime import sleep_ms
 from binascii import hexlify
+from utime import sleep_ms
 from network import AP_IF, STA_IF, WLAN
 from machine import unique_id
 from Config import cfgget, cfgput

@@ -789,7 +789,7 @@ Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
 Next **main release** version **2.0.0.0**
 
 ```
-Almost same as Current v 1.48.0 content
+Current v1.57.0 content
 	- WebCli (multiport async servers)
 	- Camera support
 	- Full async as technically possible (InterCon)

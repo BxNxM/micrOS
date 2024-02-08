@@ -1,6 +1,6 @@
-import uasyncio as asyncio
 from socket import getaddrinfo, SOCK_STREAM
 from re import compile
+import uasyncio as asyncio
 from Debug import errlog_add
 from Config import cfgget
 from Server import SocketServer

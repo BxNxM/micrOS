@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
-    <title>MicroPython Web Server</title>
+    <title>microWeb</title>
     <style>
         @keyframes backgroundAnimation {
             0% {background-position: 0% 50%;}
@@ -19,23 +19,32 @@
             background-size: 400% 400%;
             animation: backgroundAnimation 15s infinite;
             color: #d9d9d9;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Verdana', Sans-serif;
+        }
+        button {
+            background-color: #e7e7e7; /* Gray */
+            border: none;
+            color: black;
+            font-size: 14px;
+            border-radius: 4px;
+            transition-duration: 0.4s;
+        }
+        button:hover {
+            background-color: #555555; /* Black */
+            color: white;
         }
     </style>
 </head>
 <body>
     <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
     <h1> microWeb server </h1>
-    <!-- Display SysApiCall output -->
     <p id="SysApiCall"></p>
-
     <h2>🚀 REST API</h2>
     <p>Clickable examples 🕹</p>
     <button onclick="restApi('system/info')">SysInfo</button>
     <button onclick="restApi('system/alarms')">Alarms</button>
     <button onclick="restApi('system/clock')">Clock</button>
     <button onclick="restApi('task/list')">Tasks</button>
-
     <!-- Input field for string -->
     <h3><label for="inputApiCmd">⚙️ Enter micrOS command: </label></h3>
     <input type="text" id="inputApiCmd">
@@ -47,7 +56,6 @@
     <pre id="usrApiCallResponse"></pre>
     <!-- Display response time in ms -->
     <p id="restResponseTime"></p>
-
     <script>
         // Get the current hostname and create the REST API URL
         const currentHostname = window.location.hostname;
@@ -57,32 +65,27 @@
             if (cmd == '') {cmd=document.getElementById('inputApiCmd').value;}
             cmd = cmd.trim().replace(/\s+/g, '/');
             let apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
-
             const startTime = performance.now();
             let endTime;
 
             // Call rest api with command parameter
             fetch(apiUrl).then(response => {
-                // Check if the request was successful (status code 200)
                 if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
-                // Parse the JSON response
                 endTime = performance.now();
                 return response.json();
             }).then(data => {
                 // Display the generated URL on the webpage
                 document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-
                 // Handle the data received from the server
                 document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
                 const delta = (endTime - startTime).toFixed(0);
                 document.getElementById('restResponseTime').innerHTML=`⏱ Response time: ${delta} ms`;
-
-                // Update sys info
+                // Update sys info /rest default
                 if (cmd == '') {document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
                                 .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
                                 .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
                                 .join('  ❖  ').replace(/"/g, '') +
-                                (data['result']['usr_endpoints'] ? "<br>📎 " + Object.entries(data['result']['usr_endpoints'])
+                                (data['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(data['result']['usr_endpoints'])
                                     .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value}</a>`)
                                     .join(' | '): '');}
             }).catch(error => {console.error('Fetch error:', error, data);});

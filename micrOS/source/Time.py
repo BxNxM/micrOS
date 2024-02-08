@@ -6,13 +6,12 @@ Module is responsible for Time related functions
 Designed by Marcell Ban aka BxNxM
 """
 
-from re import compile as re_comp
 from socket import socket, getaddrinfo, AF_INET, SOCK_DGRAM
-
+from re import compile as re_comp
+from struct import unpack
 from machine import RTC
 from network import WLAN, STA_IF
 from utime import sleep_ms, time, mktime, localtime
-from struct import unpack
 
 from Config import cfgput, cfgget
 from Debug import errlog_add, console_write

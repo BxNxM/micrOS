@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
-    <title>MicroPython Web Server</title>
+    <title>microWebDashboard</title>
     <style>
         @keyframes backgroundAnimation {
             0% {background-position: 0% 50%;}
@@ -19,20 +19,44 @@
             background-size: 400% 400%;
             animation: backgroundAnimation 15s infinite;
             color: #d9d9d9;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Verdana', Sans-serif;
+        }
+        button {
+            background-color: #e7e7e7; /* Gray */
+            border: none;
+            color: black;
+            font-size: 14px;
+            border-radius: 4px;
+            transition-duration: 0.4s;
+        }
+        button:hover {
+            background-color: #555555; /* Black */
+            color: white;
+        }
+        input {
+            -webkit-appearance: none;  /* Override default CSS styles */
+            appearance: none;
+            width: 30%;
+            height: 5px;
+            background: #e7e7e7; /* Gray */
+            outline: none;
+        }
+        input::-webkit-slider-thumb {
+            -webkit-appearance: none; /* Override default look */
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #B0BEC5; /* LightGray */
+            border-radius: 4px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
     <h1> micrOS dashboard </h1>
     <!-- Container for the dynamically generated list -->
     <ul id="dynamicContent"></ul>
-
-    <br>
-    <br>
-    <br>
-
+    <br><br><br>
     <button id="toggleDebugSection">console</button>
     <div id="debugSection" style="display: none;">
         <h2>🚀 REST API</h2>
@@ -144,11 +168,12 @@
                 paragraph.textContent = 'measure';
                 // Create a small box (div)
                 element = document.createElement('div');
-                element.style.width = '300px';
+                element.style.width = '30%';
                 element.style.height = '60px';
                 element.style.paddingTop = '10px';
                 element.style.paddingLeft = '10px';
-                element.style.border = '2px solid #1E0654';
+                element.style.border = '2px solid #e7e7e7';
+                element.style.borderRadius = '4px';
                 console.log(`Box update: ${data}`);
                 restApi(data).then(resp => {
                     console.log(resp.result);

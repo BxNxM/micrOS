@@ -296,6 +296,7 @@ LogicalPin lookup tables:
 - [esp32s2](./micrOS/source/IO_esp32s2.py)
 - [esp32s3](./micrOS/source/IO_esp32s3.py)
 - [raspberryPicoW](./micrOS/source/IO_rp2.py) - reset needed after ota update (webrepl limitation)
+- `IO_*.py` [etc.](./micrOS/source)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
 
@@ -786,25 +787,40 @@ Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
 
 ## RELESE NOTE
 
-Next **main release** version **2.0.0.0**
+Next **main release** version **2.0.0.0** coming soon.
 
 ```
 Current v1.57.0 content
-	- WebCli (multiport async servers)
-	- Camera support
-	- Full async as technically possible (InterCon)
-	- Async task management
-Missing:
-	- review + optimization(?)
-	- testing with gateway (ongoing)
+	Core:
+		- WebCli (http server with endpoints: / and /rest and /<custom>)
+		- Full async as technically possible (WebCLI, ShelCLI, TaskManager (LM), InterCon)
+			- rest (urequests) stays sync module (https limitation with async.) 
+		- Extensive testing and quality checks (system tests, pylint) 
+		Web Frontends:
+			- index.html (built-in)
+	
+	Load Module:
+		- Camera support (LM_OV2640.py)
+		- I2S mic support
+		- dashboard backend (LM_dashboard_be.py)
+		Web Frontends:
+		- dashboard.html
+
+TODO:
+	- LM_KeyChain HW+SW for the 2.0 anniversary 🎲 	
 ```
 
 Planned features in version **2.1.0-0**
 
 ```
-- micropython 1.22 integration with ShellCli (+interCon) and WebCli SSL/TLS support
-- Camera performance enhancements (WebCli) - investigation needed (techical limitations?) - but actually fine enough :D
-- telegram picture reply (? techical limitation ?)
+	Core:
+		- Socket SSL/TLS integration (with auth.)
+			- WebCli (http), ShellCli (terminal) and InterCon
+			- micropython 1.22+ required
+		- Study of ESP-NOW integration into InterCon (micropython requirements?)
+	
+	Load Module:
+		- Camera support (LM_OV2640.py) embed into dashboard.html
 ```
 
 
@@ -818,7 +834,7 @@ Planned features in version **2.1.0-0**
 |  **v light-1.3.0-0** | - |  - | **esp8266** | [lightweight branch](https://github.com/BxNxM/micrOS/tree/lightweight)| - |remove esp8266 due to memory limitation - BUT still supported with limited functionalities on **`lightweight`** branch. Hint: Change branch on github and download zip file, then start micrOSDevToolKit dashboard GUI
 |  **v 1.5.0-1** | [release_Info-1.5.0-1](./micrOS/release_info/micrOS_ReleaseInfo/release_1.5.0-1_note_esp32.md) |  **58,2%** 64 704 byte | esp32 (tinyPico) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.5.0-1.json) | Advanced Timer IRQ based scheduling (cron & timirq), Geolocation based timing features, External IRQs with 4 channel (event filtering), finalized light controls, Device-Device comminucation support, etc.
 |  **v 1.21.0-4** | [release_Info-1.21.0-4](./micrOS/release_info/micrOS_ReleaseInfo/release_1.21.0-4_note_esp32.md) |  **57.3%** 63 728 byte | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.21.0-4.json) | Full async core system with advanced task management and device to device communication, task scheduling and much more ... with more then 30 application/pheriphery support.
-
+|  **v 2.0.0-0** | [TODO](./micrOS/release_info/micrOS_ReleaseInfo/release_2.0.0-0_note_esp32.md) |  **~47.0%** ~52kb | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.0.0-0.json) | Optimizations, WebCli with web frontends, Camera support. Micropython 1.21 async maxed out :D 
 
 ----------------------------------------
 ----------------------------------------

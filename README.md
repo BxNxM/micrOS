@@ -58,7 +58,7 @@ Access rest api over browser: `http://<nodename>.local`
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
 7. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
 8. micrOS gateway with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS#micros-gateway-in-docker)
-9. Release notes: [link](https://github.com/BxNxM/micrOS#RELESE-NOTE)
+9. Release notes: [link](https://github.com/BxNxM/micrOS#relese-note)
 
 ----------------------------------------
 ----------------------------------------
@@ -787,7 +787,7 @@ Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
 
 ## RELESE NOTE
 
-Next **main release** version **2.0.0.0** coming soon.
+Next **main release** version **2.0.0.0** coming soon (24 April).
 
 ```
 Current v1.57.0 content
@@ -810,7 +810,7 @@ TODO:
 	- LM_KeyChain HW+SW for the 2.0 anniversary 🎲 	
 ```
 
-Planned features in version **2.1.0-0**
+Future planned features in version **2.1+.0-0**
 
 ```
 	Core:
@@ -821,6 +821,27 @@ Planned features in version **2.1.0-0**
 	
 	Load Module:
 		- Camera support (LM_OV2640.py) embed into dashboard.html
+```
+
+Future planned features in version **2.2+.0-0**
+
+```
+	Core:
+		- Network stack redesign
+			- Network
+				- wifi (defualt, current interfaces)
+				- Study of ble (Shell)
+	
+	Load Module:
+		- (?)
+```
+
+Future main Version **3.0.0-0**
+
+```
+Optimization of new features...
+	Core:
+		- Low power mode (with ble)
 ```
 
 

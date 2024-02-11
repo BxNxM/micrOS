@@ -56,10 +56,11 @@ def illuminance():
     return {'illuminance [lux]': lux}
 
 
-async def _task(on, off, threshold, tolerance=2):
+async def _task(on, off, threshold, tolerance=2, check_ms=5000):
     last_ev = ""
     on = on.split()
     off = off.split()
+    check_ms = 5000 if check_ms < 5000 else check_ms        # MIN 5s check period
     with micro_task(tag="light_sensor.intercon") as my_task:
         my_task.out = f"threshold: {threshold} - starting"
         while True:
@@ -81,20 +82,22 @@ async def _task(on, off, threshold, tolerance=2):
                         InterCon.send_cmd(host, cmd)
                     my_task.out = f"{percent}% > threshold: {threshold+tolerance}% - OFF"
                     last_ev = off
-            await asyncio.sleep_ms(5000)        # Sample every 5 sec
+            await asyncio.sleep_ms(check_ms)        # Sample every <check_ms> sec
 
 
-def subscribe_intercon(on, off, threshold=4, tolerance=2):
+def subscribe_intercon(on, off, threshold=4, tolerance=2, sample_sec=60):
     """
     [TASK] ON/OFF command sender over intercon on given threshold
     :param on: on callback to send: "host cmd"
     :param off: off callback to send: "host cmd"
     :param threshold: percentage value for on(under) /off(above)
     :param tolerance: off tolerance value -> off event: threshold+tolerance
+    :param sample_sec: light measure task period in sec (also means event frequency)
     """
     # Start play - servo XY in async task
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag="light_sensor.intercon", task=_task(on, off, threshold, tolerance=tolerance))
+    state = micro_task(tag="light_sensor.intercon", task=_task(on, off, threshold, tolerance=tolerance,
+                                                               check_ms=sample_sec*1000))
     if state:
         return 'Light sensor remote trigger starts'
     return 'Light sensor remote trigger - already running'
@@ -120,6 +123,6 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'intensity', 'illuminance', 'subscribe_intercon on off threshold=1 tolerance=2',\
+    return 'intensity', 'illuminance', 'subscribe_intercon on off threshold=1 tolerance=2 sample_sec=60',\
            'pinmap', 'INFO sensor:TEMP600'
 

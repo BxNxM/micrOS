@@ -43,7 +43,7 @@ class Shell:
             cfgput('version', Shell.MICROS_VERSION)
         except Exception as e:
             console_write(f"Export system version to config failed: {e}")
-            errlog_add(f"[Shell][ERR] system version export error: {e}")
+            errlog_add(f"[ERR] shell system version export: {e}")
 
     def send(self, msg):
         """

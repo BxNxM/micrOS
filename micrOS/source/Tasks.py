@@ -62,12 +62,12 @@ class TaskBase:
                     self.task.cancel()  # Try to cancel task by asyncio
                 except Exception as e:
                     if "can't cancel self" != str(e):
-                        errlog_add(f"[IRQ limitation] Task cancel error: {e}")
+                        errlog_add(f"[WARN] IRQ Task cancel: {e}")
                 self.__task_del()
             else:
                 return False
         except Exception as e:
-            errlog_add(f"[ERR] Task kill error: {e}")
+            errlog_add(f"[ERR] Task kill: {e}")
             return False
         return True
 
@@ -412,7 +412,7 @@ def exec_lm_pipe(taskstr):
                 console_write(f"|-[LM-PIPE] task error: {cmd}")
     except Exception as e:
         console_write(f"[IRQ-PIPE] error: {taskstr}\n{e}")
-        errlog_add(f"[ERR] exec_lm_pipe error: {e}")
+        errlog_add(f"[ERR] exec_lm_pipe: {e}")
         return False
     return True
 
@@ -426,7 +426,7 @@ def exec_lm_pipe_schedule(taskstr):
         schedule(exec_lm_pipe, taskstr)
         return True
     except Exception as e:
-        errlog_add(f"exec_lm_pipe_schedule error: {e}")
+        errlog_add(f"[ERR] exec_lm_pipe_schedule: {e}")
         return False
 
 
@@ -563,5 +563,5 @@ def exec_lm_core_schedule(arg_list):
         schedule(lm_exec, arg_list)
         return True
     except Exception as e:
-        errlog_add(f"schedule_lm_exec {arg_list} error: {e}")
+        errlog_add(f"[ERR] schedule_lm_exec {arg_list}: {e}")
         return False

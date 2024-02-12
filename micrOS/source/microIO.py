@@ -8,7 +8,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from sys import platform, modules
+from sys import platform
 from os import listdir
 
 #################################################################

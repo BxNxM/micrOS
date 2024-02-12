@@ -83,7 +83,7 @@ def ntp_time():
             console_write(f"ntptime error.:{e}")
             err = e
         sleep_ms(100)
-    errlog_add(f"[ERR] ntptime error: {err}")
+    errlog_add(f"[ERR] ntptime: {err}")
     return False
 
 
@@ -140,7 +140,7 @@ def suntime():
         Sun.UTC = int(response.get('offset') / 60)      # IN MINUTE
         cfgput('utc', Sun.UTC, True)
     except Exception as e:
-        errlog_add(f'ip-api error: {e} data: {response}')
+        errlog_add(f'[ERR] ip-api: {e} data: {response}')
         return Sun.TIME
 
     # SUNSET-SUNRISE API REQUEST HANDLING
@@ -157,7 +157,7 @@ def suntime():
                 'sunset': time_regex.search(results.get('sunset')).group(1).split(':')
                 }
         except Exception as e:
-            errlog_add(f'sunrise-api error: {e} data: {response}')
+            errlog_add(f'[ERR] sunrise-api: {e} data: {response}')
     # Try to parse response by expected sun_keys
     try:
         for key in sun:

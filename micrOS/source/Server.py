@@ -183,16 +183,17 @@ class WebCli(Client):
         """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
         # Create short request (first line)
         request = request.split('\n')[0]
+        # REST API (GET) [/rest]
         if request.startswith('GET /rest'):
-            Client.console("[WebCli] --- /REST accept")      # REST API (GET)
+            Client.console("[WebCli] --- /REST accept")
             try:
                 await self.a_send(WebCli.rest(request))
             except Exception as e:
                 await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {len(str(e))}\r\n\r\n{e}")
             return
-
+        # HOMEPAGE ENDPOINT [default: /]
         if request.startswith('GET / HTTP'):
-            Client.console("[WebCli] --- / accept")          # HOMEPAGE ENDPOINT (fallback as well)
+            Client.console("[WebCli] --- / accept")
             try:
                 with open('index.html', 'r') as file:
                     html = file.read()
@@ -200,12 +201,10 @@ class WebCli(Client):
             except OSError:
                 await self.a_send("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found")
             return
-
-        # Check other (dynamic) endpoints (from Load Modules)
+        # DYNAMIC/USER ENDPOINTS (from Load Modules)
         if await self.endpoints(request):
             return
-
-        # INVALID REQUEST: Not home page / OR Not /rest endpoint
+        # INVALID REQUEST: NOT home page OR /rest OR registered custom
         await self.a_send("HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request")
 
     async def endpoints(self, request):
@@ -315,7 +314,9 @@ class ShellCli(Client, Shell):
                 Client.drop_client(self.client_id)
                 errlog_add(f"[WARN] ShellCli.send (auto-drop) {self.client_id}: {e}")
             # Send buffered data with async task - hacky
-            asyncio.get_event_loop().create_task(self.__wait_for_drain())
+            if self.drain_event.is_set():
+                self.drain_event.clear()        # set drain busy
+                asyncio.get_event_loop().create_task(self.__wait_for_drain())
         else:
             console_write(f"[ShellCli] NoCon: response>/dev/nul")
 
@@ -324,11 +325,6 @@ class ShellCli(Client, Shell):
         Handle drain serialization
         - solve output data duplicate
         """
-        # Wait for event set (True) - drain is free
-        await self.drain_event.wait()
-
-        # set drain busy
-        self.drain_event.clear()
         try:
             # send write buffer
             # Client.console("  |----- start drain")
@@ -372,7 +368,6 @@ class ShellCli(Client, Shell):
     async def run_shell(self):
         # Update server task output (? test ?)
         Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
-
         # Init prompt
         self.send(self.prompt())
         # Run async connection handling
@@ -382,7 +377,6 @@ class ShellCli(Client, Shell):
                 state, request = await self.read()
                 if state:
                     break
-
                 state = await self.__shell_cmd(request)
                 if not state:
                     self.send("[HA] Critical error - disconnect & hard reset")
@@ -451,16 +445,14 @@ class SocketServer:
         """
         # Get new client ID
         new_client_id = new_client.client_id
-
         # Add new client immediately if queue not full
         if len(list(Client.ACTIVE_CLIS.keys())) < self._socqueue:
             # Add new client to active clients dict
             Client.ACTIVE_CLIS[new_client_id] = new_client
-            return True, new_client_id      # [!] Enable new connection
+            return True                     # [!] Enable new connection
 
         # Get active clients timeout counters - handle new client depending on active client timeouts
         Client.console(f"NEW CLIENT CONN: {new_client_id}")
-        enable_new = False
         for cli_id, cli in Client.ACTIVE_CLIS.items():
             cli_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
             Client.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{self._timeout - cli_inactive}s")
@@ -468,19 +460,14 @@ class SocketServer:
                 # OPEN CONNECTION IS INACTIVE > CLOSE
                 Client.console("------- client timeout - accept new connection")
                 await cli.close()
-                enable_new = True
-                break
+                return True                 # [!] Enable new connection
 
-        # Interpret new connection is possible ...
-        if enable_new:
-            return True, new_client_id  # [!] Enable new connection
-        # THERE IS ACTIVE OPEN CONNECTION, DROP NEW CLIENT!
+        # DROP NEW CLIENT - QUEUE FULL!
         Client.console("------- connection busy")
-        # Handle only single connection
         await new_client.a_send("Connection is busy. Bye!")
-        await new_client.close()  # Play nicely - close connection
-        del new_client  # Clean up unused client
-        return False, new_client_id     # [!] Deny new client
+        await new_client.close()    # Play nicely - close connection
+        del new_client              # Clean up unused client
+        return False                        # [!] Deny new client
 
     async def shell_cli(self, reader, writer):
         """
@@ -488,17 +475,13 @@ class SocketServer:
         - creates ShellCli object with the new incoming connection
         - Client implements micrOS shell interface over reader, sender tcp connection
         """
-        # Create client object
+        # Create ShellCli instance
         new_client = ShellCli(reader, writer)
-
-        # Check incoming client with queue limit
-        state, _ = await self.accept_client(new_client)
-        if not state:
-            # Server busy, there is one active open connection - reject client
-            # close unused new_client as well!
+        # Accept incoming client with queue limit check
+        if not await self.accept_client(new_client):
+            # Server busy - skip connection (accept_client auto-close feature)
             return
-
-        # Store client object as active client
+        # Run new_client shell prompt
         await new_client.run_shell()
 
     async def web_cli(self, reader, writer):
@@ -507,17 +490,13 @@ class SocketServer:
         - creates WebCli object with the new incoming connection
         - WebCli handles simple http get requests over tcp connection
         """
-        # Create client object
+        # Create WebCli instance
         new_client = WebCli(reader, writer)
-
-        # Check incoming client with queue limit
-        state, _ = await self.accept_client(new_client)
-        if not state:
-            # Server busy, there is one active open connection - reject client
-            # close unused new_client as well!
+        # Accept incoming client with queue limit check
+        if not await self.accept_client(new_client):
+            # Server busy - skip connection (accept_client auto-close feature)
             return
-
-        # Run web (http) cli
+        # Run new_client web (http) cli
         await new_client.run_web()
 
     async def run_server(self):

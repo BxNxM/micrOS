@@ -157,8 +157,7 @@ def initEventIRQs():
         try:
             return physical_pin(_p)
         except Exception as e:
-            msg = f'[ERR] EVENT {_p} IO error: {e}'
-            console_write(f"|-- [!] {msg}")
+            msg = f'[ERR][!] EVENT {_p} IO error: {e}'
             errlog_add(msg)
         return None
 

@@ -93,7 +93,6 @@ class Data:
             console_write("[CONF] Purge obsolete keys")
             for key in (key for key in liveconf if key not in Data.CONFIG_CACHE):
                 liveconf.pop(key, None)
-            # TODO: dynamic ... key in new config - re-store value in offloaded mode.
         except Exception:
             console_write("[CONF] SKIP obsolete keys check (no cleanup.pds)")
         # Merge template to live conf (store active conf in Data.CONFIG_CACHE)
@@ -104,8 +103,7 @@ class Data:
             Data.write_cfg_file()
             console_write("[CONF] Save conf successful")
         except Exception as e:
-            console_write(f"[CONF] Save conf failed: {e}")
-            errlog_add(f"[ERR] __inject_default_conf error: {e}")
+            errlog_add(f"[ERR] Save (__inject) conf failed: {e}")
         finally:
             del liveconf
 
@@ -136,8 +134,7 @@ class Data:
                     dump(Data.CONFIG_CACHE, f)
                 break
             except Exception as e:
-                console_write(f"[CONF] __write_cfg_file error {Data.CONFIG_PATH} (json): {e}")
-                errlog_add(f'[ERR] write_cfg_file error: {e}')
+                errlog_add(f'[ERR] write_cfg_file {Data.CONFIG_PATH} (json): {e}')
             sleep(0.2)
         return True
 
@@ -203,7 +200,6 @@ def cfgget(key=None):
             return Data.disk_keys(key)
         return val
     except Exception as e:
-        console_write(f"[CONF] Get config value error: {e}")
         errlog_add(f'[ERR] cfgget {key} error: {e}')
     return None
 

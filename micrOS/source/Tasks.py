@@ -411,8 +411,7 @@ def exec_lm_pipe(taskstr):
             if not lm_exec(cmd)[0]:
                 console_write(f"|-[LM-PIPE] task error: {cmd}")
     except Exception as e:
-        console_write(f"[IRQ-PIPE] error: {taskstr}\n{e}")
-        errlog_add(f"[ERR] exec_lm_pipe: {e}")
+        errlog_add(f"[ERR] exec_lm_pipe {taskstr}: {e}")
         return False
     return True
 
@@ -523,7 +522,6 @@ def _exec_lm_core(cmd_list):
             except Exception as e:
                 # Handle not proper module load (simulator), note: module in sys.modules BUT not available
                 if lm_mod in str(e):
-                    errlog_add(f"_exec_lm_core re-import {lm_mod}!")
                     # [2.1] LOAD MODULE - FORCED
                     exec(f"import {lm_mod}")
                     # [2.2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)

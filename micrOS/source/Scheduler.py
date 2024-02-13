@@ -101,7 +101,7 @@ def __resolve_time_tag(check_time, crontask):
         # Resolve tag
         value = Sun.TIME.get(tag, None)
         if value is None or len(value) < 3:
-            errlog_add(f'[cron][ERR] syntax error: {tag}:{value}')
+            errlog_add(f'[ERR] cron syntax error: {tag}:{value}')
             return ()
 
         # Update check_time with resolved value by tag
@@ -186,7 +186,7 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
                         console_write(f"[builtin cron] {crontask[1]()}")
                         lm_state = True
                     except Exception as e:
-                        errlog_add(f"[cron][ERR] function exec error: {e}")
+                        errlog_add(f"[ERR] cron function exec error: {e}")
                 if not lm_state:
                     console_write(f"[cron]now[{cron_time_now}]  \
                         {__convert_sec_to_time(tolerance_min_sec)} <-> {__convert_sec_to_time(tolerance_max_sec)}  \
@@ -221,8 +221,7 @@ def deserialize_raw_input(cron_data):
         # Parse and create return - convert cron_data (bytearray) to string
         return (tuple(cron.split('!')) for cron in str(cron_data, 'utf-8').split(';'))
     except Exception as e:
-        console_write(f"[cron] deserialize: syntax error: {e}")
-        errlog_add(f"[cron][ERR] deserialize: syntax error: {e}")
+        errlog_add(f"[ERR] cron deserialize - syntax error: {e}")
     return ()
 
 
@@ -254,6 +253,5 @@ def scheduler(cron_data, irqperiod):
             state |= __scheduler_trigger(cron_time_now, cron, deltasec=irqperiod)
         return state
     except Exception as e:
-        console_write(f"[cron] callback error: {e}")
-        errlog_add(f'[cron][ERR] callback error: {e}')
+        errlog_add(f'[ERR] cron callback error: {e}')
         return False

@@ -127,7 +127,10 @@ def main():
             print(f"[loader][main mode] micrOS start failed: {e}")
             print("[loader][main mode] -> [recovery mode]")
             if errlog_add is not None:
-                errlog_add(f"[ERR][micrOSloader] micrOS start failed: {e}")
+                try:
+                    errlog_add(f"[ERR][micrOSloader] start failed: {e}")
+                except:
+                    pass
     # Recovery aka webrepl mode
     __recovery_mode()
     __auto_restart_event()

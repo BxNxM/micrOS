@@ -77,7 +77,6 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
                 try:
                     return essid, str(raw_pwd.split(';')[idx]).strip()
                 except Exception as e:
-                    console_write(f'\t| - [NW: STA] wifi stapwd config error: {e}')
                     errlog_add(f'[ERR][SET STA] stapwd config error: {e}')
             sleep_ms(400)
     return None, ''
@@ -150,8 +149,7 @@ def __set_wifi_dev_static_ip(sta_if):
                 sta_if.ifconfig(tuple(conn_ips))
                 return True     # was reconfigured
             except Exception as e:
-                console_write(f"\t\t| [NW: STA] StaticIP conf. failed: {e}")
-                errlog_add(f"__set_wifi_dev_static_ip error: {e}")
+                errlog_add(f"[ERR][STA] StaticIP conf failed: {e}")
         else:
             console_write(f"[NW: STA][SKIP] StaticIP conf.: {stored_ip} ? {conn_ips[0]}")
     else:
@@ -186,10 +184,9 @@ def set_access_point(_essid, _pwd, _authmode=3):
             # Config #2 (rp2-w)???
             ap_if.config(essid=_essid, password=_pwd)
         except Exception as e2:
-            console_write(f"|- [NW: AP] Config Error: {e2}")
-            errlog_add(f"[ERR] set_access_point error: {e2}")
+            errlog_add(f"[ERR][AP] config failed: {e2}")
     if not (ap_if.active() and str(ap_if.config('essid')) == str(_essid)):
-        errlog_add("[ERR][SET AP] config error")
+        errlog_add("[ERR][AP] error")
     console_write(f"\t|\t| [NW: AP] network config: {str(ap_if.ifconfig())}")
     set_dev_uid()
     NW.NIF = ap_if

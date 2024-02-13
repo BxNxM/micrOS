@@ -68,7 +68,7 @@ class InterCon:
             # None: ServerBusy(or \0) or Prompt mismatch (auto delete cached IP), STR: valid comm. output
             return output
         else:
-            errlog_add(f"[intercon][ERR] Invalid host: {host}")
+            errlog_add(f"[ERR][intercon] Invalid host: {host}")
         return ''
 
     async def __run_command(self, cmd, hostname):

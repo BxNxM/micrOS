@@ -16,7 +16,7 @@ from sys import modules
 from machine import reset as hard_reset, soft_reset
 from Config import cfgget, cfgput
 from Tasks import lm_exec
-from Debug import console_write, errlog_add
+from Debug import errlog_add
 
 
 #################################################################
@@ -24,7 +24,7 @@ from Debug import console_write, errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.57.0-1'
+    MICROS_VERSION = '1.58.0-0'
 
     def __init__(self):
         """
@@ -42,8 +42,7 @@ class Shell:
         try:
             cfgput('version', Shell.MICROS_VERSION)
         except Exception as e:
-            console_write(f"Export system version to config failed: {e}")
-            errlog_add(f"[ERR] shell system version export: {e}")
+            errlog_add(f"[ERR] micrOS version export failed (config): {e}")
 
     def send(self, msg):
         """

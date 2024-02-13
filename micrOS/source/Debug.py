@@ -132,7 +132,7 @@ def console_write(msg):
             if analog:
                 DebugCfg.step()
         except Exception as e:
-            errlog_add(f"[ERR] console_write: {e}")
+            errlog_add(f"[ERR] console_write: {e}", console=False)
 
 #############################################
 #        LOGGING WITH DATA ROTATION         #
@@ -214,13 +214,15 @@ def log_get(f_name, msgobj=None):
 #############################################
 
 
-def errlog_add(data):
+def errlog_add(data, console=True):
     """
     :param data: msg string / data
+    :param console: activate console_write (default: True)
     :return: is ok
     """
-    f_name = 'err.log'
-    return logger(data, f_name, limit=5)
+    if console:
+        console_write(msg=data)
+    return logger(data, 'err.log', limit=6)
 
 
 def errlog_get(msgobj=None):

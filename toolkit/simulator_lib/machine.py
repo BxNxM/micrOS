@@ -154,6 +154,16 @@ class I2C:
         return b'00000000'
 
 
+class I2S:
+    MONO = 0
+    STEREO = 1
+
+    @staticmethod
+    def shift(buf, shift, bits):
+        console(f"[I2S shift] buf: {buf} shift: {shift} bits: {bits}")
+        return None
+
+
 class SoftI2C(I2C):
 
     def __init__(self, scl, sda, freq):

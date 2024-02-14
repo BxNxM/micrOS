@@ -105,6 +105,9 @@ def get_from_buffer(capture_duration=Data.CAPTURE_DURATION,
                     downsampling=Data.DOWNSAMPLING):
     """
     Return samples stored in the buffer, captured by micro task
+    :capture_duration: maximum duration (seconds) of samples to retrieve (number)
+    :channel: which channel to get samples from ('left', 'right' or 'all')
+    :downsampling: return every nth sample (int)
     """
     if not Data.MIC_ENABLED:
         return bytearray()
@@ -125,12 +128,13 @@ def get_from_buffer(capture_duration=Data.CAPTURE_DURATION,
 # Asnyc capturing methods #
 ###########################
 
-async def capture(capture_duration = Data.CAPTURE_DURATION,
-                  channel = Data.DEFAULT_CHANNEL,
+async def _capture(capture_duration = Data.CAPTURE_DURATION,
                   downsampling = Data.DOWNSAMPLING):
     """
     Capture and return an array of samples asynchronously (without micro task)
     Can be used to reliably capture large samples without overlapping segments
+    :capture_duration: maximum duration (seconds) of samples to retrieve (number)
+    :downsampling: return every nth sample (int)
     """
     if not Data.MIC_ENABLED:
         return bytearray()
@@ -147,7 +151,7 @@ async def capture(capture_duration = Data.CAPTURE_DURATION,
     if Data.SHIFT_SIZE:
         I2S.shift(buf=sample_mv,shift=Data.SHIFT_SIZE,bits=Data.SAMPLE_SIZE)
 
-    return select_channel(mic_samples[:num_read], channel, downsampling)
+    return select_channel(mic_samples[:num_read], Data.DEFAULT_CHANNEL, downsampling)
 
 
 def _record_clb():
@@ -162,7 +166,7 @@ def _record_clb():
         return 'text/plain', f'Invalid sample size configured. 16-bit representation must be used.'
     
     return 'multipart/form-data', \
-        {'callback': capture, 'content-type': f'audio/l16;rate={Data.SAMPLING_RATE};channels={num_channels}'}
+        {'callback': _capture, 'content-type': f'audio/l16;rate={Data.SAMPLING_RATE};channels={num_channels}'}
 
 
 ####################
@@ -173,6 +177,8 @@ def select_channel(samples=b'', channel = Data.DEFAULT_CHANNEL, downsampling = 1
     """
     Separate channels from stereo data and/or apply downsampling
     Can be used as a workaround for https://github.com/espressif/esp-idf/issues/6625
+    :samples: samples to select channels from (bytes, bytearray)
+    :channel: which channel to get samples from ('left', 'right' or 'all')
     :downsampling: return every nth sample (int)
     """
     sample_size_bytes = int(Data.SAMPLE_SIZE / 8)
@@ -194,9 +200,8 @@ def select_channel(samples=b'', channel = Data.DEFAULT_CHANNEL, downsampling = 1
 
     selected = bytearray()
 
-    for i in range(offset, len(samples), step):
-        if i+sample_size_bytes <= len(samples):
-            selected.extend(samples[i:i+sample_size_bytes])
+    for i in range(offset, len(samples) - sample_size_bytes + 1, step):
+        selected.extend(samples[i:i+sample_size_bytes])
     
     return selected
 
@@ -204,6 +209,7 @@ def select_channel(samples=b'', channel = Data.DEFAULT_CHANNEL, downsampling = 1
 def decode(samples=b''):
     """
     Decode raw bytes to floats between -1 and 1
+    :samples: samples to select channels from (bytes, bytearray)
     """
     samples_decoded = []
 
@@ -218,8 +224,8 @@ def decode(samples=b''):
 
     for i in range(offset, len(samples), step):
         if i+sample_size_bytes <= len(samples):
-            uint_v = unpack(unpack_format, samples[i:i+sample_size_bytes])[0]
-            samples_decoded.append((uint_v+1)/(2**(Data.SAMPLE_SIZE-1)))
+            sample_int = unpack(unpack_format, samples[i:i+sample_size_bytes])[0]
+            samples_decoded.append((sample_int+1)/(2**(Data.SAMPLE_SIZE-1)))
 
     return samples_decoded
 
@@ -229,7 +235,8 @@ def bytes_per_second(t=1):
     Get configured number of bytes per second
     :t: seconds (number)
     """
-    return int(Data.SAMPLING_RATE * (Data.FORMAT + 1) * (Data.SAMPLE_SIZE / 8) * t)
+    num_channels = 2 if Data.FORMAT == I2S.STEREO else 1
+    return int(Data.SAMPLING_RATE * num_channels * (Data.SAMPLE_SIZE / 8) * t)
 
 
 def set_volume(shift_size=0):
@@ -248,6 +255,17 @@ def load_n_init(buf_length=Data.BUF_LENGTH, sampling_rate=Data.SAMPLING_RATE,
                 enable_endpoint = True):
     """
     Initialize I2S microphone module
+    :buf_length: I2S internal buffer length (int)
+    :sampling_rate: I2S sampling rate (int)
+    :capture_duration: override default duration of samples to retrieve
+    :shift_size: override default shift size
+    :sample_size: override default sample size (16 or 32)
+    :i2s_channel: override default I2S channel
+    :default_channel: override default channel ('left', 'right' or 'all')
+    :sound_format: override default format (I2S.MONO, I2S.STEREO)
+    :downsampling: override default downsampling
+    :control_button: name of button pin, control task is enbaled when provided
+    :enable_endpoint: enable/disable endpoint creation at /mic/stream (True/False)
     """
     if sample_size not in (16,32):
         return f'Invalid samples size {sample_size}. Must be either 16 or 32.'

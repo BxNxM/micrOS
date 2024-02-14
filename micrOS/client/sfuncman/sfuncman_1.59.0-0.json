@@ -47,8 +47,8 @@
             "param(s)": ""
         },
         "flashlight": {
-            "doc": "\n    Camera flashlight\n    :param value: None OR 0-1000\n    :param default: default value when value is None (ON/OFF function)\n    ",
-            "param(s)": "value=None ault=100"
+            "doc": "\n    Camera flashlight\n    :param state: True/False/None(automatic)\n    ",
+            "param(s)": "state=None"
         },
         "help": {
             "doc": null,

@@ -11,9 +11,9 @@ try:
 except:
     widget_add = None
 
-FLASH_LIGHT = None      # Flashlight object
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
 CAM_INIT = False
+FLASH_LIGHT = None      # Flashlight object
 
 
 def load_n_init(quality='medium', freq='default', effect="NONE"):
@@ -66,7 +66,8 @@ def _set_web_endpoints():
     if widget_add is not None:
         widget_add({'OV2640': {'settings/saturation=': 'slider',
                                'settings/brightness=': 'slider',
-                               'settings/contrast=': 'slider'}})
+                               'settings/contrast=': 'slider',
+                               'flashlight': 'button'}})
 
 
 def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None, brightness=None, contrast=None, whitebalace=None, q=None):
@@ -203,26 +204,24 @@ def set_photo_endpoint():
     return "Endpoint created: /photo"
 
 
-def __dimmer_init():
+def __light_init():
     global FLASH_LIGHT
     if FLASH_LIGHT is None:
-        from machine import Pin, PWM
-        dimmer_pin = Pin(4)
-        FLASH_LIGHT = PWM(dimmer_pin, freq=20480)
+        from machine import Pin
+        FLASH_LIGHT = Pin(4, Pin.OUT)
     return FLASH_LIGHT
 
-def flashlight(value=None, default=100):
+def flashlight(state=None):
     """
     Camera flashlight
-    :param value: None OR 0-1000
-    :param default: default value when value is None (ON/OFF function)
+    :param state: True/False/None(automatic)
     """
-    fl = __dimmer_init()
-    if value is None:
-        val = fl.duty()
-        value = 0 if val > 0 else default
-    fl.duty(value)
-    return {'value': value}
+    fl = __light_init()
+    if state is None:
+        state = fl.value(not fl.value())
+    else:
+        state = fl.value(state)
+    return {'S': state}
 
 def lmdep():
     """
@@ -235,6 +234,6 @@ def lmdep():
 def help():
     return 'load_n_init quality="medium/low/high" freq="default/high"',\
         'settings quality=None flip=None/True mirror=None/True effect="NONE" saturation brightness contrast',\
-        'capture', 'photo', 'set_photo_endpoint', 'flashlight value=None<0-1000> default=100',\
+        'capture', 'photo', 'set_photo_endpoint', 'flashlight state=None/True/False',\
         'Thanks to :) https://github.com/lemariva/micropython-camera-driver',\
         '[HINT] after load_n_init you can access the /cam/snapshot and /cam/stream endpoints'

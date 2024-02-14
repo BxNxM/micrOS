@@ -13,11 +13,10 @@ def input_with_timeout(prompt, default=None, timeout=5):
         print("[WARNING] WINDOWS NO TIMEOUT OPTION FOR USER INPUT...")
         return input(prompt)
 
-    # Set up a signal handler for the alarm signal
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(timeout)  # Set the alarm to trigger after timeout
-
     try:
+        # Set up a signal handler for the alarm signal
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(timeout)  # Set the alarm to trigger after timeout
         user_input = input(prompt)
     except Exception as e:
         print(f"Timeout reached. Default value will be used.: {e}")

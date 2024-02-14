@@ -157,8 +157,7 @@ def initEventIRQs():
         try:
             return physical_pin(_p)
         except Exception as e:
-            msg = f'[ERR][!] EVENT {_p} IO error: {e}'
-            errlog_add(msg)
+            errlog_add(f'[ERR][!] EVENT {_p} IO error: {e}')
         return None
 
     # Load External IRQ (1-4) execution data set from node config

@@ -117,8 +117,8 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
         b_gen = rgb_gen[2]
         for _r in r_gen:
             Data.RGB_OBJS[0].duty(_r)
-            Data.RGB_OBJS[1].duty(g_gen.__next__())
-            Data.RGB_OBJS[2].duty(b_gen.__next__())
+            Data.RGB_OBJS[1].duty(next(g_gen))
+            Data.RGB_OBJS[2].duty(next(b_gen))
             sleep_ms(step_ms)
 
     __RGB_init()
@@ -224,8 +224,8 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
             ro, go, bo = __RGB_init()
             r_gen, g_gen, b_gen = iterable[0], iterable[1], iterable[2]
             for _r in r_gen:
-                _g = g_gen.__next__()
-                _b = b_gen.__next__()
+                _g = next(g_gen)
+                _b = next(b_gen)
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
                     my_task.out = "Cancelled"
                     return

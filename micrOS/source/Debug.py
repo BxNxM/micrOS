@@ -16,7 +16,6 @@ except:
 class DebugCfg:
     DEBUG = True        # DEBUG PRINT ON/OFF - SET FROM ConfigHandler
     PLED_STEP = None    # PROGRESS LED OBJECT - init in init_pled
-    PLED_A = False      # ANALOG "BLINK" LED FEATURE - True when analog, false when colorwheel
     NEO_WHEEL = None    # NEOPIXEL (ws2812/esp32s3) color wheel object
     COLOR_INDEX = 0     # APA102 TinyPico color wheel counter
 
@@ -43,7 +42,6 @@ class DebugCfg:
             else:
                 # OVERRIDE PROGRESS LED WITH CUSTOM step FUNCTION
                 DebugCfg.PLED_STEP = pled
-                DebugCfg.PLED_A = False
 
     @staticmethod
     def step():
@@ -53,13 +51,11 @@ class DebugCfg:
         - automatic selection based on board type + builtin logical pin number
         """
         try:
-            if DebugCfg.PLED_STEP:
-                DebugCfg.PLED_STEP()
-                return DebugCfg.PLED_A      # Return non RGB indicator (True) - "double blink"
-            return False
+            if callable(DebugCfg.PLED_STEP):
+                return DebugCfg.PLED_STEP()         # Run step function (return None: double-blink OR True: no d-b)
         except Exception as e:
             errlog_add(f"[PLED] step error: {e}")
-            return False
+        return True
 
     @staticmethod
     def _init_simple():
@@ -69,8 +65,7 @@ class DebugCfg:
             if physical_pin('builtin') < 0:     # Pin number start with (-), like -8 (means inverted output)
                 led_obj.value(1)                # Turn OFF built-in LED state invert (1:OFF)
             # Set function callback for step function (simple led - blink)
-            DebugCfg.PLED_STEP = lambda: led_obj.value(not led_obj.value())
-            DebugCfg.PLED_A = True
+            DebugCfg.PLED_STEP = lambda: led_obj.value(not led_obj.value())     # # double-blink: return None
         except Exception as e:
             errlog_add(f"[PLED] led error: {e}")
 
@@ -97,6 +92,7 @@ class DebugCfg:
         led_obj[0] = (int(r * 0.6), g, b, 0.4)
         # Increase the wheel index
         DebugCfg.COLOR_INDEX = 0 if DebugCfg.COLOR_INDEX > 1000 else DebugCfg.COLOR_INDEX + 2
+        return True                  # No double-blink
 
     @staticmethod
     def _init_ws2812():
@@ -120,8 +116,9 @@ class DebugCfg:
                 yield 5, 0, 5
         if DebugCfg.NEO_WHEEL is None:
             DebugCfg.NEO_WHEEL = _color_wheel()
-        led_obj[0] = DebugCfg.NEO_WHEEL.__next__()
+        led_obj[0] = next(DebugCfg.NEO_WHEEL)
         led_obj.write()
+        return True                     # No double-blink
 
 
 def console_write(msg):
@@ -129,8 +126,8 @@ def console_write(msg):
         try:
             analog = DebugCfg.step()
             print(msg)
-            if analog:
-                DebugCfg.step()
+            if analog is None:
+                DebugCfg.step()             # Double-blink
         except Exception as e:
             errlog_add(f"[ERR] console_write: {e}", console=False)
 

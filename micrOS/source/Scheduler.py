@@ -239,7 +239,7 @@ def scheduler(cron_data, irqperiod):
     builtin_tasks = (("*:3:0:0", suntime), ("*:3:5:0", ntp_time))
     state = False
     time_now = localtime()[3:7]
-    # time_now = GEN.__next__()   # USE FOR TESTING (time machine)
+    # time_now = next(GEN)         # USE FOR TESTING (time machine)
 
     # Actual time - WD, H, M, S
     cron_time_now = (time_now[3], time_now[0], time_now[1], time_now[2])

@@ -114,8 +114,8 @@ def color(r=None, g=None, b=None, smooth=True, force=True):
         g_gen = rgb_gen_obj[1]
         b_gen = rgb_gen_obj[2]
         for _r in r_gen:
-            _g = g_gen.__next__()
-            _b = b_gen.__next__()
+            _g = next(g_gen)
+            _b = next(b_gen)
             for lcnt in range(0, __init_NEOPIXEL().n):
                 Data.NEOPIXEL_OBJ[lcnt] = (_r, _g, _b)
             Data.NEOPIXEL_OBJ.write()
@@ -256,8 +256,8 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
                 if not Data.TASK_STATE:
                     my_task.out = "Cancelled"
                     return
-                g_val = g_gen.__next__()
-                b_val = b_gen.__next__()
+                g_val = next(g_gen)
+                b_val = next(b_gen)
                 if Data.DCACHE[3] == 1 or wake:
                     # Write periphery
                     for element in range(0, __init_NEOPIXEL().n):           # Iterate over led string elements

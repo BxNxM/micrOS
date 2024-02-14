@@ -114,7 +114,7 @@ def white(cw=None, ww=None, smooth=True, force=True):
         cw_gen = gen_list[1]
         for _ww in ww_gen:
             Data.CWWW_OBJS[1].duty(_ww)
-            Data.CWWW_OBJS[0].duty(cw_gen.__next__())
+            Data.CWWW_OBJS[0].duty(next(cw_gen))
             sleep_ms(step_ms)
 
     if force:
@@ -219,7 +219,7 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
                 if not Data.TASK_STATE:                         # SOFT KILL TASK - USER INPUT PRIO
                     my_task.out = "Cancelled"
                     return
-                ww_val = ww_gen.__next__()
+                ww_val = next(ww_gen)
                 if Data.CWWW_CACHE[2] == 1 or wake:
                     # Write periphery
                     cw_obj.duty(cw_val)

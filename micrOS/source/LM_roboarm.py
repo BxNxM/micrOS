@@ -72,7 +72,7 @@ def control(x_new, y_new, speed_ms=None, smooth=True):
         y = transition(from_val=y_from, to_val=y_to, step_ms=step_ms, interval_sec=interval_sec)
         for _x in x:
             servo.sduty(_x)
-            servo.s2duty(y.__next__())
+            servo.s2duty(next(y))
             sleep_ms(step_ms)
 
     # Skip if new XY is the same as current

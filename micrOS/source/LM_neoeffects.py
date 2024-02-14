@@ -62,7 +62,7 @@ class DrawEffect:
         r, g, b, i = 0, 0, 0, 0
         for r, g, b in iterable:
             # Handle index offset - rotate effect
-            i = offset_gen.__next__()
+            i = next(offset_gen)
             # Write data to neopixel - write / segment :)
             segment(int(r), int(g), int(b), s=i, cache=False, write=False)
         segment(int(r), int(g), int(b), s=i, cache=False, write=True)

@@ -24,12 +24,12 @@ def _step_ws2812():
             yield 0, 0, 10
             yield 5, 0, 5
     if PLED_OBJ is None:
-        return
+        return False
     if NEO_WHEEL is None:
         NEO_WHEEL = _color_wheel()
-    PLED_OBJ[0] = NEO_WHEEL.__next__()
+    PLED_OBJ[0] = next(NEO_WHEEL)
     PLED_OBJ.write()
-    return False
+    return True
 ###########################################
 
 

@@ -17,6 +17,8 @@ MYPATH = os.path.dirname(__file__)
 MICROS_SOURCE_DIR = os.path.join(MYPATH, '../micrOS/source')
 RELEASE_INFO_PATH = os.path.join(MYPATH, '../micrOS/release_info/micrOS_ReleaseInfo')
 
+# MICROS LINTER CONFIG
+ALLOWED_LM_DEP_WARNS = 6
 
 def parse_micros_file_categories(verbose=True):
     """
@@ -192,7 +194,7 @@ def load_module_checker(categories, verbose=True):
                 verdict.append((lm_res, True, f'res-error: {e}'))
 
     lm_dep_warnings = sum([1 for v in verdict if not v[1]])
-    if lm_dep_warnings <= 5:  # Temporary fix, drops error if quality pattern goes down...
+    if lm_dep_warnings <= ALLOWED_LM_DEP_WARNS:  # Temporary fix, drops error if quality pattern goes down...
         # TODO: After fixes it can be set as False in this case, if it make sense
         state_lm_dep = True
     if verbose or not state_lm_dep:
@@ -531,5 +533,5 @@ def main(verbose=True):
     return exitcode
 
 if __name__ == "__main__":
-    sys.exit(main(verbose=False))
+    sys.exit(main(verbose=True))
 

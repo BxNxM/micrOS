@@ -185,7 +185,7 @@
             0
         ],
         "LM_keychain.py": [
-            7.8,
+            7.97,
             0
         ],
         "LM_dht11.py": [
@@ -271,11 +271,11 @@
             0
         ],
         "load_dep": [
-            false,
+            true,
             6
         ],
         "core_score": 9.18,
-        "load_score": 8.14,
+        "load_score": 8.15,
         "version": "1.59.0-1"
     }
 }

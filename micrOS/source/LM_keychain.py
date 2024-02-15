@@ -1,4 +1,6 @@
-from LM_oled import text, show, load_n_init as oled_lni
+from utime import localtime
+from Network import ifconfig
+from LM_oled import text, show, rect, clean, load_n_init as oled_lni
 from LM_ds18 import measure
 from LM_neopixel import color, brightness, toggle, load_n_init as neopixel_lni
 
@@ -14,10 +16,10 @@ def load_n_init():
     try:
         oled_lni(128, 64)
         INITED = True
-        return f'OLED INIT OK'
+        return "OLED INIT OK"
     except Exception as e:
         INITED = False
-        return f'OLED INIT NOK: {e}'
+        return f"OLED INIT NOK: {e}"
 
 
 def display():
@@ -33,11 +35,22 @@ def display():
         if not INITED:
             return _v
 
-    text('STA 12:0:0', x=0, y=1)
-    text('IP: 1.92', x=4, y=10)
-    text(f"T[C]: {measure()}", x=4, y=20)
+    # Clean display and draw rect...
+    clean()
+    rect(0, 0, 66, 34)
+    ltime = localtime()
+    h = "0{}".format(ltime[-5]) if len(str(ltime[-5])) < 2 else ltime[-5]
+    m = "0{}".format(ltime[-4]) if len(str(ltime[-4])) < 2 else ltime[-4]
+    s = "0{}".format(ltime[-3]) if len(str(ltime[-3])) < 2 else ltime[-3]
+    nwmd, nwif = ifconfig()
+    nwmd, devip = nwmd[0] if len(nwmd) > 0 else "0", ".".join(nwif[0].split(".")[-2:])
+
+    # Draw data to display
+    text(f"{h}:{m}:{s}", x=0, y=1)
+    text(f"{nwmd}: {devip}", x=4, y=10)
+    text(f"{round(tuple(measure().values())[0], 1)} C", x=4, y=20)
     show()
-    return 'Display show'
+    return "Display show"
 
 
 def temperature():
@@ -56,7 +69,7 @@ def neopixel(r=None, g=None, b=None, br=None, onoff=None, smooth=True):
     if br is not None:
         brightness(br, smooth=smooth)
     if onoff is not None:
-        if onoff == 'toggle':
+        if onoff == "toggle":
             return toggle(smooth=smooth)
         state = True if onoff == 'on' else False
         return toggle(state, smooth=smooth)

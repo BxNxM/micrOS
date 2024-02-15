@@ -50,7 +50,7 @@
         ],
         "Network.py": [
             9.71,
-            9
+            10
         ],
         "Scheduler.py": [
             9.61,
@@ -185,7 +185,7 @@
             0
         ],
         "LM_keychain.py": [
-            7.96,
+            7.8,
             0
         ],
         "LM_dht11.py": [
@@ -263,7 +263,7 @@
             19
         ],
         "load": [
-            6009,
+            6019,
             45
         ],
         "core_dep": [
@@ -271,11 +271,11 @@
             0
         ],
         "load_dep": [
-            true,
-            5
+            false,
+            6
         ],
         "core_score": 9.18,
         "load_score": 8.14,
-        "version": "1.59.0-0"
+        "version": "1.59.0-1"
     }
 }

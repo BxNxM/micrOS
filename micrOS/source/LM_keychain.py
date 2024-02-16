@@ -1,3 +1,5 @@
+import uasyncio as asyncio
+from Common import micro_task
 from utime import localtime
 from Network import ifconfig
 from LM_oled import text, show, rect, clean, load_n_init as oled_lni
@@ -22,19 +24,14 @@ def load_n_init():
         return f"OLED INIT NOK: {e}"
 
 
-def display():
+
+async def _display():
     """
     Run display content refresh
-        STA    H:M:S  W
-          IP:   1.92
-          T[C]: 40C
+        H:M:S
+         S/A: 1.92
+         40.0 C
     """
-
-    if not INITED:
-        _v = load_n_init()
-        if not INITED:
-            return _v
-
     # Clean display and draw rect...
     clean()
     rect(0, 0, 66, 34)
@@ -51,6 +48,32 @@ def display():
     text(f"{round(tuple(measure().values())[0], 1)} C", x=4, y=20)
     show()
     return "Display show"
+
+async def __task(period_ms):
+    """
+    Async display refresh task
+    """
+    if not INITED:
+        _v = load_n_init()
+        if not INITED:
+            return _v
+
+    with micro_task(tag="kc.display") as my_task:
+        my_task.out = 'running...'
+        while True:
+            await _display()
+            # Async sleep - feed event loop
+            await asyncio.sleep_ms(period_ms)
+
+
+def display(period=1000):
+    """
+    Create kc.display display task
+    """
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    period_ms = 1000 if period < 1000 else period
+    state = micro_task(tag="kc.display", task=__task(period_ms=period_ms))
+    return "Starting" if state else "Already running"
 
 
 def temperature():
@@ -97,6 +120,6 @@ def pinmap():
 
 
 def help():
-    return 'load_n_init', 'temperature', 'display', 'display &&1000',\
+    return 'load_n_init', 'temperature', 'display period>=1000',\
            'neopixel r=<0-255> g=<0-255> b=<0-255> br=<0-100> onoff=<toggle/on/off> smooth=<True/False>',\
            'pinmap', 'lmdep'

@@ -571,8 +571,8 @@
     },
     "keychain": {
         "display": {
-            "doc": "\n    Run display content refresh\n        STA    H:M:S  W\n          IP:   1.92\n          T[C]: 40C\n    ",
-            "param(s)": ""
+            "doc": "\n    Create kc.display display task\n    ",
+            "param(s)": "period=1000"
         },
         "help": {
             "doc": null,

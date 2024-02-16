@@ -1,7 +1,7 @@
 version: '3'
 services:
   micros-gateway:
-    image: bxnxm/micros-gateway:1.59.1
+    image: bxnxm/micros-gateway:1.59.2
     container_name: micros-gateway
     environment:
       - GATEWAYIP=10.0.1.1
@@ -19,7 +19,7 @@ services:
       - prometheus_valume:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.retention.time=90d'
+      - '--storage.tsdb.retention.time=365d'
     ports:
       - "9090:9090"  # Expose Prometheus UI port to host
     networks:

@@ -61,7 +61,7 @@ if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
 
     def _is_local_network():
         # Define local network IP prefixes (adjust as needed)
-        local_network_prefixes = ['192.168.', '10.0.', '172.17.']
+        local_network_prefixes = ['192.168.', '10.0.', '172.']
         #local_network_prefixes = []
         remote_ip = request.remote_addr
         print(f"\t[GW-AUTH] Check incoming IP address: {remote_ip}")

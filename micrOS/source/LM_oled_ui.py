@@ -310,18 +310,19 @@ class PageUI:
             task_buffer = str(Manager().show(tag=self.cmd_task_tag)).replace(' ', '')
             if task_buffer is not None and len(task_buffer) > 0:
                 # Set display out to task buffered data
-                self.cmd_out = task_buffer.replace('ºC', 'C')  # Workaround to eliminate ºC special character on display
+                self.cmd_out = task_buffer
                 # Kill task - clean
                 Manager().kill(tag=self.cmd_task_tag)
                 # data gathered - remove tag - skip re-read
                 self.cmd_task_tag = None
         # Show self.cmd_out value on display
         self._cmd_text(posx, posy+10)
-        # Set button press callback (+draw button)
-        self.set_press_callback(_button)
         # Run button event at page init
         if run:
             _button()
+        else:
+            # Set button press callback (+draw button)
+            self.set_press_callback(_button)
 
     def cmd_call_page(self, cmd, run=False):
         """Generic LoadModule execution page core - create multiple page with it"""
@@ -334,7 +335,7 @@ class PageUI:
                 # Send CMD to other device & show result
                 state, out = lm_exec(cmd_list)
                 try:
-                    self.cmd_out = ''.join(out.strip().split()).replace(' ', '').replace('ºC', 'C')
+                    self.cmd_out = ''.join(out.strip().split()).replace(' ', '')
                 except Exception:
                     self.cmd_out = out.strip()
             except Exception as e:
@@ -343,11 +344,12 @@ class PageUI:
         # Draw host + cmd details
         PageUI.DISPLAY.text(cmd, 0, posy)
         self._cmd_text(posx, posy)
-        # Set button press callback (+draw button)
-        self.set_press_callback(_button)
         # Run button event at page init
         if run:
             _button()
+        else:
+            # Set button press callback (+draw button)
+            self.set_press_callback(_button)
 
 
 #################################

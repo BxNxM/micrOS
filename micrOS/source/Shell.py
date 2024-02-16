@@ -24,7 +24,7 @@ from Debug import errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '1.59.0-1'
+    MICROS_VERSION = '1.59.1-0'
 
     def __init__(self):
         """
@@ -69,7 +69,7 @@ class Shell:
         mode = "[configure] " if self.__conf_mode else ""
         return f"{auth}{mode}{self.__devfid} $ "
 
-    def __authentication(self, msg_list):
+    def __auth(self, msg_list):
         """Authorize user"""
         # Set user auth state
         if self.__auth_mode and not self.__auth_ok:
@@ -121,7 +121,7 @@ class Shell:
             return True
 
         # [!] AUTH
-        state, msg_list = self.__authentication(msg_list)
+        state, msg_list = self.__auth(msg_list)
         if not state:
             return False
         if len(msg_list) == 0:
@@ -240,7 +240,7 @@ class Shell:
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
         """
-        def _offline_help(mod):
+        def _help(mod):
             for lm_path in (i for i in mod if i.startswith('LM_') and (i.endswith('py'))):
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
@@ -263,9 +263,9 @@ class Shell:
         if active_only:
             mod_keys = modules.keys()
             active_modules = (dir_mod for dir_mod in listdir() if dir_mod.split('.')[0] in mod_keys)
-            return _offline_help(active_modules)
+            return _help(active_modules)
         # [2] list all LMs on file system (ALL - help lm) - manual
-        return _offline_help(listdir())
+        return _help(listdir())
 
     @staticmethod
     def webrepl(msg_obj, update=False):

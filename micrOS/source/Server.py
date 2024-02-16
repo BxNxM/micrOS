@@ -96,9 +96,10 @@ class Client:
                 # Maintain ACTIVE_CLIS - remove closed connection by peer.
                 await self.close()
                 errlog_add(f"[WARN] Client.a_send (auto-drop) {self.client_id}: {e}")
+                return          # Abort async send (no drain)
             # Send buffered data with async task - hacky
             try:
-                # send write buffer
+                # Send write buffer
                 # Client.console("  |----- start drain")
                 await self.writer.drain()
                 # Client.console("  |------ stop drain")
@@ -237,7 +238,6 @@ class WebCli(Client):
                 return True         # I. endpoint /query no need to iterate through the full dict...
         return False
 
-
     async def stream(self, callback, task, content_type):
         """
         Async stream method
@@ -315,7 +315,7 @@ class ShellCli(Client, Shell):
                 errlog_add(f"[WARN] ShellCli.send (auto-drop) {self.client_id}: {e}")
             # Send buffered data with async task - hacky
             if self.drain_event.is_set():
-                self.drain_event.clear()        # set drain busy
+                self.drain_event.clear()        # set drain busy (False)
                 asyncio.get_event_loop().create_task(self.__wait_for_drain())
         else:
             console_write(f"[ShellCli] NoCon: response>/dev/nul")
@@ -334,7 +334,7 @@ class ShellCli(Client, Shell):
             Client.console(f"[ShellCli] Drain error -> close conn: {e}")
             await self.close()
         # set drain free
-        self.drain_event.set()
+        self.drain_event.set()                  # set drain free (True)
 
     async def close(self):
         Client.console(f"[ShellCli] Close connection {self.client_id}")

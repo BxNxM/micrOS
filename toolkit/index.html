@@ -21,6 +21,18 @@
             color: #d9d9d9;
             font-family: 'Arial', sans-serif;
         }
+        button {
+            background-color: #e7e7e7; /* Gray */
+            border: none;
+            color: black;
+            font-size: 14px;
+            border-radius: 4px;
+            transition-duration: 0.4s;
+        }
+        button:hover {
+            background-color: #555555; /* Black */
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -28,7 +40,7 @@
     <h1> micrOS GATEWAY </h1>
     <!-- Display micrOSDevices output -->
     <p id="micrOSDevices"></p>
-    <p> micrOS gateway <b>v1.2</b> </p>
+    <p> micrOS gateway <b>v1.3</b> </p>
     <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/list &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; List known devices, sort by online/offline </p>
     <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/search &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Search devices </p>
     <p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/status &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Get all device status - node info </p>

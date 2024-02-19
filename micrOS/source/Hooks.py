@@ -44,13 +44,18 @@ def bootup():
             console_write("|-[BOOT] ERROR")
 
     # Set boostmd (boost mode)
+    platform = detect_platform()
     if cfgget('boostmd') is True:
         console_write(f"[BOOT HOOKS] Set up CPU high Hz - boostmd: {cfgget('boostmd')}")
-        if 'esp32' in detect_platform():
-            freq(240_000_000)   # 240 Mhz
+        if platform == 'esp32c3':
+            freq(160_000_000)   # 160 Mhz (max)
+        elif 'esp32' in platform:
+            freq(240_000_000)   # 240 Mhz (max)
     else:
         console_write(f"[BOOT HOOKS] Set up CPU low Hz - boostmd: {cfgget('boostmd')}")
-        if 'esp32' in detect_platform():
+        if platform == 'esp32c3':
+            freq(80_000_000)   # 80 Mhz / Half the max CPU clock
+        elif 'esp32' in platform:
             freq(160_000_000)   # 160 Mhz / Half the max CPU clock
 
 

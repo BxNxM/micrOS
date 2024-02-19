@@ -59,7 +59,7 @@
 
 
     <!-- Input field for string -->
-    <label for="inputApiCmd"> <h3>⚙️ Enter micrOS command:</h3> </label>
+    <h3><label for="inputApiCmd"> ⚙️ Enter micrOS command: </label></h3>
 
     <label for="dropdown">Device</label>
     <select id="dropdown">
@@ -77,8 +77,10 @@
     <p id="rest_response_time"></p>
 
     <script>
-        const currentHostname = window.location.hostname;
+        const proto = window.location.protocol;
+        const hostname = window.location.hostname;
         const port = window.location.port ? `:${window.location.port}` : "";
+        const apiBaseUrl = `${proto}//${hostname}${port}`;
         var deviceLinksHTML = [];
 
         function restApi(cmd = 'list') {
@@ -93,7 +95,7 @@
             }
 
             // Get the current hostname and create the REST API URL
-            let apiUrl = `http://${currentHostname}${port}/${cmd}`;
+            let apiUrl = `${apiBaseUrl}/${cmd}`;
 
             const startTime = performance.now();
             let endTime;
@@ -143,7 +145,7 @@
         }
 
         function update_device_links(fuid, color='green'){
-            var linkTemplate = `<a href="http://${fuid}.local" target="_blank" style="background-color: ${color}; color: white; padding: 6px;">${fuid}</a>`;
+            var linkTemplate = `<a href="${proto}//${fuid}.local" target="_blank" style="background-color: ${color}; color: white; padding: 6px;">${fuid}</a>`;
             deviceLinksHTML.push(`${linkTemplate}&nbsp;`);
 
             if (deviceLinksHTML.length % 5 === 0) {
@@ -178,7 +180,7 @@
         }
 
         function create_camera_stream_link() {
-            let apiUrl = `http://${currentHostname}${port}/imgstream`;
+            let apiUrl = `${apiBaseUrl}/imgstream`;
 
             // Create a new anchor element
             var link = document.createElement('a');

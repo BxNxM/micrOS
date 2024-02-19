@@ -512,45 +512,41 @@
         }
     },
     "i2s_mic": {
-        "async": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
-            "param(s)": "capture capture_duration = Data.CAPTURE_DURATION"
-        },
         "background_capture": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    Start recording samples into a buffer by micro task\n    ",
             "param(s)": ""
         },
         "bytes_per_second": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    Get configured number of bytes per second\n    :t: seconds (number)\n    ",
             "param(s)": "t=1"
         },
         "decode": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    Decode raw bytes to floats between -1 and 1\n    :samples: samples to select channels from (bytes, bytearray)\n    ",
             "param(s)": "samples=b''"
         },
         "get_from_buffer": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    Return samples stored in the buffer, captured by micro task\n    :capture_duration: maximum duration (seconds) of samples to retrieve (number)\n    :channel: which channel to get samples from ('left', 'right' or 'all')\n    :downsampling: return every nth sample (int)\n    ",
             "param(s)": "capture_duration=Data.CAPTURE_DURATION"
         },
         "help": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/i2s_mic.png?raw=true",
         "load_n_init": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    Initialize I2S microphone module\n    :buf_length: I2S internal buffer length (int)\n    :sampling_rate: I2S sampling rate (int)\n    :capture_duration: override default duration of samples to retrieve\n    :shift_size: override default shift size\n    :sample_size: override default sample size (16 or 32)\n    :i2s_channel: override default I2S channel\n    :default_channel: override default channel ('left', 'right' or 'all')\n    :sound_format: override default format (I2S.MONO, I2S.STEREO)\n    :downsampling: override default downsampling\n    :control_button: name of button pin, control task is enbaled when provided\n    :enable_endpoint: enable/disable endpoint creation at /mic/stream (True/False)\n    ",
             "param(s)": "buf_length=Data.BUF_LENGTH sampling_rate=Data.SAMPLING_RATE"
         },
         "pinmap": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: sck, ws, sd",
             "param(s)": ""
         },
         "select_channel": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    Separate channels from stereo data and/or apply downsampling\n    Can be used as a workaround for https://github.com/espressif/esp-idf/issues/6625\n    :samples: samples to select channels from (bytes, bytearray)\n    :channel: which channel to get samples from ('left', 'right' or 'all')\n    :downsampling: return every nth sample (int)\n    ",
             "param(s)": "samples=b'' channel = Data.DEFAULT_CHANNEL downsampling = 1"
         },
         "set_volume": {
-            "doc": "cannot import name 'I2S' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    Change default volume by positive/negative bitwise shift\n    :param mic: shift_size, positive shift increases volume (int)\n    ",
             "param(s)": "shift_size=0"
         }
     },

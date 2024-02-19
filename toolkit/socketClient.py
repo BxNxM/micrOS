@@ -142,7 +142,7 @@ class ConnectionData:
                 ConnectionData.MICROS_DEVICES = cache_content
         else:
             print("Load micrOS device cache not found: {}".format(cache_path))
-            ConnectionData.MICROS_DEVICES = ConnectionData.DEFAULT_CONFIG_FRAGMNENT
+            ConnectionData.MICROS_DEVICES = ConnectionData.DEFAULT_CONFIG_FRAGMNENT if len(ConnectionData.MICROS_DEVICES) == 0 else ConnectionData.MICROS_DEVICES
         return ConnectionData.MICROS_DEVICES
 
     @staticmethod

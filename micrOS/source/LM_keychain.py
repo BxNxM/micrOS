@@ -9,14 +9,16 @@ from LM_neopixel import color, brightness, toggle, load_n_init as neopixel_lni
 INITED = False
 
 
-def load_n_init():
+def load_n_init(width=64, height=32):
     """
-    Init OLED display 64x32
+    Init OLED display 64x32 (default)
+    :param width: screen width (pixel)
+    :param height: screen height (pixel)
     """
     global INITED
     neopixel_lni(ledcnt=1)
     try:
-        oled_lni(128, 64)
+        oled_lni(width, height)
         INITED = True
         return "OLED INIT OK"
     except Exception as e:
@@ -25,7 +27,7 @@ def load_n_init():
 
 
 
-async def _display():
+async def _display(vd=False):
     """
     Run display content refresh
         H:M:S
@@ -34,7 +36,9 @@ async def _display():
     """
     # Clean display and draw rect...
     clean()
-    rect(0, 0, 66, 34)
+    # Virtual display rectangle 64x32
+    if vd:
+        rect(0, 0, 66, 34)
     ltime = localtime()
     h = "0{}".format(ltime[-5]) if len(str(ltime[-5])) < 2 else ltime[-5]
     m = "0{}".format(ltime[-4]) if len(str(ltime[-4])) < 2 else ltime[-4]
@@ -49,7 +53,7 @@ async def _display():
     show()
     return "Display show"
 
-async def __task(period_ms):
+async def __task(period_ms, vd=False):
     """
     Async display refresh task
     """
@@ -61,18 +65,19 @@ async def __task(period_ms):
     with micro_task(tag="kc.display") as my_task:
         my_task.out = 'running...'
         while True:
-            await _display()
+            await _display(vd=vd)
             # Async sleep - feed event loop
             await asyncio.sleep_ms(period_ms)
 
 
-def display(period=1000):
+def display(period=1000, vd=False):
     """
     Create kc.display display task
+    :param vd: virtual display 64x32 (rectangle for bigger screens)
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 1000 if period < 1000 else period
-    state = micro_task(tag="kc.display", task=__task(period_ms=period_ms))
+    state = micro_task(tag="kc.display", task=__task(period_ms=period_ms, vd=vd))
     return "Starting" if state else "Already running"
 
 

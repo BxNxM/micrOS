@@ -6,28 +6,31 @@ from LM_oled import text, show, rect, clean, load_n_init as oled_lni
 from LM_ds18 import measure
 from LM_neopixel import color, brightness, toggle, load_n_init as neopixel_lni
 
-INITED = False
+class KC:
+    INITED = False
+    DP_isON = True          # store display logical state: ON (main page) / OFF
+    DP_cnt = 0              # display "count back", when 0 go to sleep -> OFF
+    DP_cnt_default = None   # store calculated sequence to sleep 30sec/period_ms
 
 
 def load_n_init(width=64, height=32):
     """
     Init OLED display 64x32 (default)
+    Init Neopixel LED (1 segment)
     :param width: screen width (pixel)
     :param height: screen height (pixel)
     """
-    global INITED
     neopixel_lni(ledcnt=1)
     try:
         oled_lni(width, height)
-        INITED = True
+        KC.INITED = True
         return "OLED INIT OK"
     except Exception as e:
-        INITED = False
+        KC.INITED = False
         return f"OLED INIT NOK: {e}"
 
 
-
-async def _display(vd=False):
+async def _main_page(vd=False):
     """
     Run display content refresh
         H:M:S
@@ -53,19 +56,35 @@ async def _display(vd=False):
     show()
     return "Display show"
 
+
 async def __task(period_ms, vd=False):
     """
     Async display refresh task
     """
-    if not INITED:
+    if not KC.INITED:
         _v = load_n_init()
-        if not INITED:
+        if not KC.INITED:
             return _v
 
+    KC.DP_cnt_default = int(30_000 / period_ms)
+    KC.DP_cnt = KC.DP_cnt_default
+
     with micro_task(tag="kc.display") as my_task:
-        my_task.out = 'running...'
         while True:
-            await _display(vd=vd)
+            # Run main page loop
+            if KC.DP_isON:
+                await _main_page(vd=vd)
+                my_task.out = f'main page: {KC.DP_cnt}'
+                KC.DP_cnt -= 1
+
+            # Handle DISPLAY modes - auto "sleep"
+            if KC.DP_cnt <= 0:
+                KC.DP_isON = False              #1 disable screen
+                clean()                         #2 clean screen
+                # TODO: other options then just blank page
+                KC.DP_cnt = KC.DP_cnt_default   #3 set default sleep counter
+                my_task.out = 'sleep...'
+
             # Async sleep - feed event loop
             await asyncio.sleep_ms(period_ms)
 
@@ -104,6 +123,23 @@ def neopixel(r=None, g=None, b=None, br=None, onoff=None, smooth=True):
     return 'No action: r g b br onoff smooth'
 
 
+def press_event():
+    """
+    IRQ1 keychain module control function
+    - neopixel ON/OFF
+    - display wake-up (ON)
+    """
+    # If display is ON call neopixel toggle function
+    if KC.DP_isON:
+        # Reset display counter
+        KC.DP_cnt = KC.DP_cnt_default
+        # Neopixel toggle
+        toggle()
+        return
+    # Wake display
+    KC.DP_isON = True
+
+
 def lmdep():
     """
     Load Module dependencies
@@ -125,6 +161,6 @@ def pinmap():
 
 
 def help():
-    return 'load_n_init', 'temperature', 'display period>=1000',\
+    return 'load_n_init', 'temperature', 'display period>=1000', 'press_event'\
            'neopixel r=<0-255> g=<0-255> b=<0-255> br=<0-100> onoff=<toggle/on/off> smooth=<True/False>',\
            'pinmap', 'lmdep'

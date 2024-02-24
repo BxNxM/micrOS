@@ -580,7 +580,7 @@
             "param(s)": ""
         },
         "load_n_init": {
-            "doc": "\n    Init OLED display 64x32 (default)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    ",
+            "doc": "\n    Init OLED display 64x32 (default)\n    Init Neopixel LED (1 segment)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    ",
             "param(s)": "width=64 height=32"
         },
         "neopixel": {
@@ -589,6 +589,10 @@
         },
         "pinmap": {
             "doc": "\n    PIN MAP dump\n    \npin map: i2c_scl, i2c_sda, ds18, neop",
+            "param(s)": ""
+        },
+        "press_event": {
+            "doc": "\n    IRQ1 keychain module control function\n    - neopixel ON/OFF\n    - display wake-up (ON)\n    ",
             "param(s)": ""
         },
         "temperature": {

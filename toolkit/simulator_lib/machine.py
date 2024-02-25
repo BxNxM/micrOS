@@ -194,7 +194,7 @@ def reset_cause():
 
 
 def unique_id():
-    return hex(1234)
+    return b'08b61f3b6d18'
 
 
 def time_pulse_us():

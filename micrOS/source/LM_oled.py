@@ -102,6 +102,17 @@ class SSD1306(framebuf.FrameBuffer):
         self.write_cmd(SET_COM_OUT_DIR | ((rotate & 1) << 3))
         self.write_cmd(SET_SEG_REMAP | (rotate & 1))
 
+    def image(self, pbm_file, x=0, y=0):
+        # Load Portable Bitmap Format (PBM) formatted image from file
+        with open(pbm_file, 'rb') as f:
+            f.readline()  # Magic number
+            f.readline()  # Creator comment
+            f.readline()  # Dimensions
+            data = bytearray(f.read())
+        fbuf = framebuf.FrameBuffer(data, self.width, self.height, framebuf.MONO_HLSB)
+        self.invert(1)
+        self.blit(fbuf, x, y)
+
     def show(self):
         x0 = 0
         x1 = self.width - 1
@@ -211,6 +222,54 @@ def rect(x, y, w, h, state=1, fill=False):
         load_n_init().rect(x, y, w, h, state)
     return True
 
+def pixel(x, y, color=1):
+    """
+    https://blog.martinfitzpatrick.com/oled-displays-i2c-micropython/
+    Set pixel
+    .pixel(x, y, c)
+    """
+    load_n_init().pixel(x, y, color)  # 3rd param is the colour
+    return True
+
+
+def bitmap(bmp=None, x=0, y=0):
+    """
+    Draw simple bitmap
+    :param bmp: lines of image string ('001','011','111')
+    :param x: x offset
+    :param y: y offset
+    """
+    if bmp is None:
+        bmp = ('000000000',
+               '011000110',
+               '111101111',
+               '111111111',
+               '111111111',
+               '011111110',
+               '001111100',
+               '000111000',
+               '000010000')
+
+    display = load_n_init()
+    display.fill(0)  # Clear the display
+    for _y, row in enumerate(bmp):
+        for _x, c in enumerate(row):
+            display.pixel(_x+x, _y+y, int(c))
+    return True
+
+
+def image(pbm_img, x=0, y=0):
+    """
+    https://blog.martinfitzpatrick.com/displaying-images-oled-displays/
+    Load Portable Bitmap Format (PBM) image
+    :param pbm_img: .pbm image path
+    :param x: x offset
+    :param y: y offset
+    """
+    load_n_init().image(pbm_file=pbm_img, x=x, y=y)
+    return True
+
+
 
 def poweron():
     """
@@ -258,4 +317,5 @@ def help():
     """
     return 'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
+           'pixel x y color=1', 'bitmap bmp=<str tuple> x=0 y=0', 'image pbm_img x=0 y=0',\
            'show', 'poweron', 'poweroff', 'pinmap', 'INFO: OLED Module for SSD1306'

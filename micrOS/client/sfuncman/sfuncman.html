@@ -188,7 +188,16 @@ pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table bo
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;w:&nbsp;width<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;h:&nbsp;height<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state:&nbsp;state<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fill:&nbsp;fill&nbsp;rectangle&nbsp;(True/False)</td></tr></table></td></tr><tr><th>poweron</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Power&nbsp;ON&nbsp;OLED</td></tr></table></td></tr><tr><th>poweroff</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Power&nbsp;OFF&nbsp;OLED</td></tr></table></td></tr><tr><th>show</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;OLED&nbsp;buffer&nbsp;data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fill:&nbsp;fill&nbsp;rectangle&nbsp;(True/False)</td></tr></table></td></tr><tr><th>pixel</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>x y color=1</td></tr><tr><th>doc</th><td>https://blog.martinfitzpatrick.com/oled-displays-i2c-micropython/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Set&nbsp;pixel<br>
+&nbsp;&nbsp;&nbsp;&nbsp;.pixel(x,&nbsp;y,&nbsp;c)</td></tr></table></td></tr><tr><th>bitmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>bmp=None x=0 y=0</td></tr><tr><th>doc</th><td>Draw&nbsp;simple&nbsp;bitmap<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;bmp:&nbsp;lines&nbsp;of&nbsp;image&nbsp;string&nbsp;('001','011','111')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;x:&nbsp;x&nbsp;offset<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;y:&nbsp;y&nbsp;offset</td></tr></table></td></tr><tr><th>image</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>pbm_img x=0 y=0</td></tr><tr><th>doc</th><td>https://blog.martinfitzpatrick.com/displaying-images-oled-displays/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;Portable&nbsp;Bitmap&nbsp;Format&nbsp;(PBM)&nbsp;image<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pbm_img:&nbsp;.pbm&nbsp;image&nbsp;path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;x:&nbsp;x&nbsp;offset<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;y:&nbsp;y&nbsp;offset</td></tr></table></td></tr><tr><th>poweron</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Power&nbsp;ON&nbsp;OLED</td></tr></table></td></tr><tr><th>poweroff</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Power&nbsp;OFF&nbsp;OLED</td></tr></table></td></tr><tr><th>show</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;OLED&nbsp;buffer&nbsp;data<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;update&nbsp;display</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>

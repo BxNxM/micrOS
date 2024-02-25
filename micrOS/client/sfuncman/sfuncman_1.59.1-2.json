@@ -808,6 +808,10 @@
         }
     },
     "oled_sh1106": {
+        "bitmap": {
+            "doc": "\n    Draw simple bitmap\n    :param bmp: lines of image string ('001','011','111')\n    :param x: x offset\n    :param y: y offset\n    ",
+            "param(s)": "bmp=None x=0 y=0"
+        },
         "clean": {
             "doc": "\n    Clean display\n    :param state: 0/1\n    ",
             "param(s)": "state=0"

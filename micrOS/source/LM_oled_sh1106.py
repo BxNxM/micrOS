@@ -289,6 +289,57 @@ def rect(x, y, w, h, state=1, fill=False):
     return True
 
 
+def pixel(x, y, state=1):
+    __init().pixel(x, y, color=state)
+    return True
+
+
+def bitmap(bmp=None, x=0, y=0):
+    """
+    Draw simple bitmap
+    :param bmp: lines of image string ('001','011','111')
+    :param x: x offset
+    :param y: y offset
+    """
+    if bmp is None:
+        """default bmp 14x14:
+                # #    # #
+                # #    # # 
+            # # # # # # # # # #
+            # # # # # # # # # #
+        # # # #             # # # #
+        # # # #             # # # #
+            # #     # #     # #
+            # #     # #     # #
+        # # # #             # # # #
+        # # # #             # # # #
+            # # # # # # # # # #
+            # # # # # # # # # #
+                # #     # #
+                # #     # #
+        """
+        bmp = ('00001100110000',
+               '00001100110000',
+               '11111111111111',
+               '11111111111111',
+               '11110000001111',
+               '11110000001111',
+               '00110011001100',
+               '00110011001100',
+               '11110000001111',
+               '11110000001111',
+               '11111111111111',
+               '11111111111111',
+               '00001100110000',
+               '00001100110000')
+
+    display = __init()
+    for _y, row in enumerate(bmp):
+        for _x, c in enumerate(row):
+            display.pixel(_x+x, _y+y, int(c))
+    return True
+
+
 def poweron():
     """
     Power ON OLED
@@ -313,11 +364,6 @@ def show():
     __init().show()
 
 
-def pixel(x, y, state=1):
-    __init().pixel(x, y, color=state)
-    return True
-
-
 def flip():
     __init().flip()
     return True
@@ -340,6 +386,7 @@ def pinmap():
 def help():
     return 'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
-           'show', 'poweron', 'poweroff', 'pixel x y state', 'flip', 'pinmap',\
+           'pixel x y state', 'bitmap bmp=None x=0 y=0',\
+           'show', 'poweron', 'poweroff', 'flip', 'pinmap',\
            'INFO: OLED Module for SH1106'
 

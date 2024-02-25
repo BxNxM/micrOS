@@ -58,7 +58,7 @@ class Data:
                     "irq4_trig": "n/a",
                     "irq_prell_ms": 300,
                     "boothook": "n/a",
-                    "aioqueue": 3,
+                    "aioqueue": 4,
                     "utc": +60,
                     "boostmd": True,
                     "guimeta": "...",     # special "offloaded" key indicator

@@ -61,14 +61,14 @@
     <!-- Input field for string -->
     <h3><label for="inputApiCmd"> ⚙️ Enter micrOS command: </label></h3>
 
-    <label for="dropdown">Device</label>
-    <select id="dropdown">
-    </select>
-
-
-    <input type="text" id="inputApiCmd">
     <!-- Button to send data -->
-    <button onclick="restApi(cmd='')">Send</button>
+    <form onsubmit="restApi(cmd=''); return false;">
+        <label for="dropdown">Device</label>
+        <select id="dropdown"></select>
+        <input type="text" id="inputApiCmd">
+        <button type="submit">Send</button>
+    </form>
+
     <!-- Display usrApiCallUrl generated from inputApiCmd -->
     <p id="usrApiCallUrl"></p>
     <!-- Display api response -->

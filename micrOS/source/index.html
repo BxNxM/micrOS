@@ -47,9 +47,11 @@
     <button onclick="restApi('task/list')">Tasks</button>
     <!-- Input field for string -->
     <h3><label for="inputApiCmd">⚙️ Enter micrOS command: </label></h3>
-    <input type="text" id="inputApiCmd">
     <!-- Button to send data -->
-    <button onclick="restApi()">Send</button>
+    <form onsubmit="restApi(); return false;">
+        <input type="text" id="inputApiCmd">
+        <button type="submit">Send</button>
+    </form>
     <!-- Display usrApiCallUrl generated from inputApiCmd -->
     <p id="usrApiCallUrl"></p>
     <!-- Display api response -->

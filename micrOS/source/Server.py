@@ -271,7 +271,8 @@ class WebCli(Client):
             # REST sub-parameter handling (rest commands)
             cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"').replace('%E2%80%9D', '"')
                    .replace('-', ' ').strip().split())
-            cmd.append('>json')                             # request json format instead of string
+            # request json format instead of default string output (+ handle & tasks syntax)
+            cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
             # EXECUTE COMMAND - LoadModule
             state, out = lm_exec(cmd)
             result += out

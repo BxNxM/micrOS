@@ -18,7 +18,7 @@ dependencies = ['adafruit-ampy', 'mpremote', 'esptool', 'ipaddress', 'netaddr',
 
 setuptools.setup(
     name='micrOSDevToolKit',
-    version='1.59.4',
+    version='1.60.0',
     author='Marcell Ban',
     author_email='miros.framework@gmail.com',
     description='Development and deployment environment for micrOS, the diy micropython automation OS (IoT)',

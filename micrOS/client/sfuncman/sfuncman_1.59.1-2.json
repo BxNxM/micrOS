@@ -762,7 +762,7 @@
             "param(s)": ""
         },
         "image": {
-            "doc": "\n    https://blog.martinfitzpatrick.com/displaying-images-oled-displays/\n    Load Portable Bitmap Format (PBM) image\n    :param pbm_img: .pbm image path\n    :param x: x offset\n    :param y: y offset\n    ",
+            "doc": "\n    [BETA]\n    https://blog.martinfitzpatrick.com/displaying-images-oled-displays/\n    Load Portable Bitmap Format (PBM) image\n    :param pbm_img: .pbm image path\n    :param x: x offset\n    :param y: y offset\n    ",
             "param(s)": "pbm_img x=0 y=0"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true",

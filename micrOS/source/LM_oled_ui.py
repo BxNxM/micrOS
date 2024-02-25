@@ -392,7 +392,14 @@ def _micros_welcome():
     """Template function"""
     def _button():
         """Button callback example"""
-        PageUI.DISPLAY.text('HELLO :D', 35, 29)
+        bmp_ok=True
+        try:
+            PageUI.DISPLAY.bitmap(x=15, y=29)
+        except:
+            # No bitmap method supported
+            bmp_ok = False
+        s = ':D' if bmp_ok else ':/'
+        PageUI.DISPLAY.text(f'HELLO {s}', 35, 29)
         PageUI.DISPLAY.show()
 
     try:

@@ -110,7 +110,7 @@ class SSD1306(framebuf.FrameBuffer):
             f.readline()  # Dimensions
             data = bytearray(f.read())
         fbuf = framebuf.FrameBuffer(data, self.width, self.height, framebuf.MONO_HLSB)
-        self.invert(1)
+        self.invert(1)          # Clear display
         self.blit(fbuf, x, y)
 
     def show(self):
@@ -240,18 +240,38 @@ def bitmap(bmp=None, x=0, y=0):
     :param y: y offset
     """
     if bmp is None:
-        bmp = ('000000000',
-               '011000110',
-               '111101111',
-               '111111111',
-               '111111111',
-               '011111110',
-               '001111100',
-               '000111000',
-               '000010000')
+        """default bmp 14x14:
+                # #    # #
+                # #    # # 
+            # # # # # # # # # #
+            # # # # # # # # # #
+        # # # #             # # # #
+        # # # #             # # # #
+            # #     # #     # #
+            # #     # #     # #
+        # # # #             # # # #
+        # # # #             # # # #
+            # # # # # # # # # #
+            # # # # # # # # # #
+                # #     # #
+                # #     # #
+        """
+        bmp = ('00001100110000',
+               '00001100110000',
+               '11111111111111',
+               '11111111111111',
+               '11110000001111',
+               '11110000001111',
+               '00110011001100',
+               '00110011001100',
+               '11110000001111',
+               '11110000001111',
+               '11111111111111',
+               '11111111111111',
+               '00001100110000',
+               '00001100110000')
 
     display = load_n_init()
-    display.fill(0)  # Clear the display
     for _y, row in enumerate(bmp):
         for _x, c in enumerate(row):
             display.pixel(_x+x, _y+y, int(c))
@@ -260,6 +280,7 @@ def bitmap(bmp=None, x=0, y=0):
 
 def image(pbm_img, x=0, y=0):
     """
+    [BETA]
     https://blog.martinfitzpatrick.com/displaying-images-oled-displays/
     Load Portable Bitmap Format (PBM) image
     :param pbm_img: .pbm image path

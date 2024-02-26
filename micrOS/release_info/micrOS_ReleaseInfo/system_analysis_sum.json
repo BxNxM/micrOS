@@ -13,7 +13,7 @@
             1
         ],
         "Server.py": [
-            9.34,
+            9.31,
             4
         ],
         "Tasks.py": [
@@ -276,6 +276,6 @@
         ],
         "core_score": 9.18,
         "load_score": 8.16,
-        "version": "1.59.1-2"
+        "version": "1.60.0-0"
     }
 }

@@ -161,6 +161,6 @@ def pinmap():
 
 
 def help():
-    return 'load_n_init', 'temperature', 'display period>=1000', 'press_event'\
+    return 'load_n_init', 'temperature', 'display period>=1000', 'press_event',\
            'neopixel r=<0-255> g=<0-255> b=<0-255> br=<0-100> onoff=<toggle/on/off> smooth=<True/False>',\
            'pinmap', 'lmdep'

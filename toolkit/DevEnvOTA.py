@@ -34,7 +34,7 @@ class OTA(Compile):
         self.gui_console = gui_console
         # Skip the following modules in OTA update (safe mode) to have recovery mode
         self.safe_mode_file_exception_list = ['main.py', 'micrOSloader.mpy',
-                                              'Network.mpy', 'ConfigHandler.mpy',
+                                              'Network.mpy', 'Config.mpy',
                                               'Debug.mpy']
 
     def safe_core_list(self):

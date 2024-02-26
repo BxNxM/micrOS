@@ -50,15 +50,15 @@ Access rest api over browser: `http://<nodename>.local`
 🚀🎈Lightweight and high performance core system that leaves you space 😎
 
 ## ◉ Shortcuts:
-1. micrOS Client Application [link](https://github.com/BxNxM/micrOS#micrOS-Client-Application)
-2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32)
-3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS#micros-video-tutorials)
-4. micrOS System and features [link](https://github.com/BxNxM/micrOS#micros-system-message-function-visualization)
-5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS#built-in-periphery-support)
-6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS#micros-node-configuration-parameters-with-description)
-7. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS#micros-customization)
-8. micrOS gateway with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS#micros-gateway-in-docker)
-9. Release notes: [link](https://github.com/BxNxM/micrOS#relese-note)
+1. micrOS Client Application [link](https://github.com/BxNxM/micrOS/#micros-client-application)
+2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32-and-more)
+3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS/#micros-video-tutorials)
+4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
+5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
+6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
+7. micrOS customization with LMs: [link](https://github.com/BxNxM/micrOS/#micros-customization)
+8. micrOS gateway with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
+9. Release notes: [link](https://github.com/BxNxM/micrOS/#relese-note)
 
 ----------------------------------------
 ----------------------------------------

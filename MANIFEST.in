@@ -15,3 +15,4 @@ include toolkit/img_stream.html
 include toolkit/LM_to_compile.dat
 include micrOS/release_info/micrOS_ReleaseInfo/system_analysis_sum.json
 graft env/driver_cp210x/
+graft toolkit/user_data/webhooks/

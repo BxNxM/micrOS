@@ -74,7 +74,7 @@
         ],
         "urequests.py": [
             8.9,
-            3
+            4
         ],
         "LM_roboarm.py": [
             9.18,
@@ -103,6 +103,10 @@
         "LM_co2.py": [
             8.39,
             3
+        ],
+        "LM_rest.py": [
+            7.5,
+            0
         ],
         "LM_oled.py": [
             9.36,
@@ -263,8 +267,8 @@
             19
         ],
         "load": [
-            6179,
-            45
+            6207,
+            46
         ],
         "core_dep": [
             true,
@@ -272,10 +276,10 @@
         ],
         "load_dep": [
             true,
-            6
+            7
         ],
         "core_score": 9.18,
-        "load_score": 8.16,
-        "version": "1.60.0-0"
+        "load_score": 8.14,
+        "version": "1.60.1-0"
     }
 }

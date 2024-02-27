@@ -23,10 +23,12 @@ except Exception as e:
 try:
     from . import socketClient
     from .lib.SearchDevices import my_local_ip
+    from .lib.LocalMachine import CommandHandler, FileHandler
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     import socketClient
     from lib.SearchDevices import my_local_ip
+    from lib.LocalMachine import CommandHandler, FileHandler
 
 API_URL_CACHE = ""
 
@@ -581,6 +583,30 @@ class ImgStream(Resource):
             response = "404 Not Found"
         return make_response(response)
 
+class WebHook(Resource):
+    ACTION_SCRIPTS_PATH = os.path.join(MYPATH, 'user_data/webhooks')
+
+    def get(self, payload=None, args=None):
+        if payload is None:
+            return self.webhook_help()
+        response = {'exitcode': 1, 'response': ''}
+        script = os.path.join(WebHook.ACTION_SCRIPTS_PATH, f"{payload}.py")
+        if os.path.isfile(script):
+            args = ' '.join(args.split('+')) if args is not None else ''
+            cmd = f"python3 {script} {args}"
+            response['exitcode'], response['response'], stderr = CommandHandler.run_command(cmd, raise_exception=True, shell=True, debug=True)
+            print(f"[WEBHOOK][{response['exitcode']}{stderr}] {script} {args}")
+        else:
+            print(f"[WEBHOOK] no payload script was found: {script}")
+        return jsonify(response)
+
+    def webhook_help(self):
+        webhook_scripts = FileHandler.list_dir(WebHook.ACTION_SCRIPTS_PATH)
+        response = {'webhooks_folder': WebHook.ACTION_SCRIPTS_PATH, 'webhooks': webhook_scripts}
+        return jsonify(response)
+
+
+
 # adding the defined resources along with their corresponding urls
 api.add_resource(Hello, '/')
 api.add_resource(ListDevices, '/list/')
@@ -590,6 +616,7 @@ api.add_resource(SendCmd, '/sendcmd/<string:device>/<string:cmd>')
 api.add_resource(Prometheus, '/metrics/<string:device>/<string:cmd>')
 api.add_resource(ForwardImg, '/image', '/image/<string:device>')
 api.add_resource(ImgStream, '/imgstream')
+api.add_resource(WebHook, '/webhooks', '/webhooks/<string:payload>', '/webhooks/<string:payload>/<string:args>')
 
 
 def gateway(debug=True):

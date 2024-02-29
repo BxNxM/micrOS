@@ -115,16 +115,14 @@ def _default():
              (0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0),
              (0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0))
     GoL.GOL.add_cells(1, 4, cells)
-
     # Oscillator (my Blinker Star)
     cells = ((1, 1, 1, 1, 1),)
     GoL.GOL.add_cells(25, 5, cells)
-
     # Spaceship (Glider)
     cells = ((0, 1, 0),
              (0, 0, 1),
              (1, 1, 1))
-    GoL.GOL.add_cells(25, 10, cells)
+    GoL.GOL.add_cells(16, 5, cells)
 
 
 def load_n_init(w=32, h=16):

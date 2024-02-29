@@ -182,10 +182,10 @@ class PageUI:
         # Default mode
         if gof_nextgen is None:
             return      # __power_save
-        PageUI.DISPLAY.poweron()
         # Screen saver mode
         matrix = gof_nextgen(raw=True)
         if matrix is None:
+            # Reset Game of life
             gof_reset()
         else:
             # Update display with Conway's Game of Life
@@ -193,9 +193,11 @@ class PageUI:
             matrix_height = len(matrix)
             for line_idx, line in enumerate(matrix):
                 for x_idx, v in enumerate(line):
-                    #PageUI.DISPLAY.pixel(x_idx, line_idx, color=v)
                     scale = int(self.height / matrix_height)
-                    PageUI.DISPLAY.rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
+                    if scale == 1:
+                        PageUI.DISPLAY.pixel(x_idx, line_idx, color=v)
+                    else:
+                        PageUI.DISPLAY.rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
             PageUI.DISPLAY.show()
 
     #############################
@@ -222,7 +224,7 @@ class PageUI:
             PageUI.DISPLAY.show()
             self.__power_save()
         else:
-            # Check when screen off
+            # Check when screen is off / screen saver
             self.screen_saver()
 
     def control(self, cmd):
@@ -254,8 +256,12 @@ class PageUI:
             PageUI.DISPLAY.poweron()
             self.oled_state = True
         elif cmd.strip() == 'off':
-            PageUI.DISPLAY.poweroff()
-            self.oled_state = False
+            if gof_nextgen is None:
+                PageUI.DISPLAY.poweroff()       # Off screen when no ScreenSaver (gof_nextgen)
+            else:
+                PageUI.DISPLAY.clean(state=1)   # Invert clean before ScreenSaver
+                PageUI.DISPLAY.show()
+            self.oled_state = False             # Off main page logic
             self.bttn_press_callback = None
         return "page: {} pwr: {}".format(self.active_page, self.oled_state)
 

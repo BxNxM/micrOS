@@ -5,6 +5,10 @@ from Network import ifconfig
 from LM_oled import text, show, rect, clean, load_n_init as oled_lni
 from LM_ds18 import measure
 from LM_neopixel import color, brightness, toggle, load_n_init as neopixel_lni
+try:
+    from LM_gameOfLife import next_gen as gof_nextgen, reset as gof_reset
+except:
+    gof_nextgen = None      # Optional function handling
 
 class KC:
     INITED = False
@@ -13,21 +17,23 @@ class KC:
     DP_cnt_default = None   # store calculated sequence to sleep 30sec/period_ms
 
 
-def load_n_init(width=64, height=32):
-    """
-    Init OLED display 64x32 (default)
-    Init Neopixel LED (1 segment)
-    :param width: screen width (pixel)
-    :param height: screen height (pixel)
-    """
-    neopixel_lni(ledcnt=1)
-    try:
-        oled_lni(width, height)
-        KC.INITED = True
-        return "OLED INIT OK"
-    except Exception as e:
-        KC.INITED = False
-        return f"OLED INIT NOK: {e}"
+def _screen_saver():
+    # Default mode
+    if gof_nextgen is None:
+        return      # screen off - no screen saver...
+    # Screen saver mode
+    matrix = gof_nextgen(raw=True)
+    if matrix is None:
+        # Reset Game of life
+        gof_reset()
+    else:
+        # Update display with Conway's Game of Life
+        clean()
+        for line_idx, line in enumerate(matrix):
+            for x_idx, v in enumerate(line):
+                scale = 2     # Because default GoL matrix: 32x16
+                rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
+        show()
 
 
 async def _main_page(vd=False):
@@ -76,17 +82,36 @@ async def __task(period_ms, vd=False):
                 await _main_page(vd=vd)
                 my_task.out = f'main page: {KC.DP_cnt}'
                 KC.DP_cnt -= 1
+            else:
+                # When KC.DP_isON False - main page off
+                _screen_saver()                  # run screen saver
 
-            # Handle DISPLAY modes - auto "sleep"
+            # Handle DISPLAY modes - off event - auto "sleep"
             if KC.DP_cnt <= 0:
-                KC.DP_isON = False              #1 disable screen
+                KC.DP_isON = False              #1 disable main screen
                 clean()                         #2 clean screen
-                # TODO: other options then just blank page
                 KC.DP_cnt = KC.DP_cnt_default   #3 set default sleep counter
                 my_task.out = 'sleep...'
 
             # Async sleep - feed event loop
             await asyncio.sleep_ms(period_ms)
+
+
+def load_n_init(width=64, height=32):
+    """
+    Init OLED display 64x32 (default)
+    Init Neopixel LED (1 segment)
+    :param width: screen width (pixel)
+    :param height: screen height (pixel)
+    """
+    neopixel_lni(ledcnt=1)
+    try:
+        oled_lni(width, height)
+        KC.INITED = True
+        return "OLED INIT OK"
+    except Exception as e:
+        KC.INITED = False
+        return f"OLED INIT NOK: {e}"
 
 
 def display(period=1000, vd=False):

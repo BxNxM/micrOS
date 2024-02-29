@@ -115,7 +115,11 @@ def _update_dep_category(struct, core_filter_list, lm_filter_list, master_key='c
                 categories[master_key][core]['dependencies']['lm'].append(mod_dep)
             else:
                 categories[master_key][core]['dependencies']['builtin'].append(mod_dep)
-        categories[master_key][core]['linter']['lines'] = lines
+        try:
+            categories[master_key][core]['linter']['lines'] = lines
+        except Exception as e:
+            print(f"[WARNING] {e}")
+            
     categories[master_key]['linter'] = {}
     categories[master_key]['linter']['sum_lines'] = lines_sum
     return categories

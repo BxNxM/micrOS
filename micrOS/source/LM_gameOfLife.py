@@ -103,40 +103,28 @@ class GoL:
 def _default():
     """
     Contains default cells setup
+    Default: 16x32 px
     """
-    # Oscallator (Beacon)
-    cells = ((1, 1, 0),
-             (1, 1, 0),
-             (0, 0, 1, 1),
-             (0, 0, 1, 1))
-    GoL.GOL.add_cells(2, 2, cells)
+    # Spaceship (Copperhead)
+    cells = ((0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0),
+             (0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0),
+             (0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0),
+             (1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0),
+             (1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0),
+             (0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0),
+             (0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0),
+             (0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0))
+    GoL.GOL.add_cells(1, 4, cells)
 
-    # Oscillator (my Blinker)
+    # Oscillator (my Blinker Star)
     cells = ((1, 1, 1, 1, 1),)
-    GoL.GOL.add_cells(9, 2, cells)
-
-    # Oscillator (Blinker)
-    cells = ((1, 1, 1),)
-    GoL.GOL.add_cells(29, 8, cells)
+    GoL.GOL.add_cells(25, 5, cells)
 
     # Spaceship (Glider)
     cells = ((0, 1, 0),
              (0, 0, 1),
              (1, 1, 1))
-    GoL.GOL.add_cells(2, 7, cells)
-
-    # Oscillator (Pentadecathlon)
-    cells = ((0, 1, 0),
-             (0, 1, 0),
-             (1, 0, 1),
-             (0, 1, 0),
-             (0, 1, 0),
-             (0, 1, 0),
-             (0, 1, 0),
-             (1, 0, 1),
-             (0, 1, 0),
-             (0, 1, 0))
-    GoL.GOL.add_cells(20, 3, cells)
+    GoL.GOL.add_cells(25, 10, cells)
 
 
 def load_n_init(w=32, h=16):
@@ -169,5 +157,14 @@ def next_gen(raw=False):
     return '\n'.join([" ".join(['.' if r == 0 else "●" for r in row]) for row in matrix])
 
 
+def reset():
+    """
+    Reset life table - set default
+    """
+    del GoL.GOL
+    GoL.GOL = None
+    return 'GoL reset'
+
+
 def help():
-    return 'load_n_init w=32 h=16', 'next_gen raw=False'
+    return 'load_n_init w=32 h=16', 'next_gen raw=False', 'reset'

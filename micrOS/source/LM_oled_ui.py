@@ -9,7 +9,7 @@ from Tasks import lm_exec, Manager
 try:
     from LM_system import memory_usage
 except:
-    memory_usage = None
+    memory_usage = None         # Optional function handling
 try:
     import LM_intercon as InterCon
 except:
@@ -18,6 +18,10 @@ try:
     from LM_genIO import get_adc
 except:
     get_adc = None              # Optional function handling
+try:
+    from LM_gameOfLife import next_gen as gof_nextgen, reset as gof_reset
+except:
+    gof_nextgen = None          # Optional function handling
 
 
 #################################
@@ -174,6 +178,26 @@ class PageUI:
             self.control('off')
             self.pwr_saver_state[2] = sec
 
+    def screen_saver(self):
+        # Default mode
+        if gof_nextgen is None:
+            return      # __power_save
+        PageUI.DISPLAY.poweron()
+        # Screen saver mode
+        matrix = gof_nextgen(raw=True)
+        if matrix is None:
+            gof_reset()
+        else:
+            # Update display with Conway's Game of Life
+            PageUI.DISPLAY.clean()
+            matrix_height = len(matrix)
+            for line_idx, line in enumerate(matrix):
+                for x_idx, v in enumerate(line):
+                    #PageUI.DISPLAY.pixel(x_idx, line_idx, color=v)
+                    scale = int(self.height / matrix_height)
+                    PageUI.DISPLAY.rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
+            PageUI.DISPLAY.show()
+
     #############################
     #       PUBLIC FUNCTIONS    #
     #############################
@@ -197,6 +221,9 @@ class PageUI:
                     self.page_callback_list[self.active_page]()         # <== Execute page functions
             PageUI.DISPLAY.show()
             self.__power_save()
+        else:
+            # Check when screen off
+            self.screen_saver()
 
     def control(self, cmd):
         # Reset power saver counter

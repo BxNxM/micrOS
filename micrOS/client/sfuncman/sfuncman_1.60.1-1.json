@@ -478,6 +478,10 @@
         "next_gen": {
             "doc": "\n    Get Next Generation of cells\n    :param raw: Output type (raw:True -> matrix), (raw:False formatted output)\n    return change of life matrix or None if there is no change\n    ",
             "param(s)": "raw=False"
+        },
+        "reset": {
+            "doc": "\n    Reset life table - set default\n    ",
+            "param(s)": ""
         }
     },
     "genIO": {

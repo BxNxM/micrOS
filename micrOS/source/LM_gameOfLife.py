@@ -7,12 +7,15 @@ class GoL:
                   of overpopulation, in the next generation.
     """
     GOL = None
+    CSTM_CONF = None
 
-    def __init__(self, height=16, width=32):
+    def __init__(self, height=16, width=32, custom_conf=None):
         self.height = height
         self.width = width
         self.matrix = [[0] * width for _ in range(height)]
         self.__next_delta = []
+        if isinstance(custom_conf, tuple):
+            GoL.CSTM_CONF = custom_conf
 
     def add_cells(self, x, y, cells):
         """
@@ -22,7 +25,44 @@ class GoL:
             for ix, v in enumerate(line_data):
                 self.matrix[y+line_index][ix+x] = v
 
-    def _next_gen(self):
+    def init_conf(self):
+        """
+        Contains default cells setup
+        Default: 16x32 px
+        Configuration of Game of life:
+        - simulation end is stationary (detection->restart) + reset function
+        """
+        if GoL.CSTM_CONF is None:
+            # SET DEFAULT CONFIG
+            # Spaceship (Copperhead)
+            cells = ((0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0),
+                     (0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0),
+                     (0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0),
+                     (1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0),
+                     (1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0),
+                     (0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0),
+                     (0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0),
+                     (0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0))
+            self.add_cells(1, 4, cells)
+            # Oscillator (my Blinker Star)
+            cells = ((1, 1, 1, 1, 1),)
+            self.add_cells(25, 5, cells)
+            # Spaceship (Glider)
+            cells = ((0, 1, 0),
+                     (0, 0, 1),
+                     (1, 1, 1))
+            self.add_cells(16, 5, cells)
+        else:
+            # SET CUSTOM (USER) CONFIG
+            try:
+                pos = GoL.CSTM_CONF[0]
+                cells = GoL.CSTM_CONF[1:]
+                self.add_cells(x=pos[0], y=pos[1], cells=cells)
+            except Exception as e:
+                GoL.CSTM_CONF = None        # Fallback to default config
+                raise Exception(e)
+
+    def next_gen(self):
         """
         Create next generation of cells - line-by-line on self.matrix
         """
@@ -99,57 +139,49 @@ class GoL:
             return True
         return False
 
+"""
+Custom config usage:
 
-def _default():
-    """
-    Contains default cells setup
-    Default: 16x32 px
-    """
-    # Spaceship (Copperhead)
-    cells = ((0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0),
-             (0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0),
-             (0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0),
-             (1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0),
-             (1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0),
-             (0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0),
-             (0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0),
-             (0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0))
-    GoL.GOL.add_cells(1, 4, cells)
-    # Oscillator (my Blinker Star)
-    cells = ((1, 1, 1, 1, 1),)
-    GoL.GOL.add_cells(25, 5, cells)
-    # Spaceship (Glider)
-    cells = ((0, 1, 0),
-             (0, 0, 1),
-             (1, 1, 1))
-    GoL.GOL.add_cells(16, 5, cells)
+def my_config(add_cells):
+    # custom cells
+    cells = ((10,10),(1,0,0),(0,1,1),(0,0,1))
+    load_n_init(w=32, h=16, custom=cells)
+    
+    matrix = []
+    while matrix is not None:
+        matrix = next_gen(raw=True, w=32, h=16)
+        print(matrix)
+"""
 
-
-def load_n_init(w=32, h=16):
+def load_n_init(w=32, h=16, custom=None):
     """
     Init Conway's Game of Life
     :param w: width of display (pixel)
     :param h: height of display (pixel)
+    :param custom: custom initial set, example: ((10,10),(1,0,0),(0,1,1),(0,0,1))
     Init and store GoL instance, inject default cells
     """
     if GoL.GOL is None:
-        GoL.GOL = GoL(height=h, width=w)
-        _default()
+        GoL.GOL = GoL(height=h, width=w, custom_conf=custom)     # Init GoL class
+        GoL.GOL.init_conf()                                      # Set default configuration
         return f'Init Game of Life: X:{w}Y:{h}'
     return f'Game of Life was already inited: X:{GoL.GOL.width}Y:{GoL.GOL.height}'
 
 
-def next_gen(raw=False):
+def next_gen(raw=False, w=32, h=16):
     """
-    Get Next Generation of cells
+    Main Game of Life function
+        Get Next Generation of cells (with auto load_n_init and GoL reinit)
     :param raw: Output type (raw:True -> matrix), (raw:False formatted output)
-    return change of life matrix or None if there is no change
+    :param w: width of display (pixel)
+    :param h: height of display (pixel)
+    return change of life matrix or None if there is no change (on None, restart feature: call reset())
     """
     if GoL.GOL is None:
-        load_n_init()
-    matrix = GoL.GOL._next_gen()
+        load_n_init(w=w, h=h)
+    matrix = GoL.GOL.next_gen()
     if raw:
-        return matrix
+        return matrix               # Matrix / None (no change)
     if matrix is None:
         return 'GoL No changes'
     return '\n'.join([" ".join(['.' if r == 0 else "●" for r in row]) for row in matrix])
@@ -165,4 +197,4 @@ def reset():
 
 
 def help():
-    return 'load_n_init w=32 h=16', 'next_gen raw=False', 'reset'
+    return 'load_n_init w=32 h=16 custom=None', 'next_gen w=32 h=16 raw=False', 'reset'

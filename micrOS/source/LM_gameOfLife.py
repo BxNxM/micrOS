@@ -67,18 +67,10 @@ class GoL:
         Create next generation of cells - line-by-line on self.matrix
         """
         action = False
-        dead_cells = [(y, tuple((x for x, v in enumerate(raw) if v == 0))) for y, raw in enumerate(self.matrix) if 0 in raw]
-        # Birth
-        for cell in dead_cells:
-            line_index, column_idxs = cell
-            for col_idx in column_idxs:
-                action |= self._birth(x=col_idx, y=line_index)
-        live_cells = [(line_index, tuple((x for x, v in enumerate(raw) if v == 1))) for line_index, raw in enumerate(self.matrix) if 1 in raw]
-        # Death
-        for cell in live_cells:
-            line_index, column_idxs = cell
-            for col_idx in column_idxs:
-                action |= self._death(x=col_idx, y=line_index)
+        for line_index, line_data in enumerate(self.matrix):
+            for x, v in enumerate(line_data):
+                # action:       Birth                              OR         Death
+                action |= self._birth(x=x, y=line_index) if v == 0 else self._death(x=x, y=line_index)
         if action:
             # Commit changes - next generation of cells
             for x, y, v in self.__next_delta:
@@ -102,7 +94,8 @@ class GoL:
             try:
                 state = self.matrix[check_y][check_x]
                 neighbours += state
-            except Exception as e:
+            except Exception:
+                # List index aut of range ... matrix edges issue
                 pass
         return neighbours
 
@@ -112,6 +105,7 @@ class GoL:
             1. Birth: A dead cell with exactly three live neighbors becomes a live cell in the next generation.
         """
         neighbours = self._get_neighbours(x, y)
+        # Birth - died cell has exactly 3 neighbours -> birth
         if neighbours == 3:
             self.__next_delta.append((x, y, 1))
             return True
@@ -125,15 +119,15 @@ class GoL:
                       of overpopulation, in the next generation.
         """
         neighbours = self._get_neighbours(x, y)
-        # Survival - if not delete
+        # Survival - live cell has exactly 2 or 3 neighbours OR -> death
         if not (neighbours == 2 or neighbours == 3):
             self.__next_delta.append((x, y, 0))
             return True
-        # Underpopulation/loneliness - less then 2 neighbour
+        # Underpopulation/loneliness - live cell has less than 2 neighbour -> death
         if neighbours < 2:
             self.__next_delta.append((x, y, 0))
             return True
-        # Overpopulation - more then 3 neighbours
+        # Overpopulation - live cell has more than 3 neighbours -> death
         if neighbours > 3:
             self.__next_delta.append((x, y, 0))
             return True

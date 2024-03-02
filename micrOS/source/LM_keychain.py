@@ -12,12 +12,16 @@ except:
 
 class KC:
     INITED = False
-    DP_isON = True          # store display logical state: ON (main page) / OFF
+    DP_main_page = True          # store display logical state: ON (main page) / OFF
     DP_cnt = 0              # display "count back", when 0 go to sleep -> OFF
     DP_cnt_default = None   # store calculated sequence to sleep 30sec/period_ms
 
 
-def _screen_saver():
+def _screen_saver(scale=2):
+    """
+    Conway's game of life screen saver simulation
+    :param scale: default (2) game of life matrix (16x32) upscale to real display size 32x64
+    """
     # Default mode
     if gof_nextgen is None:
         return      # screen off - no screen saver...
@@ -31,7 +35,6 @@ def _screen_saver():
         clean()
         for line_idx, line in enumerate(matrix):
             for x_idx, v in enumerate(line):
-                scale = 2     # Because default GoL matrix: 32x16
                 rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
         show()
 
@@ -66,35 +69,47 @@ async def _main_page(vd=False):
 async def __task(period_ms, vd=False):
     """
     Async display refresh task
+    - main page    (main mode)  - auto sleep after 30 sec
+    - screen saver (sleep mode)
     """
+    # Auto init keychain module (if needed) - failsafe
     if not KC.INITED:
         _v = load_n_init()
         if not KC.INITED:
             return _v
 
-    KC.DP_cnt_default = int(30_000 / period_ms)
-    KC.DP_cnt = KC.DP_cnt_default
+    KC.DP_cnt_default = int(30_000 / period_ms)     # After 30 sec go to sleep mode
+    KC.DP_cnt = KC.DP_cnt_default                   # Set sleep counter
 
-    with micro_task(tag="kc.display") as my_task:
+    # Run keychain main async loop, with update ID: kc._display
+    with micro_task(tag="kc._display") as my_task:
         while True:
-            # Run main page loop
-            if KC.DP_isON:
-                await _main_page(vd=vd)
-                my_task.out = f'main page: {KC.DP_cnt}'
-                KC.DP_cnt -= 1
+            if KC.DP_main_page:
+                # [MAIN MODE] Execute main page
+                await _main_page(vd=vd)                     #1 Run main page function
+                my_task.out = f'main page: {KC.DP_cnt}'     #2 Update task data for (task show kc._display)
+                KC.DP_cnt -= 1                              #3 Update sleep counter
             else:
-                # When KC.DP_isON False - main page off
-                _screen_saver()                  # run screen saver
+                # [SLEEP MODE] Execute screen saver page
+                _screen_saver()                             # Run sleep page function
+                # TODO: overwrite period_ms to have faster updates if possible: period_ms = period_ms/2 ???
 
-            # Handle DISPLAY modes - off event - auto "sleep"
+            # Auto sleep event handler - off event - go to (sleep mode)
             if KC.DP_cnt <= 0:
-                KC.DP_isON = False              #1 disable main screen
+                KC.DP_main_page = False         #1 disable main screen
                 clean()                         #2 clean screen
-                KC.DP_cnt = KC.DP_cnt_default   #3 set default sleep counter
-                my_task.out = 'sleep...'
+                show()                          #3 show cleaned display
+                KC.DP_cnt = KC.DP_cnt_default   #4 reset sleep counter to default
+                my_task.out = 'sleep...'        # Update sleep counter
 
             # Async sleep - feed event loop
             await asyncio.sleep_ms(period_ms)
+
+
+def _boot_page(msg="micrOS"):
+    clean()
+    text(msg, x=8, y=8)         # TODO: Auto positioning in y axes
+    show()
 
 
 def load_n_init(width=64, height=32):
@@ -104,24 +119,25 @@ def load_n_init(width=64, height=32):
     :param width: screen width (pixel)
     :param height: screen height (pixel)
     """
-    neopixel_lni(ledcnt=1)
+    neopixel_lni(ledcnt=1)                  #1 Init neopixel
     try:
-        oled_lni(width, height)
-        KC.INITED = True
+        oled_lni(width, height)             #2 Init oled display
+        _boot_page()                        #3 Show boot page text
+        KC.INITED = True                    # Set display was successfully inited (for __task auto init)
         return "OLED INIT OK"
     except Exception as e:
-        KC.INITED = False
+        KC.INITED = False                   # display init failed (for __task auto init)
         return f"OLED INIT NOK: {e}"
 
 
 def display(period=1000, vd=False):
     """
-    Create kc.display display task
+    Create kc._display task - refresh loop
     :param vd: virtual display 64x32 (rectangle for bigger screens)
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 1000 if period < 1000 else period
-    state = micro_task(tag="kc.display", task=__task(period_ms=period_ms, vd=vd))
+    state = micro_task(tag="kc._display", task=__task(period_ms=period_ms, vd=vd))
     return "Starting" if state else "Already running"
 
 
@@ -143,7 +159,7 @@ def neopixel(r=None, g=None, b=None, br=None, onoff=None, smooth=True):
     if onoff is not None:
         if onoff == "toggle":
             return toggle(smooth=smooth)
-        state = True if onoff == 'on' else False
+        state = onoff == 'on'
         return toggle(state, smooth=smooth)
     return 'No action: r g b br onoff smooth'
 
@@ -155,21 +171,21 @@ def press_event():
     - display wake-up (ON)
     """
     # If display is ON call neopixel toggle function
-    if KC.DP_isON:
+    if KC.DP_main_page:
         # Reset display counter
         KC.DP_cnt = KC.DP_cnt_default
         # Neopixel toggle
         toggle()
         return
     # Wake display
-    KC.DP_isON = True
+    KC.DP_main_page = True
 
 
 def lmdep():
     """
     Load Module dependencies
     """
-    return 'oled', 'ds18', 'neopixel'
+    return 'oled', 'ds18', 'neopixel', 'gameOfLife'
 
 
 def pinmap():
@@ -186,6 +202,6 @@ def pinmap():
 
 
 def help():
-    return 'load_n_init', 'temperature', 'display period>=1000', 'press_event',\
+    return 'load_n_init width=64 height=32', 'temperature', 'display period>=1000', 'press_event',\
            'neopixel r=<0-255> g=<0-255> b=<0-255> br=<0-100> onoff=<toggle/on/off> smooth=<True/False>',\
            'pinmap', 'lmdep'

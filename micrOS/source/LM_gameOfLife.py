@@ -120,7 +120,7 @@ class GoL:
         """
         neighbours = self._get_neighbours(x, y)
         # Survival - live cell has exactly 2 or 3 neighbours OR -> death
-        if not (neighbours == 2 or neighbours == 3):
+        if neighbours not in (2, 3):
             self.__next_delta.append((x, y, 0))
             return True
         # Underpopulation/loneliness - live cell has less than 2 neighbour -> death

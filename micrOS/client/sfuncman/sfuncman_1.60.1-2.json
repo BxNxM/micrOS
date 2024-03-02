@@ -590,7 +590,7 @@
     },
     "keychain": {
         "display": {
-            "doc": "\n    Create kc.display display task\n    :param vd: virtual display 64x32 (rectangle for bigger screens)\n    ",
+            "doc": "\n    Create kc._display task - refresh loop\n    :param vd: virtual display 64x32 (rectangle for bigger screens)\n    ",
             "param(s)": "period=1000 vd=False"
         },
         "help": {

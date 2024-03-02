@@ -2,7 +2,7 @@ import uasyncio as asyncio
 from Common import micro_task
 from utime import localtime
 from Network import ifconfig
-from LM_oled import text, show, rect, clean, load_n_init as oled_lni
+from LM_oled import text, show, rect, pixel, clean, load_n_init as oled_lni
 from LM_ds18 import measure
 from LM_neopixel import color, brightness, toggle, load_n_init as neopixel_lni
 try:
@@ -35,7 +35,10 @@ def _screen_saver(scale=2):
         clean()
         for line_idx, line in enumerate(matrix):
             for x_idx, v in enumerate(line):
-                rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
+                if scale == 1:
+                    pixel(x_idx, line_idx, color=v)
+                else:
+                    rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
         show()
 
 
@@ -107,23 +110,26 @@ async def __task(period_ms, vd=False):
                 my_task.out = 'sleep...'        
 
 
-def _boot_page(msg="micrOS"):
+def _boot_page(msg):
     clean()
-    text(msg, x=8, y=8)         # TODO: Auto positioning in y axes
+    msg_len = len(msg)*8                # message text length in pixels
+    x_offset = int((64 - msg_len)/2)    # x (width) center-ing offset
+    text(msg, x=x_offset, y=11)         # y(height):32 TODO: Auto positioning in y axes (multi line...)
     show()
 
 
-def load_n_init(width=64, height=32):
+def load_n_init(width=64, height=32, bootmsg="micrOS"):
     """
     Init OLED display 64x32 (default)
     Init Neopixel LED (1 segment)
     :param width: screen width (pixel)
     :param height: screen height (pixel)
+    :param bootmsg: First text on page at bootup, default: "micrOS"
     """
     neopixel_lni(ledcnt=1)                  #1 Init neopixel
     try:
         oled_lni(width, height)             #2 Init oled display
-        _boot_page()                        #3 Show boot page text
+        _boot_page(bootmsg)                 #3 Show boot page text
         KC.INITED = True                    # Set display was successfully inited (for __task auto init)
         return "OLED INIT OK"
     except Exception as e:
@@ -203,6 +209,6 @@ def pinmap():
 
 
 def help():
-    return 'load_n_init width=64 height=32', 'temperature', 'display period>=1000', 'press_event',\
+    return 'load_n_init width=64 height=32 bootmsg="micrOS"', 'temperature', 'display period>=1000', 'press_event',\
            'neopixel r=<0-255> g=<0-255> b=<0-255> br=<0-100> onoff=<toggle/on/off> smooth=<True/False>',\
            'pinmap', 'lmdep'

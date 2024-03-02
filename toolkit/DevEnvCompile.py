@@ -54,9 +54,11 @@ class Compile:
         if mpy_cross is None:
             self.mpy_cross_compiler_path = None
         else:
-            if MPY_IS_V6:                                                   # TODO: Refactor homogenous usage of mpy_cross path
+            if MPY_IS_V6:
+                # Store mpy_cross_V6 executable path
                 self.mpy_cross_compiler_path = str(mpy_cross.MPY_CROSS_PATH)
             else:
+                # Store mpy_cross executable path
                 self.mpy_cross_compiler_path = mpy_cross.mpy_cross
 
 

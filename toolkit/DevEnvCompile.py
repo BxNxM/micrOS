@@ -18,13 +18,24 @@ except Exception as e:
 try:
     import mpy_cross
     print("{}MICROPYTHON mpy_cross version{}:".format(Colors.WARN, Colors.NC))
-    mpy_cross.run('--version')
-    time.sleep(0.1)
     print("{}|_ To update mpy_cross{}: source magic.bash env; pip uninstall mpy_cross; pip install mpy_cross".format(
         Colors.WARN, Colors.NC))
+    MPY_IS_V6 = False
 except Exception as e:
-    print("{}[!!!] mpy-cross error{}: {}".format(Colors.ERR, Colors.NC, e))
+    print("{}[!!!] mpy_cross error{}: {}".format(Colors.ERR, Colors.NC, e))
     mpy_cross = None
+
+if mpy_cross is None:
+    try:
+        import mpy_cross_v6
+        mpy_cross = mpy_cross_v6
+        print("{}MICROPYTHON mpy_cross version{}:".format(Colors.WARN, Colors.NC))
+        print("{}|_ To update mpy_cross-v6{}: source magic.bash env; pip uninstall mpy_cross_v6; pip install mpy_cross_v6".format(
+            Colors.WARN, Colors.NC))
+        MPY_IS_V6 = True
+    except Exception as e:
+        print("{}[!!!] mpy_cross_v6 error{}: {}".format(Colors.ERR, Colors.NC, e))
+        mpy_cross = None
 
 
 class Compile:
@@ -43,7 +54,10 @@ class Compile:
         if mpy_cross is None:
             self.mpy_cross_compiler_path = None
         else:
-            self.mpy_cross_compiler_path = mpy_cross.mpy_cross
+            if MPY_IS_V6:                                                   # TODO: Refactor homogenous usage of mpy_cross path
+                self.mpy_cross_compiler_path = str(mpy_cross.MPY_CROSS_PATH)
+            else:
+                self.mpy_cross_compiler_path = mpy_cross.mpy_cross
 
 
     @staticmethod

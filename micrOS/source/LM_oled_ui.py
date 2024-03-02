@@ -19,9 +19,9 @@ try:
 except:
     get_adc = None              # Optional function handling
 try:
-    from LM_gameOfLife import next_gen as gof_nextgen, reset as gof_reset
+    from LM_gameOfLife import next_gen as gol_nextgen, reset as gol_reset
 except:
-    gof_nextgen = None          # Optional function handling
+    gol_nextgen = None          # Optional function handling
 
 
 #################################
@@ -180,13 +180,13 @@ class PageUI:
 
     def screen_saver(self):
         # Default mode
-        if gof_nextgen is None:
+        if gol_nextgen is None:
             return      # __power_save
         # Screen saver mode
-        matrix = gof_nextgen(raw=True)
+        matrix = gol_nextgen(raw=True)
         if matrix is None:
             # Reset Game of life
-            gof_reset()
+            gol_reset()
         else:
             # Update display with Conway's Game of Life
             PageUI.DISPLAY.clean()
@@ -256,7 +256,7 @@ class PageUI:
             PageUI.DISPLAY.poweron()
             self.oled_state = True
         elif cmd.strip() == 'off':
-            if gof_nextgen is None:
+            if gol_nextgen is None:
                 PageUI.DISPLAY.poweroff()       # Off screen when no ScreenSaver (gof_nextgen)
             else:
                 PageUI.DISPLAY.clean(state=1)   # Invert clean before ScreenSaver

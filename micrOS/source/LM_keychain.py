@@ -6,9 +6,9 @@ from LM_oled import text, show, rect, clean, load_n_init as oled_lni
 from LM_ds18 import measure
 from LM_neopixel import color, brightness, toggle, load_n_init as neopixel_lni
 try:
-    from LM_gameOfLife import next_gen as gof_nextgen, reset as gof_reset
+    from LM_gameOfLife import next_gen as gol_nextgen, reset as gol_reset
 except:
-    gof_nextgen = None      # Optional function handling
+    gol_nextgen = None      # Optional function handling
 
 class KC:
     INITED = False
@@ -23,13 +23,13 @@ def _screen_saver(scale=2):
     :param scale: default (2) game of life matrix (16x32) upscale to real display size 32x64
     """
     # Default mode
-    if gof_nextgen is None:
+    if gol_nextgen is None:
         return      # screen off - no screen saver...
     # Screen saver mode
-    matrix = gof_nextgen(raw=True)
+    matrix = gol_nextgen(raw=True)
     if matrix is None:
         # Reset Game of life
-        gof_reset()
+        gol_reset()
     else:
         # Update display with Conway's Game of Life
         clean()
@@ -80,6 +80,7 @@ async def __task(period_ms, vd=False):
 
     KC.DP_cnt_default = int(30_000 / period_ms)     # After 30 sec go to sleep mode
     KC.DP_cnt = KC.DP_cnt_default                   # Set sleep counter
+    fast_period = int(period_ms/2)                  # Calculate faster refresh period
 
     # Run keychain main async loop, with update ID: kc._display
     with micro_task(tag="kc._display") as my_task:
@@ -89,10 +90,13 @@ async def __task(period_ms, vd=False):
                 await _main_page(vd=vd)                     #1 Run main page function
                 my_task.out = f'main page: {KC.DP_cnt}'     #2 Update task data for (task show kc._display)
                 KC.DP_cnt -= 1                              #3 Update sleep counter
+                # Async sleep - feed event loop
+                await asyncio.sleep_ms(period_ms)
             else:
                 # [SLEEP MODE] Execute screen saver page
                 _screen_saver()                             # Run sleep page function
-                # TODO: overwrite period_ms to have faster updates if possible: period_ms = period_ms/2 ???
+                # Async sleep - feed event loop
+                await asyncio.sleep_ms(fast_period)
 
             # Auto sleep event handler - off event - go to (sleep mode)
             if KC.DP_cnt <= 0:
@@ -100,10 +104,7 @@ async def __task(period_ms, vd=False):
                 clean()                         #2 clean screen
                 show()                          #3 show cleaned display
                 KC.DP_cnt = KC.DP_cnt_default   #4 reset sleep counter to default
-                my_task.out = 'sleep...'        # Update sleep counter
-
-            # Async sleep - feed event loop
-            await asyncio.sleep_ms(period_ms)
+                my_task.out = 'sleep...'        
 
 
 def _boot_page(msg="micrOS"):

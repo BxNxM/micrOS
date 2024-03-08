@@ -1,11 +1,8 @@
 {
- "timirqseq": 2000,
- "irq1": false,
- "irq1_cbf": "n/a",
- "timirqcbf": "system heartbeat",
  "boothook": "system heartbeat; dimmer load_n_init",
  "timirq": true,
- "socport": 9008,
+ "timirqseq": 2000,
+ "timirqcbf": "system heartbeat",
  "dbg": true,
  "devfid": null,
  "stapwd": null,

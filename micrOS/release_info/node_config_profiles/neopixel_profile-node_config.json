@@ -1,11 +1,8 @@
 {
- "timirqseq": 2000,
+ "boothook": "neopixel load_n_init",
  "irq1": true,
  "irq1_cbf": "neopixel toggle",
  "timirqcbf": "system heartbeat",
- "boothook": "neopixel load_n_init",
- "timirq": false,
- "socport": 9008,
  "dbg": true,
  "devfid": null,
  "stapwd": null,

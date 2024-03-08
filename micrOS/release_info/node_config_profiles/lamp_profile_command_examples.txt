@@ -1,6 +1,6 @@
 ./devToolKit.py -h
 ./devToolKit.py -c -p '--dev <device> help'
 ./devToolKit.py -c -p '--dev <device> rgb help'
-./devToolKit.py -c -p '--dev <device> rgb rgb r=0 g=0 b=0'
-./devToolKit.py -c -p '--dev <device> rgb rgb r=1000 g=1000 b=1000)'
+./devToolKit.py -c -p '--dev <device> rgb color r=0 g=0 b=0'
+./devToolKit.py -c -p '--dev <device> rgb color r=1000 g=1000 b=1000'
 ./devToolKit.py -c -p '--dev <device> rgb toggle'

@@ -1,6 +1,6 @@
 ./devToolKit.py -h
 ./devToolKit.py -c -p '--dev <device> help'
 ./devToolKit.py -c -p '--dev <device> neopixel help'
-./devToolKit.py -c -p '--dev <device> neopixel neopixel r=0 g=0 b=0'
-./devToolKit.py -c -p '--dev <device> neopixel neopixel r=255 g=255 b=255)'
+./devToolKit.py -c -p '--dev <device> neopixel color r=0 g=0 b=0'
+./devToolKit.py -c -p '--dev <device> neopixel color r=255 g=255 b=255'
 ./devToolKit.py -c -p '--dev <device> neopixel toggle'

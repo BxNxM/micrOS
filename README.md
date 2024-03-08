@@ -787,29 +787,6 @@ Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
 
 ## RELESE NOTE
 
-Next **main release** version **2.0.0.0** coming soon (24 April).
-
-```
-Current v1.57.0 content
-	Core:
-		- WebCli (http server with endpoints: / and /rest and /<custom>)
-		- Full async as technically possible (WebCLI, ShelCLI, TaskManager (LM), InterCon)
-			- rest (urequests) stays sync module (https limitation with async.) 
-		- Extensive testing and quality checks (system tests, pylint) 
-		Web Frontends:
-			- index.html (built-in)
-	
-	Load Module:
-		- Camera support (LM_OV2640.py)
-		- I2S mic support
-		- dashboard backend (LM_dashboard_be.py)
-		Web Frontends:
-		- dashboard.html
-
-TODO:
-	- LM_KeyChain HW+SW for the 2.0 anniversary 🎲 	
-```
-
 Future planned features in version **2.1+.0-0**
 
 ```

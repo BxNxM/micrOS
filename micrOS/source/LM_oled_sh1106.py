@@ -224,6 +224,7 @@ def __init(rotate=180):
     if SH1106_I2C.OLED_OBJ is None:
         #i2c = SoftI2C(Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
         i2c = I2C(scl=Pin(physical_pin('i2c_scl')), sda=Pin(physical_pin('i2c_sda')), freq=400000)
+        # TODO: scan device - abort if no device is available
         SH1106_I2C.OLED_OBJ = SH1106_I2C(128, 64, i2c, rotate=rotate)
     return SH1106_I2C.OLED_OBJ
 

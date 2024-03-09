@@ -384,6 +384,32 @@ class PageUI:
             # Set button press callback (+draw button)
             self.set_press_callback(_button)
 
+    def adc_visualize_page(self, pin):
+        """Generic ADC value visualization page - create multiple page with it"""
+
+        def __visualize(p):
+            max_w = 50
+            percent = p * 0.01
+            size = round(percent * max_w)
+            size = 1 if size < 1 else size
+            # Visualize percentage
+            PageUI.DISPLAY.rect(0, 9, size, size, fill=True)
+            # Visualize percentages scale
+            steps = int(max_w / 10)
+            for scale in range(steps, max_w + 1, steps):
+                if scale < size:
+                    PageUI.DISPLAY.rect(0, 9, scale, scale, state=0)
+                else:
+                    PageUI.DISPLAY.rect(0, 9, scale, scale, state=1)
+
+        data = {'percent': 'null', 'volt': 'null'}
+        if get_adc is not None:
+            data = get_adc(pin)
+        __visualize(p=data['percent'])
+        PageUI.DISPLAY.text("{} %".format(data['percent']), 65, 20)
+        PageUI.DISPLAY.text("{} V".format(data['volt']), 65, 40)
+        return True
+
 
 #################################
 #        PAGE DEFINITIONS       #
@@ -442,43 +468,6 @@ def _micros_welcome():
         return str(e)
     return True
 
-
-def _adc_page():
-    """
-    ADC value visualizer
-    """
-    def __visualize(p):
-        max_w = 50
-        percent = p * 0.01
-        size = round(percent * max_w)
-        size = 1 if size < 1 else size
-        # Visualize percentage
-        PageUI.DISPLAY.rect(0, 9, size, size, fill=True)
-        # Visualize percentages scale
-        steps = int(max_w/10)
-        for scale in range(steps, max_w+1, steps):
-            if scale < size:
-                PageUI.DISPLAY.rect(0, 9, scale, scale, state=0)
-            else:
-                PageUI.DISPLAY.rect(0, 9, scale, scale, state=1)
-
-    def __rgb_brightness(percent):
-        from sys import modules
-        if 'LM_rgb' in modules.keys():
-            from LM_rgb import brightness
-            if percent is None:
-                return
-            brightness(percent, smooth=True)
-
-    data = {'percent': 'null', 'volt': 'null'}
-    if get_adc is not None:
-        data = get_adc(physical_pin('genadc'))
-    __visualize(p=data['percent'])
-    PageUI.DISPLAY.text("{} %".format(data['percent']), 65, 20)
-    PageUI.DISPLAY.text("{} V".format(data['volt']), 65, 40)
-    __rgb_brightness(data['percent'])
-    return True
-
 #################################
 # PAGE GUI CONTROLLER FUNCTIONS #
 #   USED IN MICROS SHELL/IRQs   #
@@ -494,7 +483,7 @@ def pageui(pwr_sec=None, oled_type='ssd1306', page=0):
     :param page: start page index, start from 0
     """
     if PageUI.PAGE_UI_OBJ is None:
-        pages = [_sys_page, _intercon_cache, _adc_page, _micros_welcome]  # <== Add page function HERE
+        pages = [_sys_page, _intercon_cache, _micros_welcome]  # <== Add page function HERE
         PageUI(pages, 128, 64, page=page, pwr_sec=pwr_sec, oled_type=oled_type)
     PageUI.PAGE_UI_OBJ.render_page()
 
@@ -539,6 +528,7 @@ def intercon_genpage(cmd=None, run=False):
         # Create page for intercon command
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(host, cmd, run=run))
     except Exception as e:
+        errlog_add(f'[ERR] intercon_genpage: {e}')
         return str(e)
     return True
 
@@ -561,10 +551,30 @@ def cmd_genpage(cmd=None, run=False):
         # Create page for intercon command
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd, run=run))
     except Exception as e:
-        print(e)
+        errlog_add(f'[ERR] cmd_genpage: {e}')
         return str(e)
     return True
 
+
+def adc_genpage(pin=33):
+    """
+    Create ADC visualization pages dynamically :)
+    :param pin: pin number for ADC read, default: 33
+    :return: page creation verdict
+    """
+    if not isinstance(pin, int):
+        return False
+
+    if PageUI.PAGE_UI_OBJ is None:
+        # Auto init UI
+        pageui()
+    try:
+        # Create page for intercon command
+        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.adc_visualize_page(pin=pin))
+    except Exception as e:
+        errlog_add(f'[ERR] adc_genpage: {e}')
+        return str(e)
+    return True
 
 #######################
 # LM helper functions #
@@ -602,4 +612,5 @@ def help():
            'msgbox "msg"',\
            'intercon_genpage "host" "cmd" run=False',\
            'cmd_genpage "cmd" run=False',\
+           'adc_genpage pin=33',\
            'pinmap'

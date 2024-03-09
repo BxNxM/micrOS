@@ -856,6 +856,10 @@
             "doc": "\n    Draw line on OLED\n    :param sx: start x\n    :param sy: start y\n    :param ex: end x\n    :param ey: end y\n    :param state: state 0/1\n    ",
             "param(s)": "sx sy ex ey state=1"
         },
+        "load_n_init": {
+            "doc": null,
+            "param(s)": "width=128 height=64 rotate=180"
+        },
         "pinmap": {
             "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
             "param(s)": ""
@@ -886,6 +890,10 @@
         }
     },
     "oled_ui": {
+        "adc_genpage": {
+            "doc": "\n    Create ADC visualization pages dynamically :)\n    :param pin: pin number for ADC read, default: 33\n    :return: page creation verdict\n    ",
+            "param(s)": "pin=33"
+        },
         "cmd_genpage": {
             "doc": "\n    Create load module execution pages dynamically :)\n    - based on cmd value: load_module function (args)\n    :param cmd: 'load_module function (args)' string\n    :param run: run button event at page init: True/False\n    :return: page creation verdict\n    ",
             "param(s)": "cmd=None run=False"

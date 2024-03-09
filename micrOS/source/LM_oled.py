@@ -337,7 +337,8 @@ def help():
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'text "text" x y', 'invert', 'clean state=<0/1>',\
+    return 'load_n_init width=128 height=64',\
+           'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
            'pixel x y color=1', 'bitmap bmp=<str tuple> x=0 y=0', 'image pbm_img x=0 y=0',\
            'show', 'poweron', 'poweroff', 'pinmap', 'INFO: OLED Module for SSD1306'

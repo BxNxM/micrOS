@@ -70,4 +70,3 @@ temp6000 = const(13)   # - [ADC] light sensor TEMP6000
 ph = const(12)         # - [ADC] PH sensor
 ds18 = const(35)       # - DS18B20 - temp. sensor
 mic = const(5)         # - [ADC] microphone
-genadc = const(14)     # - oled_ui - percent visualization demo

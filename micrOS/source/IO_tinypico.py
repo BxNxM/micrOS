@@ -54,7 +54,6 @@ co2 = const(33)        # D33 - CO2 / BATTERY CONFLICT
 temp6000 = const(32)   # D32  - light sensor TEMP6000
 ph = const(32)         # D32 - PH sensor
 ds18 = const(19)       # D19 - DS18B20 - temp. sensor
-genadc = const(33)     # D33 - generic adc input
 
 
 # TinyPico Built-in

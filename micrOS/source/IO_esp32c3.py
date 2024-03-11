@@ -39,6 +39,9 @@ oleduibttn = const(20)   # oled_ui center/ok button
 # I2C BUS
 i2c_sda = const(8)       # oled - data
 i2c_scl = const(9)       # oled - clock
+# UART BUS
+tx = const(21)           # UART - TX
+rx = const(20)           # UART - RX
 
 # SENSORS
 ds18 = const(10)         # - DS18B20 - temp. sensor

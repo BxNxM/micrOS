@@ -33,3 +33,4 @@ LM_keychain.py
 LM_i2s_mic.py
 LM_rest.py
 LM_gameOfLife.py
+LM_ld2410.py

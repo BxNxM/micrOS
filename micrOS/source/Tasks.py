@@ -211,7 +211,7 @@ class Manager:
     micrOS async task handler
     """
     INSTANCE = None                      # Manager object
-    LOAD = 0                            # CPU overload measure
+    LOAD = 0                             # CPU overload measure
 
     def __new__(cls):
         """
@@ -261,7 +261,7 @@ class Manager:
 
         # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
         my_task = TaskBase.TASKS.get('idle')
-        my_task.out = f"i.d.l.e: 200ms"
+        my_task.out = f"i.d.l.e: 600ms"
         try:
             while True:
                 # [0] Just chill
@@ -272,8 +272,8 @@ class Manager:
                 delta_rate = int(((ticks_diff(ticks_ms(), t) / 300) - 1) * 100)
                 Manager.LOAD = int((Manager.LOAD + delta_rate) / 2)  # Average - smooth
                 # [2] NETWORK AUTO REPAIR
-                if self.idle_counter > 50:  # ~30 sec
-                    self.idle_counter = 0  # Reset counter
+                if self.idle_counter > 200:  # ~120 sec
+                    self.idle_counter = 0    # Reset counter
                     # Check and fix STA network (example: after power outage - micrOS boards boots faster then router)
                     sta_high_avail()
                 self.idle_counter += 1  # Increase counter

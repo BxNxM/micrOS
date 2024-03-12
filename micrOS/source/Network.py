@@ -241,6 +241,7 @@ def sta_high_avail():
         if wifi_avail or not ap_if.active():
             # ACTION: Restart micrOS node (boot phase automatically detects nw mode)
             from machine import reset
+            console_write("[Restart] network repair")
             reset()
         return f'{cfgget("nwmd")} mode NOK, wifi avail: {wifi_avail}'
     return f'{cfgget("nwmd")} mode OK'

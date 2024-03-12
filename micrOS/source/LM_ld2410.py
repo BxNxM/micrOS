@@ -20,7 +20,6 @@ import utime
 from microIO import physical_pin, pinmap_dump
 
 ser = UART(1, baudrate = 256000, tx=Pin(physical_pin('tx')), rx=Pin(physical_pin('rx')), timeout = 1)
-serial_status = False
 HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])
 TERMINATOR = bytes([0x04, 0x03, 0x02, 0x01])
 NULLDATA = bytes([])

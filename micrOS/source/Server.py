@@ -367,7 +367,7 @@ class ShellCli(Client, Shell):
         return True
 
     async def run_shell(self):
-        # Update server task output (? test ?)
+        # Update server task output
         Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
         # Init prompt
         self.send(self.prompt())

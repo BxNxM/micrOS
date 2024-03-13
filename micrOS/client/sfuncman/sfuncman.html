@@ -119,7 +119,11 @@ pin&nbsp;map:&nbsp;stppr_1,&nbsp;stppr_2,&nbsp;stppr_3,&nbsp;stppr_4</td></tr></
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;based&nbsp;on&nbsp;cmd&nbsp;value:&nbsp;load_module&nbsp;function&nbsp;(args)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cmd:&nbsp;'load_module&nbsp;function&nbsp;(args)'&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;run:&nbsp;run&nbsp;button&nbsp;event&nbsp;at&nbsp;page&nbsp;init:&nbsp;True/False<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;page&nbsp;creation&nbsp;verdict</td></tr></table></td></tr><tr><th>adc_genpage</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>pin=33</td></tr><tr><th>doc</th><td>Create&nbsp;ADC&nbsp;visualization&nbsp;pages&nbsp;dynamically&nbsp;:)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;page&nbsp;creation&nbsp;verdict</td></tr></table></td></tr><tr><th>function_genpage</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>func</td></tr><tr><th>doc</th><td>Coding&nbsp;interface&nbsp;to&nbsp;register&nbsp;custom&nbsp;pages&nbsp;in&nbsp;oled_ui&nbsp;(ui&nbsp;application&nbsp;manager)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[1]&nbsp;define&nbsp;function&nbsp;like:&nbsp;def&nbsp;mypage(display):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[2]&nbsp;use&nbsp;display.text,&nbsp;display.pixel,&nbsp;etc.&nbsp;display&nbsp;function&nbsp;in&nbsp;mypage<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[3]&nbsp;oled_ui.function_genpage(mypage)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;func:&nbsp;python&nbsp;function&nbsp;reference&nbsp;with&nbsp;display&nbsp;parameter</td></tr></table></td></tr><tr><th>[1]</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>ine function like: mypage display</td></tr><tr><th>doc</th><td>invalid&nbsp;syntax&nbsp;(<string>,&nbsp;line&nbsp;1)</td></tr></table></td></tr><tr><th>adc_genpage</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>pin=33</td></tr><tr><th>doc</th><td>Create&nbsp;ADC&nbsp;visualization&nbsp;pages&nbsp;dynamically&nbsp;:)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;pin&nbsp;number&nbsp;for&nbsp;ADC&nbsp;read,&nbsp;default:&nbsp;33<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;page&nbsp;creation&nbsp;verdict</td></tr></table></td></tr><tr><th>lmdep</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;Load&nbsp;Module&nbsp;dependency<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;List&nbsp;of&nbsp;load&nbsp;modules&nbsp;used&nbsp;by&nbsp;this&nbsp;application<br>

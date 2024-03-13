@@ -217,10 +217,13 @@ class PageUI:
             self.__page_header()
             self.__page_bar()
             if not msg_event:
-                if self.active_page > len(self.page_callback_list) - 1:     # Index out of range
-                    self.page_callback_list[0]()    # <== Execute page functions, page not available, fallback
-                else:
-                    self.page_callback_list[self.active_page]()         # <== Execute page functions
+                try:
+                    if self.active_page > len(self.page_callback_list) - 1:     # Index out of range
+                        self.page_callback_list[0]()    # <== Execute page functions, page not available, fallback
+                    else:
+                        self.page_callback_list[self.active_page]()             # <== Execute page functions
+                except Exception as e:
+                    PageUI.PAGE_UI_OBJ.show_msg = f"Err: {e}"                   # Show page error in msgbox
             PageUI.DISPLAY.show()
             self.__power_save()
         else:
@@ -552,6 +555,29 @@ def cmd_genpage(cmd=None, run=False):
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd, run=run))
     except Exception as e:
         errlog_add(f'[ERR] cmd_genpage: {e}')
+        return str(e)
+    return True
+
+
+def function_genpage(func):
+    """
+    Coding interface to register custom pages in oled_ui (ui application manager)
+    [1] define function like: def mypage(display):
+    [2] use display.text, display.pixel, etc. display function in mypage
+    [3] oled_ui.function_genpage(mypage)
+    :param func: python function reference with display parameter
+    """
+    if not callable(func):
+        return "Provided <func> not callable, input must be python function (coding interface)"
+
+    if PageUI.PAGE_UI_OBJ is None:
+        # Auto init UI
+        pageui()
+    try:
+        # Create custom page
+        PageUI.PAGE_UI_OBJ.add_page(lambda: func(display=PageUI.DISPLAY))
+    except Exception as e:
+        errlog_add(f'[ERR] function_genpage: {e}')
         return str(e)
     return True
 

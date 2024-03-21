@@ -356,15 +356,15 @@ class ShellCli(Client, Shell):
             Client.console("[ShellCli] --- #Run shell")
             state = self.shell(request)
             if state:
-                return True
+                return False      # exit_loop
+            return True           # exit_loop : Close session when shell returns False (auth Failed, etc.)
         except Exception as e:
-            if "ECONNRESET" in str(e):
-                await self.close()
             Client.console(f"[ShellCli] Shell exception: {e}")
-            return False
-        collect()
-        self.send(f"[HA] Shells cleanup: {mem_free()}")
-        return True
+            if "ECONNRESET" in str(e):
+                return True       # exit_loop
+        self.send("[HA] Critical error - disconnect & hard reset")
+        errlog_add("[ERR] Socket critical error - reboot")
+        self.reboot()
 
     async def run_shell(self):
         # Update server task output
@@ -378,11 +378,10 @@ class ShellCli(Client, Shell):
                 state, request = await self.read()
                 if state:
                     break
-                state = await self.__shell_cmd(request)
-                if not state:
-                    self.send("[HA] Critical error - disconnect & hard reset")
-                    errlog_add("[ERR] Socket critical error - reboot")
-                    self.reboot()
+                _exit = await self.__shell_cmd(request)
+                if _exit:
+                    collect()
+                    break
             except Exception as e:
                 errlog_add(f"[ERR] handle_client: {e}")
                 break

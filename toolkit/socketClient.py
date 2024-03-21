@@ -283,12 +283,12 @@ class ConnectionData:
 
 class SocketDictClient:
 
-    def __init__(self, host='localhost', port=9008, silent_mode=False, tout=6):
+    def __init__(self, host='localhost', port=9008, silent_mode=False, tout=6, password="ADmin123"):
         self.silent_mode = silent_mode
         self.host = host
         self.port = port
         self.tout = tout
-        self.client = micrOSClient(self.host, self.port, dbg=False)         # <== SET CLIENT DEBUG HERE
+        self.client = micrOSClient(self.host, self.port, pwd=password, dbg=False)         # <== SET CLIENT DEBUG HERE
 
     def run_command(self, cmd):
         data = self.client.send_cmd_retry(cmd)

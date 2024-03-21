@@ -14,6 +14,7 @@ class InterCon:
     def __init__(self):
         self.reader = None
         self.writer = None
+        self.auth_pwd = str.encode(cfgget('appwd'))        # Convert to bytes
         self.task = NativeTask()
 
     @staticmethod
@@ -97,6 +98,18 @@ class InterCon:
         SocketServer.reply_all(f"[intercon] prompt mismatch, hostname: {hostname} prompt: {prompt}")
         return None
 
+    async def __auth_handshake(self, prompt):
+        try:
+            self.writer.write(self.auth_pwd)
+            await self.writer.drain()
+            data, prompt = await self.__receive_data(prompt=prompt)
+        except Exception as e:
+            errlog_add(f'[intercon][ERR] Auth: {e}')
+            data = 'AuthFailed'
+        if 'AuthOk' in data:
+            return True             # AuthOk
+        return False                # AuthFailed
+
     async def __receive_data(self, prompt=None):
         """
         Implements data receive loop until prompt / [configure] / Bye!
@@ -113,9 +126,15 @@ class InterCon:
                 # First data is prompt, get it
                 prompt = last_data.strip() if prompt is None else prompt
                 data += last_data
+                # Detect auth mode - pre-prompt: [password]
+                if prompt.strip().startswith('[password]'):
+                    prompt = prompt.replace('[password]', '').strip()
+                    if not await self.__auth_handshake(prompt=prompt):
+                        break       # AUTH FAILED
                 # Wait for prompt or special cases (conf, exit)
                 if prompt in data.strip() or '[configure]' in data or "Bye!" in last_data:
                     break
+                #print(f"prompt: {prompt}, data: {data}")
             except OSError:
                 break
         data = data.replace(prompt, '').replace('\n', ' ')

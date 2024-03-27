@@ -13,13 +13,17 @@ except:
     gol_nextgen = None      # Optional function handling
 
 class KC:
-    INITED = False
-    DP_main_page = True     # store display logical state: ON (main page) / OFF
+    INITED = False          # Auto init module feature
+    DP_main_page = True     # store display logical state: ON (main page) / OFF (screen saver)
     DP_cnt = 0              # display "count back", when 0 go to sleep -> OFF
     DP_cnt_default = None   # store calculated sequence to sleep 30sec/period_ms
-    NEOPIXEL_OBJ = None     # Neopixel handler
-    COLOR_WHEEL = None      # Neopixel color wheel animation
+    NEOPIXEL_OBJ = None     # Neopixel LED handler object
+    COLOR_WHEEL = None      # LED color wheel generator object for animation
     NEOPIXEL_BR = 30        # default neopixel brightness
+
+#############################
+#    INTERNAL FUNCTIONS     #
+#############################
 
 
 async def _screen_saver(scale=2):
@@ -50,10 +54,30 @@ async def _screen_saver(scale=2):
         show()
 
 
+def _color_wheel():
+    """
+    RGB LED color wheel generator - rainbow
+    """
+    max_val = 10                    # normally up to 255, but must be limited due to heat problems (4%)
+    half_val = max_val // 2
+    colors = ((0, 0, half_val), (0, 0, max_val), (0, half_val, max_val), (0, max_val, half_val), (0, max_val, 0),
+              (half_val, max_val, 0), (max_val, half_val, 0), (max_val, 0, 0), (half_val, 0, 0), (max_val, 0, half_val),
+              (half_val, 0, max_val), (0, 0, half_val))
+    while True:
+        # Loop through the colors to generate smooth transitions
+        for i in range(len(colors) - 1):
+            start_color = colors[i]
+            end_color = colors[i + 1]
+            # Generate a smooth transition from start_color to end_color
+            for j in range(5):  # Adjust this value for smoother or faster transition
+                # Linear interpolation for each color component
+                yield tuple(int(start + (end - start) * j / 10) for start, end in zip(start_color, end_color))
+
+
 async def _main_page():
     """
     Run display content refresh
-        H:M:S
+        #   H:M
          S/A: 1.92
          40.0 C
     """
@@ -70,7 +94,7 @@ async def _main_page():
                 line(0+_offset, _l+_offset, _sub_line+_offset, _l+_offset)
                 break
 
-    # Clean display and draw rect...
+    # Clean display and collect input data: time, network mode, IP address
     clean()
     ltime = localtime()
     h = f"0{ltime[-5]}" if len(str(ltime[-5])) < 2 else ltime[-5]
@@ -79,18 +103,18 @@ async def _main_page():
     nwmd, devip = nwmd[0] if len(nwmd) > 0 else "0", ".".join(nwif[0].split(".")[-2:])
 
     # Draw data to display
-    _cube()
-    text(f"{h}:{m}", x=12, y=1)                                             # Header: time
-    text(f"{nwmd}:{devip}", x=4, y=15)                                      # Network mode and IP
+    _cube()                                                                     # Draw display timer (until screen saver)
+    text(f"{h}:{m}", x=12, y=1)                                           # Header: time
+    text(f"{nwmd}:{devip}", x=4, y=15)                                    # Network mode and IP
     try:
-        text(f"{round(tuple(measure().values())[0], 1)} C", x=4, y=25)      # ds18 sensor value
+        text(f"{round(tuple(measure().values())[0], 1)} C", x=4, y=25)    # ds18 sensor value
     except Exception:
-        text("? C", x=4, y=25)                                             # ds18 read issue (default)
+        text("? C", x=4, y=25)                                            # ds18 read issue (default: ?)
     show()
     return "Display show"
 
 
-async def __task(period_ms):
+async def _task(period_ms):
     """
     Async display refresh task
     - main page    (main mode)  - auto sleep after 30 sec
@@ -104,7 +128,7 @@ async def __task(period_ms):
 
     KC.DP_cnt_default = int(30_000 / period_ms)     # After 30 sec go to sleep mode
     KC.DP_cnt = KC.DP_cnt_default                   # Set sleep counter
-    fast_period = int(period_ms/4)                  # Calculate faster refresh period
+    fast_period = int(period_ms/3)                  # Calculate faster refresh period
     fast_period = fast_period if fast_period > 100 else 100
 
     # Run keychain main async loop, with update ID: kc._display
@@ -141,6 +165,10 @@ def _boot_page(msg):
     show()
 
 
+#############################
+#      PUBLIC FUNCTIONS     #
+#############################
+
 def load_n_init(width=64, height=32, bootmsg="micrOS"):
     """
     Init OLED display 64x32 (default)
@@ -153,10 +181,10 @@ def load_n_init(width=64, height=32, bootmsg="micrOS"):
     try:
         oled_lni(width, height)             #2 Init oled display
         _boot_page(bootmsg)                 #3 Show boot page text
-        KC.INITED = True                    # Set display was successfully inited (for __task auto init)
+        KC.INITED = True                    # Set display was successfully inited (for _task auto init)
         return "OLED INIT OK"
     except Exception as e:
-        KC.INITED = False                   # display init failed (for __task auto init)
+        KC.INITED = False                   # display init failed (for _task auto init)
         return f"OLED INIT NOK: {e}"
 
 
@@ -167,7 +195,7 @@ def display(period=1000):
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 500 if period < 500 else period
-    state = micro_task(tag="kc._display", task=__task(period_ms=period_ms))
+    state = micro_task(tag="kc._display", task=_task(period_ms=period_ms))
     return "Starting" if state else "Already running"
 
 
@@ -178,27 +206,7 @@ def temperature():
     return measure()
 
 
-def _color_wheel():
-    """
-    Neopixel color wheel generator
-    """
-    max_val = 10                    # normally up to 255, but must be limited due to heat problems (4%)
-    half_val = max_val // 2
-    colors = ((0, 0, half_val), (0, 0, max_val), (0, half_val, max_val), (0, max_val, half_val), (0, max_val, 0),
-              (half_val, max_val, 0), (max_val, half_val, 0), (max_val, 0, 0), (half_val, 0, 0), (max_val, 0, half_val),
-              (half_val, 0, max_val), (0, 0, half_val))
-    while True:
-        # Loop through the colors to generate smooth transitions
-        for i in range(len(colors) - 1):
-            start_color = colors[i]
-            end_color = colors[i + 1]
-            # Generate a smooth transition from start_color to end_color
-            for j in range(5):  # Adjust this value for smoother or faster transition
-                # Linear interpolation for each color component
-                yield tuple(int(start + (end - start) * j / 10) for start, end in zip(start_color, end_color))
-
-
-def neopixel_color_wheel(br=KC.NEOPIXEL_BR):
+def neopixel_color_wheel(br=None):
     """
     Neopixel color wheel
     :param br: brightness value 0-100 percent
@@ -209,18 +217,42 @@ def neopixel_color_wheel(br=KC.NEOPIXEL_BR):
             neopixel_pin = Pin(physical_pin('neop'))        # Get Neopixel pin from LED PIN pool
             KC.NEOPIXEL_OBJ = NeoPixel(neopixel_pin, n=1)   # initialize for max 1 segment
         return KC.NEOPIXEL_OBJ
-
+    # INIT
     neo_led = _init()
-    if br != KC.NEOPIXEL_BR:
+    if br is None or not isinstance(br, int):       # Optional brightness param handling (load from cache)
+        br = KC.NEOPIXEL_BR
+    else:
         KC.NEOPIXEL_BR = br                         # update neopixel brightness cache
     if KC.COLOR_WHEEL is None:
         KC.COLOR_WHEEL = _color_wheel()             # init color wheel generator
+    # UPDATE
     r, g, b = next(KC.COLOR_WHEEL)                  # get next color
     br = br if br == 100 else br/100                # calculate brightness multiplier
     r, g, b = int(r*br), int(g*br), int(b*br)       # apply brightness parameter
     neo_led[0] = (r, g, b)                          # Set LED element color
     neo_led.write()                                 # Send data to LED device
-    return {'R': r, 'G': g, 'B': b, 'S': 1}         # Return verdict
+    return {'R': r, 'G': g, 'B': b, 'S': 1, 'br': br}   # Return verdict
+
+
+def display_toggle():
+    """
+    Display mode toggle (main/screensaver)
+    """
+    KC.DP_main_page = not KC.DP_main_page
+    if not KC.DP_main_page:
+        # Reset display counter when goes to sleep
+        KC.DP_cnt = KC.DP_cnt_default
+    v = 'main view' if KC.DP_main_page else 'screensaver'
+    return f"Display mode: {v}"
+
+
+def neopixel_toggle():
+    """
+    Disable/Enable neopixel LED (brightness 0/default)
+    """
+    KC.NEOPIXEL_BR = 0 if KC.NEOPIXEL_BR > 0 else 30
+    v = 'disabled' if KC.NEOPIXEL_BR == 0 else 'enabled'
+    return f"Neopixel: {v} br: {KC.NEOPIXEL_BR}"
 
 def press_event():
     """
@@ -233,11 +265,10 @@ def press_event():
         # Reset display counter
         KC.DP_cnt = KC.DP_cnt_default
         # Neopixel color wheel disable/enable
-        brightness = 0 if KC.NEOPIXEL_BR > 0 else 30        # set default brightness 30% when turns on
-        neopixel_color_wheel(br=brightness)
-        return
+        return neopixel_toggle()
     # Wake display
     KC.DP_main_page = True
+    return f"Display mode: main view"
 
 
 def lmdep():
@@ -263,5 +294,7 @@ def help():
     return ('load_n_init width=64 height=32 bootmsg="micrOS"',
             'temperature', 'display period>=1000',
             'press_event',
+            'display_toggle',
+            'neopixel_toggle',
             'neopixel_color_wheel br=<0-100>',
             'pinmap', 'lmdep')

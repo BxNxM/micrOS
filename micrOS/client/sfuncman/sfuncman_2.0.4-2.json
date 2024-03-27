@@ -590,8 +590,12 @@
     },
     "keychain": {
         "display": {
-            "doc": "\n    Create kc._display task - refresh loop\n    :param vd: virtual display 64x32 (rectangle for bigger screens)\n    ",
+            "doc": "\n    Create kc._display task - refresh loop\n    :param period: display refresh period in ms (min. 500ms)\n    ",
             "param(s)": "period=1000"
+        },
+        "display_toggle": {
+            "doc": "\n    Display mode toggle (main/screensaver)\n    ",
+            "param(s)": ""
         },
         "help": {
             "doc": null,
@@ -608,7 +612,11 @@
         },
         "neopixel_color_wheel": {
             "doc": "\n    Neopixel color wheel\n    :param br: brightness value 0-100 percent\n    :param run: run led update / disable\n    ",
-            "param(s)": "br=KC.NEOPIXEL_BR"
+            "param(s)": "br=None"
+        },
+        "neopixel_toggle": {
+            "doc": "\n    Disable/Enable neopixel LED (brightness 0/default)\n    ",
+            "param(s)": ""
         },
         "pinmap": {
             "doc": "\n    PIN MAP dump\n    \npin map: i2c_scl, i2c_sda, ds18, neop",

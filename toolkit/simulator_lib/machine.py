@@ -132,7 +132,7 @@ class ADC:
 
 class I2C:
 
-    def __init__(self, scl, sda, freq):
+    def __init__(self, scl, sda, freq=None):
         self.scl = scl
         self.sda = sda
         self.freq = freq
@@ -166,7 +166,7 @@ class I2S:
 
 class SoftI2C(I2C):
 
-    def __init__(self, scl, sda, freq):
+    def __init__(self, scl, sda, freq=None):
         super().__init__(scl, sda, freq)
 
 

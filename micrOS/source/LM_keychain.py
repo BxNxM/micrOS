@@ -2,7 +2,7 @@ import uasyncio as asyncio
 from Common import micro_task
 from utime import localtime
 from Network import ifconfig
-from LM_oled import text, show, rect, pixel, clean, load_n_init as oled_lni
+from LM_oled import text, show, rect, pixel, clean, line, load_n_init as oled_lni
 from LM_ds18 import measure
 from microIO import physical_pin, pinmap_dump
 from neopixel import NeoPixel
@@ -37,12 +37,12 @@ async def _screen_saver(scale=2):
         gol_reset()
         # flash main page - quick view
         await _main_page()                  # Run main screen page coroutine
-        await asyncio.sleep_ms(1500)        # Wait 1,5s to show main screen before continue screensaver
+        await asyncio.sleep_ms(3000)        # Wait 3s to show main screen before continue screensaver
     else:
         # Update display with Conway's Game of Life
         clean()
-        for line_idx, line in enumerate(matrix):
-            for x_idx, v in enumerate(line):
+        for line_idx, _line in enumerate(matrix):
+            for x_idx, v in enumerate(_line):
                 if scale == 1:
                     pixel(x_idx, line_idx, color=v)
                 else:
@@ -50,37 +50,47 @@ async def _screen_saver(scale=2):
         show()
 
 
-async def _main_page(vd=False):
+async def _main_page():
     """
     Run display content refresh
         H:M:S
          S/A: 1.92
          40.0 C
     """
+    def _cube():
+        # 5x5 px cube (25px overall)
+        _offset, _l_width = 2, 5                                # Initial size + positioning
+        _view = int(25*(KC.DP_cnt/KC.DP_cnt_default))           # overall pixel to be visualized
+        _complete_lines = int(_view / _l_width)                 # complete lines number
+        _sub_line = _view - (_complete_lines*_l_width)          # incomplete line width
+        for _l in range(0, 5):
+            if _l < _complete_lines:
+                line(0+_offset, _l+_offset, _l_width+_offset, _l+_offset)
+            else:
+                line(0+_offset, _l+_offset, _sub_line+_offset, _l+_offset)
+                break
+
     # Clean display and draw rect...
     clean()
-    # Virtual display rectangle 64x32
-    if vd:
-        rect(0, 0, 66, 34)
     ltime = localtime()
-    h = "0{}".format(ltime[-5]) if len(str(ltime[-5])) < 2 else ltime[-5]
-    m = "0{}".format(ltime[-4]) if len(str(ltime[-4])) < 2 else ltime[-4]
-    s = "0{}".format(ltime[-3]) if len(str(ltime[-3])) < 2 else ltime[-3]
+    h = f"0{ltime[-5]}" if len(str(ltime[-5])) < 2 else ltime[-5]
+    m = f"0{ltime[-4]}" if len(str(ltime[-4])) < 2 else ltime[-4]
     nwmd, nwif = ifconfig()
     nwmd, devip = nwmd[0] if len(nwmd) > 0 else "0", ".".join(nwif[0].split(".")[-2:])
 
     # Draw data to display
-    text(f"{h}:{m}:{s}", x=0, y=1)
-    text(f"{nwmd}: {devip}", x=4, y=10)
+    _cube()
+    text(f"{h}:{m}", x=12, y=1)                                             # Header: time
+    text(f"{nwmd}:{devip}", x=4, y=15)                                      # Network mode and IP
     try:
-        text(f"{round(tuple(measure().values())[0], 1)} C", x=4, y=20)
+        text(f"{round(tuple(measure().values())[0], 1)} C", x=4, y=25)      # ds18 sensor value
     except Exception:
-        pass
+        text("? C", x=4, y=25)                                             # ds18 read issue (default)
     show()
     return "Display show"
 
 
-async def __task(period_ms, vd=False):
+async def __task(period_ms):
     """
     Async display refresh task
     - main page    (main mode)  - auto sleep after 30 sec
@@ -102,7 +112,7 @@ async def __task(period_ms, vd=False):
         while True:
             if KC.DP_main_page:
                 # [MAIN MODE] Execute main page
-                await _main_page(vd=vd)                     #1 Run main page function
+                await _main_page()                          #1 Run main page function
                 my_task.out = f'main page: {KC.DP_cnt}'     #2 Update task data for (task show kc._display)
                 KC.DP_cnt -= 1                              #3 Update sleep counter
                 # Async sleep - feed event loop
@@ -150,15 +160,15 @@ def load_n_init(width=64, height=32, bootmsg="micrOS"):
         return f"OLED INIT NOK: {e}"
 
 
-def display(period=1000, vd=False):
+def display(period=1000):
     """
     Create kc._display task - refresh loop
-    :param vd: virtual display 64x32 (rectangle for bigger screens)
+    :param period: display refresh period in ms (min. 500ms)
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 500 if period < 500 else period
-    state = micro_task(tag="kc._display", task=__task(period_ms=period_ms, vd=vd))
-    return f"Starting" if state else "Already running"
+    state = micro_task(tag="kc._display", task=__task(period_ms=period_ms))
+    return "Starting" if state else "Already running"
 
 
 def temperature():
@@ -173,11 +183,19 @@ def _color_wheel():
     Neopixel color wheel generator
     """
     max_val = 10                    # normally up to 255, but must be limited due to heat problems (4%)
+    half_val = max_val // 2
+    colors = ((0, 0, half_val), (0, 0, max_val), (0, half_val, max_val), (0, max_val, half_val), (0, max_val, 0),
+              (half_val, max_val, 0), (max_val, half_val, 0), (max_val, 0, 0), (half_val, 0, 0), (max_val, 0, half_val),
+              (half_val, 0, max_val), (0, 0, half_val))
     while True:
-        for r in range(0, max_val, 2):
-            for g in range(0, max_val, 2):
-                for b in range(0, max_val, 2):
-                    yield r, g, b
+        # Loop through the colors to generate smooth transitions
+        for i in range(len(colors) - 1):
+            start_color = colors[i]
+            end_color = colors[i + 1]
+            # Generate a smooth transition from start_color to end_color
+            for j in range(5):  # Adjust this value for smoother or faster transition
+                # Linear interpolation for each color component
+                yield tuple(int(start + (end - start) * j / 10) for start, end in zip(start_color, end_color))
 
 
 def neopixel_color_wheel(br=KC.NEOPIXEL_BR):
@@ -235,7 +253,6 @@ def pinmap():
     """
     from LM_oled import pinmap as o_pmp
     from LM_ds18 import pinmap as t_pmp
-    from LM_neopixel import pinmap as n_pmp
     pmp = o_pmp()
     pmp.update(t_pmp())
     pmp.update(pinmap_dump(['neop']))

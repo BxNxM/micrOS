@@ -94,7 +94,9 @@ class SH1106(framebuf.FrameBuffer):
     def sleep(self, value):
         self.write_cmd(_SET_DISP | (not value))
 
-    def contrast(self, contrast):
+    def contrast(self, percent):
+        """percent: 0-100"""
+        contrast = int(255 * (percent / 100))
         self.write_cmd(_SET_CONTRAST)
         self.write_cmd(contrast)
 
@@ -219,12 +221,13 @@ class SH1106_I2C(SH1106):
 #   SH1106 interface functions    #
 ###################################
 
-def load_n_init(width=128, height=64, rotate=180):
+def load_n_init(width=128, height=64, brightness=50, rotate=180):
     if SH1106_I2C.OLED_OBJ is None:
         #i2c = SoftI2C(Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
         i2c = I2C(scl=Pin(physical_pin('i2c_scl')), sda=Pin(physical_pin('i2c_sda')), freq=400000)
         # TODO: scan device - abort if no device is available
         SH1106_I2C.OLED_OBJ = SH1106_I2C(width, height, i2c, rotate=rotate)
+        SH1106_I2C.OLED_OBJ.contrast(percent=brightness)
     return SH1106_I2C.OLED_OBJ
 
 

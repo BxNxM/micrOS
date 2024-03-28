@@ -177,14 +177,14 @@ def load_n_init(width=64, height=32, bootmsg="micrOS"):
     :param height: screen height (pixel)
     :param bootmsg: First text on page at bootup, default: "micrOS"
     """
-    KC.COLOR_WHEEL = _color_wheel()         #1 Init neopixel color wheel generator
+    KC.COLOR_WHEEL = _color_wheel()             #1 Init neopixel color wheel generator
     try:
-        oled_lni(width, height)             #2 Init oled display
-        _boot_page(bootmsg)                 #3 Show boot page text
-        KC.INITED = True                    # Set display was successfully inited (for _task auto init)
+        oled_lni(width, height, brightness=20)  #2 Init oled display
+        _boot_page(bootmsg)                     #3 Show boot page text
+        KC.INITED = True                        # Set display was successfully inited (for _task auto init)
         return "OLED INIT OK"
     except Exception as e:
-        KC.INITED = False                   # display init failed (for _task auto init)
+        KC.INITED = False                       # display init failed (for _task auto init)
         return f"OLED INIT NOK: {e}"
 
 

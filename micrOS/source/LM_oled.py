@@ -91,7 +91,9 @@ class SSD1306(framebuf.FrameBuffer):
     def poweron(self):
         self.write_cmd(SET_DISP | 0x01)
 
-    def contrast(self, contrast):
+    def contrast(self, percent):
+        """percent: 0-100"""
+        contrast = int(255*(percent/100))
         self.write_cmd(SET_CONTRAST)
         self.write_cmd(contrast)
 
@@ -155,11 +157,17 @@ class SSD1306_I2C(SSD1306):
 #  SSD1306 interface functions    #
 ###################################
 
-def load_n_init(width=128, height=64):
+def load_n_init(width=128, height=64, brightness=50):
+    """
+    :param width: pixel
+    :param height: pixel
+    :param brightness: percentage
+    """
     if SSD1306_I2C.OLED_OBJ is None:
         i2c = SoftI2C(Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
         # TODO: scan device - abort if no device is available
         SSD1306_I2C.OLED_OBJ = SSD1306_I2C(width, height, i2c)
+        SSD1306_I2C.OLED_OBJ.contrast(percent=brightness)
     return SSD1306_I2C.OLED_OBJ
 
 

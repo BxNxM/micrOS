@@ -4,6 +4,7 @@ from utime import localtime
 from Network import ifconfig
 from LM_oled import text, show, rect, pixel, clean, line, load_n_init as oled_lni
 from LM_ds18 import measure
+from LM_system import top
 from microIO import physical_pin, pinmap_dump
 from neopixel import NeoPixel
 from machine import Pin
@@ -39,9 +40,8 @@ async def _screen_saver(scale=2):
     if matrix is None:
         # Reset Game of life
         gol_reset()
-        # flash main page - quick view
-        await _main_page()                  # Run main screen page coroutine
-        await asyncio.sleep_ms(3000)        # Wait 3s to show main screen before continue screensaver
+        # quick view - show (enable) main page
+        KC.DP_main_page = True
     else:
         # Update display with Conway's Game of Life
         clean()
@@ -81,7 +81,7 @@ async def _main_page():
          S/A: 1.92
          40.0 C
     """
-    def _cube():
+    def _timer():
         # 5x5 px cube (25px overall)
         _offset, _l_width = 2, 5                                # Initial size + positioning
         _view = int(25*(KC.DP_cnt/KC.DP_cnt_default))           # overall pixel to be visualized
@@ -94,6 +94,17 @@ async def _main_page():
                 line(0+_offset, _l+_offset, _sub_line+_offset, _l+_offset)
                 break
 
+    def _cpu_mem():
+        sys_usage = top()
+        cpu = sys_usage.get('CPU load [%]', 100)
+        cpu = 100 if cpu > 100 else cpu                                             # limit cpu overload in visualization
+        mem = sys_usage.get('Mem usage [%]', 100)
+        _cpu_limit, _mem_limit = cpu > 90, mem > 70                                 # fill indicator (limit)
+        _offset, _height = 1, 6
+        _cpu, _mem = int(_height * (cpu/100)), int(_height * (mem/100))
+        rect(55, _height+_offset-_cpu, w=3, h=_cpu+_offset, fill=_cpu_limit)     # cpu usage indicator
+        rect(60, _height+_offset-_mem, w=3, h=_mem+_offset, fill=_mem_limit)     # memory usage indicator
+
     # Clean display and collect input data: time, network mode, IP address
     clean()
     ltime = localtime()
@@ -103,7 +114,8 @@ async def _main_page():
     nwmd, devip = nwmd[0] if len(nwmd) > 0 else "0", ".".join(nwif[0].split(".")[-2:])
 
     # Draw data to display
-    _cube()                                                                     # Draw display timer (until screen saver)
+    _timer()                                                                    # Draw display timer (until screen saver)
+    _cpu_mem()                                                                  # Draw cpu and memory indicator
     text(f"{h}:{m}", x=12, y=1)                                           # Header: time
     text(f"{nwmd}:{devip}", x=4, y=15)                                    # Network mode and IP
     try:

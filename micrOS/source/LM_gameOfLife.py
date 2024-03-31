@@ -17,6 +17,12 @@ class GoL:
         if isinstance(custom_conf, tuple):
             GoL.CSTM_CONF = custom_conf
 
+    def clean(self):
+        """
+        Clean data matrix - empty state
+        """
+        self.matrix = [[0] * self.width for _ in range(self.height)]
+
     def add_cells(self, x, y, cells):
         """
         Add living cells
@@ -167,8 +173,8 @@ def next_gen(raw=False, w=32, h=16):
     Main Game of Life function
         Get Next Generation of cells (with auto load_n_init and GoL reinit)
     :param raw: Output type (raw:True -> matrix), (raw:False formatted output)
-    :param w: width of display (pixel)
-    :param h: height of display (pixel)
+    :param w: width of display (pixel) - auto init
+    :param h: height of display (pixel) - auto init
     return change of life matrix or None if there is no change (on None, restart feature: call reset())
     """
     if GoL.GOL is None:
@@ -185,9 +191,11 @@ def reset():
     """
     Reset life table - set default
     """
-    del GoL.GOL
-    GoL.GOL = None
-    return 'GoL reset'
+    if GoL.GOL is not None:
+        GoL.GOL.clean()
+        GoL.GOL.init_conf()
+        return 'GoL reset'
+    return 'GoL skip reset'
 
 
 def help():

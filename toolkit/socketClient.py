@@ -173,7 +173,10 @@ class ConnectionData:
                                                              devip, uid))
             uid_list_to_select.append(uid)
         if len(uid_list_to_select) > 1 and device_tag is None:
-            index = int(input("{}Choose a device index: {}".format(Colors.OK, Colors.NC)))
+            try:
+                index = int(input("{}Choose a device index: {}".format(Colors.OK, Colors.NC)))
+            except KeyboardInterrupt:
+                sys.exit(0)
             device = ConnectionData.MICROS_DEVICES[uid_list_to_select[index]]
             print("Device was selected: {}".format(device))
             # IP, PORT, FID, UID
@@ -283,12 +286,12 @@ class ConnectionData:
 
 class SocketDictClient:
 
-    def __init__(self, host='localhost', port=9008, silent_mode=False, tout=6, password="ADmin123"):
+    def __init__(self, host='localhost', port=9008, silent_mode=False, tout=6, password=None, verbose=False):
         self.silent_mode = silent_mode
         self.host = host
         self.port = port
         self.tout = tout
-        self.client = micrOSClient(self.host, self.port, pwd=password, dbg=False)         # <== SET CLIENT DEBUG HERE
+        self.client = micrOSClient(self.host, self.port, pwd=password, dbg=verbose)         # <== SET CLIENT DEBUG HERE
 
     def run_command(self, cmd):
         data = self.client.send_cmd_retry(cmd)
@@ -338,20 +341,20 @@ class SocketDictClient:
 #########################################################
 
 
-def main(args, host='127.0.0.1', port=9008, timeout=3):
+def main(args, host='127.0.0.1', port=9008, timeout=3, pwd=None, verbose=False):
     """ main connection wrapper function """
     answer_msg = None
 
     try:
-        socketdictclient = SocketDictClient(host=host, port=port, tout=timeout)
+        client = SocketDictClient(host=host, port=port, tout=timeout, password=pwd, verbose=verbose)
         if len(args) == 0:
             #print("Run interactive mode")
             # INTERACTIVE MODE
-            socketdictclient.interactive()
+            client.interactive()
         else:
             #print("Run non-interactive mode")
             # NON INTERACTIVE MODE WITH ARGS
-            answer_msg = socketdictclient.non_interactive(args)
+            answer_msg = client.non_interactive(args)
         return True, answer_msg
     except KeyboardInterrupt:
         sys.exit(0)
@@ -363,31 +366,62 @@ def main(args, host='127.0.0.1', port=9008, timeout=3):
 
 
 def socket_commandline_args(arg_list):
-    return_action_dict = {'search': False, 'device_tag': None, 'status': False}
-    if len(arg_list) > 0 and (arg_list[0].startswith('--scan') or arg_list[0].startswith('scan')):
-        del arg_list[0]
-        return_action_dict['search'] = True
-    if len(arg_list) > 0 and (str(arg_list[0]).startswith('--stat') or str(arg_list[0]).startswith('stat')):
-        del arg_list[0]
-        return_action_dict['status'] = True
-    if len(arg_list) > 0 and "dev" in arg_list[0]:
-        return_action_dict['device_tag'] = arg_list[1]
-        del arg_list[0:2]
-    if len(arg_list) > 0 and arg_list[0].startswith('clean'):
-        ConnectionData.clean_cache()
-        sys.exit()
-    if len(arg_list) > 0 and arg_list[0].startswith('list'):
-        ConnectionData.list_devices()
-        sys.exit()
-    if len(arg_list) > 0 and ("man" == arg_list[0] or "manual" == arg_list[0] or "hint" in arg_list[0]):
+    command_buffer = []
+    return_action_dict = {'search': False, 'device_tag': None,
+                          'status': False, 'password': None,
+                          'verbose': False}
+    _skip = False
+    for i, arg in enumerate(arg_list):
+        if _skip:
+            _skip = False
+            continue
+        arg = arg.strip()
+        if arg.startswith('--'):  # Handle -- optional prefix
+            arg = arg.replace('--', '')
+        if 'pwd' == arg:  # shortcut pwd -> password
+            arg = 'password'
+        elif 'dev' == arg:  # shortcut: dev -> device_tag
+            arg = 'device_tag'
+        elif 'scan' == arg:  # shortcut: scan -> search
+            arg = 'search'
+        elif 'stat' == arg:  # shortcut: stat -> status
+            arg = 'status'
+        keywords = list(return_action_dict.keys())
+        if arg in keywords:
+            print(arg)
+            if return_action_dict[arg] is None:
+                return_action_dict[arg] = arg_list[i+1]
+                _skip = True
+                continue
+            else:
+                if 'verbose' == arg:
+                    return_action_dict['verbose'] = True
+                elif 'search' == arg:
+                    return_action_dict['search'] = True
+                elif 'status' == arg:
+                    return_action_dict['status'] = True
+        elif 'list' == arg:
+            ConnectionData.list_devices()
+            sys.exit(0)
+        elif 'clean' == arg:
+            ConnectionData.clean_cache()
+            sys.exit(0)
+        else:
+            command_buffer.append(arg)
+    if len(arg_list) > 0 and (arg_list[0].startswith("man") or "hint" in arg_list[0] or "help" in arg_list[0]):
+        print("--verbose \t\t- turn on micrOSClient verbose mode")
         print("--scan / scan\t\t- scan devices")
-        print("--dev / dev\t\t- select device - value should be: fuid or uid or devip")
         print("--stat / stat\t\t- show devides online/offline - and memory data")
+        print("--dev / dev\t\t- select device - value should be: fuid or uid or devip")
+        print("--pwd / pwd\t\t- selected device password (appwd) if auth is enabled")
         print("--clean / clean\t\t- clean device_conn_cache.json")
         print("--list / list\t\t- list mocrOS devices")
-        print("HINT\t\t- In non interactive mode you can pipe commands with <a> separator")
+        print("HINT:\t\t\t- In non interactive mode just list command(s) as last parameters.\n\t\t\t"
+              "Also you can pipe commands with <a> separator.")
+        print("HINT:\t\t\t\t- Example: --dev node01 system clock")
+        print("HINT:\t\t\t\t- Example: --dev node01 --pwd ADmin123 system clock")
         sys.exit(0)
-    return arg_list, return_action_dict
+    return ' '.join(command_buffer), return_action_dict
 
 
 def run(arg_list=[], timeout=5):
@@ -399,7 +433,7 @@ def run(arg_list=[], timeout=5):
     host, port, fid, uid = ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['device_tag'])
     output = False, ''
     try:
-        output = main(args, host=host, port=port, timeout=timeout)
+        output = main(args, host=host, port=port, timeout=timeout, pwd=action['password'], verbose=action['verbose'])
     except Exception as e:
         if "TimeOut" in str(e):
             print("Resolve device by host ... {}.local {}:{}:{}".format(fid, host, port, uid))

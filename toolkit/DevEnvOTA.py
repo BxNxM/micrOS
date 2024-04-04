@@ -91,7 +91,7 @@ class OTA(Compile):
         force = False if repo_major_version == device_major_version else True
         return repo_version, device_version, force
 
-    def _mpy_cross_compatibility_check(self, device=None):
+    def _mpy_cross_compatibility_check(self, device=None, ota_password=None):
         self.console("Compare mpy-cross - upython version compatibility", state='WARN')
         mpy_cross_version = self.precompiled_mpy_cross_version
         upython_version = None
@@ -99,7 +99,7 @@ class OTA(Compile):
         if self.dry_run:
             status, answer_msg = True, 'dry-run-upython: v1.20.0'
         else:
-            status, answer_msg = socketClient.run(['--dev', device, 'system info'])
+            status, answer_msg = socketClient.run(['--dev', device, '--pwd', ota_password, 'system info'])
         if status:
             try:
                 upython = [version for version in answer_msg.split("\n") if "upython" in version][0]
@@ -176,7 +176,7 @@ class OTA(Compile):
         self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
 
         # Get device appwd - device password for webrepl connection (not too safe - ???)
-        status, answer_msg = socketClient.run(['--dev', fuid, 'conf', '<a>', 'appwd'])
+        status, answer_msg = socketClient.run(['--dev', fuid, '--pwd', ota_password, 'conf', '<a>', 'appwd'])
         webrepl_password = answer_msg.strip() if status else None
         if webrepl_password is None:
             if self.cmdgui:
@@ -187,7 +187,7 @@ class OTA(Compile):
                 webrepl_password = ota_password
 
         # Check micropython cross compile version compatibility
-        if not self._mpy_cross_compatibility_check(device=fuid):
+        if not self._mpy_cross_compatibility_check(device=fuid, ota_password=ota_password):
             self.console("Version mismatch: upython vs. mpycross", state='ERR')
             self.console("==> Update your micropython board via USB!", state='OK')
             if self.gui_console is not None: self.gui_console("Version mismatch: upython vs. mpycross")
@@ -264,7 +264,7 @@ class OTA(Compile):
         # Upload files / sources
         return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list, ota_password=webrepl_password)
 
-    def _enable_micros_ota_update_via_webrepl(self, device=None):
+    def _enable_micros_ota_update_via_webrepl(self, device=None, ota_password=None):
         # Get specific device from device list
         self.console("Select device to update ...", state='IMP')
         socketClient.ConnectionData.read_micrOS_device_cache()
@@ -279,7 +279,7 @@ class OTA(Compile):
             device_ip, fuid = device[1], device[0]
         self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
 
-        status, answer_msg = socketClient.run(['--dev', fuid, 'help'])
+        status, answer_msg = socketClient.run(['--dev', fuid, '--pwd', ota_password, 'help'])
         if answer_msg is None:
             # micrOS auth:True not supported under ota update
             self.console("AuthFailed - no help msg was returned...", state='ERR')
@@ -295,11 +295,11 @@ class OTA(Compile):
                     if '--update' in answer_msg:
                         # START OTA UPDATE MODE ON DEVICE
                         self.console("[UPDATE] built-in restart and update monitor activation")
-                        status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl --update'])
+                        status, answer_msg = socketClient.run(['--dev', fuid, '--pwd', ota_password, 'webrepl --update'])
                     else:
                         self.console("[UPDATE] live update - obsoleted...")
                         # START OTA UPDATE MODE ON DEVICE
-                        status, answer_msg = socketClient.run(['--dev', fuid, 'webrepl'])
+                        status, answer_msg = socketClient.run(['--dev', fuid, '--pwd', ota_password, 'webrepl'])
             else:
                 self.console("Webrepl not available on device, update over USB.")
                 self.execution_verdict.append("[ERR] ota_update - webrepl not available on node")
@@ -404,7 +404,7 @@ class OTA(Compile):
         self.console("MICROS SOCKET WON'T BE AVAILABLE UNDER UPDATE.")
 
         # Enable micrOS OTA mode
-        status, device_ip, fuid = self._enable_micros_ota_update_via_webrepl(device=device)
+        status, device_ip, fuid = self._enable_micros_ota_update_via_webrepl(device=device, ota_password=ota_password)
 
         # Create lock file for ota update
         self.console("[UPLOAD] Copy files to device...", state='IMP')

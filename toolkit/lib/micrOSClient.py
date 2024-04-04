@@ -1,4 +1,6 @@
 import socket
+import sys
+
 import select
 import re
 import time
@@ -115,8 +117,10 @@ class micrOSClient:
 
     def __auth(self):
         # Autofill password
-        if self.password is not None and 'password' in self.preprompt:
-            self.send_cmd(self.password, timeout=4)
+        if self.password is not None and '[password]' in self.preprompt:
+            out = self.send_cmd(self.password, timeout=4)
+            if 'AuthFailed' in out or 'Bye!' in out:
+                raise Exception(f"Connection {self.prompt} - AuthFailed")
 
     def __get_prompt(self, timeout=3):
         """Get and save prompt

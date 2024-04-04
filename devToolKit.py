@@ -44,7 +44,7 @@ def arg_parse():
     base_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
     base_group.add_argument("-o", "--OTA", action="store_true", help="OTA (OverTheArir update with webrepl)")
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
-    base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactivve mode.")
+    base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactive mode. For more info: -p 'help'")
     base_group.add_argument("-a", "--applications", type=str, help="List/Execute frontend applications. [list]")
     base_group.add_argument("-stat", "--node_status", action="store_true", help="Show all available micrOS devices status data.")
     base_group.add_argument("-cl", "--clean", action="store_true", help="Clean user connection data: device_conn_cache.json")
@@ -100,10 +100,8 @@ def install(api_obj):
 
 def connect(args=None):
     if args is not None and len(args) != 0:
-        arg_list = args.split(' ')
-        dev_name = arg_list[0:2]
-        param_str = ' '.join(arg_list[2:])
-        socketClient.run(arg_list=[dev_name[0], dev_name[1], param_str])
+        arg_list = args.split()
+        socketClient.run(arg_list=arg_list)
     else:
         socketClient.run(arg_list=[])
 

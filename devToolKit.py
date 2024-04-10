@@ -10,7 +10,7 @@ if len(sys.argv) > 1 and sys.argv[1] in ['light', '--light']:
 else:
     # INSTALL OPTIONAL DEPENDENCIES - PIP HACK
     from toolkit.lib import pip_package_installer as pip_install
-    pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.20.0'])
+    pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.20.0', 'matplotlib'])
 
 
 # NORMAL CODE ...

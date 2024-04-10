@@ -12,7 +12,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 # micrOS devToolKit dependencies
 dependencies = ['adafruit-ampy', 'mpremote', 'esptool', 'ipaddress', 'netaddr',
                 'pylint', 'pyserial', 'resources', 'flask', 'flask_restful', 'numpy',
-                'matplotlib', 'json2html', 'requests', 'Flask-BasicAuth', 'soundfile']
+                'json2html', 'requests', 'Flask-BasicAuth', 'soundfile']
 
 # Optional dependencies in devToolKit.py: 'PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.20.0'
 

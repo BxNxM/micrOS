@@ -25,5 +25,5 @@ EXPOSE 5000
 # Search and start gateway and start simulator (beta)
 #ENTRYPOINT devToolKit.py -s -gw -sim
 # Search and start gateway
-ENTRYPOINT devToolKit.py -s -gw
+ENTRYPOINT devToolKit.py --light -s -gw
 

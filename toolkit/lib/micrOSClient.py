@@ -47,7 +47,7 @@ class micrOSClient:
         # Retrieve IP address by hostname dynamically
         if micrOSClient.CONN_MAP.get(self.hostname, None) is None:
             self.dbg_print("\t[dhcp] Resolve IP by host name... {}".format(self.host))
-            if self.host == "__simulator__":
+            if "__simulator__" in self.host:
                 # Simulator hack - due to no dhcp available
                 self.host = '127.0.0.1'
                 self.hostname = 'node01'

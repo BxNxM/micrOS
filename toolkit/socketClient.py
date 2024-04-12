@@ -421,7 +421,9 @@ def socket_commandline_args(arg_list):
         print("HINT:\t\t\t\t- Example: --dev node01 system clock")
         print("HINT:\t\t\t\t- Example: --dev node01 --pwd ADmin123 system clock")
         sys.exit(0)
-    return ' '.join(command_buffer), return_action_dict
+    if '<a>' in command_buffer:
+        return ' '.join(command_buffer), return_action_dict
+    return ' <a> '.join(command_buffer), return_action_dict
 
 
 def run(arg_list=[], timeout=5):
@@ -433,6 +435,7 @@ def run(arg_list=[], timeout=5):
     host, port, fid, uid = ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['device_tag'])
     output = False, ''
     try:
+        #print("Socket run (args): {}".format(args))
         output = main(args, host=host, port=port, timeout=timeout, pwd=action['password'], verbose=action['verbose'])
     except Exception as e:
         if "TimeOut" in str(e):

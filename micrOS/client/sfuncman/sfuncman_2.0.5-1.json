@@ -1253,6 +1253,33 @@
             "param(s)": ""
         }
     },
+    "sdcard": {
+        "help": {
+            "doc": "No module named 'uos'",
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sdcard.png?raw=true",
+        "list_storage": {
+            "doc": "No module named 'uos'",
+            "param(s)": ""
+        },
+        "mount_storage": {
+            "doc": "No module named 'uos'",
+            "param(s)": ""
+        },
+        "read_file": {
+            "doc": "No module named 'uos'",
+            "param(s)": "name"
+        },
+        "unmount_storage": {
+            "doc": "No module named 'uos'",
+            "param(s)": ""
+        },
+        "write_file": {
+            "doc": "No module named 'uos'",
+            "param(s)": "name content"
+        }
+    },
     "servo": {
         "deinit": {
             "doc": "\n    Deinit servo motors\n    - stop pwm channels (sduty/s2duty)\n    ",

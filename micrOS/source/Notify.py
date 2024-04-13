@@ -1,7 +1,7 @@
 from sys import modules
 import urequests
 from Config import cfgget
-from Tasks import lm_exec
+from Tasks import lm_exec, lm_is_loaded
 from Debug import console_write
 
 #########################################
@@ -160,7 +160,7 @@ class Telegram:
 
         def lm_execute(cmd_args):
             nonlocal verdict
-            if cmd_args[0] in loaded_mods:
+            if lm_is_loaded(cmd_args[0]):
                 verdict = f'[UP] Exec: {" ".join(cmd_args[0])}'
                 try:
                     _, out = lm_exec(cmd_args)
@@ -181,13 +181,12 @@ class Telegram:
         if msg_in is not None and m_id != Telegram._IN_MSG_ID:
             # replace single/double quotation to apostrophe (str syntax for repl interpretation)
             msg_in = msg_in.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
-            # Parse loaded modules
-            loaded_mods = [lm.replace('LM_', '') for lm in modules if lm.startswith('LM_')]
-            loaded_mods.append('task')      # add task "module" to whitelist
             # [TELEGRAM CMD] /PING - Get auto reply from node - loaded modules
             #               Example: /ping
             if msg_in.startswith('/ping'):
-                Telegram.send_msg(', '.join(loaded_mods), reply_to=m_id, chat_id=c_id)
+                # Parse loaded modules
+                _loaded_mods = [lm.replace('LM_', '') for lm in modules if lm.startswith('LM_')] + ['task']
+                Telegram.send_msg(', '.join(_loaded_mods), reply_to=m_id, chat_id=c_id)
             # [TELEGRAM CMD] /CMD_SELECT - Load Module execution handling - SELECTED DEV. MODE
             #               Example: /cmd_select device module func param(s)
             elif msg_in.startswith('/cmd_select'):

@@ -9,16 +9,22 @@ import socketClient
 
 # FILL OUT
 DEVICE = 'node01'
+PASSWD = None
 
 
 def base_cmd():
-    return ['--dev', DEVICE]
+    if PASSWD is None:
+        return ['--dev', DEVICE]
+    return ['--dev', DEVICE, '--password', PASSWD]
 
 
-def app(devfid=None):
-    global DEVICE
+
+def app(devfid=None, pwd=None):
+    global DEVICE, PASSWD
     if devfid is not None:
         DEVICE = devfid
+    if pwd is not None:
+        PASSWD = pwd
     # EDIT YOUR COMMAND
     args = base_cmd() + ['version']
     status, answer = socketClient.run(args)

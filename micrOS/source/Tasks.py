@@ -550,6 +550,15 @@ def _exec_lm_core(cmd_list):
             return False, f"Core error: {lm_mod}->{lm_func}: {e}"
     return False, "Shell: for hints type help.\nShell: for LM exec: [1](LM)module [2]function [3...]optional params"
 
+def lm_is_loaded(lm_name):
+    """
+    [Auth mode]
+    Check lm_name in enabled modules
+    """
+    static_keywords = ('task')
+    loaded_mods = [lm.replace('LM_', '') for lm in modules if lm.startswith('LM_')]
+    return lm_name in static_keywords or lm_name in loaded_mods
+
 
 def exec_lm_core_schedule(arg_list):
     """

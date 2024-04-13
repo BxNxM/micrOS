@@ -26,7 +26,7 @@ except:
 # Module load optimization, needed only for webui
 if cfgget('webui'):
     from json import dumps, loads
-    from Tasks import lm_exec, NativeTask
+    from Tasks import lm_exec, NativeTask, lm_is_loaded
 
 
 #########################################################
@@ -148,6 +148,7 @@ class Client:
 
 class WebCli(Client):
     REST_ENDPOINTS = {}
+    AUTH = cfgget('auth')
 
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer, r_size=512)
@@ -274,7 +275,10 @@ class WebCli(Client):
             # request json format instead of default string output (+ handle & tasks syntax)
             cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
             # EXECUTE COMMAND - LoadModule
-            state, out = lm_exec(cmd)
+            if WebCli.AUTH:
+                state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) else (True, 'Auth:Protected')
+            else:
+                state, out = lm_exec(cmd)
             result += out
             try:
                 resp_schema['result'] = loads(result)       # Load again ... hack for embedded shell json converter...
@@ -282,7 +286,7 @@ class WebCli(Client):
                 resp_schema['result'] = result
             resp_schema['state'] = state
         else:
-            resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid')}
+            resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid'), 'auth': WebCli.AUTH}
             if len(tuple(WebCli.REST_ENDPOINTS.keys())) > 0:
                 resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS)
             resp_schema['state'] = True

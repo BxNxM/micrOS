@@ -885,12 +885,13 @@ class micrOSGUI(QWidget):
         Execute application with selected device here
         """
 
-        def __execute_app(toolkit_obj, app_name, dev_name):
-            res = toolkit_obj.exec_app(app_name, dev_name)
+        def __execute_app(toolkit_obj, app_name, dev_name, pwd):
+            res = toolkit_obj.exec_app(app_name, dev_name, pwd)
             print(res)
 
         selected_app = self.application_dropdown.get()
         selected_device = self.micrOS_devide_dropdown.get()
+        password = self.appwd_textbox.get()
         process_key = "{}_{}".format(selected_app, selected_device)
 
         if process_key in self.bgjob_thread_obj_dict.keys():
@@ -902,7 +903,7 @@ class micrOSGUI(QWidget):
         try:
             app_name = selected_app.replace('_app', '')
             th = threading.Thread(target=__execute_app,
-                                  args=(self.devtool_obj, app_name, selected_device),
+                                  args=(self.devtool_obj, app_name, selected_device, password),
                                   daemon=DAEMON)
             th.start()
             self.bgjob_thread_obj_dict[process_key] = th

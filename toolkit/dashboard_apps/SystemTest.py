@@ -14,10 +14,13 @@ import requests
 
 # FILL OUT
 DEVICE = '__simulator__'
+PASSWD = None
 
 
 def base_cmd():
-    return ['--dev', DEVICE]
+    if PASSWD is None:
+        return ['--dev', DEVICE]
+    return ['--dev', DEVICE, '--password', PASSWD]
 
 
 def get_device():
@@ -499,10 +502,12 @@ def after_st_reboot():
     return verdict
 
 
-def app(devfid=None):
-    global DEVICE
+def app(devfid=None, pwd=None):
+    global DEVICE, PASSWD
     if devfid is not None:
         DEVICE = devfid
+    if pwd is not None:
+        PASSWD = pwd
 
     # Get test verdict
     verdict = {'single_cmds': single_cmd_exec_check(),

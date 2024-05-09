@@ -24,7 +24,7 @@ from Debug import errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '2.0.6-0'
+    MICROS_VERSION = '2.0.7-0'
 
     def __init__(self):
         """
@@ -203,22 +203,32 @@ class Shell:
     @staticmethod
     def _configure(msg_obj, msg_list):
         """
-        :param msg_obj: shell output stream function pointer (write object)
+        :param msg_obj: shell output stream function reference (write object)
         :param msg_list: socket input param list
         :return: execution status
         """
+        def dump():
+            nonlocal msg_obj, msg_list
+            if msg_list[0] == 'dump':
+                search = msg_list[1] if len(msg_list) == 2 else None
+                # DUMP DATA
+                for _key, value in cfgget().items():
+                    if search is None or search in _key:
+                        msg_obj(f"  {_key}{' ' * (10 - len(_key))}:{' ' * 7} {value}")
+                return True
+            return False
+
         # [CONFIG] Get value
         if len(msg_list) == 1:
-            if msg_list[0] == 'dump':
-                # DUMP DATA
-                for key, value in cfgget().items():
-                    msg_obj(f"  {key}{' ' * (10 - len(key))}:{' ' * 7} {value}")
+            if dump():                      # Simple dump without param filter
                 return True
             # GET SINGLE PARAMETER VALUE
             msg_obj(cfgget(msg_list[0]))
             return True
         # [CONFIG] Set value
         if len(msg_list) >= 2:
+            if dump():                      # Dump with search option
+                return True
             # Deserialize params
             key = msg_list[0]
             # Set the parameter value in config

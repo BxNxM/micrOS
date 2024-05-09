@@ -152,6 +152,7 @@ def micrOS_bgjob_loop_check():
             return False, f'[Overload task - run same] {info} + not expected return: {output[1]}'
 
     # Show task output by task tag
+    time.sleep(0.1)                           # Give time for the task to start and update buffer... (sim)
     cmd_list = ['task show system.clock']
     output = execute(cmd_list)
     if output[0]:
@@ -533,7 +534,6 @@ def app(devfid=None, pwd=None):
                'micros_tasks': task_list(),
                'clean-reboot': after_st_reboot()
                }
-
 
     # Test Evaluation
     final_state = True

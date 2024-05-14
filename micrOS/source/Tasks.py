@@ -296,7 +296,7 @@ class Manager:
         return NativeTask().create(callback=callback, tag=tag)
 
     @staticmethod
-    def list_tasks():
+    def list_tasks(json=False):
         """
         Primary interface
             List tasks - micrOS top :D
@@ -305,9 +305,12 @@ class Manager:
         out_active = ["---- micrOS  top ----", f"#queue: {q} #load: {Manager.LOAD}%\n", "#Active   #taskID"]
         out_passive = []
         for tag, task in TaskBase.TASKS.items():
-            is_running = 'No' if task.done.is_set() else 'Yes'
-            spcr = " " * (10 - len(is_running))
-            view = f"{is_running}{spcr}{tag}"
+            if json:
+                view = tag
+            else:
+                is_running = 'No' if task.done.is_set() else 'Yes'
+                spcr = " " * (10 - len(is_running))
+                view = f"{is_running}{spcr}{tag}"
             _ = out_passive.append(view) if task.done.is_set() else out_active.append(view)
         return tuple(out_active), tuple(out_passive)
 
@@ -442,7 +445,12 @@ def lm_exec(arg_list):
         if 'task' == msg_list[0]:
             # task list
             if msg_len > 1 and 'list' == msg_list[1]:
-                on, off = Manager.list_tasks()
+                if msg_len > 2 and msg_list[2].strip() == '>json':
+                    # JSON mode
+                    on, off = Manager.list_tasks(json=True)
+                    return True, {'active': on[3:], 'inactive': off}
+                on, off = Manager.list_tasks(json=False)
+                # Human readable mode with cpu & queue info
                 return True, '\n'.join(on) + '\n' + '\n'.join(off) + '\n'  # Show active tasks and passive tasks
             # task kill <taskID> / task show <taskID>
             if msg_len > 2:

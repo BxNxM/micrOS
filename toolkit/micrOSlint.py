@@ -88,25 +88,29 @@ def parse_load_modules(lm_resources, verbose=True):
 
 
 def _update_dep_category(struct, core_filter_list, lm_filter_list, master_key='core'):
+    def init_struct():
+        nonlocal  categories
+        # core->?module?->dependencies
+        #                               ->core
+        #                               ->builtin
+        #                               ->lm
+        if categories[master_key].get(core, None) is None:
+            categories[master_key][core] = {}
+            categories[master_key][core]['dependencies'] = {}
+        if categories[master_key][core]['dependencies'].get('core', None) is None:
+            categories[master_key][core]['dependencies']['core'] = []
+            categories[master_key][core]['dependencies']['builtin'] = []
+            categories[master_key][core]['dependencies']['lm'] = []
+            categories[master_key][core]['linter'] = {}
+
     categories = {master_key: {}}
     lines_sum = 0
     for core in struct:
         core_module_dep = struct[core]['dependencies']
         lines = struct[core]['lines']
         lines_sum += lines
+        init_struct()
         for mod_dep in core_module_dep:
-            # core->?module?->dependencies
-            #                               ->core
-            #                               ->builtin
-            #                               ->lm
-            if categories[master_key].get(core, None) is None:
-                categories[master_key][core] = {}
-                categories[master_key][core]['dependencies'] = {}
-            if categories[master_key][core]['dependencies'].get('core', None) is None:
-                categories[master_key][core]['dependencies']['core'] = []
-                categories[master_key][core]['dependencies']['builtin'] = []
-                categories[master_key][core]['dependencies']['lm'] = []
-                categories[master_key][core]['linter'] = {}
             # Filter core resources
             if mod_dep in core_filter_list:
                 categories[master_key][core]['dependencies']['core'].append(mod_dep)
@@ -168,7 +172,7 @@ def core_dep_checker(categories, verbose=True):
 def load_module_checker(categories, verbose=True):
 
     def _is_allowed(_relation):
-        _allowed_whitelist = ['Common', 'microIO']
+        _allowed_whitelist = ['Common', 'microIO', 'Types']
         _allowed = []
         for _allow in _relation:
             if _allow in _allowed_whitelist:
@@ -220,7 +224,7 @@ def _run_pylint(file_name):
         '--disable=too-many-return-statements',     # :D I don't think so :D
         '--disable=too-many-branches'               # :D I don't think so :D
     ]
-    if file_name in ['Tasks.py', 'microIO.py']:
+    if file_name in ['Tasks.py', 'microIO.py', 'Types.py']:
         pylint_opts.append('--disable=exec-used')   # Disable micrOS execution core exec/eval warning
         pylint_opts.append('--disable=eval-used')
     # Run pylint on the specified file
@@ -513,7 +517,7 @@ def main(verbose=True):
     print(f"Analyze project: {MICROS_SOURCE_DIR}")
     resources = parse_micros_file_categories(verbose=verbose)
     core_struct = parse_core_modules(resources['core'], verbose=verbose)
-    lm_struct = parse_core_modules(resources['load_module'], verbose=False)
+    lm_struct = parse_core_modules(resources['load_module'], verbose=verbose)
     categories = combine_data_structures(core_struct, lm_struct, all_struct=resources, verbose=verbose)
 
     print("== RUN checker on parsed resources ==")

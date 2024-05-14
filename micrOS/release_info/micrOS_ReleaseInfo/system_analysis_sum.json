@@ -36,6 +36,10 @@
             9.55,
             2
         ],
+        "Types.py": [
+            9.73,
+            1
+        ],
         "Common.py": [
             9.1,
             24
@@ -153,7 +157,7 @@
             0
         ],
         "LM_neopixel.py": [
-            7.57,
+            7.59,
             2
         ],
         "LM_cct.py": [
@@ -248,6 +252,10 @@
             8.68,
             0
         ],
+        "LM_gameOfLife.py": [
+            9.39,
+            2
+        ],
         "LM_catgame.py": [
             8.85,
             0
@@ -271,12 +279,12 @@
     },
     "summary": {
         "core": [
-            2992,
-            19
+            3038,
+            20
         ],
         "load": [
-            6737,
-            48
+            6745,
+            49
         ],
         "core_dep": [
             true,
@@ -286,8 +294,8 @@
             true,
             7
         ],
-        "core_score": 9.18,
-        "load_score": 8.18,
-        "version": "2.0.7-0"
+        "core_score": 9.21,
+        "load_score": 8.2,
+        "version": "2.0.8-0"
     }
 }

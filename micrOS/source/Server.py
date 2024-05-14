@@ -265,7 +265,6 @@ class WebCli(Client):
 
     @staticmethod
     def rest(request):
-        result = ''
         resp_schema = {'result': None, 'state': False}
         cmd = request.split()[1].replace('/rest', '')
         if len(cmd) > 1:
@@ -279,11 +278,10 @@ class WebCli(Client):
                 state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) else (True, 'Auth:Protected')
             else:
                 state, out = lm_exec(cmd)
-            result += out
             try:
-                resp_schema['result'] = loads(result)       # Load again ... hack for embedded shell json converter...
+                resp_schema['result'] = loads(out)       # Load again ... hack for embedded shell json converter...
             except:
-                resp_schema['result'] = result
+                resp_schema['result'] = out
             resp_schema['state'] = state
         else:
             resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid'), 'auth': WebCli.AUTH}

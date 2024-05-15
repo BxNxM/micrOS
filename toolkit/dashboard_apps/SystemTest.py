@@ -169,6 +169,28 @@ def micrOS_bgjob_loop_check():
     # Failed verdict
     return False, f'[Thread not stopped]{info} + not expected return: {output[1]}'
 
+def micrOS_task_list_check():
+    info = "[ST] Run micrOS Task list feature check [task list][task list >json]"
+    print(info)
+
+    async_available_cmd_list = ['task list']
+    output = execute(async_available_cmd_list)
+    if output[0]:
+        if "---- micrOS  top ----" not in output[1]:
+            return False, f"{info} - ERROR: missing response prefix {output[1]}"
+    else:
+        return False, f"{info} - task list error: {output[1]}"
+
+    async_available_cmd_list = ['task list >json']
+    output = execute(async_available_cmd_list)
+    if output[0]:
+        starts = '{'
+        ends = '}'
+        if not (output[1].startswith(starts) and output[1].endswith(ends)):
+            return False, f"{info} - ERROR: missing {starts}{ends} - {output[1]}"
+    else:
+        print(f"{info} - task list >json error: {output[1]}")
+    return True, info
 
 def micrOS_get_version():
     info = "[ST] Run micrOS get version [version]"
@@ -502,6 +524,13 @@ def after_st_reboot():
             verdict = False, '[NOK] reboot failed :D'
     return verdict
 
+def get_dev_version():
+    cmd = ['version']
+    out = execute(cmd, tout=3)
+    state, output = out[0], out[1]
+    if state:
+        return output
+    return '0.0.0-0'
 
 def app(devfid=None, pwd=None):
     global DEVICE, PASSWD
@@ -517,6 +546,7 @@ def app(devfid=None, pwd=None):
                'config_set': micrOS_config_set(),
                'task_oneshot': micrOS_bgjob_one_shot_check(),
                'task_loop': micrOS_bgjob_loop_check(),
+               'task_list': micrOS_task_list_check(),
                'version': micrOS_get_version(),
                'json_check': json_format_check(),
                'response_time': measure_package_response_time(),
@@ -538,7 +568,8 @@ def app(devfid=None, pwd=None):
     # Test Evaluation
     final_state = True
     ok_cnt = 0
-    print(f"\n----------------------------------- micrOS System Test results on {DEVICE} device -----------------------------------")
+    version = get_dev_version()
+    print(f"\n----------------------------------- micrOS System Test results on {DEVICE}:{version} device -----------------------------------")
     print("\tTEST NAME\t\tSTATE\t\tDescription\n")
     for test, state_data in verdict.items():
         state = Colors.ERR + 'NOK' + Colors.NC

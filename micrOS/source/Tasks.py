@@ -481,7 +481,7 @@ def lm_exec(arg_list):
 
     # ================ main function ================
     # modules built-in function: show loaded LoadModules
-    if len(arg_list) == 1 and arg_list[0] == 'modules':
+    if len(arg_list) > 0 and arg_list[0] == 'modules':
         return True, list([m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')])
     # [1] Run task command: start (&), list, kill, show
     is_task, out = task_manager(arg_list)
@@ -495,7 +495,7 @@ def lm_exec(arg_list):
 def _exec_lm_core(cmd_list):
     """
     CORE STRING REFERENCE EXECUTOR: MODULE.FUNCTION...
-    :param cmd_list: list of string paramters
+    :param cmd_list: list of string parameters
         [1] module name (LM)
         [2] function
         [3...] parameters (separator: space)

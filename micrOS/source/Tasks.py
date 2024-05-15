@@ -50,7 +50,7 @@ class TaskBase:
         """
         task = TaskBase.TASKS.get(tag, None)
         # return True: busy OR False: not busy (inactive)
-        return True if task is not None and not task.done.is_set() else False
+        return bool(task is not None and not task.done.is_set())
 
     def cancel(self):
         """
@@ -102,8 +102,6 @@ class NativeTask(TaskBase):
     Run native async task from code
     - could be built in function or custom code from load modules
     """
-    def __init__(self):
-        super().__init__()
 
     def create(self, callback=None, tag=None):
         """
@@ -261,7 +259,7 @@ class Manager:
 
         # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
         my_task = TaskBase.TASKS.get('idle')
-        my_task.out = f"i.d.l.e: 600ms"
+        my_task.out = "i.d.l.e: 600ms"
         try:
             while True:
                 # [0] Just chill
@@ -482,6 +480,9 @@ def lm_exec(arg_list):
         return False, ''
 
     # ================ main function ================
+    # modules built-in function: show loaded LoadModules
+    if len(arg_list) == 1 and arg_list[0] == 'modules':
+        return True, list([m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')])
     # [1] Run task command: start (&), list, kill, show
     is_task, out = task_manager(arg_list)
     if is_task:
@@ -563,7 +564,7 @@ def lm_is_loaded(lm_name):
     [Auth mode]
     Check lm_name in enabled modules
     """
-    static_keywords = ('task')
+    static_keywords = tuple('task')
     loaded_mods = [lm.replace('LM_', '') for lm in modules if lm.startswith('LM_')]
     return lm_name in static_keywords or lm_name in loaded_mods
 

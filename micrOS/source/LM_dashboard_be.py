@@ -32,6 +32,9 @@ def create_dashboard():
 def app_list():
     """
     API HELPER: return loaded application modules
+    TODO: Use 'modules' rest command instead
+    1. fix frontend
+    2. remove function
     """
     app_list = [m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')]
     return list(app_list)

@@ -24,7 +24,7 @@ from Debug import errlog_add
 #################################################################
 
 class Shell:
-    MICROS_VERSION = '2.0.10-0'
+    MICROS_VERSION = '2.1.0-0'
 
     def __init__(self):
         """
@@ -158,6 +158,7 @@ class Shell:
         if msg_list[0] == "help":
             self.send("[MICROS]   - built-in shell commands")
             self.send("   hello   - hello msg - for device identification")
+            self.send("   modules - show active Load Modules")
             self.send("   version - returns micrOS version")
             self.send("   exit    - exit from shell socket prompt")
             self.send("   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h")

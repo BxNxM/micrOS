@@ -149,6 +149,9 @@ class Client:
 class WebCli(Client):
     REST_ENDPOINTS = {}
     AUTH = cfgget('auth')
+    REQ200 = "HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len}\r\n\r\n{data}"
+    REQ400 = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
+    REQ404 = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
 
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer, r_size=512)
@@ -181,63 +184,86 @@ class WebCli(Client):
         # Close connection
         await self.close()
 
-    async def response(self, request):
-        """HTTP GET REQUEST WITH /WEB - SWITCH TO WEB INTERFACE"""
-        # Create short request (first line)
-        request = request.split('\n')[0]
-        # REST API (GET) [/rest]
-        if request.startswith('GET /rest'):
-            Client.console("[WebCli] --- /REST accept")
-            try:
-                await self.a_send(WebCli.rest(request))
-            except Exception as e:
-                await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {len(str(e))}\r\n\r\n{e}")
-            return
-        # HOMEPAGE ENDPOINT [default: /]
-        if request.startswith('GET / HTTP'):
-            Client.console("[WebCli] --- / accept")
-            try:
-                with open('index.html', 'r') as file:
-                    html = file.read()
-                await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(html)}\r\n\r\n{html}")
-            except OSError:
-                await self.a_send("HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\n404 Not Found")
-            return
-        # DYNAMIC/USER ENDPOINTS (from Load Modules)
-        if await self.endpoints(request):
-            return
-        # INVALID REQUEST: NOT home page OR /rest OR registered custom
-        await self.a_send("HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n400 Bad Request")
+    @staticmethod
+    def file_type(path):
+        """File dynamic Content-Type handling"""
+        if path.endswith(".html"):
+            return "text/html"
+        elif path.endswith(".css"):
+            return "text/css"
+        elif path.endswith(".js"):
+            return "application/javascript"
+        else:
+            return "text/plain"
 
-    async def endpoints(self, request):
-        for cmd in WebCli.REST_ENDPOINTS:
-            if request.startswith(f'GET /{cmd}'):
-                console_write(f"[WebCli] endpoint: /{cmd}")
-                # Registered endpoint was found - exec callback
-                try:
-                    # RESOLVE ENDPOINT CALLBACK
-                    # dtype:
-                    #   one-shot: image/jpeg | text/html | text/plain              - data: raw
-                    #       task: multipart/x-mixed-replace | multipart/form-data  - data: dict=callback,content-type
-                    #                   content-type: image/jpeg | audio/l16;*
-                    dtype, data = WebCli.REST_ENDPOINTS[cmd]()
-                    if dtype == 'image/jpeg':
-                        resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
-                        await self.a_send(resp, encode=None)
-                    elif dtype in ('multipart/x-mixed-replace', 'multipart/form-data'):
-                        headers = (f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
-                        await self.a_send(headers, encode=None)
-                        # Start Native stream async task
-                        task = NativeTask()
-                        task.create(callback=self.stream(data['callback'], task, data['content-type']),
-                                    tag=f"web.stream_{self.client_id.replace('W', '')}")
-                    else:  # dtype: text/html or text/plain
-                        await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
-                except Exception as e:
-                    await self.a_send(f"HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length:{len(str(e))}\r\n\r\n{e}")
-                    errlog_add(f"[ERR] WebCli endpoints {cmd}: {e}")
-                return True         # I. endpoint /query no need to iterate through the full dict...
-        return False
+    async def response(self, request):
+        """HTTP GET REQUEST - WEB INTERFACE"""
+        # Parse request line (first line)
+        _method, url, _version = request.split('\n')[0].split()
+        # Protocol validation
+        if _method != "GET" and _version.startswith('HTTP'):
+            _err = f"Bad Request: not GET/HTTP"
+            await self.a_send(self.REQ400.format(len=len(_err), data=_err))
+            return
+
+        # [1] REST API GET ENDPOINT [/rest]
+        if url.startswith('/rest'):
+            Client.console("[WebCli] --- /rest ACCEPT")
+            try:
+                await self.a_send(WebCli.rest(url))
+            except Exception as e:
+                await self.a_send(self.REQ404.format(len=len(str(e)), data=e))
+            return
+        # [2] DYNAMIC/USER ENDPOINTS (from Load Modules)
+        if await self.endpoints(url):
+            return
+        # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
+        if url.startswith('/'):
+            resource = 'index.html' if url == '/' else url.replace('/', '')
+            Client.console(f"[WebCli] --- {url} ACCEPT")
+            if resource.split('.')[-1] not in ('html', 'js', 'css'):
+                await self.a_send(self.REQ404.format(len=27, data='404 Not supported file type'))
+                return
+            try:
+                # SEND RESOURCE CONTENT: HTML, JS, CSS
+                with open(resource, 'r') as file:
+                    html = file.read()
+                await self.a_send(self.REQ200.format(dtype=WebCli.file_type(resource), len=len(html), data=html))
+            except OSError:
+                await self.a_send(self.REQ404.format(len=13, data='404 Not Found'))
+            return
+        # INVALID/BAD REQUEST
+        await self.a_send(self.REQ400.format(len=15, data='400 Bad Request'))
+
+    async def endpoints(self, url):
+        cmd = url.replace('/', '')
+        if cmd in WebCli.REST_ENDPOINTS:
+            console_write(f"[WebCli] endpoint: {url}")
+            # Registered endpoint was found - exec callback
+            try:
+                # RESOLVE ENDPOINT CALLBACK
+                # dtype:
+                #   one-shot: image/jpeg | text/html | text/plain              - data: raw
+                #       task: multipart/x-mixed-replace | multipart/form-data  - data: dict=callback,content-type
+                #                   content-type: image/jpeg | audio/l16;*
+                dtype, data = WebCli.REST_ENDPOINTS[cmd]()
+                if dtype == 'image/jpeg':
+                    resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
+                    await self.a_send(resp, encode=None)
+                elif dtype in ('multipart/x-mixed-replace', 'multipart/form-data'):
+                    headers = (f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
+                    await self.a_send(headers, encode=None)
+                    # Start Native stream async task
+                    task = NativeTask()
+                    task.create(callback=self.stream(data['callback'], task, data['content-type']),
+                                tag=f"web.stream_{self.client_id.replace('W', '')}")
+                else:  # dtype: text/html or text/plain
+                    await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
+            except Exception as e:
+                await self.a_send(self.REQ404.format(len=len(str(e)), data=e))
+                errlog_add(f"[ERR] WebCli endpoints {cmd}: {e}")
+            return True         # Registered endpoint was found and executed
+        return False            # Not registered endpoint
 
     async def stream(self, callback, task, content_type):
         """
@@ -264,13 +290,13 @@ class WebCli(Client):
             task.out = 'Finished stream'
 
     @staticmethod
-    def rest(request):
+    def rest(url):
         resp_schema = {'result': None, 'state': False}
-        cmd = request.split()[1].replace('/rest', '')
+        cmd = url.replace('/rest', '')
         if len(cmd) > 1:
             # REST sub-parameter handling (rest commands)
-            cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"').replace('%E2%80%9D', '"')
-                   .replace('-', ' ').strip().split())
+            cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"')
+                   .replace('%E2%80%9D', '"').replace('-', ' ').strip().split())
             # request json format instead of default string output (+ handle & tasks syntax)
             cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
             # EXECUTE COMMAND - LoadModule
@@ -289,7 +315,7 @@ class WebCli(Client):
                 resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS)
             resp_schema['state'] = True
         response = dumps(resp_schema)
-        return f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length:{len(response)}\r\n\r\n{response}"
+        return WebCli.REQ200.format(dtype='text/html', len=len(response), data=response)
 
 class ShellCli(Client, Shell):
 

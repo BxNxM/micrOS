@@ -29,17 +29,6 @@ def create_dashboard():
     return 'Endpoint created: /dashboard'
 
 
-def app_list():
-    """
-    API HELPER: return loaded application modules
-    TODO: Use 'modules' rest command instead
-    1. fix frontend
-    2. remove function
-    """
-    app_list = [m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')]
-    return list(app_list)
-
-
 def widget_list():
     """
     API HELPER: return custom widgets dict
@@ -62,4 +51,4 @@ def widget_add(widget=None):
 
 
 def help():
-    return 'load_n_init', 'create_dashboard', 'app_list', 'widget_list', 'widget_add', 'help'
+    return 'load_n_init', 'create_dashboard', 'widget_list', 'widget_add', 'help'

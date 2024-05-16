@@ -204,8 +204,8 @@
         }
 
         // INIT DASHBOARD (load active modules -> build page)
-        restApi('dashboard_be/app_list').then(data => {
-            let app_list = JSON.parse(data['result'].replace(/'/g, '"'));
+        restApi('modules').then(data => {
+            let app_list = data['result'];
             // Handle the app_list data here
             for (const module of app_list) {
                 //console.log(module);

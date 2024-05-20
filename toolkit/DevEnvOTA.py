@@ -11,12 +11,14 @@ try:
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
     from .lib.SafeInput import input_with_timeout
+    from .lib.file_extensions import check_all_extensions
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from DevEnvCompile import Compile
     from lib import LocalMachine
     from lib.TerminalColors import Colors
     from lib.SafeInput import input_with_timeout
+    from lib.file_extensions import check_all_extensions
     sys.path.append(MYPATH)
     import socketClient
 
@@ -237,7 +239,7 @@ class OTA(Compile):
         # Parse files from precompiled dir
         resource_list_to_upload = [os.path.join(self.precompiled_micrOS_dir_path, pysource) for pysource in
                                    LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
-                                   if pysource.endswith('.py') or pysource.endswith('.mpy') or pysource.endswith('.html')]
+                                   if check_all_extensions(pysource)]
         # Apply upload settings on parsed resources
         for index, source in enumerate(resource_list_to_upload):
             source_name = os.path.basename(source)
@@ -352,7 +354,7 @@ class OTA(Compile):
                     time.sleep(2)
         except Exception as e:
             self.console("Create lock/unlock failed: {}".format(e))
-        self.console("[ERROR] Create lock/unlock failed")
+        self.console("[ERROR] Create lock/unlock failed\n")
         # Cleanup lock file: .if_mode + restore path
         LocalMachine.FileHandler.remove('.if_mode', ignore=True)
         workdir_handler.popd()

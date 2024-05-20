@@ -1,0 +1,27 @@
+@keyframes backgroundAnimation {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}}
+body {
+    height: 200vh;
+    width: 200vh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    margin: 40px;
+    background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
+    background-size: 400% 400%;
+    animation: backgroundAnimation 15s infinite;
+    color: #d9d9d9;
+    font-family: 'Verdana', Sans-serif;
+}
+button {
+    background-color: #e7e7e7; /* Gray */
+    border: none;
+    color: black;
+    font-size: 14px;
+    border-radius: 4px;
+    transition-duration: 0.4s;
+}
+button:hover {
+    background-color: #555555; /* Black */
+    color: white;
+}

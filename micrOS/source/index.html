@@ -5,35 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
     <title>microWeb</title>
-    <style>
-        @keyframes backgroundAnimation {
-            0% {background-position: 0% 50%;}
-            50% {background-position: 100% 50%;}
-            100% {background-position: 0% 50%;}}
-        body {
-            height: 200vh;
-            width: 200vh;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            margin: 40px;
-            background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
-            background-size: 400% 400%;
-            animation: backgroundAnimation 15s infinite;
-            color: #d9d9d9;
-            font-family: 'Verdana', Sans-serif;
-        }
-        button {
-            background-color: #e7e7e7; /* Gray */
-            border: none;
-            color: black;
-            font-size: 14px;
-            border-radius: 4px;
-            transition-duration: 0.4s;
-        }
-        button:hover {
-            background-color: #555555; /* Black */
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="ustyle.css">
+    <script src="uapi.js" defer></script>
 </head>
 <body>
     <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
@@ -41,14 +14,14 @@
     <p id="SysApiCall"></p>
     <h2>🚀 REST API</h2>
     <p>Clickable examples 🕹</p>
-    <button onclick="restApi('system/info')">SysInfo</button>
-    <button onclick="restApi('system/alarms')">Alarms</button>
-    <button onclick="restApi('system/clock')">Clock</button>
-    <button onclick="restApi('task/list')">Tasks</button>
+    <button onclick="restAPI('system/info')">SysInfo</button>
+    <button onclick="restAPI('system/alarms')">Alarms</button>
+    <button onclick="restAPI('system/clock')">Clock</button>
+    <button onclick="restAPI('task/list')">Tasks</button>
     <!-- Input field for string -->
     <h3><label for="inputApiCmd">⚙️ Enter micrOS command: </label></h3>
     <!-- Button to send data -->
-    <form onsubmit="restApi(); return false;">
+    <form onsubmit="restAPI(); return false;">
         <input type="text" id="inputApiCmd">
         <button type="submit">Send</button>
     </form>
@@ -59,41 +32,10 @@
     <!-- Display response time in ms -->
     <p id="restResponseTime"></p>
     <script>
-        // Get the current hostname and create the REST API URL
-        const currentHostname = window.location.hostname;
-        const port = window.location.port ? `:${window.location.port}` : "";
-
-        function restApi(cmd = '') {
-            if (cmd == '') {cmd=document.getElementById('inputApiCmd').value;}
-            cmd = cmd.trim().replace(/\s+/g, '/');
-            let apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
-            const startTime = performance.now();
-            let endTime;
-
-            // Call rest api with command parameter
-            fetch(apiUrl).then(response => {
-                if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
-                endTime = performance.now();
-                return response.json();
-            }).then(data => {
-                // Display the generated URL on the webpage
-                document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-                // Handle the data received from the server
-                document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>"+"&nbsp;".repeat(15));
-                const delta = (endTime - startTime).toFixed(0);
-                document.getElementById('restResponseTime').innerHTML=`⏱ Response time: ${delta} ms`;
-                // Update sys info /rest default
-                if (cmd == '') {document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
-                                .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
-                                .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-                                .join('  ❖  ').replace(/"/g, '') +
-                                (data['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(data['result']['usr_endpoints'])
-                                    .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value}</a>`)
-                                    .join(' | '): '');}
-            }).catch(error => {console.error('Fetch error:', error, data);});
-        }
-        // Init basic info from board
-        restApi()
+        document.addEventListener("DOMContentLoaded", function() {
+            // Init basic info from board after DOM is fully loaded
+            restAPI();
+        });
     </script>
 </body>
 </html>

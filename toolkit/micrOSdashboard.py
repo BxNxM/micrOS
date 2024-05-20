@@ -29,12 +29,14 @@ try:
     from . import socketClient
     from . import dashboard_apps
     from .lib import LocalMachine
+    from .lib.file_extensions import check_all_extensions
 except Exception as e:
     print("Import warning: {}".format(e))
     import MicrOSDevEnv
     import socketClient
     import dashboard_apps
     from lib import LocalMachine
+    from lib.file_extensions import check_all_extensions
 
 APP_DIR = os.path.join(MYPATH, 'dashboard_apps')
 
@@ -667,11 +669,11 @@ class QuickOTAUpload(QLabel):
             # Save dropped file(s)
             if f not in self.contents_path:
                 # Format check! LM_*.py/.mpy
-                if f.endswith('.py') or f.endswith('.mpy') or f.endswith('.html') or f.endswith('.pbm'):
+                if check_all_extensions(f) or f.endswith('.pbm'):
                     self.contents_path.append(f)
                     self.parent_obj.console.append_output(f"Add file: {f}")
                 else:
-                    self.parent_obj.console.append_output("You can only upload files with .py/.mpy/.html extension!")
+                    self.parent_obj.console.append_output("You can only upload files with .py/.mpy/.html/.css/.js extension!")
             else:
                 self.parent_obj.console.append_output(f"File was already added.")
 

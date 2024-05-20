@@ -1,7 +1,6 @@
 import os
 import sys
 import re
-import time
 
 MYPATH = os.path.dirname(__file__)
 print("Module [DevEnvBase] path: {} __package__: {} __name__: {} __file__: {}".format(
@@ -10,10 +9,12 @@ print("Module [DevEnvBase] path: {} __package__: {} __name__: {} __file__: {}".f
 try:
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
+    from .lib.file_extensions import check_all_extensions, check_web_extensions
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from lib import LocalMachine
     from lib.TerminalColors import Colors
+    from lib.file_extensions import check_all_extensions, check_web_extensions
 
 try:
     import mpy_cross
@@ -133,7 +134,7 @@ class Compile:
     def __cleanup_precompiled_dir(self):
         self.console("Delete precompiled components: {}".format(self.precompiled_micrOS_dir_path))
         for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
-                       if pysource.endswith('.py') or pysource.endswith('.mpy') or pysource.endswith('.html')]:
+                       if check_all_extensions(pysource)]:
             to_remove_path = os.path.join(self.precompiled_micrOS_dir_path, source)
             self.console("\t|-remove: {}".format(to_remove_path), state='imp')
             if not self.dry_run:
@@ -237,7 +238,7 @@ class Compile:
         self.console("COPY additional resources")
         # Filter component source
         for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path) if
-                       pysource.endswith('.html')]:
+                       check_web_extensions(pysource)]:
             source_path = os.path.join(self.micrOS_dir_path, source)
             if self.dry_run:
                 state = True

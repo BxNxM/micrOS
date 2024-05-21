@@ -11,7 +11,7 @@
 <body>
     <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
     <h1> microWeb server </h1>
-    <p id="SysApiCall"></p>
+    <p id="restInfo"></p>
     <h2>🚀 REST API</h2>
     <p>Clickable examples 🕹</p>
     <button onclick="restAPI('system/info')">SysInfo</button>
@@ -19,22 +19,42 @@
     <button onclick="restAPI('system/clock')">Clock</button>
     <button onclick="restAPI('task/list')">Tasks</button>
     <!-- Input field for string -->
-    <h3><label for="inputApiCmd">⚙️ Enter micrOS command: </label></h3>
+    <h3><label for="restCmdInput">⚙️ Enter micrOS command: </label></h3>
     <!-- Button to send data -->
     <form onsubmit="restAPI(); return false;">
-        <input type="text" id="inputApiCmd">
+        <input type="text" id="restCmdInput">
         <button type="submit">Send</button>
     </form>
-    <!-- Display usrApiCallUrl generated from inputApiCmd -->
-    <p id="usrApiCallUrl"></p>
+    <!-- Display usrApiCallUrl generated from restCmdInput -->
+    <p id="restConsoleUrl"></p>
     <!-- Display api response -->
-    <pre id="usrApiCallResponse"></pre>
+    <pre id="restConsoleResponse"></pre>
     <!-- Display response time in ms -->
-    <p id="restResponseTime"></p>
+    <p id="restConsoleTime"></p>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Init basic info from board after DOM is fully loaded
-            restAPI();
+            function restInfo() {
+                // UPDATES: 'restInfo' and restConsole(...)
+                restAPICore(cmd='').then(({ response, delta, query }) => {
+                    // Update API Console
+                    restConsole(query, response, delta)
+                    // Update 'SysApiInfo' tag
+                    let infoLine = Object.entries(response['result'])
+                        .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
+                        .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                        .join('  ❖  ').replace(/"/g, '') +
+                        (response['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(response['result']['usr_endpoints'])
+                        .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value} </a>`)
+                        .join(' | ') : '');
+                    console.log(infoLine)
+                    document.getElementById('restInfo').innerHTML = infoLine;
+                }).catch(error => {
+                    console.error('Error in restAPI:', error);
+                });
+            }
+            // Init restInfo: restInfo html tag
+            restInfo();
         });
     </script>
 </body>

@@ -2,42 +2,52 @@
 const currentHostname = window.location.hostname;
 const port = window.location.port ? `:${window.location.port}` : "";
 
-function restAPI(cmd = '') {
-    if (cmd == '') {
-        cmd = document.getElementById('inputApiCmd').value;
-    }
+
+function restAPICore(cmd) {
+    // Core micrOS rest API handler
     cmd = cmd.trim().replace(/\s+/g, '/');
-    let apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
+    let query = `http://${currentHostname}${port}/rest/${cmd}`;
     const startTime = performance.now();
     let endTime;
-
-    // Call rest api with command parameter
-    fetch(apiUrl).then(response => {
+    // Call rest api with command parameter and return the promise
+    return fetch(query).then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok: ' + response.status);
+            throw new Error('restAPICore code NOK: ' + response.status);
         }
         endTime = performance.now();
         return response.json();
-    }).then(data => {
-        // Display the generated URL on the webpage
-        document.getElementById('usrApiCallUrl').innerHTML = `<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-        // Handle the data received from the server
-        document.getElementById('usrApiCallResponse').innerHTML = JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>" + "&nbsp;".repeat(15));
+    }).then(response => {
+        // return cmd result
         const delta = (endTime - startTime).toFixed(0);
-        document.getElementById('restResponseTime').innerHTML = `⏱ Response time: ${delta} ms`;
-        // Update sys info /rest default
-        if (cmd == '') {
-            document.getElementById('SysApiCall').innerHTML = Object.entries(data['result'])
-                .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
-                .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-                .join('  ❖  ').replace(/"/g, '') +
-                (data['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(data['result']['usr_endpoints'])
-                    .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value}</a>`)
-                    .join(' | ') : '');
-        }
+        return { response, delta, query };                  // RETURN DATA
     }).catch(error => {
-        console.error('Fetch error:', error);
+        console.error('Error in restAPICore:', error);
+        throw error;
     });
+}
+
+function restAPI(cmd='', console=true) {
+    // micrOS rest API handler with built-in restCmdInput
+    // UPDATES: restConsole(...)
+    if (cmd == '') {
+        cmd = document.getElementById('restCmdInput').value;
+    }
+    return restAPICore(cmd)
+            .then(({ response, delta, query }) => {
+                if (console) {
+                    restConsole(query, response, delta);
+                }
+            return response
+        }).catch(error => {
+            console.error('Error in restAPI:', error);
+        });
+}
+
+function restConsole(apiUrl, data, delta) {
+    // UPDATES: restConsoleUrl, restConsoleResponse, restConsoleTime
+    document.getElementById('restConsoleUrl').innerHTML = `<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
+    document.getElementById('restConsoleResponse').innerHTML = JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>" + "&nbsp;".repeat(15));
+    document.getElementById('restConsoleTime').innerHTML = `⏱ Response time: ${delta} ms`;
 }
 
 // Init basic info from board

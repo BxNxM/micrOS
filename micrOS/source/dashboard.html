@@ -25,6 +25,8 @@
             cursor: pointer;
         }
     </style>
+    <script src="uapi.js" defer></script>
+    <script src="uwidgets.js" defer></script>
 </head>
 <body>
     <h1> micrOS dashboard </h1>
@@ -35,193 +37,67 @@
     <div id="debugSection" style="display: none;">
         <h2>🚀 REST API</h2>
         <!-- Display api response -->
-        <p id="usrApiCallUrl"></p>
-        <pre id="usrApiCallResponse"></pre>
+        <p id="restConsoleUrl"></p>
+        <pre id="restConsoleResponse"></pre>
         <!-- Display response time in ms -->
-        <p id="rest_response_time"></p>
+        <p id="restConsoleTime"></p>
     </div>
 
     <script>
-        // CONFIGURE known FE functions
-        const conf_func_fe_list = ['brightness', 'toggle', 'measure'];
-        // Get the current hostname and create the REST API URL
-        const currentHostname = window.location.hostname;
-        const port = window.location.port ? `:${window.location.port}` : "";
+        document.addEventListener("DOMContentLoaded", function() {
+            // Init basic info from board after DOM is fully loaded
 
-        function restApi(cmd='', debug=true) {
-            cmd = cmd.trim().replace(/\s+/g, '/');
-            const apiUrl = `http://${currentHostname}${port}/rest/${cmd}`;
-            const startTime = performance.now();
-            let endTime;
+            // CONFIGURE known FE functions
+            const conf_func_fe_list = ['brightness', 'toggle', 'measure'];
 
-            // Call rest api with command parameter
-            return fetch(apiUrl).then(response => {
-                // Check if the request was successful (status code 200)
-                if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
-                // Parse the JSON response
-                endTime = performance.now();
-                return response.json();
-            }).then(data => {
-                if (debug) {
-                    // Display the generated URL on the webpage
-                    document.getElementById('usrApiCallUrl').innerHTML=`<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-                    // Handle the data received from the server
-                    document.getElementById('usrApiCallResponse').innerHTML=JSON.stringify(data, null, 4).replace(/\\n/g, "<br>");
-                    const delta = (endTime - startTime).toFixed(0);
-                    document.getElementById('rest_response_time').innerHTML=`⏱ Response time: ${delta} ms`;
+            // INIT DASHBOARD (load active modules -> build page)
+            restAPI('modules').then(data => {
+                console.log(data);
+                let app_list = data['result'];
+                // Handle the app_list data here
+                for (const module of app_list) {
+                    //console.log(module);
+                    restAPI(`${module}/help`, debug=false).then(data => {
+                        let module_help = data.result;
+                        let matchingElements = getMatchingElements(module_help, conf_func_fe_list);
+                        //console.log(matchingElements)
+                        if (matchingElements.length > 0) {
+                            genPage(module, matchingElements);
+                        }
+                    });
                 }
-                return data;
             }).catch(error => {
-                console.error('Fetch error:', error, data);
+                console.error(error);
             });
-        }
-        function getMatchingElements(targetList, whitelist) {
-            let matchingElementsSet = new Set();
-            whitelist.forEach(whitelistedItem => {
-                targetList.forEach(targetItem => {
-                    if (targetItem.startsWith(whitelistedItem)) {
-                        matchingElementsSet.add(whitelistedItem);
-                    }
-                });
+
+            // INIT DASHBOARD (load custom widget commands -> build page)
+            restAPI('dashboard_be/widget_list').then(commands => {
+                console.log(commands.result)
+                const widget_dict=commands.result;
+                for (const module in widget_dict) {
+                    if (Object.hasOwnProperty.call(widget_dict, module)) {
+                        const innerObject = widget_dict[module];
+                        generateElement(type='h2', data=`🧬 ${module}`);
+                        // Iterate through the inner object
+                        for (const func in innerObject) {
+                            if (Object.hasOwnProperty.call(innerObject, func)) {
+                                const api_type = innerObject[func];
+                                const api_cmd = `${module}/${func}`;
+                                console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
+                                generateElement(type=api_type, data=api_cmd);
+                };};};}
+            }).catch(error => {
+                console.error(error);
             });
-            // Convert the Set back to an array
-            let matchingElements = Array.from(matchingElementsSet);
-            return matchingElements;
-        }
-        function containerAppendChild(elements, container) {
-            // Append list of elements into the container aka draw elements :D
-            if (!elements || !container) {
-                console.error("Inputs array or container element is missing.");
-                return;}
-            elements.forEach(function(element) {
-                container.appendChild(element);});
-        }
-        function generateElement(type, data) {
-            // type: slider, button, box, h1, h2, p, li, etc.
-            // data: rest command
-            var container = document.getElementById('dynamicContent');
-            var element;
-            paragraph = document.createElement('p');
-            if (type.toLowerCase() === 'slider') {
-                paragraph.textContent = data.split('/').slice(1).join('-').replace(/=/g, '');
-                // Create a slider
-                element = document.createElement('input');
-                element.type = 'range';
-                element.min = 0;
-                element.max = 100;
-                element.step = 5;
-                element.value = 50;
-
-                // Create a span to display the slider value
-                var valueDisplay = document.createElement('span');
-                valueDisplay.textContent = element.value;
-                element.addEventListener('input', function () {
-                    valueDisplay.textContent = this.value;
-                });
-                // Add an event listener for API CALL
-                element.addEventListener('change', function () {
-                    console.log(`Slider value: ${data}/${this.value}`);
-                    if (data.endsWith("=")) {
-                        restApi(`${data}${this.value}`);
-                    } else {
-                        restApi(`${data}/${this.value}`);
-                    }
-                });
-                containerAppendChild([paragraph, element, valueDisplay], container);
-            } else if (type.toLowerCase() === 'button') {
-                // Create a button
-                element = document.createElement('button');
-                element.textContent = 'toggle';
-                // Add an event listener for API CALL
-                element.addEventListener('click', function () {
-                    console.log(`Button clicked: ${data}`);
-                    restApi(data);
-                });
-                containerAppendChild([paragraph, element], container);
-            } else if (type.toLowerCase() === 'box') {
-                paragraph.textContent = 'measure';
-                // Create a small box (div)
-                element = document.createElement('div');
-                element.style.width = '30%';
-                element.style.height = '60px';
-                element.style.paddingTop = '10px';
-                element.style.paddingLeft = '10px';
-                element.style.border = '2px solid #e7e7e7';
-                element.style.borderRadius = '4px';
-                console.log(`Box update: ${data}`);
-                restApi(data).then(resp => {
-                    console.log(resp.result);
-                    element.textContent = JSON.stringify(resp.result, null, 4);});
-                containerAppendChild([paragraph, element], container);
-            } else {
-                // Create other elements
-                element = document.createElement(type);
-                element.textContent = data;
-                containerAppendChild([paragraph, element], container);
-            }
-        }
-        function genPage(module, functions) {
-            generateElement(type='h2', data=`🧬 ${module}`);
-            for (const func of functions) {
-                let html_type='p';
-                if (func === 'brightness') {
-                    html_type='slider';
+            // INIT [hidden] debug section
+            document.getElementById('toggleDebugSection').addEventListener('click', function() {
+                var debugSection = document.getElementById('debugSection');
+                if (debugSection.style.display === 'none') {
+                    debugSection.style.display = 'block';
+                } else {
+                    debugSection.style.display = 'none';
                 }
-                if (func === 'toggle') {
-                    html_type='button';
-                }
-                if (func === 'measure') {
-                    html_type = 'box'
-                }
-                generateElement(type=html_type, data=`${module}/${func}`);
-            }
-        }
-
-        // INIT DASHBOARD (load active modules -> build page)
-        restApi('modules').then(data => {
-            let app_list = data['result'];
-            // Handle the app_list data here
-            for (const module of app_list) {
-                //console.log(module);
-                restApi(`${module}/help`, debug=false).then(data => {
-                    let module_help = data.result;
-                    let matchingElements = getMatchingElements(module_help, conf_func_fe_list);
-                    //console.log(matchingElements)
-                    if (matchingElements.length > 0) {
-                        genPage(module, matchingElements);
-                    }
-                });
-            }
-        }).catch(error => {
-            console.error(error);
-        });
-        // INIT DASHBOARD (load custom widget commands -> build page)
-        restApi('dashboard_be/widget_list').then(commands => {
-            console.log(commands.result)
-            const widget_dict=commands.result;
-            for (const module in widget_dict) {
-                if (Object.hasOwnProperty.call(widget_dict, module)) {
-                    const innerObject = widget_dict[module];
-                    generateElement(type='h2', data=`🧬 ${module}`);
-                    // Iterate through the inner object
-                    for (const func in innerObject) {
-                        if (Object.hasOwnProperty.call(innerObject, func)) {
-                            const api_type = innerObject[func];
-                            const api_cmd = `${module}/${func}`;
-                            console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
-                            generateElement(type=api_type, data=api_cmd);
-            };};};}
-        }).catch(error => {
-            console.error(error);
-        });
-        // INIT [hidden] debug section
-        document.getElementById('toggleDebugSection').addEventListener('click', function() {
-            var debugSection = document.getElementById('debugSection');
-            if (debugSection.style.display === 'none') {
-                debugSection.style.display = 'block';
-            } else {
-                debugSection.style.display = 'none';
-            }
+            });
         });
     </script>
 </body>

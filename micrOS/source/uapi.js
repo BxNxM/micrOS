@@ -50,5 +50,24 @@ function restConsole(apiUrl, data, delta) {
     document.getElementById('restConsoleTime').innerHTML = `⏱ Response time: ${delta} ms`;
 }
 
+function restInfo() {
+    // UPDATES: 'restInfo' and restConsole(...)
+    restAPICore(cmd='').then(({ response, delta, query }) => {
+        // Update API Console
+        restConsole(query, response, delta)
+        // Update 'SysApiInfo' tag
+        let infoHeader = Object.entries(response['result'])
+            .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
+            .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+            .join('  ❖  ').replace(/"/g, '');
+        let infoSubpages = (response['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(response['result']['usr_endpoints'])
+            .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value} </a>`)
+            .join(' | ') : '');
+        document.getElementById('restInfo').innerHTML = infoHeader + infoSubpages;
+    }).catch(error => {
+        console.error('Error in restAPI:', error);
+    });
+}
+
 // Init basic info from board
-// restAPI();
+// restInfo();

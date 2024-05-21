@@ -47,48 +47,11 @@
         document.addEventListener("DOMContentLoaded", function() {
             // Init basic info from board after DOM is fully loaded
 
-            // CONFIGURE known FE functions
-            const conf_func_fe_list = ['brightness', 'toggle', 'measure'];
-
             // INIT DASHBOARD (load active modules -> build page)
-            restAPI('modules').then(data => {
-                console.log(data);
-                let app_list = data['result'];
-                // Handle the app_list data here
-                for (const module of app_list) {
-                    //console.log(module);
-                    restAPI(`${module}/help`, debug=false).then(data => {
-                        let module_help = data.result;
-                        let matchingElements = getMatchingElements(module_help, conf_func_fe_list);
-                        //console.log(matchingElements)
-                        if (matchingElements.length > 0) {
-                            genPage(module, matchingElements);
-                        }
-                    });
-                }
-            }).catch(error => {
-                console.error(error);
-            });
-
+            DynamicWidgetLoad();
             // INIT DASHBOARD (load custom widget commands -> build page)
-            restAPI('dashboard_be/widget_list').then(commands => {
-                console.log(commands.result)
-                const widget_dict=commands.result;
-                for (const module in widget_dict) {
-                    if (Object.hasOwnProperty.call(widget_dict, module)) {
-                        const innerObject = widget_dict[module];
-                        generateElement(type='h2', data=`🧬 ${module}`);
-                        // Iterate through the inner object
-                        for (const func in innerObject) {
-                            if (Object.hasOwnProperty.call(innerObject, func)) {
-                                const api_type = innerObject[func];
-                                const api_cmd = `${module}/${func}`;
-                                console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
-                                generateElement(type=api_type, data=api_cmd);
-                };};};}
-            }).catch(error => {
-                console.error(error);
-            });
+            CustomWidgetLoad('dashboard_be/widget_list')
+
             // INIT [hidden] debug section
             document.getElementById('toggleDebugSection').addEventListener('click', function() {
                 var debugSection = document.getElementById('debugSection');

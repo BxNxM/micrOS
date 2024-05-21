@@ -34,27 +34,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Init basic info from board after DOM is fully loaded
-            function restInfo() {
-                // UPDATES: 'restInfo' and restConsole(...)
-                restAPICore(cmd='').then(({ response, delta, query }) => {
-                    // Update API Console
-                    restConsole(query, response, delta)
-                    // Update 'SysApiInfo' tag
-                    let infoLine = Object.entries(response['result'])
-                        .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
-                        .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-                        .join('  ❖  ').replace(/"/g, '') +
-                        (response['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(response['result']['usr_endpoints'])
-                        .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value} </a>`)
-                        .join(' | ') : '');
-                    console.log(infoLine)
-                    document.getElementById('restInfo').innerHTML = infoLine;
-                }).catch(error => {
-                    console.error('Error in restAPI:', error);
-                });
-            }
-            // Init restInfo: restInfo html tag
-            restInfo();
+            restInfo();     // Update restInfo html tag
         });
     </script>
 </body>

@@ -236,8 +236,8 @@ class WebCli(Client):
         await self.a_send(self.REQ400.format(len=15, data='400 Bad Request'))
 
     async def endpoints(self, url):
-        cmd = url.replace('/', '')
-        if cmd in WebCli.REST_ENDPOINTS:
+        url = url[1:]       # Cut first / char
+        if url in WebCli.REST_ENDPOINTS:
             console_write(f"[WebCli] endpoint: {url}")
             # Registered endpoint was found - exec callback
             try:
@@ -246,7 +246,7 @@ class WebCli(Client):
                 #   one-shot: image/jpeg | text/html | text/plain              - data: raw
                 #       task: multipart/x-mixed-replace | multipart/form-data  - data: dict=callback,content-type
                 #                   content-type: image/jpeg | audio/l16;*
-                dtype, data = WebCli.REST_ENDPOINTS[cmd]()
+                dtype, data = WebCli.REST_ENDPOINTS[url]()
                 if dtype == 'image/jpeg':
                     resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
                     await self.a_send(resp, encode=None)
@@ -261,7 +261,7 @@ class WebCli(Client):
                     await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
             except Exception as e:
                 await self.a_send(self.REQ404.format(len=len(str(e)), data=e))
-                errlog_add(f"[ERR] WebCli endpoints {cmd}: {e}")
+                errlog_add(f"[ERR] WebCli endpoints {url}: {e}")
             return True         # Registered endpoint was found and executed
         return False            # Not registered endpoint
 

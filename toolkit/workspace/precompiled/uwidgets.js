@@ -104,4 +104,56 @@ function genPage(module, functions) {
     }
 }
 
+
+function DynamicWidgetLoad() {
+    // CONFIGURE known FE functions
+    const conf_func_fe_list = ['brightness', 'toggle', 'measure'];
+
+    // INIT DASHBOARD (load active modules -> build page)
+    restAPI('modules').then(data => {
+        console.log(data);
+        let app_list = data['result'];
+        // Handle the app_list data here
+        for (const module of app_list) {
+            //console.log(module);
+            restAPI(`${module}/help`, debug=false).then(data => {
+                let module_help = data.result;
+                let matchingElements = getMatchingElements(module_help, conf_func_fe_list);
+                //console.log(matchingElements)
+                if (matchingElements.length > 0) {
+                    genPage(module, matchingElements);
+                }
+            });
+        }
+    }).catch(error => {
+        console.error(error);
+    });
+}
+
+
+function CustomWidgetLoad(endpoint) {
+    // INIT DASHBOARD (load custom widget commands -> build page)
+    // endpoint: 'dashboard_be/widget_list' returns special dict
+    restAPI(endpoint).then(commands => {
+        console.log(commands.result)
+        const widget_dict=commands.result;
+        for (const module in widget_dict) {
+            if (Object.hasOwnProperty.call(widget_dict, module)) {
+                const innerObject = widget_dict[module];
+                generateElement(type='h2', data=`🧬 ${module}`);
+                // Iterate through the inner object
+                for (const func in innerObject) {
+                    if (Object.hasOwnProperty.call(innerObject, func)) {
+                        const api_type = innerObject[func];
+                        const api_cmd = `${module}/${func}`;
+                        console.log(`Gen. Type: ${api_type} Cmd: ${api_cmd}`);
+                        generateElement(type=api_type, data=api_cmd);
+        };};};}
+    }).catch(error => {
+        console.error(error);
+    });
+}
+
+
+
 // genPage

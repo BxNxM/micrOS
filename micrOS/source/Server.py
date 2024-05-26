@@ -202,7 +202,7 @@ class WebCli(Client):
         _method, url, _version = request.split('\n')[0].split()
         # Protocol validation
         if _method != "GET" and _version.startswith('HTTP'):
-            _err = f"Bad Request: not GET/HTTP"
+            _err = f"Bad Request: not GET HTTP/1.1"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
 

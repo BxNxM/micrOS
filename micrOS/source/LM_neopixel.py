@@ -342,13 +342,13 @@ def help(details=False):
     :return tuple: list of functions implemented by this application
     """
     return resolve(('COLOR color r=<0-255> g b smooth=True force=True',
-                             'TOGGLE toggle state=None smooth=True',
-                             'BUTTON load_n_init ledcnt=24',
-                             'BRIGHTNESS brightness percent=<0-100> smooth=True wake=True',
+                             'BUTTON toggle state=None smooth=True',
+                             'load_n_init ledcnt=24',
+                             'SLIDER brightness percent=<0-100> smooth=True wake=True',
                              'COLOR segment r g b s=<0-n>',
-                             'TRAN_COLOR transition r=None g=None b=None sec=1.0 wake=False',
+                             'transition r=None g=None b=None sec=1.0 wake=False',
                              'BUTTON random smooth=True max_val=254',
-                             'BUTTON status',
-                             'BUTTON subscribe_presence',
-                             'BUTTON pinmap',
-                             'BUTTON help details=False'), details=details)
+                             'status',
+                             'subscribe_presence',
+                             'TEXTBOX pinmap',
+                             'help details=False'), details=details)

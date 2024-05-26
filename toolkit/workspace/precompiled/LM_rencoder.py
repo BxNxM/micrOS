@@ -91,7 +91,7 @@ def reset_state():
     return msg
 
 
-def pinmap():
+def pinmap(details=False):
     """
     [i] micrOS LM naming convention
     Shows logical pins - pin number(s) used by this Load module

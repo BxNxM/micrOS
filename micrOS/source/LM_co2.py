@@ -2,6 +2,7 @@ from math import pow
 from sys import platform
 from machine import ADC, Pin
 from microIO import physical_pin, pinmap_dump
+from Types import resolve
 
 #########################################
 #            MQ135 GAS SENSOR           #
@@ -143,5 +144,6 @@ def help(details=False):
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'measure_mq135 temp=<int> hum=<int>', 'raw_measure_mq135', 'pinmap'
+    return resolve(('TEXTBOX measure_mq135 temp=<int> hum=<int>',
+                             'raw_measure_mq135', 'pinmap'), details=details)
 

@@ -50,5 +50,5 @@ def widget_add(widget=None):
         WIDGETS.update(widget)
 
 
-def help():
+def help(details=False):
     return 'load_n_init', 'create_dashboard', 'widget_list', 'widget_add', 'help'

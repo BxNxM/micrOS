@@ -41,6 +41,6 @@ def read_file(name):
         return f"Read error {name}: {e}"
 
 
-def help():
+def help(details=False):
     return "mount_storage", "unmount_storage", "list_storage",\
            "write_file name content", "read_file name"

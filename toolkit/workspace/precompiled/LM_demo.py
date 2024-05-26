@@ -68,7 +68,7 @@ def exec_info():
 
 
 @_debug
-def help():
+def help(details=False):
     return 'hello name="MrNobody"',\
            'calculator a b op="+"',\
            '\t=>op: + - / *',\

@@ -7,6 +7,7 @@ ADC.ATTN_11DB — the full range voltage: 3.3V
 """
 import uasyncio as asyncio
 from Common import SmartADC, micro_task
+from Types import resolve
 try:
     import LM_intercon as InterCon
 except:
@@ -123,6 +124,7 @@ def help(details=False):
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'intensity', 'illuminance', 'subscribe_intercon on off threshold=1 tolerance=2 sample_sec=60',\
-           'pinmap', 'INFO sensor:TEMP600'
+    return resolve(('TEXTBOX intensity', 'TEXTBOX illuminance',
+                             'subscribe_intercon on off threshold=1 tolerance=2 sample_sec=60',\
+                             'pinmap', 'INFO sensor:TEMP600'), details=details)
 

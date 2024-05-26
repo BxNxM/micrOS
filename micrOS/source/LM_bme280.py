@@ -8,6 +8,7 @@ import utime as time
 from machine import Pin, I2C
 from microIO import physical_pin, pinmap_dump
 from Common import notify
+from Types import resolve
 
 # BME280 default address.
 BME280_I2CADDR = 0x76
@@ -359,4 +360,5 @@ def help(details=False):
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'measure ntfy=False', 'measure_w_co2', 'lmdep', 'pinmap'
+    return resolve(('TEXTBOX measure ntfy=False', 'measure_w_co2',
+                             'lmdep', 'pinmap'), details=details)

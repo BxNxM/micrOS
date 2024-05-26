@@ -1,5 +1,6 @@
 from microIO import physical_pin, pinmap_dump
 from Common import data_logger
+from Types import resolve
 
 #########################################
 #  DHT22 temperature & humidity sensor  #
@@ -92,4 +93,5 @@ def help(details=False):
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'measure log=False', 'measure_w_co2 log=False', 'logger', 'lmdep', 'pinmap'
+    return resolve(('TEXTBOX measure log=False', 'measure_w_co2 log=False',
+                             'logger', 'lmdep', 'pinmap'), details=details)

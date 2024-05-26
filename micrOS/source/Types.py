@@ -1,5 +1,5 @@
 """
-micrOS Frontend element types
+micrOS Frontend element types - 'This is the frontend perspective of micrOS functions'
 - Can be attached for Load Module functions in module help tuple
 
 USAGE:

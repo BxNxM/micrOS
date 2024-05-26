@@ -3,6 +3,7 @@ from microIO import physical_pin, pinmap_dump
 from Common import syslog
 from time import sleep
 from binascii import hexlify
+from Types import resolve
 
 ##################################################################################
 # AHT10 temperature & humidity sensor                                            #
@@ -126,4 +127,4 @@ def help(details=False):
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'pinmap', 'measure', 'reset'
+    return resolve(('pinmap', 'TEXTBOX measure', 'reset'), details=details)

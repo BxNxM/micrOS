@@ -75,7 +75,7 @@ def pinmap():
     return pinmap_dump(['l298speed', 'l298dir_1', 'l298dir_2'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

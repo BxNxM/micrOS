@@ -144,7 +144,7 @@ def pinmap():
     return pinmap_dump(['stppr_1', 'stppr_2', 'stppr_3', 'stppr_4'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

@@ -318,7 +318,7 @@ def pinmap():
     return pinmap_dump(['sck', 'ws', 'sd'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

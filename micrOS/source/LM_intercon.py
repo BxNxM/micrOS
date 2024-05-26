@@ -44,7 +44,7 @@ def addr_cache():
 # LM helper functions #
 #######################
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

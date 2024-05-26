@@ -386,7 +386,7 @@ def pinmap():
     return pinmap_dump(['i2c_scl', 'i2c_sda'])
 
 
-def help():
+def help(details=False):
     return 'load_n_init width=128 height=64 rotate=180',\
            'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\

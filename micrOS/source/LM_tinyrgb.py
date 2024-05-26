@@ -89,7 +89,7 @@ def wheel(br=None):
 # LM helper functions #
 #######################
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

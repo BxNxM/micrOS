@@ -34,7 +34,7 @@ def pinmap():
     return pinmap_dump(['i2c_scl', 'i2c_sda'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

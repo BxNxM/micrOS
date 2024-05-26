@@ -302,7 +302,7 @@ def pinmap():
     return pmp
 
 
-def help():
+def help(details=False):
     return ('load_n_init width=64 height=32 bootmsg="micrOS"',
             'temperature', 'display period>=1000',
             'press_event',

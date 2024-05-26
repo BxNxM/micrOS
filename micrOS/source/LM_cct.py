@@ -8,6 +8,7 @@ from Common import transition_gen, micro_task
 import uasyncio as asyncio
 from microIO import physical_pin, pinmap_dump
 from random import randint
+from Types import resolve
 
 
 class Data:
@@ -343,15 +344,16 @@ def pinmap():
     return pinmap_dump(['cwhite', 'wwhite'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'white cw=<0-1000> ww=<0-1000> smooth=True force=True', \
-           'toggle state=None smooth=True', 'load_n_init', \
-           'brightness percent=<0-100> smooth=True wake=True', \
-           'transition cw=None ww=None sec=1.0 wake=False',\
-           'hue_transition percent=<0-100> sec=1.0 wake=False',\
-           'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'
+    return resolve(('WHITE white cw=<0-1000-5> ww smooth=True force=True',
+                             'TOGGLE toggle state=None smooth=True', 'load_n_init',
+                             'SLIDER brightness percent=<0-100> smooth=True wake=True',
+                             'transition cw=None ww=None sec=1.0 wake=False',
+                             'hue_transition percent=<0-100> sec=1.0 wake=False',
+                             'BUTTON random smooth=True max_val=1000', 'status',
+                             'subscribe_presence', 'pinmap'), details=details)

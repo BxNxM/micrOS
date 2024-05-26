@@ -1,5 +1,6 @@
 import LM_rgb
 import LM_cct
+from Types import resolve
 
 
 def load_n_init(cache=None):
@@ -51,11 +52,13 @@ def pinmap():
     return pins
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'load_n_init', 'toggle state smooth=True', 'brightness percent smooth=True wake=True',\
-           'status', 'pinmap'
+    return resolve(('load_n_init',
+                             'BUTTON toggle state smooth=True',
+                             'SLIDER brightness percent smooth=True wake=True',
+                             'status', 'pinmap'), details=details)

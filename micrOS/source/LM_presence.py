@@ -260,7 +260,7 @@ def pinmap():
     return pinmap_dump(['mic', 'irq1'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

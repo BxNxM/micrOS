@@ -30,5 +30,5 @@ def url(subdomain):
     status_code, response = http_get(domain, jsonify=True)
     return {'status': status_code, 'response': response}
 
-def help():
+def help(details=False):
     return 'load_n_init gateway_url=<http://gateway.local:5000>', 'url subdomain=</webhooks/template>'

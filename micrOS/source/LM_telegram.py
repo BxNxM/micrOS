@@ -86,5 +86,5 @@ def receiver_loop():
     return "Starting" if state else "Already running"
 
 
-def help():
+def help(details=False):
     return 'send "text"', 'receive', 'receiver_loop', 'load_n_init', 'INFO: Send & Receive messages with Telegram bot'

@@ -128,7 +128,7 @@ def micros_checksum(msgobj=None):
     return f"micrOS version: {cfgget('version')}"
 
 
-def help():
+def help(details=False):
     return 'listmods', 'dellm lm=<module>.py/.mpy', 'del_duplicates',\
            'module unload="LM_rgb/None"', 'delhtml html=<page>.html',\
            'cachedump cdel="rgb.pds/None"', 'micros_checksum'

@@ -231,7 +231,7 @@ def lmdep():
     """
     return 'dashboard_be'
 
-def help():
+def help(details=False):
     return 'load_n_init quality="medium/low/high" freq="default/high"',\
         'settings quality=None flip=None/True mirror=None/True effect="NONE" saturation brightness contrast',\
         'capture', 'photo', 'set_photo_endpoint', 'flashlight state=None/True/False',\

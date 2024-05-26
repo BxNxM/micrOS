@@ -66,7 +66,7 @@ def lmdep():
     return 'servo', 'stepper'
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

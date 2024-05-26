@@ -8,6 +8,7 @@ import uasyncio as asyncio
 from utime import sleep_ms
 from microIO import physical_pin, pinmap_dump
 from random import randint
+from Types import resolve
 
 
 class Data:
@@ -305,14 +306,15 @@ def pinmap():
     return pinmap_dump(['redgb', 'rgreenb', 'rgbue'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
     :return tuple: list of functions implemented by this application
     """
-    return 'color r=<0-1000> g=<0-1000> b=<0,1000> smooth=True force=True',\
-           'toggle state=None smooth=True', 'load_n_init', \
-           'brightness percent=<0-100> smooth=True wake=True',\
-           'transition r=None g=None b=None sec=1.0 wake=False',\
-           'random smooth=True max_val=1000', 'status', 'subscribe_presence', 'pinmap'
+    return resolve(( 'COLOR color r=<0-1000> g b smooth=True force=True',
+                              'TOGGLE toggle state smooth=True', 'load_n_init',
+                              'SLIDER brightness percent=<0-100> smooth=True wake=True',
+                              'transition r=None g=None b=None sec=1.0 wake=False',
+                              'BUTTON random smooth=True max_val=1000',
+                              'status', 'subscribe_presence', 'pinmap'), details=details)

@@ -193,5 +193,5 @@ def pinmap():
     return pinmap_dump(['tx', 'rx'])
 
 
-def help():
+def help(details=False):
     return 'read', 'firmware_version', 'serial_flush', 'pinmap'

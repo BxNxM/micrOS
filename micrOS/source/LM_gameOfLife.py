@@ -198,5 +198,5 @@ def reset():
     return 'GoL skip reset'
 
 
-def help():
+def help(details=False):
     return 'load_n_init w=32 h=16 custom=None', 'next_gen w=32 h=16 raw=False', 'reset'

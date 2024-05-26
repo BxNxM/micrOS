@@ -48,7 +48,7 @@ def pinmap():
     return pinmap_dump(['l9110dir_1', 'l9110dir_2'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

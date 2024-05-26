@@ -253,7 +253,7 @@ def pinmap():
     return pinmap_dump(['switch_1', 'switch_2', 'switch_3', 'switch_4'])
 
 
-def help():
+def help(details=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message

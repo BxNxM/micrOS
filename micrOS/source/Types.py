@@ -49,7 +49,7 @@ def _placeholder(var, value, type_dict):
                     _step = type_dict['range'][2]
                 new_range = (int(_min), int(_max), int(_step))
                 #print(f"[i] Range overwrite[{var}]: {_range}")
-                return f"{var}=<range>", new_range
+                return f"{var}=:range:", new_range
             # Ignore param
             return "", new_range
     # Keep param value
@@ -68,7 +68,7 @@ def _generate(type_dict, help_msg):
                 type_dict['range'] = new_range
         else:
             # Empty param fallback
-            p = f'{p}=<range>'
+            p = f'{p}=:range:'
         valid_params.append(p)
     type_dict['lm_call'] = f"{func} " + " ".join(valid_params)
     return dumps(type_dict)

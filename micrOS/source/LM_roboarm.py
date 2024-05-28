@@ -283,11 +283,12 @@ def pinmap():
     return s_pm
 
 
-def help(details=False):
+def help(widgets=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
-    :return tuple: list of functions implemented by this application
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True',\
            'boot_move speed_ms',\

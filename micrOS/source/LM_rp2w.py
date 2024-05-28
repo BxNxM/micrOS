@@ -11,5 +11,5 @@ def temp():
     return {'CPU temp [C]': temperature}
 
 
-def help(details=False):
+def help(widgets=False):
     return 'temp'

@@ -260,11 +260,12 @@ def pinmap():
     return pinmap_dump(['mic', 'irq1'])
 
 
-def help(details=False):
+def help(widgets=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
-    :return tuple: list of functions implemented by this application
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return 'load_n_init threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S)',\
            'motion_trig sample_ms=15 buff_size=10', 'get_samples',\

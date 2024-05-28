@@ -311,11 +311,12 @@ def pinmap():
     return pm()
 
 
-def help(details=False):
+def help(widgets=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
-    :return tuple: list of functions implemented by this application
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',\
            'cycle r g b shift=True ledcnt=24',\

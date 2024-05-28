@@ -118,11 +118,13 @@ def status(lmf=None):
 	return {'key': 'value'}
 
 
-def help():
-	"""
-	[OPTIONAL]
-	Return help message tuple
-	"""
+def help(widgets=False):
+	 """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
+    """
 	return 'load_n_init', 'pinmap', 'status', 'lmdep'
 ```
 
@@ -277,7 +279,13 @@ def get_data():
 	return data_logger(f_name="mylog")
 	
 
-def help():
+def help(widgets=False):
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
+    """
 	return 'log_data data="value"', 'get_data'
 ```
 

@@ -86,5 +86,11 @@ def receiver_loop():
     return "Starting" if state else "Already running"
 
 
-def help(details=False):
+def help(widgets=False):
+    """
+    [i] micrOS LM naming convention
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
+    """
     return 'send "text"', 'receive', 'receiver_loop', 'load_n_init', 'INFO: Send & Receive messages with Telegram bot'

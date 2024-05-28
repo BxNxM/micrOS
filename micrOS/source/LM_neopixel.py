@@ -335,11 +335,12 @@ def pinmap():
     return pinmap_dump('neop')
 
 
-def help(details=False):
+def help(widgets=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
-    :return tuple: list of functions implemented by this application
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return resolve(('COLOR color r=<0-255> g b smooth=True force=True',
                              'TOGGLE toggle state smooth=True',
@@ -351,4 +352,4 @@ def help(details=False):
                              'status',
                              'subscribe_presence',
                              'TEXTBOX pinmap',
-                             'help details=False'), details=details)
+                             'help details=False'), details=widgets)

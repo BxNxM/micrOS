@@ -118,13 +118,14 @@ def pinmap():
     return pinmap_dump('temp6000')
 
 
-def help(details=False):
+def help(widgets=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
-    :return tuple: list of functions implemented by this application
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return resolve(('TEXTBOX intensity', 'TEXTBOX illuminance',
                              'subscribe_intercon on off threshold=1 tolerance=2 sample_sec=60',\
-                             'pinmap', 'INFO sensor:TEMP600'), details=details)
+                             'pinmap', 'INFO sensor:TEMP600'), details=widgets)
 

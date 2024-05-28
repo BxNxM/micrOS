@@ -91,12 +91,12 @@ def reset_state():
     return msg
 
 
-def pinmap(details=False):
+def pinmap(widgets=False):
     """
     [i] micrOS LM naming convention
-    Shows logical pins - pin number(s) used by this Load module
-    - info which pins to use for this application
-    :return dict: pin name (str) - pin value (int) pairs
+    Load Module built-in help message
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return pinmap_dump(['rot_clk', 'rot_dt'])
 

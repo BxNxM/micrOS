@@ -1,8 +1,8 @@
 {
     "L298N_DCmotor": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L298N_DCmotor.png?raw=true",
         "m1_control": {
@@ -28,8 +28,8 @@
     },
     "L9110_DCmotor": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L9110_DCmotor.png?raw=true",
         "motor_control": {
@@ -51,8 +51,8 @@
             "param(s)": "state=None"
         },
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true",
         "lmdep": {
@@ -78,8 +78,8 @@
     },
     "VL53L0X": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true",
         "measure": {
@@ -93,8 +93,8 @@
     },
     "aht10": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/aht10.png?raw=true",
         "measure": {
@@ -112,8 +112,8 @@
     },
     "bme280": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true",
         "lmdep": {
@@ -139,8 +139,8 @@
             "param(s)": "repeat=1 freq=None"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true",
         "list_tones": {
@@ -166,8 +166,8 @@
             "param(s)": "repeat=10 delta=20"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/catgame.png?raw=true",
         "live_game": {
@@ -193,8 +193,8 @@
             "param(s)": "percent=None smooth=True wake=True"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "hue_transition": {
             "doc": "\n    [TASK] Set HUE transition independently from brightness\n    - Running warm and cold white ratio change\n    - USE cct brightness function to set brightness besides this transition (running)\n    :param percent: warm channel ratio in percent 0-100\n    :param sec: transition length\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
@@ -236,8 +236,8 @@
     },
     "co2": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true",
         "measure_mq135": {
@@ -259,8 +259,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dashboard_be.png?raw=true",
         "load_n_init": {
@@ -295,7 +295,7 @@
         },
         "help": {
             "doc": null,
-            "param(s)": "details=False"
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/demo.png?raw=true",
         "links": {
@@ -313,8 +313,8 @@
     },
     "dht11": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true",
         "lmdep": {
@@ -340,8 +340,8 @@
     },
     "dht22": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true",
         "lmdep": {
@@ -367,8 +367,8 @@
     },
     "dimmer": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true",
         "load_n_init": {
@@ -414,8 +414,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true",
         "pinmap": {
@@ -425,8 +425,8 @@
     },
     "ds18": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ds18.png?raw=true",
         "measure": {
@@ -448,8 +448,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/esp32.png?raw=true",
         "temp": {
@@ -463,8 +463,8 @@
     },
     "gameOfLife": {
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/gameOfLife.png?raw=true",
         "load_n_init": {
@@ -498,8 +498,8 @@
             "param(s)": "pin"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/genIO.png?raw=true",
         "set_out": {
@@ -517,8 +517,8 @@
     },
     "i2c": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/i2c.png?raw=true",
         "pinmap": {
@@ -548,8 +548,8 @@
             "param(s)": "capture_duration=Data.CAPTURE_DURATION"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/i2s_mic.png?raw=true",
         "load_n_init": {
@@ -575,8 +575,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/intercon.png?raw=true",
         "sendcmd": {
@@ -594,8 +594,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/keychain.png?raw=true",
         "lmdep": {
@@ -654,7 +654,7 @@
         },
         "help": {
             "doc": "cannot import name 'UART' from 'machine' (/Users/bnm/micrOS/micrOS/toolkit/simulator_lib/machine.py)",
-            "param(s)": "details=False"
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ld2410.png?raw=true",
         "pinmap": {
@@ -684,8 +684,8 @@
     },
     "light_sensor": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "illuminance": {
             "doc": "\n    Measure light illuminance in flux\n    - result is 20 result average (noise reduction)\n    ",
@@ -723,8 +723,8 @@
             "param(s)": "lm=None"
         },
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/lmpacman.png?raw=true",
         "listmods": {
@@ -754,8 +754,8 @@
             "param(s)": "r=None g=None b=None ledcnt=24"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true",
         "lmdep": {
@@ -793,8 +793,8 @@
             "param(s)": "r=None g=None b=None smooth=True"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true",
         "load_n_init": {
@@ -840,8 +840,8 @@
             "param(s)": "state=0"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "image": {
             "doc": "\n    [BETA]\n    https://blog.martinfitzpatrick.com/displaying-images-oled-displays/\n    Load Portable Bitmap Format (PBM) image\n    :param pbm_img: .pbm image path\n    :param x: x offset\n    :param y: y offset\n    ",
@@ -903,8 +903,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_sh1106.png?raw=true",
         "invert": {
@@ -970,8 +970,8 @@
             "param(s)": "func"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true",
         "intercon_genpage": {
@@ -997,8 +997,8 @@
     },
     "pet_feeder": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/pet_feeder.png?raw=true",
         "lmdep": {
@@ -1016,8 +1016,8 @@
     },
     "ph_sensor": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ph_sensor.png?raw=true",
         "measure": {
@@ -1035,8 +1035,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/presence.png?raw=true",
         "load_n_init": {
@@ -1071,8 +1071,8 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: rot_clk, rot_dt",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    \npin map: rot_clk, rot_dt",
+            "param(s)": "widgets=False"
         },
         "read_state": {
             "doc": null,
@@ -1085,8 +1085,8 @@
     },
     "rest": {
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rest.png?raw=true",
         "load_n_init": {
@@ -1108,8 +1108,8 @@
             "param(s)": "r=None g=None b=None smooth=True"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true",
         "load_n_init": {
@@ -1147,8 +1147,8 @@
             "param(s)": "percent=None smooth=True wake=True"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rgbcct.png?raw=true",
         "load_n_init": {
@@ -1178,8 +1178,8 @@
             "param(s)": "x_new y_new speed_ms=None smooth=True"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true",
         "jiggle": {
@@ -1221,8 +1221,8 @@
     },
     "robustness": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/robustness.png?raw=true",
         "memory_leak": {
@@ -1241,7 +1241,7 @@
     "rp2w": {
         "help": {
             "doc": null,
-            "param(s)": "details=False"
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rp2w.png?raw=true",
         "temp": {
@@ -1252,7 +1252,7 @@
     "sdcard": {
         "help": {
             "doc": "No module named 'uos'",
-            "param(s)": "details=False"
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sdcard.png?raw=true",
         "list_storage": {
@@ -1282,8 +1282,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/servo.png?raw=true",
         "pinmap": {
@@ -1313,8 +1313,8 @@
             "param(s)": "dg speed=None"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/stepper.png?raw=true",
         "load_n_init": {
@@ -1336,8 +1336,8 @@
     },
     "switch": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true",
         "load_n_init": {
@@ -1411,8 +1411,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "ifconfig": {
             "doc": "\n    Show network ifconfig\n    ",
@@ -1469,8 +1469,8 @@
     },
     "telegram": {
         "help": {
-            "doc": null,
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/telegram.png?raw=true",
         "load_n_init": {
@@ -1496,8 +1496,8 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application\n    ",
-            "param(s)": "details=False"
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    ",
+            "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tinyrgb.png?raw=true",
         "setrgb": {

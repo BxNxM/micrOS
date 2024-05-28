@@ -253,11 +253,12 @@ def pinmap():
     return pinmap_dump(['switch_1', 'switch_2', 'switch_3', 'switch_4'])
 
 
-def help(details=False):
+def help(widgets=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
-    :return tuple: list of functions implemented by this application
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return 'set_state state=<0,1>', 'toggle', \
            'set_state2 state=<0,1>', 'toggle2', \

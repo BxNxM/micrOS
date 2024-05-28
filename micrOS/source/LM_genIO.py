@@ -145,11 +145,12 @@ def genio_pins():
 # LM helper functions #
 #######################
 
-def help(details=False):
+def help(widgets=False):
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
-    :return tuple: list of functions implemented by this application
+    :return tuple: list of functions implemented by this application (widgets=False)
+    :return tuple: list of widget json for UI generation (widgets=True)
     """
     return 'set_pwm pin=<int> duty=<0-1000> freq=<int>',\
            'set_random_pwm pin min_duty max_duty freq=20480)',\

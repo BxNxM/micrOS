@@ -132,7 +132,7 @@ def _read_serial_until(identifier):
     content = bytes([])
     while len(identifier) > 0:
         v = ser.read(1)
-        if v == None:
+        if v is None:
             # timeout
             return None
             break

@@ -29,14 +29,14 @@ COLOR = __TEMPLATE | {'type': 'color'} | __RANGE_255                        # Ma
 WHITE = __TEMPLATE | {'type': 'white'} | __RANGE_255                        # Mandatory func params: wc, ww
 
 
-def _is_int(data):
-    try:
-        int(data)
-        return True
-    except:
-        return False
-
 def _placeholder(var, value, type_dict):
+    def _is_int(data):
+        try:
+            int(data)
+            return True
+        except:
+            return False
+
     new_range = None
     if value.startswith('<') and value.endswith('>'):
         if '-' in value:
@@ -75,7 +75,7 @@ def _generate(type_dict, help_msg):
 
 def resolve(help_data, widgets=False):
     help_msg = []
-    for i, msg in enumerate(help_data):
+    for msg in help_data:
         tag = msg.split()[0].strip()
         # TYPE DECORATION detect in help strings
         if tag[0].isupper():

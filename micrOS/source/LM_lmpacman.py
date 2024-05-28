@@ -2,6 +2,7 @@ from os import listdir, remove
 from sys import modules
 from Common import socket_stream
 
+WEB_EXT = ('html', 'js', 'css')
 
 @socket_stream
 def listmods(msgobj=None):
@@ -11,7 +12,8 @@ def listmods(msgobj=None):
     """
     # Dump available LMs
     msg_buf = []
-    for k in (res.replace('LM_', '') for res in listdir() if res.startswith('LM_') or res.endswith('.html')):
+    for k in (res.replace('LM_', '') for res in listdir()
+              if res.startswith('LM_') or res.split('.')[-1] in WEB_EXT):
         if msgobj is None:
             msg_buf.append(f'   {k}')
         else:
@@ -19,40 +21,24 @@ def listmods(msgobj=None):
     return msg_buf if len(msg_buf) > 0 else ''
 
 
-def dellm(lm=None):
+def delmod(mod=None):
     """
-    Load module package manager
-    - delete load module
-    :param lm: Delete Load Module with full name: module.py or module.mpy
+    Module package manager
+    :param mod:
+        Delete Load Module with full name: module.py or module.mpy
+        OR delete any web resource: *.js, *.css, *.html
     """
-    if lm is not None and lm.endswith('py'):
+    if mod is not None and (mod.endswith('py') or mod.split('.')[-1] in WEB_EXT):
         # LM exception list - system and lmpacman cannot be deleted
-        if 'lmpacman.' in lm or 'system.' in lm:
-            return f'Load module {lm} is in use, skip delete.'
+        if 'lmpacman.' in mod or 'system.' in mod:
+            return f'Load module {mod} is in use, skip delete.'
         try:
-            remove(f'LM_{lm}')
-            return f'Delete module: {lm}'
+            to_remove = mod if mod.split('.')[-1] in WEB_EXT else f'LM_{mod}'
+            remove(to_remove)
+            return f'Delete module: {mod}'
         except Exception as e:
-            return f'Cannot delete: {lm}: {e}'
-    return f'Invalid value: {lm}'
-
-
-def delhtml(html=None):
-    """
-    Load module package manager
-    - delete load module
-    :param lm: Delete Load Module with full name: module.py or module.mpy
-    """
-    if html is not None and html.endswith('.html'):
-        # LM exception list - system and lmpacman cannot be deleted
-        if 'index.html' == html.strip():
-            return f'Main page {html} is protected, skip delete.'
-        try:
-            remove(f'{html}')
-            return f'Delete html: {html}'
-        except Exception as e:
-            return f'Cannot html: {html}: {e}'
-    return f'Invalid value: {html}'
+            return f'Cannot delete: {mod}: {e}'
+    return f'Invalid value: {mod}'
 
 
 def del_duplicates():
@@ -135,6 +121,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'listmods', 'dellm lm=<module>.py/.mpy', 'del_duplicates',\
-           'module unload="LM_rgb/None"', 'delhtml html=<page>.html',\
+    return 'listmods', 'delmod mod=<module>.py/.mpy or .js/.html/.css', 'del_duplicates',\
+           'module unload="LM_rgb/None"',\
            'cachedump cdel="rgb.pds/None"', 'micros_checksum'

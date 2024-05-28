@@ -34,15 +34,14 @@ function containerAppendChild(elements, container) {
 function generateElement(type, data, options={}) {
     // type: slider, button, box, h1, h2, p, li, etc.
     // data: rest command
-    var container = document.getElementById('dynamicContent');
-    var element;
+    const container = document.getElementById('dynamicContent');
     if (type.toLowerCase() === 'slider') {
         // Create slider widget
         sliderWidget(container, data, options)
     } else if (type.toLowerCase() === 'button') {
         // Create button widget
         buttonWidget(container, data, options)
-    } else if (type.toLowerCase() === 'box') {
+    } else if (type.toLowerCase() === 'textbox') {
         // Create textbox widget
         textBoxWidget(container, data, options)
     } else if (type.toLowerCase() === 'color') {
@@ -50,8 +49,8 @@ function generateElement(type, data, options={}) {
         colorPaletteWidget(container, data, options)
     } else {
         // Create other elements
-        paragraph = document.createElement('p');
-        element = document.createElement(type);
+        const paragraph = document.createElement('p');
+        const element = document.createElement(type);
         element.textContent = data;
         containerAppendChild([paragraph, element], container);
     }
@@ -85,27 +84,29 @@ function craftModuleWidgets(module, widgets) {
         let type_options = {};
         let lm_call = item.lm_call.replace(/\s/g, '/');
 
-        let html_type='p';
         if (type === 'slider') {
-            html_type='slider';
-            type_options['range'] = item.range;
             type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
+            type_options['range'] = item.range;
+
         } else if (type === 'button' || type === 'toggle') {
-            html_type='button';
+            type = 'button';
+            type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
             type_options['range'] = item.range;
-            type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
+
         } else if (type === 'textbox') {
-            html_type = 'box'
             type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
+            type_options['refresh'] = item.refresh;
+
         } else if (type === 'color') {
-            html_type = 'color'
             type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
+            type_options['range'] = item.range;
+
         } else {
             console.log(`Unsupported micrOS widget html_type: ${type}`)
             return;
         }
         try {
-            generateElement(type=html_type, data=`${module}/${lm_call}`, options=type_options);
+            generateElement(type=type, data=`${module}/${lm_call}`, options=type_options);
         } catch (error) {
             console.error(error);
         }
@@ -117,7 +118,7 @@ function DynamicWidgetLoad() {
     // INIT DASHBOARD (load active modules -> build page)
     restAPI('modules').then(data => {
         //console.log(data);
-        let app_list = data['result'];
+        const app_list = data['result'];
         // Handle the app_list data here
         for (const module of app_list) {
             // NEW module widget query

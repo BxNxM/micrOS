@@ -1,11 +1,15 @@
 // WIDGETS ELEMENTS
 
+const widget_indent = '40px';
+
 function sliderWidget(container, command, options={}) {
         var title_len = options.title_len || 1;
         paragraph = document.createElement('p');
+        paragraph.style.textIndent = widget_indent;
         paragraph.textContent = command.split('/').slice(1, title_len+1).join('-').replace(/=/g, '').replace(':range:', '');
         // Create a slider
         element = document.createElement('input');
+        element.style.marginLeft = widget_indent;
         element.type = 'range';
         element.min = options.range[0] || 0;
         element.max = options.range[1] || 100;
@@ -41,8 +45,10 @@ function sliderWidget(container, command, options={}) {
 function buttonWidget(container, command, options={}) {
         var title_len = options.title_len || 1;
         paragraph = document.createElement('p');
+        paragraph.style.textIndent = widget_indent;
         // Create a button
         element = document.createElement('button');
+        element.style.marginLeft = widget_indent;
         element.textContent = command.split('/').slice(1, title_len+1).join('-');
         // Add an event listener for API CALL
         element.addEventListener('click', function () {
@@ -63,9 +69,11 @@ function buttonWidget(container, command, options={}) {
 function textBoxWidget(container, command, options={}) {
         var title_len = options.title_len || 1;
         paragraph = document.createElement('p');
+        paragraph.style.textIndent = widget_indent;
         paragraph.textContent = command.split('/').slice(1, title_len+1).join('-');
         // Create a small box (div)
         element = document.createElement('div');
+        element.style.marginLeft = widget_indent;
         element.style.width = '30%';
         element.style.height = '60px';
         element.style.paddingTop = '10px';
@@ -84,8 +92,9 @@ function textBoxWidget(container, command, options={}) {
         console.log(`[API] textBox exec: ${call_cmd}`);
         restAPI(call_cmd).then(resp => {
             console.log(resp.result);
-            element.textContent = JSON.stringify(resp.result, null, 4);});
+            element.textContent = JSON.stringify(resp.result, null, 4);
         containerAppendChild([paragraph, element], container);
+        });
 }
 
 function colorPaletteWidget(container, command, options) {

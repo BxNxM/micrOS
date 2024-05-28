@@ -1,5 +1,4 @@
 from Common import rest_endpoint, syslog
-from sys import modules
 
 ENDPOINT_INITED = False
 

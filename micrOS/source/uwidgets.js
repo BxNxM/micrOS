@@ -119,7 +119,13 @@ function colorPaletteWidget(container, command, options) {
         let r = (bigint >> 16) & 255;
         let g = (bigint >> 8) & 255;
         let b = bigint & 255;
-        // TODO: scale to max (not 255, but 1000....)
+        if (max > 255) {
+            // upscale 0-255 range
+            const ratio = max / 255;
+            r = Math.round(r * ratio);
+            g = Math.round(g * ratio);
+            b = Math.round(b * ratio);
+        }
         return { r, g, b };
     }
     function getRandomColorFromList() {

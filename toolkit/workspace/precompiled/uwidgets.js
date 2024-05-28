@@ -174,7 +174,7 @@ function colorPaletteWidget(container, command, options) {
     }
 
     // Initialize the display with the initial color
-    updateColor();
+    //updateColor();
     // Add an event listener to update the displayed color value
     colorPicker.addEventListener('input', updateColor);
     // Append elements to the paragraph

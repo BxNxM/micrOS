@@ -225,10 +225,10 @@ def pinmap():
 
 def help(widgets=False):
     """
-    [i] micrOS LM naming convention
-    Load Module built-in help message
-    :return tuple: list of functions implemented by this application (widgets=False)
-    :return tuple: list of widget json for UI generation (widgets=True)
+    [i] micrOS LM naming convention - built-in help message
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
     """
     return 'set_value value=<0-1000> smooth=True force=True', 'toggle state=None smooth=True', 'load_n_init',\
            'subscribe_presence', 'transition value=<0-1000> sec wake=False', 'status', 'pinmap'

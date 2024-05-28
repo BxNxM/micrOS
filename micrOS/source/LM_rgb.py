@@ -308,14 +308,14 @@ def pinmap():
 
 def help(widgets=False):
     """
-    [i] micrOS LM naming convention
-    Load Module built-in help message
-    :return tuple: list of functions implemented by this application (widgets=False)
-    :return tuple: list of widget json for UI generation (widgets=True)
+    [i] micrOS LM naming convention - built-in help message
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
     """
     return resolve(( 'COLOR color r=<0-1000> g b smooth=True force=True',
                               'TOGGLE toggle state smooth=True', 'load_n_init',
                               'SLIDER brightness percent=<0-100> smooth=True wake=True',
                               'transition r=None g=None b=None sec=1.0 wake=False',
                               'BUTTON random smooth=True max_val=1000',
-                              'status', 'subscribe_presence', 'pinmap'), details=widgets)
+                              'status', 'subscribe_presence', 'pinmap'), widgets=widgets)

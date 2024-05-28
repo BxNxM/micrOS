@@ -73,7 +73,7 @@ def _generate(type_dict, help_msg):
     type_dict['lm_call'] = f"{func} " + " ".join(valid_params)
     return dumps(type_dict)
 
-def resolve(help_data, details=False):
+def resolve(help_data, widgets=False):
     help_msg = []
     for i, msg in enumerate(help_data):
         tag = msg.split()[0].strip()
@@ -84,13 +84,13 @@ def resolve(help_data, details=False):
                 # TAG NOT FOUND - keep value
                 help_msg.append(msg)
                 #continue
-            if details:
-                # Create json string type + help msg details
+            if widgets:
+                # Create json string type + extract widgets from help message
                 help_msg.append(_generate(resolved_tag, msg))
             else:
                 # Remove tag - Human readable mode (decorated functions)
                 help_msg.append(msg.replace(tag, '').strip())
-        elif not details:
+        elif not widgets:
             # Human readable mode (non decorated functions)
             help_msg.append(msg)
     return tuple(help_msg)

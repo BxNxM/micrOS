@@ -346,10 +346,10 @@ def pinmap():
 
 def help(widgets=False):
     """
-    [i] micrOS LM naming convention
-    Load Module built-in help message
-    :return tuple: list of functions implemented by this application (widgets=False)
-    :return tuple: list of widget json for UI generation (widgets=True)
+    [i] micrOS LM naming convention - built-in help message
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
     """
     return resolve(('WHITE white cw=<0-1000-5> ww smooth=True force=True',
                              'TOGGLE toggle state=None smooth=True', 'load_n_init',
@@ -357,4 +357,4 @@ def help(widgets=False):
                              'transition cw=None ww=None sec=1.0 wake=False',
                              'hue_transition percent=<0-100> sec=1.0 wake=False',
                              'BUTTON random smooth=True max_val=1000', 'status',
-                             'subscribe_presence', 'pinmap'), details=widgets)
+                             'subscribe_presence', 'pinmap'), widgets=widgets)

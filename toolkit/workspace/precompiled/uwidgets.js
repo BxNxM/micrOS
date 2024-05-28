@@ -38,9 +38,10 @@ function sliderWidget(container, paragraph, command, options={}) {
 }
 
 function buttonWidget(container, paragraph, command, options={}) {
+        var title_len = options.title_len || 2;
         // Create a button
         element = document.createElement('button');
-        element.textContent = command.split('/').slice(1, 2).join('-');
+        element.textContent = command.split('/').slice(1, title_len).join('-');
         // Add an event listener for API CALL
         element.addEventListener('click', function () {
             var call_cmd;
@@ -58,7 +59,8 @@ function buttonWidget(container, paragraph, command, options={}) {
 }
 
 function textBoxWidget(container, paragraph, command, options={}) {
-        paragraph.textContent = command.split('/').slice(1, 3).join('-');
+        var title_len = options.title_len || 2;
+        paragraph.textContent = command.split('/').slice(1, title_len).join('-');
         // Create a small box (div)
         element = document.createElement('div');
         element.style.width = '30%';

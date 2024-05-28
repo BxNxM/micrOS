@@ -63,10 +63,10 @@ def _recursion(cnt, msgobj=None):
 
 def help(widgets=False):
     """
-    [i] micrOS LM naming convention
-    Load Module built-in help message
-    :return tuple: list of functions implemented by this application (widgets=False)
-    :return tuple: list of widget json for UI generation (widgets=True)
+    [i] micrOS LM naming convention - built-in help message
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
     """
     return 'NOTE: This is a test module to validate system robustness', \
            'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14'

@@ -11,7 +11,6 @@ def check_all_extensions(path):
 
 def check_web_extensions(path):
     extension = path.split('.')[-1]
-    print(f"|{extension}|")
     if extension in WEB_ONLY:
         return True
     return False

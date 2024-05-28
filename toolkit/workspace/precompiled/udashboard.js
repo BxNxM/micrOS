@@ -61,15 +61,13 @@ function autoTitleLen(widgets, func) {
     try {
         // Create function list for comparation
         const funcNames = widgets.map(command => command.lm_call.split(' ')[0]);
-        console.log(`FUNC NAMES (${func})`);
-        console.log(funcNames);
         // Count the occurrences of the func name
         const count = funcNames.filter(word => word === func).length;
         // Return 2 if count is greater than 1, otherwise return 1
         return count > 1 ? 2 : 1;
     } catch (error) {
-        console.error(error.message);
-        return 1; // Return -1 or some other value to indicate an error occurred
+        console.error(error);
+        return 1;
     }
 }
 
@@ -106,7 +104,11 @@ function craftModuleWidgets(module, widgets) {
             console.log(`Unsupported micrOS widget html_type: ${type}`)
             return;
         }
-        generateElement(type=html_type, data=`${module}/${lm_call}`, options=type_options);
+        try {
+            generateElement(type=html_type, data=`${module}/${lm_call}`, options=type_options);
+        } catch (error) {
+            console.error(error);
+        }
     })
 }
 

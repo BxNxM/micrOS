@@ -1,0 +1,7 @@
+{"auth": false,
+  "devfid": "simulator",
+  "appwd": "ADmin123",
+  "webui": true,
+  "boothook": "dashboard_be load_n_init; neopixel load_n_init",
+  "aioqueue": 4,
+  "telegram": "n/a"}

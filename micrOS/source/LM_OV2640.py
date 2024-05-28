@@ -5,11 +5,7 @@ except Exception as e:
 import time
 from Debug import console_write
 from Common import rest_endpoint, syslog
-
-try:
-    from LM_dashboard_be import widget_add
-except:
-    widget_add = None
+from Types import resolve
 
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
 CAM_INIT = False
@@ -62,12 +58,6 @@ def _set_web_endpoints():
     # Register rest endpoint
     rest_endpoint('cam/snapshot', _snapshot_clb)
     rest_endpoint('cam/stream', _image_stream_clb)
-    # Add custom widgets to /dashboard (generated frontend)
-    if widget_add is not None:
-        widget_add({'OV2640': {'settings/saturation=': 'slider',
-                               'settings/brightness=': 'slider',
-                               'settings/contrast=': 'slider',
-                               'flashlight': 'button'}})
 
 
 def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None, brightness=None, contrast=None, whitebalace=None, q=None):
@@ -238,8 +228,14 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init quality="medium/low/high" freq="default/high"',\
-        'settings quality=None flip=None/True mirror=None/True effect="NONE" saturation brightness contrast',\
-        'capture', 'photo', 'set_photo_endpoint', 'flashlight state=None/True/False',\
-        'Thanks to :) https://github.com/lemariva/micropython-camera-driver',\
-        '[HINT] after load_n_init you can access the /cam/snapshot and /cam/stream endpoints'
+    return resolve(('load_n_init quality="medium/low/high" freq="default/high"',
+        'settings quality=None flip=None mirror=None effect="NONE"',
+        'SLIDER settings saturation=<0-100>',
+        'SLIDER settings brightness=<0-100>',
+        'SLIDER settings contrast=<0-100>',
+        'capture',
+        'photo',
+        'set_photo_endpoint',
+        'BUTTON flashlight state=None',
+        '[HINT] after load_n_init you can access the /cam/snapshot and /cam/stream endpoints',
+        'Thanks to :) https://github.com/lemariva/micropython-camera-driver'), widgets=widgets)

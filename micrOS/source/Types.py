@@ -78,18 +78,15 @@ def resolve(help_data, widgets=False):
     for msg in help_data:
         tag = msg.split()[0].strip()
         # TYPE DECORATION detect in help strings
-        if tag[0].isupper():
+        if tag.isupper():
             resolved_tag = _resolve_key(tag)
             if resolved_tag == tag:
-                # TAG NOT FOUND - keep value
-                help_msg.append(msg)
-                #continue
-            if widgets:
-                # Create json string type + extract widgets from help message
-                help_msg.append(_generate(resolved_tag, msg))
-            else:
-                # Remove tag - Human readable mode (decorated functions)
-                help_msg.append(msg.replace(tag, '').strip())
+                if widgets:
+                    continue                                    # Invalid tag in widget mode
+                help_msg.append(msg.replace(tag, '').strip())   # Invalid tag (OK) in human readable mode
+                continue
+            # Create json string type + extract widgets from help message
+            help_msg.append(_generate(resolved_tag, msg))
         elif not widgets:
             # Human readable mode (non decorated functions)
             help_msg.append(msg)

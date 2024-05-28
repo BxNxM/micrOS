@@ -36,21 +36,21 @@ function generateElement(type, data, options={}) {
     // data: rest command
     var container = document.getElementById('dynamicContent');
     var element;
-    paragraph = document.createElement('p');
     if (type.toLowerCase() === 'slider') {
         // Create slider widget
-        sliderWidget(container, paragraph, data, options)
+        sliderWidget(container, data, options)
     } else if (type.toLowerCase() === 'button') {
         // Create button widget
-        buttonWidget(container, paragraph, data, options)
+        buttonWidget(container, data, options)
     } else if (type.toLowerCase() === 'box') {
         // Create textbox widget
-        textBoxWidget(container, paragraph, data, options)
+        textBoxWidget(container, data, options)
     } else if (type.toLowerCase() === 'color') {
         // Create color palette widget
-        colorPaletteWidget(container, paragraph, data, options)
+        colorPaletteWidget(container, data, options)
     } else {
         // Create other elements
+        paragraph = document.createElement('p');
         element = document.createElement(type);
         element.textContent = data;
         containerAppendChild([paragraph, element], container);
@@ -75,6 +75,7 @@ function craftModuleWidgets(module, widgets) {
         if (type === 'slider') {
             html_type='slider';
             type_options['range'] = item.range;
+            type_options['title_len'] = 2;
         } else if (type === 'button' || type === 'toggle') {
             html_type='button';
             type_options['range'] = item.range;
@@ -106,32 +107,6 @@ function DynamicWidgetLoad() {
                 console.error(error);
             });
         }
-    }).catch(error => {
-        console.error(error);
-    });
-}
-
-
-function CustomWidgetLoad(endpoint) {
-    // INIT DASHBOARD (load custom widget commands -> build page)
-    // endpoint: 'dashboard_be/widget_list' returns special dict
-    restAPI(endpoint).then(commands => {
-        console.log(commands.result)
-        const widget_dict=commands.result;
-        var opts = {};
-        opts.title_len = 3;
-        for (const module in widget_dict) {
-            if (Object.hasOwnProperty.call(widget_dict, module)) {
-                const innerObject = widget_dict[module];
-                generateElement(type='h2', data=`🧬 ${module}`);
-                // Iterate through the inner object
-                for (const func in innerObject) {
-                    if (Object.hasOwnProperty.call(innerObject, func)) {
-                        const api_type = innerObject[func];
-                        const api_cmd = `${module}/${func}`;
-                        console.log(`Gen custom Type: ${api_type} Cmd: ${api_cmd}`);
-                        generateElement(type=api_type, data=api_cmd, options=opts);
-        };};};}
     }).catch(error => {
         console.error(error);
     });

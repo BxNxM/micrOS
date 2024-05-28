@@ -12,6 +12,15 @@ from sim_console import console
 import micrOSloader
 import LocalMachine
 
+ENABLE_SIM_CONFIG = True
+
+
+def apply_sim_node_config():
+    if ENABLE_SIM_CONFIG:
+        print("Copy SIM config - for testing: enable webui, etc.")
+        sim_config = os.path.join(MYPATH, 'node_config.json')
+        LocalMachine.FileHandler().copy(sim_config, os.path.join(SIM_PATH))
+
 
 class micrOSIM():
     SIM_PROCESS_LIST = []
@@ -47,6 +56,8 @@ class micrOSIM():
         if trace:
             # Trace handling - DEBUG
             sys.settrace(trace_func)
+
+        apply_sim_node_config()
         micrOSloader.main()
 
         console("[micrOSIM] Stop micrOS ({})".format(SIM_PATH))

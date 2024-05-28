@@ -351,5 +351,5 @@ def help(widgets=False):
                              'BUTTON random smooth=True max_val=254',
                              'status',
                              'subscribe_presence',
-                             'TEXTBOX pinmap',
+                             'pinmap',
                              'help widgets=False'), widgets=widgets)

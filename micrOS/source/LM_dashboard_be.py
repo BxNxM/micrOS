@@ -1,7 +1,6 @@
 from Common import rest_endpoint, syslog
 from sys import modules
 
-WIDGETS={}
 ENDPOINT_INITED = False
 
 def load_n_init():
@@ -29,27 +28,6 @@ def create_dashboard():
     return 'Endpoint created: /dashboard'
 
 
-def widget_list():
-    """
-    API HELPER: return custom widgets dict
-    """
-    return WIDGETS
-
-
-
-def widget_add(widget=None):
-    """
-    :param widget: {'OV2640': {'settings/saturation=': 'slider',
-                               'settings/brightness=': <type>}}
-    <type>: 'slider', 'button', 'box', 'h1', 'h2', 'p', etc...
-    """
-    global WIDGETS
-    if not ENDPOINT_INITED:
-        load_n_init()           # auto-enable dashboard endpoint
-    if isinstance(widget, dict):
-        WIDGETS.update(widget)
-
-
 def help(widgets=False):
     """
     [i] micrOS LM naming convention - built-in help message
@@ -57,4 +35,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init', 'create_dashboard', 'widget_list', 'widget_add', 'help'
+    return 'load_n_init', 'create_dashboard', 'help'

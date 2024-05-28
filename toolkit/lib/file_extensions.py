@@ -5,7 +5,6 @@ WEB_ONLY = ('js', 'html', 'css')
 
 def check_all_extensions(path):
     extension = path.split('.')[-1]
-    print(f"|{extension}|")
     if extension in ENABLED_EXTENSIONS:
         return True
     return False

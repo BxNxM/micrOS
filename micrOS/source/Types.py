@@ -12,6 +12,8 @@ USAGE:
     SLIDER brightness br=<0-100-5>
 """
 from json import dumps
+from Debug import errlog_add
+
 ########################################################
 #                 HELP TUPLE RESOLVER                  #
 ########################################################
@@ -21,6 +23,7 @@ __RANGE_255 = {'range': (0, 255, 2)}
 __RANGE_OPTS = {'range': ("True", "False")}
 
 
+# WIDGET TYPES - STRUCTURE (DYNAMIC)
 BUTTON = __TEMPLATE | {'type': 'button'}                                    # Mandatory func params: n/a
 TOGGLE = __TEMPLATE | {'type': 'toggle'} | __RANGE_OPTS                     # Mandatory func params: state
 SLIDER = __TEMPLATE | {'type': 'slider'} | __RANGE_100                      # Mandatory func params: br
@@ -28,6 +31,10 @@ TEXTBOX = __TEMPLATE | {'type': 'textbox', 'refresh': 5000}                 # Ma
 COLOR = __TEMPLATE | {'type': 'color'} | __RANGE_255                        # Mandatory func params: r, g, b
 WHITE = __TEMPLATE | {'type': 'white'} | __RANGE_255                        # Mandatory func params: wc, ww
 
+
+########################################################
+#                       FUNCTIONS                      #
+########################################################
 
 def _placeholder(var, value, type_dict):
     def _is_int(data):
@@ -63,9 +70,12 @@ def _generate(type_dict, help_msg):
     for p in params:
         if '=' in p:
             var, value = p.split("=")
-            p, new_range = _placeholder(var, value, type_dict)
-            if new_range is not None:
-                type_dict['range'] = new_range
+            try:
+                p, new_range = _placeholder(var, value, type_dict)
+                if new_range is not None:
+                    type_dict['range'] = new_range
+            except Exception as e:
+                errlog_add(f"[ERR] Type.resolve._placeholder: {e}")
         else:
             # Empty param fallback
             p = f'{p}=:range:'
@@ -79,22 +89,19 @@ def resolve(help_data, widgets=False):
         tag = msg.split()[0].strip()
         # TYPE DECORATION detect in help strings
         if tag.isupper():
-            resolved_tag = _resolve_key(tag)
-            if resolved_tag == tag:
-                if widgets:
-                    continue                                    # Invalid tag in widget mode
-                help_msg.append(msg.replace(tag, '').strip())   # Invalid tag (OK) in human readable mode
+            try:
+                resolved_tag = eval(tag)
+            except NameError:
+                resolved_tag = tag
+            if widgets:
+                if isinstance(resolved_tag, dict):
+                    # Create json string type + extract widgets from help message
+                    help_msg.append(_generate(resolved_tag, msg))
                 continue
-            # Create json string type + extract widgets from help message
-            help_msg.append(_generate(resolved_tag, msg))
+            # Human readable mode (decorated functions)
+            help_msg.append(msg.replace(tag, '').strip())
         elif not widgets:
             # Human readable mode (non decorated functions)
-            help_msg.append(msg)
+            help_msg.append(f"{msg}")
     return tuple(help_msg)
 
-def _resolve_key(key):
-    try:
-        type_info = eval(f'{key}')
-    except NameError:
-        return key
-    return type_info

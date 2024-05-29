@@ -237,5 +237,5 @@ def help(widgets=False):
         'photo',
         'set_photo_endpoint',
         'BUTTON flashlight state=None',
-        '[HINT] after load_n_init you can access the /cam/snapshot and /cam/stream endpoints',
+        '[Hint] after load_n_init you can access the /cam/snapshot and /cam/stream endpoints',
         'Thanks to :) https://github.com/lemariva/micropython-camera-driver'), widgets=widgets)

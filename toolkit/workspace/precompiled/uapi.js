@@ -58,8 +58,11 @@ function restInfo() {
         // Update 'SysApiInfo' tag
         let infoHeader = Object.entries(response['result'])
             .filter(([key]) => key !== 'usr_endpoints') // Exclude usr_endpoints
-            .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-            .join('  ❖  ').replace(/"/g, '');
+            .map(([key, value]) => `${key}: ${JSON.stringify(value)}`);
+        if (infoHeader[2].endsWith("true")) {           // check auth: true
+            infoHeader[2] = "🔑";
+        } else {infoHeader.splice(2, 1);}
+        infoHeader = infoHeader.join('  ❖  ').replace(/"/g, '');
         let infoSubpages = (response['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(response['result']['usr_endpoints'])
             .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value} </a>`)
             .join(' | ') : '');

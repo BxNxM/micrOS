@@ -1,6 +1,7 @@
 // WIDGETS ELEMENTS
 
 const widget_indent = '40px';
+const windowWidth = window.innerWidth;
 
 function sliderWidget(container, command, options={}) {
         const title_len = options.title_len || 1;
@@ -16,6 +17,7 @@ function sliderWidget(container, command, options={}) {
         element.max = options.range[1] || 100;
         element.step = options.range[2] || 5;
         element.value = Math.round((element.max-element.min)/2);
+        element.style.width = Math.min(windowWidth * 0.6, 300) + 'px';
 
         // Create a span to display the slider value
         var valueDisplay = document.createElement('span');
@@ -51,6 +53,7 @@ function buttonWidget(container, command, options={}) {
         const element = document.createElement('button');
         element.style.marginLeft = widget_indent;
         element.textContent = command.split('/').slice(1, title_len+1).join('-');
+        element.style.height = '30px';
         // Add an event listener for API CALL
         element.addEventListener('click', function () {
             var call_cmd;
@@ -129,7 +132,7 @@ function colorPaletteWidget(container, command, options) {
         return { r, g, b };
     }
     function getRandomColorFromList() {
-        const colors = ['#7b219f', '#4f7a28', '#008cb4', '#b51a00', '#ffb43f', '#0061ff', '#96d35f'];
+        const colors = ['#542040', '#2b2155', '#4c1e44', '#56213f', '#853366', '#493984', '#6f3487'];
         // Generate a random index within the range of the colors array
         const randomIndex = Math.floor(Math.random() * colors.length);
         // Return the color at the random index
@@ -137,28 +140,25 @@ function colorPaletteWidget(container, command, options) {
     }
 
     const title_len = options.title_len || 1;
-    const label = 'Color: ';
     const max_val = options.range[1] || 255
-
     // Create elements
     const paragraph = document.createElement('p');
-    const colorLabel = document.createElement('label');
     const colorPicker = document.createElement('input');
     const selectedColor = document.createElement('span');
 
     // Set up the color picker
     paragraph.style.textIndent = widget_indent;
+    paragraph.textContent = command.split('/').slice(1, title_len+1).join('-');
     colorPicker.type = 'color';
-    colorPicker.value = getRandomColorFromList();      // initialColor
+    colorPicker.value = getRandomColorFromList();   // initial color
     colorPicker.classList.add('custom-color-picker');
-    colorPicker.style.width = '40px';
+    colorPicker.style.width = '60px';
     colorPicker.style.height = '40px';
-    colorLabel.textContent = label;
-    selectedColor.style.marginLeft = '10px';
+    colorPicker.style.marginLeft = '40px';
 
-    // Function to update the displayed color value
-    function updateColor() {
-        //selectedColor.textContent = colorPicker.value;
+    // Add an event listener to update the displayed color value
+    colorPicker.addEventListener('change', function () {
+        //selectedColor.textContent = colorPicker.value;          //TODO: debug
         const rgbColor = hexToRgb(colorPicker.value, max_val);
         var call_cmd;
         if (options.hasOwnProperty('range')) {
@@ -171,18 +171,9 @@ function colorPaletteWidget(container, command, options) {
         }
         console.log(`[API] colorPalette exec: ${call_cmd}`);
         restAPI(call_cmd);
-    }
+    });
 
-    // Initialize the display with the initial color
-    //updateColor();
-    // Add an event listener to update the displayed color value
-    colorPicker.addEventListener('input', updateColor);
-    // Append elements to the paragraph
-    paragraph.appendChild(colorLabel);
-    paragraph.appendChild(colorPicker);
-    paragraph.appendChild(selectedColor);
-    // Append the paragraph to the container
-    container.appendChild(paragraph);
+    containerAppendChild([paragraph, colorPicker, selectedColor], container);
 }
 
 // sliderWidget

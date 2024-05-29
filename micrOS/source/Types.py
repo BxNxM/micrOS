@@ -104,4 +104,3 @@ def resolve(help_data, widgets=False):
             # Human readable mode (non decorated functions)
             help_msg.append(f"{msg}")
     return tuple(help_msg)
-

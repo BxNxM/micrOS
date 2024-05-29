@@ -301,7 +301,7 @@ class WebCli(Client):
             cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
             # EXECUTE COMMAND - LoadModule
             if WebCli.AUTH:
-                state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) else (True, 'Auth:Protected')
+                state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) or cmd[0].startswith('modules') else (True, 'Auth:Protected')
             else:
                 state, out = lm_exec(cmd)
             try:

@@ -17,7 +17,7 @@ Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), fo
 [![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
 
 
-**micrOS** is a mini **application** execution **platform** with ShellCli (socket) and webCli (http) **servers** and several **other** embedded **features**.
+**micrOS** is a mini **application** execution **platform** with ShellCli (socket) and WebCli (http) **servers** and several **other** embedded **features**.
 > It uses direct wifi connection to access the exposed functionalities.<br/>
 
 In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
@@ -83,9 +83,9 @@ I would suggest to use micrOS GUI as a primary interface for micrOS development 
 
 <br/>
 
-### 1. Install python3.9
+### 1. Install python3.9+
 
-Link for python 3.9 [download](https://www.python.org/downloads/release/python-390/)
+Link for python 3.9+ [download](https://www.python.org/downloads/release/python-390/)
 
 > Note: **Allow extend system path** with that python version (installation parameter) </br>
 > On **Windows**: RUN AS ADMINISTARTOR
@@ -411,40 +411,36 @@ Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gatew
 ----------------------------------------
 
 
-## RELESE NOTE
+## FUTURE RELEASE PLANS
 
-Future planned features in version **2.(x+1).0-0**
+Version **3.0.0-0**
 
 ```
 	Core:
-		- Socket SSL/TLS integration (with auth.)
-			- WebCli (http), ShellCli (terminal) and InterCon
-			- micropython 1.22+ required
-		- Study of ESP-NOW integration into InterCon (micropython requirements?)
-	
-	Load Module:
-		- Camera support (LM_OV2640.py) embed into dashboard.html
+		- Async SSL/TLS integration (micropython 1.22+ required)
+			- urequest module async redesign for rest clients
+				- Notify (telegram) + server (listener - chatbot)
+				- Time (ntp location + sunset/sunrise api)
 ```
 
-Future planned features in version **2.(x+2).0-0**
+Version **3.1.0-0**
+
+```
+	Core:
+		- Async socket SSL/TLS integration (with auth.)
+			- WebCli (http), ShellCli (terminal) and InterCon
+		- Study of ESP-NOW (peer-to-peer communication) integration into InterCon (micropython requirements?)
+```
+
+Version **4.0.0-0**
 
 ```
 	Core:
 		- Network stack redesign
 			- Network
 				- wifi (defualt, current interfaces)
-				- Study of ble (Shell)
-	
-	Load Module:
-		- (?)
-```
-
-Future main Version **3.0.0-0**
-
-```
-Optimization of new features...
-	Core:
-		- Low power mode (with ble) and soft-sleep / deep-sleep
+				- Study of BLE (Shell)
+			- Low power mode (with BLE) and soft-sleep / deep-sleep
 ```
 
 

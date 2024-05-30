@@ -31,6 +31,13 @@ def __temp_hum():
 # Application functions #
 #########################
 
+def load():
+    """
+    Initialize DHT11 hum/temp sensor module
+    """
+    __init_DHT11()
+    return "DHT11 hum/temp sensor module - loaded"
+
 def measure(log=False):
     """
     Measure with dht11
@@ -95,4 +102,4 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('TEXTBOX measure log=False', 'measure_w_co2 log=False',
-                             'logger', 'lmdep', 'pinmap'), widgets=widgets)
+                             'logger', 'lmdep', 'load', 'pinmap'), widgets=widgets)

@@ -4,6 +4,7 @@ from Common import socket_stream
 from Network import get_mac
 from Time import ntp_time, set_time, uptime
 from Tasks import Manager
+from Types import resolve
 
 try:
     from gc import mem_free, mem_alloc, collect
@@ -223,8 +224,8 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'info', 'top', 'gclean', 'heartbeat', 'clock',\
-           'setclock year month mday hour min sec',\
-           'ntp', 'rssi', 'pinmap key="dhtpin"/None', 'alarms clean=False',\
-           'sun refresh=False', 'ifconfig', 'memory_usage',\
-           'disk_usage', 'dat_dump', 'urequests_host_cache'
+    return resolve(('info', 'TEXTBOX top', 'gclean', 'heartbeat', 'clock',
+                    'setclock year month mday hour min sec',
+                    'ntp', 'rssi', 'pinmap key="dhtpin"/None', 'alarms clean=False',
+                    'sun refresh=False', 'ifconfig', 'memory_usage',
+                    'disk_usage', 'dat_dump', 'urequests_host_cache'), widgets=widgets)

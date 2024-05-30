@@ -1,5 +1,6 @@
 from machine import Pin
 from microIO import physical_pin, pinmap_dump
+from Types import resolve
 
 #########################################
 #           DIGITAL IO SWITCH           #
@@ -260,10 +261,10 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'set_state state=<0,1>', 'toggle', \
-           'set_state2 state=<0,1>', 'toggle2', \
-           'set_state3 state=<0,1>', 'toggle3', \
-           'set_state4 state=<0,1>', 'toggle4', \
-           'load cache=None<True/False> ch_init=[1,2,3,4]',\
-           'status',\
-           'pinmap'
+    return resolve(('set_state state=<0,1>', 'BUTTON toggle',
+                             'set_state2 state=<0,1>', 'BUTTON toggle2',
+                             'set_state3 state=<0,1>', 'BUTTON toggle3',
+                             'set_state4 state=<0,1>', 'BUTTON toggle4',
+                             'load cache=None<True/False> ch_init=[1,2,3,4]',
+                             'status',
+                             'pinmap'), widgets=widgets)

@@ -90,6 +90,13 @@ def __ppm_verdict(ppm):
 # Application functions #
 #########################
 
+def load():
+    """
+    Initialize mq135 CO2 (ppm) sensor module
+    """
+    __get_resistance()
+    return "mq135 CO2 (ppm) sensor - loaded"
+
 def raw_measure_mq135():
     """
     Measure raw mq135 CO2 value
@@ -145,6 +152,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('TEXTBOX measure_mq135 temp=<int> hum=<int>',
-                             'raw_measure_mq135', 'pinmap'), widgets=widgets)
+    return resolve(('TEXTBOX measure_mq135 temp=None hum=None',
+                             'raw_measure_mq135', 'load', 'pinmap'), widgets=widgets)
 

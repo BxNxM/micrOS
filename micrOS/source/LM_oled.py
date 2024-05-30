@@ -4,6 +4,7 @@ from micropython import const
 import framebuf
 from machine import Pin, SoftI2C
 from microIO import physical_pin, pinmap_dump
+from Types import resolve
 
 __INVERT = False
 
@@ -346,8 +347,15 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load width=128 height=64',\
-           'text "text" x y', 'invert', 'clean state=<0/1>',\
-           'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
-           'pixel x y color=1', 'bitmap bmp=<str tuple> x=0 y=0', 'image pbm_img x=0 y=0',\
-           'show', 'poweron', 'poweroff', 'pinmap', 'INFO: OLED Module for SSD1306'
+    return resolve(('load width=128 height=64',
+                             'text "text" x y',
+                             'BUTTON invert',
+                             'clean state=<0/1>',
+                             'line sx sy ex ey state=1',
+                             'rect x y w h state=1 fill=False',
+                             'pixel x y color=1',
+                             'bitmap bmp=<str tuple> x=0 y=0',
+                             'image pbm_img x=0 y=0',
+                             'show', 'BUTTON poweron', 'BUTTON poweroff',
+                             'pinmap', '[Info] OLED Module for SSD1306'), widgets=widgets)
+

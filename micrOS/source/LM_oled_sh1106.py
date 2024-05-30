@@ -17,6 +17,7 @@ import utime as time
 import framebuf
 from machine import Pin, I2C
 from microIO import physical_pin, pinmap_dump
+from Types import resolve
 
 __INVERT = False
 
@@ -393,10 +394,13 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load width=128 height=64 rotate=180',\
-           'text "text" x y', 'invert', 'clean state=<0/1>',\
-           'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
-           'pixel x y state', 'bitmap bmp=None x=0 y=0',\
-           'show', 'poweron', 'poweroff', 'flip', 'pinmap',\
-           'INFO: OLED Module for SH1106'
+    return resolve(('load width=128 height=64 rotate=180',
+                             'text "text" x y',
+                             'BUTTON invert', 'clean state=<0/1>',
+                             'line sx sy ex ey state=1',
+                             'rect x y w h state=1 fill=False',
+                             'pixel x y state', 'bitmap bmp=None x=0 y=0',
+                             'show', 'BUTTON poweron', 'BUTTON poweroff',
+                             'flip', 'pinmap',
+                             '[Info] OLED Module for SH1106'), widgets=widgets)
 

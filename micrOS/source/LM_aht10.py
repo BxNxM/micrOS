@@ -84,6 +84,14 @@ class AHT10:
         return self._send_sensor(b'\xBA')
 
 
+def load():
+    """
+    Initialize AHT10 module
+    """
+    __init_AHT10()
+    return "AHT10 temp/hum sensor - loaded"
+
+
 def __init_AHT10():
     global __AHT10_OBJ
     if __AHT10_OBJ is None:
@@ -128,4 +136,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('pinmap', 'TEXTBOX measure', 'reset'), widgets=widgets)
+    return resolve(('TEXTBOX measure', 'reset', 'load', 'pinmap'), widgets=widgets)

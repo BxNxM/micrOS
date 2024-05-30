@@ -2,6 +2,14 @@ from random import randint
 from LM_servo import sduty, deinit
 from LM_servo import pinmap as pm
 from utime import sleep_ms
+from Types import resolve
+
+
+def load():
+    """
+    Initialize catgame-servo module
+    """
+    return "catgame-servo module - loaded"
 
 
 def game(repeat=10, delta=20):
@@ -71,4 +79,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'game repeat=10', 'live_game chance=<10-90>', 'stop', 'pinmap', 'lmdep'
+    return resolve(('BUTTON game repeat=10',
+                             'SLIDER live_game chance=<10-90>',
+                             'BUTTON stop', 'pinmap',
+                             'load', 'lmdep'), widgets=widgets)

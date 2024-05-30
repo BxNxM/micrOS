@@ -12,4 +12,7 @@ def temp():
 
 
 def help(widgets=False):
+    """
+    [BETA]
+    """
     return 'temp'

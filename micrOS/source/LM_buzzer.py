@@ -3,6 +3,7 @@ from utime import sleep
 from microIO import physical_pin, pinmap_dump
 from Common import micro_task
 import uasyncio as asyncio
+from Types import resolve
 
 
 #########################################
@@ -281,7 +282,7 @@ def list_tones():
 
 def load(cache=None):
     """
-    Initiate buzzer module
+    Initialize buzzer module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
     - Load .pds (state machine cache) for this load module
     - Apply loaded states to gpio pins (boot function)
@@ -318,4 +319,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr/title>', 'list_tones', 'load', 'pinmap'
+    return resolve(('BUTTON bipp repeat=3 freq=600',
+                             'play <rtttlstr/title>', 'list_tones',
+                             'load', 'pinmap'), widgets=widgets)

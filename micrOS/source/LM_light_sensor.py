@@ -28,6 +28,14 @@ def __init_tempt6000():
     return ADC
 
 
+def load():
+    """
+    Initialize TEMPT6000 light sensor module
+    """
+    __init_tempt6000()
+    return "TEMPT6000 light sensor module - loaded"
+
+
 def intensity():
     """
     Measure light intensity in %
@@ -126,6 +134,6 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('TEXTBOX intensity', 'TEXTBOX illuminance',
-                             'subscribe_intercon on off threshold=1 tolerance=2 sample_sec=60',\
-                             'pinmap', 'INFO sensor:TEMP600'), widgets=widgets)
+                             'subscribe_intercon on off threshold=1 tolerance=2 sample_sec=60',
+                             'pinmap', 'load', '[Info] sensor:TEMP600'), widgets=widgets)
 

@@ -2,6 +2,7 @@ from random import randint
 from microIO import detect_platform
 from Debug import console_write
 from Time import uptime
+from Types import resolve
 
 CNT = 0
 
@@ -18,6 +19,13 @@ def _debug(func):
         console_write("debug module cmd executed")     # + Progress LED
         return func(*args, **kwargs)
     return __wrapper
+
+
+def load():
+    """
+    Initialize demo module
+    """
+    return "demo module - loaded"
 
 
 @_debug
@@ -75,11 +83,15 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'hello name="MrNobody"',\
-           'calculator a b op="+"',\
-           '\t=>op: + - / *',\
-           'dice_cube - show number, roll a dice',\
-           'yes_no    - show random yes/no',\
-           'links     - show micrOS links',\
-           'source    - show demo module source code',\
-           'exec_info - Execution info, demo module usage'
+    return resolve(('hello name="MrNobody"',
+           'calculator a b op="+"',
+           '\t=>op: + - / *',
+           'BUTTON dice_cube',
+           'dice_cube - show number, roll a dice',
+           'BUTTON yes_no',
+           'yes_no    - show random yes/no',
+           'links     - show micrOS links',
+           'source    - show demo module source code',
+           'TEXTBOX exec_info',
+           'exec_info - Execution info, demo module usage',
+           'load'), widgets=widgets)

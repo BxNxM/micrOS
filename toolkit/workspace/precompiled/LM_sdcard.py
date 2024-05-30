@@ -42,5 +42,8 @@ def read_file(name):
 
 
 def help(widgets=False):
+    """
+    [BETA]
+    """
     return "mount_storage", "unmount_storage", "list_storage",\
            "write_file name content", "read_file name"

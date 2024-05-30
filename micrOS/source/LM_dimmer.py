@@ -3,6 +3,7 @@ from microIO import physical_pin, pinmap_dump
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
 from utime import sleep_ms
+from Types import resolve
 
 
 #########################################
@@ -69,7 +70,7 @@ def __state_machine(value):
 
 def load(cache=None):
     """
-    Initiate dimmer module
+    Initialize dimmer module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
     - Load .pds (state machine cache) for this load module
     - Apply loaded states to gpio pins (boot function)
@@ -230,5 +231,8 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'set_value value=<0-1000> smooth=True force=True', 'toggle state=None smooth=True', 'load',\
-           'subscribe_presence', 'transition value=<0-1000> sec wake=False', 'status', 'pinmap'
+    return resolve(('SLIDER set_value value=<0-1000> smooth=True force=True',
+                             'BUTTON toggle state=None smooth=True',
+                             'subscribe_presence',
+                             'transition value=<0-1000> sec wake=False',
+                             'status', 'load', 'pinmap'), widgets=widgets)

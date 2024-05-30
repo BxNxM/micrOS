@@ -308,6 +308,14 @@ def __init_bme280_i2c():
 # Application functions #
 #########################
 
+def load():
+    """
+    Initialize BME280 module
+    """
+    __init_bme280_i2c()
+    return "BME280 temp/hum/pressure sensor - loaded"
+
+
 def measure(ntfy=False):
     """
     Measure with bme280
@@ -362,4 +370,4 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('TEXTBOX measure ntfy=False', 'measure_w_co2',
-                             'lmdep', 'pinmap'), widgets=widgets)
+                             'load', 'lmdep', 'pinmap'), widgets=widgets)

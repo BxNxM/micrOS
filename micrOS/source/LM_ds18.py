@@ -17,6 +17,13 @@ def __init_DS18():
 # Application functions #
 #########################
 
+def load():
+    """
+    Initialize DS18 temp sensor module
+    """
+    __init_DS18()
+    return "DS18 temp sensor module - loaded"
+
 def measure():
     """
     Measure with digital onewire temperature sensor
@@ -64,4 +71,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('TEXTBOX measure', 'pinmap'), widgets=widgets)
+    return resolve(('TEXTBOX measure', 'load', 'pinmap'), widgets=widgets)

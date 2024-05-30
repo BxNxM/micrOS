@@ -1,5 +1,4 @@
-from LM_neopixel import load, segment, Data, status
-from LM_neopixel import pinmap as pm
+from LM_neopixel import load, segment, Data, status, pinmap as pm
 from random import randint
 
 

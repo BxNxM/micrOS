@@ -27,7 +27,7 @@ __RANGE_OPTS = {'range': ("True", "False")}
 BUTTON = __TEMPLATE | {'type': 'button'}                                    # Mandatory func params: n/a
 TOGGLE = __TEMPLATE | {'type': 'toggle'} | __RANGE_OPTS                     # Mandatory func params: state
 SLIDER = __TEMPLATE | {'type': 'slider'} | __RANGE_100                      # Mandatory func params: br
-TEXTBOX = __TEMPLATE | {'type': 'textbox', 'refresh': 5000}                 # Mandatory func params: n/a
+TEXTBOX = __TEMPLATE | {'type': 'textbox', 'refresh': 10000}                # Mandatory func params: n/a
 COLOR = __TEMPLATE | {'type': 'color'} | __RANGE_255                        # Mandatory func params: r, g, b
 WHITE = __TEMPLATE | {'type': 'white'} | __RANGE_255                        # Mandatory func params: wc, ww
 
@@ -91,7 +91,7 @@ def resolve(help_data, widgets=False):
         if tag.isupper():
             try:
                 resolved_tag = eval(tag)
-            except NameError:
+            except:
                 resolved_tag = tag
             if widgets:
                 if isinstance(resolved_tag, dict):

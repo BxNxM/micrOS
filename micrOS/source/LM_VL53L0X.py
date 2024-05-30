@@ -370,7 +370,7 @@ def pinmap():
 
 def help(widgets=False):
     """
-    [i] micrOS LM naming convention - built-in help message
+    [BETA][i] micrOS LM naming convention - built-in help message
     :return tuple:
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation

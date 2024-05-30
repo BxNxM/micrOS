@@ -75,7 +75,7 @@ def __state_machine(c, w):
 
 def load(cache=None):
     """
-    Initiate Cold white / Warm white LED module
+    Initialize Cold white / Warm white LED module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
     - Load .pds (state machine cache) for this load module
     - Apply loaded states to gpio pins (boot function)

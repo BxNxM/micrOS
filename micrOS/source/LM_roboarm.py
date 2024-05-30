@@ -5,6 +5,7 @@ from LM_switch import set_state
 from LM_switch import pinmap as pm
 from Common import transition, micro_task
 import uasyncio as asyncio
+from Types import resolve
 
 
 class RoboArm:
@@ -290,11 +291,13 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'control x=<40-115> y=<40-115> s=<ms delay> smooth=True',\
-           'boot_move speed_ms',\
-           'standby y_pos=45',\
-           'jiggle delta=2',\
-           'play 40 40 115 115 s=<speed ms> delay=<ms> deinit=True',\
-           'record clean=False rec_limit=8',\
-           'random x_range=20 y_range=20 speed_ms=5',\
-           'load', 'pinmap', 'status', 'lmdep'
+    return resolve(('control x=<40-115> y=<40-115> s=<ms delay> smooth=True',
+                             'BUTTON boot_move speed_ms=10',
+                             'BUTTON standby y_pos=45',
+                             'BUTTON jiggle delta=3',
+                             'play 40 40 115 115 s=<speed ms> delay=<ms> deinit=True',
+                             'BUTTON play deinit=True',
+                             'record clean=False rec_limit=8',
+                             'random x_range=20 y_range=20 speed_ms=5',
+                             'load', 'pinmap',
+                             'status', 'lmdep'), widgets=widgets)

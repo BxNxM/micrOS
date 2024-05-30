@@ -6,6 +6,7 @@ from Network import ifconfig
 from Common import syslog
 from machine import Pin
 from Tasks import lm_exec, Manager
+from Types import resolve
 try:
     from LM_system import memory_usage
 except:
@@ -606,6 +607,13 @@ def adc_genpage(pin=33):
 # LM helper functions #
 #######################
 
+def load(type='ssd1306', page=0, screen_saver=None):
+    """
+    Initialize ssd1306/h1106 display module
+    - wrapper of pageui
+    """
+    return pageui(pwr_sec=screen_saver, oled_type=type, page=page)
+
 def lmdep():
     """
     Show Load Module dependency
@@ -634,10 +642,15 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'pageui page=0 pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',\
-           'control next/prev/press/on/off',\
-           'msgbox "msg"',\
-           'intercon_genpage "host" "cmd" run=False',\
-           'cmd_genpage "cmd" run=False',\
-           'adc_genpage pin=33',\
-           'pinmap'
+    return resolve(('pageui page=0 pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',
+                             'control next/prev/press/on/off',
+                             'BUTTON control cmd="next"',
+                             'BUTTON control cmd="prev"',
+                             'BUTTON control cmd="press"',
+                             'BUTTON control cmd="on"',
+                             'BUTTON control cmd="off"',
+                             'msgbox "msg"',
+                             'intercon_genpage "host" "cmd" run=False',
+                             'cmd_genpage "cmd" run=False',
+                             'adc_genpage pin=33',
+                             'pinmap'), widgets=widgets)

@@ -40,6 +40,14 @@ def __send_pulse_and_wait(echo_timeout_us=1000000):
 # Application functions #
 #########################
 
+def load():
+    """
+    Initialize HCSR04 ultrasonic distance sensor module
+    """
+    __init_HCSR04()
+    return "HCSR04 Ultrasonic distance sensor - loaded"
+
+
 def distance_mm():
     """
     To calculate the distance we get the pulse_time and divide it by 2
@@ -85,4 +93,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'distance_mm', 'distance_cm', 'deinit', 'pinmap'
+    return 'distance_mm', 'distance_cm', 'deinit', 'pinmap', 'load'

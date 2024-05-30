@@ -1,5 +1,5 @@
 from InterConnect import send_cmd, host_cache
-from Debug import errlog_add
+from Common import syslog
 
 
 def sendcmd(*args, **kwargs):
@@ -15,7 +15,7 @@ def sendcmd(*args, **kwargs):
             out = send_cmd(_host, _cmd)
         except Exception as e:
             out = []
-            errlog_add(f'[intercon] sendcmd: {e}')
+            syslog(f'[intercon] sendcmd: {e}')
         return out
 
     host = kwargs.get('host', None)

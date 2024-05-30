@@ -73,7 +73,7 @@ def __state_machine(r, g, b):
 #             USER FUNCTIONS            #
 #########################################
 
-def load_n_init(cache=None, ledcnt=24):
+def load(cache=None, ledcnt=24):
     """
     Initiate NeoPixel RGB module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
@@ -344,7 +344,7 @@ def help(widgets=False):
     """
     return resolve(('COLOR color r=<0-255> g b smooth=True force=True',
                              'TOGGLE toggle state smooth=True',
-                             'load_n_init ledcnt=24',
+                             'load ledcnt=24',
                              'SLIDER brightness percent=<0-100> smooth=True wake=True',
                              'COLOR segment r g b s=<0-n>',
                              'transition r=None g=None b=None sec=1.0 wake=False',

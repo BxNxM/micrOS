@@ -157,7 +157,7 @@ class SSD1306_I2C(SSD1306):
 #  SSD1306 interface functions    #
 ###################################
 
-def load_n_init(width=128, height=64, brightness=50):
+def load(width=128, height=64, brightness=50):
     """
     :param width: pixel
     :param height: pixel
@@ -178,7 +178,7 @@ def text(string="text", x=0, y=0):
     :param x: 0-127
     :param y: 0-63
     """
-    load_n_init().text(string, x, y)
+    load().text(string, x, y)
     return True
 
 
@@ -187,7 +187,7 @@ def invert():
     Invert OLED display
     """
     global __INVERT
-    load_n_init()
+    load()
     __INVERT = not __INVERT
     SSD1306_I2C.OLED_OBJ.invert(__INVERT)
     return True
@@ -198,7 +198,7 @@ def clean(state=0):
     Clean display
     :param state: 0/1
     """
-    load_n_init().fill(state)
+    load().fill(state)
     return True
 
 
@@ -211,7 +211,7 @@ def line(sx, sy, ex, ey, state=1):
     :param ey: end y
     :param state: state 0/1
     """
-    load_n_init().line(sx, sy, ex, ey, state)
+    load().line(sx, sy, ex, ey, state)
     return True
 
 
@@ -226,9 +226,9 @@ def rect(x, y, w, h, state=1, fill=False):
     :param fill: fill rectangle (True/False)
     """
     if fill:
-        load_n_init().fill_rect(x, y, w, h, state)
+        load().fill_rect(x, y, w, h, state)
     else:
-        load_n_init().rect(x, y, w, h, state)
+        load().rect(x, y, w, h, state)
     return True
 
 def pixel(x, y, color=1):
@@ -237,7 +237,7 @@ def pixel(x, y, color=1):
     Set pixel
     .pixel(x, y, c)
     """
-    load_n_init().pixel(x, y, color)  # 3rd param is the colour
+    load().pixel(x, y, color)  # 3rd param is the colour
     return True
 
 
@@ -280,7 +280,7 @@ def bitmap(bmp=None, x=0, y=0):
                '00001100110000',
                '00001100110000')
 
-    display = load_n_init()
+    display = load()
     for _y, row in enumerate(bmp):
         for _x, c in enumerate(row):
             display.pixel(_x+x, _y+y, int(c))
@@ -296,7 +296,7 @@ def image(pbm_img, x=0, y=0):
     :param x: x offset
     :param y: y offset
     """
-    load_n_init().image(pbm_file=pbm_img, x=x, y=y)
+    load().image(pbm_file=pbm_img, x=x, y=y)
     return True
 
 
@@ -305,7 +305,7 @@ def poweron():
     """
     Power ON OLED
     """
-    load_n_init().poweron()
+    load().poweron()
     return True
 
 
@@ -313,7 +313,7 @@ def poweroff():
     """
     Power OFF OLED
     """
-    load_n_init().poweroff()
+    load().poweroff()
     return True
 
 
@@ -346,7 +346,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init width=128 height=64',\
+    return 'load width=128 height=64',\
            'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
            'pixel x y color=1', 'bitmap bmp=<str tuple> x=0 y=0', 'image pbm_img x=0 y=0',\

@@ -102,7 +102,7 @@ async def __task(ms_period, buff_size):
         if Data.I2S_MIC is None:
             import LM_i2s_mic
             Data.I2S_MIC = LM_i2s_mic
-        Data.I2S_MIC.load_n_init(sampling_rate=2000) # High frequencies can result in slow performance
+        Data.I2S_MIC.load(sampling_rate=2000) # High frequencies can result in slow performance
         Data.I2S_MIC.background_capture()
 
     # ASYNC TASK ADAPTER [*2] with automatic state management
@@ -186,7 +186,7 @@ def __mic_sample(buff_size, mytask):
 #  PRESENCE PUBLIC FUNCTIONS #
 ##############################
 
-def load_n_init(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.MIC_TYPE):
+def load(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.MIC_TYPE):
     """
     Initialize presence module
     :param threshold: trigger on relative noice change in percent
@@ -267,7 +267,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S)',\
+    return 'load threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S)',\
            'motion_trig sample_ms=15 buff_size=10', 'get_samples',\
            'subscribe_intercon on="host cmd" off="host cmd"',\
            'notification state=None/True/False',\

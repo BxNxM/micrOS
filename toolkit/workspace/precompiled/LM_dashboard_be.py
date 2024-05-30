@@ -1,8 +1,8 @@
-from Common import rest_endpoint, syslog
+from Common import web_endpoint, syslog
 
 ENDPOINT_INITED = False
 
-def load_n_init():
+def load():
     return create_dashboard()
 
 
@@ -23,7 +23,7 @@ def create_dashboard():
     """
     global ENDPOINT_INITED
     ENDPOINT_INITED = True
-    rest_endpoint('dashboard', _dashboard_clb)
+    web_endpoint('dashboard', _dashboard_clb)
     return 'Endpoint created: /dashboard'
 
 
@@ -34,4 +34,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init', 'create_dashboard', 'help'
+    return 'load', 'create_dashboard', 'help'

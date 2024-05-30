@@ -4,7 +4,7 @@ except Exception as e:
     camera = None
 import time
 from Debug import console_write
-from Common import rest_endpoint, syslog
+from Common import web_endpoint, syslog
 from Types import resolve
 
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
@@ -12,7 +12,7 @@ CAM_INIT = False
 FLASH_LIGHT = None      # Flashlight object
 
 
-def load_n_init(quality='medium', freq='default', effect="NONE"):
+def load(quality='medium', freq='default', effect="NONE"):
     """
     Load Camera module OV2640
     :param quality: high (HD), medium (SVGA), low (240x240)
@@ -56,8 +56,8 @@ def load_n_init(quality='medium', freq='default', effect="NONE"):
 
 def _set_web_endpoints():
     # Register rest endpoint
-    rest_endpoint('cam/snapshot', _snapshot_clb)
-    rest_endpoint('cam/stream', _image_stream_clb)
+    web_endpoint('cam/snapshot', _snapshot_clb)
+    web_endpoint('cam/stream', _image_stream_clb)
 
 
 def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None, brightness=None, contrast=None, whitebalace=None, q=None):
@@ -138,7 +138,7 @@ def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None,
 def capture():
     if camera is None:
         return "Non supported feature - use esp32cam image!"
-    load_n_init()
+    load()
     global IN_CAPTURE
     # Capture image
     buf = False
@@ -190,7 +190,7 @@ def set_photo_endpoint():
     """
     Set photo endpoint (rest endpoint)
     """
-    rest_endpoint('photo', _img_clb)
+    web_endpoint('photo', _img_clb)
     return "Endpoint created: /photo"
 
 
@@ -228,7 +228,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('load_n_init quality="medium/low/high" freq="default/high"',
+    return resolve(('load quality="medium/low/high" freq="default/high"',
         'settings quality=None flip=None mirror=None effect="NONE"',
         'SLIDER settings saturation=<0-100>',
         'SLIDER settings brightness=<0-100>',
@@ -237,5 +237,5 @@ def help(widgets=False):
         'photo',
         'set_photo_endpoint',
         'BUTTON flashlight state=None',
-        '[Hint] after load_n_init you can access the /cam/snapshot and /cam/stream endpoints',
+        '[Hint] after load you can access the /cam/snapshot and /cam/stream endpoints',
         'Thanks to :) https://github.com/lemariva/micropython-camera-driver'), widgets=widgets)

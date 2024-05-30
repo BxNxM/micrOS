@@ -1,5 +1,6 @@
 import machine, onewire, ds18x20, time
 from microIO import physical_pin, pinmap_dump
+from Types import resolve
 
 DS_OBJ = None
 
@@ -63,4 +64,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'measure', 'pinmap'
+    return resolve(('TEXTBOX measure', 'pinmap'), widgets=widgets)

@@ -3,12 +3,12 @@ import LM_cct
 from Types import resolve
 
 
-def load_n_init(cache=None):
+def load(cache=None):
     """
     Unified rgb and cct module usage as one module
     """
-    s1 = LM_rgb.load_n_init(cache)
-    s2 = LM_cct.load_n_init(cache)
+    s1 = LM_rgb.load(cache)
+    s2 = LM_cct.load(cache)
     return f'RGB: {s1}, CCT: {s2}'
 
 
@@ -59,7 +59,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('load_n_init',
+    return resolve(('load',
                              'BUTTON toggle state smooth=True',
                              'SLIDER brightness percent smooth=True wake=True',
                              'status', 'pinmap'), widgets=widgets)

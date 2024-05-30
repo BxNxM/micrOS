@@ -279,7 +279,7 @@ def list_tones():
     return '\n'.join(list(_builtin_tones()))
 
 
-def load_n_init(cache=None):
+def load(cache=None):
     """
     Initiate buzzer module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
@@ -318,4 +318,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr/title>', 'list_tones', 'load_n_init', 'pinmap'
+    return 'bipp repeat=<int> freq=<Hz>', 'play <rtttlstr/title>', 'list_tones', 'load', 'pinmap'

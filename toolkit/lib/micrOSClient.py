@@ -50,7 +50,7 @@ class micrOSClient:
             if "__simulator__" in self.host:
                 # Simulator hack - due to no dhcp available
                 self.host = '127.0.0.1'
-                self.hostname = 'node01'
+                self.hostname = 'simulator'     # HARDCODE MATCHING HOSTNAME FOR __simulator__
             else:
                 # * Set self.host to ip address OK
                 self.host = socket.getaddrinfo(self.host, self.port)[-1][4][0]

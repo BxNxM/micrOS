@@ -410,7 +410,7 @@ def exec_lm_pipe(taskstr):
         # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
             if not lm_exec(cmd)[0]:
-                console_write(f"|-[LM-PIPE] task error: {cmd}")
+                errlog_add(f"[WARN] exec_lm_pipe: {cmd}")
     except Exception as e:
         errlog_add(f"[ERR] exec_lm_pipe {taskstr}: {e}")
         return False

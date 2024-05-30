@@ -4,10 +4,10 @@ micrOS Load Module programming API-s
 """
 
 from Server import SocketServer
-from machine import Pin, ADC
+from Server import WebCli
 from microIO import physical_pin
 from Debug import logger, log_get, errlog_add
-from Server import WebCli
+from machine import Pin, ADC
 try:
     from Tasks import TaskBase, Manager
 except Exception as e:
@@ -149,7 +149,7 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
 
 def syslog(msg):
     """ Wrapper of errlog_add """
-    errlog_add(msg)
+    return errlog_add(msg)
 
 
 def notify(text):
@@ -175,7 +175,7 @@ def notify(text):
         return True
     return False
 
-def rest_endpoint(endpoint, function):
+def web_endpoint(endpoint, function):
     """
     Add test endpoint <localhost.local>/endpoint from Load Modules
     Simple:
@@ -185,5 +185,5 @@ def rest_endpoint(endpoint, function):
         multipart/x-mixed-replace | multipart/form-data, <data>
             <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
     """
-    WebCli.rest_setter(endpoint=endpoint, callback=function)
+    WebCli.register(endpoint=endpoint, callback=function)
     return True

@@ -36,7 +36,7 @@ def __persistent_cache_manager(mode):
         pass
 
 
-def load_n_init():
+def load():
     """
     Initiate roboarm module
     - move servo motors to middle position
@@ -109,7 +109,7 @@ def boot_move(speed_ms=None):
     """
     RoboArm.SPEED_MS = speed_ms if isinstance(speed_ms, int) else RoboArm.SPEED_MS
     # Set arm to center
-    load_n_init()
+    load()
     sleep_ms(RoboArm.SPEED_MS*2)
     # Test X
     control(RoboArm.RANGE[0], RoboArm.CENTER_XY)
@@ -297,4 +297,4 @@ def help(widgets=False):
            'play 40 40 115 115 s=<speed ms> delay=<ms> deinit=True',\
            'record clean=False rec_limit=8',\
            'random x_range=20 y_range=20 speed_ms=5',\
-           'load_n_init', 'pinmap', 'status', 'lmdep'
+           'load', 'pinmap', 'status', 'lmdep'

@@ -156,16 +156,6 @@ class WebCli(Client):
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer, r_size=512)
 
-    @staticmethod
-    def rest_setter(endpoint, callback):
-        # AUTO ENABLE webui when rest_setter called and webui is False
-        if not cfgget('webui'):
-            from Config import cfgput
-            if cfgput('webui', True):        # SET webui to True
-                from machine import reset
-                reset()                                 # HARD RESET (REBOOT)
-        WebCli.REST_ENDPOINTS[endpoint] = callback
-
     async def run_web(self):
         # Update server task output
         Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
@@ -235,6 +225,44 @@ class WebCli(Client):
         # INVALID/BAD REQUEST
         await self.a_send(self.REQ400.format(len=15, data='400 Bad Request'))
 
+    @staticmethod
+    def rest(url):
+        resp_schema = {'result': None, 'state': False}
+        cmd = url.replace('/rest', '')
+        if len(cmd) > 1:
+            # REST sub-parameter handling (rest commands)
+            cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"')
+                   .replace('%E2%80%9D', '"').replace('-', ' ').strip().split())
+            # request json format instead of default string output (+ handle & tasks syntax)
+            cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
+            # EXECUTE COMMAND - LoadModule
+            if WebCli.AUTH:
+                state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) or cmd[0].startswith('modules') else (True, 'Auth:Protected')
+            else:
+                state, out = lm_exec(cmd)
+            try:
+                resp_schema['result'] = loads(out)       # Load again ... hack for embedded shell json converter...
+            except:
+                resp_schema['result'] = out
+            resp_schema['state'] = state
+        else:
+            resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid'), 'auth': WebCli.AUTH}
+            if len(tuple(WebCli.REST_ENDPOINTS.keys())) > 0:
+                resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS)
+            resp_schema['state'] = True
+        response = dumps(resp_schema)
+        return WebCli.REQ200.format(dtype='text/html', len=len(response), data=response)
+
+    @staticmethod
+    def register(endpoint, callback):
+        # AUTO ENABLE webui when register (endpoint) called and webui is False
+        if not cfgget('webui'):
+            from Config import cfgput
+            if cfgput('webui', True):        # SET webui to True
+                from machine import reset
+                reset()                                 # HARD RESET (REBOOT)
+        WebCli.REST_ENDPOINTS[endpoint] = callback
+
     async def endpoints(self, url):
         url = url[1:]       # Cut first / char
         if url in WebCli.REST_ENDPOINTS:
@@ -289,33 +317,6 @@ class WebCli(Client):
                 await self.close()
             task.out = 'Finished stream'
 
-    @staticmethod
-    def rest(url):
-        resp_schema = {'result': None, 'state': False}
-        cmd = url.replace('/rest', '')
-        if len(cmd) > 1:
-            # REST sub-parameter handling (rest commands)
-            cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"')
-                   .replace('%E2%80%9D', '"').replace('-', ' ').strip().split())
-            # request json format instead of default string output (+ handle & tasks syntax)
-            cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
-            # EXECUTE COMMAND - LoadModule
-            if WebCli.AUTH:
-                state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) or cmd[0].startswith('modules') else (True, 'Auth:Protected')
-            else:
-                state, out = lm_exec(cmd)
-            try:
-                resp_schema['result'] = loads(out)       # Load again ... hack for embedded shell json converter...
-            except:
-                resp_schema['result'] = out
-            resp_schema['state'] = state
-        else:
-            resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid'), 'auth': WebCli.AUTH}
-            if len(tuple(WebCli.REST_ENDPOINTS.keys())) > 0:
-                resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS)
-            resp_schema['state'] = True
-        response = dumps(resp_schema)
-        return WebCli.REQ200.format(dtype='text/html', len=len(response), data=response)
 
 class ShellCli(Client, Shell):
 

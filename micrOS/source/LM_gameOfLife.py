@@ -145,7 +145,7 @@ Custom config usage:
 def my_config(add_cells):
     # custom cells
     cells = ((10,10),(1,0,0),(0,1,1),(0,0,1))
-    load_n_init(w=32, h=16, custom=cells)
+    load(w=32, h=16, custom=cells)
     
     matrix = []
     while matrix is not None:
@@ -153,7 +153,7 @@ def my_config(add_cells):
         print(matrix)
 """
 
-def load_n_init(w=32, h=16, custom=None):
+def load(w=32, h=16, custom=None):
     """
     Init Conway's Game of Life
     :param w: width of display (pixel)
@@ -171,14 +171,14 @@ def load_n_init(w=32, h=16, custom=None):
 def next_gen(raw=False, w=32, h=16):
     """
     Main Game of Life function
-        Get Next Generation of cells (with auto load_n_init and GoL reinit)
+        Get Next Generation of cells (with auto load and GoL reinit)
     :param raw: Output type (raw:True -> matrix), (raw:False formatted output)
     :param w: width of display (pixel) - auto init
     :param h: height of display (pixel) - auto init
     return change of life matrix or None if there is no change (on None, restart feature: call reset())
     """
     if GoL.GOL is None:
-        load_n_init(w=w, h=h)
+        load(w=w, h=h)
     matrix = GoL.GOL.next_gen()
     if raw:
         return matrix               # Matrix / None (no change)
@@ -205,4 +205,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init w=32 h=16 custom=None', 'next_gen w=32 h=16 raw=False', 'reset'
+    return 'load w=32 h=16 custom=None', 'next_gen w=32 h=16 raw=False', 'reset'

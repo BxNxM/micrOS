@@ -86,7 +86,7 @@ def __init_stepper(mode='HALF'):
     return STEPPER_INST
 
 
-def load_n_init(mode="HALF"):
+def load(mode="HALF"):
     """
     Init stepper motor module
     :param mode: step mode: HALF/FULL
@@ -154,5 +154,5 @@ def help(widgets=False):
     return 'angle dg=+/-360 speed=<ms>',\
            'step st=+/-2 speed=<ms>',\
            'standby',\
-           'load_n_init mode=<"HALF"/"FULL">', 'pinmap'\
+           'load mode=<"HALF"/"FULL">', 'pinmap'\
            'Info: stepper: 28byj-48 driver: ULN2003'

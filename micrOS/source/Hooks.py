@@ -17,7 +17,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from Config import cfgget
+from Config import cfgget, cfgput
 from microIO import detect_platform
 from Debug import console_write
 from Tasks import exec_lm_pipe
@@ -36,6 +36,7 @@ def bootup():
     # Execute LMs from boothook config parameter
     console_write("[BOOT] EXECUTION ...")
     bootasks = cfgget('boothook')
+    bootasks = _migrate(bootasks)                # load_n_init -> load migration (simplify)
     if bootasks is not None and bootasks.lower() != 'n/a':
         console_write(f"|-[BOOT] TASKS: {bootasks}")
         if exec_lm_pipe(bootasks):
@@ -67,3 +68,16 @@ def profiling_info(label=""):
         console_write(f"{'~'*5} [PROFILING INFO] - {label} {'~'*5}")
         mem_info()
         console_write("~"*30)
+
+def _migrate(bootstr):
+    """
+    OBSOLETE load_n_init -- REMOVE AT 2023.12
+    Use load instead
+    - auto replace in boothook param
+    """
+    if 'load_n_init' in bootstr:
+        console_write("[MIGRATE] load_n_init -> load")
+        bootstr = bootstr.replace('load_n_init', 'load')
+        cfgput('boothook', bootstr)
+    return bootstr
+

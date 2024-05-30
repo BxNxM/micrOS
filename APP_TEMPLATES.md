@@ -24,7 +24,7 @@ from machine import Pin					# Import micropython Pin module
 
 PIN = None								# Cache created Pin instance
 
-def load_n_init():
+def load():
 	global PIN
 	if PIN is None:
 		PIN = Pin(4, Pin.OUT)			# Init PIN 4 as OUTPUT and store (cache) in global var.
@@ -32,24 +32,24 @@ def load_n_init():
 
 
 def on():
-	pin = load_n_init()
+	pin = load()
 	pin.value(1)							# Set pin high - LED ON
 	return "LED ON"
 
 
 def off():
-	pin = load_n_init()
+	pin = load()
 	pin.value(0)							# Set pin low - LED OFF
 	return "LED OFF"
 
 
 def toggle():
-	pin = load_n_init()
+	pin = load()
 	pin.value(not pin.value())
 	return "LED ON" if pin.value() else "LED OFF"
 	
 def help():
-	return 'load_n_init', 'on', 'off', 'toggle'
+	return 'load', 'on', 'off', 'toggle'
 ```
 
 For more info: Micropython official [Pins](https://docs.micropython.org/en/latest/library/machine.Pin.html)
@@ -64,7 +64,7 @@ Function naming convesions for Load Modules.
 from LogicalPins import physical_pin, pinmap_dump
 from machine import Pin
 
-def load_n_init():
+def load():
 	"""
 	[RECOMMENDED]
 	Function naming convension to create IO (Pin) objects
@@ -125,7 +125,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-	return 'load_n_init', 'pinmap', 'status', 'lmdep'
+	return 'load', 'pinmap', 'status', 'lmdep'
 ```
 
 
@@ -368,11 +368,11 @@ Returns:
 **Example:** LM\_my\_endpoint.py
 
 ```python
-from Common import rest_endpoint
+from Common import web_endpoint
 
-def load_n_init():
+def load():
 	...
-	rest_endpoint('my_endpoint', _response)
+	web_endpoint('my_endpoint', _response)
 	return "Endpoint was created: http://localhost/my_endpoint"
 
 def _response():
@@ -381,4 +381,97 @@ def _response():
 ```
 
 Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
+
+## Advanced help messages with widget type assignment
+
+Normally in help function you can return a tuple of strings, this can be
+queried as help message from ShellCli and WebCli.
+
+With `Types.resolve` integration you can easily extend normal human readable help messages,
+and enable machine readable output for frontend element generation.
+
+Main steps:
+
+1. Create `help` function with `widgets` parameter <br>
+2. Wrap help tuple into `resolve` function
+3. Use predefined widget types (tags)
+4. Check the following example:
+
+Tags:
+
+* `BUTTON`, requires[0]: no param
+* `COLOR`, requires[3]: r, g, b function parameters
+* `SLIDER`, requires[1]: br function parameters (or any other single param)
+* `TEXTBOX`, requires[0]: no param
+* Implementation of [TYPES](./micrOS/source/Types.py)
+
+```python
+from Types import resolve
+
+# Application functions
+
+def measure():
+    return "22 Celsius"
+
+
+def color(r, g, b):
+    return f"r:{r} g:{g} b:{b}"
+
+
+def brightness(br):
+    return f"br:{br}"
+
+
+def action():
+    return "Do something..."
+
+
+def other_function(num=0):
+    return f"Do something, no widget assigned...num: {num}"
+
+#######################
+# LM helper functions #
+#######################
+
+def help(widgets=False):
+    """
+    [i] micrOS LM naming convention - built-in help message
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
+    """
+    return resolve(('TEXTBOX measure',
+                    'COLOR color r g b',
+                    'SLIDER brightness br',
+                    'BUTTON action',
+                    'other_function num'), widgets=widgets)
+```
+
+Output example:
+
+```
+RingLamp $ neopixel help
+ color r=<0-255> g b smooth=True force=True,
+ toggle state smooth=True,
+ load ledcnt=24,
+ brightness percent=<0-100> smooth=True wake=True,
+ segment r g b s=<0-n>,
+ transition r=None g=None b=None sec=1.0 wake=False,
+ random smooth=True max_val=254,
+ status,
+ subscribe_presence,
+ pinmap,
+ help widgets=False,
+ 
+RingLamp $ neopixel help widgets=True
+ {"lm_call": "color r=:range: g=:range: b=:range: smooth=True force=True", "type": "color", "range": [0, 255, 2]},
+ {"lm_call": "toggle state=:range: smooth=True", "type": "toggle", "range": ["True", "False"]},
+ {"lm_call": "brightness percent=:range: smooth=True wake=True", "type": "slider", "range": [0, 100, 2]},
+ {"lm_call": "segment r=:range: g=:range: b=:range: ", "type": "color", "range": [0, 255, 2]},
+ {"lm_call": "random smooth=True max_val=254", "type": "button"},
+```
+
+
+
+Usage(s): [LM_neopixel](./micrOS/source/LM_neopixel.py), etc. in most of the modules :)
 

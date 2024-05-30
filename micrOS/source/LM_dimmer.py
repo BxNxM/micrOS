@@ -67,7 +67,7 @@ def __state_machine(value):
 # Application functions #
 #########################
 
-def load_n_init(cache=None):
+def load(cache=None):
     """
     Initiate dimmer module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
@@ -230,5 +230,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'set_value value=<0-1000> smooth=True force=True', 'toggle state=None smooth=True', 'load_n_init',\
+    return 'set_value value=<0-1000> smooth=True force=True', 'toggle state=None smooth=True', 'load',\
            'subscribe_presence', 'transition value=<0-1000> sec wake=False', 'status', 'pinmap'

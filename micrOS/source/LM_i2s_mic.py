@@ -1,6 +1,6 @@
 from ustruct import unpack
 from microIO import physical_pin, pinmap_dump
-from Common import micro_task, rest_endpoint
+from Common import micro_task, web_endpoint
 from machine import I2S, Pin
 from Debug import console_write
 from Tasks import TaskBase
@@ -26,7 +26,7 @@ class Data:
     CONTROL_TASK_TAG = 'i2s._mic_control'
     CONTROL_BUTTON_PIN = None
 
-    # To be initialized by load_n_init
+    # To be initialized by load
     I2S_AUDIO_IN = None
     SREADER = None
 
@@ -58,7 +58,7 @@ async def __control_task(ms_period=50):
                 console_write(f'Microphone enabled: {Data.MIC_ENABLED}')
 
                 if Data.MIC_ENABLED:
-                    load_n_init()
+                    load()
 
                 # Debounce
                 await asyncio.sleep_ms(500)
@@ -247,7 +247,7 @@ def set_volume(shift_size=0):
     Data.SHIFT_SIZE = shift_size
 
 
-def load_n_init(buf_length=Data.BUF_LENGTH, sampling_rate=Data.SAMPLING_RATE,
+def load(buf_length=Data.BUF_LENGTH, sampling_rate=Data.SAMPLING_RATE,
                 capture_duration=Data.CAPTURE_DURATION, shift_size = Data.SHIFT_SIZE,
                 sample_size = Data.SAMPLE_SIZE, i2s_channel = Data.I2S_CHANNEL,
                 default_channel = Data.DEFAULT_CHANNEL, sound_format = Data.FORMAT,
@@ -296,7 +296,7 @@ def load_n_init(buf_length=Data.BUF_LENGTH, sampling_rate=Data.SAMPLING_RATE,
     Data.SREADER = asyncio.StreamReader(Data.I2S_AUDIO_IN)
 
     if enable_endpoint:
-        rest_endpoint('mic/stream', _record_clb)
+        web_endpoint('mic/stream', _record_clb)
 
     if Data.RECORD_TASK_ENABLED:
         background_capture()
@@ -325,7 +325,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init buf_length=16000 '\
+    return 'load buf_length=16000 '\
            'sampling_rate=8000 capture_duration=0.25 shift_size=6 '\
            'sample_size=16 i2s_channel=1 default_channel=\'right\' '\
            'sound_format=I2S.STEREO downsampling=1 control_button='' enable_endpoint=True',\

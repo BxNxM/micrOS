@@ -4,7 +4,7 @@ class Rest:
     GATEWAY_HOST = None
 
 
-def load_n_init(gateway_url=None):
+def load(gateway_url=None):
     """
     Set gateway url aka main domain
     :param gateway_url: base url of gateway, like: http://gateway.local:5000
@@ -37,4 +37,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init gateway_url=<http://gateway.local:5000>', 'url subdomain=</webhooks/template>'
+    return 'load gateway_url=<http://gateway.local:5000>', 'url subdomain=</webhooks/template>'

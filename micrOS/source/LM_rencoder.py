@@ -55,7 +55,7 @@ def _rotary_changed(change):
         Data.VAL = Data.VAL - 1
 
 
-def load_n_init():
+def load():
     """
     Create rotary encoder
     """
@@ -72,7 +72,7 @@ def read_state(msgobj=None):
     """
     Read rotary encoder status / relative position
     """
-    load_n_init()
+    load()
     if msgobj is not None:
         if Data.EVENT:
             msgobj(f"[stream] RotaryState: {Data.VAL}")
@@ -102,4 +102,4 @@ def pinmap(widgets=False):
 
 
 def help():
-    return 'load_n_init', 'read_state', 'reset_state', 'pinmap'
+    return 'load', 'read_state', 'reset_state', 'pinmap'

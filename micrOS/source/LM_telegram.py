@@ -16,7 +16,7 @@ else:
     TELEGRAM_OBJ = None
 
 
-def load_n_init():
+def load():
     """
     Set custom chat commands for Telegram
     - /ping
@@ -93,4 +93,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'send "text"', 'receive', 'receiver_loop', 'load_n_init', 'INFO: Send & Receive messages with Telegram bot'
+    return 'send "text"', 'receive', 'receiver_loop', 'load', 'INFO: Send & Receive messages with Telegram bot'

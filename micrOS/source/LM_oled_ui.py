@@ -3,7 +3,7 @@ from utime import localtime
 from network import WLAN, STA_IF
 from microIO import physical_pin, pinmap_dump
 from Network import ifconfig
-from Debug import errlog_add
+from Common import syslog
 from machine import Pin
 from Tasks import lm_exec, Manager
 try:
@@ -48,7 +48,7 @@ class PageUI:
                 import LM_oled_sh1106 as oled
             PageUI.DISPLAY = oled
         else:
-            errlog_add(f"Oled UI unknown oled_type: {oled_type}")
+            syslog(f"Oled UI unknown oled_type: {oled_type}")
             Exception(f"Oled UI unknown oled_type: {oled_type}")
         self.page_callback_list = page_callbacks
         self.active_page = page
@@ -157,7 +157,7 @@ class PageUI:
         except Exception as e:
             msg = '[ERR] Button IRQ:{} {}'.format(pinkey, e)
             pin = None
-            errlog_add(msg)
+            syslog(msg)
         if pin:
             pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
             # [IRQ] - event type setup
@@ -531,7 +531,7 @@ def intercon_genpage(cmd=None, run=False):
         # Create page for intercon command
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(host, cmd, run=run))
     except Exception as e:
-        errlog_add(f'[ERR] intercon_genpage: {e}')
+        syslog(f'[ERR] intercon_genpage: {e}')
         return str(e)
     return True
 
@@ -554,7 +554,7 @@ def cmd_genpage(cmd=None, run=False):
         # Create page for intercon command
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd, run=run))
     except Exception as e:
-        errlog_add(f'[ERR] cmd_genpage: {e}')
+        syslog(f'[ERR] cmd_genpage: {e}')
         return str(e)
     return True
 
@@ -577,7 +577,7 @@ def function_genpage(func):
         # Create custom page
         PageUI.PAGE_UI_OBJ.add_page(lambda: func(display=PageUI.DISPLAY))
     except Exception as e:
-        errlog_add(f'[ERR] function_genpage: {e}')
+        syslog(f'[ERR] function_genpage: {e}')
         return str(e)
     return True
 
@@ -598,7 +598,7 @@ def adc_genpage(pin=33):
         # Create page for intercon command
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.adc_visualize_page(pin=pin))
     except Exception as e:
-        errlog_add(f'[ERR] adc_genpage: {e}')
+        syslog(f'[ERR] adc_genpage: {e}')
         return str(e)
     return True
 

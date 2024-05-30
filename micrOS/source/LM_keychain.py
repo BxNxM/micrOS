@@ -2,7 +2,7 @@ import uasyncio as asyncio
 from Common import micro_task
 from utime import localtime
 from Network import ifconfig
-from LM_oled import text, show, rect, pixel, clean, line, load_n_init as oled_lni
+from LM_oled import text, show, rect, pixel, clean, line, load as oled_lni
 from LM_ds18 import measure
 from LM_system import top
 from microIO import physical_pin, pinmap_dump
@@ -134,7 +134,7 @@ async def _task(period_ms):
     """
     # Auto init keychain module (if needed) - failsafe
     if not KC.INITED:
-        _v = load_n_init()
+        _v = load()
         if not KC.INITED:
             return _v
 
@@ -181,7 +181,7 @@ def _boot_page(msg):
 #      PUBLIC FUNCTIONS     #
 #############################
 
-def load_n_init(width=64, height=32, bootmsg="micrOS"):
+def load(width=64, height=32, bootmsg="micrOS"):
     """
     Init OLED display 64x32 (default)
     Init Neopixel LED (1 segment)
@@ -309,7 +309,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return ('load_n_init width=64 height=32 bootmsg="micrOS"',
+    return ('load width=64 height=32 bootmsg="micrOS"',
             'temperature', 'display period>=1000',
             'press_event',
             'display_toggle',

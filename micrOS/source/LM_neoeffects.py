@@ -1,4 +1,4 @@
-from LM_neopixel import load_n_init, segment, Data, status
+from LM_neopixel import load, segment, Data, status
 from LM_neopixel import pinmap as pm
 from random import randint
 
@@ -27,7 +27,7 @@ class DrawEffect:
         Set neopixel object & store pixel cnt
         """
         if Data.NEOPIXEL_OBJ is None:
-            load_n_init(ledcnt=ledcnt)
+            load(ledcnt=ledcnt)
             cls.pix_cnt = Data.NEOPIXEL_OBJ.n
         if cls.pix_cnt is None:
             cls.pix_cnt = Data.NEOPIXEL_OBJ.n

@@ -221,7 +221,7 @@ class SH1106_I2C(SH1106):
 #   SH1106 interface functions    #
 ###################################
 
-def load_n_init(width=128, height=64, brightness=50, rotate=180):
+def load(width=128, height=64, brightness=50, rotate=180):
     if SH1106_I2C.OLED_OBJ is None:
         #i2c = SoftI2C(Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
         i2c = I2C(scl=Pin(physical_pin('i2c_scl')), sda=Pin(physical_pin('i2c_sda')), freq=400000)
@@ -238,7 +238,7 @@ def text(string="text", x=0, y=0):
     :param x: 0-127
     :param y: 0-63
     """
-    load_n_init().text(string, x, y, color=1)
+    load().text(string, x, y, color=1)
     return True
 
 
@@ -247,9 +247,9 @@ def invert():
     Invert OLED display
     """
     global __INVERT
-    load_n_init()
+    load()
     __INVERT = not __INVERT
-    load_n_init().invert(invert=__INVERT)
+    load().invert(invert=__INVERT)
     return True
 
 
@@ -258,7 +258,7 @@ def clean(state=0):
     Clean display
     :param state: 0/1
     """
-    load_n_init().fill(state)
+    load().fill(state)
     return True
 
 
@@ -271,7 +271,7 @@ def line(sx, sy, ex, ey, state=1):
     :param ey: end y
     :param state: state 0/1
     """
-    load_n_init().line(sx, sy, ex, ey, state)
+    load().line(sx, sy, ex, ey, state)
     return True
 
 
@@ -286,14 +286,14 @@ def rect(x, y, w, h, state=1, fill=False):
     :param fill: fill rectangle (True/False)
     """
     if fill:
-        load_n_init().fill_rect(x, y, w, h, state)
+        load().fill_rect(x, y, w, h, state)
     else:
-        load_n_init().rect(x, y, w, h, state)
+        load().rect(x, y, w, h, state)
     return True
 
 
 def pixel(x, y, state=1):
-    load_n_init().pixel(x, y, color=state)
+    load().pixel(x, y, color=state)
     return True
 
 
@@ -336,7 +336,7 @@ def bitmap(bmp=None, x=0, y=0):
                '00001100110000',
                '00001100110000')
 
-    display = load_n_init()
+    display = load()
     for _y, row in enumerate(bmp):
         for _x, c in enumerate(row):
             display.pixel(_x+x, _y+y, int(c))
@@ -347,7 +347,7 @@ def poweron():
     """
     Power ON OLED
     """
-    load_n_init().poweron()
+    load().poweron()
     return True
 
 
@@ -355,7 +355,7 @@ def poweroff():
     """
     Power OFF OLED
     """
-    load_n_init().poweroff()
+    load().poweroff()
     return True
 
 
@@ -364,11 +364,11 @@ def show():
     Show OLED buffer data
     - update display
     """
-    load_n_init().show()
+    load().show()
 
 
 def flip():
-    load_n_init().flip()
+    load().flip()
     return True
 
 
@@ -393,7 +393,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load_n_init width=128 height=64 rotate=180',\
+    return 'load width=128 height=64 rotate=180',\
            'text "text" x y', 'invert', 'clean state=<0/1>',\
            'line sx sy ex ey state=1', 'rect x y w h state=1 fill=False',\
            'pixel x y state', 'bitmap bmp=None x=0 y=0',\

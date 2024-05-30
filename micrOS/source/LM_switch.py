@@ -49,7 +49,7 @@ def __init_switches_state(state=None, ch_init=None):
         set_state4(state)
 
 
-def load_n_init(cache=None, ch_init=None):
+def load(cache=None, ch_init=None):
     """
     Initiate switch module (4 switch pack)
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
@@ -264,6 +264,6 @@ def help(widgets=False):
            'set_state2 state=<0,1>', 'toggle2', \
            'set_state3 state=<0,1>', 'toggle3', \
            'set_state4 state=<0,1>', 'toggle4', \
-           'load_n_init cache=None<True/False> ch_init=[1,2,3,4]',\
+           'load cache=None<True/False> ch_init=[1,2,3,4]',\
            'status',\
            'pinmap'

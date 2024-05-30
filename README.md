@@ -207,7 +207,7 @@ It will install your board via USB with default settings. **Continue with micrOS
 - 📄**Config handling** - user config - **node_config.json**
     - ⏳**Boot phase** - preload Load Module(s)
         - For pinout and last state initialization - based on node_config `boothook`
-        - Example values: `rgb load_n_init; neopixel load_n_init`
+        - Example values: `rgb load; neopixel load`
     - 📡**Network handling** - based on node_config 
         - STA / AP network modes, `nwmd`
         - NTP + UTC aka clock setup
@@ -327,7 +327,7 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 |   **`staessid`**    |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name to connect (for STA default connection mode). You can list multiple wifi names separated with `;`
 |   **`stapwd`**      | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for STA default connection mode). You can list multiple wifi passwords separated with `;` connected in order to `staessid` wifi names.
 |   **`appwd`**       |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password + micrOS auth
-| **`boothook`**      |    `n/a` `<str>`            |      Yes        | Add Load Module execution(s) to the boot sequence. Separator `;`. Examples: `rgb load_n_init; cct load_n_init` but you can call any load module function here if you want to run it at boot time.
+| **`boothook`**      |    `n/a` `<str>`            |      Yes        | Add Load Module execution(s) to the boot sequence. Separator `;`. Examples: `rgb load; cct load` but you can call any load module function here if you want to run it at boot time.
 | **`webui`**         |       `False`  `bool`       |      Yes        | Launch http rest server on port 80 (in parallel with micrOS shell on port 9008 aka `socport`). It has 2 endpoints: / aka main page (index.html) and /rest aka rest (json) interface for load module execution. Example: `<devfid>.local` or `<devfid>.local/rest` + optional parameters: `/rgb/toggle`. **Apple shortcuts compatible**
 | | |
 | **`cron`**          |     `False`  `<bool>`       |       Yes       | Enable timestamp based Load Module execution aka Cron scheduler (linux terminology), Timer(1) hardware interrupt enabler.
@@ -649,7 +649,7 @@ devToolKit.py -c -p '--dev BedLamp conf <a> dump'
   nwmd      :        STA
   timirqcbf :        system ha_sta
   irq_prell_ms:      300
-  boothook  :        cct load_n_init
+  boothook  :        cct load
   aioqueue  :        3
   auth      :        False
   timirqseq :        60000

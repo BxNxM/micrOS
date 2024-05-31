@@ -647,8 +647,6 @@ def help(widgets=False):
                              'BUTTON control cmd="next"',
                              'BUTTON control cmd="prev"',
                              'BUTTON control cmd="press"',
-                             'BUTTON control cmd="on"',
-                             'BUTTON control cmd="off"',
                              'msgbox "msg"',
                              'intercon_genpage "host" "cmd" run=False',
                              'cmd_genpage "cmd" run=False',

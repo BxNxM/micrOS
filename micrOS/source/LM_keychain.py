@@ -20,7 +20,7 @@ class KC:
     DP_cnt_default = None   # store calculated sequence to sleep 30sec/period_ms
     NEOPIXEL_OBJ = None     # Neopixel LED handler object
     COLOR_WHEEL = None      # LED color wheel generator object for animation
-    NEOPIXEL_BR = 30        # default neopixel brightness
+    NEOPIXEL_BR = 20        # default neopixel brightness
 
 #############################
 #    INTERNAL FUNCTIONS     #
@@ -54,7 +54,7 @@ async def _screen_saver(scale=2):
         show()
 
 
-def _color_wheel():
+def __color_wheel():
     """
     RGB LED color wheel generator - rainbow
     """
@@ -126,7 +126,7 @@ async def _main_page():
     return "Display show"
 
 
-async def _task(period_ms):
+async def _ui_task(period_ms):
     """
     Async display refresh task
     - main page    (main mode)  - auto sleep after 30 sec
@@ -166,7 +166,7 @@ async def _task(period_ms):
                 show()                          #3 show cleaned display
                 KC.DP_cnt = KC.DP_cnt_default   #4 reset sleep counter to default
                 my_task.out = 'sleep...'
-            neopixel_color_wheel()              # update neopixel color wheel
+            color_wheel()              # update neopixel color wheel
 
 
 def _boot_page(msg):
@@ -189,7 +189,7 @@ def load(width=64, height=32, bootmsg="micrOS"):
     :param height: screen height (pixel)
     :param bootmsg: First text on page at bootup, default: "micrOS"
     """
-    KC.COLOR_WHEEL = _color_wheel()             #1 Init neopixel color wheel generator
+    KC.COLOR_WHEEL = __color_wheel()             #1 Init neopixel color wheel generator
     try:
         oled_lni(width, height, brightness=20)  #2 Init oled display
         _boot_page(bootmsg)                     #3 Show boot page text
@@ -207,7 +207,7 @@ def display(period=1000):
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 500 if period < 500 else period
-    state = micro_task(tag="kc._display", task=_task(period_ms=period_ms))
+    state = micro_task(tag="kc._display", task=_ui_task(period_ms=period_ms))
     return "Starting" if state else "Already running"
 
 
@@ -218,7 +218,7 @@ def temperature():
     return measure()
 
 
-def neopixel_color_wheel(br=None):
+def color_wheel(br=None):
     """
     Neopixel color wheel
     :param br: brightness value 0-100 percent
@@ -236,7 +236,7 @@ def neopixel_color_wheel(br=None):
     else:
         KC.NEOPIXEL_BR = br                         # update neopixel brightness cache
     if KC.COLOR_WHEEL is None:
-        KC.COLOR_WHEEL = _color_wheel()             # init color wheel generator
+        KC.COLOR_WHEEL = __color_wheel()             # init color wheel generator
     # UPDATE
     r, g, b = next(KC.COLOR_WHEEL)                  # get next color
     br = br if br == 100 else br/100                # calculate brightness multiplier
@@ -266,7 +266,7 @@ def neopixel_toggle():
     v = 'disabled' if KC.NEOPIXEL_BR == 0 else 'enabled'
     return f"Neopixel: {v} br: {KC.NEOPIXEL_BR}"
 
-def press_event():
+def button():
     """
     IRQ1 keychain module control function
     - neopixel ON/OFF
@@ -311,8 +311,8 @@ def help(widgets=False):
     """
     return ('load width=64 height=32 bootmsg="micrOS"',
             'temperature', 'display period>=1000',
-            'press_event',
+            'button',
             'display_toggle',
             'neopixel_toggle',
-            'neopixel_color_wheel br=<0-100>',
+            'color_wheel br=<0-100>',
             'pinmap', 'lmdep')

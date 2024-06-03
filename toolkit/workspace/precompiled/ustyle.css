@@ -4,7 +4,7 @@
     100% {background-position: 0% 50%;}
 }
 body {
-    height: 100vh; /* Set the height to 100% of the viewport height */
+    height: 200vh; /* Set the height to 100% of the viewport height */
     width: 100vh; /* Set the width to 200% of the viewport height */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     margin: 40px;

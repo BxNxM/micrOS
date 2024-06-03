@@ -2,41 +2,41 @@
 const currentHostname = window.location.hostname;
 const port = window.location.port ? `:${window.location.port}` : "";
 
-
-function restAPICore(cmd) {
-    // Core micrOS rest API handler
+function restAPICore(cmd, timeout=5000) {
     cmd = cmd.trim().replace(/\s+/g, '/');
-    let query = `http://${currentHostname}${port}/rest/${cmd}`;
+    const query = `http://${currentHostname}${port}/rest/${cmd}`;
     const startTime = performance.now();
-    let endTime;
-    // Call rest api with command parameter and return the promise
-    return fetch(query).then(response => {
-        if (!response.ok) {
-            throw new Error('restAPICore code NOK: ' + response.status);
-        }
-        endTime = performance.now();
-        return response.json();
-    }).then(response => {
-        // return cmd result
-        const delta = (endTime - startTime).toFixed(0);
-        return { response, delta, query };                  // RETURN DATA
-    }).catch(error => {
-        console.error('Error in restAPICore:', error);
-        throw error;
-    });
+    // Timeout handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    return fetch(query, { signal: controller.signal })
+        .then(response => {
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error('restAPICore code NOK: ' + response.status);
+            }
+            const endTime = performance.now();
+            return response.json().then(response => ({ response, delta: (endTime - startTime).toFixed(0), query }));
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            console.error('Error in restAPICore:', error);
+            throw error;
+        });
 }
 
-function restAPI(cmd='', console=true) {
+
+function restAPI(cmd='', console=true, timeout=5000) {
     // micrOS rest API handler with built-in restCmdInput
     // UPDATES: restConsole(...)
     if (cmd == '') {
         cmd = document.getElementById('restCmdInput').value;
     }
-    return restAPICore(cmd)
-            .then(({ response, delta, query }) => {
-                if (console) {
-                    restConsole(query, response, delta);
-                }
+    return restAPICore(cmd, timeout).then(({ response, delta, query }) => {
+            if (console) {
+                restConsole(query, response, delta);
+            }
             return response
         }).catch(error => {
             console.error('Error in restAPI:', error);

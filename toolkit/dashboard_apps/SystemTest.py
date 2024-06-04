@@ -37,6 +37,26 @@ def single_cmd_exec_check():
             return True, info
     return False, info
 
+def shell_cmds_check():
+    info = "[ST] Run built-in shell commands [modules|version|help]"
+    print(info)
+    cmd_list = ['modules']
+    output = execute(cmd_list)
+    if output[0]:
+        if not (output[1].startswith("[") and output[1].endswith("]")):
+            return False, f"{info}modules: {output[1]}"
+    cmd_list = ['version']
+    output = execute(cmd_list)
+    if output[0]:
+        if not ('.' in output[1] and '-' in output[1]):
+            return False, f"{info}version: {output[1]}"
+    cmd_list = ['help']
+    output = execute(cmd_list)
+    if output[0]:
+        if not ('[MICROS]' in output[1] and '[CONF]' in output[1] and '[TASK]' in output[1] and '[EXEC]' in output[1]):
+            return False, f"{info}help: {output[1]}"
+    return True, info
+
 
 def lm_cmd_exec_check():
     info = "[ST] Run Load Module command execution check [system heartbeat]"
@@ -107,14 +127,6 @@ def micrOS_bgjob_one_shot_check():
     # Initial task cleanup...
     execute(['task kill system.clock'])
 
-    async_available_cmd_list = ['help']
-    output = execute(async_available_cmd_list)
-    if output[0]:
-        if "[TASK]" not in output[1]:
-            return False, f'[ASYNC] task function not available: {output[1]}'
-    else:
-        return False, f'[ASYNC] check: help cmd return error.'
-
     for _ in range(0, 2):
         cmd_list = ['system clock &']
         output = execute(cmd_list)
@@ -128,14 +140,6 @@ def micrOS_bgjob_one_shot_check():
 def micrOS_bgjob_loop_check():
     info = "[ST] Run micrOS Async Task check [system clock &&] + task kill"
     print(info)
-
-    async_available_cmd_list = ['help']
-    output = execute(async_available_cmd_list)
-    if output[0]:
-        if "[TASK]" not in output[1]:
-            return False, f'[ASYNC] task function not available: {output[1]}'
-    else:
-        return False, f'[ASYNC] check: help cmd return error.'
 
     # Start background task loop
     cmd_list = ['system clock &&']
@@ -541,6 +545,7 @@ def app(devfid=None, pwd=None):
 
     # Get test verdict
     verdict = {'single_cmds': single_cmd_exec_check(),
+               'shell_cmds': shell_cmds_check(),
                'lm_cmd_exec': lm_cmd_exec_check(),
                'config_get': micrOS_config_get(),
                'config_set': micrOS_config_set(),

@@ -1,21 +1,13 @@
 // API HELPER FUNCTION - get module exposed widgets
-
 function moduleHelp(module) {
-    // Get and Parse module widget help message
-    let endpoint = `${module}/help/True`;
-    console.log(`[API] Endpoint: ${endpoint}`)
-    return restAPI(endpoint).then(commands => {
-        //console.log(`Raw ${module} help: ${commands.result}`)
-        // Replace all occurrences of \" with " in each string and parse each string into a JSON object
-        const parsedWidgets = commands.result.map(item => {
-            const cleanedItem = item.replace(/\\"/g, '"');      // Workaround...
-            return JSON.parse(cleanedItem);
-        });
-        console.log(`Parsed ${module} help:`);
-        console.log(parsedWidgets)
-        return parsedWidgets
+    const endpoint = `${module}/help/True`;
+    console.log(`[API] Endpoint: ${endpoint}`);
+    return restAPI(endpoint).then(({ result }) => {
+        const parsedWidgets = result.map(item => JSON.parse(item.replace(/\\"/g, '"')));
+        console.log(`Parsed ${module} help:`, parsedWidgets);
+        return parsedWidgets;
     }).catch(error => {
-        console.error(error)
+        console.error(error);
         return [];
     });
 }
@@ -56,13 +48,10 @@ function generateElement(type, data, options={}) {
     }
 }
 
-function autoTitleLen(widgets, func) {
+function autoTitleLen(widgets, lm_call) {
     try {
-        // Create function list for comparation
-        const funcNames = widgets.map(command => command.lm_call.split(' ')[0]);
-        // Count the occurrences of the func name
-        const count = funcNames.filter(word => word === func).length;
-        // Return 2 if count is greater than 1, otherwise return 1
+        const func = lm_call.split('/')[0].split(' ')[0];
+        const count = widgets.reduce((accumulator, { lm_call }) => accumulator + (lm_call.split(' ')[0] === func ? 1 : 0), 0);
         return count > 1 ? 2 : 1;
     } catch (error) {
         console.error(error);
@@ -71,66 +60,51 @@ function autoTitleLen(widgets, func) {
 }
 
 function craftModuleWidgets(module, widgets) {
-    // Create ALL exposed module function widgets
-    if (widgets.length === 0) {
+    if (!widgets.length) {
         console.log(`${module} no exposed widgets`);
         return;
     }
     console.log(`Craft widgets bind to ${module}`);
-    generateElement(type='h2', data=`🧬 ${module}`);
-    // Check widget data struct for the given module
+    generateElement('h2', `🧬 ${module}`);
+
+    const widgetTypeOptions = {
+        slider: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
+        button: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
+        toggle: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
+        textbox: item => ({ title_len: autoTitleLen(widgets, item.lm_call), refresh: item.refresh }),
+        color: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range })
+    };
+
     widgets.forEach(item => {
-        let type = item.type;
-        let type_options = {};
-        let lm_call = item.lm_call.replace(/\s/g, '/');
-
-        if (type === 'slider') {
-            type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
-            type_options['range'] = item.range;
-
-        } else if (type === 'button' || type === 'toggle') {
-            type = 'button';
-            type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
-            type_options['range'] = item.range;
-
-        } else if (type === 'textbox') {
-            type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
-            type_options['refresh'] = item.refresh;
-
-        } else if (type === 'color') {
-            type_options['title_len'] = autoTitleLen(widgets, lm_call.split('/')[0]);
-            type_options['range'] = item.range;
-
-        } else {
-            console.log(`Unsupported micrOS widget html_type: ${type}`)
+        let { type, lm_call } = item;
+        lm_call = lm_call.replace(/\s/g, '/');
+        const type_options = widgetTypeOptions[type] ? widgetTypeOptions[type](item) : null;
+        if (!type_options) {
+            console.log(`Unsupported micrOS widget html_type: ${type}`);
             return;
         }
+
         try {
-            generateElement(type=type, data=`${module}/${lm_call}`, options=type_options);
+            if (type === 'toggle') type = 'button';                     // Workaround for toggle->button
+            generateElement(type, `${module}/${lm_call}`, type_options);
         } catch (error) {
             console.error(error);
         }
-    })
+    });
 }
 
-
 function DynamicWidgetLoad() {
-    // INIT DASHBOARD (load active modules -> build page)
     restAPI('modules').then(data => {
-        //console.log(data);
-        const app_list = data['result'];
-        // Handle the app_list data here
-        for (const module of app_list) {
-            // NEW module widget query
+        const app_list = data.result;
+        app_list.forEach(module => {
             moduleHelp(module).then(widgets => {
-                craftModuleWidgets(module, widgets)
+                craftModuleWidgets(module, widgets);
             }).catch(error => {
-                // You can work with parsedWidgets here
-                console.error(error);
+                console.error(`Error processing module ${module}:`, error);
             });
-        }
+        });
     }).catch(error => {
-        console.error(error);
+        console.error('Error loading modules:', error);
     });
 }
 

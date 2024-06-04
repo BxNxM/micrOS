@@ -3,43 +3,34 @@ const currentHostname = window.location.hostname;
 const port = window.location.port ? `:${window.location.port}` : "";
 
 function restAPICore(cmd, timeout=5000) {
-    cmd = cmd.trim().replace(/\s+/g, '/');
-    const query = `http://${currentHostname}${port}/rest/${cmd}`;
-    const startTime = performance.now();
-    // Timeout handling
+    const query = `http://${currentHostname}${port}/rest/${cmd.trim().replace(/\s+/g, '/')}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const startTime = performance.now();
 
     return fetch(query, { signal: controller.signal })
         .then(response => {
             clearTimeout(timeoutId);
-            if (!response.ok) {
-                throw new Error('restAPICore code NOK: ' + response.status);
-            }
-            const endTime = performance.now();
-            return response.json().then(response => ({ response, delta: (endTime - startTime).toFixed(0), query }));
-        })
-        .catch(error => {
+            if (!response.ok) {throw new Error(`restAPICore code NOK: ${response.status}`);}
+            return response.json().then(data => ({response: data,
+                delta: (performance.now() - startTime).toFixed(0), query
+            }));
+        }).catch(error => {
             clearTimeout(timeoutId);
             console.error('Error in restAPICore:', error);
             throw error;
         });
 }
 
-
-function restAPI(cmd='', console=true, timeout=5000) {
-    // micrOS rest API handler with built-in restCmdInput
-    // UPDATES: restConsole(...)
-    if (cmd == '') {
-        cmd = document.getElementById('restCmdInput').value;
-    }
+function restAPI(cmd='', consoleOut=true, timeout=5000) {
+    if (cmd === '') {cmd = document.getElementById('restCmdInput').value;}
     return restAPICore(cmd, timeout).then(({ response, delta, query }) => {
-            if (console) {
-                restConsole(query, response, delta);
-            }
-            return response
+            if (consoleOut) {restConsole(query, response, delta);}
+            return response;
         }).catch(error => {
-            console.error('Error in restAPI:', error);
+            if (error.name === 'AbortError') {console.error(`Timeout (${timeout}ms) - restAPICore: ${cmd}`);
+            } else {console.error('Error in restAPI:', error);}
+            return { response: null, delta: 0, query: 'restAPI error' };
         });
 }
 

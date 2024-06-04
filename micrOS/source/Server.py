@@ -177,14 +177,13 @@ class WebCli(Client):
     @staticmethod
     def file_type(path):
         """File dynamic Content-Type handling"""
-        if path.endswith(".html"):
-            return "text/html"
-        elif path.endswith(".css"):
-            return "text/css"
-        elif path.endswith(".js"):
-            return "application/javascript"
-        else:
-            return "text/plain"
+        content_types = {".html": "text/html",
+                         ".css": "text/css",
+                         ".js": "application/javascript"}
+        # Extract the file extension
+        ext = path.rsplit('.', 1)[-1]
+        # Return the content type based on the file extension
+        return content_types.get(f".{ext}", "text/plain")
 
     async def response(self, request):
         """HTTP GET REQUEST - WEB INTERFACE"""

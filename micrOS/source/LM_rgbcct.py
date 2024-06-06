@@ -60,6 +60,6 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('load',
-                             'TOGGLE toggle state=<None,True,False> smooth=True',
+                             'BUTTON toggle state=<True,False> smooth=True',
                              'SLIDER brightness percent smooth=True wake=True',
                              'status', 'pinmap'), widgets=widgets)

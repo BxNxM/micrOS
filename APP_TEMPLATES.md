@@ -424,6 +424,9 @@ def brightness(br):
 
 def action():
     return "Do something..."
+    
+def control(cmd=None):
+    return 'No cmd' if cmd is None else cmd
 
 
 def other_function(num=0):
@@ -444,6 +447,17 @@ def help(widgets=False):
                     'COLOR color r g b',
                     'SLIDER brightness br',
                     'BUTTON action',
+                    'conntrol cmd',
+                    'other_function num'), widgets=widgets)
+```
+
+OR custimze type parameters:
+
+```
+    return resolve(('COLOR color r=<0-255> g b',                 # range syntax: <min-max-step> step is optional
+                    'SLIDER brightness br=<0-1000-10>',          # range syntax: <min-max-step> step is optional
+                    'BUTTON action',
+                    'BUTTON conntrol cmd=<Hello,Bello>',         # options syntax: <opt1,opt2,...> list of parameters
                     'other_function num'), widgets=widgets)
 ```
 
@@ -465,10 +479,10 @@ RingLamp $ neopixel help
  
 RingLamp $ neopixel help widgets=True
  {"lm_call": "color r=:range: g=:range: b=:range: smooth=True force=True", "type": "color", "range": [0, 255, 2]},
- {"lm_call": "toggle state=:range: smooth=True", "type": "toggle", "range": ["True", "False"]},
+ {"lm_call": "toggle state=:options: smooth=True", "type": "button", "options": ["True", "False"]},
  {"lm_call": "brightness percent=:range: smooth=True wake=True", "type": "slider", "range": [0, 100, 2]},
  {"lm_call": "segment r=:range: g=:range: b=:range: ", "type": "color", "range": [0, 255, 2]},
- {"lm_call": "random smooth=True max_val=254", "type": "button"},
+ {"lm_call": "random smooth=True max_val=254", "type": "button", "options": ["None"]},
 ```
 
 

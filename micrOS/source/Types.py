@@ -21,12 +21,11 @@ __TEMPLATE = {'type': 'n/a', 'lm_call': ''}
 # range and options param types
 __RANGE_100 = {'range': (0, 100, 2)}
 __RANGE_255 = {'range': (0, 255, 2)}
-__RANGE_OPTS = {'options': ("True", "False")}
+__OPTIONS = {'options': ("None",)}
 
 
 # WIDGET TYPES - STRUCTURE (DYNAMIC)
-BUTTON = __TEMPLATE | {'type': 'button'}                                    # Mandatory func params: n/a
-TOGGLE = __TEMPLATE | {'type': 'toggle'} | __RANGE_OPTS                     # Mandatory func params: state
+BUTTON = __TEMPLATE | {'type': 'button'} | __OPTIONS                        # Mandatory func params: n/a
 SLIDER = __TEMPLATE | {'type': 'slider'} | __RANGE_100                      # Mandatory func params: br
 TEXTBOX = __TEMPLATE | {'type': 'textbox', 'refresh': 10000}                # Mandatory func params: n/a
 COLOR = __TEMPLATE | {'type': 'color'} | __RANGE_255                        # Mandatory func params: r, g, b
@@ -70,21 +69,22 @@ def _generate(type_dict, help_msg):
     func = help_msg.split()[1]
     params = help_msg.split()[2:] if len(help_msg.split()) > 2 else []
     valid_params = []
+    overwrite = {}
     for p in params:
         if '=' in p:
             var, value = p.split("=")
             try:
                 p, values, value_type = _placeholder(var, value, type_dict)
                 if value_type is not None:
-                    type_dict[value_type] = values
+                    overwrite[value_type] = values
             except Exception as e:
                 errlog_add(f"[ERR] Type.resolve._placeholder: {e}")
         else:
             # Empty param fallback
-            p = f'{p}=:range:'
+            p = f'{p}=:{"range" if "range" in type_dict else "options"}:'
         valid_params.append(p)
     type_dict['lm_call'] = f"{func} " + " ".join(valid_params)
-    return dumps(type_dict)
+    return dumps(type_dict | overwrite)
 
 def resolve(help_data, widgets=False):
     help_msg = []

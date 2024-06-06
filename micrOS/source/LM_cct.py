@@ -352,7 +352,7 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('WHITE white cw=<0-1000-5> ww smooth=True force=True',
-                             'TOGGLE toggle state=<None,True,False> smooth=True', 'load',
+                             'BUTTON toggle state=<True,False> smooth=True', 'load',
                              'SLIDER brightness percent=<0-100> smooth=True wake=True',
                              'transition cw=None ww=None sec=1.0 wake=False',
                              'hue_transition percent=<0-100> sec=1.0 wake=False',

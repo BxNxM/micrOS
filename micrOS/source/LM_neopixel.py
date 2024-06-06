@@ -343,11 +343,11 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('COLOR color r=<0-255-5> g b smooth=True force=True',
-                             'TOGGLE toggle state=<None,True,False> smooth=True',
+                             'BUTTON toggle state=<True,False> smooth=True',
                              'load ledcnt=24',
                              'SLIDER brightness percent=<0-100> smooth=True wake=True',
                              'COLOR segment r g b s=<0-n>',
-                             'transition r=None g=None b=None sec=1.0 wake=False',
+                             'transition r g b sec=1.0 wake=False',
                              'BUTTON random smooth=True max_val=254',
                              'status',
                              'subscribe_presence',

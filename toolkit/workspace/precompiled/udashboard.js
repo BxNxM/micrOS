@@ -30,7 +30,7 @@ function generateElement(type, data, options={}) {
     if (type === 'slider') {
         // Create slider widget
         sliderWidget(container, data, options)
-    } else if (type === 'button' || type === 'toggle') {
+    } else if (type === 'button') {
         // Create button widget
         buttonWidget(container, data, options)
     } else if (type === 'textbox') {
@@ -68,8 +68,7 @@ function craftModuleWidgets(module, widgets) {
     generateElement('h2', `🧬 ${module}`);
 
     const widgetTypeOptions = {
-        button: item => ({title_len: autoTitleLen(widgets, item.lm_call)}),
-        toggle: item => ({title_len: autoTitleLen(widgets, item.lm_call), options: item.options }),
+        button: item => ({title_len: autoTitleLen(widgets, item.lm_call), options: item.options }),
         slider: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
         color: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
         textbox: item => ({title_len: autoTitleLen(widgets, item.lm_call), refresh: item.refresh })

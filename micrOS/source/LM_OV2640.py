@@ -233,7 +233,7 @@ def help(widgets=False):
         'SLIDER settings saturation=<0-100>',
         'SLIDER settings brightness=<0-100>',
         'SLIDER settings contrast=<0-100>',
-        'BUTTON settings effect=<None,NEG,BW,RED,GREEN,BLUE,RETRO>',
+        'BUTTON settings effect=<NONE,NEG,BW,RED,GREEN,BLUE,RETRO>',
         'capture',
         'photo',
         'set_photo_endpoint',

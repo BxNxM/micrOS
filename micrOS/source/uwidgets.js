@@ -3,8 +3,8 @@
 const widget_indent = '40px';
 const windowWidth = window.innerWidth;
 
-function sliderWidget(container, command, options = {}) {
-    const { title_len = 1, range = [0, 100, 5] } = options;
+function sliderWidget(container, command, params={}) {
+    const { title_len = 1, range = [0, 100, 5] } = params;
     const [min, max, step] = range;
     const paragraph = document.createElement('p');
     const element = document.createElement('input');
@@ -33,27 +33,43 @@ function sliderWidget(container, command, options = {}) {
     containerAppendChild([paragraph, element, valueDisplay], container);
 }
 
-function buttonWidget(container, command, options = {}) {
-    const { title_len = 1 } = options;
+function buttonWidget(container, command, params = {}) {
+    const { title_len = 1, options = ['None'] } = params;
+    const text = command.split('/').slice(1, title_len + 1).join('-');
+    const optsToTextMap = {
+        'True': 'ON',
+        'False': 'OFF',
+        'None': 'Auto'
+    };
+    if (options.length > 1) {
+        // Create and append title paragraph for multi-button mode
+        const titleParagraph = document.createElement('p');
+        titleParagraph.style.textIndent = widget_indent;
+        titleParagraph.textContent = text;
+        container.appendChild(titleParagraph);
+    }
     const paragraph = document.createElement('p');
-    const element = document.createElement('button');
-
     paragraph.style.textIndent = widget_indent;
-    element.style.marginLeft = widget_indent;
-    element.style.height = '30px';
-    element.textContent = command.split('/').slice(1, title_len + 1).join('-');;
 
-    element.addEventListener('click', () => {
-        const call_cmd = options.hasOwnProperty('range') ? command.replace(':range:', 'None') : command;
-        console.log(`[API] Button clicked: ${call_cmd}`);
-        restAPI(call_cmd);
+    // Create buttons for each option
+    options.forEach(opt => {
+        const element = document.createElement('button');
+        element.style.marginRight = '20px';
+        element.style.height = '30px';
+        element.textContent = options.length === 1 ? text : optsToTextMap[opt] || opt;
+
+        element.addEventListener('click', () => {
+            const call_cmd = command.replace(':options:', opt);  //TODO: in case of string param: `"${opt}"`
+            console.log(`[API] Button clicked: ${call_cmd}`);
+            restAPI(call_cmd);
+        });
+        paragraph.appendChild(element);
     });
-
-    containerAppendChild([paragraph, element], container);
+    container.appendChild(paragraph);
 }
 
-function textBoxWidget(container, command, options = {}) {
-    const { title_len = 1, refresh = 5000 } = options;
+function textBoxWidget(container, command, params={}) {
+    const { title_len = 1, refresh = 5000 } = params;
     const paragraph = document.createElement('p');
     const uniqueId = `textbox-${command}-${Date.now()}`;
     const element = document.createElement('div');
@@ -92,7 +108,7 @@ function textBoxWidget(container, command, options = {}) {
     containerAppendChild([paragraph, element], container);
 }
 
-function colorPaletteWidget(container, command, options = {}) {
+function colorPaletteWidget(container, command, params = {}) {
     const hexToRgb = (hex, max = 255) => {
         hex = hex.replace(/^#/, '');
         let bigint = parseInt(hex, 16);
@@ -112,7 +128,7 @@ function colorPaletteWidget(container, command, options = {}) {
         return colors[Math.floor(Math.random() * colors.length)];
     };
 
-    const { title_len = 1, range = [0, 255] } = options;
+    const { title_len = 1, range = [0, 255] } = params;
     const max_val = range[1];
     const paragraph = document.createElement('p');
     const colorPicker = document.createElement('input');

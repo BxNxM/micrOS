@@ -18,9 +18,10 @@ from Debug import errlog_add
 #                 HELP TUPLE RESOLVER                  #
 ########################################################
 __TEMPLATE = {'type': 'n/a', 'lm_call': ''}
+# range and options param types
 __RANGE_100 = {'range': (0, 100, 2)}
 __RANGE_255 = {'range': (0, 255, 2)}
-__RANGE_OPTS = {'range': ("True", "False")}
+__RANGE_OPTS = {'options': ("True", "False")}
 
 
 # WIDGET TYPES - STRUCTURE (DYNAMIC)
@@ -44,7 +45,6 @@ def _placeholder(var, value, type_dict):
         except:
             return False
 
-    new_range = None
     if value.startswith('<') and value.endswith('>'):
         if '-' in value:
             _range = value[1:-1].split('-')
@@ -55,12 +55,15 @@ def _placeholder(var, value, type_dict):
                 if _step is None:
                     _step = type_dict['range'][2]
                 new_range = (int(_min), int(_max), int(_step))
-                #print(f"[i] Range overwrite[{var}]: {_range}")
-                return f"{var}=:range:", new_range
+                return f"{var}=:range:", new_range, 'range'
             # Ignore param
-            return "", new_range
+            return "", None, None
+        if ',' in value:
+            _opts = value[1:-1].split(',')
+            new_opts = tuple(_opts)
+            return f"{var}=:options:", new_opts, 'options'
     # Keep param value
-    return f"{var}={value}", new_range
+    return f"{var}={value}", None, None
 
 
 def _generate(type_dict, help_msg):
@@ -71,9 +74,9 @@ def _generate(type_dict, help_msg):
         if '=' in p:
             var, value = p.split("=")
             try:
-                p, new_range = _placeholder(var, value, type_dict)
-                if new_range is not None:
-                    type_dict['range'] = new_range
+                p, values, value_type = _placeholder(var, value, type_dict)
+                if value_type is not None:
+                    type_dict[value_type] = values
             except Exception as e:
                 errlog_add(f"[ERR] Type.resolve._placeholder: {e}")
         else:

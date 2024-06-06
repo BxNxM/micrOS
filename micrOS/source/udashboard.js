@@ -27,16 +27,16 @@ function generateElement(type, data, options={}) {
     // type: slider, button, box, h1, h2, p, li, etc.
     // data: rest command
     const container = document.getElementById('dynamicContent');
-    if (type.toLowerCase() === 'slider') {
+    if (type === 'slider') {
         // Create slider widget
         sliderWidget(container, data, options)
-    } else if (type.toLowerCase() === 'button') {
+    } else if (type === 'button' || type === 'toggle') {
         // Create button widget
         buttonWidget(container, data, options)
-    } else if (type.toLowerCase() === 'textbox') {
+    } else if (type === 'textbox') {
         // Create textbox widget
         textBoxWidget(container, data, options)
-    } else if (type.toLowerCase() === 'color') {
+    } else if (type === 'color') {
         // Create color palette widget
         colorPaletteWidget(container, data, options)
     } else {
@@ -68,11 +68,11 @@ function craftModuleWidgets(module, widgets) {
     generateElement('h2', `🧬 ${module}`);
 
     const widgetTypeOptions = {
-        slider: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
-        button: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
-        toggle: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
-        textbox: item => ({ title_len: autoTitleLen(widgets, item.lm_call), refresh: item.refresh }),
-        color: item => ({ title_len: autoTitleLen(widgets, item.lm_call), range: item.range })
+        button: item => ({title_len: autoTitleLen(widgets, item.lm_call)}),
+        toggle: item => ({title_len: autoTitleLen(widgets, item.lm_call), options: item.options }),
+        slider: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
+        color: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
+        textbox: item => ({title_len: autoTitleLen(widgets, item.lm_call), refresh: item.refresh })
     };
 
     widgets.forEach(item => {
@@ -85,7 +85,6 @@ function craftModuleWidgets(module, widgets) {
         }
 
         try {
-            if (type === 'toggle') type = 'button';                     // Workaround for toggle->button
             generateElement(type, `${module}/${lm_call}`, type_options);
         } catch (error) {
             console.error(error);

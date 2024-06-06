@@ -232,7 +232,7 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('SLIDER set_value value=<0-1000> smooth=True force=True',
-                             'BUTTON toggle state=None smooth=True',
+                             'TOGGLE toggle state=<None,True,False> smooth=True',
                              'subscribe_presence',
                              'transition value=<0-1000> sec wake=False',
                              'status', 'load', 'pinmap'), widgets=widgets)

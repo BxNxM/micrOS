@@ -342,8 +342,8 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('COLOR color r=<0-255> g b smooth=True force=True',
-                             'TOGGLE toggle state smooth=True',
+    return resolve(('COLOR color r=<0-255-5> g b smooth=True force=True',
+                             'TOGGLE toggle state=<None,True,False> smooth=True',
                              'load ledcnt=24',
                              'SLIDER brightness percent=<0-100> smooth=True wake=True',
                              'COLOR segment r g b s=<0-n>',

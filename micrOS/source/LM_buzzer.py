@@ -320,5 +320,5 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('BUTTON bipp repeat=3 freq=600',
-                             'play <rtttlstr/title>', 'list_tones',
+                             'TOGGLE play rtttlstr=<Indiana,TakeOnMe,StarWars,MissionImp>', 'list_tones',
                              'load', 'pinmap'), widgets=widgets)

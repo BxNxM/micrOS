@@ -643,10 +643,7 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('pageui page=0 pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',
-                             'control next/prev/press/on/off',
-                             'BUTTON control cmd="next"',
-                             'BUTTON control cmd="prev"',
-                             'BUTTON control cmd="press"',
+                             'TOGGLE control cmd=<next,prev,press,on,off>',
                              'msgbox "msg"',
                              'intercon_genpage "host" "cmd" run=False',
                              'cmd_genpage "cmd" run=False',

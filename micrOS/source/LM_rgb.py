@@ -313,7 +313,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(( 'COLOR color r=<0-1000> g b smooth=True force=True',
+    return resolve(( 'COLOR color r=<0-1000-10> g b smooth=True force=True',
                               'BUTTON toggle state=<True,False> smooth=True', 'load',
                               'SLIDER brightness percent=<0-100> smooth=True wake=True',
                               'transition r=None g=None b=None sec=1.0 wake=False',

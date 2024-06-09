@@ -1,5 +1,6 @@
 from LM_system import memory_usage
 from Common import socket_stream
+from Common import syslog
 
 
 @socket_stream
@@ -9,6 +10,7 @@ def raise_error(msgobj=None):
     """
     if msgobj is not None:
         msgobj("Raise test exception")
+    syslog("Raise test exception")
     raise Exception("Test exception")
 
 

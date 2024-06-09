@@ -17,19 +17,19 @@ from Debug import errlog_add
 ########################################################
 #                 HELP TUPLE RESOLVER                  #
 ########################################################
+
+# Consolidate common dictionary parts
 __TEMPLATE = {'type': 'n/a', 'lm_call': ''}
-# range and options param types
 __RANGE_100 = {'range': (0, 100, 2)}
 __RANGE_255 = {'range': (0, 255, 2)}
 __OPTIONS = {'options': ("None",)}
 
-
-# WIDGET TYPES - STRUCTURE (DYNAMIC)
-BUTTON = __TEMPLATE | {'type': 'button'} | __OPTIONS                        # Mandatory func params: n/a
-SLIDER = __TEMPLATE | {'type': 'slider'} | __RANGE_100                      # Mandatory func params: br
-TEXTBOX = __TEMPLATE | {'type': 'textbox', 'refresh': 10000}                # Mandatory func params: n/a
-COLOR = __TEMPLATE | {'type': 'color'} | __RANGE_255                        # Mandatory func params: r, g, b
-WHITE = __TEMPLATE | {'type': 'white'} | __RANGE_255                        # Mandatory func params: wc, ww
+# Widget Types
+BUTTON = __TEMPLATE | {'type': 'button'} | __OPTIONS
+SLIDER = __TEMPLATE | {'type': 'slider'} | __RANGE_100
+TEXTBOX = __TEMPLATE | {'type': 'textbox', 'refresh': 10000}
+COLOR = __TEMPLATE | {'type': 'color'} | __RANGE_255
+WHITE = __TEMPLATE | {'type': 'white'} | __RANGE_255
 
 
 ########################################################
@@ -41,69 +41,54 @@ def _placeholder(var, value, type_dict):
         try:
             int(data)
             return True
-        except:
+        except ValueError:
             return False
 
     if value.startswith('<') and value.endswith('>'):
         if '-' in value:
             _range = value[1:-1].split('-')
-            # Range param int check
-            if len([r for r in _range if not _is_int(r)]) == 0:
-                # Get custom range values
-                _min, _max, _step = (_range[0], _range[1], _range[2]) if len(_range) > 2 else (_range[0], _range[1], None)
-                if _step is None:
-                    _step = type_dict['range'][2]
-                new_range = (int(_min), int(_max), int(_step))
-                return f"{var}=:range:", new_range, 'range'
-            # Ignore param
+            if all(_is_int(r) for r in _range):
+                _min, _max = int(_range[0]), int(_range[1])
+                _step = int(_range[2]) if len(_range) > 2 else type_dict['range'][2]
+                return f"{var}=:range:", (_min, _max, _step), 'range'
             return "", None, None
         if ',' in value:
-            _opts = value[1:-1].split(',')
-            new_opts = tuple(_opts)
-            return f"{var}=:options:", new_opts, 'options'
-    # Keep param value
+            _opts = tuple(value[1:-1].split(','))
+            return f"{var}=:options:", _opts, 'options'
     return f"{var}={value}", None, None
 
 
 def _generate(type_dict, help_msg):
-    func = help_msg.split()[1]
-    params = help_msg.split()[2:] if len(help_msg.split()) > 2 else []
-    valid_params = []
-    overwrite = {}
+    parts = help_msg.split()
+    func, params = parts[1], parts[2:] if len(parts) > 2 else []
+    valid_params, overwrite = [], {}
     for p in params:
         if '=' in p:
             var, value = p.split("=")
-            try:
-                p, values, value_type = _placeholder(var, value, type_dict)
-                if value_type is not None:
-                    overwrite[value_type] = values
-            except Exception as e:
-                errlog_add(f"[ERR] Type.resolve._placeholder: {e}")
+            param_str, values, value_type = _placeholder(var, value, type_dict)
+            if value_type:
+                overwrite[value_type] = values
+            valid_params.append(param_str)
         else:
-            # Empty param fallback
-            p = f'{p}=:{"range" if "range" in type_dict else "options"}:'
-        valid_params.append(p)
-    type_dict['lm_call'] = f"{func} " + " ".join(valid_params)
+            param_str = f'{p}=:{"range" if "range" in type_dict else "options"}:'
+            valid_params.append(param_str)
+    type_dict['lm_call'] = f"{func} {' '.join(valid_params)}"
     return dumps(type_dict | overwrite)
+
 
 def resolve(help_data, widgets=False):
     help_msg = []
     for msg in help_data:
         tag = msg.split()[0].strip()
-        # TYPE DECORATION detect in help strings
         if tag.isupper():
-            try:
-                resolved_tag = eval(tag)
-            except:
-                resolved_tag = tag
-            if widgets:
-                if isinstance(resolved_tag, dict):
-                    # Create json string type + extract widgets from help message
+            resolved_tag = globals().get(tag, tag)
+            if widgets and isinstance(resolved_tag, dict):
+                try:
                     help_msg.append(_generate(resolved_tag, msg))
+                except Exception as e:
+                    errlog_add(f"[ERR] resolve {tag} help msg: {e}")
                 continue
-            # Human readable mode (decorated functions)
             help_msg.append(msg.replace(tag, '').strip())
         elif not widgets:
-            # Human readable mode (non decorated functions)
-            help_msg.append(f"{msg}")
+            help_msg.append(msg)
     return tuple(help_msg)

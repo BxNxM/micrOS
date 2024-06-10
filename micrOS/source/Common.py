@@ -6,12 +6,13 @@ micrOS Load Module programming API-s
 from Server import SocketServer
 from Server import WebCli
 from microIO import physical_pin
-from Debug import logger, log_get, errlog_add
+from Debug import errlog_add
+from Logger import logger, log_get
 from machine import Pin, ADC
 try:
     from Tasks import TaskBase, Manager
-except Exception as e:
-    print(f"Import ERROR, TaskManager: {e}")
+except Exception as ie:
+    print(f"Import ERROR, TaskManager: {ie}")
     TaskBase, Manager = None, None
 TELEGRAM = None
 

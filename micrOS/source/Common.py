@@ -3,11 +3,10 @@ micrOS Load Module programming API-s
     Designed by Marcell Ban aka BxNxM
 """
 
-from Server import SocketServer
-from Server import WebCli
-from microIO import physical_pin
+from Server import SocketServer, WebCli
 from Debug import errlog_add
 from Logger import logger, log_get
+from microIO import physical_pin
 from machine import Pin, ADC
 try:
     from Tasks import TaskBase, Manager
@@ -179,10 +178,10 @@ def notify(text):
 def web_endpoint(endpoint, function):
     """
     Add test endpoint <localhost.local>/endpoint from Load Modules
-    Simple:
+    Simple function:
         image/jpeg | text/html | text/plain, <data>
             <data>: binary | string
-    Stream:
+    Stream function:
         multipart/x-mixed-replace | multipart/form-data, <data>
             <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
     """

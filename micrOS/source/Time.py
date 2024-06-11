@@ -152,10 +152,8 @@ def suntime():
             _, response = http_get(url, sock_size=512, jsonify=True)
             results = response.get('results')
             time_regex = re_comp(r'T([0-9:]+)')
-            sun = {
-                'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
-                'sunset': time_regex.search(results.get('sunset')).group(1).split(':')
-                }
+            sun = {'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
+                   'sunset': time_regex.search(results.get('sunset')).group(1).split(':')}
         except Exception as e:
             errlog_add(f'[ERR] sunrise-api: {e} data: {response}')
     # Try to parse response by expected sun_keys

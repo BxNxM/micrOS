@@ -73,5 +73,7 @@ def log_get(f_name, msgobj=None):
     return err_cnt
 
 
-def syslog(data):
+def syslog(data=None, msgobj=None):
+    if data is None:
+        return log_get('err.log', msgobj)
     return logger(data, 'err.log', limit=6)

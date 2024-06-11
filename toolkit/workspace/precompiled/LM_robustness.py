@@ -1,6 +1,5 @@
 from LM_system import memory_usage
-from Common import socket_stream
-from Common import syslog
+from Common import socket_stream, syslog
 
 
 @socket_stream

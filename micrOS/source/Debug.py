@@ -1,9 +1,9 @@
 from os import listdir, remove
 from machine import Pin
 try:
-    from Logger import syslog, log_get
+    from Logger import syslog
 except:
-    syslog, log_get = None, None
+    syslog = None
 try:
     from microIO import physical_pin, pinmap_dump, detect_platform
 except:
@@ -28,11 +28,12 @@ class DebugCfg:
             # Check LogicalPins module loadable (robustness...)
             return
         micro_platform = detect_platform()
-        pled = pinmap_dump('builtin')['builtin']
         if micro_platform == "tinypico":
             # Progress led for TinyPico
             DebugCfg._init_apa102()
-        elif pled is not None:
+            return
+        pled = pinmap_dump('builtin')['builtin']
+        if pled is not None:
             if isinstance(pled, int):
                 # SET PROGRESS LED WITH BUILT-IN step FUNCTION
                 if micro_platform == "esp32s3":
@@ -147,7 +148,7 @@ def errlog_add(data, console=True):
 
 def errlog_get(msgobj=None):
     # Return error number
-    return False if log_get is None else log_get('err.log', msgobj)
+    return -1 if syslog is None else syslog(msgobj=msgobj)
 
 
 def errlog_clean(msgobj=None):

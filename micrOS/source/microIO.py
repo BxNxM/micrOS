@@ -61,7 +61,7 @@ def set_pinmap(map_data=None):
     try:
         PinMap.MAPPING = {pin.split(':')[0].strip(): int(pin.split(':')[1].strip()) for pin in parsed_data if ':' in pin}
     except Exception as e:
-        print(f"[io] custom pin key(s) parse error: {e}")
+        syslog(f"[io] custom pin key(s) parse error: {e}")
 
     # SELECT LOOKUP TABLE BASED ON PLATFORM / User input
     if isinstance(io_file, str) and io_file != 'n/a':

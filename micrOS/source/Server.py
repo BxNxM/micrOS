@@ -18,10 +18,10 @@ from Network import ifconfig
 from Tasks import Manager
 from Shell import Shell
 try:
-    from gc import collect, mem_free
+    from gc import collect
 except:
     console_write("[SIMULATOR MODE GC IMPORT]")
-    from simgc import collect, mem_free
+    from simgc import collect
 
 # Module load optimization, needed only for webui
 if cfgget('webui'):
@@ -107,7 +107,7 @@ class Client:
                 Client.console(f"[Client] Drain error -> close conn: {e}")
                 await self.close()
         else:
-            console_write(f"[Client] NoCon: response>dev/nul")
+            console_write("[Client] NoCon: response>dev/nul")
 
     def send(self, response):
         # Implement in child class - synchronous send method
@@ -191,7 +191,7 @@ class WebCli(Client):
         _method, url, _version = request.split('\n')[0].split()
         # Protocol validation
         if _method != "GET" and _version.startswith('HTTP'):
-            _err = f"Bad Request: not GET HTTP/1.1"
+            _err = "Bad Request: not GET HTTP/1.1"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
 
@@ -338,10 +338,10 @@ class ShellCli(Client, Shell):
             # Store data in stream buffer
             try:
                 self.writer.write(response.encode('utf8'))
-            except Exception as e:
+            except:
                 # Maintain ACTIVE_CLIS - remove closed connection by peer.
                 Client.drop_client(self.client_id)
-                errlog_add(f"[WARN] ShellCli.send (auto-drop) {self.client_id}: {e}")
+                errlog_add(f"[WARN] ShellCli.send (auto-drop) {self.client_id}")
             # Send buffered data with async task - hacky
             if self.drain_event.is_set():
                 self.drain_event.clear()        # set drain busy (False)

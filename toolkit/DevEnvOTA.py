@@ -386,6 +386,17 @@ class OTA(Compile):
         self.execution_verdict.append("[OK] ota_update was finished")
         return up_again_status
 
+    @staticmethod
+    def sim_ota_update(file_list, force_lm):
+        sim_path = os.path.join(MYPATH, "workspace/simulator")
+        for source in file_list:
+            f_name = os.path.basename(source)
+            if force_lm and not f_name.startswith('LM_') and f_name.endswith('.py'):
+                f_name = 'LM_{}'.format(f_name)
+            target = os.path.join(sim_path, f_name)
+            print(f"[SIM] 'OTA' COPY FILES... {source} -> {target}")
+            LocalMachine.FileHandler().copy(source, target)
+
     def ota_webrepl_update_core(self, device=None, upload_path_list=[], ota_password='ADmin123', force_lm=False):
         """
         Generic file uploader for micrOS - over webrepl
@@ -396,6 +407,9 @@ class OTA(Compile):
         ota_password - accessing webrepl to upload files
         force_lm - use prefix as 'LM_' for every file - for user file upload / GUI drag n drop
         """
+        if device[0] == "__simulator__":
+            OTA.sim_ota_update(upload_path_list, force_lm)
+            return
 
         # GET webrepl repo
         if not self.__clone_webrepl_repo():

@@ -609,7 +609,7 @@ class QuickOTAUpload(QLabel):
         width = 200
         height = 15
         label = QLabel(self.parent_obj)
-        label.setText("Quick LM OTA Upload")
+        label.setText("Drag-n-Drop OTA file upload")
         label.setGeometry(start_x, start_y, width, height)
         label.setStyleSheet("background-color: white")
 
@@ -638,14 +638,14 @@ class QuickOTAUpload(QLabel):
         pixmap = QPixmap(logo_path)
         pixmap = pixmap.scaled(100, 100)
         self.setPixmap(pixmap)
-        self.setToolTip(f"Direct LM module upload to micrOS board via webrepl\nSimulator path: {os.path.join(MYPATH, 'workspace/simulator')}")
+        self.setToolTip(f"OTA File (py,mpy,js,html,css) upload to micrOS board via webrepl\nSimulator path: {os.path.join(MYPATH, 'workspace/simulator')}")
         self.setAcceptDrops(True)
 
     def get_upload_callback(self):
         if len(self.contents_path) == 0:
             self.parent_obj.console.append_output(f"Empty upload list.")
         else:
-            if not self.parent_obj.start_bg_application_popup(text="QUICK LM OTA UPLOAD?",
+            if not self.parent_obj.start_bg_application_popup(text="OTA UPLOAD?",
                                                               verify_data_dict={i+1: path for i, path in enumerate(self.contents_path)}):
                 return
             self.parent_obj.on_click_lm_quick_update(upload_path_list=self.contents_path)
@@ -1064,7 +1064,7 @@ class micrOSGUI(QWidget):
                                                                  'forced LM_ prefix': not self.modifiers_obj.unsafe_ota_enabled}):
             return
 
-        self.console.append_output('[quick_ota] Update Load Modules over wifi')
+        self.console.append_output('[quick_ota] Module upload over wifi')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
         pth.eta_sec = ProgressbarTimers.quick_ota

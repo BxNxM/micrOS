@@ -53,7 +53,7 @@ class USB(Compile):
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': ''},
-             'tinypico-usbc':
+             'tinypico_usbc':
                  {'erase': 'esptool.py --port {dev} erase_flash',
                   'deploy': 'esptool.py --chip esp32 --port {dev} --baud 921600 write_flash -z 0x1000 {micropython}',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',

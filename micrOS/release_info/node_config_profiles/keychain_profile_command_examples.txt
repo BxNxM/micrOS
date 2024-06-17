@@ -1,0 +1,2 @@
+./devToolKit.py -h
+./devToolKit.py -c -p '--dev <device> help'

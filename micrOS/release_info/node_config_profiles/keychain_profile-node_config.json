@@ -1,0 +1,4 @@
+{
+ "devfid": null,
+ "boothook": "keychain load bootmsg='micrOS'; keychain display"
+}

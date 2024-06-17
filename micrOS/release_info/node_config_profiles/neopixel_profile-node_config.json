@@ -1,5 +1,5 @@
 {
- "boothook": "neopixel load_n_init",
+ "boothook": "neopixel load",
  "irq1": true,
  "irq1_cbf": "neopixel toggle",
  "timirqcbf": "system heartbeat",

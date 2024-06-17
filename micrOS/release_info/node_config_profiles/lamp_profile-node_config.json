@@ -1,5 +1,5 @@
 {
- "boothook": "rgb load_n_init",
+ "boothook": "rgb load",
  "timirq": true,
  "timirqseq": 2000,
  "timirqcbf": "system heartbeat",

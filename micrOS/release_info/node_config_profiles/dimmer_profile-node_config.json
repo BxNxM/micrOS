@@ -1,5 +1,5 @@
 {
- "boothook": "system heartbeat; dimmer load_n_init",
+ "boothook": "system heartbeat; dimmer load",
  "timirq": true,
  "timirqseq": 2000,
  "timirqcbf": "system heartbeat",

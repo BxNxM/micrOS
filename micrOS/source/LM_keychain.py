@@ -126,10 +126,9 @@ async def _main_page():
     return "Display show"
 
 
-async def _ui_task(period_ms):
-    """
-    Async display refresh task
-    - main page    (main mode)  - auto sleep after 30 sec
+async def _ui_task(period_ms, tts_ms):
+    """Async display refresh task
+    - main page    (main mode)
     - screen saver (sleep mode)
     """
     # Auto init keychain module (if needed) - failsafe
@@ -138,7 +137,7 @@ async def _ui_task(period_ms):
         if not KC.INITED:
             return _v
 
-    KC.DP_cnt_default = int(30_000 / period_ms)     # After 30 sec go to sleep mode
+    KC.DP_cnt_default = int(tts_ms / period_ms)     # After 30 sec go to sleep mode
     KC.DP_cnt = KC.DP_cnt_default                   # Set sleep counter
     fast_period = int(period_ms/3)                  # Calculate faster refresh period
     fast_period = fast_period if fast_period > 100 else 100
@@ -200,14 +199,16 @@ def load(width=64, height=32, bootmsg="micrOS"):
         return f"OLED INIT NOK: {e}"
 
 
-def display(period=1000):
+def display(period=1000, tts=30):
     """
     Create kc._display task - refresh loop
     :param period: display refresh period in ms (min. 500ms)
+    :param tts: time to sleep (in seconds)
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 500 if period < 500 else period
-    state = micro_task(tag="kc._display", task=_ui_task(period_ms=period_ms))
+    tts_ms = 5000 if tts < 5 else tts*1000
+    state = micro_task(tag="kc._display", task=_ui_task(period_ms, tts_ms))
     return "Starting" if state else "Already running"
 
 
@@ -280,7 +281,7 @@ def button():
         return neopixel_toggle()
     # Wake display
     KC.DP_main_page = True
-    return f"Display mode: main view"
+    return "Display mode: main view"
 
 
 def lmdep():
@@ -310,7 +311,8 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return ('load width=64 height=32 bootmsg="micrOS"',
-            'temperature', 'display period>=1000',
+            'temperature', 
+            'display period>=1000 tts=30',
             'button',
             'display_toggle',
             'neopixel_toggle',

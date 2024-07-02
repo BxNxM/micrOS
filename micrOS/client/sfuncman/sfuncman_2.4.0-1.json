@@ -657,56 +657,56 @@
     },
     "ld2410": {
         "bytes_to_str": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": "data"
         },
         "enable_config": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "enable_engineering": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "end_config": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "end_engineering": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "firmware_version": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "help": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    ",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ld2410.png?raw=true",
         "pinmap": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: tx, rx",
             "param(s)": ""
         },
         "print_bytes": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": "data"
         },
         "read": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "read_serial_buffer": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         },
         "send_command": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": "cmd data=NULLDATA response_expected=True"
         },
         "serial_flush": {
-            "doc": "cannot import name 'UART' from 'machine' (/Users/kristofkasza/Dev/micros_fork/toolkit/simulator_lib/machine.py)",
+            "doc": null,
             "param(s)": ""
         }
     },

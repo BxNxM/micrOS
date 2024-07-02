@@ -175,6 +175,17 @@ class SoftSPI:
         pass
 
 
+class UART:
+
+    def __init__(self, pin, baudrate, tx, rx, timeout=1):
+        pass
+
+    def write(self, frame):
+        pass
+
+    def read(self, *args, **kwargs):
+        pass
+
 def freq(*args, **kwargs):
     return 1
 

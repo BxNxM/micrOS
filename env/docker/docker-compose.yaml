@@ -1,7 +1,7 @@
 version: '3'
 services:
   micros-gateway:
-    image: bxnxm/micros-gateway:2.0.5
+    image: bxnxm/micros-gateway:2.4.1
     container_name: micros-gateway
     environment:
       - GATEWAYIP=10.0.1.1

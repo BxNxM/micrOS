@@ -17,7 +17,7 @@ try:
     from flask_basicauth import BasicAuth
     from datetime import datetime
 except Exception as e:
-    print("Cannot load flask_basicauth->BasicAuth")
+    print("[GW-AUTH] Cannot load flask_basicauth->BasicAuth")
     BasicAuth = None
 
 try:
@@ -103,10 +103,10 @@ if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
             except Exception as e:
                 response = {"ok": False, "Country": str(e)}
             if response["ok"] and response["Country"] in enabled_country_codes:
-                print(f"\t[GW-AUTH] EXTERNAL LOGIN: ALLOW ({enabled_country_codes}) EXTERNAL IP FROM: {response}")
+                print(f"\t[GW-AUTH] EXTERNAL LOGIN: ALLOW ({enabled_country_codes}) EXTERNAL IP ({ip_address}) FROM: {response}")
                 ADDRESS_CACHE[ip_address] = (True, response)
                 return True, response
-            print(f"\t[GW-AUTH] EXTERNAL LOGIN: DENY ({enabled_country_codes}) EXTERNAL IP FROM: {response}")
+            print(f"\t[GW-AUTH] EXTERNAL LOGIN: DENY - EXTERNAL IP ({ip_address}) FROM: {response}")
             ADDRESS_CACHE[ip_address] = (False, response)
             return False, response
         # Return cached value:

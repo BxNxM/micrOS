@@ -14,10 +14,11 @@ function validate_command() {
   command_variants+=("/usr/bin/python3 -m devToolKit.py")
   command_variants+=("devToolKit.py")
   command_variants+=("/usr/bin/python3 /home/${USER}/micrOS/devToolKit.py")
+
   for cmd in "${command_variants[@]}"
   do
     cmd_help="${cmd} --light --help"
-    $cmd_help >> "./setup.log"
+    "$cmd_help" >> "./setup.log"
     exitcode=$?
     if [[ $exitcode == 0 ]]
     then
@@ -40,9 +41,9 @@ function prepare_template() {
 
   local target="./${SERVICE_NAME}"
   local user="$USER"
-  local command=$(validate_command)
+  local command="$(validate_command)"
   if [[ -z "$command" ]]; then
-    echo -e "Cannot find valid command... check setup.log"
+    echo -e "Cannot find valid command... check setup.log for more info"
     exit 1
   fi
   local replace_user="s/<user>/${user}/g"
@@ -51,6 +52,10 @@ function prepare_template() {
 
   echo -e "PREPARE ${target}: replace <user> <password> <command>"
   cat "${TEMPLATE_PATH}" | sed "$replace_user" | sed "$replace_password" | sed "$replace_command" > "./${target}"
+  if [[ $? != 0 ]]; then
+    echo -e "Cannot create ./${target} ..."
+    exit 1
+  fi
 }
 
 function create_service() {

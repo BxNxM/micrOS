@@ -18,7 +18,7 @@ function validate_command() {
   for cmd in "${command_variants[@]}"
   do
     cmd_help="${cmd} --light --help"
-    "$cmd_help" >> "./setup.log"
+    $cmd_help >> "./setup.log"
     exitcode=$?
     if [[ $exitcode == 0 ]]
     then

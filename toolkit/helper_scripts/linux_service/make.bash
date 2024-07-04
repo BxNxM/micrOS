@@ -33,6 +33,10 @@ function validate_command() {
 
 function prepare_template() {
   read -sp "Set gateway password: " password
+  while [[ -z "$password" ]]; do
+    echo -e ""
+    read -sp "Set gateway password: " password
+  done
 
   local target="./${SERVICE_NAME}"
   local user="$USER"

@@ -10,10 +10,13 @@ function check_service() {
 }
 
 function validate_command() {
-  local command_variants=("/usr/bin/python3 -m devToolKit" "/usr/bin/python3 -m devToolKit.py" "devToolKit.py")
+  local command_variants=("/usr/bin/python3 -m devToolKit")
+  command_variants+=("/usr/bin/python3 -m devToolKit.py")
+  command_variants+=("devToolKit.py")
+  command_variants+=("/usr/bin/python3 /home/${USER}/micrOS/devToolKit.py")
   for cmd in "${command_variants[@]}"
   do
-    cmd_help="${cmd} --help"
+    cmd_help="${cmd} --light --help"
     $cmd_help >> "./setup.log"
     exitcode=$?
     if [[ $exitcode == 0 ]]

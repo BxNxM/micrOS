@@ -7,6 +7,10 @@ SYSTEMD_PATH="/lib/systemd/system/"
 function check_service() {
   echo -e "Check service ${SERVICE_NAME}"
   sudo systemctl status "$SERVICE_NAME"
+
+  if [[ ! -e "./systemd" ]]; then
+    ln -s "/lib/systemd/system/" "./systemd"
+  fi
 }
 
 function validate_command() {
@@ -48,7 +52,7 @@ function prepare_template() {
   fi
   local replace_user="s/<user>/${user}/g"
   local replace_password="s/<password>/${password}/g"
-  local replace_command="s/<command>/${command} --light -gw/g"
+  local replace_command="s:<command>:${command} --light -gw:g"
 
   echo -e "PREPARE ${target}: replace <user> <password> <command>"
   cat "${TEMPLATE_PATH}" | sed "$replace_user" | sed "$replace_password" | sed "$replace_command" > "./${target}"

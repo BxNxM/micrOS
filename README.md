@@ -984,6 +984,8 @@ devToolKit.py --linter
 
 ### micrOS gateway - Linux service template
 
+> [BETA] service setup tool: `toolkit/helper_scripts/linux_service/make.bash`
+
 - Prerequisite: install micrOS devtoolkit **PiP package**
 
 - Create service: [micrOS gateway service](https://domoticproject.com/creating-raspberry-pi-service/)

@@ -1,0 +1,15 @@
+[Unit]
+Description=micrOS gateway REST API service
+After=network-online.target
+
+[Service]
+Environment="API_AUTH=<user>:<password>"
+ExecStart=<command>
+WorkingDirectory=/home/<user>
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=<user>
+
+[Install]
+WantedBy=multi-user.target

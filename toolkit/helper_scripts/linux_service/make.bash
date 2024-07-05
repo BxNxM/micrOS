@@ -6,10 +6,21 @@ SYSTEMD_PATH="/lib/systemd/system/"
 
 function check_service() {
   echo -e "Check service ${SERVICE_NAME}"
+
+  echo -e "\tAUTH LOG: ALLOW"
+  journalctl -u micros-gw | grep "LOGIN: ALLOW" | tail -n 50
+  echo -e "\tAUTH LOG: DENY"
+  journalctl -u micros-gw | grep "LOGIN: DENY" | tail -n 50
+  echo -e "\tSERVICE: systemctl status ${SERVICE_NAME}"
   sudo systemctl status "$SERVICE_NAME"
 
   if [[ ! -e "./systemd" ]]; then
+    echo -e "LINK /lib/systemd/system/ -> ./systemd"
     ln -s "/lib/systemd/system/" "./systemd"
+  fi
+  if [[ ! -e "./systemd/${SERVICE_NAME}" ]]; then
+    echo -e "LINK /lib/systemd/system/${SERVICE_NAME} -> ./systemd/${SERVICE_NAME}"
+    ln -s "/lib/systemd/system/${SERVICE_NAME}" "./systemd/${SERVICE_NAME}"
   fi
 }
 

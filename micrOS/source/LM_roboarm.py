@@ -53,11 +53,11 @@ def load():
     return f'Init and Move to home X{x}, Y{y}'
 
 
-def control(x_new, y_new, speed_ms=None, smooth=True):
+def control(x, y, speed_ms=None, smooth=True):
     """
     Control robot arm function
-    :param x_new: new x position (40-115)
-    :param y_new: new y position (40-115)
+    :param x: new x position (40-115)
+    :param y: new y position (40-115)
     :param speed_ms: speed - step wait in ms
     :param smooth: smooth transition, default True
     :return str: move verdict
@@ -77,11 +77,11 @@ def control(x_new, y_new, speed_ms=None, smooth=True):
             sleep_ms(step_ms)
 
     # Skip if new XY is the same as current
-    if RoboArm.ACTUAL_XY[0] == x_new and RoboArm.ACTUAL_XY[1] == y_new:
-        return f"Already on X:{x_new} Y:{y_new}"
+    if RoboArm.ACTUAL_XY[0] == x and RoboArm.ACTUAL_XY[1] == y:
+        return f"Already on X:{x} Y:{y}"
     # Check input parameter range
-    if RoboArm.RANGE[0] > x_new > RoboArm.RANGE[1] or RoboArm.RANGE[0] > y_new > RoboArm.RANGE[1]:
-        return f"X{x_new}/Y{y_new} out of range... range: {RoboArm.RANGE[0]}-{RoboArm.RANGE[1]}"
+    if RoboArm.RANGE[0] > x > RoboArm.RANGE[1] or RoboArm.RANGE[0] > y > RoboArm.RANGE[1]:
+        return f"X{x}/Y{y} out of range... range: {RoboArm.RANGE[0]}-{RoboArm.RANGE[1]}"
 
     # Set arm speed
     RoboArm.SPEED_MS = speed_ms if isinstance(speed_ms, int) else RoboArm.SPEED_MS
@@ -91,14 +91,14 @@ def control(x_new, y_new, speed_ms=None, smooth=True):
 
     if smooth:
         # Move roboarm to position
-        __buttery(x_prev, y_prev, x_new, y_new)
-        RoboArm.ACTUAL_XY = [x_new, y_new]
+        __buttery(x_prev, y_prev, x, y)
+        RoboArm.ACTUAL_XY = [x, y]
     else:
         # Fast move robaorm to position
-        servo.sduty(x_new)
-        servo.s2duty(y_new)
-        RoboArm.ACTUAL_XY[0] = x_new
-        RoboArm.ACTUAL_XY[1] = y_new
+        servo.sduty(x)
+        servo.s2duty(y)
+        RoboArm.ACTUAL_XY[0] = x
+        RoboArm.ACTUAL_XY[1] = y
     return 'Move X{}->{} Y{}->{}'.format(x_prev, RoboArm.ACTUAL_XY[0], y_prev, RoboArm.ACTUAL_XY[1])
 
 
@@ -291,7 +291,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('control x=<40-115> y=<40-115> s=<ms delay> smooth=True',
+    return resolve(('JOYSTICK control x=<40-115> y=<40-115> speed_ms=5 smooth=True',
                              'BUTTON boot_move speed_ms=10',
                              'BUTTON standby y_pos=45',
                              'BUTTON jiggle delta=3',

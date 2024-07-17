@@ -25,11 +25,12 @@ __RANGE_255 = {'range': (0, 255, 2)}
 __OPTIONS = {'options': ("None",)}
 
 # Widget Types
-BUTTON = __TEMPLATE | {'type': 'button'} | __OPTIONS
-SLIDER = __TEMPLATE | {'type': 'slider'} | __RANGE_100
-TEXTBOX = __TEMPLATE | {'type': 'textbox', 'refresh': 10000}
-COLOR = __TEMPLATE | {'type': 'color'} | __RANGE_255
-WHITE = __TEMPLATE | {'type': 'white'} | __RANGE_255
+BUTTON = lambda: __TEMPLATE | {'type': 'button'} | __OPTIONS
+SLIDER = lambda: __TEMPLATE | {'type': 'slider'} | __RANGE_100
+TEXTBOX = lambda: __TEMPLATE | {'type': 'textbox', 'refresh': 10000}
+COLOR = lambda: __TEMPLATE | {'type': 'color'} | __RANGE_255
+WHITE = lambda: __TEMPLATE | {'type': 'white'} | __RANGE_255
+JOYSTICK = lambda: __TEMPLATE | {'type': 'joystick'} | __RANGE_100
 
 
 ########################################################
@@ -81,7 +82,7 @@ def resolve(help_data, widgets=False):
     for msg in help_data:
         tag = msg.split()[0].strip()
         if tag.isupper():
-            resolved_tag = globals().get(tag, tag)
+            resolved_tag = globals().get(tag, tag)()
             if widgets and isinstance(resolved_tag, dict):
                 try:
                     help_msg.append(_generate(resolved_tag, msg))

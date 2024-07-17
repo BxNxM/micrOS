@@ -39,6 +39,9 @@ function generateElement(type, data, options={}) {
     } else if (type === 'color') {
         // Create color palette widget
         colorPaletteWidget(container, data, options)
+    } else if (type === 'joystick') {
+        // Create joystick widget
+        joystickWidget(container, data, options)
     } else {
         // Create other elements
         const paragraph = document.createElement('p');
@@ -71,7 +74,8 @@ function craftModuleWidgets(module, widgets) {
         button: item => ({title_len: autoTitleLen(widgets, item.lm_call), options: item.options }),
         slider: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
         color: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
-        textbox: item => ({title_len: autoTitleLen(widgets, item.lm_call), refresh: item.refresh })
+        textbox: item => ({title_len: autoTitleLen(widgets, item.lm_call), refresh: item.refresh }),
+        joystick: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range })
     };
 
     widgets.forEach(item => {

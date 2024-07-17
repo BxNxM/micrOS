@@ -68,7 +68,7 @@ function joystickWidget(container, command, params={}) {
         }
     });
 
-    joystick.addEventListener('mousemove', () => {  // OR mouseup?
+    joystick.addEventListener('mouseup', () => {
         if (isDragging) {
             const rect = joystickContainer.getBoundingClientRect();
             const x = Math.round((parseFloat(joystick.style.left) / rect.width) * (max - min) + min);

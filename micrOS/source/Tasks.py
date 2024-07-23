@@ -571,7 +571,7 @@ def lm_is_loaded(lm_name):
 
 def exec_lm_core_schedule(arg_list):
     """
-    Wrapper for lm_exec for Scheduler
+    Wrapper for lm_exec
     - micropython scheduling
         - exec protection for cron IRQ
     """

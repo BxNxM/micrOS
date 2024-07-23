@@ -12,15 +12,15 @@ function joystickWidget(container, command, params={}) {
     paragraph.textContent = createTitle(command, title_len);
 
     joystickContainer.style.position = 'relative';
-    joystickContainer.style.width = '150px';
-    joystickContainer.style.height = '150px';
+    joystickContainer.style.width = '200px';
+    joystickContainer.style.height = '200px';
     joystickContainer.style.border = '1px solid #fff';
     joystickContainer.style.marginLeft = widget_indent;
-    joystickContainer.style.backgroundColor = 'transparent'; // Transparent background
+    joystickContainer.style.backgroundColor = 'transparent';
 
     joystick.style.position = 'absolute';
-    joystick.style.width = '20px';
-    joystick.style.height = '20px';
+    joystick.style.width = '30px';
+    joystick.style.height = '30px';
     joystick.style.background = '#fff';
     joystick.style.borderRadius = '50%';
     joystick.style.left = '50%';
@@ -28,8 +28,8 @@ function joystickWidget(container, command, params={}) {
     joystick.style.transform = 'translate(-50%, -50%)';
     joystick.style.cursor = 'pointer';
 
-    valueDisplay.style.textIndent = widget_indent; // Indenting the value display line
-    valueDisplay.style.display = 'block'; // Ensuring it behaves like a block element
+    valueDisplay.style.textIndent = widget_indent;
+    valueDisplay.style.display = 'block';
 
     let isDragging = false;
 
@@ -43,32 +43,12 @@ function joystickWidget(container, command, params={}) {
         return value;
     };
 
-    joystick.addEventListener('mousedown', (event) => {
+    const startDragging = (event) => {
         isDragging = true;
-    });
+        event.preventDefault();
+    };
 
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-
-    document.addEventListener('mousemove', (event) => {
-        if (isDragging) {
-            const rect = joystickContainer.getBoundingClientRect();
-            const offsetX = event.clientX - rect.left;
-            const offsetY = event.clientY - rect.top;
-            const x = constrain(offsetX, 0, rect.width);
-            const y = constrain(offsetY, 0, rect.height);
-
-            joystick.style.left = `${x}px`;
-            joystick.style.top = `${y}px`;
-
-            const xValue = Math.round((x / rect.width) * (max - min) + min);
-            const yValue = Math.round((y / rect.height) * (max - min) + min);
-            updateValueDisplay(xValue, yValue);
-        }
-    });
-
-    joystick.addEventListener('mouseup', () => {
+    const stopDragging = () => {
         if (isDragging) {
             const rect = joystickContainer.getBoundingClientRect();
             const x = Math.round((parseFloat(joystick.style.left) / rect.width) * (max - min) + min);
@@ -81,11 +61,39 @@ function joystickWidget(container, command, params={}) {
             console.log(`[API] Joystick exec: ${call_cmd}`);
             restAPI(call_cmd);
         }
-    });
+        isDragging = false;
+    };
+
+    const drag = (event) => {
+        if (isDragging) {
+            const rect = joystickContainer.getBoundingClientRect();
+            const offsetX = event.touches ? event.touches[0].clientX - rect.left : event.clientX - rect.left;
+            const offsetY = event.touches ? event.touches[0].clientY - rect.top : event.clientY - rect.top;
+            const x = constrain(offsetX, 0, rect.width);
+            const y = constrain(offsetY, 0, rect.height);
+
+            joystick.style.left = `${x}px`;
+            joystick.style.top = `${y}px`;
+
+            const xValue = Math.round((x / rect.width) * (max - min) + min);
+            const yValue = Math.round((y / rect.height) * (max - min) + min);
+            updateValueDisplay(xValue, yValue);
+        }
+    };
+
+    joystick.addEventListener('mousedown', startDragging);
+    joystick.addEventListener('touchstart', startDragging);
+
+    document.addEventListener('mouseup', stopDragging);
+    document.addEventListener('touchend', stopDragging);
+
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('touchmove', drag);
 
     joystickContainer.appendChild(joystick);
     containerAppendChild([paragraph, joystickContainer, valueDisplay], container);
     updateValueDisplay((max - min) / 2, (max - min) / 2);
 }
+
 
 

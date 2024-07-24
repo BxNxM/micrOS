@@ -12,8 +12,7 @@ from Tasks import Manager
 from Hooks import bootup, profiling_info
 from Network import auto_nw_config
 from Server import SocketServer
-from Interrupts import enableInterrupt, enableCron
-from Interrupts import initEventIRQs
+from Interrupts import enableInterrupt, enableCron, initEventIRQs
 from Debug import errlog_add
 
 

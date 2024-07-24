@@ -1,4 +1,3 @@
-from os import listdir, remove
 from machine import Pin
 try:
     from Logger import syslog
@@ -149,11 +148,3 @@ def errlog_add(data, console=True):
 def errlog_get(msgobj=None):
     # Return error number
     return -1 if syslog is None else syslog(msgobj=msgobj)
-
-
-def errlog_clean(msgobj=None):
-    to_del = [file for file in listdir() if file.endswith('.log')]
-    for _del in to_del:
-        if msgobj is not None:
-            msgobj(f" Delete: {_del}")
-        remove(_del)

@@ -1,8 +1,9 @@
 # How to write Load Modules
 
+
 1. Create python file with the following naming convension: `LM_`your_app`.py`
-2. You can create any function in this modul, these will be exposed by micrOS framework over tcp/ip so these can be accessable via phone client.
-3. drag-n-drop LM file to micrOS devToolKit GUI
+2. You can create any function in this modul, these will be exposed by micrOS framework over IP so these can be accessable via phone client or web application (webui)
+3. Drag-n-Drop LM file to micrOS devToolKit GUI
 4. Select device
 5. Press upload
 
@@ -15,31 +16,36 @@ def hello(name="Anonymous"):
 
 def add_two_numbers(a, b):
 	return f"{a}+{b} = {a+b}"
+
+
+def help(widgets=False):
+	return ("hello name='Anonymous'",
+			  "add_two_numbers a b")
 ```
 
 ### LM\_simple\_led.py
 
 ```python
-from machine import Pin					# Import micropython Pin module
+from machine import Pin	              # Import micropython Pin module
 
-PIN = None								# Cache created Pin instance
+PIN = None                            # Cache created Pin instance
 
-def load():
+def load(pin_number=4):
 	global PIN
 	if PIN is None:
-		PIN = Pin(4, Pin.OUT)			# Init PIN 4 as OUTPUT and store (cache) in global var.
+		PIN = Pin(pin_number, Pin.OUT) # Init PIN 4 as OUTPUT and store (cache) in global var.
 	return PIN
 
 
 def on():
 	pin = load()
-	pin.value(1)							# Set pin high - LED ON
+	pin.value(1)                      # Set pin high - LED ON
 	return "LED ON"
 
 
 def off():
 	pin = load()
-	pin.value(0)							# Set pin low - LED OFF
+	pin.value(0)                      # Set pin low - LED OFF
 	return "LED OFF"
 
 
@@ -47,15 +53,20 @@ def toggle():
 	pin = load()
 	pin.value(not pin.value())
 	return "LED ON" if pin.value() else "LED OFF"
-	
+
+
 def help():
 	return 'load', 'on', 'off', 'toggle'
 ```
 
 For more info: Micropython official [Pins](https://docs.micropython.org/en/latest/library/machine.Pin.html)
 
+[Official micropython site](https://docs.micropython.org/en/latest/esp32/quickref.html#pins-and-gpio)
 
-### LM_template.py
+-------------------------------------------------------------------------------
+
+
+### micrOS LM_template.py
 
 Function naming convesions for Load Modules.
 
@@ -129,7 +140,7 @@ def help(widgets=False):
 ```
 
 
-## micrOS Common module
+## micrOS Common.py module
 
 #### Common module with additinal features for LoadModule-s
 
@@ -382,7 +393,9 @@ def _response():
 
 Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
 
-## Advanced help messages with widget type assignment
+## micrOS Types.py module
+
+> Advanced help messages with widget type assignment
 
 Normally in help function you can return a tuple of strings, this can be
 queried as help message from ShellCli and WebCli.
@@ -403,6 +416,7 @@ Tags:
 * `COLOR`, requires[3]: r, g, b function parameters
 * `SLIDER`, requires[1]: br function parameters (or any other single param)
 * `TEXTBOX`, requires[0]: no param
+* `JOYSTICK`, requires[1]: x and y function parameters
 * Implementation of [TYPES](./micrOS/source/Types.py)
 
 ```python
@@ -424,9 +438,10 @@ def brightness(br):
 
 def action():
     return "Do something..."
+
     
-def control(cmd=None):
-    return 'No cmd' if cmd is None else cmd
+def control(x, y):
+    return f"X: {x}, Y: {y}"
 
 
 def other_function(num=0):
@@ -447,7 +462,7 @@ def help(widgets=False):
                     'COLOR color r g b',
                     'SLIDER brightness br',
                     'BUTTON action',
-                    'conntrol cmd',
+                    'JOYSTICK control x y',
                     'other_function num'), widgets=widgets)
 ```
 

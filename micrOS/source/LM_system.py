@@ -172,11 +172,12 @@ def alarms(clean=False, test=False, msgobj=None):
     :param test bool: create test alarms, set True
     :return dict: verdict
     """
-    from Debug import errlog_get, errlog_add, errlog_clean
+    from Debug import errlog_get, errlog_add
+    from Logger import log_clean
     if test:
         errlog_add('[ERR] TeSt ErRoR')
     if clean:
-        errlog_clean(msgobj=msgobj)
+        log_clean(msgobj=msgobj)
     errcnt = errlog_get(msgobj=msgobj)
     return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
 

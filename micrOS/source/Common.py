@@ -18,7 +18,7 @@ TELEGRAM = None
 
 def socket_stream(func):
     """
-    [LM] Socket message streamer - adds msgobj to the decorated function arg list.
+    Decorator for Socket message stream - adds msgobj to the decorated function arg list.
     Use msgobj as print function: msgobj("hello")
     (SocketServer singleton class - reply all bug/feature)
     """
@@ -100,12 +100,11 @@ class SmartADC:
 
 def micro_task(tag, task=None):
     """
-    [LM] Async task creation
-    - Indirect interface
-    tag:
+    [LM] Async task creation - user interface
+    :param tag:
         [1] tag=None: return task generator object
         [2] tag=taskID: return existing task object by tag
-    task: coroutine to execute (built in overload protection and lcm)
+    :param task: coroutine to execute (with built-in overload protection and lcm)
     """
     # [0] Check dependencies
     if TaskBase is None or Manager is None:
@@ -149,7 +148,7 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
 
 def syslog(msg):
     """ Wrapper of errlog_add """
-    return errlog_add(msg)
+    return errlog_add(f"[usr]{msg}")
 
 
 def notify(text):
@@ -164,12 +163,12 @@ def notify(text):
             from Notify import Telegram
             TELEGRAM = Telegram
         except Exception as e:
-            print(f"Import ERROR, Notify.Telegram: {e}")
+            errlog_add(f"[ERR] Import Notify.Telegram: {e}")
             return False
     try:
         out = TELEGRAM().send_msg(text)
     except Exception as e:
-        print(f"Notify ERROR: {e}")
+        errlog_add(f"[ERR] Notify: {e}")
         out = str(e)
     if out is not None and out == 'Sent':
         return True
@@ -178,12 +177,14 @@ def notify(text):
 def web_endpoint(endpoint, function):
     """
     Add test endpoint <localhost.local>/endpoint from Load Modules
-    Simple function:
-        image/jpeg | text/html | text/plain, <data>
-            <data>: binary | string
-    Stream function:
-        multipart/x-mixed-replace | multipart/form-data, <data>
-            <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
+    :param endpoint: simple string, name of the endpoint
+    :param function:
+        [1] Normal function return tuple (html_type, data):
+            image/jpeg | text/html | text/plain, <data>
+                                                 <data>: binary | string
+        [2] Stream function return tuple (multipart_type, data):
+            multipart/x-mixed-replace | multipart/form-data, <data>
+                <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
     """
     WebCli.register(endpoint=endpoint, callback=function)
     return True

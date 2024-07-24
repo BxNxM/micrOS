@@ -1,4 +1,5 @@
 from time import localtime
+from os import listdir, remove
 
 #############################################
 #        LOGGING WITH DATA ROTATION         #
@@ -77,3 +78,11 @@ def syslog(data=None, msgobj=None):
     if data is None:
         return log_get('err.log', msgobj)
     return logger(data, 'err.log', limit=6)
+
+
+def log_clean(msgobj=None):
+    to_del = [file for file in listdir() if file.endswith('.log')]
+    for _del in to_del:
+        if msgobj is not None:
+            msgobj(f" Delete: {_del}")
+        remove(_del)

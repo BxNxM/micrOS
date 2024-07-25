@@ -1,4 +1,4 @@
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 
 __I2C = None
 
@@ -7,7 +7,7 @@ def __init():
     global __I2C
     if __I2C is None:
         from machine import Pin, I2C
-        __I2C = I2C(-1, Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
+        __I2C = I2C(-1, Pin(resolve_pin('i2c_scl')), Pin(resolve_pin('i2c_sda')))
     return __I2C
 
 
@@ -31,7 +31,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['i2c_scl', 'i2c_sda'])
+    return pinmap_search(['i2c_scl', 'i2c_sda'])
 
 
 def help(widgets=False):

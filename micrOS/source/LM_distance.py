@@ -1,6 +1,6 @@
 from machine import Pin, time_pulse_us
 from utime import sleep_us
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 
 __TRIGGER_OBJ = None
 __ECHO_OBJ = None
@@ -9,8 +9,8 @@ __ECHO_OBJ = None
 def __init_HCSR04():
     global __TRIGGER_OBJ, __ECHO_OBJ
     if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
-        trigger_pin = physical_pin('hcsrtrig')
-        echo_pin = physical_pin('hcsrecho')
+        trigger_pin = resolve_pin('hcsrtrig')
+        echo_pin = resolve_pin('hcsrecho')
         # Init trigger pin (out)
         __TRIGGER_OBJ = Pin(trigger_pin, mode=Pin.OUT, pull=None)
         __TRIGGER_OBJ.value(0)
@@ -83,7 +83,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['hcsrtrig', 'hcsrecho'])
+    return pinmap_search(['hcsrtrig', 'hcsrecho'])
 
 
 def help(widgets=False):

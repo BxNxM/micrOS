@@ -1,4 +1,4 @@
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
@@ -15,8 +15,8 @@ def __l9110_init():
     global __L9110_OBJS
     if len(__L9110_OBJS) == 0:
         from machine import Pin, PWM
-        __L9110_OBJS.append(PWM(Pin(physical_pin('l9110dir_1')), freq=1024))
-        __L9110_OBJS.append(PWM(Pin(physical_pin('l9110dir_2')), freq=1024))
+        __L9110_OBJS.append(PWM(Pin(resolve_pin('l9110dir_1')), freq=1024))
+        __L9110_OBJS.append(PWM(Pin(resolve_pin('l9110dir_2')), freq=1024))
         __L9110_OBJS[0].duty(0)     # Set default speed (PWM)
         __L9110_OBJS[1].duty(0)     # Set default speed (PWM)
     return __L9110_OBJS
@@ -45,7 +45,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['l9110dir_1', 'l9110dir_2'])
+    return pinmap_search(['l9110dir_1', 'l9110dir_2'])
 
 
 def help(widgets=False):

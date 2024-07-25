@@ -12,7 +12,7 @@ try:
     import LM_intercon as InterCon
 except:
     InterCon = None
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 
 
 ADC = None
@@ -24,7 +24,7 @@ def __init_tempt6000():
     """
     global ADC
     if ADC is None:
-        ADC = SmartADC(physical_pin('temp6000'))
+        ADC = SmartADC(resolve_pin('temp6000'))
     return ADC
 
 
@@ -123,7 +123,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump('temp6000')
+    return pinmap_search('temp6000')
 
 
 def help(widgets=False):

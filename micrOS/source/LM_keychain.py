@@ -5,7 +5,7 @@ from Network import ifconfig
 from LM_oled import text, show, rect, pixel, clean, line, load as oled_lni
 from LM_ds18 import measure
 from LM_system import top
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from neopixel import NeoPixel
 from machine import Pin
 try:
@@ -227,7 +227,7 @@ def color_wheel(br=None):
     """
     def _init():
         if KC.NEOPIXEL_OBJ is None:
-            neopixel_pin = Pin(physical_pin('neop'))        # Get Neopixel pin from LED PIN pool
+            neopixel_pin = Pin(resolve_pin('neop'))        # Get Neopixel pin from LED PIN pool
             KC.NEOPIXEL_OBJ = NeoPixel(neopixel_pin, n=1)   # initialize for max 1 segment
         return KC.NEOPIXEL_OBJ
     # INIT
@@ -299,7 +299,7 @@ def pinmap():
     from LM_ds18 import pinmap as t_pmp
     pmp = o_pmp()
     pmp.update(t_pmp())
-    pmp.update(pinmap_dump(['neop']))
+    pmp.update(pinmap_search(['neop']))
     return pmp
 
 

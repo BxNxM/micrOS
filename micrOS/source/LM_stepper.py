@@ -2,7 +2,7 @@
 
 from utime import sleep_ms
 from machine import Pin
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 STEPPER_INST = None
 
 
@@ -30,10 +30,10 @@ class StepperULN2003:
                          [1, 0, 0, 1]]
             self.delay = 2
         # Init stepper pins
-        self.pin1 = Pin(physical_pin('stppr_1'), Pin.OUT)
-        self.pin2 = Pin(physical_pin('stppr_2'), Pin.OUT)
-        self.pin3 = Pin(physical_pin('stppr_3'), Pin.OUT)
-        self.pin4 = Pin(physical_pin('stppr_4'), Pin.OUT)
+        self.pin1 = Pin(resolve_pin('stppr_1'), Pin.OUT)
+        self.pin2 = Pin(resolve_pin('stppr_2'), Pin.OUT)
+        self.pin3 = Pin(resolve_pin('stppr_3'), Pin.OUT)
+        self.pin4 = Pin(resolve_pin('stppr_4'), Pin.OUT)
         # Initialize all value to 0 - "OFF"
         self.reset()
 
@@ -141,7 +141,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['stppr_1', 'stppr_2', 'stppr_3', 'stppr_4'])
+    return pinmap_search(['stppr_1', 'stppr_2', 'stppr_3', 'stppr_4'])
 
 
 def help(widgets=False):

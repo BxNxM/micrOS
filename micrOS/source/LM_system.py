@@ -159,9 +159,9 @@ def pinmap(key='builtin'):
     :param key str: logical pin name to resolve
     :return dict: key map
     """
-    from microIO import pinmap_dump, get_pinmap
-    map = get_pinmap()
-    map[key] = pinmap_dump(key)[key]
+    from microIO import pinmap_search, pinmap_info
+    map = pinmap_info()
+    map[key] = pinmap_search(key)[key]
     return map
 
 @socket_stream

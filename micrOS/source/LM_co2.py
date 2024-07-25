@@ -1,7 +1,7 @@
 from math import pow
 from sys import platform
 from machine import ADC, Pin
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Types import resolve
 
 #########################################
@@ -20,10 +20,10 @@ def __get_resistance():
     global __ADC, __ADC_PROP
     if __ADC is None:
         if 'esp8266' in platform:
-            __ADC = ADC(physical_pin('co2'))      # 1V measure range
+            __ADC = ADC(resolve_pin('co2'))      # 1V measure range
             __ADC_PROP = (1023, 1.0)
         else:
-            __ADC = ADC(Pin(physical_pin('co2')))
+            __ADC = ADC(Pin(resolve_pin('co2')))
             __ADC.atten(ADC.ATTN_11DB)                          # 3.6V measure range
             __ADC.width(ADC.WIDTH_10BIT)                        # Default 10 bit ADC
             __ADC_PROP = (1023, 3.6)
@@ -142,7 +142,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump('co2')
+    return pinmap_search('co2')
 
 
 def help(widgets=False):

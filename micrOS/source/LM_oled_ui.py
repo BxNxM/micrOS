@@ -1,7 +1,7 @@
 from Config import cfgget
 from utime import localtime
 from network import WLAN, STA_IF
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Network import ifconfig
 from Common import syslog
 from machine import Pin
@@ -154,7 +154,7 @@ class PageUI:
     def __create_button_irq(self, pinkey='oleduibttn'):
         """Create button press IRQ for OK/Center button"""
         try:
-            pin = physical_pin(pinkey)
+            pin = resolve_pin(pinkey)
         except Exception as e:
             msg = '[ERR] Button IRQ:{} {}'.format(pinkey, e)
             pin = None
@@ -631,7 +631,7 @@ def pinmap():
     :return dict: pin name (str) - pin value (int) pairs
     """
     pin_map = PageUI.DISPLAY.pinmap()
-    pin_map.update(pinmap_dump('oleduibttn'))
+    pin_map.update(pinmap_search('oleduibttn'))
     return pin_map
 
 

@@ -6,7 +6,7 @@ micrOS Load Module programming API-s
 from Server import SocketServer, WebCli
 from Debug import errlog_add
 from Logger import logger, log_get
-from microIO import physical_pin
+from microIO import resolve_pin
 from machine import Pin, ADC
 try:
     from Tasks import TaskBase, Manager
@@ -80,7 +80,7 @@ class SmartADC:
         self.adp_prop = (65535, 2450)                               # raw value, 2450mV (so 2,45V)
         self.adc = None
         if not isinstance(pin, int):
-            pin = physical_pin(pin)
+            pin = resolve_pin(pin)
         self.adc = ADC(Pin(pin))
         self.adc.atten(ADC.ATTN_11DB)                               # 2450mV measure range
 

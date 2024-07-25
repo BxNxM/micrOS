@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from microIO import physical_pin
+from microIO import resolve_pin
 from Common import SmartADC
 from random import randint
 
@@ -37,7 +37,7 @@ def __digital_out_init(pin):
     Init Digital output
     """
     if not isinstance(pin, int):
-        pin = physical_pin(pin)
+        pin = resolve_pin(pin)
     if not IObjects._check_obj(pin, 'out'):
         pin_obj = Pin(pin, Pin.OUT)
         IObjects._store_obj(pin, 'out', pin_obj)
@@ -49,7 +49,7 @@ def __digital_in_init(pin):
     Init Digital output
     """
     if not isinstance(pin, int):
-        pin = physical_pin(pin)
+        pin = resolve_pin(pin)
     if not IObjects._check_obj(pin, 'in'):
         pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
         IObjects._store_obj(pin, 'in', pin_obj)
@@ -61,7 +61,7 @@ def __pwm_init(pin, freq):
     Init PWM signal
     """
     if not isinstance(pin, int):
-        pin = physical_pin(pin)
+        pin = resolve_pin(pin)
     tag = 'pwm{}'.format(freq)
     if not IObjects._check_obj(pin, tag):
         pin_obj = PWM(Pin(pin), freq=freq)

@@ -1,7 +1,7 @@
 from machine import Pin
 import micropython
 from Common import socket_stream, syslog
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 
 # https://www.coderdojotc.org/micropython/sensors/10-rotary-encoder/
 
@@ -61,7 +61,7 @@ def load():
     """
     if Data.ROTARY_OBJ is None:
         # GPIO Pins 33 and 35 are for the encoder pins.
-        Data.ROTARY_OBJ = Rotary(physical_pin('rot_dt'), physical_pin('rot_clk'))
+        Data.ROTARY_OBJ = Rotary(resolve_pin('rot_dt'), resolve_pin('rot_clk'))
         Data.VAL = 0
         Data.ROTARY_OBJ.add_handler(_rotary_changed)
     return 'Init RotaryEncoder with IRQs.'
@@ -98,7 +98,7 @@ def pinmap(widgets=False):
     :return tuple: list of functions implemented by this application (widgets=False)
     :return tuple: list of widget json for UI generation (widgets=True)
     """
-    return pinmap_dump(['rot_clk', 'rot_dt'])
+    return pinmap_search(['rot_clk', 'rot_dt'])
 
 
 def help():

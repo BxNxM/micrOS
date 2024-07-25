@@ -21,7 +21,7 @@ from utime import ticks_ms, ticks_diff
 from Config import cfgget
 from Debug import console_write, errlog_add
 from Tasks import exec_lm_pipe_schedule
-from microIO import physical_pin
+from microIO import resolve_pin
 if cfgget('cron'):
     # Only import when enabled - memory usage optimization
     from Scheduler import scheduler
@@ -155,7 +155,7 @@ def initEventIRQs():
         Resolve pin by name
         """
         try:
-            return physical_pin(_p)
+            return resolve_pin(_p)
         except Exception as e:
             errlog_add(f'[ERR][!] EVENT {_p} IO error: {e}')
         return None

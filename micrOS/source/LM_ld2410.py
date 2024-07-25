@@ -17,9 +17,9 @@
 
 from machine import Pin, UART
 import utime
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 
-ser = UART(1, baudrate = 256000, tx=Pin(physical_pin('tx')), rx=Pin(physical_pin('rx')), timeout = 1)
+ser = UART(1, baudrate = 256000, tx=Pin(resolve_pin('tx')), rx=Pin(resolve_pin('rx')), timeout = 1)
 HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])
 TERMINATOR = bytes([0x04, 0x03, 0x02, 0x01])
 NULLDATA = bytes([])
@@ -190,7 +190,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['tx', 'rx'])
+    return pinmap_search(['tx', 'rx'])
 
 
 def help(widgets=False):

@@ -72,41 +72,55 @@ def set_pinmap(map_data=None):
     return PinMap.MAPPING_LUT
 
 
-def physical_pin(key):
+def resolve_pin(tag):
     """
     Used in LoadModules
-    key - resolve pin name by logical name (like: switch_1)
+    tag - resolve pin name by logical name (like: switch_1)
     This function implements protected IO allocation (overload protection)
      for protected LM functions (IO-booking)
     """
     # Get pin number on platform by pin key/name
-    pin_num = __resolve_pin(key)
+    pin_num = __resolve_pin(tag)
     if isinstance(pin_num, int):
         # Check pin is already used
         if pin_num in PinMap.IO_USE_DICT:
             key_cache = PinMap.IO_USE_DICT[pin_num]
-            if key_cache == key:
-                return pin_num      # [io] ENABLE ReInit pin with same key name
-            raise Exception(f"[io] Pin {key} is busy: {key_cache}:{pin_num}")
-        # key: pin number, value: pin key (alias)
-        PinMap.IO_USE_DICT[pin_num] = key
-        print(f"[io] Init pin: {key}:{pin_num}")
+            if key_cache == tag:
+                return pin_num      # [io] ENABLE ReInit pin with same tag name
+            raise Exception(f"[io] Pin {tag} is busy: {key_cache}:{pin_num}")
+        # tag: pin number, value: pin tag (alias)
+        PinMap.IO_USE_DICT[pin_num] = tag
+        print(f"[io] Init pin: {tag}:{pin_num}")
     return pin_num
 
 
-def get_pinmap():
+def register_pin(tag, number):
+    allocated_tag = PinMap.IO_USE_DICT.get(number, None)
+    if allocated_tag is None:
+        # Save custom pin - same as cstmpmap config param
+        PinMap.MAPPING[tag] = number
+        # Save pin number as used - same as resolve_pin does
+        PinMap.IO_USE_DICT[number] = tag
+    else:
+        reg_tag = PinMap.IO_USE_DICT.get(number)
+        if tag != reg_tag: # detect conflict
+            raise Exception(f"[io-register] {tag}:{number} already in use: {reg_tag}")
+    return number
+
+
+def pinmap_info():
     """
     Debug info function to get active pinmap and booked IO-s
     """
     return {'map': PinMap.MAPPING_LUT, 'booked': PinMap.IO_USE_DICT, 'custom': PinMap.MAPPING}
 
 
-def pinmap_dump(keys):
+def pinmap_search(keys):
     """
     keys: one or list of pin names (like: switch_1) to resolve physical pin number
     Gives information where to connect the selected periphery to control
     DO NOT USE RETURNED PIN NUMBERS FOR FUNC ALLOCATION IN LMs!!!
-    - USE: physical_pin function for protected IO allocation (overload protection)
+    - USE: resolve_pin function for protected IO allocation (overload protection)
     """
     if isinstance(keys, str):
         keys = [keys]

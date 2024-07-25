@@ -1,5 +1,5 @@
 from machine import I2C, Pin
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Common import syslog
 from time import sleep
 from binascii import hexlify
@@ -24,7 +24,7 @@ def _handle_connection_error(f):
 
 class AHT10:
     def __init__(self, address = 0x38):
-        self.i2c = I2C(-1, Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')), freq = 9600)
+        self.i2c = I2C(-1, Pin(resolve_pin('i2c_scl')), Pin(resolve_pin('i2c_sda')), freq = 9600)
         self.address = address
         if not self.init_sensor():
             raise Exception("Could not initialize the sensor!")
@@ -126,7 +126,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['i2c_scl', 'i2c_sda'])
+    return pinmap_search(['i2c_scl', 'i2c_sda'])
 
 
 def help(widgets=False):

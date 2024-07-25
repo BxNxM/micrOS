@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 
 
 class Data:
@@ -16,7 +16,7 @@ class Data:
 def __servo_init():
     if Data.S_OBJ is None:
         try:
-            pin = Pin(physical_pin('servo_1'))
+            pin = Pin(resolve_pin('servo_1'))
             Data.S_OBJ = PWM(pin, freq=50)
             del pin
         except Exception as e:
@@ -64,7 +64,7 @@ def sdemo():
 def __servo2_init():
     if Data.S_OBJ2 is None:
         try:
-            pin = Pin(physical_pin('servo_2'))     # Alternative wiring
+            pin = Pin(resolve_pin('servo_2'))     # Alternative wiring
             Data.S_OBJ2 = PWM(pin, freq=50)
             del pin
         except Exception as e:
@@ -135,7 +135,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['servo_1', 'servo_2'])
+    return pinmap_search(['servo_1', 'servo_2'])
 
 
 def help(widgets=False):

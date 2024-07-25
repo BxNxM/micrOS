@@ -6,7 +6,7 @@ from sys import platform
 from utime import sleep_ms
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from random import randint
 from Types import resolve
 
@@ -27,8 +27,8 @@ class Data:
 
 def __cwww_init():
     if Data.CWWW_OBJS[0] is None or Data.CWWW_OBJS[1] is None:
-        cw = Pin(physical_pin('cwhite'))
-        ww = Pin(physical_pin('wwhite'))
+        cw = Pin(resolve_pin('cwhite'))
+        ww = Pin(resolve_pin('wwhite'))
         if platform == 'esp8266':
             Data.CWWW_OBJS = (PWM(cw, freq=1024),
                               PWM(ww, freq=1024))
@@ -341,7 +341,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['cwhite', 'wwhite'])
+    return pinmap_search(['cwhite', 'wwhite'])
 
 
 def help(widgets=False):

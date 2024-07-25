@@ -6,7 +6,7 @@ from sys import platform
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
 from utime import sleep_ms
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from random import randint
 from Types import resolve
 
@@ -29,9 +29,9 @@ class Data:
 
 def __RGB_init():
     if Data.RGB_OBJS[0] is None or Data.RGB_OBJS[1] is None or Data.RGB_OBJS[2] is None:
-        red = Pin(physical_pin('redgb'))
-        green = Pin(physical_pin('rgreenb'))
-        blue = Pin(physical_pin('rgbue'))
+        red = Pin(resolve_pin('redgb'))
+        green = Pin(resolve_pin('rgreenb'))
+        blue = Pin(resolve_pin('rgbue'))
         if platform == 'esp8266':
             Data.RGB_OBJS = (PWM(red, freq=1024),
                           PWM(green, freq=1024),
@@ -303,7 +303,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['redgb', 'rgreenb', 'rgbue'])
+    return pinmap_search(['redgb', 'rgreenb', 'rgbue'])
 
 
 def help(widgets=False):

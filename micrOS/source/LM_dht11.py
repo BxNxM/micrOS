@@ -1,4 +1,4 @@
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Common import data_logger
 from Types import resolve
 
@@ -14,7 +14,7 @@ def __init_DHT11():
     if __DHT_OBJ is None:
         from dht import DHT11
         from machine import Pin
-        __DHT_OBJ = DHT11(Pin(physical_pin('dhtpin')))
+        __DHT_OBJ = DHT11(Pin(resolve_pin('dhtpin')))
     return __DHT_OBJ
 
 
@@ -91,7 +91,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump('dhtpin')
+    return pinmap_search('dhtpin')
 
 
 def help(widgets=False):

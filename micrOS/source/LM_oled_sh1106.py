@@ -16,7 +16,7 @@ from micropython import const
 import utime as time
 import framebuf
 from machine import Pin, I2C
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Types import resolve
 
 __INVERT = False
@@ -224,8 +224,8 @@ class SH1106_I2C(SH1106):
 
 def load(width=128, height=64, brightness=50, rotate=180):
     if SH1106_I2C.OLED_OBJ is None:
-        #i2c = SoftI2C(Pin(physical_pin('i2c_scl')), Pin(physical_pin('i2c_sda')))
-        i2c = I2C(scl=Pin(physical_pin('i2c_scl')), sda=Pin(physical_pin('i2c_sda')), freq=400000)
+        #i2c = SoftI2C(Pin(resolve_pin('i2c_scl')), Pin(resolve_pin('i2c_sda')))
+        i2c = I2C(scl=Pin(resolve_pin('i2c_scl')), sda=Pin(resolve_pin('i2c_sda')), freq=400000)
         # TODO: scan device - abort if no device is available
         SH1106_I2C.OLED_OBJ = SH1106_I2C(width, height, i2c, rotate=rotate)
         SH1106_I2C.OLED_OBJ.contrast(percent=brightness)
@@ -384,7 +384,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['i2c_scl', 'i2c_sda'])
+    return pinmap_search(['i2c_scl', 'i2c_sda'])
 
 
 def help(widgets=False):

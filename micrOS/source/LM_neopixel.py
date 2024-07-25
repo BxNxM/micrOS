@@ -4,7 +4,7 @@ from sys import platform
 from utime import sleep_ms
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from random import randint
 from Types import resolve
 
@@ -33,7 +33,7 @@ def __init_NEOPIXEL(n=24):
     n - number of led fragments
     """
     if Data.NEOPIXEL_OBJ is None:
-        neopixel_pin = Pin(physical_pin('neop'))     # Get Neopixel pin from LED PIN pool
+        neopixel_pin = Pin(resolve_pin('neop'))     # Get Neopixel pin from LED PIN pool
         Data.NEOPIXEL_OBJ = NeoPixel(neopixel_pin, n)                 # initialize for max 8 segments
         del neopixel_pin
     return Data.NEOPIXEL_OBJ
@@ -332,7 +332,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump('neop')
+    return pinmap_search('neop')
 
 
 def help(widgets=False):

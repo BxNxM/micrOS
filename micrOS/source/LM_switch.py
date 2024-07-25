@@ -1,5 +1,5 @@
 from machine import Pin
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Types import resolve
 
 #########################################
@@ -82,7 +82,7 @@ def load(cache=None, ch_init=None):
 
 def __switch_init():
     if __SWITCH_OBJ[0] is None:
-        __SWITCH_OBJ[0] = Pin(physical_pin('switch_1'), Pin.OUT)
+        __SWITCH_OBJ[0] = Pin(resolve_pin('switch_1'), Pin.OUT)
     return __SWITCH_OBJ[0]
 
 
@@ -118,7 +118,7 @@ def toggle():
 
 def __switch2_init():
     if __SWITCH_OBJ[1] is None:
-        __SWITCH_OBJ[1] = Pin(physical_pin('switch_2'), Pin.OUT)
+        __SWITCH_OBJ[1] = Pin(resolve_pin('switch_2'), Pin.OUT)
     return __SWITCH_OBJ[1]
 
 
@@ -153,7 +153,7 @@ def toggle2():
 
 def __switch3_init():
     if __SWITCH_OBJ[2] is None:
-        __SWITCH_OBJ[2] = Pin(physical_pin('switch_3'), Pin.OUT)
+        __SWITCH_OBJ[2] = Pin(resolve_pin('switch_3'), Pin.OUT)
     return __SWITCH_OBJ[2]
 
 
@@ -188,7 +188,7 @@ def toggle3():
 
 def __switch4_init():
     if __SWITCH_OBJ[3] is None:
-        __SWITCH_OBJ[3] = Pin(physical_pin('switch_4'), Pin.OUT)
+        __SWITCH_OBJ[3] = Pin(resolve_pin('switch_4'), Pin.OUT)
     return __SWITCH_OBJ[3]
 
 
@@ -251,7 +251,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['switch_1', 'switch_2', 'switch_3', 'switch_4'])
+    return pinmap_search(['switch_1', 'switch_2', 'switch_3', 'switch_4'])
 
 
 def help(widgets=False):

@@ -44,15 +44,23 @@ stppr_4 = const(27)    # D27 - stepper motor pin
 
 
 # I2C BUS
-i2c_sda = const(21)    # D22 - oled - data
-i2c_scl = const(22)    # D21 - oled - clock
+i2c_sda = const(21)    # D21 - oled - data
+i2c_scl = const(22)    # D22 - oled - clock
+# I2S BUS
+i2s_sck = const(26)    # Serial clock
+i2s_ws = const(25)     # Word select
+i2s_sd = const(33)     # Serial data
+
+tx = const(50)
+rx = const(51)
 
 
 # EXTERNAL EVENT IRQ
-irq1 = const(4)        # D4  - event irq pin
-irq2 = const(18)       # D18 - event irq pin
-irq3 = const(5)        # D19  - event irq pin
-irq4 = const(13)       # D13  - event irq pin
+irq1 = const(4)         # D4  - event irq pin
+irq2 = const(18)        # D18 - event irq pin
+irq3 = const(5)         # D19  - event irq pin
+irq4 = const(13)        # D13  - event irq pin
+oleduibttn = const(34)  # D34 - oled_ui center/ok button
 
 touch_0 = const(13)    # D13 - touch sensor TODO
 
@@ -61,9 +69,8 @@ touch_0 = const(13)    # D13 - touch sensor TODO
 hcsrtrig = const(32)   # D32 - distance HCSR04 trigger pin
 hcsrecho = const(35)   # D35 - distance HCSR04 echo pin
 dhtpin = const(32)     # D32 - dht_pin 11 and 22
-co2 = const(35)        # D35 - CO2
-temp6000 = const(36)   # VP - light sensor TEMP6000
-ph = const(39)         # VN - PH sensor
+co2 = const(35)        # D35 - [ADC] CO2
+temp6000 = const(36)   # VP  - [ADC] light sensor TEMP6000
+ph = const(39)         # VN  - [ADC] PH sensor
 ds18 = const(19)       # D19 - DS18B20 - temp. sensor
-
-mic = const(39)
+mic = const(39)        # VN  - [ADC] microphone

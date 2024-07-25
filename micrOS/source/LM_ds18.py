@@ -1,5 +1,5 @@
 import machine, onewire, ds18x20, time
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Types import resolve
 
 DS_OBJ = None
@@ -8,7 +8,7 @@ DS_OBJ = None
 def __init_DS18():
     global DS_OBJ
     if DS_OBJ is None:
-        ds_pin = machine.Pin(physical_pin('ds18'))
+        ds_pin = machine.Pin(resolve_pin('ds18'))
         DS_OBJ = ds18x20.DS18X20(onewire.OneWire(ds_pin))
     return DS_OBJ
 
@@ -61,7 +61,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump('ds18')
+    return pinmap_search('ds18')
 
 
 def help(widgets=False):

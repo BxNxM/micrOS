@@ -1,5 +1,5 @@
 from sys import platform
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Common import transition_gen, micro_task
 import uasyncio as asyncio
 from utime import sleep_ms
@@ -25,7 +25,7 @@ class Data:
 def __dimmer_init():
     if Data.DIMMER_OBJ is None:
         from machine import Pin, PWM
-        dimmer_pin = Pin(physical_pin('dim_1'))
+        dimmer_pin = Pin(resolve_pin('dim_1'))
         if platform == 'esp8266':
             Data.DIMMER_OBJ = PWM(dimmer_pin, freq=1024)
         else:
@@ -221,7 +221,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump('dim_1')
+    return pinmap_search('dim_1')
 
 
 def help(widgets=False):

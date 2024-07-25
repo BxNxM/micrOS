@@ -1,6 +1,6 @@
 from sys import platform
 from utime import sleep
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Common import micro_task
 import uasyncio as asyncio
 from Types import resolve
@@ -181,7 +181,7 @@ def __buzzer_init():
     global __BUZZER_OBJ
     if __BUZZER_OBJ is None:
         from machine import Pin, PWM
-        dimmer_pin = Pin(physical_pin('buzzer'))
+        dimmer_pin = Pin(resolve_pin('buzzer'))
         if platform == 'esp8266':
             __BUZZER_OBJ = PWM(dimmer_pin, freq=600)
         else:
@@ -309,7 +309,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump('buzzer')
+    return pinmap_search('buzzer')
 
 
 def help(widgets=False):

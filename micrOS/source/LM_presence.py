@@ -1,4 +1,4 @@
-from microIO import physical_pin, pinmap_dump
+from microIO import resolve_pin, pinmap_search
 from Common import SmartADC, micro_task, notify, syslog
 import uasyncio as asyncio
 from utime import ticks_ms
@@ -97,7 +97,7 @@ async def __task(ms_period, buff_size):
 
     if Data.MIC_TYPE == Data.MIC_TYPES['ADC']:
         # Create ADC object
-        Data.MIC_ADC = SmartADC.get_singleton(physical_pin('mic'))
+        Data.MIC_ADC = SmartADC.get_singleton(resolve_pin('mic'))
     elif Data.MIC_TYPE == Data.MIC_TYPES['I2S']:
         if Data.I2S_MIC is None:
             import LM_i2s_mic
@@ -257,7 +257,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_dump(['mic', 'irq1'])
+    return pinmap_search(['mic', 'irq1'])
 
 
 def help(widgets=False):

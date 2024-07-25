@@ -28,8 +28,8 @@ def touch(triglvl=300):
     :return dict: verdict isTouched and value
     """
     from machine import TouchPad, Pin
-    from microIO import physical_pin
-    t = TouchPad(Pin(physical_pin('touch_0')))
+    from microIO import resolve_pin
+    t = TouchPad(Pin(resolve_pin('touch_0')))
     value = t.read()  # Returns a smaller number when touched
     return {'isTouched': True if value < triglvl else False, 'value': value}
 

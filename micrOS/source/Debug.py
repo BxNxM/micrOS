@@ -4,7 +4,7 @@ try:
 except:
     syslog = None
 try:
-    from microIO import physical_pin, pinmap_dump, detect_platform
+    from microIO import resolve_pin, pinmap_search, detect_platform
 except:
     detect_platform = None
 
@@ -31,7 +31,7 @@ class DebugCfg:
             # Progress led for TinyPico
             DebugCfg._init_apa102()
             return
-        pled = pinmap_dump('builtin')['builtin']
+        pled = pinmap_search('builtin')['builtin']
         if pled is not None:
             if isinstance(pled, int):
                 # SET PROGRESS LED WITH BUILT-IN step FUNCTION
@@ -63,8 +63,8 @@ class DebugCfg:
     def _init_simple():
         try:
             # Progress led for esp32/etc
-            led_obj = Pin(abs(physical_pin('builtin')), Pin.OUT)
-            if physical_pin('builtin') < 0:     # Pin number start with (-), like -8 (means inverted output)
+            led_obj = Pin(abs(resolve_pin('builtin')), Pin.OUT)
+            if resolve_pin('builtin') < 0:     # Pin number start with (-), like -8 (means inverted output)
                 led_obj.value(1)                # Turn OFF built-in LED state invert (1:OFF)
             # Set function callback for step function (simple led - blink)
             DebugCfg.PLED_STEP = lambda: led_obj.value(not led_obj.value())     # # double-blink: return None
@@ -100,7 +100,7 @@ class DebugCfg:
     def _init_ws2812():
         try:
             from neopixel import NeoPixel
-            neo_pin = Pin(physical_pin('builtin'))
+            neo_pin = Pin(resolve_pin('builtin'))
             led_obj = NeoPixel(neo_pin, 1)
             DebugCfg.PLED_STEP = lambda: DebugCfg._step_ws2812(led_obj)
         except Exception as e:

@@ -1,4 +1,16 @@
-# How to write Load Modules
+```
+██       ██████   █████  ██████      ███    ███  ██████  ██████  ██    ██ ██      ███████ ███████ 
+██      ██    ██ ██   ██ ██   ██     ████  ████ ██    ██ ██   ██ ██    ██ ██      ██      ██      
+██      ██    ██ ███████ ██   ██     ██ ████ ██ ██    ██ ██   ██ ██    ██ ██      █████   ███████ 
+██      ██    ██ ██   ██ ██   ██     ██  ██  ██ ██    ██ ██   ██ ██    ██ ██      ██           ██ 
+███████  ██████  ██   ██ ██████      ██      ██  ██████  ██████   ██████  ███████ ███████ ███████ 
+```
+
+![microIO](https://img.shields.io/badge/microIO.py-blue) ![Types](https://img.shields.io/badge/Types.py-darkgreen) ![Common](https://img.shields.io/badge/Common.py-purple)
+
+![MICROSVISUALIZATION](./media/micrOSToolkit.png?raw=true)
+
+# Create your own application module
 
 
 1. Create python file with the following naming convension: `LM_`your_app`.py`
@@ -7,7 +19,15 @@
 4. Select device
 5. Press upload
 
-### LM\_simple.py
+```
+██████  ███████  ██████   ██████  ██ ███    ██ ███████ ██████  
+██   ██ ██      ██       ██       ██ ████   ██ ██      ██   ██ 
+██████  █████   ██   ███ ██   ███ ██ ██ ██  ██ █████   ██████  
+██   ██ ██      ██    ██ ██    ██ ██ ██  ██ ██ ██      ██   ██ 
+██████  ███████  ██████   ██████  ██ ██   ████ ███████ ██   ██ level
+```
+
+### LM\_basic.py
 
 ```python
 def hello(name="Anonymous"):
@@ -23,18 +43,18 @@ def help(widgets=False):
 			  "add_two_numbers a b")
 ```
 
-### LM\_simple\_led.py
+### LM\_basic\_led.py
 
 ```python
 from machine import Pin	              # Import micropython Pin module
 
-PIN = None                            # Cache created Pin instance
+LED = None                            # Cache created Pin instance
 
 def load(pin_number=4):
-	global PIN
-	if PIN is None:
-		PIN = Pin(pin_number, Pin.OUT) # Init PIN 4 as OUTPUT and store (cache) in global var.
-	return PIN
+	global LED
+	if LED is None:
+		LED = Pin(pin_number, Pin.OUT) # Init PIN 4 as OUTPUT and store (cache) in global var.
+	return LED
 
 
 def on():
@@ -66,67 +86,68 @@ For more info: Micropython official [Pins](https://docs.micropython.org/en/lates
 -------------------------------------------------------------------------------
 
 
-### micrOS LM_template.py
+### micrOS LM\_template.py
 
 Function naming convesions for Load Modules.
 
 ```python
 
-from LogicalPins import physical_pin, pinmap_dump
-from machine import Pin
+from machine import Pin	
+from microIO import register_pin, pinmap_search
 
-def load():
+LED = None                            # Cache created Pin instance
+
+def load(pin_number=4):
 	"""
 	[RECOMMENDED]
-	Function naming convension to create IO (Pin) objects
-	- function to initialize IO peripheries
-
-	physical_pin - to resolve pin on board by logical name (tag)
+	Function Naming Convetion for module load/init
 	"""
-	
-	pin_number = physical_pin('redgb')	# select pin number from platfrom lookup table
-	red = Pin(pin_number)
-	return red
+	global LED
+	if LED is None:
+		pin = register_pin('led', pin_number)            # Book pin 4 (as "led")
+		LED = Pin(pin, Pin.OUT) # Init PIN 4 as OUTPUT and store (cache) in global var.
+	return LED
 
 
-def lmdep():
-   """
-   [OPTIONAL] [IN CASE OF LM DEPENDENCY]
-   Function to return Load Module dependencies (tuple)
-   - example: if this module uses LM_rgb.py, you should
-   				 return 'rgb'
-   """
-	return '<module_name>'
+def on():
+	pin = load()
+	pin.value(1)                      # Set pin high - LED ON
+	return "LED ON"
+
+
+def off():
+	pin = load()
+	pin.value(0)                      # Set pin low - LED OFF
+	return "LED OFF"
+
+
+def toggle():
+	pin = load()
+	pin.value(not pin.value())
+	return "LED ON" if pin.value() else "LED OFF"
 
 
 def pinmap():
 	"""
 	[OPTIONAL]
-	Return list of pins
-	Example:
-		RoboArm $  rgb pinmap >json
-		{"rgbue": 15, "rgreenb": 12, "redgb": 14}
-	return: dict {pinkey: pinvalue}
-	
-	pinmap_dump - logical pinmap resolver based on IO_<device_tag>.py
-	
-	Example:
-	return pinmap_dump(['redgb', 'rgreenb', 'rgbue'])
+	pinmap_search - logical pinmap resolver based on IO_<device_tag>.py + Custom pins
+	return: dict {pinkey: pinvalue, ...}
 	"""
-	return pinmap_dump(['redgb'])
+	return pinmap_search(['led'])
 
 
 def status(lmf=None):
 	"""
 	[OPTIONAL]
 	Function naming convension for
-	module state-machine return
-	return: dict
+		module state-machine return
+		return: dict
 	
-	Example in case of RGB color state return
-	return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
+	Example:
+		return {'S': 0/1}
+	Supported keys: {S, R, G, B, BR, X, Y}
 	"""
-	return {'key': 'value'}
+	return {'S': LED.value()}
 
 
 def help(widgets=False):
@@ -136,9 +157,165 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-	return 'load', 'pinmap', 'status', 'lmdep'
+	return 'load', 'on', 'off', 'toggle', 'pinmap', 'status', 'help'
 ```
 
+
+```
+██ ███    ██ ████████ ███████ ██████  ███    ███ ███████ ██████  ██  █████  ████████ ███████ 
+██ ████   ██    ██    ██      ██   ██ ████  ████ ██      ██   ██ ██ ██   ██    ██    ██      
+██ ██ ██  ██    ██    █████   ██████  ██ ████ ██ █████   ██   ██ ██ ███████    ██    █████   
+██ ██  ██ ██    ██    ██      ██   ██ ██  ██  ██ ██      ██   ██ ██ ██   ██    ██    ██      
+██ ██   ████    ██    ███████ ██   ██ ██      ██ ███████ ██████  ██ ██   ██    ██    ███████ level
+```
+
+## micrOS Types.py module
+
+> Advanced help messages with widget type assignment
+
+Normally in help function you can return a tuple of strings, this can be
+queried as help message from ShellCli and WebCli.
+
+With `Types.resolve` integration you can easily extend normal human readable help messages,
+and enable machine readable output for frontend element generation.
+
+Main steps:
+
+1. Create `help` function with `widgets` parameter <br>
+2. Wrap help tuple into `resolve` function
+3. Use predefined widget types (tags)
+4. Check the following example:
+
+Tags:
+
+* `BUTTON`, requires[0]: no param
+* `COLOR`, requires[3]: r, g, b function parameters
+* `SLIDER`, requires[1]: br function parameters (or any other single param)
+* `TEXTBOX`, requires[0]: no param
+* `JOYSTICK`, requires[1]: x and y function parameters
+* Implementation of [TYPES](./micrOS/source/Types.py)
+
+
+### micrOS LM\_types\_demo.py
+
+```python
+from machine import Pin
+from microIO import register_pin, pinmap_search
+from Types import resolve
+
+LED = None  # Cache created Pin instance
+
+
+def load(pin_number=4):
+    """
+    [RECOMMENDED]
+    Function Naming Convetion for module load/init
+    """
+    global LED
+    if LED is None:
+        pin = register_pin('led', pin_number)  # Book pin 4 (as "led")
+        LED = Pin(pin, Pin.OUT)  # Init PIN 4 as OUTPUT and store (cache) in global var.
+    return LED
+
+
+def on():
+    pin = load()
+    pin.value(1)  # Set pin high - LED ON
+    return "LED ON"
+
+
+def off():
+    pin = load()
+    pin.value(0)  # Set pin low - LED OFF
+    return "LED OFF"
+
+
+def toggle():
+    pin = load()
+    pin.value(not pin.value())
+    return "LED ON" if pin.value() else "LED OFF"
+
+
+def pinmap():
+    """
+    [OPTIONAL]
+    pinmap_search - logical pinmap resolver based on IO_<device_tag>.py + Custom pins
+    return: dict {pinkey: pinvalue, ...}
+    """
+    return pinmap_search(['led'])
+
+
+def status(lmf=None):
+    """
+    [OPTIONAL]
+    Function naming convension for
+        module state-machine return
+        return: dict
+
+    Example:
+        return {'S': 0/1}
+    Supported keys: {S, R, G, B, BR, X, Y}
+    """
+    return {'S': LED.value()}
+
+
+def help(widgets=False):
+    """
+    [i] micrOS LM naming convention - built-in help message
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
+    """
+    return resolve(('load',
+                    'BUTTON on',
+                    'BUTTON off',
+                    'BUTTON toggle',
+                    'pinmap',
+                    'status',
+                    'help'), widgets)
+
+```
+
+Output:
+
+```
+simulator $ types_demo help
+ load,
+ on,
+ off,
+ toggle,
+ pinmap,
+ status,
+ help,
+
+simulator $ types_demo help True
+ {"type": "button", "lm_call": "on ", "options": ["None"]},
+ {"type": "button", "lm_call": "off ", "options": ["None"]},
+ {"type": "button", "lm_call": "toggle ", "options": ["None"]},
+```
+
+Usage(s): [LM_neopixel](./micrOS/source/LM_neopixel.py), etc. in most of the modules :)
+
+TYPE Example sytax:
+
+```python
+    return resolve(('COLOR color r=<0-255> g b',                 # range syntax: <min-max-step> step is optional
+                    'SLIDER brightness br=<0-1000-10>',          # range syntax: <min-max-step> step is optional
+                    'BUTTON action',
+                    'BUTTON conntrol cmd=<Hello,Bello>',         # options syntax: <opt1,opt2,...> list of parameters
+                    'other_function num'), widgets=widgets)
+```
+
+
+
+```
+ █████  ██████  ██    ██  █████  ███    ██ ██    ██ ███████ 
+██   ██ ██   ██ ██    ██ ██   ██ ████   ██ ██    ██ ██      
+███████ ██   ██ ██    ██ ███████ ██ ██  ██ ██    ██ █████   
+██   ██ ██   ██  ██  ██  ██   ██ ██  ██ ██  ██  ██  ██      
+██   ██ ██████    ████   ██   ██ ██   ████   ████   ███████ level
+                                                                    
+```
 
 ## micrOS Common.py module
 
@@ -343,9 +520,9 @@ Usage(s): [LM_presence](./micrOS/source/LM_presence.py)
 
 ------------------------------------
 
-### rest\_endpoint(endpoint, function):
+### web\_endpoint(endpoint, function):
 
-Add custom endpint `<localhost.local>/endpoint` from Load Modules to WebCli html server.
+Add custom endpint `<localhost.local>/endpoint` from Load Modules to WebCli web server.
 
 **Prerequisite**
 > Enable `webui True` in node config.
@@ -392,115 +569,3 @@ def _response():
 ```
 
 Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
-
-## micrOS Types.py module
-
-> Advanced help messages with widget type assignment
-
-Normally in help function you can return a tuple of strings, this can be
-queried as help message from ShellCli and WebCli.
-
-With `Types.resolve` integration you can easily extend normal human readable help messages,
-and enable machine readable output for frontend element generation.
-
-Main steps:
-
-1. Create `help` function with `widgets` parameter <br>
-2. Wrap help tuple into `resolve` function
-3. Use predefined widget types (tags)
-4. Check the following example:
-
-Tags:
-
-* `BUTTON`, requires[0]: no param
-* `COLOR`, requires[3]: r, g, b function parameters
-* `SLIDER`, requires[1]: br function parameters (or any other single param)
-* `TEXTBOX`, requires[0]: no param
-* `JOYSTICK`, requires[1]: x and y function parameters
-* Implementation of [TYPES](./micrOS/source/Types.py)
-
-```python
-from Types import resolve
-
-# Application functions
-
-def measure():
-    return "22 Celsius"
-
-
-def color(r, g, b):
-    return f"r:{r} g:{g} b:{b}"
-
-
-def brightness(br):
-    return f"br:{br}"
-
-
-def action():
-    return "Do something..."
-
-    
-def control(x, y):
-    return f"X: {x}, Y: {y}"
-
-
-def other_function(num=0):
-    return f"Do something, no widget assigned...num: {num}"
-
-#######################
-# LM helper functions #
-#######################
-
-def help(widgets=False):
-    """
-    [i] micrOS LM naming convention - built-in help message
-    :return tuple:
-        (widgets=False) list of functions implemented by this application
-        (widgets=True) list of widget json for UI generation
-    """
-    return resolve(('TEXTBOX measure',
-                    'COLOR color r g b',
-                    'SLIDER brightness br',
-                    'BUTTON action',
-                    'JOYSTICK control x y',
-                    'other_function num'), widgets=widgets)
-```
-
-OR custimze type parameters:
-
-```
-    return resolve(('COLOR color r=<0-255> g b',                 # range syntax: <min-max-step> step is optional
-                    'SLIDER brightness br=<0-1000-10>',          # range syntax: <min-max-step> step is optional
-                    'BUTTON action',
-                    'BUTTON conntrol cmd=<Hello,Bello>',         # options syntax: <opt1,opt2,...> list of parameters
-                    'other_function num'), widgets=widgets)
-```
-
-Output example:
-
-```
-RingLamp $ neopixel help
- color r=<0-255> g b smooth=True force=True,
- toggle state smooth=True,
- load ledcnt=24,
- brightness percent=<0-100> smooth=True wake=True,
- segment r g b s=<0-n>,
- transition r=None g=None b=None sec=1.0 wake=False,
- random smooth=True max_val=254,
- status,
- subscribe_presence,
- pinmap,
- help widgets=False,
- 
-RingLamp $ neopixel help widgets=True
- {"lm_call": "color r=:range: g=:range: b=:range: smooth=True force=True", "type": "color", "range": [0, 255, 2]},
- {"lm_call": "toggle state=:options: smooth=True", "type": "button", "options": ["True", "False"]},
- {"lm_call": "brightness percent=:range: smooth=True wake=True", "type": "slider", "range": [0, 100, 2]},
- {"lm_call": "segment r=:range: g=:range: b=:range: ", "type": "color", "range": [0, 255, 2]},
- {"lm_call": "random smooth=True max_val=254", "type": "button", "options": ["None"]},
-```
-
-
-
-Usage(s): [LM_neopixel](./micrOS/source/LM_neopixel.py), etc. in most of the modules :)
-

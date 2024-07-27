@@ -1068,16 +1068,12 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/presence.png?raw=true",
         "load": {
-            "doc": "\n    Initialize presence module\n    :param threshold: trigger on relative noice change in percent\n    :param timer: off timer in sec\n    :param mic: enable / disable mic sampling (bool)\n    ",
-            "param(s)": "threshold=Data.TRIG_THRESHOLD timer=Data.TIMER_VALUE mic=Data.MIC_TYPE"
+            "doc": "\n    Initialize presence module\n    :param threshold: trigger on relative noice change in percent\n    :param timer: off timer in sec\n    :param mic: enable / disable mic sampling (bool)\n    :param enable_notify: enable (True) / disable (False) telegram notifications\n    ",
+            "param(s)": "threshold=Data.TRIG_THRESHOLD timer=Data.TIMER_VALUE mic=Data.MIC_TYPE enable_notify=False"
         },
         "motion_trig": {
             "doc": "\n    Set motion trigger by IRQx - PIR sensor\n    - Reset OFF_EV_TIMER to TIMER_VALUE\n    - Start async mic sample task\n    ",
             "param(s)": "sample_ms=15 buff_size=10"
-        },
-        "notification": {
-            "doc": "Enable/Disable motion detection notifications",
-            "param(s)": "state=None"
         },
         "pinmap": {
             "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: mic, irq1",

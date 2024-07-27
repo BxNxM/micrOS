@@ -10,7 +10,7 @@ except:
 class Data:
     TASK_TAG = 'presence._capture'
 
-    MIC_TYPES={'NONE': 0, 'ADC':1, 'I2S': 2}
+    MIC_TYPES = {'NONE':0, 'ADC':1, 'I2S':2}
     MIC_TYPE = MIC_TYPES['NONE']      # Enable/Disable MIC periphery ('ADC', 'I2S', None)
     RAW_DATA = []               # format [[<time>, <amplitude>, <trigger>],...]
     MIC_ADC = None              # Initialized by micro task if sampled by ADC
@@ -26,7 +26,8 @@ class Data:
     OFF_INTERCON_CLBK = None    # Intercon OFF callback
 
     I2S_MIC = None              # Optional LM_i2s_mic import
-    NOTIFY = False
+
+    ENABLE_NOTIFY = False
 
 
 #######################################
@@ -91,9 +92,8 @@ def __run_intercon(state):
 ####################################
 
 async def __task(ms_period, buff_size):
-    if Data.NOTIFY:
-        if not notify("Motion detected"):
-            syslog("Motion detect. notify, error...")
+    if Data.ENABLE_NOTIFY and not notify("Motion detected"):
+        syslog("Motion detect. notify, error...")
 
     if Data.MIC_TYPE == Data.MIC_TYPES['ADC']:
         # Create ADC object
@@ -186,18 +186,20 @@ def __mic_sample(buff_size, mytask):
 #  PRESENCE PUBLIC FUNCTIONS #
 ##############################
 
-def load(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.MIC_TYPE):
+def load(threshold=Data.TRIG_THRESHOLD, timer=Data.TIMER_VALUE, mic=Data.MIC_TYPE, enable_notify=False):
     """
     Initialize presence module
     :param threshold: trigger on relative noice change in percent
     :param timer: off timer in sec
     :param mic: enable / disable mic sampling (bool)
+    :param enable_notify: enable (True) / disable (False) telegram notifications
     """
     threshold = threshold if threshold > 1 else 1
     Data.TRIG_THRESHOLD = threshold
     Data.TIMER_VALUE = timer
     Data.MIC_TYPE = mic
-    return f"Init presence module: th: {threshold} timer: {timer} mic: {mic}"
+    Data.ENABLE_NOTIFY = enable_notify
+    return f"Init presence module: th: {threshold} timer: {timer} mic: {mic} notify: {enable_notify}"
 
 
 def motion_trig(sample_ms=15, buff_size=10):
@@ -231,14 +233,6 @@ def subscribe_intercon(on, off):
     return {'on': Data.ON_INTERCON_CLBK, 'off': Data.OFF_INTERCON_CLBK}
 
 
-def notification(state=None):
-    """Enable/Disable motion detection notifications"""
-    if state is None:
-        return f"Notifications: {'enabled' if Data.NOTIFY else 'disabled'}"
-    Data.NOTIFY = True if state else False
-    return f"Set notifications: {'ON' if Data.NOTIFY else 'OFF'}"
-
-
 def get_samples():
     """
     [DEBUG] Return measured data set
@@ -267,8 +261,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S)',\
+    return 'load threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S) notify=False',\
            'motion_trig sample_ms=15 buff_size=10', 'get_samples',\
            'subscribe_intercon on="host cmd" off="host cmd"',\
-           'notification state=None/True/False',\
            'pinmap'

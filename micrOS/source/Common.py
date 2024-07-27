@@ -170,7 +170,7 @@ def notify(text):
     except Exception as e:
         errlog_add(f"[ERR] Notify: {e}")
         out = str(e)
-    if out is not None and out == 'Sent':
+    if out is not None and (out.startswith('Sent') or out.endswith('disabled')):
         return True
     return False
 

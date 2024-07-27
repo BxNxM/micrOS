@@ -13,7 +13,8 @@ from Debug import console_write
 class Telegram:
     # Telegram bot token and chat ID
     # https://core.telegram.org/bots/api
-    _TOKEN = None
+    GLOBAL_NOTIFY = True                             # Enable Global notifications
+    _TOKEN = None                                    # Telegram token
     _CHAT_IDS = set()                                # Telegram bot chat IDs - multi group support - persistent caching
     _API_PARAMS = "?offset=-1&limit=1&timeout=2"     # Generic API params - optimization
     _DEVFID = cfgget('devfid')                       # For reply message (pre text)
@@ -98,6 +99,12 @@ class Telegram:
             resp_json = _send(chid=chat_id)
             verdict = f'Sent{chat_id}' if resp_json['ok'] else str(resp_json)
         return verdict
+
+    @staticmethod
+    def notification(text, reply_to=None, chat_id=None):
+        if Telegram.GLOBAL_NOTIFY:
+            return Telegram.send_msg(text, reply_to, chat_id)
+        return "Notifications disabled"
 
     @staticmethod
     def get_msg():

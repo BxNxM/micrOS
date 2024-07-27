@@ -161,12 +161,12 @@ def notify(text):
     if TELEGRAM is None:
         try:
             from Notify import Telegram
-            TELEGRAM = Telegram
+            TELEGRAM = Telegram()
         except Exception as e:
             errlog_add(f"[ERR] Import Notify.Telegram: {e}")
             return False
     try:
-        out = TELEGRAM().send_msg(text)
+        out = TELEGRAM.notification(text)
     except Exception as e:
         errlog_add(f"[ERR] Notify: {e}")
         out = str(e)

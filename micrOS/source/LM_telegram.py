@@ -1,20 +1,25 @@
 import uasyncio as asyncio
 from Notify import Telegram
-from Common import micro_task
+from Common import micro_task, syslog
 from Network import ifconfig
 
 #########################################
 #          micrOS Notifications         #
 #########################################
+TELEGRAM_OBJ = None
 
-# ENABLE TELEGRAM IF NW IS STA - CONNECTED TO THE WEB
-_ENABLE = True if ifconfig()[0] == "STA" else False
-if _ENABLE:
-    TELEGRAM_OBJ = Telegram()
-else:
-    # NO NETWORK CONNECTION (STA)
-    TELEGRAM_OBJ = None
+def __init():
+    global TELEGRAM_OBJ
+    if TELEGRAM_OBJ is None:
+        # ENABLE TELEGRAM IF NW IS STA - CONNECTED TO THE WEB
+        _sta_available = True if ifconfig()[0] == "STA" else False
+        if _sta_available:
+            TELEGRAM_OBJ = Telegram()
+        else:
+            syslog("No STA: cannot init telegram")
 
+# Auto INIT Telegram at load time (legacy)
+__init()
 
 def load():
     """
@@ -22,6 +27,7 @@ def load():
     - /ping
     - /cmd module function (params)
     """
+    __init()
     if TELEGRAM_OBJ is None:
         return "Network unavailable."
     verdict = TELEGRAM_OBJ.set_commands()
@@ -38,6 +44,17 @@ def send(text):
         return "Network unavailable."
     verdict = TELEGRAM_OBJ.send_msg(text)
     return "Missing telegram bot token" if verdict is None else verdict
+
+def notify(text):
+    """
+    Notify function with system global enable/disable function
+    Control:
+        telegram notifications enable=True
+        telegram notifications enable=False
+    """
+    if TELEGRAM_OBJ is None:
+        return "Network unavailable."
+    return TELEGRAM_OBJ.notification(text)
 
 
 def receive():
@@ -86,6 +103,19 @@ def receiver_loop():
     return "Starting" if state else "Already running"
 
 
+def notifications(enable=None):
+    """
+    Global notification control for micrOS notification
+        LM usage: Common.notify (-> Notify.Telegram.notification (GLOBAL_NOTIFY) -> Notify.Telegram.send_msg)
+    :param enable: True: Enable notifications / False: Disable notifications
+    return: state verdict
+    """
+    if enable is None:
+        enable = not Telegram.GLOBAL_NOTIFY
+    Telegram.GLOBAL_NOTIFY = enable
+    return "Notifications: enabled" if enable else "Notifications: disabled"
+
+
 def help(widgets=False):
     """
     [i] micrOS LM naming convention - built-in help message
@@ -93,4 +123,9 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'send "text"', 'receive', 'receiver_loop', 'load', 'INFO: Send & Receive messages with Telegram bot'
+    return ('send "text"',
+            'receive',
+            'receiver_loop',
+            'notify "message"',
+            'notifications enable=False',
+            'load', 'INFO: Send & Receive messages with Telegram bot')

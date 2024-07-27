@@ -585,7 +585,7 @@
             "param(s)": "buf_length=Data.BUF_LENGTH sampling_rate=Data.SAMPLING_RATE"
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: sck, ws, sd",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2s_sck, i2s_ws, i2s_sd",
             "param(s)": ""
         },
         "select_channel": {

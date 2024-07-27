@@ -315,7 +315,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_search(['sck', 'ws', 'sd'])
+    return pinmap_search(['i2s_sck', 'i2s_ws', 'i2s_sd'])
 
 
 def help(widgets=False):

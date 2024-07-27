@@ -76,8 +76,8 @@ def resolve_pin(tag):
     """
     Used in LoadModules
     tag - resolve pin name by logical name (like: switch_1)
-    This function implements protected IO allocation (overload protection)
-     for protected LM functions (IO-booking)
+    This function implements IO allocation/booking (with overload protection)
+    return: integer (pin number)
     """
     # Get pin number on platform by pin key/name
     pin_num = __resolve_pin(tag)
@@ -95,6 +95,12 @@ def resolve_pin(tag):
 
 
 def register_pin(tag, number):
+    """
+    Book pin (with overload protection) without IO_platform.py file editing
+    :param tag: associated pin name for pin number
+    :param number: pin number as integer
+    return: pin number
+    """
     allocated_tag = PinMap.IO_USE_DICT.get(number, None)
     if allocated_tag is None:
         # Save custom pin - same as cstmpmap config param
@@ -117,10 +123,8 @@ def pinmap_info():
 
 def pinmap_search(keys):
     """
-    keys: one or list of pin names (like: switch_1) to resolve physical pin number
-    Gives information where to connect the selected periphery to control
-    DO NOT USE RETURNED PIN NUMBERS FOR FUNC ALLOCATION IN LMs!!!
-    - USE: resolve_pin function for protected IO allocation (overload protection)
+    :param keys: one or list of pin names (like: switch_1) to resolve physical pin number
+    Gives information where to connect the selected periphery to control WITHOUT PIN BOOKING
     """
     if isinstance(keys, str):
         keys = [keys]

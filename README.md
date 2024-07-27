@@ -56,7 +56,7 @@ Access rest api over browser: `http://<nodename>.local`
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
-7. micrOS customization with LMs: [link](./APP_TEMPLATES.md)
+7. micrOS customization with LMs: [link](./APPLICATION_GUIDE.md)
 8. micrOS gateway with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
 9. Release notes: [link](https://github.com/BxNxM/micrOS/#relese-note)
 
@@ -405,7 +405,7 @@ Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gatew
 
 # micrOS Customization
 
-[![app_templates](./media/app_templates.png?raw=true)](./APP_TEMPLATES.md)
+[![app_templates](./media/app_templates.png?raw=true)](./APPLICATION_GUIDE.md)
 
 ----------------------------------------
 ----------------------------------------

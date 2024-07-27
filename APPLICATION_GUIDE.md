@@ -20,11 +20,11 @@
 5. Press upload
 
 ```
-██████  ███████  ██████   ██████  ██ ███    ██ ███████ ██████  
-██   ██ ██      ██       ██       ██ ████   ██ ██      ██   ██ 
-██████  █████   ██   ███ ██   ███ ██ ██ ██  ██ █████   ██████  
-██   ██ ██      ██    ██ ██    ██ ██ ██  ██ ██ ██      ██   ██ 
-██████  ███████  ██████   ██████  ██ ██   ████ ███████ ██   ██ level
+██████  ███████  ██████  ██ ███    ██ ███    ██ ███████ ██████  
+██   ██ ██      ██       ██ ████   ██ ████   ██ ██      ██   ██ 
+██████  █████   ██   ███ ██ ██ ██  ██ ██ ██  ██ █████   ██████  
+██   ██ ██      ██    ██ ██ ██  ██ ██ ██  ██ ██ ██      ██   ██ 
+██████  ███████  ██████  ██ ██   ████ ██   ████ ███████ ██   ██ level
 ```
 
 ### LM\_basic.py
@@ -158,6 +158,48 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
 	return 'load', 'on', 'off', 'toggle', 'pinmap', 'status', 'help'
+```
+
+#### microIO.py
+
+``` python
+def resolve_pin(tag):
+    """
+    Used in LoadModules
+    tag - resolve pin name by logical name (like: switch_1)
+    This function implements IO allocation/booking (with overload protection)
+    return: integer (pin number)
+    """
+```
+
+> Note: Used for multi-device pin support (advanced)  
+
+```python
+def register_pin(tag, number):
+    """
+    Book pin (with overload protection) without IO_platform.py file editing
+    :param tag: associated pin name for pin number
+    :param number: pin number as integer
+    return: pin number
+    """
+```
+
+> Note: Simple micrOS pin allocation method
+
+```python
+def pinmap_info():
+    """
+    Debug info function to get active pinmap and booked IO-s
+    return: {'map': "platform", 'booked': {}, 'custom': {}}
+    """
+```
+
+```python
+def pinmap_search(keys):
+    """
+    :param keys: one or list of pin names (like: switch_1) to resolve physical pin number
+    Gives information where to connect the selected periphery to control WITHOUT PIN BOOKING
+    """
 ```
 
 
@@ -309,11 +351,11 @@ TYPE Example sytax:
 
 
 ```
- █████  ██████  ██    ██  █████  ███    ██ ██    ██ ███████ 
-██   ██ ██   ██ ██    ██ ██   ██ ████   ██ ██    ██ ██      
-███████ ██   ██ ██    ██ ███████ ██ ██  ██ ██    ██ █████   
-██   ██ ██   ██  ██  ██  ██   ██ ██  ██ ██  ██  ██  ██      
-██   ██ ██████    ████   ██   ██ ██   ████   ████   ███████ level
+ █████  ██████  ██    ██  █████  ███    ██  ██████ ███████ ██████  
+██   ██ ██   ██ ██    ██ ██   ██ ████   ██ ██      ██      ██   ██ 
+███████ ██   ██ ██    ██ ███████ ██ ██  ██ ██      █████   ██   ██ 
+██   ██ ██   ██  ██  ██  ██   ██ ██  ██ ██ ██      ██      ██   ██ 
+██   ██ ██████    ████   ██   ██ ██   ████  ██████ ███████ ██████  level
                                                                     
 ```
 

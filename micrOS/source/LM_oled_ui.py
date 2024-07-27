@@ -16,10 +16,6 @@ try:
 except:
     InterCon = None             # Optional function handling
 try:
-    from LM_genIO import get_adc
-except:
-    get_adc = None              # Optional function handling
-try:
     from LM_gameOfLife import next_gen as gol_nextgen, reset as gol_reset
 except:
     gol_nextgen = None          # Optional function handling
@@ -33,7 +29,7 @@ class PageUI:
     PAGE_UI_OBJ = None
     DISPLAY = None
 
-    def __init__(self, page_callbacks, w, h, page=0, pwr_sec=None, oled_type='ssd1306'):
+    def __init__(self, page_callbacks, w, h, page=0, pwr_sec=None, oled_type='ssd1306', joystick=False):
         """
         :param page_callbacks: callback function list to show on UI
         :param page: start page index, default 0 (+fallback)
@@ -41,6 +37,7 @@ class PageUI:
         :param h: screen height
         :param pwr_sec: auto screen off after this sec
         :param oled_type: type of oled display: ssd1306 / sh1106
+        :param joystick: enable joystick IRQ-s
         """
         if oled_type.strip() in ('ssd1306', 'sh1106'):
             if oled_type.strip() == 'ssd1306':
@@ -69,7 +66,8 @@ class PageUI:
         # Create built-in button IRQ - OK button (center)
         self.bttn_press_callback = None
         self.irq_ok = False
-        self.__create_button_irq()
+        if joystick:
+            self.__create_joystick_irq()
 
         # Power saver state machine - turn off sec, deltaT (timirq executor seq loop), counter
         self.pwr_saver_state = [pwr_sec, round(cfgget('timirqseq') / 1000, 2), pwr_sec]
@@ -151,19 +149,25 @@ class PageUI:
         PageUI.DISPLAY.text(msg, 15, 40)
         return True
 
-    def __create_button_irq(self, pinkey='oleduibttn'):
-        """Create button press IRQ for OK/Center button"""
-        try:
-            pin = resolve_pin(pinkey)
-        except Exception as e:
-            msg = '[ERR] Button IRQ:{} {}'.format(pinkey, e)
+    def __create_joystick_irq(self):
+        """Create Joystick buttons IRQs"""
+        def _set(pin_tag, callback):
             pin = None
-            syslog(msg)
-        if pin:
-            pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
-            # [IRQ] - event type setup
-            pin_obj.irq(trigger=Pin.IRQ_RISING, handler=lambda pin: self.control('press'))
-            self.irq_ok = True
+            try:
+                pin = resolve_pin(pin_tag)
+            except Exception as e:
+                syslog(f'[ERR] {pin_tag} IRQ: {e}')
+            if pin:
+                pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+                # [IRQ] - event type setup
+                pin_obj.irq(trigger=Pin.IRQ_RISING, handler=callback)
+
+        _set("js_right", lambda pin: self.control('next'))
+        _set("js_left", lambda pin: self.control('prev'))
+        _set("js_up", lambda pin: self.control('on'))
+        _set("js_down", lambda pin: self.control('off'))
+        _set("js_press", lambda pin: self.control('press'))
+        self.irq_ok = True
 
     def __power_save(self):
         """
@@ -388,36 +392,9 @@ class PageUI:
             # Set button press callback (+draw button)
             self.set_press_callback(_button)
 
-    def adc_visualize_page(self, pin):
-        """Generic ADC value visualization page - create multiple page with it"""
-
-        def __visualize(p):
-            max_w = 50
-            percent = p * 0.01
-            size = round(percent * max_w)
-            size = 1 if size < 1 else size
-            # Visualize percentage
-            PageUI.DISPLAY.rect(0, 9, size, size, fill=True)
-            # Visualize percentages scale
-            steps = int(max_w / 10)
-            for scale in range(steps, max_w + 1, steps):
-                if scale < size:
-                    PageUI.DISPLAY.rect(0, 9, scale, scale, state=0)
-                else:
-                    PageUI.DISPLAY.rect(0, 9, scale, scale, state=1)
-
-        data = {'percent': 'null', 'volt': 'null'}
-        if get_adc is not None:
-            data = get_adc(pin)
-        __visualize(p=data['percent'])
-        PageUI.DISPLAY.text("{} %".format(data['percent']), 65, 20)
-        PageUI.DISPLAY.text("{} V".format(data['volt']), 65, 40)
-        return True
-
-
-#################################
-#        PAGE DEFINITIONS       #
-#################################
+####################################
+#        UI PAGE DEFINITIONS       #
+####################################
 
 def _sys_page():
     """
@@ -472,24 +449,36 @@ def _micros_welcome():
         return str(e)
     return True
 
-#################################
-# PAGE GUI CONTROLLER FUNCTIONS #
-#   USED IN MICROS SHELL/IRQs   #
-#################################
+#############################################################################
+#                       PAGE GUI CONTROLLER FUNCTIONS                       #
+#                         USED IN MICROS SHELL/IRQs                         #
+#############################################################################
 
-
-def pageui(pwr_sec=None, oled_type='ssd1306', page=0):
+def load(pwr_sec=None, oled_type='ssd1306', page=0, width=128, height=64, joystick=True):
     """
-    Init&RUN PageUI
-    - add page definitions here - interface from code
-    :param pwr_sec: power down oled after given sec - power safe
+    Init PageUI
+    :param pwr_sec: power down oled after given sec -> screensaver
     :param oled_type: oled type selection: ssd1306 or sh1106
-    :param page: start page index, start from 0
+    :param page: start page index, default: 0
+    :param width: width in pixels
+    :param height: height in pixels
+    :param joystick: init joystick irq pin-s (default: True)
     """
     if PageUI.PAGE_UI_OBJ is None:
         pages = [_sys_page, _intercon_cache, _micros_welcome]  # <== Add page function HERE
-        PageUI(pages, 128, 64, page=page, pwr_sec=pwr_sec, oled_type=oled_type)
+        PageUI(pages, width, height, page=page, pwr_sec=pwr_sec, oled_type=oled_type, joystick=joystick)
     PageUI.PAGE_UI_OBJ.render_page()
+    return f"OLED: {oled_type}: {width}x{height} initialized."
+
+
+def draw():
+    """
+    Refresh page on PageUI
+    """
+    if PageUI.PAGE_UI_OBJ is None:
+        return "Module uninitialized, run: oled_ui load pwr_sec=None oled_type='ssd1306' page=0 width=128 height=64"
+    PageUI.PAGE_UI_OBJ.render_page()
+    return f"refreshed..."
 
 
 def control(cmd='next'):
@@ -525,9 +514,6 @@ def intercon_genpage(cmd=None, run=False):
     raw = cmd.split()
     host = raw[0]
     cmd = ' '.join(raw[1:])
-    if PageUI.PAGE_UI_OBJ is None:
-        # Auto init UI
-        pageui()
     try:
         # Create page for intercon command
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(host, cmd, run=run))
@@ -548,9 +534,6 @@ def cmd_genpage(cmd=None, run=False):
     if not isinstance(cmd, str):
         return False
 
-    if PageUI.PAGE_UI_OBJ is None:
-        # Auto init UI
-        pageui()
     try:
         # Create page for intercon command
         PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd, run=run))
@@ -571,9 +554,6 @@ def function_genpage(func):
     if not callable(func):
         return "Provided <func> not callable, input must be python function (coding interface)"
 
-    if PageUI.PAGE_UI_OBJ is None:
-        # Auto init UI
-        pageui()
     try:
         # Create custom page
         PageUI.PAGE_UI_OBJ.add_page(lambda: func(display=PageUI.DISPLAY))
@@ -582,37 +562,9 @@ def function_genpage(func):
         return str(e)
     return True
 
-
-def adc_genpage(pin=33):
-    """
-    Create ADC visualization pages dynamically :)
-    :param pin: pin number for ADC read, default: 33
-    :return: page creation verdict
-    """
-    if not isinstance(pin, int):
-        return False
-
-    if PageUI.PAGE_UI_OBJ is None:
-        # Auto init UI
-        pageui()
-    try:
-        # Create page for intercon command
-        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.adc_visualize_page(pin=pin))
-    except Exception as e:
-        syslog(f'[ERR] adc_genpage: {e}')
-        return str(e)
-    return True
-
 #######################
 # LM helper functions #
 #######################
-
-def load(type='ssd1306', page=0, screen_saver=None):
-    """
-    Initialize ssd1306/h1106 display module
-    - wrapper of pageui
-    """
-    return pageui(pwr_sec=screen_saver, oled_type=type, page=page)
 
 def lmdep():
     """
@@ -631,7 +583,7 @@ def pinmap():
     :return dict: pin name (str) - pin value (int) pairs
     """
     pin_map = PageUI.DISPLAY.pinmap()
-    pin_map.update(pinmap_search('oleduibttn'))
+    pin_map.update(pinmap_search(["js_right", "js_left", "js_up", "js_down", "js_press"]))
     return pin_map
 
 
@@ -642,10 +594,10 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('pageui page=0 pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106"',
-                             'BUTTON control cmd=<next,prev,press,on,off>',
+    return resolve(('load pwr_sec=None/int(sec) oled_type="ssd1306 or sh1106" page=0 width=128 height=64 joystick=True',
+                             'draw',
+                             'BUTTON control cmd=<prev,press,next,on,off>',
                              'msgbox "msg"',
                              'intercon_genpage "host" "cmd" run=False',
                              'cmd_genpage "cmd" run=False',
-                             'adc_genpage pin=33',
                              'pinmap'), widgets=widgets)

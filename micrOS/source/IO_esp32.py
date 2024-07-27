@@ -57,7 +57,12 @@ irq1 = const(4)         # D4  - event irq pin
 irq2 = const(18)        # D18 - event irq pin
 irq3 = const(5)         # D19  - event irq pin
 irq4 = const(13)        # D13  - event irq pin
-oleduibttn = const(34)  # D34 - oled_ui center/ok button
+
+js_right = const(4)     # oled_ui joystick
+js_left = const(18)
+js_up = const(5)
+js_down = const(13)
+js_press = const(34)    # oled_ui center/ok button
 
 touch_0 = const(13)    # D13 - touch sensor TODO
 

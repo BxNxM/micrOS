@@ -261,7 +261,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S) notify=False',\
+    return 'load threshold=<percent> timer=<sec> mic=0 (0: None, 1: ADC, 2: I2S) enable_notify=False',\
            'motion_trig sample_ms=15 buff_size=10', 'get_samples',\
            'subscribe_intercon on="host cmd" off="host cmd"',\
            'pinmap'

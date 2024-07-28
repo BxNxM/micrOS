@@ -18,6 +18,12 @@ def base_cmd():
         return ['--dev', DEVICE]
     return ['--dev', DEVICE, '--password', PASSWD]
 
+def run_command(cmd):
+    # EDIT YOUR COMMAND
+    args = base_cmd() + cmd
+    status, answer = socketClient.run(args)
+    return status, answer
+
 
 def app(devfid=None, pwd=None):
     """
@@ -30,9 +36,8 @@ def app(devfid=None, pwd=None):
         DEVICE = devfid
     if pwd is not None:
         PASSWD = pwd
-    # EDIT YOUR COMMAND
-    args = base_cmd() + ['help', 'version']
-    status, answer = socketClient.run(args)
+
+    status, answer = run_command(['help', 'version'])
 
 
 if __name__ == "__main__":

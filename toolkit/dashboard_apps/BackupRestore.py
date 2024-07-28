@@ -50,14 +50,66 @@ def backup():
 
 def restore():
     print(f"\tRestore backup for: {DEVICE}")
-    print("\t|--- TODO")
-    # Search backups in BACKUP_DIR
-    # Backup selection (load json)
-    # Compare live and backup config
-    #   Live:     status, answer = run_command(["conf", "dump"])
-    # Dump diff
-    # Enable restore (verify from user)
-    # Restore the changes param by param
+    diff_config = {}
+
+    # SELECT AND LOAD CONFIG BACKUP
+    backup_list = os.listdir(BACKUP_DIR)
+    for i, json_backup in enumerate(backup_list):
+        print(f"[{i}]  {json_backup}")
+    opt = input("Select backup number to restore: ")
+    try:
+        opt = int(opt)
+    except Exception as e:
+        print(f"{Colors.ERR}INVALID INDEX:{Colors.NC} {e}")
+        return
+    backup_path = os.path.join(BACKUP_DIR, backup_list[opt])
+    with open(backup_path, 'r') as f:
+        backup_dict = json.load(f)
+    print(f"SELECTED CONFIG: {backup_path}")
+    print(f"BACKUP CONFIG DICT:\n{backup_dict}")
+
+    # LOAD LIVE DEVICE CONFIG - create config diff
+    status, answer = run_command(["conf", "dump"])
+    if not status:
+        return f"Cannot load live device config"
+    live_configuration = {line.split(":")[0].strip(): ''.join(line.split(":")[1:]).strip() for line in answer.strip().split("\n") if ":" in line}
+
+    for key, live_value in live_configuration.items():
+        if key in ("version", "devip", "hwuid", "version"):
+            continue
+        bckp_value = backup_dict.get(key, None)
+        if bckp_value is None or bckp_value == live_value:
+            continue
+        print(f"\tDIFF: {key} : {live_value} -> {bckp_value}")
+        diff_config[key] = bckp_value
+
+    if len(diff_config.keys()) == 0:
+        print(f"{Colors.OKGREEN}No diff in config - skip restore{Colors.NC}")
+        return
+    verify = input(f"{Colors.WARN}APPLY DIFFS?{Colors.NC} [Y/n]: ")
+    if verify != "Y":
+        print(f"{Colors.WARN}SKIP restore...{Colors.NC}")
+        return
+
+    print("PACKAGE CONFIG DIFFS...")
+    conf_cmd_list = ["conf"]
+    for key, value in diff_config.items():
+        print(f"\tADD {key} : {value}")
+        conf_cmd_list.append(f"{key} {value}")
+    conf_cmd_list.append("reboot")
+
+    verify = input(f"{Colors.WARN}This is BETA feature, are you sure?{Colors.NC} [YY/n]: ")
+    if verify != "YY":
+        print(f"{Colors.WARN}SKIP restore...{Colors.NC}")
+        return
+    # Restore
+    print("APPLY CONFIG DIFFS...")
+    status, answer = run_command(conf_cmd_list)
+    if status:
+        print(f"{Colors.OKGREEN}Backup was successfully restored:{Colors.NC} {backup_path}\nRebooting...")
+    else:
+        print(f"{Colors.ERR}Restore error:{Colors.NC} {status}: {answer}")
+
 
 
 def delete_backup():

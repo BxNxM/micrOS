@@ -2,7 +2,6 @@
 
 import os
 import sys
-import time
 import json
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 BACKUP_DIR = os.path.join(MYPATH, "../user_data/node_config_archive/")
@@ -28,6 +27,19 @@ def run_command(cmd):
     return status, answer
 
 ###########################################################
+def _value_type(value):
+    value = value.strip()
+    if value == "True":     # Bool
+        return True
+    if value == "False":    # Bool
+        return False
+    try:
+        value = int(value)  # integer
+        return value
+    except Exception:
+        pass
+    return value            # string
+
 
 def backup():
     print(f"\tBackup name format: {DEVICE}-<tag>-node_config.json")
@@ -40,7 +52,7 @@ def backup():
 
     status, answer = run_command(["conf", "dump"])
     if status:
-        configuration = {line.split(":")[0].strip(): ''.join(line.split(":")[1:]).strip() for line in answer.strip().split("\n") if ":" in line}
+        configuration = {line.split(":")[0].strip(): _value_type(':'.join(line.split(":")[1:])) for line in answer.strip().split("\n") if ":" in line}
         with open(backup_path, 'w') as f:
             f.write(json.dumps(configuration, indent=4))
     else:
@@ -72,10 +84,10 @@ def restore():
     status, answer = run_command(["conf", "dump"])
     if not status:
         return f"Cannot load live device config"
-    live_configuration = {line.split(":")[0].strip(): ''.join(line.split(":")[1:]).strip() for line in answer.strip().split("\n") if ":" in line}
+    live_configuration = {line.split(":")[0].strip(): _value_type(':'.join(line.split(":")[1:])) for line in answer.strip().split("\n") if ":" in line}
 
     for key, live_value in live_configuration.items():
-        if key in ("version", "devip", "hwuid", "version"):
+        if key in ("version", "devip", "hwuid", "version", "devfid"):
             continue
         bckp_value = backup_dict.get(key, None)
         if bckp_value is None or bckp_value == live_value:
@@ -91,7 +103,7 @@ def restore():
         print(f"{Colors.WARN}SKIP restore...{Colors.NC}")
         return
 
-    print("PACKAGE CONFIG DIFFS...")
+    print(f"PACKAGE CONFIG DIFFS...{DEVICE}")
     conf_cmd_list = ["conf"]
     for key, value in diff_config.items():
         print(f"\tADD {key} : {value}")
@@ -103,7 +115,7 @@ def restore():
         print(f"{Colors.WARN}SKIP restore...{Colors.NC}")
         return
     # Restore
-    print("APPLY CONFIG DIFFS...")
+    print(f"APPLY CONFIG DIFFS...{DEVICE}")
     status, answer = run_command(conf_cmd_list)
     if status:
         print(f"{Colors.OKGREEN}Backup was successfully restored:{Colors.NC} {backup_path}\nRebooting...")

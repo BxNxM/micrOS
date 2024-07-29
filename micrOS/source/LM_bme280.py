@@ -328,29 +328,9 @@ def measure(ntfy=False):
     return data
 
 
-def measure_w_co2():
-    """
-    Measure with bme280 and mq135 (CO2)
-    :return dict: temp, hum, pressure, co2
-    """
-    from LM_co2 import measure_mq135
-    data = measure()
-    data['co2[ppm]'] = measure_mq135(data['temp[C]'], data['hum[%]'])
-    return data
-
-
 #######################
 # LM helper functions #
 #######################
-
-def lmdep():
-    """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
-    """
-    return 'co2'
-
 
 def pinmap():
     """
@@ -369,5 +349,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('TEXTBOX measure ntfy=False', 'measure_w_co2',
-                             'load', 'lmdep', 'pinmap'), widgets=widgets)
+    return resolve(('TEXTBOX measure ntfy=False',
+                             'load', 'pinmap'), widgets=widgets)

@@ -1,6 +1,6 @@
 import uasyncio as asyncio
-from LM_servo import sduty, deinit
-from LM_stepper import step
+from LM_servo import sduty, deinit, pinmap as servo_pinmap
+from LM_stepper import step, pinmap as stepper_pinmap
 from Common import micro_task
 
 
@@ -57,13 +57,16 @@ def serve_w_stepper(portion=1, forward=135, back=10):
         step(back)
 
 
-def lmdep():
+def pinmap():
     """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
+    [i] micrOS LM naming convention
+    Shows logical pins - pin number(s) used by this Load module
+    - info which pins to use for this application
+    :return dict: pin name (str) - pin value (int) pairs
     """
-    return 'servo', 'stepper'
+    p = servo_pinmap()
+    p.update(stepper_pinmap())
+    return p
 
 
 def help(widgets=False):
@@ -73,4 +76,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'serve portion=1 \t\t[info] servo control',  'serve_w_stepper portion=1 \t[info] stepper control', 'lmdep'
+    return 'serve portion=1 \t\t[info] servo control',  'serve_w_stepper portion=1 \t[info] stepper control'

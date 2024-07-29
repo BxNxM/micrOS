@@ -1,6 +1,5 @@
 from random import randint
-from LM_servo import sduty, deinit
-from LM_servo import pinmap as pm
+from LM_servo import sduty, deinit, pinmap as pm
 from utime import sleep_ms
 from Types import resolve
 
@@ -53,15 +52,6 @@ def stop():
 # LM helper functions #
 #######################
 
-def lmdep():
-    """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
-    """
-    return 'servo'
-
-
 def pinmap():
     """
     [i] micrOS LM naming convention
@@ -82,4 +72,4 @@ def help(widgets=False):
     return resolve(('BUTTON game repeat=10',
                              'SLIDER live_game chance=<10-90>',
                              'BUTTON stop', 'pinmap',
-                             'load', 'lmdep'), widgets=widgets)
+                             'load'), widgets=widgets)

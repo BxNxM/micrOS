@@ -284,13 +284,6 @@ def button():
     return "Display mode: main view"
 
 
-def lmdep():
-    """
-    Load Module dependencies
-    """
-    return 'oled', 'ds18', 'gameOfLife'
-
-
 def pinmap():
     """
     PIN MAP dump
@@ -317,4 +310,4 @@ def help(widgets=False):
             'display_toggle',
             'neopixel_toggle',
             'color_wheel br=<0-100>',
-            'pinmap', 'lmdep')
+            'pinmap')

@@ -286,18 +286,9 @@ def fire(r=None, g=None, b=None, ledcnt=24):
     effect.draw(cgen, shift=False)
     return 'fire R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
 
-
 #######################
 # LM helper functions #
 #######################
-
-def lmdep():
-    """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
-    """
-    return 'neopixel'
 
 
 def pinmap():

@@ -50,22 +50,9 @@ def measure(log=False):
     return data
 
 
-def measure_w_co2(log=False):
-    """
-    Measure with dht22 and mq135 (CO2)
-    :return dict: temp, hum, co2
-    """
-    from LM_co2 import measure_mq135
-    _temp, _hum = __temp_hum()
-    data = {'temp[C]': round(_temp, 2), 'hum[%]': round(_hum, 2), 'co2[ppm]': measure_mq135(_temp, _hum)}
-    if log:
-        data_logger(_LOG_NAME, data=str(data))
-    return data
-
-
 def logger():
     """
-    Return temp, hum, (co2) logged data
+    Return temp, hum logged data
     """
     data_logger(_LOG_NAME)
     return ''
@@ -74,15 +61,6 @@ def logger():
 #######################
 # LM helper functions #
 #######################
-
-def lmdep():
-    """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
-    """
-    return 'co2'
-
 
 def pinmap():
     """
@@ -101,5 +79,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('TEXTBOX measure log=False', 'measure_w_co2 log=False',
-                             'logger', 'lmdep', 'load', 'pinmap'), widgets=widgets)
+    return resolve(('TEXTBOX measure log=False',
+                             'logger', 'load', 'pinmap'), widgets=widgets)

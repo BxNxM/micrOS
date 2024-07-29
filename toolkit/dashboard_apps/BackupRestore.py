@@ -87,7 +87,7 @@ def restore():
     live_configuration = {line.split(":")[0].strip(): _value_type(':'.join(line.split(":")[1:])) for line in answer.strip().split("\n") if ":" in line}
 
     for key, live_value in live_configuration.items():
-        if key in ("version", "devip", "hwuid", "version", "devfid"):
+        if key in ("version", "devip", "hwuid", "version", "devfid"):   # IGNORE KEYS
             continue
         bckp_value = backup_dict.get(key, None)
         if bckp_value is None or bckp_value == live_value:

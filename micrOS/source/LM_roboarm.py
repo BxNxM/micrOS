@@ -1,8 +1,7 @@
 from utime import sleep_ms
 from random import randint
 import LM_servo as servo
-from LM_switch import set_state
-from LM_switch import pinmap as pm
+from LM_switch import set_state, pinmap as switch_pinmap
 from Common import transition, micro_task
 import uasyncio as asyncio
 from Types import resolve
@@ -263,15 +262,6 @@ def status(lmf=None):
     return {'X': RoboArm.ACTUAL_XY[0], 'Y': RoboArm.ACTUAL_XY[1]}
 
 
-def lmdep():
-    """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
-    """
-    return 'servo', 'switch'
-
-
 def pinmap():
     """
     [i] micrOS LM naming convention
@@ -280,7 +270,7 @@ def pinmap():
     :return dict: pin name (str) - pin value (int) pairs
     """
     s_pm = servo.pinmap()
-    s_pm.update({'switch_1': pm()['switch_1']})
+    s_pm.update(switch_pinmap())
     return s_pm
 
 
@@ -300,4 +290,4 @@ def help(widgets=False):
                              'record clean=False rec_limit=8',
                              'random x_range=20 y_range=20 speed_ms=5',
                              'load', 'pinmap',
-                             'status', 'lmdep'), widgets=widgets)
+                             'status'), widgets=widgets)

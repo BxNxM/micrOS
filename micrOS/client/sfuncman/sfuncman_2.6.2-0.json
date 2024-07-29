@@ -55,10 +55,6 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true",
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
-        },
         "load": {
             "doc": "\n    Load Camera module OV2640\n    :param quality: high (HD), medium (SVGA), low (240x240)\n    :param freq: default (not set: 10kHz) or high: 20kHz\n    :param effect: NONE (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    ",
             "param(s)": "quality='medium' freq='ault' effect=\"NONE\""
@@ -120,10 +116,6 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true",
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
-        },
         "load": {
             "doc": "\n    Initialize BME280 module\n    ",
             "param(s)": ""
@@ -131,10 +123,6 @@
         "measure": {
             "doc": "\n    Measure with bme280\n    :return dict: temp, hum, pressure\n    ",
             "param(s)": "ntfy=False"
-        },
-        "measure_w_co2": {
-            "doc": "\n    Measure with bme280 and mq135 (CO2)\n    :return dict: temp, hum, pressure, co2\n    ",
-            "param(s)": ""
         },
         "pinmap": {
             "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
@@ -181,10 +169,6 @@
         "live_game": {
             "doc": "\n    Generate game\n    :param chance int: percent value 0-100\n    :return str: verdict (action / no action)\n    ",
             "param(s)": "chance=10"
-        },
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
         },
         "load": {
             "doc": "\n    Initialize catgame-servo module\n    ",
@@ -329,24 +313,16 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true",
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
-        },
         "load": {
             "doc": "\n    Initialize DHT11 hum/temp sensor module\n    ",
             "param(s)": ""
         },
         "logger": {
-            "doc": "\n    Return temp, hum, (co2) logged data\n    ",
+            "doc": "\n    Return temp, hum logged data\n    ",
             "param(s)": ""
         },
         "measure": {
             "doc": "\n    Measure with dht11\n    :return dict: temp, hum\n    ",
-            "param(s)": "log=False"
-        },
-        "measure_w_co2": {
-            "doc": "\n    Measure with dht11 and mq135 (CO2)\n    :return dict: temp, hum, co2\n    ",
             "param(s)": "log=False"
         },
         "pinmap": {
@@ -360,24 +336,16 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true",
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
-        },
         "load": {
             "doc": "\n    Initialize DHT22 hum/temp sensor module\n    ",
             "param(s)": ""
         },
         "logger": {
-            "doc": "\n    Return temp, hum, (co2) logged data\n    ",
+            "doc": "\n    Return temp, hum logged data\n    ",
             "param(s)": ""
         },
         "measure": {
             "doc": "\n    Measure with dht22\n    :return dict: temp, hum\n    ",
-            "param(s)": "log=False"
-        },
-        "measure_w_co2": {
-            "doc": "\n    Measure with dht22 and mq135 (CO2)\n    :return dict: temp, hum, co2\n    ",
             "param(s)": "log=False"
         },
         "pinmap": {
@@ -634,10 +602,6 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/keychain.png?raw=true",
-        "lmdep": {
-            "doc": "\n    Load Module dependencies\n    ",
-            "param(s)": ""
-        },
         "load": {
             "doc": "\n    Init OLED display 64x32 (default)\n    Init Neopixel LED (1 segment)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    :param bootmsg: First text on page at bootup, default: \"micrOS\"\n    ",
             "param(s)": "width=64 height=32 bootmsg=\"micrOS\""
@@ -786,10 +750,6 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true",
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
-        },
         "meteor": {
             "doc": "\n    Meteor effect\n    :param r int: red value 0-1000\n    :param g int: green value 0-1000\n    :param b int: blue value 0-1000\n    :param shift bool: automatic effect shifting\n    :param ledcnt int: number of neopixel elements in chain (default: 24)\n    :return str: verdict\n    ",
             "param(s)": "r=None g=None b=None shift=True ledcnt=24"
@@ -1006,10 +966,6 @@
             "doc": "\n    Create intercon pages dynamically :)\n    - based on cmd value.\n    :param cmd: 'host hello' or 'host system clock'\n    :param run: run button event at page init: True/False\n    :return: page creation verdict\n    ",
             "param(s)": "cmd=None run=False"
         },
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
-        },
         "load": {
             "doc": "\n    Init PageUI\n    :param pwr_sec: power down oled after given sec -> screensaver\n    :param oled_type: oled type selection: ssd1306 or sh1106\n    :param page: start page index, default: 0\n    :param width: width in pixels\n    :param height: height in pixels\n    :param joystick: init joystick irq pin-s (default: True)\n    ",
             "param(s)": "pwr_sec=None oled_type='ssd1306' page=0 width=128 height=64 joystick=True"
@@ -1029,8 +985,8 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/pet_feeder.png?raw=true",
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2, stppr_1, stppr_2, stppr_3, stppr_4",
             "param(s)": ""
         },
         "serve": {
@@ -1210,16 +1166,12 @@
             "doc": "\n    Joggle roboarm in small range\n    :param delta: jiggle delta from current position (full range: 40-115)\n    ",
             "param(s)": "delta=2"
         },
-        "lmdep": {
-            "doc": "\n    Show Load Module dependency\n    - List of load modules used by this application\n    :return: tuple\n    ",
-            "param(s)": ""
-        },
         "load": {
             "doc": "\n    Initiate roboarm module\n    - move servo motors to middle position\n    ",
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2, switch_1",
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2, switch_1, switch_2, switch_3, switch_4",
             "param(s)": ""
         },
         "play": {

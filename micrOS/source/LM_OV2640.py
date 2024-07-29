@@ -213,13 +213,6 @@ def flashlight(state=None):
         state = fl.value(state)
     return {'S': state}
 
-def lmdep():
-    """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
-    """
-    return 'dashboard_be'
 
 def help(widgets=False):
     """

@@ -566,15 +566,6 @@ def function_genpage(func):
 # LM helper functions #
 #######################
 
-def lmdep():
-    """
-    Show Load Module dependency
-    - List of load modules used by this application
-    :return: tuple
-    """
-    return 'oled', 'intercon', 'genIO'
-
-
 def pinmap():
     """
     [i] micrOS LM naming convention

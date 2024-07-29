@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from microIO import resolve_pin
+from microIO import resolve_pin, register_pin, PinMap
 from Common import SmartADC
 from random import randint
 
@@ -12,20 +12,12 @@ class IObjects:
     PIN_OBJS = {}
 
     @staticmethod
-    def _check_obj(pin, tag):
-        if IObjects.PIN_OBJS.get(pin, None) is None:
-            return False    # Obj not exists
-        elif IObjects.PIN_OBJS.get(pin)[0] != tag:
-            return False    # Obj not exists
-        return True         # Obj exists
+    def store_obj(pin, obj):
+        IObjects.PIN_OBJS[pin] = obj
 
     @staticmethod
-    def _store_obj(pin, tag, obj):
-        IObjects.PIN_OBJS[pin] = (tag, obj)
-
-    @staticmethod
-    def _get_obj(pin):
-        return IObjects.PIN_OBJS[pin][1]
+    def get_obj(pin):
+        return IObjects.PIN_OBJS[pin]
 
 
 ##################################
@@ -38,10 +30,14 @@ def __digital_out_init(pin):
     """
     if not isinstance(pin, int):
         pin = resolve_pin(pin)
-    if not IObjects._check_obj(pin, 'out'):
+
+    # Register pin in microIO (drops exception if pin already booked)
+    pin_tag = f"OUT{pin}"
+    if PinMap.IO_USE_DICT.get(pin_tag, None) is None:
+        pin = register_pin(pin_tag, pin)
         pin_obj = Pin(pin, Pin.OUT)
-        IObjects._store_obj(pin, 'out', pin_obj)
-    return IObjects._get_obj(pin)
+        IObjects.store_obj(pin, pin_obj)
+    return IObjects.get_obj(pin)
 
 
 def __digital_in_init(pin):
@@ -50,10 +46,14 @@ def __digital_in_init(pin):
     """
     if not isinstance(pin, int):
         pin = resolve_pin(pin)
-    if not IObjects._check_obj(pin, 'in'):
+
+    # Register pin in microIO (drops exception if pin already booked)
+    pin_tag = f"IN{pin}"
+    if PinMap.IO_USE_DICT.get(pin_tag, None) is None:
+        pin = register_pin(pin_tag, pin)
         pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
-        IObjects._store_obj(pin, 'in', pin_obj)
-    return IObjects._get_obj(pin)
+        IObjects.store_obj(pin, pin_obj)
+    return IObjects.get_obj(pin)
 
 
 def __pwm_init(pin, freq):
@@ -62,11 +62,14 @@ def __pwm_init(pin, freq):
     """
     if not isinstance(pin, int):
         pin = resolve_pin(pin)
-    tag = 'pwm{}'.format(freq)
-    if not IObjects._check_obj(pin, tag):
+
+    # Register pin in microIO (drops exception if pin already booked)
+    pin_tag = f"PWM{pin}"
+    if PinMap.IO_USE_DICT.get(pin_tag, None) is None:
+        pin = register_pin(pin_tag, pin)
         pin_obj = PWM(Pin(pin), freq=freq)
-        IObjects._store_obj(pin, tag, pin_obj)
-    return IObjects._get_obj(pin)
+        IObjects.store_obj(pin, pin_obj)
+    return IObjects.get_obj(pin)
 
 
 ##################################
@@ -118,6 +121,9 @@ def get_adc(pin, key=None):
     :param key: select adc parameter by key
     :return dict: adc volt, percent, raw
     """
+    if isinstance(pin, int):
+        pin_tag = f"ADC{pin}"
+        pin = register_pin(pin_tag, pin)
     data = SmartADC.get_singleton(pin).get()
     data["pin"] = pin
     if key is None:
@@ -132,13 +138,6 @@ def get_in(pin):
     :return dict: pin, state
     """
     return {'pin': pin, 'state': __digital_in_init(pin).value()}
-
-
-def genio_pins():
-    """
-    Get used pins in genIO module
-    """
-    return IObjects.PIN_OBJS
 
 
 #######################
@@ -156,4 +155,4 @@ def help(widgets=False):
            'set_random_pwm pin min_duty max_duty freq=20480)',\
            'set_out pin=<int> state=<None/True/False>',\
            'get_adc pin key=None',\
-           'get_in pin', 'genio_pins'
+           'get_in pin'

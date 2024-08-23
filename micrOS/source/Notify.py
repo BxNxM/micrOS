@@ -101,7 +101,20 @@ class Telegram:
         return verdict
 
     @staticmethod
-    def notification(text, reply_to=None, chat_id=None):
+    def notifications(state=None):
+        """
+        Setter for disable/enable notification messages
+        """
+        if state is not None:
+            Telegram.GLOBAL_NOTIFY = state
+        return f"Notifications: {'enabled' if Telegram.GLOBAL_NOTIFY else 'disabled'}"
+
+
+    @staticmethod
+    def notify(text, reply_to=None, chat_id=None):
+        """
+        Notification sender
+        """
         if Telegram.GLOBAL_NOTIFY:
             return Telegram.send_msg(text, reply_to, chat_id)
         return "Notifications disabled"
@@ -188,26 +201,27 @@ class Telegram:
         if msg_in is not None and m_id != Telegram._IN_MSG_ID:
             # replace single/double quotation to apostrophe (str syntax for repl interpretation)
             msg_in = msg_in.replace('‘', "'").replace('’', "'").replace('“', '"').replace('”', '"')
-            # [TELEGRAM CMD] /PING - Get auto reply from node - loaded modules
-            #               Example: /ping
             if msg_in.startswith('/ping'):
                 # Parse loaded modules
                 _loaded_mods = [lm.replace('LM_', '') for lm in modules if lm.startswith('LM_')] + ['task']
                 Telegram.send_msg(', '.join(_loaded_mods), reply_to=m_id, chat_id=c_id)
-            # [TELEGRAM CMD] /CMD_SELECT - Load Module execution handling - SELECTED DEV. MODE
-            #               Example: /cmd_select device module func param(s)
             elif msg_in.startswith('/cmd_select'):
-                cmd_lm = msg_in.replace('/cmd_select', '').strip().split()
+                cmd_lm = msg_in.strip().split()[1:]
                 # [Compare] cmd selected device param with DEVFID (device/prompt name)
                 if cmd_lm[0] in Telegram._DEVFID:
                     lm_execute(cmd_lm[1:])
                 else:
                     verdict = f'[UP] NoSelected: {cmd_lm[0]}'
-            # [TELEGRAM CMD] /CMD - Load Module execution handling - ALL mode
-            #               Example: /cmd module func param(s)
             elif msg_in.startswith('/cmd'):
-                cmd_lm = msg_in.replace('/cmd', '').strip().split()
+                cmd_lm = msg_in.strip().split()[1:]
                 lm_execute(cmd_lm)
+            elif msg_in.startswith('/notify'):
+                param = msg_in.strip().split()[1:]
+                if len(param) > 0:
+                    verdict = Telegram.notifications(not param[0].strip().lower() in ("disable", "off", 'false'))
+                else:
+                    verdict = Telegram.notifications()
+                Telegram.send_msg(verdict, reply_to=m_id)
         else:
             verdict = "[UP] NoExec"
         console_write(f"\tREC&EVAL: {verdict}")
@@ -225,9 +239,10 @@ class Telegram:
         if bot_token is None:
             return None
         url = f"https://api.telegram.org/bot{bot_token}/setMyCommands{Telegram._API_PARAMS}"
-        data = {"commands": [{"command": "ping", "description": "Ping All endpoints, return active modules."},
-                             {"command": "cmd", "description": "Command to All endpoints (only loaded modules)."},
-                             {"command": "cmd_select", "description": "Command to Selected endpoints: device module func"},
+        data = {"commands": [{"command": "ping", "description": "Ping All endpoints: list of active modules."},
+                             {"command": "notify", "description": "Enable/Disable notifications: on or off"},
+                             {"command": "cmd", "description": "Run active module function on all devices."},
+                             {"command": "cmd_select", "description": "Same as cmd, only first param must be device name."},
                              ]}
         _, resp_json = urequests.post(url, headers={"Content-Type": "application/json"}, json=data, jsonify=True, sock_size=128)
         return 'Custom commands was set' if resp_json['ok'] else str(resp_json)

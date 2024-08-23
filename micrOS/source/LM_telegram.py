@@ -48,13 +48,13 @@ def send(text):
 def notify(text):
     """
     Notify function with system global enable/disable function
-    Control:
-        telegram notifications enable=True
-        telegram notifications enable=False
+    Control with:
+        telegram notification enable=True
+        telegram notification enable=False
     """
     if TELEGRAM_OBJ is None:
         return "Network unavailable."
-    return TELEGRAM_OBJ.notification(text)
+    return TELEGRAM_OBJ.notify(text)
 
 
 def receive():
@@ -105,15 +105,13 @@ def receiver_loop():
 
 def notifications(enable=None):
     """
-    Global notification control for micrOS notification
-        LM usage: Common.notify (-> Notify.Telegram.notification (GLOBAL_NOTIFY) -> Notify.Telegram.send_msg)
+    Global notifications control for micrOS
     :param enable: True: Enable notifications / False: Disable notifications
     return: state verdict
     """
     if enable is None:
         enable = not Telegram.GLOBAL_NOTIFY
-    Telegram.GLOBAL_NOTIFY = enable
-    return "Notifications: enabled" if enable else "Notifications: disabled"
+    return Telegram.notifications(state=enable)
 
 
 def help(widgets=False):

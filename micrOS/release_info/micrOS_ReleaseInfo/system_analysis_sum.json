@@ -5,7 +5,7 @@
             6
         ],
         "micrOSloader.py": [
-            7.59,
+            7.85,
             1
         ],
         "Hooks.py": [
@@ -13,7 +13,7 @@
             1
         ],
         "Server.py": [
-            9.38,
+            8.59,
             3
         ],
         "Tasks.py": [
@@ -33,7 +33,7 @@
             1
         ],
         "Notify.py": [
-            9.57,
+            9.59,
             2
         ],
         "Types.py": [
@@ -73,7 +73,7 @@
             1
         ],
         "Interrupts.py": [
-            9.05,
+            8.38,
             1
         ],
         "main.py": [
@@ -81,7 +81,7 @@
             0
         ],
         "urequests.py": [
-            8.94,
+            8.83,
             4
         ],
         "LM_roboarm.py": [
@@ -173,7 +173,7 @@
             0
         ],
         "LM_neoeffects.py": [
-            6.85,
+            6.71,
             0
         ],
         "LM_i2c.py": [
@@ -209,11 +209,11 @@
             0
         ],
         "LM_telegram.py": [
-            9.03,
+            9.02,
             0
         ],
         "LM_OV2640.py": [
-            9.04,
+            9.2,
             0
         ],
         "LM_rgb.py": [
@@ -273,7 +273,7 @@
             2
         ],
         "LM_i2s_mic.py": [
-            8.71,
+            8.39,
             1
         ],
         "LM_sdcard.py": [
@@ -283,11 +283,11 @@
     },
     "summary": {
         "core": [
-            3121,
+            3140,
             21
         ],
         "load": [
-            6827,
+            6825,
             49
         ],
         "core_dep": [
@@ -298,8 +298,8 @@
             true,
             7
         ],
-        "core_score": 9.15,
-        "load_score": 8.08,
-        "version": "2.6.2-1"
+        "core_score": 9.08,
+        "load_score": 8.07,
+        "version": "2.6.3-0"
     }
 }

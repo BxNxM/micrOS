@@ -166,7 +166,7 @@ def notify(text):
             errlog_add(f"[ERR] Import Notify.Telegram: {e}")
             return False
     try:
-        out = TELEGRAM.notification(text)
+        out = TELEGRAM.notify(text)
     except Exception as e:
         errlog_add(f"[ERR] Notify: {e}")
         out = str(e)

@@ -580,14 +580,13 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;/cmd&nbsp;module&nbsp;function&nbsp;(params)</td></tr></table></td></tr><tr><th>send</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>text</td></tr><tr><th>doc</th><td>Send&nbsp;Telegram&nbsp;message&nbsp;-&nbsp;micrOS&nbsp;notification<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;text:&nbsp;text&nbsp;to&nbsp;send<br>
 &nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;verdict</td></tr></table></td></tr><tr><th>notify</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>text</td></tr><tr><th>doc</th><td>Notify&nbsp;function&nbsp;with&nbsp;system&nbsp;global&nbsp;enable/disable&nbsp;function<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Control:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;telegram&nbsp;notifications&nbsp;enable=True<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;telegram&nbsp;notifications&nbsp;enable=False</td></tr></table></td></tr><tr><th>receive</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Receive&nbsp;Telegram&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Control&nbsp;with:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;telegram&nbsp;notification&nbsp;enable=True<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;telegram&nbsp;notification&nbsp;enable=False</td></tr></table></td></tr><tr><th>receive</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Receive&nbsp;Telegram&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;if&nbsp;all&nbsp;value&nbsp;None,&nbsp;then&nbsp;no&nbsp;incoming&nbsp;messages<br>
 &nbsp;&nbsp;&nbsp;&nbsp;One&nbsp;successful&nbsp;msg&nbsp;receive&nbsp;is&nbsp;necessary&nbsp;to&nbsp;get&nbsp;chat_id&nbsp;for&nbsp;msg&nbsp;send&nbsp;as&nbsp;well!</td></tr></table></td></tr><tr><th>receiver_loop</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Telegram&nbsp;msg&nbsp;receiver&nbsp;loop&nbsp;-&nbsp;automatic&nbsp;LM&nbsp;execution<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Only&nbsp;executes&nbsp;module&nbsp;(function)&nbsp;if&nbsp;the&nbsp;module&nbsp;is&nbsp;already&nbsp;loaded<br>
-&nbsp;&nbsp;&nbsp;&nbsp;on&nbsp;the&nbsp;endpoint&nbsp;/&nbsp;micrOS&nbsp;node</td></tr></table></td></tr><tr><th>notifications</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>enable=None</td></tr><tr><th>doc</th><td>Global&nbsp;notification&nbsp;control&nbsp;for&nbsp;micrOS&nbsp;notification<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LM&nbsp;usage:&nbsp;Common.notify&nbsp;(->&nbsp;Notify.Telegram.notification&nbsp;(GLOBAL_NOTIFY)&nbsp;->&nbsp;Notify.Telegram.send_msg)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;on&nbsp;the&nbsp;endpoint&nbsp;/&nbsp;micrOS&nbsp;node</td></tr></table></td></tr><tr><th>notifications</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>enable=None</td></tr><tr><th>doc</th><td>Global&nbsp;notifications&nbsp;control&nbsp;for&nbsp;micrOS<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;enable:&nbsp;True:&nbsp;Enable&nbsp;notifications&nbsp;/&nbsp;False:&nbsp;Disable&nbsp;notifications<br>
 &nbsp;&nbsp;&nbsp;&nbsp;return:&nbsp;state&nbsp;verdict</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>

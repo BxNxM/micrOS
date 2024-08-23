@@ -34,3 +34,4 @@ LM_i2s_mic.py
 LM_rest.py
 LM_gameOfLife.py
 LM_ld2410.py
+LM_sound_event.py

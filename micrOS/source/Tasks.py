@@ -454,7 +454,7 @@ def lm_exec(arg_list):
     # modules built-in function: show loaded LoadModules
     arg_len = len(arg_list)
     if arg_len > 0 and arg_list[0] == 'modules':
-        return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')))
+        return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_'))) + ['task']
     # [1] Run task command: start (&), list, kill, show
     is_task, out = _exec_task()
     if is_task:

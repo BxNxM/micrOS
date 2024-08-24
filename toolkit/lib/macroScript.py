@@ -10,18 +10,25 @@ except:
 
 class Executor:
 
-    def __init__(self, host=None, pwd="ADmin123", verbose=False):
+    def __init__(self, host=None, pwd=None, verbose=None, safe=None):
         self.com = None
         self.host = host
         self.pwd = pwd
         self.verbose = verbose
+        self.safe_mode = safe
+        self.safe_modules = None
 
     def init_com(self):
         self.com = micrOSClient(host=self.host, port=9008, pwd=self.pwd, dbg=self.verbose)
+        if self.safe_mode:
+            self.safe_modules = self.com.send_cmd_retry("modules")[0]
 
     def run(self, cmd, force_close=True):
         if self.com is None:
             self.init_com()
+        if self.safe_mode and cmd.split()[0] not in self.safe_modules:
+            print(f"SKIP {cmd.split()[0]} execution (not loaded) - safe mode: {self.safe_modules}")
+            return True, "Skipped..."
         # [2] Test functions for command send function
         print(f"{color.WARN}==> SEND: {cmd}{color.NC}")
         out = self.com.send_cmd_retry(cmd)
@@ -44,7 +51,7 @@ class Executor:
     @staticmethod
     def validate_conf(conf):
         is_valid = False
-        parsed_config = {'dbg': False, 'device': None, 'pwd': "ADmin123"}
+        parsed_config = {'dbg': False, 'device': None, 'pwd': "ADmin123", 'safe': False}
         conf_list = conf.strip().split()
         if len(conf_list) < 2:
             print(f"Not enough parameters:\n#microscript devName.local/IPaddress\n\t{conf}")
@@ -54,6 +61,9 @@ class Executor:
             parsed_config['dbg'] = "debug" in conf_list
             if parsed_config['dbg']:
                 conf_list.remove("debug")
+            parsed_config['safe'] = "safe" in conf_list
+            if parsed_config['safe']:
+                conf_list.remove("safe")
             parsed_config['device'] = conf_list[1]
             if len(conf_list) > 2:
                 parsed_config['pwd'] = conf_list[2]
@@ -61,7 +71,7 @@ class Executor:
 
     @staticmethod
     def create_template(path):
-        default_conf = """#microscript __simulator__.local
+        default_conf = """#microscript __simulator__.local safe
 # Comments:
 #       SHEBANG LINE: #microscript <device> <password> <opts>
 #           <device>    :   host name or IP address
@@ -101,9 +111,11 @@ system clock
 
         print(f"microSCRIPT\nconf:{conf}\ncommands:\n{lines}")
         if self.com is None:
-            self.host = conf['device']
-            self.verbose = conf['dbg']
-            self.pwd = conf['pwd']
+            # Inject params from macro if was not set by constructor
+            self.host = conf['device'] if self.host is None else self.host
+            self.verbose = conf['dbg'] if self.verbose is None else self.verbose
+            self.pwd = conf['pwd'] if self.pwd is None else self.pwd
+            self.safe_mode = conf['safe'] if self.safe_mode is None else self.safe_mode
         try:
             for cmd in lines:
                 cmd = self.filter_commands(cmd)

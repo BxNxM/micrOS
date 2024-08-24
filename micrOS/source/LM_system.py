@@ -165,20 +165,16 @@ def pinmap(key='builtin'):
     return map
 
 @socket_stream
-def alarms(clean=False, test=False, msgobj=None):
+def alarms(clean=False, msgobj=None):
     """
     Show micrOS alarms - system error list
     :param clean bool: clean alarms, default: False
-    :param test bool: create test alarms, set True
     :return dict: verdict
     """
-    from Debug import errlog_get, errlog_add
-    from Logger import log_clean
-    if test:
-        errlog_add('[ERR] TeSt ErRoR')
+    from Logger import log_clean, syslog
     if clean:
         log_clean(msgobj=msgobj)
-    errcnt = errlog_get(msgobj=msgobj)
+    errcnt = -1 if syslog is None else syslog(msgobj=msgobj)
     return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
 
 

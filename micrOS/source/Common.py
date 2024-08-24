@@ -9,23 +9,13 @@ from Logger import logger, log_get
 from microIO import resolve_pin
 from machine import Pin, ADC
 try:
-    from Tasks import TaskBase, Manager
+    from Tasks import TaskBase, Manager, lm_exec
 except Exception as ie:
     print(f"Import ERROR, TaskManager: {ie}")
     TaskBase, Manager = None, None
 TELEGRAM = None
 
-
-def socket_stream(func):
-    """
-    Decorator for Socket message stream - adds msgobj to the decorated function arg list.
-    Use msgobj as print function: msgobj("hello")
-    (SocketServer singleton class - reply all bug/feature)
-    """
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs, msgobj=SocketServer.reply_all)
-    return wrapper
-
+################## Common LM features ##################
 
 def transition(from_val, to_val, step_ms, interval_sec):
     """
@@ -49,16 +39,16 @@ def transition_gen(*args, interval_sec=1.0):
     """
     [LM] Multiple Generator for color/value transitions:
     - calculate minimum step count -> step_ms
-    - autofill and use use transition(from_val, to_val, step_ms, interval_sec)
+    - autofill and use transition(from_val, to_val, step_ms, interval_sec)
     :param args: ch1_from, ch1_to, ch2_from, ch2_to, etc...
     :param interval_sec: interval in sec to calculate optimal fade/transition effect
     return: gen, step_ms OR gen list, step_ms
     """
     step_ms_min = 5            # min calculated step is 5 ms - good enough
-    delta = max([abs(args[ch_from_i] - args[ch_from_i+1]) for ch_from_i in range(0, len(args)-1, 2)])
+    delta = max((abs(args[ch_from_i] - args[ch_from_i+1]) for ch_from_i in range(0, len(args)-1, 2)))
     step_ms = 0 if delta == 0 else int(interval_sec*1000 / delta)
     step_ms = step_ms_min if step_ms < step_ms_min else step_ms
-    transitions = list([transition(args[ch_from_i], args[ch_from_i+1], step_ms, interval_sec) for ch_from_i in range(0, len(args)-1, 2)])
+    transitions = list((transition(args[ch_from_i], args[ch_from_i+1], step_ms, interval_sec) for ch_from_i in range(0, len(args)-1, 2)))
     if len(transitions) == 1:
         return transitions[0], step_ms
     return list(transitions), step_ms
@@ -97,10 +87,11 @@ class SmartADC:
         SmartADC.OBJS[pin] = SmartADC(pin)
         return SmartADC.OBJS[pin]
 
+################# micrOS feature interfaces #################
 
 def micro_task(tag, task=None):
     """
-    [LM] Async task creation - user interface
+    [LM] Async task creation
     :param tag:
         [1] tag=None: return task generator object
         [2] tag=taskID: return existing task object by tag
@@ -123,6 +114,83 @@ def micro_task(tag, task=None):
     # RETURN task creation state - success (True) / fail (False)
     state = Manager().create_task(callback=task, tag=tag)
     return state
+
+
+def manage_task(tag, operation):
+    """
+    [LM] Async task management
+    :param tag: task tag
+    :param operation: kill / show / isbusy
+    """
+    if Manager is None:
+        # RETURN: None - cannot utilize async task functionality
+        return None
+    if operation == "show":
+        return str(Manager().show(tag=tag))
+    if operation == "kill":
+        return Manager().kill(tag=tag)
+    if operation == "isbusy":
+        return TaskBase.is_busy(tag=tag)
+    raise Exception(f"Invalid operation: {operation}")
+
+
+def exec_cmd(cmd):
+    """
+    [LM] Single (sync) LM execution
+    :param cmd: command string list
+    return state, output
+    """
+    return lm_exec(cmd) if isinstance(cmd, list) else False, "Invalid cmd type, must be list"
+
+
+def notify(text):
+    """
+    [LM] micrOS common notification handler (Telegram)
+    :param text: notification text
+    return: verdict: True/False
+    """
+    global TELEGRAM
+    if TELEGRAM is None:
+        try:
+            from Notify import Telegram
+            TELEGRAM = Telegram()
+        except Exception as e:
+            errlog_add(f"[ERR] Import Notify.Telegram: {e}")
+            return False
+    try:
+        out = TELEGRAM.notify(text)
+    except Exception as e:
+        errlog_add(f"[ERR] Notify: {e}")
+        out = str(e)
+    if out is not None and (out.startswith('Sent') or out.endswith('disabled')):
+        return True
+    return False
+
+def web_endpoint(endpoint, function):
+    """
+    [LM] Add test endpoint <localhost.local>/endpoint from Load Modules
+    :param endpoint: simple string, name of the endpoint
+    :param function:
+        [1] Normal function return tuple (html_type, data):
+            image/jpeg | text/html | text/plain, <data>
+                                                 <data>: binary | string
+        [2] Stream function return tuple (multipart_type, data):
+            multipart/x-mixed-replace | multipart/form-data, <data>
+                <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
+    """
+    WebCli.register(endpoint=endpoint, callback=function)
+    return True
+
+
+def socket_stream(func):
+    """
+    [LM] Decorator for Socket message stream - adds msgobj to the decorated function arg list.
+    Use msgobj as print function: msgobj("hello")
+    (SocketServer singleton class - reply all bug/feature)
+    """
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs, msgobj=SocketServer.reply_all)
+    return wrapper
 
 
 @socket_stream
@@ -148,43 +216,4 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
 
 def syslog(msg):
     """ Wrapper of errlog_add """
-    return errlog_add(f"[usr]{msg}")
-
-
-def notify(text):
-    """
-    micrOS common notification handler (Telegram)
-    :param text: notification text
-    return: verdict: True/False
-    """
-    global TELEGRAM
-    if TELEGRAM is None:
-        try:
-            from Notify import Telegram
-            TELEGRAM = Telegram()
-        except Exception as e:
-            errlog_add(f"[ERR] Import Notify.Telegram: {e}")
-            return False
-    try:
-        out = TELEGRAM.notify(text)
-    except Exception as e:
-        errlog_add(f"[ERR] Notify: {e}")
-        out = str(e)
-    if out is not None and (out.startswith('Sent') or out.endswith('disabled')):
-        return True
-    return False
-
-def web_endpoint(endpoint, function):
-    """
-    Add test endpoint <localhost.local>/endpoint from Load Modules
-    :param endpoint: simple string, name of the endpoint
-    :param function:
-        [1] Normal function return tuple (html_type, data):
-            image/jpeg | text/html | text/plain, <data>
-                                                 <data>: binary | string
-        [2] Stream function return tuple (multipart_type, data):
-            multipart/x-mixed-replace | multipart/form-data, <data>
-                <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
-    """
-    WebCli.register(endpoint=endpoint, callback=function)
-    return True
+    return errlog_add(f"[U]{msg}")

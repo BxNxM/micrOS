@@ -143,8 +143,3 @@ def errlog_add(data, console=True):
     if console:
         console_write(data)
     return False if syslog is None else syslog(data)
-
-
-def errlog_get(msgobj=None):
-    # Return error number
-    return -1 if syslog is None else syslog(msgobj=msgobj)

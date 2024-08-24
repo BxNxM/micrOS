@@ -476,6 +476,57 @@ def create_task():
 
 Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) etc.
 
+### manage\_task(tag, operation)
+
+Async task management from LoadModules.: `show` , `isbusy` , `kill`
+
+Parameters:
+
+- `tag`: Task string identifier. Used for task creation, or can be get as `task list` command output.
+- `operation`: Opeartion `show` , `isbusy` , `kill` on `tag`-ed task.
+
+```python
+def manage_task(tag, operation):
+    """
+    [LM] Async task management - user interface
+    :param tag: task tag
+    :param operation: kill / show / isbusy
+    """
+```
+
+Usage(s): [LM\_oled\_ui](./micrOS/source/LM_oled_ui.py) [LM\_i2s\_mic](./micrOS/source/LM_i2s_mic.py)
+
+### exec_cmd(cmd)
+
+Run sync task from LoadModules by string list.
+
+Parameters:
+
+- `cmd`: String list for Load Module execution
+
+Example:
+
+```
+cmd = ["system", "info"]
+state, output = exec_cmd(cmd)
+``` 
+
+Where `"system"` is the module name and `"info"` is the function name, and it not requires any paramater.
+
+
+> Note: `cmd` can contain only one command with its optional paramater. So this method not supports multi command execution.
+
+```python
+def exec_cmd(cmd):
+    """
+    Single (sync) LM execution - user interface
+    :param cmd: command string list
+    return state, output
+    """
+```
+
+Usage(s): [LM\_oled_ui](./micrOS/source/LM_oled_ui.py)
+
 
 ### data\_logger(f\_name, data=None, limit=12, msgobj=None)
 

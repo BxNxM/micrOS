@@ -84,7 +84,7 @@ class TaskBase:
     @staticmethod
     def task_gc():
         keep  = TaskBase.QUEUE_SIZE
-        passive = tuple([task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)])
+        passive = tuple((task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)))
         if len(passive) >= keep:
             for i in range(0, len(passive)-keep+1):
                 del TaskBase.TASKS[passive[i]]
@@ -398,46 +398,16 @@ class Manager:
 #                      LM EXEC CORE functions                   #
 #################################################################
 
-def exec_lm_pipe(taskstr):
-    """
-    Input: taskstr contains LM calls separated by ;
-    Used for execute config callback parameters (BootHook, ...)
-    """
-    try:
-        # Handle config default empty value (do nothing)
-        if taskstr.startswith('n/a'):
-            return True
-        # Execute individual commands - msgobj->"/dev/null"
-        for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
-            if not lm_exec(cmd)[0]:
-                errlog_add(f"[WARN] exec_lm_pipe: {cmd}")
-    except Exception as e:
-        errlog_add(f"[ERR] exec_lm_pipe {taskstr}: {e}")
-        return False
-    return True
-
-
-def exec_lm_pipe_schedule(taskstr):
-    """
-    Wrapper for exec_lm_pipe
-    - Schedule LM executions from IRQs (extIRQ, timIRQ)
-    """
-    try:
-        schedule(exec_lm_pipe, taskstr)
-        return True
-    except Exception as e:
-        errlog_add(f"[ERR] exec_lm_pipe_schedule: {e}")
-        return False
-
-
 def lm_exec(arg_list):
     """
-    Main LM executor function wrapper
-    - handle async (background) task execution
-    - handle sync task execution (_exec_lm_core)
+    Main LM executor function with
+    - async (background)
+    - sync
+    (single) task execution (_exec_lm_core)
+    Return Bool(OK/NOK), STR(Command output)
     """
 
-    def task_manager(msg_list):
+    def _exec_task(msg_list):
         msg_len = len(msg_list)
         # [1] Handle task manipulation commands: list, kill, show - return True -> Command handled
         if 'task' == msg_list[0]:
@@ -482,9 +452,9 @@ def lm_exec(arg_list):
     # ================ main function ================
     # modules built-in function: show loaded LoadModules
     if len(arg_list) > 0 and arg_list[0] == 'modules':
-        return True, list([m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')])
+        return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')))
     # [1] Run task command: start (&), list, kill, show
-    is_task, out = task_manager(arg_list)
+    is_task, out = _exec_task(arg_list)
     if is_task:
         return True, out
     # [2] Sync "realtime" task execution
@@ -494,15 +464,16 @@ def lm_exec(arg_list):
 
 def _exec_lm_core(cmd_list):
     """
-    CORE STRING REFERENCE EXECUTOR: MODULE.FUNCTION...
+    [CORE] Single command executor: MODULE.FUNCTION...
     :param cmd_list: list of string parameters
         [1] module name (LM)
         [2] function
         [3...] parameters (separator: space)
-    Built-in json output handler: >json
+        [-1] Built-in json output handler: >json
+    Return Bool(OK/NOK), STR(Command output)
     """
 
-    def __conv_func_params(param):
+    def __func_params(param):
         buf = None
         if "'" in param or '"' in param:
             str_index = [i for i, c in enumerate(param) if c in ('"', "'")]
@@ -519,7 +490,7 @@ def _exec_lm_core(cmd_list):
     cmd_list = cmd_list[0:-1] if json_mode else cmd_list
     # LoadModule execution
     if len(cmd_list) >= 2:
-        lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], __conv_func_params(' '.join(cmd_list[2:]))
+        lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], __func_params(' '.join(cmd_list[2:]))
         try:
             # ------------- LM LOAD & EXECUTE ------------- #
             # [1] LOAD MODULE - OPTIMIZED by sys.modules
@@ -559,6 +530,7 @@ def _exec_lm_core(cmd_list):
             return False, f"Core error: {lm_mod}->{lm_func}: {e}"
     return False, "Shell: for hints type help.\nShell: for LM exec: [1](LM)module [2]function [3...]optional params"
 
+
 def lm_is_loaded(lm_name):
     """
     [Auth mode]
@@ -569,11 +541,43 @@ def lm_is_loaded(lm_name):
     return lm_name in static_keywords or lm_name in loaded_mods
 
 
+#####################  LM EXEC CORE WRAPPERS  #####################
+
+def exec_lm_pipe(taskstr):
+    """
+    Real-time multi command executor
+    :param taskstr: contains LM calls separated by ;
+    Used for execute config callback parameters (BootHook, ...)
+    """
+    try:
+        # Handle config default empty value (do nothing)
+        if taskstr.startswith('n/a'):
+            return True
+        # Execute individual commands - msgobj->"/dev/null"
+        for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
+            if not lm_exec(cmd)[0]:
+                errlog_add(f"[WARN] exec_lm_pipe: {cmd}")
+    except Exception as e:
+        errlog_add(f"[ERR] exec_lm_pipe {taskstr}: {e}")
+        return False
+    return True
+
+
+def exec_lm_pipe_schedule(taskstr):
+    """
+    Scheduled Wrapper for exec_lm_pipe for IRQs (extIRQ, timIRQ)
+    """
+    try:
+        schedule(exec_lm_pipe, taskstr)
+        return True
+    except Exception as e:
+        errlog_add(f"[ERR] exec_lm_pipe_schedule: {e}")
+        return False
+
+
 def exec_lm_core_schedule(arg_list):
     """
-    Wrapper for lm_exec
-    - micropython scheduling
-        - exec protection for cron IRQ
+    Scheduled Wrapper for lm_exec for cron IRQ
     """
     try:
         schedule(lm_exec, arg_list)

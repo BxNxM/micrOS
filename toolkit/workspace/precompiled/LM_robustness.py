@@ -9,7 +9,7 @@ def raise_error(msgobj=None):
     """
     if msgobj is not None:
         msgobj("Raise test exception")
-    syslog("Raise test exception")
+    syslog('Robustness TeSt ErRoR')
     raise Exception("Test exception")
 
 

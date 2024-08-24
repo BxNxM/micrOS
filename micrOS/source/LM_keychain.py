@@ -1,10 +1,9 @@
 import uasyncio as asyncio
 from Common import micro_task
 from utime import localtime
-from Network import ifconfig
 from LM_oled import text, show, rect, pixel, clean, line, load as oled_lni
 from LM_ds18 import measure
-from LM_system import top
+from LM_system import top, ifconfig
 from microIO import resolve_pin, pinmap_search
 from neopixel import NeoPixel
 from machine import Pin

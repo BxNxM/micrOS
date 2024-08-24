@@ -18,7 +18,7 @@ MICROS_SOURCE_DIR = os.path.join(MYPATH, '../micrOS/source')
 RELEASE_INFO_PATH = os.path.join(MYPATH, '../micrOS/release_info/micrOS_ReleaseInfo')
 
 # MICROS LINTER CONFIG
-ALLOWED_LM_DEP_WARNS = 7        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
+ALLOWED_LM_DEP_WARNS = 4        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
 
 def parse_micros_file_categories(verbose=True):
     """
@@ -346,13 +346,18 @@ def _verdict_gen(master_key, categories, verbose=True):
                     ref = ['?', []]
             spacer = "\n" + " " * 98
             ref_verdict = f'{ref[0]}:{spacer.join(ref[1])}' if verbose else ref[0]
+            if isinstance(ref_verdict, int):
+                ref_cnt = f"{Colors.BOLD}{ref_verdict}{Colors.NC}" if ref_verdict > 0 else ref_verdict
+            else:
+                ref_cnt = ref_verdict
 
             mlint = categories[master_key][master_module]['linter']['mlint'][0]
+            mlint = f"{Colors.OK}OK{Colors.NC}" if mlint else f"{Colors.WARN}NOK{Colors.NC}"
             try:
                 pylint = categories[master_key][master_module]['linter']['pylint'][0]
             except Exception as e:
                 pylint = f'{e}'
-            long_verdict.append(f"\t{i+1}\t{lines}\t{master_module}{_spacer(master_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref_verdict})")
+            long_verdict.append(f"\t{i+1}\t{lines}\t{master_module}{_spacer(master_module)}(mlint: {mlint})\t(pylint: {pylint})\t(ref.: {ref_cnt})")
             short_result[master_module] = [pylint, ref_verdict]
     return  short_result, long_verdict
 
@@ -502,8 +507,9 @@ def diff_short_summary(summary, verbose=True):
 
 def save_system_analysis_json(categories):
     file_path = os.path.join(MYPATH, 'user_data/system_analysis.json')
+    sorted_categories = {key: categories[key] for key in sorted(categories)}
     with open(file_path, 'w') as json_file:
-        json.dump(categories, json_file, indent=4)
+        json.dump(sorted_categories, json_file, indent=4)
     return f"system_analysis json saved to {file_path}"
 
 def save_system_summary_json(summary):

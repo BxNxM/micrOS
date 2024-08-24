@@ -3,9 +3,8 @@ from utime import localtime
 from network import WLAN, STA_IF
 from microIO import resolve_pin, pinmap_search
 from Network import ifconfig
-from Common import syslog
+from Common import syslog, exec_cmd, manage_task
 from machine import Pin
-from Tasks import lm_exec, Manager
 from Types import resolve
 try:
     from LM_system import memory_usage
@@ -104,13 +103,13 @@ class PageUI:
             pass
 
         ltime = localtime()
-        h = "0{}".format(ltime[-5]) if len(str(ltime[-5])) < 2 else ltime[-5]
-        m = "0{}".format(ltime[-4]) if len(str(ltime[-4])) < 2 else ltime[-4]
-        s = "0{}".format(ltime[-3]) if len(str(ltime[-3])) < 2 else ltime[-3]
+        h = f"0{ltime[-5]}" if len(str(ltime[-5])) < 2 else ltime[-5]
+        m = f"0{ltime[-4]}" if len(str(ltime[-4])) < 2 else ltime[-4]
+        s = f"0{ltime[-3]}" if len(str(ltime[-3])) < 2 else ltime[-3]
         nwmd = ifconfig()[0]
         nwmd = nwmd[0] if len(nwmd) > 0 else "0"
         irq_ok = ' ' if self.bttn_press_callback is None else '*' if self.irq_ok else '!'
-        PageUI.DISPLAY.text("{} {} {}:{}:{}".format(nwmd, irq_ok, h, m, s), 0, 0)
+        PageUI.DISPLAY.text(f"{nwmd} {irq_ok} {h}:{m}:{s}", 0, 0)
 
     def __page_bar(self):
         """Generates page indicator bar"""
@@ -271,7 +270,7 @@ class PageUI:
                 PageUI.DISPLAY.show()
             self.oled_state = False             # Off main page logic
             self.bttn_press_callback = None
-        return "page: {} pwr: {}".format(self.active_page, self.oled_state)
+        return f"page: {self.active_page} pwr: {self.oled_state}"
 
     def _page_button_press(self):
         """
@@ -348,12 +347,12 @@ class PageUI:
         PageUI.DISPLAY.text(cmd, posx, posy+10)
         # Update display output with retrieved task result (by TaskID)
         if self.cmd_task_tag is not None:
-            task_buffer = str(Manager().show(tag=self.cmd_task_tag)).replace(' ', '')
+            task_buffer = manage_task(self.cmd_task_tag, 'show').replace(' ', '')
             if task_buffer is not None and len(task_buffer) > 0:
                 # Set display out to task buffered data
                 self.cmd_out = task_buffer
                 # Kill task - clean
-                Manager().kill(tag=self.cmd_task_tag)
+                manage_task(self.cmd_task_tag, 'kill')
                 # data gathered - remove tag - skip re-read
                 self.cmd_task_tag = None
         # Show self.cmd_out value on display
@@ -374,7 +373,7 @@ class PageUI:
             try:
                 cmd_list = cmd.strip().split()
                 # Send CMD to other device & show result
-                state, out = lm_exec(cmd_list)
+                state, out = exec_cmd(cmd_list)
                 try:
                     self.cmd_out = ''.join(out.strip().split()).replace(' ', '')
                 except Exception:
@@ -401,7 +400,7 @@ def _sys_page():
     System basic information page
     """
     PageUI.DISPLAY.text(cfgget("devfid"), 0, 15)
-    PageUI.DISPLAY.text("  {}".format(ifconfig()[1][0]), 0, 25)
+    PageUI.DISPLAY.text(f"  {ifconfig()[1][0]}", 0, 25)
     if memory_usage is not None:
         mem = memory_usage()
         PageUI.DISPLAY.text(f"  {mem['percent']}% ({int(mem['mem_used']/1000)}kb)", 0, 35)
@@ -419,7 +418,7 @@ def _intercon_cache(line_limit=3):
         for key, val in InterCon.host_cache().items():
             key = key.split('.')[0]
             val = '.'.join(val.split('.')[-2:])
-            PageUI.DISPLAY.text(" {} {}".format(val, key), 0, line_start+(line_cnt*10))
+            PageUI.DISPLAY.text(f" {val} {key}", 0, line_start+(line_cnt*10))
             line_cnt += 1
             if line_cnt > line_limit:
                 break
@@ -490,7 +489,7 @@ def control(cmd='next'):
     valid_cmd = ('next', 'prev', 'press', 'on', 'off')
     if cmd in valid_cmd:
         return PageUI.PAGE_UI_OBJ.control(cmd)
-    return 'Invalid command {}! Hint: {}'.format(cmd, valid_cmd)
+    return f'Invalid command {cmd}! Hint: {valid_cmd}'
 
 
 def msgbox(msg='micrOS msg'):

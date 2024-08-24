@@ -1,9 +1,7 @@
 from ustruct import unpack
 from microIO import resolve_pin, pinmap_search
-from Common import micro_task, web_endpoint
+from Common import micro_task, web_endpoint, manage_task
 from machine import I2S, Pin
-from Debug import console_write
-from Tasks import TaskBase
 import uasyncio as asyncio
 
 
@@ -55,7 +53,7 @@ async def __control_task(ms_period=50):
         while True:
             if Data.CONTROL_BUTTON_PIN.value():
                 Data.MIC_ENABLED = not Data.MIC_ENABLED
-                console_write(f'Microphone enabled: {Data.MIC_ENABLED}')
+                print(f'Microphone enabled: {Data.MIC_ENABLED}')
 
                 if Data.MIC_ENABLED:
                     load()
@@ -139,8 +137,8 @@ async def _capture(capture_duration = Data.CAPTURE_DURATION,
     if not Data.MIC_ENABLED:
         return bytearray()
     
-    if TaskBase.is_busy(Data.TASK_TAG):
-        console_write('[i2s_mic] Warning: micro task is already running, capturing directly is not possible. '\
+    if manage_task(Data.TASK_TAG, 'isbusy'):
+        print('[i2s_mic] Warning: micro task is already running, capturing directly is not possible. '\
                       'Use get_from_buffer() instead.')
         return bytearray()
 

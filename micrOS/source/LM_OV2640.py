@@ -3,7 +3,6 @@ try:
 except Exception as e:
     camera = None
 import time
-from Debug import console_write
 from Common import web_endpoint, syslog
 from Types import resolve
 
@@ -30,7 +29,7 @@ def load(quality='medium', freq='default', effect="NONE"):
         return CAM_INIT
 
     for cnt in range(0, 3):
-        console_write(f"Init OV2640 cam {cnt+1}/3")
+        print(f"Init OV2640 cam {cnt+1}/3")
         try:
             # ESP32-CAM (default configuration) - https://bit.ly/2Ndn8tN
             if freq.strip().lower() == 'high':

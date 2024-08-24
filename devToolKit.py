@@ -23,7 +23,7 @@ APP_DIR = os.path.join(MYPATH, 'toolkit/dashboard_apps')
 import argparse
 from toolkit import MicrOSDevEnv
 from toolkit import socketClient
-from toolkit.lib import LocalMachine
+from toolkit.lib import LocalMachine, macroScript
 try:
     from toolkit import micrOSlint
 except Exception as e:
@@ -46,6 +46,7 @@ def arg_parse():
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
     base_group.add_argument("-p", "--connect_parameters", type=str, help="Parameters for connection in non-interactive mode. For more info: -p 'help'")
     base_group.add_argument("-a", "--applications", type=str, help="List/Execute frontend applications. [list]")
+    base_group.add_argument("-macro", "--macro", type=str, help="Run micrOS remote command sequence from .macro file. If file not exists creates a template")
     base_group.add_argument("-stat", "--node_status", action="store_true", help="Show all available micrOS devices status data.")
     base_group.add_argument("-cl", "--clean", action="store_true", help="Clean user connection data: device_conn_cache.json")
 
@@ -285,5 +286,9 @@ if __name__ == "__main__":
     if cmd_args.linter:
         if micrOSlint is not None:
             sys.exit(micrOSlint.main(verbose=False))
+
+    if cmd_args.macro:
+        executor = macroScript.Executor()
+        executor.run_micro_script(cmd_args.macro)
 
     sys.exit(0)

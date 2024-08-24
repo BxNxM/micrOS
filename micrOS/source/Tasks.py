@@ -404,16 +404,17 @@ def lm_exec(arg_list):
     - async (background)
     - sync
     (single) task execution (_exec_lm_core)
+    :param arg_list: command parameters
     Return Bool(OK/NOK), STR(Command output)
     """
 
-    def _exec_task(msg_list):
-        msg_len = len(msg_list)
+    def _exec_task():
+        nonlocal arg_list, arg_len
         # [1] Handle task manipulation commands: list, kill, show - return True -> Command handled
-        if 'task' == msg_list[0]:
+        if 'task' == arg_list[0]:
             # task list
-            if msg_len > 1 and 'list' == msg_list[1]:
-                if msg_len > 2 and msg_list[2].strip() == '>json':
+            if arg_len > 1 and 'list' == arg_list[1]:
+                if arg_len > 2 and arg_list[2].strip() == '>json':
                     # JSON mode
                     on, off = Manager.list_tasks(json=True)
                     return True, {'active': on[3:], 'inactive': off}
@@ -421,15 +422,15 @@ def lm_exec(arg_list):
                 # Human readable mode with cpu & queue info
                 return True, '\n'.join(on) + '\n' + '\n'.join(off) + '\n'  # Show active tasks and passive tasks
             # task kill <taskID> / task show <taskID>
-            if msg_len > 2:
-                if 'kill' == msg_list[1]:
-                    state, msg = Manager.kill(tag=msg_list[2])
+            if arg_len > 2:
+                if 'kill' == arg_list[1]:
+                    state, msg = Manager.kill(tag=arg_list[2])
                     return True, msg
-                if 'show' == msg_list[1]:
-                    return True, Manager.show(tag=msg_list[2])
+                if 'show' == arg_list[1]:
+                    return True, Manager.show(tag=arg_list[2])
             return True, "Invalid task cmd! Help: task list / kill <taskID> / show <taskID>"
         # [2] Start async task, postfix: &, &&
-        if msg_len > 2 and '&' in arg_list[-1]:
+        if arg_len > 2 and '&' in arg_list[-1]:
             # Evaluate task mode: loop + delay
             mode = arg_list.pop(-1)
             loop = mode.count('&') == 2
@@ -451,10 +452,11 @@ def lm_exec(arg_list):
 
     # ================ main function ================
     # modules built-in function: show loaded LoadModules
-    if len(arg_list) > 0 and arg_list[0] == 'modules':
+    arg_len = len(arg_list)
+    if arg_len > 0 and arg_list[0] == 'modules':
         return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_')))
     # [1] Run task command: start (&), list, kill, show
-    is_task, out = _exec_task(arg_list)
+    is_task, out = _exec_task()
     if is_task:
         return True, out
     # [2] Sync "realtime" task execution
@@ -546,8 +548,9 @@ def lm_is_loaded(lm_name):
 def exec_lm_pipe(taskstr):
     """
     Real-time multi command executor
+    - with #comment annotation feature
     :param taskstr: contains LM calls separated by ;
-    Used for execute config callback parameters (BootHook, ...)
+    Used for execute config callback parameters (BootHook, IRQs, ...)
     """
     try:
         # Handle config default empty value (do nothing)
@@ -555,6 +558,9 @@ def exec_lm_pipe(taskstr):
             return True
         # Execute individual commands - msgobj->"/dev/null"
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
+            if len(cmd) > 0 and cmd[0].startswith("#"):
+                console_write(f"[SKIP] exec_lm_pipe: {' '.join(cmd)}")
+                return True
             if not lm_exec(cmd)[0]:
                 errlog_add(f"[WARN] exec_lm_pipe: {cmd}")
     except Exception as e:

@@ -1,12 +1,30 @@
 import os.path
 import sys
 import time
+from datetime import datetime
 
 try:
     from .micrOSClient import micrOSClient, color
 except:
     from micrOSClient import micrOSClient, color
 
+
+def elapsed_time(start, stop):
+    # Calculate the difference (delta) between the end and start times
+    delta = stop - start
+
+    # Total seconds in the delta
+    total_seconds = int(delta.total_seconds())
+
+    # Calculate days, hours, minutes, and seconds
+    days = total_seconds // 86400
+    hours = (total_seconds % 86400) // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+
+    # Formatting the delta time
+    formatted_delta = f"{days}d {hours}h {minutes}m {seconds}s"
+    return formatted_delta
 
 class Executor:
 
@@ -71,12 +89,14 @@ class Executor:
 
     @staticmethod
     def create_template(path):
-        default_conf = """#microscript __simulator__.local safe
+        default_conf = """#microscript 127.0.0.1 safe
 # Comments:
 #       SHEBANG LINE: #microscript <device> <password> <opts>
 #           <device>    :   host name or IP address
 #           <password>  :   optional parameter, defualt: ADmin123
-#           <opts>      :   additional optional params, like: debug
+#           <opts>      :   additional optional params, like: debug, safe
+#               debug   :   show verbose output
+#               safe    :   only run loaded modules
 #
 # You can list any load module call to be executed...
 #
@@ -116,11 +136,14 @@ system clock
             self.verbose = conf['dbg'] if self.verbose is None else self.verbose
             self.pwd = conf['pwd'] if self.pwd is None else self.pwd
             self.safe_mode = conf['safe'] if self.safe_mode is None else self.safe_mode
+        start_time = datetime.now()
+        cmd_cnt = 0
         try:
             for cmd in lines:
                 cmd = self.filter_commands(cmd)
                 if cmd is None:
                     continue
+                cmd_cnt += 1
                 state, out = self.run(cmd, force_close=False)
                 if not state:
                     print("Communication was broken...")
@@ -130,6 +153,10 @@ system clock
         finally:
             if self.com is not None:
                 self.com.close()
+        end_time = datetime.now()
+        elapsed = elapsed_time(start_time, end_time)
+        print(f"Elapsed time: {elapsed} / {cmd_cnt} command(s).")
+
 
 
 if __name__ == "__main__":

@@ -1,0 +1,20 @@
+#microscript 127.0.0.1 safe
+# Comments:
+#       SHEBANG LINE: #microscript <device> <password> <opts>
+#           <device>    :   host name or IP address
+#           <password>  :   optional parameter, defualt: ADmin123
+#           <opts>      :   additional optional params, like: debug, safe
+#               debug   :   show verbose output
+#               safe    :   only run loaded modules
+#
+# You can list any load module call to be executed...
+#
+# Additional script commands:
+#   wait X      - seconds to wait before execute next command
+#   #           - line comment
+
+system info
+task list
+system clock
+wait 3
+system clock

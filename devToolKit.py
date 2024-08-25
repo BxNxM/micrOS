@@ -33,7 +33,7 @@ except Exception as e:
 
 def arg_parse():
     parser = argparse.ArgumentParser(prog="micrOS dev toolkit - deploy, connect, update, etc.",
-                                            description="CMDline wrapper for {}\n and for {}\n USED ENV VARS: API_AUTH=usr:pwd, GATEWAYIP=10.0.1.1".format(
+                                            description="CMDline wrapper for {}\n and for {}\n[HINTS] USED ENV VARS FOR GATEWAY:\n API_AUTH=usr:pwd, GATEWAYIP=10.0.1.1, MACRO_WORKDIR=~/macros".format(
                                             os.path.join(TOOLKIT_PATH, 'MicrOSDevEnv.py'),
                                             os.path.join(TOOLKIT_PATH, 'socketClient.py')))
 

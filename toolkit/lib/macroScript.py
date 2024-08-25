@@ -126,15 +126,16 @@ class Executor:
     @staticmethod
     def create_template(path):
         default_conf = """#microscript 127.0.0.1 safe
-# Comments:
-#       SHEBANG LINE: #microscript <device> <password> <opts>
-#           <device>    :   host name or IP address
-#           <password>  :   optional parameter, defualt: ADmin123
-#           <opts>      :   additional optional params, like: debug, safe
-#               debug   :   show verbose output
-#               safe    :   only run loaded modules
 #
-# You can list any load module call to be executed...
+# HINTS:
+#   SHEBANG LINE: #microscript <device> <password> <opts>
+#       <device>    :   host name or IP address
+#       <password>  :   optional parameter, defualt: ADmin123
+#       <opts>      :   additional optional params:
+#           debug   :   show verbose output
+#           safe    :   only run loaded modules
+#
+# You can list any load module function call to be remotely executed
 #
 # Additional script commands:
 #   wait <s>        - seconds to wait before execute next command

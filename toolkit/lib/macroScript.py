@@ -8,8 +8,11 @@ try:
 except:
     from micrOSClient import micrOSClient, color
 
+#####################################
+#           HELPER FUNCTIONS        #
+#####################################
 
-def elapsed_time(start, stop):
+def _elapsed_time(start, stop):
     # Calculate the difference (delta) between the end and start times
     delta = stop - start
 
@@ -26,6 +29,34 @@ def elapsed_time(start, stop):
     formatted_delta = f"{days}d {hours}h {minutes}m {seconds}s"
     return formatted_delta
 
+
+def _run_internal_macro(macro_name, workdir, verbose=None, safe=None):
+    macro_name = f"{macro_name}.macro"
+    macro_path = os.path.join(workdir, macro_name)
+    print(f"|      - {macro_path}")
+    macro_exec = Executor(verbose=verbose, safe=safe)
+    macro_exec.run_micro_script(macro_path)
+
+
+def action_console(action, msg):
+    if action == "SKIP":
+        action = f"{color.BOLD}--- {action}{color.NC}"
+    if action == "SEND":
+        action = f"{color.WARN}==> {action}{color.NC}"
+    if action == "WAIT":
+        action = f"{color.OKBLUE}=== {action}{color.NC}"
+    if action == "MACRO":
+        action = f"{color.OKGREEN}=== {action}{color.NC}"
+    if action == "INIT":
+        print(msg)
+        return
+    message = f"|  {action} {msg}"
+    print(message)
+
+#####################################
+#           MACRO EXECUTOR          #
+#####################################
+
 class Executor:
 
     def __init__(self, host=None, pwd=None, verbose=None, safe=None):
@@ -35,6 +66,7 @@ class Executor:
         self.verbose = verbose
         self.safe_mode = safe
         self.safe_modules = None
+        self.workdir = None
 
     def init_com(self):
         self.com = micrOSClient(host=self.host, port=9008, pwd=self.pwd, dbg=self.verbose)
@@ -45,24 +77,28 @@ class Executor:
         if self.com is None:
             self.init_com()
         if self.safe_mode and cmd.split()[0] not in self.safe_modules:
-            print(f"SKIP {cmd.split()[0]} execution (not loaded) - safe mode: {self.safe_modules}")
+            action_console("SKIP", f"{cmd.split()[0]} execution (not loaded) - safe mode: {self.safe_modules}")
             return True, "Skipped..."
         # [2] Test functions for command send function
-        print(f"{color.WARN}==> SEND: {cmd}{color.NC}")
+        action_console("SEND", cmd)
         out = self.com.send_cmd_retry(cmd)
-        print(f"{cmd}: {out}")
+        action_console(" "*8, f"{cmd}: {out}")
         if force_close: self.com.close()
         return True if len(out) > 0 else False, out
 
-
-    @staticmethod
-    def filter_commands(cmd):
+    def filter_commands(self, cmd):
         cmd = cmd.strip()
+        # HANDLE wait COMMAND
         if cmd.startswith("wait"):
             wait_cmd = cmd.split()
             wait = int(wait_cmd[1]) if len(wait_cmd) > 1 else 1
-            print(f"{cmd}")
+            action_console("WAIT", cmd)
             time.sleep(wait)
+            return None
+        # HANDLE wait COMMAND
+        if cmd.startswith("macro"):
+            action_console("MACRO", cmd)
+            _run_internal_macro(cmd.split()[1].strip(), self.workdir, verbose=self.verbose, safe=self.safe_mode)
             return None
         return cmd
 
@@ -101,8 +137,9 @@ class Executor:
 # You can list any load module call to be executed...
 #
 # Additional script commands:
-#   wait X      - seconds to wait before execute next command
-#   #           - line comment
+#   wait <s>        - seconds to wait before execute next command
+#   #               - line comment
+#   macro <name>    - run a macro by name (from same dir as parent macro)
 
 system top
 system clock
@@ -129,13 +166,14 @@ system clock
             print("Invalid initial line, must starts with #microscript")
             sys.exit(2)
 
-        print(f"microSCRIPT\nconf:{conf}\ncommands:\n{lines}")
+        action_console("INIT", f"{color.BOLD}{color.OK}macroSCRIPT{color.NC}\nconf:{conf}\ncommands:{lines}")
         if self.com is None:
             # Inject params from macro if was not set by constructor
             self.host = conf['device'] if self.host is None else self.host
             self.verbose = conf['dbg'] if self.verbose is None else self.verbose
             self.pwd = conf['pwd'] if self.pwd is None else self.pwd
             self.safe_mode = conf['safe'] if self.safe_mode is None else self.safe_mode
+            self.workdir = os.path.dirname(path)
         start_time = datetime.now()
         cmd_cnt = 0
         try:
@@ -149,13 +187,13 @@ system clock
                     print("Communication was broken...")
                     break
         except Exception as e:
-            print(f"Connection error: {e}")
+            print(f"Connection error {os.path.basename(path)}: {e}")
         finally:
             if self.com is not None:
                 self.com.close()
         end_time = datetime.now()
-        elapsed = elapsed_time(start_time, end_time)
-        print(f"Elapsed time: {elapsed} / {cmd_cnt} command(s).")
+        elapsed = _elapsed_time(start_time, end_time)
+        print(f"[{color.BOLD}{color.OK}{os.path.basename(path)}{color.NC}] Elapsed time: {elapsed} / {cmd_cnt} command(s).")
 
 
 

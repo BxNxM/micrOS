@@ -1,7 +1,10 @@
-import os.path
+import os
 import sys
 import time
 from datetime import datetime
+import subprocess
+import platform
+
 
 try:
     from .micrOSClient import micrOSClient, color
@@ -43,15 +46,37 @@ def action_console(action, msg):
         action = f"{color.BOLD}--- {action}{color.NC}"
     if action == "SEND":
         action = f"{color.WARN}==> {action}{color.NC}"
+    if action == "SHELL":
+        action = f"{color.HEADER}*** {action}{color.NC}"
     if action == "WAIT":
         action = f"{color.OKBLUE}=== {action}{color.NC}"
     if action == "MACRO":
         action = f"{color.OKGREEN}=== {action}{color.NC}"
+    if action == "ERR":
+        action = f"{color.ERR}=== {action}{color.NC}"
     if action == "INIT":
         print(msg)
         return
     message = f"|  {action} {msg}"
     print(message)
+
+
+def _run_shell_command(command):
+    """Run a command in the detected shell."""
+
+    def detect_shell():
+        """Detect the current shell type."""
+        if platform.system() == "Windows":
+            return os.getenv('ComSpec')  # Typically cmd.exe on Windows
+        else:
+            return os.getenv('SHELL')    # Typically /bin/bash, /bin/zsh, etc. on Unix-like systems
+
+    shell = detect_shell()
+    if not shell:
+        raise EnvironmentError("Could not detect the shell type.")
+    # Execute the command in the detected shell
+    result = subprocess.run(command, shell=True, executable=shell, capture_output=True, text=True)
+    return shell, result
 
 #####################################
 #           MACRO EXECUTOR          #
@@ -89,16 +114,27 @@ class Executor:
     def filter_commands(self, cmd):
         cmd = cmd.strip()
         # HANDLE wait COMMAND
-        if cmd.startswith("wait"):
+        if cmd.startswith("WAIT"):
             wait_cmd = cmd.split()
             wait = int(wait_cmd[1]) if len(wait_cmd) > 1 else 1
             action_console("WAIT", cmd)
             time.sleep(wait)
             return None
         # HANDLE wait COMMAND
-        if cmd.startswith("macro"):
+        if cmd.startswith("MACRO"):
             action_console("MACRO", cmd)
             _run_internal_macro(cmd.split()[1].strip(), self.workdir, verbose=self.verbose, safe=self.safe_mode)
+            return None
+        if cmd.startswith("SHELL"):
+            action_console("SHELL", cmd)
+            cmd = ' '.join(cmd.split()[1:])
+            try:
+                shell, result = _run_shell_command(cmd)
+                stdout = result.stdout.strip()
+                stderr = result.stderr.strip()
+                action_console(" " * 8, f"[{result.returncode}] {shell} {cmd}\n{stdout}\n{stderr}")
+            except Exception as e:
+                action_console("ERR", f"NoShell: {e}")
             return None
         return cmd
 
@@ -108,9 +144,9 @@ class Executor:
         parsed_config = {'dbg': False, 'device': None, 'pwd': "ADmin123", 'safe': False}
         conf_list = conf.strip().split()
         if len(conf_list) < 2:
-            print(f"Not enough parameters:\n#microscript devName.local/IPaddress\n\t{conf}")
+            print(f"Not enough parameters:\n#macroscript devName.local/IPaddress\n\t{conf}")
             sys.exit(3)
-        if conf_list[0] == "#microscript":
+        if conf_list[0] == "#macroscript":
             is_valid = True
             parsed_config['dbg'] = "debug" in conf_list
             if parsed_config['dbg']:
@@ -125,10 +161,10 @@ class Executor:
 
     @staticmethod
     def create_template(path):
-        default_conf = """#microscript 127.0.0.1 safe
+        default_conf = """#macroscript 127.0.0.1 safe
 #
 # HINTS:
-#   SHEBANG LINE: #microscript <device> <password> <opts>
+#   SHEBANG LINE: #macroscript <device> <password> <opts>
 #       <device>    :   host name or IP address
 #       <password>  :   optional parameter, defualt: ADmin123
 #       <opts>      :   additional optional params:
@@ -138,18 +174,19 @@ class Executor:
 # You can list any load module function call to be remotely executed
 #
 # Additional script commands:
-#   wait <s>        - seconds to wait before execute next command
+#   WAIT <s>        - seconds to wait before execute next command
+#   MACRO <name>    - run a macro by name (from same dir as parent macro)
+#   SHELL <command> - run shell oneliners
 #   #               - line comment
-#   macro <name>    - run a macro by name (from same dir as parent macro)
 
 system top
 system clock
-wait 1
+WAIT 1
 system clock
 
 """
 
-        print(f"Create template for {path}")
+        print(f"{color.OKGREEN}Create template for{color.NC} {path}")
         with open(path, 'w') as f:
             f.write(default_conf)
 
@@ -164,10 +201,11 @@ system clock
         lines  = [ l for l in lines if not l.strip().startswith("#") ]
         conf_is_valid, conf = self.validate_conf(conf)
         if not conf_is_valid:
-            print("Invalid initial line, must starts with #microscript")
+            print("Invalid initial line, must starts with #macroscript")
             sys.exit(2)
 
-        action_console("INIT", f"{color.BOLD}{color.OK}macroSCRIPT{color.NC}\nconf:{conf}\ncommands:{lines}")
+        action_console("INIT", f"{color.BOLD}{color.OK}macroSCRIPT{color.NC}: {os.path.basename(path)}")
+        #print(f"conf:{conf}\ncommands:{lines}")
         if self.com is None:
             # Inject params from macro if was not set by constructor
             self.host = conf['device'] if self.host is None else self.host

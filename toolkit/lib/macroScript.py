@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 import subprocess
 import platform
+import threading
 
 
 try:
@@ -79,7 +80,7 @@ def _run_shell_command(command):
 class Executor:
     RECURSION_COUNTER = {}
 
-    def __init__(self, host=None, pwd=None, verbose=None, safe=None, max_recursion=5):
+    def __init__(self, host=None, pwd=None, verbose=None, safe=None, parallel=None, max_recursion=5):
         self.com = None
         self.host = host
         self.pwd = pwd
@@ -89,6 +90,7 @@ class Executor:
         self.workdir = None
         self.macro_name = None
         self.max_recursion = max_recursion
+        self.parallel = parallel
 
     def init_com(self):
         self.com = micrOSClient(host=self.host, port=9008, pwd=self.pwd, dbg=self.verbose)
@@ -109,12 +111,20 @@ class Executor:
         return True if len(out) > 0 else False, out
 
     @staticmethod
-    def _run_embedded_macro(macro_name, workdir, verbose=None, safe=None):
-        macro_name = f"{macro_name}.macro"
-        macro_path = os.path.join(workdir, macro_name)
-        print(f"|      - {macro_path}")
-        macro_exec = Executor(verbose=verbose, safe=safe)
-        macro_exec.run_micro_script(macro_path)
+    def _run_embedded_macro(macro_name, workdir, verbose=None, safe=None, background=None):
+        def run():
+            nonlocal  macro_name, workdir, verbose, safe, background
+            macro_name = f"{macro_name}.macro"
+            macro_path = os.path.join(workdir, macro_name)
+            print(f"|      - {macro_path}{' - background' if background else ''}")
+            macro_exec = Executor(verbose=verbose, safe=safe)
+            macro_exec.run_micro_script(macro_path)
+
+        if background:
+            thread = threading.Thread(target=run)
+            thread.start()
+        else:
+            run()
 
     def run_embedded_macro(self, macro_name):
         run_macro = True
@@ -130,7 +140,7 @@ class Executor:
                 action_console("RECURSION", f"{self.macro_name} macro: {counter}/{self.max_recursion}")
                 Executor.RECURSION_COUNTER[self.macro_name] += 1
         if run_macro:
-            self._run_embedded_macro(macro_name, self.workdir, verbose=self.verbose, safe=self.safe_mode)
+            self._run_embedded_macro(macro_name, self.workdir, verbose=self.verbose, safe=self.safe_mode, background=self.parallel)
 
     def filter_commands(self, cmd):
         cmd = cmd.strip()
@@ -163,20 +173,28 @@ class Executor:
     @staticmethod
     def validate_conf(conf):
         is_valid = False
-        parsed_config = {'dbg': False, 'device': None, 'pwd': "ADmin123", 'safe': False}
+        parsed_config = {'dbg': False, 'device': None, 'pwd': "ADmin123", 'safe': False, 'parallel': False}
         conf_list = conf.strip().split()
         if len(conf_list) < 2:
             print(f"Not enough parameters:\n#macroscript devName.local/IPaddress\n\t{conf}")
             sys.exit(3)
         if conf_list[0] == "#macroscript":
             is_valid = True
-            parsed_config['dbg'] = "debug" in conf_list
-            if parsed_config['dbg']:
-                conf_list.remove("debug")
+            # FLAG: safe
             parsed_config['safe'] = "safe" in conf_list
             if parsed_config['safe']:
                 conf_list.remove("safe")
+            # FLAG: debug
+            parsed_config['dbg'] = "debug" in conf_list
+            if parsed_config['dbg']:
+                conf_list.remove("debug")
+            # FLAG: parallel
+            parsed_config['parallel'] = "parallel" in conf_list
+            if parsed_config['parallel']:
+                conf_list.remove("parallel")
+            # PARAM: device
             parsed_config['device'] = conf_list[1]
+            # PARAM: pwd
             if len(conf_list) > 2:
                 parsed_config['pwd'] = conf_list[2]
         return is_valid, parsed_config
@@ -192,6 +210,7 @@ class Executor:
 #       <opts>      :   additional optional params:
 #           debug   :   show verbose output
 #           safe    :   only run loaded modules
+#           parallel:   enable parallel macro execution
 #
 # You can list any load module function call to be remotely executed
 #
@@ -228,10 +247,11 @@ system clock
 
         if self.com is None:
             # Inject params from macro if was not set by constructor
-            self.host = conf['device'] if self.host is None else self.host
-            self.verbose = conf['dbg'] if self.verbose is None else self.verbose
-            self.pwd = conf['pwd'] if self.pwd is None else self.pwd
             self.safe_mode = conf['safe'] if self.safe_mode is None else self.safe_mode
+            self.verbose = conf['dbg'] if self.verbose is None else self.verbose
+            self.parallel = conf['parallel'] if self.parallel is None else self.parallel
+            self.host = conf['device'] if self.host is None else self.host
+            self.pwd = conf['pwd'] if self.pwd is None else self.pwd
             self.workdir = os.path.dirname(path)
             self.macro_name = os.path.basename(path).split(".")[0].strip()
         action_console("INIT", f"{color.BOLD}{color.OK}\nmacroSCRIPT{color.NC}: {self.macro_name} {color.BOLD}{self.host}{color.NC}")

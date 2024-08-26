@@ -33,14 +33,6 @@ def _elapsed_time(start, stop):
     return formatted_delta
 
 
-def _run_internal_macro(macro_name, workdir, verbose=None, safe=None):
-    macro_name = f"{macro_name}.macro"
-    macro_path = os.path.join(workdir, macro_name)
-    print(f"|      - {macro_path}")
-    macro_exec = Executor(verbose=verbose, safe=safe)
-    macro_exec.run_micro_script(macro_path)
-
-
 def action_console(action, msg):
     if action == "SKIP":
         action = f"{color.BOLD}--- {action}{color.NC}"
@@ -54,6 +46,8 @@ def action_console(action, msg):
         action = f"{color.OKGREEN}=== {action}{color.NC}"
     if action == "ERR":
         action = f"{color.ERR}=== {action}{color.NC}"
+    if action == "RECURSION":
+        action = f"{color.WARN}{color.BOLD}    &&& {action}{color.NC}"
     if action == "INIT":
         print(msg)
         return
@@ -83,8 +77,9 @@ def _run_shell_command(command):
 #####################################
 
 class Executor:
+    RECURSION_COUNTER = {}
 
-    def __init__(self, host=None, pwd=None, verbose=None, safe=None):
+    def __init__(self, host=None, pwd=None, verbose=None, safe=None, max_recursion=5):
         self.com = None
         self.host = host
         self.pwd = pwd
@@ -92,6 +87,8 @@ class Executor:
         self.safe_mode = safe
         self.safe_modules = None
         self.workdir = None
+        self.macro_name = None
+        self.max_recursion = max_recursion
 
     def init_com(self):
         self.com = micrOSClient(host=self.host, port=9008, pwd=self.pwd, dbg=self.verbose)
@@ -111,6 +108,30 @@ class Executor:
         if force_close: self.com.close()
         return True if len(out) > 0 else False, out
 
+    @staticmethod
+    def _run_embedded_macro(macro_name, workdir, verbose=None, safe=None):
+        macro_name = f"{macro_name}.macro"
+        macro_path = os.path.join(workdir, macro_name)
+        print(f"|      - {macro_path}")
+        macro_exec = Executor(verbose=verbose, safe=safe)
+        macro_exec.run_micro_script(macro_path)
+
+    def run_embedded_macro(self, macro_name):
+        run_macro = True
+        if self.macro_name == macro_name:
+            if Executor.RECURSION_COUNTER.get(self.macro_name, None) is None:
+                Executor.RECURSION_COUNTER[self.macro_name] = 1
+            counter = Executor.RECURSION_COUNTER[self.macro_name]
+            if counter >= self.max_recursion:
+                action_console("RECURSION", f"{self.macro_name} macro limit exceeded: {self.max_recursion}")
+                Executor.RECURSION_COUNTER[self.macro_name] = 1
+                run_macro = False
+            else:
+                action_console("RECURSION", f"{self.macro_name} macro: {counter}/{self.max_recursion}")
+                Executor.RECURSION_COUNTER[self.macro_name] += 1
+        if run_macro:
+            self._run_embedded_macro(macro_name, self.workdir, verbose=self.verbose, safe=self.safe_mode)
+
     def filter_commands(self, cmd):
         cmd = cmd.strip()
         # HANDLE wait COMMAND
@@ -123,7 +144,8 @@ class Executor:
         # HANDLE wait COMMAND
         if cmd.startswith("MACRO"):
             action_console("MACRO", cmd)
-            _run_internal_macro(cmd.split()[1].strip(), self.workdir, verbose=self.verbose, safe=self.safe_mode)
+            macro_name = cmd.split()[1].strip()
+            self.run_embedded_macro(macro_name)
             return None
         if cmd.startswith("SHELL"):
             action_console("SHELL", cmd)
@@ -131,8 +153,8 @@ class Executor:
             try:
                 shell, result = _run_shell_command(cmd)
                 stdout = result.stdout.strip()
-                stderr = result.stderr.strip()
-                action_console(" " * 8, f"[{result.returncode}] {shell} {cmd}\n{stdout}\n{stderr}")
+                stderr = "\n" + result.stderr.strip()
+                action_console(" " * 8, f"[{result.returncode}] {shell} {cmd}\n{stdout}{stderr}")
             except Exception as e:
                 action_console("ERR", f"NoShell: {e}")
             return None
@@ -204,8 +226,6 @@ system clock
             print("Invalid initial line, must starts with #macroscript")
             sys.exit(2)
 
-        action_console("INIT", f"{color.BOLD}{color.OK}macroSCRIPT{color.NC}: {os.path.basename(path)}")
-        #print(f"conf:{conf}\ncommands:{lines}")
         if self.com is None:
             # Inject params from macro if was not set by constructor
             self.host = conf['device'] if self.host is None else self.host
@@ -213,6 +233,9 @@ system clock
             self.pwd = conf['pwd'] if self.pwd is None else self.pwd
             self.safe_mode = conf['safe'] if self.safe_mode is None else self.safe_mode
             self.workdir = os.path.dirname(path)
+            self.macro_name = os.path.basename(path).split(".")[0].strip()
+        action_console("INIT", f"{color.BOLD}{color.OK}\nmacroSCRIPT{color.NC}: {self.macro_name} {color.BOLD}{self.host}{color.NC}")
+        #print(f"conf:{conf}\ncommands:{lines}")
         start_time = datetime.now()
         cmd_cnt = 0
         try:
@@ -226,13 +249,13 @@ system clock
                     print("Communication was broken...")
                     break
         except Exception as e:
-            print(f"Connection error {os.path.basename(path)}: {e}")
+            print(f"Connection error {self.macro_name}: {e}")
         finally:
             if self.com is not None:
                 self.com.close()
         end_time = datetime.now()
         elapsed = _elapsed_time(start_time, end_time)
-        print(f"[{color.BOLD}{color.OK}{os.path.basename(path)}{color.NC}] Elapsed time: {elapsed} / {cmd_cnt} command(s).")
+        print(f"[{color.BOLD}{color.OK}{self.macro_name}{color.NC}] Elapsed time: {elapsed} / {cmd_cnt} command(s).")
 
 
 

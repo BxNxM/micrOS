@@ -5,12 +5,12 @@ from datetime import datetime
 import subprocess
 import platform
 import threading
-
-
 try:
     from .micrOSClient import micrOSClient, color
 except:
     from micrOSClient import micrOSClient, color
+
+DRY_RUN = False
 
 #####################################
 #           HELPER FUNCTIONS        #
@@ -52,7 +52,8 @@ def action_console(action, msg):
     if action == "INIT":
         print(msg)
         return
-    message = f"|  {action} {msg}"
+    dr = "DRYRUN" if DRY_RUN else ""
+    message = f"{dr}|  {action} {msg}"
     print(message)
 
 
@@ -93,9 +94,17 @@ class Executor:
         self.parallel = parallel
 
     def init_com(self):
-        self.com = micrOSClient(host=self.host, port=9008, pwd=self.pwd, dbg=self.verbose)
-        if self.safe_mode:
-            self.safe_modules = self.com.send_cmd_retry("modules")[0]
+        try:
+            self.com = micrOSClient(host=self.host, port=9008, pwd=self.pwd, dbg=self.verbose)
+            if self.safe_mode:
+                self.safe_modules = self.com.send_cmd_retry("modules")[0]
+        except Exception as e:
+            print(f"Connection error, cannot get dhcp(?): {e}")
+            if DRY_RUN:
+                self.com.close = lambda: print("DRY_RUN close")
+                self.safe_modules = []
+                return
+            raise e
 
     def run(self, cmd, force_close=True):
         if self.com is None:
@@ -105,7 +114,10 @@ class Executor:
             return True, "Skipped..."
         # [2] Test functions for command send function
         action_console("SEND", cmd)
-        out = self.com.send_cmd_retry(cmd)
+        if DRY_RUN:
+            out = f"dryrun"
+        else:
+            out = self.com.send_cmd_retry(cmd)
         action_console(" "*8, f"{cmd}: {out}")
         if force_close: self.com.close()
         return True if len(out) > 0 else False, out
@@ -149,6 +161,8 @@ class Executor:
             wait_cmd = cmd.split()
             wait = int(wait_cmd[1]) if len(wait_cmd) > 1 else 1
             action_console("WAIT", cmd)
+            if DRY_RUN:
+                return None
             time.sleep(wait)
             return None
         # HANDLE wait COMMAND
@@ -255,7 +269,8 @@ system clock
             self.workdir = os.path.dirname(path)
             self.macro_name = os.path.basename(path).split(".")[0].strip()
         action_console("INIT", f"{color.BOLD}{color.OK}\nmacroSCRIPT{color.NC}: {self.macro_name} {color.BOLD}{self.host}{color.NC}")
-        #print(f"conf:{conf}\ncommands:{lines}")
+        if DRY_RUN:
+            print(f"conf:{conf}\ncommands:{lines}")
         start_time = datetime.now()
         cmd_cnt = 0
         try:

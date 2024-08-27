@@ -41,8 +41,7 @@ import uasyncio as asyncio
 import json
 
 from microIO import pinmap_search
-from Common import micro_task
-from Debug import console_write, errlog_add
+from Common import micro_task, syslog, console
 from Types import resolve
 
 
@@ -358,8 +357,8 @@ def classify_last_event():
         performance_new = _evaluate_votes(instances,nearest_neighbors,majority_votes)['in-sample accuracy']
         if performance_current < performance_new:
             record_last_event(majority_votes[-1])
-            console_write(f'[info] sound_event: added new instance ({majority_votes[-1]}) to the dataset')
-            console_write(f'[info] sound_event: in-sample accuracy increased from {performance_current} to {performance_new}')
+            console(f'[info] sound_event: added new instance ({majority_votes[-1]}) to the dataset')
+            console(f'[info] sound_event: in-sample accuracy increased from {performance_current} to {performance_new}')
 
     return {'class': majority_votes[-1]}
         
@@ -378,7 +377,7 @@ def read_instances():
         with open(Data.DATASET, 'r') as f:
             return json.loads(f.read())
     except OSError:
-        errlog_add(f'[ERR] sound_event: unable to read the dataset')
+        syslog(f'[ERR] sound_event: unable to read the dataset')
         return []
 
 
@@ -402,7 +401,7 @@ def _init_matrices():
     if len(instances):
         Data.PERFORMANCE = _evaluate_dataset(instances,Data.DISTANCE_MATRICES)
     else:
-        console_write('[info] sound_event: dataset is missing, initializing empty dataset')
+        console('[info] sound_event: dataset is missing, initializing empty dataset')
         _write_instances([])
         Data.PERFORMANCE = {}
 
@@ -417,12 +416,12 @@ def record_last_event(label):
     save the last recorded event in the dataset
     :param label: str - name of the class
     """
-    console_write('[info] sound_event: event of length %s will be recorded as "%s"' % (_get_feature_values(Data.EVENTS[-1],'length'), label))
+    console('[info] sound_event: event of length %s will be recorded as "%s"' % (_get_feature_values(Data.EVENTS[-1],'length'), label))
     Data.EVENTS[-1]['name'] = label
     try:
         instances = read_instances()
     except Exception as e:
-        errlog_add(f'[ERR] sound_event: could not read instances, the dataset will be overriden')
+        syslog(f'[ERR] sound_event: could not read instances (override): {e}')
         instances = []
 
     instances.append(Data.EVENTS[-1])
@@ -666,7 +665,7 @@ async def __control_task(capture_duration_ms,
                     Data.EVENTS.append(event)
                     last_event_label = classify_last_event()
                     _notify(last_event_label['class'])
-                    console_write(f'[info] sound_event: {last_event_label}')
+                    console(f'[info] sound_event: {last_event_label}')
 
                 # Discard old samples if the number of stored samples exceeds a threshold
                 max_samples = int((max_event_duration_ms/1000)*LM_i2s_mic.Data.SAMPLING_RATE)
@@ -678,7 +677,7 @@ async def __control_task(capture_duration_ms,
                 await asyncio.sleep_ms(ms_period)
                 Data.EVENTS = Data.EVENTS[-event_buffer_length:]
             except Exception as e:
-                console_write(f'[ERR] sound_event: {e}')
+                console(f'[ERR] sound_event: {e}')
 
 
 def load(dataset = 'sound_events.pds',

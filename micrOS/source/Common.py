@@ -1,18 +1,15 @@
 """
-micrOS Load Module programming API-s
+micrOS Load Module programming Official API-s
     Designed by Marcell Ban aka BxNxM
 """
 
 from Server import SocketServer, WebCli
-from Debug import errlog_add
+from Debug import errlog_add, console_write
 from Logger import logger, log_get
 from microIO import resolve_pin
+from Tasks import TaskBase, Manager, lm_exec
 from machine import Pin, ADC
-try:
-    from Tasks import TaskBase, Manager, lm_exec
-except Exception as ie:
-    print(f"Import ERROR, TaskManager: {ie}")
-    TaskBase, Manager = None, None
+
 TELEGRAM = None
 
 ################## Common LM features ##################
@@ -97,10 +94,6 @@ def micro_task(tag, task=None):
         [2] tag=taskID: return existing task object by tag
     :param task: coroutine to execute (with built-in overload protection and lcm)
     """
-    # [0] Check dependencies
-    if TaskBase is None or Manager is None:
-        # RETURN: None - cannot utilize async task functionality
-        return None
     if task is None:
         # [1] Task is None -> Get task mode by tag
         # RETURN task obj (access obj.out + obj.done (automatic - with keyword arg))
@@ -217,3 +210,8 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
 def syslog(msg):
     """ Wrapper of errlog_add """
     return errlog_add(f"[U]{msg}")
+
+
+def console(msg):
+    """ Wrapper of console_write """
+    return console_write(msg)

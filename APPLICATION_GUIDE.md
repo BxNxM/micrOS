@@ -367,22 +367,21 @@ Module responsible for collecting additional feature definitions dedicated to th
 
 ------------------------------------
 
-### socket_stream decorator
+### console
 
 Adds an extra `msgobj` to the wrapped function's argument list. The `msgobj` provides a socket message interface for the open connection.
 
 **Example:** LM\_my\_module.py
 
 ```python
-from Common import socket_stream
+from Common import console
 
-@socket_stream
-def function_name(arg1, arg2, ..., msgobj=None):
-    # function body
-    msgobj("Reply from Load Module to shellCli :)")
+def write_and_light(msg="Hello world!"):
+    console(msg)       # Use console write + built-in LED effect 
+                       #     When dbg=True in node_config
 ```
 
-Usage(s): [LM_system](./micrOS/source/LM_system.py) 
+Usage(s): [LM_sound_event](./micrOS/source/LM_sound_event.py) [LM_demo](./micrOS/source/LM_demo.py) 
 
 ------------------------------------
 
@@ -476,6 +475,8 @@ def create_task():
 
 Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) etc.
 
+------------------------------------
+
 ### manage\_task(tag, operation)
 
 Async task management from LoadModules.: `show` , `isbusy` , `kill`
@@ -495,6 +496,8 @@ def manage_task(tag, operation):
 ```
 
 Usage(s): [LM\_oled\_ui](./micrOS/source/LM_oled_ui.py) [LM\_i2s\_mic](./micrOS/source/LM_i2s_mic.py)
+
+------------------------------------
 
 ### exec_cmd(cmd)
 
@@ -527,6 +530,7 @@ def exec_cmd(cmd):
 
 Usage(s): [LM\_oled_ui](./micrOS/source/LM_oled_ui.py)
 
+------------------------------------
 
 ### data\_logger(f\_name, data=None, limit=12, msgobj=None)
 
@@ -571,6 +575,25 @@ def help(widgets=False):
 ```
 
 Usage(s): [LM_dht22](./micrOS/source/LM_dht22.py)
+
+------------------------------------
+
+### socket_stream decorator
+
+Adds an extra `msgobj` to the wrapped function's argument list. The `msgobj` provides a socket message interface for the open connection.
+
+**Example:** LM\_my\_module.py
+
+```python
+from Common import socket_stream
+
+@socket_stream
+def function_name(arg1, arg2, ..., msgobj=None):
+    # function body
+    msgobj("Reply from Load Module to shellCli :)")
+```
+
+Usage(s): [LM_system](./micrOS/source/LM_system.py) 
 
 ------------------------------------
 

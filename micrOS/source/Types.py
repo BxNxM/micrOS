@@ -18,7 +18,6 @@ from Debug import errlog_add
 #                 HELP TUPLE RESOLVER                  #
 ########################################################
 
-# Consolidate common dictionary parts
 __TEMPLATE = {'type': 'n/a', 'lm_call': ''}
 __RANGE_100 = {'range': (0, 100, 2)}
 __RANGE_255 = {'range': (0, 255, 2)}

@@ -1,8 +1,8 @@
 from random import randint
-from microIO import detect_platform
-from Debug import console_write
 from Time import uptime
 from Types import resolve
+from microIO import detect_platform
+from Common import console
 
 CNT = 0
 
@@ -16,7 +16,7 @@ def _debug(func):
     def __wrapper(*args, **kwargs):
         global CNT
         CNT += 1
-        console_write("debug module cmd executed")     # + Progress LED
+        console("debug module cmd executed")     # + Progress LED
         return func(*args, **kwargs)
     return __wrapper
 

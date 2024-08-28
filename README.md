@@ -56,8 +56,8 @@ Access rest api over browser: `http://<nodename>.local`
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
-7. micrOS customization with LMs: [link](./APPLICATION_GUIDE.md)
-8. micrOS gateway with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
+7. micrOS create custom Load Modules: [link](./APPLICATION_GUIDE.md)
+8. micrOS Gateway server with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
 9. Release notes: [link](https://github.com/BxNxM/micrOS/#relese-note)
 
 ----------------------------------------
@@ -208,57 +208,65 @@ It will install your board via USB with default settings. **Continue with micrOS
     - ⏳**Boot phase** - preload Load Module(s)
         - For pinout and last state initialization - based on node_config `boothook`
         - Example values: `rgb load; neopixel load`
+        - Comments `#` can be used: `#rgb load; neopixel load`, excellect for experimentation.
     - 📡**Network handling** - based on node_config 
         - STA / AP network modes, `nwmd`
         - NTP + UTC aka clock setup
           - API: [ip-api.com](http://ip-api.com/json/?fields=lat,lon,timezone,offset)
         - Static IP configuration, `devip`
         - dhcp hostname setup, `devfid`.local
+        - system `uptime` measurement
     - ⚙️**Scheduling / External events** - Interrupt callback - based on node_config 
         - Time based
             - ⌛️simple LM task pool execution `timirq` & `timirqcbf`
                 - `Timer(0)`
+                - Comments `#` can be used in `timirqcbf`
             - 🗓cron [time stump!LM task] pool execution `cron` & `crontasks`
                 - `Timer(1)` 
                 - timestamp: `WD:H:M:S!LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
                     - example: `*:8:0:0!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at 8am every day.
-                    - `WD: 0...6` 0=Monday, 6=Sunday -> optional range handling: 0-2 means Monday to Wednesday
+                    - `WD: 0...6` 0=Monday, 6=Sunday
+                        - optional **range handling**: 0-2 means Monday to Wednesday
                 - tag: `sunset` / `sunrise`
                     - example: `sunset!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at every sunset, every day.
                     - optional minute offset (+/-): sunrise+30
+                - Comments cannot be used in `crontasks`! No multiple commands in this mode!
 
                 - API: [api.sunrise-sunset.org](https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0)
         - 💣Event based
             - Set trigger event `irqX`
                 - Trigger up/down/both `irqX_trig`
                 - With LM callback function `irqX_cbf`
-            - X = 1, 2, 3 or 4
+                - Comments `#` can be used in `irqX_cbf`
+            - `X` can be = 1, 2, 3 or 4
 
-- ⚙️**[L]oad [M]odule** aka **application** handling
+
+- ⚙️**[L]oad [M]odule** aka **application** execution
 	- Lot of built-in functions (table below)
 	- Create your own module with 3 easy steps
 		- Create a python file, naming convention: `LM_<your_app_name>.py`
 			- Replace `<your_app_name>` for anything you prefer!
 		- Write python functions, you can call any function from that module...
-		- Upload modul with "drag&Drop" with help of devToolKit GUI `devToolKit.py`
+		- Upload modul with "drag&Drop" devToolKit GUI `devToolKit.py`
 
 - 📨**ShellCli** - wireless communication interface with the nodes
-	- **System commands**: `help, version, reboot, webrepl, webrepl --update, etc.`
-		- After `webrepl --update` command the micrOS system reboots and waits for ota update in webrepl mode.
+	- **System commands**: `help, version, reboot, modules, webrepl, webrepl --update, etc.`
+		- After `webrepl --update` command the micrOS system reboots and waits for ota update in webrepl mode about 20 seconds.
 	- **Config handling** SET/GET/DUMP - **node_config.json**
 		- enter configuration mode: `conf`
-		- exit configuration mode:`noconf`
 		- Print out all parameters and values: `dump`
+		- exit configuration mode:`noconf`
 	- **LM** - Load Module function execution (application modules)
 		- Example: `system info`
-- 🖇**Logical IO** pinout handling - lookuptables for each board
+- 🖇**microIO** pinout handling - lookuptables for each board
 	- Predefined pinout modules for esp32, tinyPico
 	- Create your pinout based on `IO_esp32.py`, naming convencion: `IO_<name>.py`
 	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
+	- HINT: to get pin number you can get it by pin label, like: `system pinamp`
 
 - 🔄 **Task manager** aka **Async LM jobs**
 	- Capable of execute [L]oad [M]odules in the background 
-	- Invoke with single execution `&` or loop execution `&&`
+	- Invoke with single execution `&` or for loop execution `&&`
 	- Example:
 		- In loop: `system heartbeat &&`
 			- Loop frequency conrol: `system heartbeat &&1000`, it will execute every sec 
@@ -272,6 +280,36 @@ It will install your board via USB with default settings. **Continue with micrOS
 
 - Socket client python plugin - interactive - non interactive mode
 
+----------------------
+
+### Boards and suggestions
+
+There are multiple types of MCU-s (esp32, esp32s3, etc.) available to order, **BUT** to be able to enable **more features** (~2 Load Modules) and **full capable WebUI** interface you need to have more then **190-210kb** of ram (basic boards)(ℹ️).
+
+There is a solution ✅, additinal psram: **~2-4-8Mb** boards are available. It used to name as **psram** or **spiram**, even there is a type **octo-psram**, so check it before buy!!! Psram needs to be **supported on micropython** side as well !!!
+
+**Suggestions - 🔮futureproof hardware:**
+
+**`esp32s3`**: Very fast new espressif module that supports psram detection, so you can freely select any module with this MCU with additinal ram, and micros will work with the best performance, typical ram sizes: **2Mb** (more then enough for everage usage), **4-8Mb** (capacble of image and sound processing tasks and load all GPIO-s 🚀)
+
+**`esp32s3-octo`** Same sa normal psram, just uses 8 pins to connect to the MCU, basically faster...
+
+**`tinypico`** excellet hardware, bit pricy, with 4Mb of ram.
+
+**`esp32cam`** it has a custom image and attached 8Mb of ram.
+
+So prefer boards with more psram 2Mb-8Mb, **minumum requirement for the full flatched setup ~400kb** but smallest psram is **2Mb**, in practive:
+
+- max measured 4Mb is 3.2% 128kb - oled_ui and lot of things loaded...
+- camera stream can use about 50% of ram, that means about 2Mb of ram usage.
+
+ℹ️ With basic 190-210kb of ram you can use the system with ShellCli with no issue, just webUI dashboard cannot be load due to memory limitations...
+
+> Note:
+
+**`esp32`** also can be totally fine with ShellCli, WebCli and 1 load module or multiple modules based on module size... just can be limited by the available memory soonor the later ... (WebCli javascript, htmls are quite small but can be few tens of kilobytes, also multiple async tasks in the background can take same, and roughly around 80% of memory usage system can be instable and restarts.) **So if you have a spare one try out micrOS with a range of features :)**
+
+----------------------
 
 ## Built in periphery support
 

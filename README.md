@@ -303,7 +303,7 @@ So prefer boards with more psram 2Mb-8Mb, **minumum requirement for the full fla
 - max measured 4Mb is 3.2% 128kb - oled_ui and lot of things loaded...
 - camera stream can use about 50% of ram, that means about 2Mb of ram usage.
 
-ℹ️ With basic 190-210kb of ram you can use the system with ShellCli with no issue, just webUI dashboard cannot be load due to memory limitations...
+ℹ️ With basic 190-210kb of ram you can use the system with ShellCli with no issue, just webUI dashboard cannot be load due to memory limitations..., **under 140kb of system ram the system not reliable**, so these boards are not supported.
 
 > Note:
 

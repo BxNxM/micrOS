@@ -13,6 +13,46 @@ except:
 DRY_RUN = False
 
 #####################################
+#         FILE SELECTION TUI        #
+#####################################
+import curses
+
+def select_menu(directory):
+    if not os.path.isdir(directory):
+        print("Not a directory.")
+        return None
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.endswith(".macro")]
+    if not files:
+        print("No macro found in the directory.")
+        return None
+
+    def display_menu(stdscr):
+        curses.curs_set(0)  # Hide the cursor
+        current_row = 0
+        while True:
+            stdscr.clear()
+            stdscr.addstr(0, 0, "Please select a macro:")
+            # Display files with navigation
+            for idx, file in enumerate(files):
+                if idx == current_row:
+                    stdscr.addstr(idx + 1, 2, f"> {file}", curses.A_REVERSE)  # Highlight the current selection
+                else:
+                    stdscr.addstr(idx + 1, 2, f"  {file}")
+            key = stdscr.getch()
+            if key == curses.KEY_UP and current_row > 0:
+                current_row -= 1
+            elif key == curses.KEY_DOWN and current_row < len(files) - 1:
+                current_row += 1
+            elif key == curses.KEY_ENTER or key in [10, 13]:
+                stdscr.clear()
+                #stdscr.addstr(0, 0, f"Macro selected: {files[current_row]}")
+                #stdscr.refresh()
+                #stdscr.getch()  # Wait for another key press before exiting
+                return os.path.join(directory, files[current_row])
+    return curses.wrapper(display_menu)
+
+
+#####################################
 #           HELPER FUNCTIONS        #
 #####################################
 
@@ -56,23 +96,6 @@ def action_console(action, msg):
     message = f"{dr}|  {action} {msg}"
     print(message)
 
-
-def _run_shell_command(command):
-    """Run a command in the detected shell."""
-
-    def detect_shell():
-        """Detect the current shell type."""
-        if platform.system() == "Windows":
-            return os.getenv('ComSpec')  # Typically cmd.exe on Windows
-        else:
-            return os.getenv('SHELL')    # Typically /bin/bash, /bin/zsh, etc. on Unix-like systems
-
-    shell = detect_shell()
-    if not shell:
-        raise EnvironmentError("Could not detect the shell type.")
-    # Execute the command in the detected shell
-    result = subprocess.run(command, shell=True, executable=shell, capture_output=True, text=True)
-    return shell, result
 
 #####################################
 #           MACRO EXECUTOR          #
@@ -154,6 +177,24 @@ class Executor:
         if run_macro:
             self._run_embedded_macro(macro_name, self.workdir, verbose=self.verbose, safe=self.safe_mode, background=self.parallel)
 
+    @staticmethod
+    def _run_shell_command(command):
+        """Run a command in the detected shell."""
+
+        def detect_shell():
+            """Detect the current shell type."""
+            if platform.system() == "Windows":
+                return os.getenv('ComSpec')  # Typically cmd.exe on Windows
+            else:
+                return os.getenv('SHELL')  # Typically /bin/bash, /bin/zsh, etc. on Unix-like systems
+
+        shell = detect_shell()
+        if not shell:
+            raise EnvironmentError("Could not detect the shell type.")
+        # Execute the command in the detected shell
+        result = subprocess.run(command, shell=True, executable=shell, capture_output=True, text=True)
+        return shell, result
+
     def filter_commands(self, cmd):
         cmd = cmd.strip()
         # HANDLE wait COMMAND
@@ -175,7 +216,7 @@ class Executor:
             action_console("SHELL", cmd)
             cmd = ' '.join(cmd.split()[1:])
             try:
-                shell, result = _run_shell_command(cmd)
+                shell, result = self._run_shell_command(cmd)
                 stdout = result.stdout.strip()
                 stderr = "\n" + result.stderr.strip()
                 action_console(" " * 8, f"[{result.returncode}] {shell} {cmd}\n{stdout}{stderr}")
@@ -246,7 +287,12 @@ system clock
             f.write(default_conf)
 
     def run_micro_script(self, path):
-        if not (os.path.exists(path) and path.endswith(".macro")):
+        if os.path.isdir(path):
+            path = select_menu(path)
+            if path is None:
+                action_console("ERR", "Cannot find macro for selection menu")
+                sys.exit(5)
+        if not (os.path.isfile(path) and path.endswith(".macro")):
             print(f"No file was found: {path} or extension is not .macro")
             self.create_template(path)
             return

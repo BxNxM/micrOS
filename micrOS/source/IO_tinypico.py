@@ -9,7 +9,7 @@ wwhite = const(15)		# D15 - warm white [PWM CH4]
 cwhite = const(14)		# D14 - cold white [PWM CH5]
 
 # DIGITAL LED
-neop = const(23)       # D23 - WS2812 - neopixel OneWire bus [PWM]
+neop = const(26)       # D26 - WS2812 - neopixel OneWire bus [PWM]
 
 
 # ACTUATORS
@@ -34,6 +34,7 @@ buzzer = const(18)     # D18 - Buzzer pin - sound generator
 # I2C BUS
 i2c_sda = const(21)    # D22 - data
 i2c_scl = const(22)    # D21 - clock
+trackball_int = const(25)    # D25 - event interrupt
 
 
 # EXTERNAL EVENT IRQ

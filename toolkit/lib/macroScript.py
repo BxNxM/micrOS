@@ -26,6 +26,16 @@ def select_menu(directory):
         print("No macro found in the directory.")
         return None
 
+    def macro_preview(path):
+        with open(path, 'r') as file:
+            # Read the first line
+            first_line = file.readline().strip()
+        preview = ' '.join(first_line.split()[1:])
+        macro_name_len = len(os.path.basename(path))
+        column_idx = 30
+        spacer = " " * (column_idx - macro_name_len)
+        return f"{spacer}{preview}"
+
     def display_menu(stdscr):
         curses.curs_set(0)  # Hide the cursor
         current_row = 0
@@ -35,7 +45,7 @@ def select_menu(directory):
             # Display files with navigation
             for idx, file in enumerate(files):
                 if idx == current_row:
-                    stdscr.addstr(idx + 1, 2, f"> {file}", curses.A_REVERSE)  # Highlight the current selection
+                    stdscr.addstr(idx + 1, 2, f"> {file} {macro_preview(os.path.join(directory, file))}", curses.A_REVERSE)  # Highlight the current selection
                 else:
                     stdscr.addstr(idx + 1, 2, f"  {file}")
             key = stdscr.getch()

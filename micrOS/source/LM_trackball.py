@@ -5,12 +5,12 @@ Based on https://github.com/mchobby/esp8266-upy/blob/master/trackball/lib/trackb
 https://github.com/mchobby/esp8266-upy/blob/master/trackball/examples/test_colorcontrol.py
 """
 
-import time
-import struct
-from machine import I2C, Pin
-from microIO import resolve_pin
+from time import sleep
+from struct import unpack
+from machine import SoftI2C, Pin
+from microIO import resolve_pin, pinmap_search
 from Common import syslog
-from random import randint
+from micropython import schedule
 
 TRACKBALL = None
 
@@ -62,7 +62,7 @@ class Trackball:
         self.action = None
 
         data = self.i2c.readfrom_mem( self.address, REG_CHIP_ID_L, 2 )
-        chip_id = struct.unpack("<H", data)[0]
+        chip_id = unpack("<H", data)[0]
         if chip_id != CHIP_ID:
             raise Exception("Invalid chip ID: 0x{:04X}, expected 0x{:04X}".format(chip_id, CHIP_ID))
         self.enable_interrupt()
@@ -110,7 +110,7 @@ class Trackball:
         if state != self.toggle:
             self.toggle = not self.toggle
             self.action = "center"
-            time.sleep(0.5)     # Avoid bouncing
+            sleep(0.5)     # Avoid bouncing
         else:
             d = {'up': up, 'down': down, 'left': left, 'right': right}
             if sum((abs(i) for i in d.values())) > 0:
@@ -132,43 +132,17 @@ def load(width=100, height=100):
     """
     global TRACKBALL
     if TRACKBALL is None:
-        i2c = I2C(scl=Pin(resolve_pin('i2c_scl')), sda=Pin(resolve_pin('i2c_sda')))
+        i2c = SoftI2C(scl=Pin(resolve_pin('i2c_scl')), sda=Pin(resolve_pin('i2c_sda')))
         TRACKBALL = Trackball(i2c, max_x=width, max_y=height)
         _event_interrupt()
+        TRACKBALL.set_green(10)
     return TRACKBALL
 
 
 def settings():
     "Get simple trackball settings"
     tb = load()
-    return {"width": tb._max_x, "height": tb._max_y, "irq": tb.get_interrupt(), "addr": tb.address}
-
-
-def _event_interrupt():
-    """
-    Handle hange events from trackball
-    """
-    def _callback():
-        # Update trackball data
-        load().read()
-        # Execute callbacks
-        try:
-            for clbk in Trackball.EVENT_LISTENERS:
-                if callable(clbk):
-                    clbk(get())
-        except:
-            syslog("Trackball callback event error")
-
-    try:
-        pin = resolve_pin("trackball_int")
-    except Exception as e:
-        pin = None
-        syslog(f'[ERR] trackball_int IRQ: {e}')
-    if pin:
-        pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
-        # [IRQ] - event type setup
-        pin_obj.irq(trigger=Pin.IRQ_RISING, handler=_callback)
-
+    return {"width": tb._max_x, "height": tb._max_y, "irq": tb.get_interrupt(), "addr": hex(tb.address)}
 
 
 def read():
@@ -176,9 +150,15 @@ def read():
     Read trackball data over i2c
     """
     trackball = load()
-    trackball.read()
-    # Set LEDs
-    trackball.set_rgbw(r=randint(0,100), g=randint(0,100), b=randint(0, 100), w=0)
+    up, down, left, right, switch, switch_state = trackball.read()
+
+    if trackball.action == "center":
+        w_br, x_br, y_br = 50, 0, 0
+    else:
+        w_br = 0
+        x_br = int(100 * (trackball.posx / trackball._max_x))
+        y_br = int(100 * (trackball.posy / trackball._max_y))
+    trackball.set_rgbw(r=y_br, g=3, b=x_br, w=w_br)
 
     return {"X": trackball.posx, "Y": trackball.posy,
             "S": trackball.toggle, "action": trackball.action}
@@ -191,6 +171,31 @@ def get():
     trackball = load()
     return {"X": trackball.posx, "Y": trackball.posy,
             "S": trackball.toggle, "action": trackball.action}
+
+
+def _event_interrupt():
+    """
+    Handle hange events from trackball
+    """
+    def _callback(pin):
+        # Update trackball data
+        read()
+        # Execute callbacks
+        for clbk in Trackball.EVENT_LISTENERS:
+            if callable(clbk):
+                try:
+                    clbk(get())
+                except:
+                    syslog(f"Trackball callback event error: {pin}")
+
+    try:
+        pin = resolve_pin("trackball_int")
+    except Exception as e:
+        pin = None
+        syslog(f'[ERR] trackball_int IRQ: {e}')
+    if pin:
+        pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: schedule(_callback, pin))
 
 
 def subscribe_event(func):

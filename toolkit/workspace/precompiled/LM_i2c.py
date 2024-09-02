@@ -17,7 +17,8 @@ def scan():
     :return list: list of devices
     """
     # https://docs.micropython.org/en/latest/library/machine.I2C.html
-    return __init().scan()
+    devices = [ hex(device) for device in  __init().scan() ]
+    return devices
 
 
 #######################

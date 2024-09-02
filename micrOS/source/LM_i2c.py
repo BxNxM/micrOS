@@ -16,10 +16,24 @@ def scan():
     I2C scan function - experimental
     :return list: list of devices
     """
-    # https://docs.micropython.org/en/latest/library/machine.I2C.html
     devices = [ hex(device) for device in  __init().scan() ]
     return devices
 
+
+def discover():
+    """
+    Discover devices
+    """
+    known_addresses = {hex(0x0A): "trackball", hex(0x3c): "oled"}
+    devices = scan()
+    output = {"unknown": []}
+    for k in devices:
+        if k in known_addresses:
+            device_name = known_addresses[k]
+            output[device_name] = k
+        else:
+            output["unknown"].append(k)
+    return output
 
 #######################
 # LM helper functions #
@@ -42,4 +56,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'scan', 'pinmap'
+    return 'scan', 'discover', 'pinmap'

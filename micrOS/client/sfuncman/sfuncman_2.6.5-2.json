@@ -516,6 +516,10 @@
         }
     },
     "i2c": {
+        "discover": {
+            "doc": "\n    Discover devices\n    ",
+            "param(s)": ""
+        },
         "help": {
             "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    ",
             "param(s)": "widgets=False"

@@ -153,6 +153,10 @@ class I2C:
         console(f"[I2C readfrom_mem] scl: {self.scl} sda: {self.sda} freq: {self.freq} addr: {address} reg: {register} byte: {byte}")
         return b'00000000'
 
+    def scan(self):
+        # Test data: trackball, oled
+        return [0x0A, 0x3c]
+
 
 class I2S:
     MONO = 0

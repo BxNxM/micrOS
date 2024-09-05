@@ -28,7 +28,8 @@ l298dir_2 = const(19)  # D19 - DC motor direction (2)
 l9110dir_1 = const(18) # D18 - DC motor direction (1)
 l9110dir_2 = const(19) # D25 - DC motor direction (2)
 
-buzzer = const(18)     # D18 - Buzzer pin - sound generator
+buzzer = const(33)     # D33 - Buzzer pin - sound generator
+haptic = const(32)     # D32 - Haptic - vibration motor
 
 
 # I2C BUS

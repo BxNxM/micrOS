@@ -37,3 +37,4 @@ LM_ld2410.py
 LM_sound_event.py
 LM_trackball.py
 LM_oledui.py
+LM_haptic.py

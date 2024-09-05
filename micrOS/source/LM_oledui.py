@@ -223,16 +223,16 @@ class HeaderBarFrames:
             display.line(start_x, start_y, end_x, end_y)
         self.cursor_draw()
 
-#################################
-#           PageUI manager      #
-#           (Frame manager)     #
-#################################
+#################################################################################
+#                                    PageUI manager                             #
+#                                    (Frame manager)                            #
+#################################################################################
 
 class PageUI:
     DISPLAY = None
     PAGE_UI_OBJ = None
 
-    def __init__(self, w=128, h=64, page=0, poweroff=None, oled_type='ssd1306', control=None):
+    def __init__(self, w=128, h=64, page=0, poweroff=None, oled_type='ssd1306', control=None, haptic=False):
         """
         :param w: screen width
         :param h: screen height
@@ -254,6 +254,13 @@ class PageUI:
         if control is not None and control.strip() == "trackball":
             from LM_trackball import subscribe_event
             subscribe_event(self._control_clb)
+        self.haptic = None
+        if haptic:
+            try:
+                from LM_haptic import tap
+                self.haptic = tap
+            except Exception as e:
+                syslog(f"[ERR] oledui haptic: {e}")
         self.width = w
         self.height = h
         # Pages
@@ -297,6 +304,8 @@ class PageUI:
         self.cursor.draw()
         # Enable page lift-right scroll when footer is selected
         if Cursor.TAG == 'footer' or force:
+            if callable(self.haptic):
+                self.haptic()
             pages_cnt = len(self.pages)-1
             if action == "next":
                 self.active_page_index += 1
@@ -397,7 +406,7 @@ def _empty_page(display, w, h, x, y):
 #         Public features       #
 #################################
 
-def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff=None):
+def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff=None, haptic=False):
     """
     Create async oled UI
     :param width: screen width in pixels
@@ -405,9 +414,10 @@ def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff
     :param oled_type: sh1106 / ssd1306
     :param control: trackball / None
     :param poweroff: power off after given seconds
+    :param haptic: enable (True) / disable (False) haptic feedbacks (vibration)
     """
     if PageUI.PAGE_UI_OBJ is None:
-        ui = PageUI(width, height, poweroff=poweroff, oled_type=oled_type, control=control)
+        ui = PageUI(width, height, poweroff=poweroff, oled_type=oled_type, control=control, haptic=haptic)
         # Add default pages...
         ui.add_page(page=[_system_page, _intercon_page, _test_page, _empty_page])
         ui.create()         # Header and cursor
@@ -436,7 +446,7 @@ def debug():
 
 def help(widgets=False):
     return resolve(
-        ("load width=128 height=64 oled_type='sh1106/ssd1306' control='trackball' poweroff=None/sec",
+        ("load width=128 height=64 oled_type='sh1106/ssd1306' control='trackball' poweroff=None/sec haptic=False",
                   "BUTTON control cmd=<prev,next,on,off>",
                   "BUTTON debug"),
         widgets=widgets)

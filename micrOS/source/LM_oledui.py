@@ -67,7 +67,7 @@ class Frame(BaseFrame):
         # Pass adjusted useful area
         self.callback(self.display, self.w-2, self.h-2, self.x+1, self.y+1)
         self.display.show()
-        return "Draw frame"
+        return f"Draw {self._taskid} frame"
 
     async def _task(self, period_ms):
         """
@@ -223,6 +223,49 @@ class HeaderBarFrames:
             display.line(start_x, start_y, end_x, end_y)
         self.cursor_draw()
 
+class AppFrame(Frame):
+    PAGES = []
+
+    def __init__(self,  display, cursor_draw, width, height, x=0, y=0, tag="app", page=0):
+        super().__init__(display, None, width, height, x=x, y=y, tag=tag)
+        self.active_page_index = page
+        self.cursor_draw = cursor_draw
+        self.callback = self.application
+
+    def application(self, display, width, height, x=0, y=0):
+        if len(AppFrame.PAGES) > 0:
+            page = AppFrame.PAGES[self.active_page_index]
+            # Pass adjusted useful area
+            # TODO: check if page is async... (advanced task embedding)
+            try:
+                page(display, width, height, x, y)
+            except Exception as e:
+                display.text(e, x, y)
+        self.cursor_draw()
+
+    @staticmethod
+    def add_page(page):
+        if callable(page):
+            AppFrame.PAGES.append(page)     # add single page
+            return True
+        if isinstance(page, list):
+            AppFrame.PAGES += page          # add list of pages
+            return True
+        return False
+
+    def next(self):
+        pages_cnt = len(AppFrame.PAGES) - 1
+        self.active_page_index += 1
+        if self.active_page_index > pages_cnt:
+            self.active_page_index = 0
+
+    def previous(self):
+        pages_cnt = len(AppFrame.PAGES) - 1
+        self.active_page_index -= 1
+        if self.active_page_index < 0:
+            self.active_page_index = pages_cnt
+
+
 #################################################################################
 #                                    PageUI manager                             #
 #                                    (Frame manager)                            #
@@ -263,13 +306,11 @@ class PageUI:
                 syslog(f"[ERR] oledui haptic: {e}")
         self.width = w
         self.height = h
-        # Pages
-        self.pages = []
-        self.active_page_index = page
+        self.timer = poweroff
         # Store persistent frame objects
         self.cursor = None
         self.header_bar = None
-        self.timer = poweroff
+        self.app_frame = None
         self.page_bar = None
         # Save
         PageUI.PAGE_UI_OBJ = self
@@ -280,7 +321,9 @@ class PageUI:
         self.DISPLAY.show()
         self.cursor = Cursor(PageUI.DISPLAY, width=2, height=2, x=0, y=0)
         self.header_bar = HeaderBarFrames(PageUI.DISPLAY, timer=self.timer, cursor_draw=self.cursor.draw)
-        self.page_bar = self.pageFrame()
+        self.app_frame = AppFrame(PageUI.DISPLAY, self.cursor.draw, width=self.width, height=self.height-15, x=0, y=self.height-54)
+        self.app_frame.run("page", period_ms=900)
+        self.page_bar = self.pageBar()
 
     def _control_clb(self, params):
         """
@@ -306,26 +349,21 @@ class PageUI:
         if Cursor.TAG == 'footer' or force:
             if callable(self.haptic):
                 self.haptic()
-            pages_cnt = len(self.pages)-1
             if action == "next":
-                self.active_page_index += 1
-                if self.active_page_index > pages_cnt:
-                    self.active_page_index = 0
+                self.app_frame.next()
             if action == "prev":
-                self.active_page_index -= 1
-                if self.active_page_index < 0:
-                    self.active_page_index = pages_cnt
-            self.page_bar.draw()
+                self.app_frame.previous()
         if action == "off":
             Frame.pause_all()
             self.DISPLAY.poweroff()
         if action == "on":
             Frame.resume_all()
             self.DISPLAY.poweron()
+        self.page_bar.draw()
 
-    def pageFrame(self):
+    def pageBar(self):
         def page_indicator(display, w, h, x, y):
-            page_cnt = len(self.pages)
+            page_cnt = len(AppFrame.PAGES)
             plen = int(round(w / page_cnt))
             """
             # Draw page indicators
@@ -333,7 +371,7 @@ class PageUI:
                 display.rect(x+p, y, plen, h)
             """
             # Draw active page indicator
-            display.rect(x+self.active_page_index*plen+1, y+1, plen-2, h-2, fill=True)
+            display.rect(x+self.app_frame.active_page_index*plen+1, y+1, plen-2, h-2, fill=True)
             self.cursor.draw()
 
         page_bar = Frame(self.DISPLAY, page_indicator, width=self.width, height=5, x=0, y=self.height-5, tag="footer")
@@ -341,21 +379,9 @@ class PageUI:
         #page_bar.run("pagebar", 1000)
         return page_bar
 
-    def page_task(self):
-        def run(display, w, h, x, y):
-            if len(self.pages) > 0:
-                page = self.pages[self.active_page_index]
-                page(display, w, h, x, y)
-                self.cursor.draw()
-
-        app_frame = Frame(self.DISPLAY, run, width=self.width, height=self.height-15, x=0, y=self.height-54)
-        app_frame.run("page", period_ms=900)
-
-    def add_page(self, page):
-        if callable(page):
-            self.pages.append(page)     # add single page
-        elif isinstance(page, list):
-            self.pages += page          # add list of pages
+    @staticmethod
+    def add_page(page):
+        return AppFrame.add_page(page)
 
 
 #################################
@@ -419,9 +445,8 @@ def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff
     if PageUI.PAGE_UI_OBJ is None:
         ui = PageUI(width, height, poweroff=poweroff, oled_type=oled_type, control=control, haptic=haptic)
         # Add default pages...
-        ui.add_page(page=[_system_page, _intercon_page, _test_page, _empty_page])
-        ui.create()         # Header and cursor
-        ui.page_task()
+        ui.add_page([_system_page, _intercon_page, _test_page, _empty_page])
+        ui.create()         # Header(4), AppPage(1), PagerIndicator
         return "PageUI was created"
     return "PageUI was already created"
 
@@ -433,8 +458,11 @@ def control(cmd="next"):
     return f"Unknown action: {cmd}"
 
 
-def popup(msg):
-    # TODO
+def msgbox(msg='micrOS msg'):
+    """
+    POP-UP message function
+    :param msg: message string
+    """
     pass
 
 
@@ -445,6 +473,10 @@ def debug():
 
 
 def help(widgets=False):
+    """
+    New generation of oled_ui
+    - with async frames
+    """
     return resolve(
         ("load width=128 height=64 oled_type='sh1106/ssd1306' control='trackball' poweroff=None/sec haptic=False",
                   "BUTTON control cmd=<prev,next,on,off>",

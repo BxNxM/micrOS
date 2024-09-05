@@ -1023,6 +1023,10 @@
         }
     },
     "oledui": {
+        "add_page": {
+            "doc": "module 'LM_oledui' has no attribute 'add_page'",
+            "param(s)": "page"
+        },
         "control": {
             "doc": null,
             "param(s)": "cmd=\"next\""
@@ -1032,13 +1036,17 @@
             "param(s)": ""
         },
         "help": {
-            "doc": null,
+            "doc": "\n    New generation of oled_ui\n    - with async frames\n    ",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true",
         "load": {
             "doc": "\n    Create async oled UI\n    :param width: screen width in pixels\n    :param height: screen height in pixels\n    :param oled_type: sh1106 / ssd1306\n    :param control: trackball / None\n    :param poweroff: power off after given seconds\n    :param haptic: enable (True) / disable (False) haptic feedbacks (vibration)\n    ",
             "param(s)": "width=128 height=64 oled_type=\"sh1106\" control='trackball' poweroff=None haptic=False"
+        },
+        "msgbox": {
+            "doc": "\n    POP-UP message function\n    :param msg: message string\n    ",
+            "param(s)": "msg='micrOS msg'"
         },
         "page_indicator": {
             "doc": "module 'LM_oledui' has no attribute 'page_indicator'",
@@ -1048,17 +1056,9 @@
             "doc": "module 'LM_oledui' has no attribute 'pause_all'",
             "param(s)": ""
         },
-        "popup": {
-            "doc": null,
-            "param(s)": "msg"
-        },
         "resume_all": {
             "doc": "module 'LM_oledui' has no attribute 'resume_all'",
             "param(s)": ""
-        },
-        "run": {
-            "doc": "module 'LM_oledui' has no attribute 'run'",
-            "param(s)": "display w h x y"
         }
     },
     "pet_feeder": {

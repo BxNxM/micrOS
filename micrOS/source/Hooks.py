@@ -23,6 +23,10 @@ from Debug import console_write
 from Tasks import exec_lm_pipe
 from micropython import mem_info
 from machine import freq
+try:
+    from gc import mem_free
+except:
+    from simgc import mem_free
 
 #################################################################
 #                          FUNCTIONS                            #
@@ -58,6 +62,22 @@ def bootup():
             freq(80_000_000)   # 80 Mhz / Half the max CPU clock
         elif 'esp32' in platform:
             freq(160_000_000)   # 160 Mhz / Half the max CPU clock
+    # Autotune queue size
+    tune_queue_size()
+
+
+def tune_queue_size():
+    """
+    Tune queue size based on available ram
+    between 5-50
+    """
+    min_queue, max_queue, task_req_kb = 5, 20, 20       # 400kb max for tasks management
+    est_queue = int(mem_free()/1000/task_req_kb)
+    est_queue = max(est_queue, min_queue)
+    est_queue = min(est_queue, max_queue)
+    current_queue = cfgget('aioqueue')
+    if est_queue > current_queue:
+        cfgput('aioqueue', est_queue)
 
 
 def profiling_info(label=""):

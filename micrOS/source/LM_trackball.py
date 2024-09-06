@@ -51,7 +51,14 @@ MSK_CTRL_FWRITE = 0b00001000
 class Trackball:
     EVENT_LISTENERS = []
 
-    def __init__(self, i2c, address=0x0A, max_x=100, max_y=100, sensivity=1, upscale=2):
+    def __init__(self, i2c, address=0x0A, max_x=100, max_y=100, irq_sampling=1, sensitivity=2):
+        """
+        :param address: i2c device address
+        :param max_x: maximum value of x
+        :param max_y: maximum value of y
+        :param irq_sampling: max irq callback trigger sampling in time [ms]
+        :param sensitivity: xy window for irq trigger sampling in pixel, default: 2
+        """
         self.address = address
         self.i2c = i2c
         self._max_x = max_x
@@ -60,8 +67,8 @@ class Trackball:
         self.posy = 0
         self.toggle = False
         self.action = None
-        self.sensivity = sensivity
-        self.upscale = upscale
+        self.irq_sampling = irq_sampling
+        self.sensitivity = sensitivity
         self._last_event = ticks_ms()
         self._last_event_coords = (self.posx, self.posy)
 
@@ -114,34 +121,42 @@ class Trackball:
             y_br = int(100 * (self.posy / self._max_y))
         self.set_rgbw(r=y_br, g=3, b=x_br, w=w_br)
 
-    def detection_block(self, window=5):
-        window = window*self.upscale
+    def _detection_block(self):
+        window = self.sensitivity
         # Experimental - dymaic sampling time sensitivity...
         last_x, last_y = self._last_event_coords
         if abs(self.posx - last_x) > window or abs(self.posy - last_y) > window:
+            # Out of window - detect
             return True
+        # Inside window - ignore
         return False
 
-    def _state_machine(self, up, down, left, right, state):
+    def _compose_action(self, up, down, left, right, state):
+        if state != self.toggle:
+            self.toggle = not self.toggle
+            self.action = "press"
+            sleep(0.2)  # Avoid bouncing
+        else:
+            directions = {'up': up, 'down': down, 'left': left, 'right': right}
+            # detect change - non trigger based calls
+            if sum((abs(i) for i in directions.values())) > 0:
+                self.action = max(directions, key=directions.get)
+
+
+    def _update_states(self, up, down, left, right, state):
         # Update cursor positions
         change_x = (right - left)
         change_y = (up - down)
-        self.posx += change_x * self.upscale
-        self.posy += change_y * self.upscale
-        self.posx = max(0, min(self.posx, self._max_x))
-        self.posy = max(0, min(self.posy, self._max_y))
+        posx = self.posx + change_x
+        posy = self.posy + change_y
+        self.posx = max(0, min(posx, self._max_x))
+        self.posy = max(0, min(posy, self._max_y))
         # Check sensitivity
         delta_t = ticks_diff(ticks_ms(), self._last_event)
-        if delta_t > self.sensivity or detection_block():
+        # [!!!] timebox and sensitivity block check
+        if delta_t > self.irq_sampling or self._detection_block():
             self._last_event = ticks_ms()
-            if state != self.toggle:
-                self.toggle = not self.toggle
-                self.action = "press"
-                sleep(0.2)     # Avoid bouncing
-            else:
-                d = {'up': up, 'down': down, 'left': left, 'right': right}
-                if sum((abs(i) for i in d.values())) > 0:
-                    self.action = max(d, key=d.get)
+            self._compose_action(up, down, left, right, state)
             self._last_event_coords = self.posx, self.posy
             return True
         return False
@@ -151,38 +166,41 @@ class Trackball:
         data = self.i2c.readfrom_mem( self.address, REG_LEFT, 5 )
         left, right, up, down, switch = data[0], data[1], data[2], data[3], data[4]
         switch, switch_state = switch & (0xFF ^ MSK_SWITCH_STATE), (switch & MSK_SWITCH_STATE)==MSK_SWITCH_STATE
-        trigger = self._state_machine(up, down, left, right, switch_state)
+        trigger = self._update_states(up, down, left, right, switch_state)
         return up, down, left, right, switch, switch_state, trigger
 
 
 
-def load(width=100, height=100, sensivity=20, reload=False):
+def load(width=100, height=100, irq_sampling=100, sensitivity=5, reload=False):
     """
     Load Pimoroni trackball
     :param width: canvas pixel width
     :param height: canvas pixel height
-    :param sensivity: trackball sensivity in ms
+    :param irq_sampling: trackball irq_sampling in ms
+    :param sensitivity: xy window for irq trigger sampling in pixel
     :param reload: recreate trackball instance
     """
     global TRACKBALL
     if TRACKBALL is None or reload:
         i2c = SoftI2C(scl=Pin(resolve_pin('i2c_scl')), sda=Pin(resolve_pin('i2c_sda')))
-        TRACKBALL = Trackball(i2c, max_x=width, max_y=height, sensivity=sensivity)
-        _event_interrupt()
+        TRACKBALL = Trackball(i2c, max_x=width, max_y=height, irq_sampling=irq_sampling, sensitivity=sensitivity)
+        _craft_event_interrupt()
         TRACKBALL.set_green(10)
     return TRACKBALL
 
 
-def settings(sensivity=None):
+def settings(irq_sampling=None, sensitivity=None):
     """
     Get simple trackball settings
-    :param sensivity: optional param, change sensivity ms
+    :param irq_sampling: optional param, change irq_sampling ms
     """
     tb = load()
-    if isinstance(sensivity, int):
-        tb.sensivity = sensivity
+    if isinstance(irq_sampling, int):
+        tb.irq_sampling = irq_sampling
+    if isinstance(sensitivity, int):
+        tb.sensitivity = sensitivity
     return {"width": tb._max_x, "height": tb._max_y, "irq": tb.get_interrupt(),
-            "addr": hex(tb.address), "sensivity": tb.sensivity}
+            "addr": hex(tb.address), "irq_sampling": tb.irq_sampling, "sensitivity": tb.sensitivity}
 
 
 def read():
@@ -206,7 +224,7 @@ def get():
             "S": trackball.toggle, "action": trackball.action}
 
 
-def _event_interrupt():
+def _craft_event_interrupt():
     """
     Handle hange events from trackball
     """
@@ -253,4 +271,4 @@ def pinmap():
 
 
 def help():
-    return "load width=100 height=100 sensivity=20", "read", "get", "settings sensivity=None", "pinmap"
+    return "load width=100 height=100 irq_sampling=20", "read", "get", "settings irq_sampling=None", "pinmap"

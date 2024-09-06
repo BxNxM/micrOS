@@ -1,4 +1,4 @@
-from utime import localtime
+from utime import localtime, ticks_ms, ticks_diff
 import uasyncio as asyncio
 from network import WLAN, STA_IF
 from Common import syslog, micro_task
@@ -227,10 +227,9 @@ class AppFrame(Frame):
     PAGES = []
 
     def __init__(self,  display, cursor_draw, width, height, x=0, y=0, tag="app", page=0):
-        super().__init__(display, None, width, height, x=x, y=y, tag=tag)
         self.active_page_index = page
         self.cursor_draw = cursor_draw
-        self.callback = self.application
+        super().__init__(display, self.application, width, height, x=x, y=y, tag=tag)
 
     def application(self, display, width, height, x=0, y=0):
         if len(AppFrame.PAGES) > 0:
@@ -265,6 +264,23 @@ class AppFrame(Frame):
         if self.active_page_index < 0:
             self.active_page_index = pages_cnt
 
+class PageBarFrame(Frame):
+
+    def __init__(self,  display, cursor_draw, app_frame, width, height=5, x=0, y=0, tag="footer"):
+        self.cursor_draw = cursor_draw
+        self.app_frame = app_frame
+        super().__init__(display, self._page_indicator, width, height, x=x, y=y, tag=tag)
+        self._trigger_limit_ms = 100
+
+    def _page_indicator(self, display, w, h, x, y):
+        if callable(PageUI.HAPTIC):
+            PageUI.HAPTIC()
+        page_cnt = len(AppFrame.PAGES)
+        plen = int(round(w / page_cnt))
+        # Draw active page indicator
+        display.rect(x+self.app_frame.active_page_index*plen+1, y+1, plen-2, h-2, fill=True)
+        self.cursor_draw()
+
 
 #################################################################################
 #                                    PageUI manager                             #
@@ -274,6 +290,7 @@ class AppFrame(Frame):
 class PageUI:
     DISPLAY = None
     PAGE_UI_OBJ = None
+    HAPTIC = None
 
     def __init__(self, w=128, h=64, page=0, poweroff=None, oled_type='ssd1306', control=None, haptic=False):
         """
@@ -297,16 +314,16 @@ class PageUI:
         if control is not None and control.strip() == "trackball":
             from LM_trackball import subscribe_event
             subscribe_event(self._control_clb)
-        self.haptic = None
         if haptic:
             try:
                 from LM_haptic import tap
-                self.haptic = tap
+                PageUI.HAPTIC = tap
             except Exception as e:
                 syslog(f"[ERR] oledui haptic: {e}")
         self.width = w
         self.height = h
         self.timer = poweroff
+        self._last_page_switch = ticks_ms()
         # Store persistent frame objects
         self.cursor = None
         self.header_bar = None
@@ -319,11 +336,15 @@ class PageUI:
     def create(self):
         self.DISPLAY.text("Boot UI", 36, 28)
         self.DISPLAY.show()
+        # Create managed frames
         self.cursor = Cursor(PageUI.DISPLAY, width=2, height=2, x=0, y=0)
         self.header_bar = HeaderBarFrames(PageUI.DISPLAY, timer=self.timer, cursor_draw=self.cursor.draw)
-        self.app_frame = AppFrame(PageUI.DISPLAY, self.cursor.draw, width=self.width, height=self.height-15, x=0, y=self.height-54)
+        self.app_frame = AppFrame(PageUI.DISPLAY, self.cursor.draw, width=self.width,
+                                  height=self.height-15, x=0, y=self.height-54)
         self.app_frame.run("page", period_ms=900)
-        self.page_bar = self.pageBar()
+        self.page_bar = PageBarFrame(PageUI.DISPLAY, self.cursor.draw, self.app_frame,
+                                     width=self.width, height=5, x=0, y=self.height-5)
+        self.page_bar.draw()
 
     def _control_clb(self, params):
         """
@@ -332,9 +353,9 @@ class PageUI:
         """
         action = params.get('action', None)
         if action is not None:
-            x, y = params['X'], self.height-params['Y']                         # invert Y axes
+            x, y = params['X'], self.height-params['Y']     # invert Y axes
             self.cursor.update(x, y)
-            lut = {"right": "next", "left": "prev"}
+            lut = {"right": "next", "left": "prev"}         # Convert trackball output to control command
             self.control(lut.get(action, action))
             self.DISPLAY.show()
 
@@ -342,51 +363,35 @@ class PageUI:
         # Wake on action
         if Frame.HIBERNATE:
             Frame.resume_all()
+            if callable(PageUI.HAPTIC):
+                PageUI.HAPTIC()
             self.DISPLAY.poweron()
         self.header_bar.reset_timer()
         self.cursor.draw()
         # Enable page lift-right scroll when footer is selected
         if Cursor.TAG == 'footer' or force:
-            if callable(self.haptic):
-                self.haptic()
-            if action == "next":
-                self.app_frame.next()
-            if action == "prev":
-                self.app_frame.previous()
+            delta_t = ticks_diff(ticks_ms(), self._last_page_switch)
+            if delta_t > 200:       # Check page switch frequency - max 150ms
+                self._last_page_switch = ticks_ms()
+                if action == "next":
+                    self.app_frame.next()
+                if action == "prev":
+                    self.app_frame.previous()
+                self.page_bar.draw()
         if action == "off":
             Frame.pause_all()
             self.DISPLAY.poweroff()
         if action == "on":
             Frame.resume_all()
             self.DISPLAY.poweron()
-        self.page_bar.draw()
-
-    def pageBar(self):
-        def page_indicator(display, w, h, x, y):
-            page_cnt = len(AppFrame.PAGES)
-            plen = int(round(w / page_cnt))
-            """
-            # Draw page indicators
-            for p in range(0, w, plen):
-                display.rect(x+p, y, plen, h)
-            """
-            # Draw active page indicator
-            display.rect(x+self.app_frame.active_page_index*plen+1, y+1, plen-2, h-2, fill=True)
-            self.cursor.draw()
-
-        page_bar = Frame(self.DISPLAY, page_indicator, width=self.width, height=5, x=0, y=self.height-5, tag="footer")
-        page_bar.draw()
-        #page_bar.run("pagebar", 1000)
-        return page_bar
 
     @staticmethod
     def add_page(page):
         return AppFrame.add_page(page)
 
-
-#################################
-#           Default pages       #
-#################################
+#################################################################################
+#                                     Page function                             #
+#################################################################################
 
 def _system_page(display, w, h, x, y):
     """
@@ -428,9 +433,9 @@ def _test_page(display, w, h, x, y):
 def _empty_page(display, w, h, x, y):
     pass
 
-#################################
-#         Public features       #
-#################################
+#################################################################################
+#                                  Public functions                             #
+#################################################################################
 
 def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff=None, haptic=False):
     """

@@ -1,12 +1,10 @@
-from utime import localtime, ticks_ms, ticks_diff
+from utime import localtime, ticks_ms, ticks_diff, sleep_ms
 import uasyncio as asyncio
 from network import WLAN, STA_IF
 from Common import syslog, micro_task, manage_task
-from Network import ifconfig
-from Config import cfgget
 from Types import resolve
-
-from LM_system import top, memory_usage
+from Config import cfgget
+from LM_system import top, memory_usage, ifconfig
 
 try:
     import LM_intercon as InterCon
@@ -40,9 +38,10 @@ class BaseFrame:
 
     def select(self, x, y):
         """Select frame based on x,x aka cursor"""
-        if self.x <= x <= self.x + self.w and self.y-1 <= y < self.y-1 + self.h:
-            self.selected = True
-            self.display.rect(x=self.x, y=self.y, w=self.w, h=self.h, state=1, fill=False)
+        if self.x <= x <= self.x + self.w+1 and self.y <= y <= self.y + self.h:
+            if not self.selected:
+                self.selected = True
+                self.display.rect(x=self.x, y=self.y, w=self.w, h=self.h, state=1, fill=False)
         else:
             self.selected = False
         return self.selected
@@ -166,11 +165,13 @@ class Cursor(BaseFrame):
 
     def __init__(self, display, width, height, x=0, y=0):
         super().__init__(display, width, height, x, y)
-        self.pos_xy = (0, 0)
+        self.pos_xy = (x, y)
 
     def draw(self):
         x, y = self.pos_xy
-        self.display.rect(x-1, y+1, 2, 2, 1)  # draw new cursor
+        new_x = x if x-1 < 0 else x-1
+        new_y = y+1
+        self.display.rect(new_x, new_y, 2, 2, 1)  # draw new cursor
         self.display.show()
 
     def update(self, x, y):
@@ -182,10 +183,15 @@ class Cursor(BaseFrame):
         self.clean()
         self.pos_xy = (x, y)
         for frame in Frame.FRAMES:
-            if frame.select(x, y):
+            if frame.select(x, y):          # select/deselect frame based on coordinates
                 # Frame was found
                 if frame.tag != Cursor.TAG:
                     # Change event
+                    if Cursor.TAG == "footer" and PageBarFrame.INSTANCE:
+                        # Leave footer event - clean selection
+                        PageBarFrame.INSTANCE.selected = False
+                        PageBarFrame.INSTANCE.draw()
+                    # Update TAG
                     Cursor.TAG = frame.tag
                     has_hover = frame.hover()
                     if not has_hover:
@@ -210,7 +216,7 @@ class HeaderBarFrames:
         time_frame = Frame(self.display, self._time, width=66, height=10, x=32, y=0, tag="time")
         time_frame.run("time", period_ms=1000)
         # Create header: cpu,mem metrics
-        cpu_mem_frame = Frame(self.display, self._cpu_mem, width=10, height=10, x=118, y=0, tag="cpu_mem",
+        cpu_mem_frame = Frame(self.display, self._cpu_mem, width=12, height=10, x=116, y=0, tag="cpu_mem",
                               hover_clb=self._cpu_mem_hover)
         cpu_mem_frame.run('cpu_mem', period_ms=2100)
         # Create header: wifi rssi
@@ -268,9 +274,9 @@ class HeaderBarFrames:
         cpu = 100 if cpu > 100 else cpu  # limit cpu overload in visualization
         mem = sys_usage.get('Mem usage [%]', 100)
         _cpu_limit, _mem_limit = cpu > 90, mem > 70  # fill indicator (limit)
-        _cpu, _mem = int(h * (cpu / 100)), int(h * (mem / 100))
+        _cpu, _mem = int(h * (cpu / 100))+1, int(h * (mem / 100))+1
         width = int((w-2)/2)
-        y_base = y+h+1
+        y_base = y+h
         spacer = 3
         display.rect(x, y_base-_cpu, w=width, h=_cpu, fill=_cpu_limit)  # cpu usage indicator
         display.rect(x+width+spacer, y_base-_mem, w=width, h=_mem, fill=_mem_limit)  # memory usage indicator
@@ -299,12 +305,12 @@ class HeaderBarFrames:
 
     def _rssi(self, display, w, h, x, y):
         # Built-in: _rssi widget frame
-        x = min(x-1, 0)
+        x = min(x-1, 0)                     # visual offset in start_x
         rssi_ratio, _ = self.__rssi_into()
         # Top level line indicator
         display.line(x, y, x+w, y)
         # Calculate lines
-        start_line_y = y+h
+        start_line_y = y+h-1
         end_line_y = y + int(h*(1-rssi_ratio))
         for y_index in range(start_line_y, end_line_y, -1):
             end_x = x + min(w, w-int(w*(y_index/start_line_y))+1)
@@ -362,12 +368,14 @@ class AppFrame(Frame):
 
 
 class PageBarFrame(Frame):
+    INSTANCE = None
 
     def __init__(self,  display, cursor_draw, app_frame, width, height=5, x=0, y=0, tag="footer"):
         super().__init__(display, self._page_indicator, width, height, x=x, y=y, tag=tag)
         self.cursor_draw = cursor_draw
         self.app_frame = app_frame
         self._trigger_limit_ms = 100
+        PageBarFrame.INSTANCE = self
 
     def _page_indicator(self, display, w, h, x, y):
         if callable(PageUI.HAPTIC):
@@ -397,21 +405,23 @@ class PopUpFrame(BaseFrame):
 
     def _draw_icon(self):
         # Frame
-        #self.display.rect(self._inner_x, self._inner_y, self._inner_w, self._inner_h)
+        if DEBUG:
+            self.display.rect(self._inner_x, self._inner_y, self._inner_w, self._inner_h)
         # Info sign
-        x = self._inner_x+self._inner_w-8
+        x = self._inner_x+2
         y_dot = self._inner_y+4
         y_base = y_dot+8
         width = 6
         self.display.rect(x, y_dot, width, 6, fill=1)         # .
-        self.display.rect(x, y_base, width, 12, fill=1)       # i
+        self.display.rect(x, y_base, width, 14, fill=1)       # i
 
     def draw(self):
         """Draw callback"""
         self.clean()
         self._draw_icon()
         if callable(self.callback):
-            self.callback(self.display, self._inner_w, self._inner_h, self._inner_x, self._inner_y)
+            text_x_offset = 15
+            self.callback(self.display, self._inner_w, self._inner_h, self._inner_x+text_x_offset, self._inner_y+4)
         self.display.show()
         self.cursor_draw()
         return f"Draw {self._taskid} frame"
@@ -436,6 +446,7 @@ class PopUpFrame(BaseFrame):
         # Draw message
         chunk_size = 13
         char_height= 10
+        text_x_offset = 15
         # Format message: fitting and \n parsing
         msg = msg.split('\n')
         chunks = [line[i:i + chunk_size] for line in msg for i in range(0, len(line), chunk_size)]
@@ -443,7 +454,7 @@ class PopUpFrame(BaseFrame):
             if i > 2:   # max 3 lines of 13 char
                 break
             line_start_y = 4+ char_height * i
-            self.display.text(line, self._inner_x, self._inner_y + line_start_y)
+            self.display.text(line, self._inner_x+text_x_offset, self._inner_y + line_start_y)
         self.display.show()
         return f"Draw textbox frame"
 
@@ -494,8 +505,8 @@ class PageUI:
                 PageUI.HAPTIC = tap
             except Exception as e:
                 syslog(f"[ERR] oledui haptic: {e}")
-        self.width = w
-        self.height = h
+        self.width = w-1            # 128 -> 0-127: Good for xy calculation, but absolut width+1 needed!
+        self.height = h-1           # 64 -> 0-63: Good for xy calculation, but absolut width+1 needed!
         self.page = page
         self.timer = poweroff
         self._last_page_switch = ticks_ms()
@@ -509,20 +520,28 @@ class PageUI:
         PageUI.INSTANCE = self
         self.DISPLAY.clean()
 
+    def _boot_msg(self):
+        start_x = 24
+        start_y = 28
+        msg = "Loading..."
+        for i in range(0, len(msg)):
+            self.DISPLAY.text(msg[0:i+1], start_x, start_y)
+            self.DISPLAY.show()
+            sleep_ms(100)
+
     def create(self):
-        self.DISPLAY.text("Boot UI", 36, 28)
-        self.DISPLAY.show()
+        self._boot_msg()
         # Create managed frames
-        self.cursor = Cursor(PageUI.DISPLAY, width=2, height=2, x=0, y=0)
+        self.cursor = Cursor(PageUI.DISPLAY, width=2, height=2, x=0, y=self.height)
         self.header_bar = HeaderBarFrames(PageUI.DISPLAY, timer=self.timer, cursor_draw=self.cursor.draw)
-        self.app_frame = AppFrame(PageUI.DISPLAY, self.cursor.draw, width=self.width,
-                                  height=self.height-15, x=0, y=self.height-54, page=self.page)
+        self.app_frame = AppFrame(PageUI.DISPLAY, self.cursor.draw, width=self.width+1,
+                                  height=self.height-15, x=0, y=self.height-53, page=self.page)
         self.app_frame.run("page", period_ms=900)
         self.page_bar = PageBarFrame(PageUI.DISPLAY, self.cursor.draw, self.app_frame,
-                                     width=self.width, height=5, x=0, y=self.height-5)
+                                     width=self.width+1, height=6, x=0, y=self.height-5)
         self.page_bar.draw()
-        self.popup = PopUpFrame(PageUI.DISPLAY, self.cursor.draw, self.app_frame, width=self.width,
-                                  height=self.height-15, x=0, y=self.height-54)
+        self.popup = PopUpFrame(PageUI.DISPLAY, self.cursor.draw, self.app_frame, width=self.width+1,
+                                  height=self.height-15, x=0, y=self.height-53)
 
     def _control_clb(self, params):
         """
@@ -584,8 +603,9 @@ def _system_page(display, w, h, x, y):
     """
     System basic information page
     """
+    devip = ifconfig()[1][0]
     display.text(cfgget("devfid"), x, y+5)
-    display.text(f"  {ifconfig()[1][0]}", x, y+15)
+    display.text(f"  {devip}", x, y+15)
     display.text(f"  V: {cfgget('version')}", x, y+25)
     return True
 
@@ -609,11 +629,6 @@ def _intercon_page(display, w, h, x, y):
     return True
 
 
-def _test_page(display, w, h, x, y):
-    offset = 4
-    display.rect(x+offset, y+offset, w-(offset*2), h-(offset*2))
-
-
 def _empty_page(display, w, h, x, y):
     pass
 
@@ -634,7 +649,7 @@ def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff
     if PageUI.INSTANCE is None:
         ui = PageUI(width, height, poweroff=poweroff, oled_type=oled_type, control=control, haptic=haptic)
         # Add default pages...
-        ui.add_page([_system_page, _intercon_page, _test_page, _empty_page])
+        ui.add_page([_system_page, _intercon_page, _empty_page])
         ui.create()         # Header(4), AppPage(1), PagerIndicator
         return "PageUI was created"
     return "PageUI was already created"
@@ -656,6 +671,16 @@ def popup(msg='micrOS msg'):
     return PageUI.INSTANCE.popup.textbox(msg)
 
 
+def cursor(x, y):
+    """
+    Virtual cursor
+    :param x: x coordinate
+    :param y: y coordinate
+    """
+    PageUI.INSTANCE.cursor.update(x, y)
+    return "Set cursor position"
+
+
 def cancel_popup():
     return PageUI.INSTANCE.popup.cancel()
 
@@ -674,5 +699,6 @@ def help(widgets=False):
     return resolve(
         ("load width=128 height=64 oled_type='sh1106/ssd1306' control='trackball' poweroff=None/sec haptic=False",
                   "BUTTON control cmd=<prev,next,on,off>",
-                  "BUTTON debug", "popup msg='text'", "cancel_popup"),
+                  "BUTTON debug", "cursor x y",
+                  "popup msg='text'", "cancel_popup"),
         widgets=widgets)

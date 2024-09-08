@@ -171,7 +171,7 @@ class Trackball:
 
 
 
-def load(width=100, height=100, irq_sampling=100, sensitivity=5, reload=False):
+def load(width=100, height=100, irq_sampling=50, sensitivity=5, reload=False):
     """
     Load Pimoroni trackball
     :param width: canvas pixel width
@@ -228,10 +228,9 @@ def _craft_event_interrupt():
     """
     Handle hange events from trackball
     """
-    def _callback(pin):
-        # Update trackball data
-        trackball = load()
-        up, down, left, right, switch, switch_state, trigger = trackball.read()
+
+    def _inner_callback(args):
+        trigger, trackball = args[0], args[1]
         if trigger:
             trackball.auto_color()
             # Execute callbacks
@@ -242,6 +241,16 @@ def _craft_event_interrupt():
                     except:
                         syslog(f"Trackball callback event error: {pin}")
 
+    def _callback(pin):
+        # Update trackball data - handle event!
+        trackball = load()
+        up, down, left, right, switch, switch_state, trigger = trackball.read()
+        # Schedule user callbacks
+        try:
+            schedule(_inner_callback, (trigger, trackball))
+        except Exception as e:
+            syslog(f"[ERR] Trackball user callback: {e}")
+
     try:
         pin = resolve_pin("trackball_int")
     except Exception as e:
@@ -249,12 +258,12 @@ def _craft_event_interrupt():
         syslog(f'[ERR] trackball_int IRQ: {e}')
     if pin:
         pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
-        pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: schedule(_callback, pin))
+        pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=_callback)
 
 
 def subscribe_event(func):
     """
-    Add callback function to trackball events
+    [LM] Add callback function to trackball events
     """
     if func not in Trackball.EVENT_LISTENERS:
         Trackball.EVENT_LISTENERS.append(func)
@@ -271,4 +280,7 @@ def pinmap():
 
 
 def help():
-    return "load width=100 height=100 irq_sampling=20", "read", "get", "settings irq_sampling=None", "pinmap"
+    return ("load width=100 height=100 irq_sampling=50 sensitivity=5",
+            "read", "get",
+            "settings irq_sampling=None sensitivity=None",
+            "pinmap")

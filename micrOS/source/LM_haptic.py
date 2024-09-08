@@ -6,8 +6,8 @@ from utime import sleep_ms
 class Haptic:
     HAPTIC_OBJ = None
     # Haptic vibration motor settings
-    LOW = 600
-    HIGH = 900
+    LOW = 700
+    HIGH = 1000
     STOP = 0
     WAIT_TO_STOP_MS = 100
     INTENSITY = "low"

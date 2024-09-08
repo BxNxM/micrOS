@@ -45,7 +45,7 @@
             4
         ],
         "Common.py": [
-            9.59,
+            9.6,
             30
         ],
         "InterConnect.py": [
@@ -217,7 +217,7 @@
             0
         ],
         "LM_oledui.py": [
-            8.57,
+            8.55,
             0
         ],
         "LM_telegram.py": [
@@ -299,11 +299,11 @@
     },
     "summary": {
         "core": [
-            3181,
+            3184,
             21
         ],
         "load": [
-            8272,
+            8314,
             53
         ],
         "core_dep": [
@@ -316,6 +316,6 @@
         ],
         "core_score": 9.1,
         "load_score": 8.16,
-        "version": "2.6.5-7"
+        "version": "2.6.6-0"
     }
 }

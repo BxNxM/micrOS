@@ -1,7 +1,7 @@
 from utime import localtime, ticks_ms, ticks_diff, sleep_ms
 import uasyncio as asyncio
 from network import WLAN, STA_IF
-from Common import syslog, micro_task, manage_task
+from Common import syslog, micro_task, manage_task, exec_cmd
 from Types import resolve
 from Config import cfgget
 from LM_system import top, memory_usage, ifconfig
@@ -595,6 +595,32 @@ class PageUI:
     def add_page(page):
         return AppFrame.add_page(page)
 
+    @staticmethod
+    def _write_lines(msg, display, x, y):
+        chunk_size = 15
+        char_height = 10
+        text_x_offset = 3
+        # Format message: fitting and \n parsing
+        msg = msg.split('\n')
+        chunks = [line[i:i + chunk_size] for line in msg for i in range(0, len(line), chunk_size)]
+        for i, line in enumerate(chunks):
+            if i > 2:  # max 3 lines of 13 char
+                break
+            line_start_y = char_height * i
+            display.text(line, x + text_x_offset, y + line_start_y)
+
+    @staticmethod
+    def lm_exec_page(cmd, display, w, h, x, y):
+        try:
+            cmd_list = cmd.strip().split()
+            # Send CMD to other device & show result
+            state, out = exec_cmd(cmd_list, skip_check=True)
+            cmd_out = out.strip()
+        except Exception as e:
+            cmd_out = str(e)
+        display.text(cmd, x, y+2)
+        PageUI._write_lines(cmd_out, display, x, y+17)
+
 #################################################################################
 #                                     Page function                             #
 #################################################################################
@@ -671,6 +697,10 @@ def popup(msg='micrOS msg'):
     return PageUI.INSTANCE.popup.textbox(msg)
 
 
+def cancel_popup():
+    return PageUI.INSTANCE.popup.cancel()
+
+
 def cursor(x, y):
     """
     Virtual cursor
@@ -681,8 +711,24 @@ def cursor(x, y):
     return "Set cursor position"
 
 
-def cancel_popup():
-    return PageUI.INSTANCE.popup.cancel()
+def cmd_genpage(cmd=None, run=False):
+    """
+    Create load module execution pages dynamically :)
+    - based on cmd value: load_module function (args)
+    :param cmd: 'load_module function (args)' string
+    :param run: run button event at page init: True/False
+    :return: page creation verdict
+    """
+    if not isinstance(cmd, str):
+        return False
+
+    try:
+        # Create page for intercon command
+        PageUI.INSTANCE.add_page(lambda display, w, h, x, y: PageUI.lm_exec_page(cmd, display, w, h, x, y))
+    except Exception as e:
+        syslog(f'[ERR] cmd_genpage: {e}')
+        return str(e)
+    return True
 
 
 def debug():
@@ -700,5 +746,6 @@ def help(widgets=False):
         ("load width=128 height=64 oled_type='sh1106/ssd1306' control='trackball' poweroff=None/sec haptic=False",
                   "BUTTON control cmd=<prev,next,on,off>",
                   "BUTTON debug", "cursor x y",
-                  "popup msg='text'", "cancel_popup"),
+                  "popup msg='text'", "cancel_popup",
+                  "cmd_genpage cmd='system clock'"),
         widgets=widgets)

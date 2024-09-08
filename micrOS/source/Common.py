@@ -127,13 +127,19 @@ def manage_task(tag, operation):
     raise Exception(f"Invalid operation: {operation}")
 
 
-def exec_cmd(cmd):
+def exec_cmd(cmd, skip_check=False):
     """
     [LM] Single (sync) LM execution
     :param cmd: command string list
+    :param skip_check: skip cmd type check, micropython bug
     return state, output
     """
-    return lm_exec(cmd) if isinstance(cmd, list) else False, "Invalid cmd type, must be list"
+    # [BUG] Solution with isinstance/type is not reliable... micropython 1.22
+    #          Invalid type, must be list: <class list>" ...
+    if skip_check:
+        return lm_exec(cmd)
+    return lm_exec(cmd) if isinstance(cmd, list) else False, f"Invalid type, must be list: {type(cmd)}"
+
 
 
 def notify(text):

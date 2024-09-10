@@ -4,8 +4,11 @@ from network import WLAN, STA_IF
 from Common import syslog, micro_task, manage_task, exec_cmd
 from Types import resolve
 from Config import cfgget
-from LM_system import top, memory_usage, ifconfig
+# Core modules
+from Time import uptime
 
+# Load Modules
+from LM_system import top, memory_usage, ifconfig
 try:
     import LM_intercon as InterCon
 except:
@@ -122,14 +125,16 @@ class Frame(BaseFrame):
 
     def press(self):
         """
-        Called by Cursor / PageUI control
+        Redraw frame on press
+            - PageUI control
         """
-        if PopUpFrame.INSTANCE is None:
-            return False
-        if callable(self.press_clb):
-            PopUpFrame.INSTANCE.run(self.press_clb)
-            return True
-        return False
+        self.clean()
+        # Pass adjusted useful area
+        try:
+            self.press_clb(self.display, self.w - 2, self.h - 2, self.x + 1, self.y + 1)
+        except Exception as e:
+            syslog(f"[ERR] Frame press clb: {e}")
+        self.display.show()
 
     @staticmethod
     def pause_all():
@@ -193,6 +198,7 @@ class Cursor(BaseFrame):
                         PageBarFrame.INSTANCE.draw()
                     # Update TAG
                     Cursor.TAG = frame.tag
+                    # Handle hover action
                     has_hover = frame.hover()
                     if not has_hover:
                         PopUpFrame.INSTANCE.cancel()
@@ -213,7 +219,8 @@ class HeaderBarFrames:
         self.cursor_draw = cursor_draw
         self.timer = [timer, timer]     #[0] default value, [1] timer cnt
         # Create header: time frame
-        time_frame = Frame(self.display, self._time, width=66, height=10, x=32, y=0, tag="time")
+        time_frame = Frame(self.display, self._time, width=66, height=10, x=32, y=0, tag="time",
+                           hover_clb=self._time_hover)
         time_frame.run("time", period_ms=1000)
         # Create header: cpu,mem metrics
         cpu_mem_frame = Frame(self.display, self._cpu_mem, width=12, height=10, x=116, y=0, tag="cpu_mem",
@@ -239,6 +246,11 @@ class HeaderBarFrames:
         except:
             h, m, s = 0, 0, 0
         display.text(f"{h}:{m}:{s}", x, y)
+        self.cursor_draw()
+
+    def _time_hover(self, display, w, h, x, y):
+        display.text(f"Uptime:", x, y)
+        display.text(uptime(), x+10, y+10)
         self.cursor_draw()
 
     def _timer(self, display, w=5, h=5, x=0, y=0):
@@ -297,7 +309,7 @@ class HeaderBarFrames:
         try:
             value = WLAN(STA_IF).status('rssi')
         except:
-            value = -90         # Weak signal in case of error
+            value = -90         # Weak signal in case of error or AP mode
         min_rssi, max_rssi = -90, -40
         rssi = max(min_rssi, min(max_rssi, value))
         rssi_ratio = ((rssi - min_rssi) / (max_rssi - min_rssi))
@@ -318,10 +330,17 @@ class HeaderBarFrames:
         self.cursor_draw()
 
     def _rssi_hover(self, display, w, h, x, y):
-        rssi_ratio, strength = self.__rssi_into()
-        display.text("RSSI info", x, y)
-        display.text(f"{rssi_ratio*100}%", x+10, y+10)
-        display.text(f"{strength}dBm", x + 10, y + 20)
+        nw_mode = ifconfig()[0]
+        if nw_mode == "STA":
+            rssi_ratio, strength = self.__rssi_into()
+            display.text("RSSI info", x, y)
+            display.text(f"{rssi_ratio*100}%", x+10, y+10)
+            display.text(f"{strength}dBm", x + 10, y + 20)
+        elif nw_mode == "AP":
+            display.text(f"{nw_mode} mode", x, y)
+            # TODO: list connected devices
+        else:
+            display.text(f"{nw_mode} mode", x, y)
         self.cursor_draw()
 
 
@@ -329,9 +348,9 @@ class AppFrame(Frame):
     PAGES = []
 
     def __init__(self,  display, cursor_draw, width, height, x=0, y=0, tag="app", page=0):
+        super().__init__(display, self._application, width, height, x=x, y=y, tag=tag)
         self.active_page_index = page
         self.cursor_draw = cursor_draw
-        super().__init__(display, self._application, width, height, x=x, y=y, tag=tag)
 
     def _application(self, display, width, height, x=0, y=0):
         if len(AppFrame.PAGES) > 0:
@@ -339,7 +358,13 @@ class AppFrame(Frame):
             # Pass adjusted useful area
             # TODO: check if page is async... (advanced task embedding)
             try:
-                page(display, width, height, x, y)
+                output = page(display, width, height, x, y)
+                if isinstance(output, dict):
+                    # Add user press callback from page output
+                    self.press_clb = output.get("press", None)
+                else:
+                    # Reset press callback
+                    self.press_clb = None
             except Exception as e:
                 display.text(e, x, y)
         self.cursor_draw()
@@ -461,6 +486,7 @@ class PopUpFrame(BaseFrame):
     def cancel(self):
         if self.selected:
             self.selected = False
+            self.clean()
             self.app_frame.pause(False)
             if self._taskid is not None:
                 self._taskid = None
@@ -510,6 +536,7 @@ class PageUI:
         self.page = page
         self.timer = poweroff
         self._last_page_switch = ticks_ms()
+        self._press_output = ""
         # Store persistent frame objects
         self.cursor = None
         self.header_bar = None
@@ -570,8 +597,10 @@ class PageUI:
                 self._last_page_switch = ticks_ms()
                 if action == "next":
                     self.app_frame.next()
+                    self._press_output = ""
                 if action == "prev":
                     self.app_frame.previous()
+                    self._press_output = ""
                 self.page_bar.draw()
         if action == "off":
             Frame.pause_all()
@@ -582,6 +611,7 @@ class PageUI:
         if action == "press":
             if self.popup.selected:
                 self.popup.cancel()
+            self.app_frame.press()
 
     def wake(self):
         """Wake up UI from hibernation"""
@@ -609,17 +639,37 @@ class PageUI:
             line_start_y = char_height * i
             display.text(line, x + text_x_offset, y + line_start_y)
 
-    @staticmethod
-    def lm_exec_page(cmd, display, w, h, x, y):
-        try:
-            cmd_list = cmd.strip().split()
-            # Send CMD to other device & show result
-            state, out = exec_cmd(cmd_list, skip_check=True)
-            cmd_out = out.strip()
-        except Exception as e:
-            cmd_out = str(e)
-        display.text(cmd, x, y+2)
-        PageUI._write_lines(cmd_out, display, x, y+17)
+    def lm_exec_page(self, cmd, run, display, w, h, x, y):
+        """
+        :param cmd: load module string command
+        :param run: auto-run command (every page refresh)
+        :param display: display instance
+        :param h: frame h
+        :param w: frame w
+        :param x: frame x
+        :param y: frame y
+        """
+        def _execute(display, w, h, x, y):
+            nonlocal cmd
+            try:
+                cmd_list = cmd.strip().split()
+                # Send CMD to other device & show result
+                state, out = exec_cmd(cmd_list, skip_check=True)
+                cmd_out = out.strip()
+            except Exception as e:
+                cmd_out = str(e)
+            self._press_output = cmd_out
+            PageUI._write_lines(cmd_out, display, x, y+17)
+
+        _print_cmd = cmd if run else f"{cmd} (*)"
+        display.text(_print_cmd, x, y+2)
+        if run:
+            _execute(display, w, h, x, y)
+        else:
+            PageUI._write_lines(self._press_output, display, x, y + 17)
+            # Return "press" callback, mandatory input parameters: display, w, h, x, y
+            return {"press": _execute}
+        return
 
 #################################################################################
 #                                     Page function                             #
@@ -724,7 +774,7 @@ def cmd_genpage(cmd=None, run=False):
 
     try:
         # Create page for intercon command
-        PageUI.INSTANCE.add_page(lambda display, w, h, x, y: PageUI.lm_exec_page(cmd, display, w, h, x, y))
+        PageUI.INSTANCE.add_page(lambda display, w, h, x, y: PageUI.INSTANCE.lm_exec_page(cmd, run, display, w, h, x, y))
     except Exception as e:
         syslog(f'[ERR] cmd_genpage: {e}')
         return str(e)

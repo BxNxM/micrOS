@@ -257,7 +257,7 @@ def _craft_event_interrupt():
         pin = None
         syslog(f'[ERR] trackball_int IRQ: {e}')
     if pin:
-        pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
         pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=_callback)
 
 

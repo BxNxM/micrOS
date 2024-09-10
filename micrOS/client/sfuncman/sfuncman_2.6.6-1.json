@@ -1033,7 +1033,7 @@
         },
         "cmd_genpage": {
             "doc": "\n    Create load module execution pages dynamically :)\n    - based on cmd value: load_module function (args)\n    :param cmd: 'load_module function (args)' string\n    :param run: run button event at page init: True/False\n    :return: page creation verdict\n    ",
-            "param(s)": "cmd=None run=True"
+            "param(s)": "cmd=None run=False"
         },
         "control": {
             "doc": null,
@@ -1056,10 +1056,6 @@
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true",
-        "lm_exec_page": {
-            "doc": "module 'LM_oledui' has no attribute 'lm_exec_page'",
-            "param(s)": "cmd run display w h x y"
-        },
         "load": {
             "doc": "\n    Create async oled UI\n    :param width: screen width in pixels\n    :param height: screen height in pixels\n    :param oled_type: sh1106 / ssd1306\n    :param control: trackball / None\n    :param poweroff: power off after given seconds\n    :param haptic: enable (True) / disable (False) haptic feedbacks (vibration)\n    ",
             "param(s)": "width=128 height=64 oled_type=\"sh1106\" control='trackball' poweroff=None haptic=False"

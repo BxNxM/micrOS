@@ -2,7 +2,7 @@
     "files": {
         "Time.py": [
             9.17,
-            6
+            7
         ],
         "micrOSloader.py": [
             7.85,
@@ -217,7 +217,7 @@
             0
         ],
         "LM_oledui.py": [
-            8.55,
+            8.53,
             0
         ],
         "LM_telegram.py": [
@@ -303,7 +303,7 @@
             21
         ],
         "load": [
-            8314,
+            8354,
             53
         ],
         "core_dep": [
@@ -316,6 +316,6 @@
         ],
         "core_score": 9.1,
         "load_score": 8.16,
-        "version": "2.6.6-0"
+        "version": "2.6.6-1"
     }
 }

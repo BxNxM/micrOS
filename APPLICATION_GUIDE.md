@@ -369,8 +369,6 @@ Module responsible for collecting additional feature definitions dedicated to th
 
 ### console
 
-Adds an extra `msgobj` to the wrapped function's argument list. The `msgobj` provides a socket message interface for the open connection.
-
 **Example:** LM\_my\_module.py
 
 ```python
@@ -638,7 +636,7 @@ Usage(s): [LM_presence](./micrOS/source/LM_presence.py)
 
 ### web\_endpoint(endpoint, function):
 
-Add custom endpint `<localhost.local>/endpoint` from Load Modules to WebCli web server.
+Custom endpoint creation in order to receive GET requests. `<localhost.local>/endpoint` from Load Modules to WebCli web server.
 
 **Prerequisite**
 > Enable `webui True` in node config.

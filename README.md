@@ -17,7 +17,7 @@ Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), fo
 [![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
 
 
-**micrOS** is a mini **application** execution **platform** with ShellCli (socket) and WebCli (http) **servers** and several **other** embedded **features**.
+**micrOS** is a [micropython](http://micropython.org) based mini **application** execution **platform** with ShellCli (socket) and WebCli (http) **servers** and several **other** embedded **features**. 
 > It uses direct wifi connection to access the exposed functionalities.<br/>
 
 In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
@@ -38,9 +38,6 @@ Access rest api over browser: `http://<nodename>.local`
 ⚠️  No external server or service required for client-device communication <br/>
 &nbsp;&nbsp; ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
 🛠 Easy to create custom application(s) aka create your own Load Modules: <br/>
-&nbsp;&nbsp; 1. Write **LM_**`<your_app>`**.py** <br/>
-&nbsp;&nbsp; 2. Copy (OTA/USB) python script to your device (drag&drop)<br/>
-&nbsp;&nbsp; 3. Call any function from **`<your_app>`** module <br/>
 🦾 Built-in scheduling (IRQs):<br/>
 &nbsp;&nbsp; - Time stamp based <br/>
 &nbsp;&nbsp; - Geolocation based clock setup + time tags: sunset, sunrise <br/>

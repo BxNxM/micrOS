@@ -489,10 +489,6 @@
             "doc": "\n    Get digital input (high(1)/ low (0))\n    :param pin: pin number or logical pin\n    :return dict: pin, state\n    ",
             "param(s)": "pin"
         },
-        "get_obj": {
-            "doc": "module 'LM_genIO' has no attribute 'get_obj'",
-            "param(s)": "pin"
-        },
         "help": {
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    ",
             "param(s)": "widgets=False"
@@ -509,10 +505,6 @@
         "set_random_pwm": {
             "doc": "\n    Set random PWM duty in min-max range\n    :param pin: pin number or logical name\n    :param min_duty: set min duty value (0-1000)\n    :param max_duty: set max duty value (0-1000)\n    :param freq: pwm frequency (board dependent)\n    ",
             "param(s)": "pin min_duty max_duty freq=20480"
-        },
-        "store_obj": {
-            "doc": "module 'LM_genIO' has no attribute 'store_obj'",
-            "param(s)": "pin obj"
         }
     },
     "haptic": {
@@ -1023,10 +1015,6 @@
         }
     },
     "oledui": {
-        "add_page": {
-            "doc": "module 'LM_oledui' has no attribute 'add_page'",
-            "param(s)": "page"
-        },
         "cancel_popup": {
             "doc": null,
             "param(s)": ""
@@ -1047,10 +1035,6 @@
             "doc": null,
             "param(s)": ""
         },
-        "get_frame": {
-            "doc": "module 'LM_oledui' has no attribute 'get_frame'",
-            "param(s)": "tag"
-        },
         "help": {
             "doc": "\n    New generation of oled_ui\n    - with async frames\n    ",
             "param(s)": "widgets=False"
@@ -1060,17 +1044,9 @@
             "doc": "\n    Create async oled UI\n    :param width: screen width in pixels\n    :param height: screen height in pixels\n    :param oled_type: sh1106 / ssd1306\n    :param control: trackball / None\n    :param poweroff: power off after given seconds\n    :param haptic: enable (True) / disable (False) haptic feedbacks (vibration)\n    ",
             "param(s)": "width=128 height=64 oled_type=\"sh1106\" control='trackball' poweroff=None haptic=False"
         },
-        "pause_all": {
-            "doc": "module 'LM_oledui' has no attribute 'pause_all'",
-            "param(s)": ""
-        },
         "popup": {
             "doc": "\n    POP-UP message function\n    :param msg: message string\n    ",
             "param(s)": "msg='micrOS msg'"
-        },
-        "resume_all": {
-            "doc": "module 'LM_oledui' has no attribute 'resume_all'",
-            "param(s)": ""
         }
     },
     "pet_feeder": {

@@ -152,12 +152,13 @@ class MicrOSDevTool(OTA, USB):
                 module_name = LM.replace('LM_', '')
                 module_function_dict[module_name] = {}
                 with open(LMpath, 'r') as f:
+                    decorator = None
                     while True:
                         line = f.readline()
                         if not line:
                             break
                         if 'def ' in line and 'def _' not in line:
-                            if '(self' in line or '(cls' in line:
+                            if '(self' in line or '(cls' in line or (decorator is not None and "staticmethod" in decorator):
                                 continue
                             # Gen proper func name
                             command = '{}'.format(line.split(')')[0]).replace("def", '').strip()
@@ -171,6 +172,10 @@ class MicrOSDevTool(OTA, USB):
                             if module_function_dict[module_name].get(func, None) is None:
                                 module_function_dict[module_name][func] = {}
                             module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else ""
+                        elif line.strip().startswith("@"):
+                            decorator = line.strip()
+                        else:
+                            decorator = None
                 # Create / update module data fields
                 module_function_dict[module_name]['img'] = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
             except Exception as e:

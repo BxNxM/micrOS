@@ -1,3 +1,5 @@
+# ![LOGO](./media/logo_mini.png?raw=true)
+
 ```
 ██       ██████   █████  ██████      ███    ███  ██████  ██████  ██    ██ ██      ███████ ███████ 
 ██      ██    ██ ██   ██ ██   ██     ████  ████ ██    ██ ██   ██ ██    ██ ██      ██      ██      
@@ -211,7 +213,7 @@ def pinmap_search(keys):
 ██ ██   ████    ██    ███████ ██   ██ ██      ██ ███████ ██████  ██ ██   ██    ██    ███████ level
 ```
 
-## micrOS Types.py module
+## ![dashboard](./media/web_dashboard.png?raw=true) micrOS Types.py module
 
 > Advanced help messages with widget type assignment
 

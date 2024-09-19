@@ -1,6 +1,5 @@
 from utime import localtime, ticks_ms, ticks_diff, sleep_ms
 import uasyncio as asyncio
-from network import WLAN, STA_IF
 from Common import syslog, micro_task, manage_task, exec_cmd
 from Types import resolve
 from Config import cfgget
@@ -8,11 +7,15 @@ from Config import cfgget
 from Time import uptime
 
 # Load Modules
-from LM_system import top, memory_usage, ifconfig
+from LM_system import top, memory_usage, ifconfig, rssi as sta_rssi, list_stations
 try:
     import LM_intercon as InterCon
 except:
     InterCon = None             # Optional function handling
+try:
+    from LM_esp32 import temp as cpu_temp
+except Exception as e:
+    cpu_temp = None             # Optional function handling
 
 
 DEBUG = False
@@ -299,17 +302,18 @@ class HeaderBarFrames:
         mem_kb = int(memory_usage().get("mem_used", 0) / 1000)     # Get MEM usage in kb
         cpu = sys_usage.get('CPU load [%]', 100)
         mem = sys_usage.get('Mem usage [%]', 100)
-        display.text(f"CPU {cpu}%", x, y)
+        cpu_t = ""
+        if callable(cpu_temp):
+            _cpu_t = int(list(cpu_temp().values())[0])
+            cpu_t = f"{_cpu_t}C" if _cpu_t > 0 else ""
+        display.text(f"CPU {cpu}%  {cpu_t}", x, y)
         display.text(f"MEM {mem}%", x, y+10)
-        display.text(f"{mem_kb}kb", x+10, y+20)
+        display.text(f"{mem_kb}kb", x+32, y+20)
         self.cursor_draw()
 
     @staticmethod
     def __rssi_into():
-        try:
-            value = WLAN(STA_IF).status('rssi')
-        except:
-            value = -90         # Weak signal in case of error or AP mode
+        value = list(sta_rssi().values())[0]
         min_rssi, max_rssi = -90, -40
         rssi = max(min_rssi, min(max_rssi, value))
         rssi_ratio = ((rssi - min_rssi) / (max_rssi - min_rssi))
@@ -327,18 +331,24 @@ class HeaderBarFrames:
         for y_index in range(start_line_y, end_line_y, -1):
             end_x = x + min(w, w-int(w*(y_index/start_line_y))+1)
             display.line(x, y_index, end_x, y_index)
+        # Button level line indicator
+        display.line(x, y+h-1, x+1, y+h-1)
         self.cursor_draw()
 
     def _rssi_hover(self, display, w, h, x, y):
         nw_mode = ifconfig()[0]
         if nw_mode == "STA":
             rssi_ratio, strength = self.__rssi_into()
-            display.text("RSSI info", x, y)
-            display.text(f"{rssi_ratio*100}%", x+10, y+10)
-            display.text(f"{strength}dBm", x + 10, y + 20)
+            display.text(f"{nw_mode} mode", x, y)
+            display.text(f"rssi: {rssi_ratio*100}%", x+10, y+10)
+            display.text(f"{strength}dBm", x+50, y + 20)
         elif nw_mode == "AP":
             display.text(f"{nw_mode} mode", x, y)
-            # TODO: list connected devices
+            devs_mac = [d[0] for d in list_stations()]
+            for i, mac in enumerate(devs_mac):
+                display.text(f"{mac}", x, y + 9 + (i*9))
+                if i > 2:
+                    break
         else:
             display.text(f"{nw_mode} mode", x, y)
         self.cursor_draw()

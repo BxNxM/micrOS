@@ -1,4 +1,5 @@
 import esp32
+from Common import syslog
 
 #########################
 # Application functions #
@@ -17,8 +18,14 @@ def temp():
     """
     Measure CPU temperature
     """
+    try:
+        raw_temp =  esp32.raw_temperature()
+    except Exception as e:
+        syslog(f"[WARN] cpu temp: {e}")
+        return {'CPU temp [C]': -1.0}
     # read the internal temperature of the MCU, in Farenheit
-    return {'CPU temp [ºC]': '{:.1f}'.format((esp32.raw_temperature() - 32) / 1.8)}
+    cpu_temp = round((raw_temp - 32) / 1.8, 1)
+    return {'CPU temp [C]': cpu_temp}
 
 
 def touch(triglvl=300):

@@ -1,7 +1,9 @@
-from os import statvfs, getcwd
+from os import statvfs, getcwd, listdir, uname
 from utime import localtime
-from Common import socket_stream
-from Network import get_mac
+from network import WLAN, STA_IF, AP_IF
+from binascii import hexlify
+from Common import socket_stream, console
+from Network import get_mac, ifconfig as network_config
 from Time import ntp_time, set_time, uptime
 from Tasks import Manager
 from Types import resolve
@@ -52,7 +54,6 @@ def info():
     - cpu clock, ram, free fs, upython, board, mac addr, uptime
     """
     from machine import freq
-    from os import uname
 
     buffer = top()
     buffer.update({'CPU clock [MHz]': int(freq() * 0.0000001), 'upython': uname()[3],
@@ -80,6 +81,7 @@ def heartbeat():
     """
     Test function for built-in led blinking and test reply message
     """
+    console("<3 heartbeat <3")
     return "<3 heartbeat <3"
 
 
@@ -140,17 +142,39 @@ def rssi():
     """
     Show Wifi RSSI - wifi strength
     """
-    from network import WLAN, STA_IF
-    value = WLAN(STA_IF).status('rssi')
-    if value > -67:
-        return {'Amazing': value}
-    if value > -70:
-        return {'VeryGood': value}
-    if value > -80:
-        return {'Okay': value}
-    if value > -90:
-        return {'NotGood': value}
-    return {'Unusable': value}
+    if ifconfig()[0] == "STA":
+        value = WLAN(STA_IF).status('rssi')
+        if value > -67:
+            return {'Amazing': value}
+        if value > -70:
+            return {'VeryGood': value}
+        if value > -80:
+            return {'Okay': value}
+        if value > -90:
+            return {'NotGood': value}
+        return {'Unusable': value}
+    return {'Unavailable': -90}
+
+
+def list_stations():
+    """
+    AccessPoint mode "router"
+    - list connected devices
+    """
+    if ifconfig()[0] == "AP":
+        ap = WLAN(AP_IF)
+        stations = ap.status('stations')
+        connected_devices = []
+        for sta in stations:
+            mac_address, mac_rssi = '', ''
+            if len(sta) > 0:
+                mac_bytes = sta[0]
+                mac_address = hexlify(mac_bytes, ':').decode()
+            elif len(sta) > 1:
+                mac_rssi = sta(1)
+            connected_devices.append((mac_address, mac_rssi))
+        return connected_devices
+    return [("NoAP", '')]
 
 
 def pinmap(key='builtin'):
@@ -183,7 +207,6 @@ def dat_dump():
     Generic .dat file dump
     - logged data from LMs
     """
-    from os import listdir
     dats = (f for f in listdir() if f.endswith('.dat'))
     out = {}
     for dat in dats:
@@ -196,8 +219,7 @@ def ifconfig():
     """
     Show network ifconfig
     """
-    from Network import ifconfig
-    return ifconfig()
+    return network_config()
 
 
 def urequests_host_cache():
@@ -223,6 +245,6 @@ def help(widgets=False):
     """
     return resolve(('info', 'TEXTBOX top', 'gclean', 'heartbeat', 'clock',
                     'setclock year month mday hour min sec',
-                    'ntp', 'rssi', 'pinmap key="dhtpin"/None', 'alarms clean=False',
+                    'ntp', 'rssi', 'list_stations', 'pinmap key="dhtpin"/None', 'alarms clean=False',
                     'sun refresh=False', 'ifconfig', 'memory_usage',
                     'disk_usage', 'dat_dump', 'urequests_host_cache'), widgets=widgets)

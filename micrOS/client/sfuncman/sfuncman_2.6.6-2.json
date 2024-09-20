@@ -1660,6 +1660,10 @@
             "doc": "\n    Read trackball data over i2c\n    ",
             "param(s)": ""
         },
+        "ready_color": {
+            "doc": null,
+            "param(s)": ""
+        },
         "settings": {
             "doc": "\n    Get simple trackball settings\n    :param irq_sampling: optional param, change irq_sampling ms\n    ",
             "param(s)": "irq_sampling=None sensitivity=None"

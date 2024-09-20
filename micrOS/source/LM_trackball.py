@@ -185,9 +185,14 @@ def load(width=100, height=100, irq_sampling=50, sensitivity=5, reload=False):
         i2c = SoftI2C(scl=Pin(resolve_pin('i2c_scl')), sda=Pin(resolve_pin('i2c_sda')))
         TRACKBALL = Trackball(i2c, max_x=width, max_y=height, irq_sampling=irq_sampling, sensitivity=sensitivity)
         _craft_event_interrupt()
-        TRACKBALL.set_green(10)
+        ready_color()
     return TRACKBALL
 
+def ready_color():
+    if TRACKBALL is not None:
+        TRACKBALL.set_green(20)
+        return True
+    return False
 
 def settings(irq_sampling=None, sensitivity=None):
     """

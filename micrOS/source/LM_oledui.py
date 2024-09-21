@@ -587,9 +587,9 @@ class PageUI:
         """
         action = params.get('action', None)
         if action is not None:
-            x, y = params['X'], self.height-params['Y']     # invert Y axes
+            x, y = params['X'], self.height - params['Y']     # invert Y axes
             self.cursor.update(x, y)
-            lut = {"right": "next", "left": "prev"}         # Convert trackball output to control command
+            lut = {"right": "next", "left": "prev"}           # Convert trackball output to control command
             self.control(lut.get(action, action))
             self.DISPLAY.show()
 
@@ -742,7 +742,7 @@ def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff
 
 
 def control(cmd="next"):
-    if cmd in ("next", "prev", "on", "off"):
+    if cmd in ("next", "prev", "on", "off", "press"):
         PageUI.INSTANCE.control(cmd, force=True)
         return cmd
     return f"Unknown action: {cmd}"
@@ -804,7 +804,7 @@ def help(widgets=False):
     """
     return resolve(
         ("load width=128 height=64 oled_type='sh1106/ssd1306' control='trackball' poweroff=None/sec haptic=False",
-                  "BUTTON control cmd=<prev,next,on,off>",
+                  "BUTTON control cmd=<prev,press,next,on,off>",
                   "BUTTON debug", "cursor x y",
                   "popup msg='text'", "cancel_popup",
                   "cmd_genpage cmd='system clock'"),

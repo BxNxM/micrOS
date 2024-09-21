@@ -131,18 +131,6 @@ class Trackball:
         # Inside window - ignore
         return False
 
-    def _compose_action(self, up, down, left, right, state):
-        if state != self.toggle:
-            self.toggle = not self.toggle
-            self.action = "press"
-            sleep(0.2)  # Avoid bouncing
-        else:
-            directions = {'up': up, 'down': down, 'left': left, 'right': right}
-            # detect change - non trigger based calls
-            if sum((abs(i) for i in directions.values())) > 0:
-                self.action = max(directions, key=directions.get)
-
-
     def _update_states(self, up, down, left, right, state):
         # Update cursor positions
         change_x = (right - left)
@@ -151,15 +139,24 @@ class Trackball:
         posy = self.posy + change_y
         self.posx = max(0, min(posx, self._max_x))
         self.posy = max(0, min(posy, self._max_y))
-        # Check sensitivity
-        delta_t = ticks_diff(ticks_ms(), self._last_event)
+        # [1] Compose action verdict - press button
+        if state != self.toggle:
+            self.toggle = not self.toggle
+            if state:
+                # Detect only Raising edge
+                self.action = "press" if state else None
+                return True     # [trigger]
+        # [2] Compose action verdict - directions
+        if abs(change_x) + abs(change_y) > 0:
+            directions = {'up': up, 'down': down, 'left': left, 'right': right}
+            self.action = max(directions, key=directions.get)
         # [!!!] timebox and sensitivity block check
+        delta_t = ticks_diff(ticks_ms(), self._last_event)
         if delta_t > self.irq_sampling or self._detection_block():
             self._last_event = ticks_ms()
-            self._compose_action(up, down, left, right, state)
             self._last_event_coords = self.posx, self.posy
-            return True
-        return False
+            return True         # [trigger]
+        return False            # [NO trigger]
 
     def read(self):
         """Read up, down, left, right and switch data from trackball."""
@@ -234,17 +231,15 @@ def _craft_event_interrupt():
     Handle hange events from trackball
     """
 
-    def _inner_callback(args):
-        trigger, trackball = args[0], args[1]
-        if trigger:
-            trackball.auto_color()
-            # Execute callbacks
-            for clbk in Trackball.EVENT_LISTENERS:
-                if callable(clbk):
-                    try:
-                        clbk(get())
-                    except:
-                        syslog(f"Trackball callback event error: {pin}")
+    def _inner_callback(trackball):
+        trackball.auto_color()
+        # Execute callbacks
+        for clbk in Trackball.EVENT_LISTENERS:
+            if callable(clbk):
+                try:
+                 clbk(get())
+                except Exception as e:
+                    syslog(f"[ERR] Trackball clbk irq:{pin}:{e}")
 
     def _callback(pin):
         # Update trackball data - handle event!
@@ -252,7 +247,8 @@ def _craft_event_interrupt():
         up, down, left, right, switch, switch_state, trigger = trackball.read()
         # Schedule user callbacks
         try:
-            schedule(_inner_callback, (trigger, trackball))
+            if trigger:
+                schedule(_inner_callback, trackball)
         except Exception as e:
             syslog(f"[ERR] Trackball user callback: {e}")
 

@@ -1,4 +1,3 @@
-version: '3'
 services:
   micros-gateway:
     image: bxnxm/micros-gateway:2.4.1

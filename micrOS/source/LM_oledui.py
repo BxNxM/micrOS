@@ -791,6 +791,14 @@ def cmd_genpage(cmd=None, run=False):
     return True
 
 
+def add_page(page_callback):
+    """
+    [LM] Create page from load module with callback function
+    :param page_callback: callback func(display, w, h, x, y)
+    """
+    return AppFrame.add_page(page_callback)
+
+
 def debug():
     global DEBUG
     DEBUG = not DEBUG

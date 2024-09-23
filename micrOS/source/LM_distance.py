@@ -1,12 +1,18 @@
 from machine import Pin, time_pulse_us
 from utime import sleep_us
 from microIO import resolve_pin, pinmap_search
+import uasyncio as asyncio
+from Common import micro_task
+from Types import resolve
 
 __TRIGGER_OBJ = None
 __ECHO_OBJ = None
 
 
 def __init_HCSR04():
+    """
+    HCSR04 Ultrasonic distance sensor
+    """
     global __TRIGGER_OBJ, __ECHO_OBJ
     if __TRIGGER_OBJ is None or __ECHO_OBJ is None:
         trigger_pin = resolve_pin('hcsrtrig')
@@ -36,6 +42,41 @@ def __send_pulse_and_wait(echo_timeout_us=1000000):
         raise ex
 
 
+async def __task(period_ms, dimmer, idle_cm):
+    average = None
+    with micro_task(tag="distance.visual") as my_task:
+        while True:
+            brightness_max_cm = 200
+            brightness_min_cm = 5
+            dist = int(measure_cm())
+            if dist > idle_cm+100:
+                await asyncio.sleep_ms(50)
+                continue
+            dist = brightness_max_cm if dist > brightness_max_cm else dist   # Limit max
+            dist = 0 if dist < brightness_min_cm else dist                   # Limit min
+            average = dist if average is None else (average + dist) / 2
+            brightness = int(600 * (average/(brightness_max_cm)))
+            if dist >= idle_cm:
+                dimmer(5)
+            else:
+                dimmer(brightness)
+
+            # Store data in task cache (task show mytask)
+            my_task.out = f'Dist: {dist} br: {brightness}'
+
+            # Async sleep - feed event loop
+            await asyncio.sleep_ms(period_ms)
+
+
+def start_dimmer_indicator(idle_distance=180):
+    """Distance visualization on LED brightness (LM_dimmer)"""
+    from LM_dimmer import set_value
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    state = micro_task(tag="distance.visual", task=__task(period_ms=200, dimmer=set_value, idle_cm=idle_distance))
+    return "Starting" if state else "Already running"
+
+
+
 #########################
 # Application functions #
 #########################
@@ -48,7 +89,7 @@ def load():
     return "HCSR04 Ultrasonic distance sensor - loaded"
 
 
-def distance_mm():
+def measure_mm():
     """
     To calculate the distance we get the pulse_time and divide it by 2
     (the pulse walk the distance twice) and by 29.1 becasue
@@ -59,7 +100,7 @@ def distance_mm():
     return __send_pulse_and_wait() * 100 // 582
 
 
-def distance_cm():
+def measure_cm():
     return (__send_pulse_and_wait() / 2) / 29.1
 
 
@@ -83,7 +124,7 @@ def pinmap():
     - info which pins to use for this application
     :return dict: pin name (str) - pin value (int) pairs
     """
-    return pinmap_search(['hcsrtrig', 'hcsrecho'])
+    return pinmap_search(['hcsrtrig', 'hcsrecho', 'dimmer'])
 
 
 def help(widgets=False):
@@ -93,4 +134,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'distance_mm', 'distance_cm', 'deinit', 'pinmap', 'load'
+    return resolve(('measure_mm', 'TEXTBOX measure_cm', 'deinit', 'pinmap',
+                             'load', 'start_dimmer_indicator idle_distance=180',
+                             '[info] HCSR04 Ultrasonic distance sensor'), widgets=widgets)

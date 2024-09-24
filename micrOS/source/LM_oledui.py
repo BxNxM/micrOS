@@ -2,8 +2,8 @@ from utime import localtime, ticks_ms, ticks_diff, sleep_ms
 import uasyncio as asyncio
 from Common import syslog, micro_task, manage_task, exec_cmd
 from Types import resolve
-from Config import cfgget
 # Core modules
+from Config import cfgget
 from Time import uptime
 
 # Load Modules
@@ -131,6 +131,8 @@ class Frame(BaseFrame):
         Redraw frame on press
             - PageUI control
         """
+        if self.press_clb is None:
+            return
         self.clean()
         # Pass adjusted useful area
         try:
@@ -366,15 +368,10 @@ class AppFrame(Frame):
         if len(AppFrame.PAGES) > 0:
             page = AppFrame.PAGES[self.active_page_index]
             # Pass adjusted useful area
-            # TODO: check if page is async... (advanced task embedding)
             try:
                 output = page(display, width, height, x, y)
-                if isinstance(output, dict):
-                    # Add user press callback from page output
-                    self.press_clb = output.get("press", None)
-                else:
-                    # Reset press callback
-                    self.press_clb = None
+                # Add user press callback from page output
+                self.press_clb = output.get("press", None) if isinstance(output, dict) else None
             except Exception as e:
                 display.text(e, x, y)
         self.cursor_draw()
@@ -547,6 +544,8 @@ class PageUI:
         self.timer = poweroff
         self._last_page_switch = ticks_ms()
         self._press_output = ""
+        self._cmd_task_tag = None
+        self._open_intercons = []
         # Store persistent frame objects
         self.cursor = None
         self.header_bar = None
@@ -636,7 +635,7 @@ class PageUI:
         return AppFrame.add_page(page)
 
     @staticmethod
-    def _write_lines(msg, display, x, y):
+    def _write_lines(msg, display, x, y, line_limit=3):
         chunk_size = 15
         char_height = 10
         text_x_offset = 3
@@ -644,10 +643,15 @@ class PageUI:
         msg = msg.split('\n')
         chunks = [line[i:i + chunk_size] for line in msg for i in range(0, len(line), chunk_size)]
         for i, line in enumerate(chunks):
-            if i > 2:  # max 3 lines of 13 char
+            if i > line_limit-1:  # max line_limit lines of 13 char
                 break
             line_start_y = char_height * i
             display.text(line, x + text_x_offset, y + line_start_y)
+
+    def _press_indicator(self, display, w, h, x, y):
+        """Dynamic page - draw press callback indicator"""
+        if self._press_output == "":
+            display.text("press", int(x + (w / 2) - 20), y + 30)
 
     def lm_exec_page(self, cmd, run, display, w, h, x, y):
         """
@@ -659,6 +663,7 @@ class PageUI:
         :param x: frame x
         :param y: frame y
         """
+        x, y = x+2, y+4
         def _execute(display, w, h, x, y):
             nonlocal cmd
             try:
@@ -669,17 +674,68 @@ class PageUI:
             except Exception as e:
                 cmd_out = str(e)
             self._press_output = cmd_out
-            PageUI._write_lines(cmd_out, display, x, y+17)
+            PageUI._write_lines(cmd_out, display, x, y + 15)
 
-        _print_cmd = cmd if run else f"{cmd} (*)"
-        display.text(_print_cmd, x, y+2)
+        display.text(cmd, x, y)
         if run:
             _execute(display, w, h, x, y)
         else:
-            PageUI._write_lines(self._press_output, display, x, y + 17)
+            self._press_indicator(display, w, h, x, y)
+            PageUI._write_lines(self._press_output, display, x, y + 15)
             # Return "press" callback, mandatory input parameters: display, w, h, x, y
             return {"press": _execute}
         return
+
+
+    def intercon_exec_page(self, host, cmd, run, display, w, h, x, y):
+        """
+        :param host: hostname or IP address of a device
+        :param cmd: load module string command
+        :param run: auto-run command (every page refresh)
+        :param display: display instance
+        :param h: frame h
+        :param w: frame w
+        :param x: frame x
+        :param y: frame y
+        """
+        x, y = x+2, y+4
+        def _execute(display, w, h, x, y):
+            nonlocal host, cmd, run
+            # Check open host connection
+            if host in self._open_intercons:
+                return
+            self._open_intercons.append(host)
+            try:
+                # Send CMD to other device & show result
+                data_meta = InterCon.send_cmd(host, cmd)
+                self._cmd_task_tag = data_meta['tag']
+                if "Task is Busy" in data_meta['verdict'] and not run:
+                    self._press_output = data_meta['verdict']     # Otherwise the task start output not relevant on UI
+            except Exception as e:
+                self._press_output = str(e)
+            self._open_intercons.remove(host)
+
+        def _read_buffer():
+            # Read command output from async buffer
+            if self._cmd_task_tag is not None:
+                task_buffer = manage_task(self._cmd_task_tag, 'show').replace(' ', '')
+                if task_buffer is not None and len(task_buffer) > 0:
+                    # Set display out to task buffered data
+                    self._press_output = task_buffer
+                    # data gathered - remove tag - skip re-read
+                    self._cmd_task_tag = None
+            PageUI._write_lines(self._press_output, display, x, y + 20, line_limit=2)
+
+        PageUI._write_lines(f"{host.split(".")[0]}:{cmd}", display, x, y, line_limit=2)
+        if run:
+            if self._cmd_task_tag is None:
+                _execute(display, w, h, x, y)
+            _read_buffer()
+            return
+        _read_buffer()
+        self._press_indicator(display, w, h, x, y)
+        # Return "press" callback, mandatory input parameters: display, w, h, x, y
+        return {"press": _execute}
 
 #################################################################################
 #                                     Page function                             #
@@ -695,7 +751,7 @@ def _system_page(display, w, h, x, y):
     display.text(f"  V: {cfgget('version')}", x, y+25)
     return True
 
-def _intercon_page(display, w, h, x, y):
+def _intercon_nodes_page(display, w, h, x, y):
     if InterCon is None:
         return False
     line_limit = 3
@@ -735,7 +791,7 @@ def load(width=128, height=64, oled_type="sh1106", control='trackball', poweroff
     if PageUI.INSTANCE is None:
         ui = PageUI(width, height, poweroff=poweroff, oled_type=oled_type, control=control, haptic=haptic)
         # Add default pages...
-        ui.add_page([_system_page, _intercon_page, _empty_page])
+        ui.add_page([_system_page, _intercon_nodes_page, _empty_page])
         ui.create()         # Header(4), AppPage(1), PagerIndicator
         return "PageUI was created"
     return "PageUI was already created"
@@ -791,6 +847,25 @@ def cmd_genpage(cmd=None, run=False):
     return True
 
 
+def intercon_genpage(cmd=None, run=False):
+    """
+    Create intercon pages dynamically :)
+    - based on cmd value.
+    :param cmd: 'host hello' or 'host system clock'
+    :param run: run button event at page init: True/False
+    :return: page creation verdict
+    """
+    raw = cmd.split()
+    host = raw[0]
+    cmd = ' '.join(raw[1:])
+    try:
+        # Create page for intercon command
+        PageUI.INSTANCE.add_page(lambda display, w, h, x, y: PageUI.INSTANCE.intercon_exec_page(host, cmd, run, display, w, h, x, y))
+    except Exception as e:
+        syslog(f'[ERR] intercon_genpage: {e}')
+        return str(e)
+    return True
+
 def add_page(page_callback):
     """
     [LM] Create page from load module with callback function
@@ -815,5 +890,6 @@ def help(widgets=False):
                   "BUTTON control cmd=<prev,press,next,on,off>",
                   "BUTTON debug", "cursor x y",
                   "popup msg='text'", "cancel_popup",
-                  "cmd_genpage cmd='system clock'"),
+                  "cmd_genpage cmd='system clock'",
+                  "intercon_genpage 'host cmd' run=False"),
         widgets=widgets)

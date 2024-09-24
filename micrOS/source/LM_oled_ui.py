@@ -588,6 +588,6 @@ def help(widgets=False):
                              'draw',
                              'BUTTON control cmd=<prev,press,next,on,off>',
                              'msgbox "msg"',
-                             'intercon_genpage "host" "cmd" run=False',
+                             'intercon_genpage "host cmd" run=False',
                              'cmd_genpage "cmd" run=False',
                              'pinmap'), widgets=widgets)

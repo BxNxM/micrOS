@@ -16,6 +16,10 @@ try:
     from LM_esp32 import temp as cpu_temp
 except Exception as e:
     cpu_temp = None             # Optional function handling
+try:
+    from LM_gameOfLife import next_gen as gol_nextgen, reset as gol_reset
+except:
+    gol_nextgen = None          # Optional function handling
 
 
 DEBUG = False
@@ -73,6 +77,7 @@ class Frame(BaseFrame):
         self.press_clb = press_clb      # Press callback - optional
         self.tag = tag                  # used for frame identification
         self._taskid = None             # used for task identification
+        self._fast_refresh = False       # Interrupt app frame task sleep - for callback reload
         Frame.FRAMES.add(self)          # Store - managed frames
 
     def draw(self):
@@ -94,6 +99,8 @@ class Frame(BaseFrame):
         """
         with micro_task(tag=self._taskid) as my_task:
             s = None
+            micro_sleep_ms = 50
+            period_ms = micro_sleep_ms if period_ms < micro_sleep_ms else period_ms
             while True:
                 if s != self.paused:
                     my_task.out = 'paused' if self.paused else f'refresh: {period_ms} ms'
@@ -104,7 +111,15 @@ class Frame(BaseFrame):
                     # Draw/Refresh frame
                     self.draw()
                 # Async sleep - feed event loop
-                await asyncio.sleep_ms(period_ms)
+                for micro_sleep in range(0, period_ms, micro_sleep_ms):
+                    if self._fast_refresh:
+                        self._fast_refresh = False
+                        break
+                    await asyncio.sleep_ms(micro_sleep_ms)
+
+    def clb_refresh(self):
+        """Fast reload app loop callbacks"""
+        self._fast_refresh = True
 
     def run(self, tid, period_ms=500):
         """
@@ -272,14 +287,20 @@ class HeaderBarFrames:
         self.timer[1] -= 1
         if self.timer[1] <= 0:
             # Pause All Frame tasks
-            Frame.pause_all()
-            self.display.poweroff()
-            self.reset_timer()
+            self.hibernate(display, w, h, x, y)
 
     def _timer_hover(self, display, w, h, x, y):
         display.text("Power off in", x, y)
         display.text(f"{self.timer[1]} sec", x+10, y+10)
         self.cursor_draw()
+
+    def hibernate(self, display, w, h, x, y):
+        Frame.pause_all()
+        if ScreenSaver.INSTANCE is None:
+            self.display.poweroff()
+        else:
+            ScreenSaver.INSTANCE.run()
+        self.reset_timer()
 
     def reset_timer(self):
         self.timer[1] = self.timer[0]
@@ -363,6 +384,7 @@ class AppFrame(Frame):
         super().__init__(display, self._application, width, height, x=x, y=y, tag=tag)
         self.active_page_index = page
         self.cursor_draw = cursor_draw
+        self.press_output = ""
 
     def _application(self, display, width, height, x=0, y=0):
         if len(AppFrame.PAGES) > 0:
@@ -391,12 +413,16 @@ class AppFrame(Frame):
         self.active_page_index += 1
         if self.active_page_index > pages_cnt:
             self.active_page_index = 0
+        self.clb_refresh()
+        self.press_output = ""
 
     def previous(self):
         pages_cnt = len(AppFrame.PAGES) - 1
         self.active_page_index -= 1
         if self.active_page_index < 0:
             self.active_page_index = pages_cnt
+        self.clb_refresh()
+        self.press_output = ""
 
 
 class PageBarFrame(Frame):
@@ -417,6 +443,63 @@ class PageBarFrame(Frame):
         # Draw active page indicator
         display.rect(x+self.app_frame.active_page_index*plen+1, y+1, plen-2, h-2, fill=True)
         self.cursor_draw()
+
+class ScreenSaver(BaseFrame):
+    INSTANCE = None
+
+    def __init__(self, display, width, height, x=0, y=0):
+        super().__init__(display, width+1, height+1, x=x, y=y)
+        self.running = False
+        ScreenSaver.INSTANCE = self
+
+    def screen_saver(self):
+        # Default mode
+        if gol_nextgen is None:
+            self.cancel()
+            self.display.poweroff()
+            return      # __power_save / no game of life screen saver
+        # Screen saver mode
+        matrix = gol_nextgen(raw=True)
+        if matrix is None:
+            self.cancel()
+            self.display.poweroff()
+        else:
+            # Update display with Conway's Game of Life
+            self.clean()
+            matrix_height = len(matrix)
+            for line_idx, line in enumerate(matrix):
+                for x_idx, v in enumerate(line):
+                    scale = int(self.h / matrix_height)
+                    if scale == 1:
+                        self.display.pixel(x_idx, line_idx, color=v)
+                    else:
+                        self.display.rect(x_idx*scale, line_idx*scale, w=scale, h=scale, state=v, fill=True)
+            self.display.show()
+
+    async def _task(self, period_ms):
+        self.running = True
+        with micro_task(tag="oledui.anim") as my_task:
+            counter = 0
+            while self.running:
+                counter += 1
+                self.screen_saver()
+                # Store data in task cache (task show mytask)
+                my_task.out = f'GameOfLife: {counter}'
+                # Async sleep - feed event loop
+                await asyncio.sleep_ms(period_ms)
+            my_task.out = f'GameOfLife stopped: {counter}'
+
+    def run(self, fps=10):
+        # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+        period_ms = int(1000/fps)
+        state = micro_task(tag="oledui.anim", task=self._task(period_ms))
+        return "Starting" if state else "Already running"
+
+    def cancel(self):
+        if self.running:
+            self.running = False
+            gol_reset()
+            self.clean()
 
 
 class PopUpFrame(BaseFrame):
@@ -475,18 +558,9 @@ class PopUpFrame(BaseFrame):
         self.selected = True
         self.clean()
         self._draw_icon()
-        # Draw message
-        chunk_size = 13
-        char_height= 10
-        text_x_offset = 15
         # Format message: fitting and \n parsing
-        msg = msg.split('\n')
-        chunks = [line[i:i + chunk_size] for line in msg for i in range(0, len(line), chunk_size)]
-        for i, line in enumerate(chunks):
-            if i > 2:   # max 3 lines of 13 char
-                break
-            line_start_y = 4+ char_height * i
-            self.display.text(line, self._inner_x+text_x_offset, self._inner_y + line_start_y)
+        text_x_offset = 12
+        PageUI.write_lines(msg, self.display, self._inner_x + text_x_offset, self._inner_y+4, line_limit=3)
         self.display.show()
         return f"Draw textbox frame"
 
@@ -519,6 +593,7 @@ class PageUI:
         :param oled_type: ssd1306 or sh1106
         :param control: trackball / None
         """
+        # OLED setup
         if oled_type.strip() in ('ssd1306', 'sh1106'):
             if oled_type.strip() == 'ssd1306':
                 import LM_oled as oled
@@ -529,32 +604,37 @@ class PageUI:
         else:
             syslog(f"Oled UI unknown oled_type: {oled_type}")
             Exception(f"Oled UI unknown oled_type: {oled_type}")
-        if control is not None and control.strip() == "trackball":
-            from LM_trackball import subscribe_event
-            subscribe_event(self._control_clb)
-        if haptic:
-            try:
-                from LM_haptic import tap
-                PageUI.HAPTIC = tap
-            except Exception as e:
-                syslog(f"[ERR] oledui haptic: {e}")
+        # Trackball & Haptic setup
+        self._setup(control, haptic)
         self.width = w-1            # 128 -> 0-127: Good for xy calculation, but absolut width+1 needed!
         self.height = h-1           # 64 -> 0-63: Good for xy calculation, but absolut width+1 needed!
         self.page = page
         self.timer = poweroff
         self._last_page_switch = ticks_ms()
-        self._press_output = ""
         self._cmd_task_tag = None
-        self._open_intercons = []
         # Store persistent frame objects
         self.cursor = None
         self.header_bar = None
         self.app_frame = None
         self.page_bar = None
         self.popup = None
+        self.screen_saver = None
         # Save
         PageUI.INSTANCE = self
         self.DISPLAY.clean()
+
+    def _setup(self, control, haptic):
+        # Trackball setup
+        if control is not None and control.strip() == "trackball":
+            from LM_trackball import subscribe_event
+            subscribe_event(self._control_clb)
+        # Haptic setup
+        if haptic:
+            try:
+                from LM_haptic import tap
+                PageUI.HAPTIC = tap
+            except Exception as e:
+                syslog(f"[ERR] oledui haptic: {e}")
 
     def _boot_msg(self):
         start_x = 24
@@ -578,6 +658,7 @@ class PageUI:
         self.page_bar.draw()
         self.popup = PopUpFrame(PageUI.DISPLAY, self.cursor.draw, self.app_frame, width=self.width+1,
                                   height=self.height-15, x=0, y=self.height-53)
+        self.screen_saver = ScreenSaver(PageUI.DISPLAY, width=self.width, height=self.height, x=0, y=0)
 
     def _control_clb(self, params):
         """
@@ -606,15 +687,15 @@ class PageUI:
                 self._last_page_switch = ticks_ms()
                 if action == "next":
                     self.app_frame.next()
-                    self._press_output = ""
                 if action == "prev":
                     self.app_frame.previous()
-                    self._press_output = ""
                 self.page_bar.draw()
         if action == "off":
             Frame.pause_all()
-            self.DISPLAY.poweroff()
+            self.screen_saver.run()
+            #self.DISPLAY.poweroff()
         if action == "on":
+            self.screen_saver.cancel()
             Frame.resume_all()
             self.DISPLAY.poweron()
         if action == "press":
@@ -625,9 +706,10 @@ class PageUI:
     def wake(self):
         """Wake up UI from hibernation"""
         if Frame.HIBERNATE:
-            Frame.resume_all()
+            self.screen_saver.cancel()
             if callable(PageUI.HAPTIC):
                 PageUI.HAPTIC()
+            Frame.resume_all()
             self.DISPLAY.poweron()
 
     @staticmethod
@@ -635,7 +717,7 @@ class PageUI:
         return AppFrame.add_page(page)
 
     @staticmethod
-    def _write_lines(msg, display, x, y, line_limit=3):
+    def write_lines(msg, display, x, y, line_limit=3):
         chunk_size = 15
         char_height = 10
         text_x_offset = 3
@@ -650,7 +732,7 @@ class PageUI:
 
     def _press_indicator(self, display, w, h, x, y):
         """Dynamic page - draw press callback indicator"""
-        if self._press_output == "":
+        if self.app_frame.press_output == "":
             display.text("press", int(x + (w / 2) - 20), y + 30)
 
     def lm_exec_page(self, cmd, run, display, w, h, x, y):
@@ -673,15 +755,15 @@ class PageUI:
                 cmd_out = out.strip()
             except Exception as e:
                 cmd_out = str(e)
-            self._press_output = cmd_out
-            PageUI._write_lines(cmd_out, display, x, y + 15)
+            self.app_frame.press_output = cmd_out
+            PageUI.write_lines(cmd_out, display, x, y + 15)
 
         display.text(cmd, x, y)
         if run:
             _execute(display, w, h, x, y)
         else:
             self._press_indicator(display, w, h, x, y)
-            PageUI._write_lines(self._press_output, display, x, y + 15)
+            PageUI.write_lines(self.app_frame.press_output, display, x, y + 15)
             # Return "press" callback, mandatory input parameters: display, w, h, x, y
             return {"press": _execute}
         return
@@ -702,18 +784,14 @@ class PageUI:
         def _execute(display, w, h, x, y):
             nonlocal host, cmd, run
             # Check open host connection
-            if host in self._open_intercons:
-                return
-            self._open_intercons.append(host)
             try:
                 # Send CMD to other device & show result
                 data_meta = InterCon.send_cmd(host, cmd)
                 self._cmd_task_tag = data_meta['tag']
                 if "Task is Busy" in data_meta['verdict'] and not run:
-                    self._press_output = data_meta['verdict']     # Otherwise the task start output not relevant on UI
+                    self.app_frame.press_output = data_meta['verdict']     # Otherwise the task start output not relevant on UI
             except Exception as e:
-                self._press_output = str(e)
-            self._open_intercons.remove(host)
+                self.app_frame.press_output = str(e)
 
         def _read_buffer():
             # Read command output from async buffer
@@ -721,12 +799,12 @@ class PageUI:
                 task_buffer = manage_task(self._cmd_task_tag, 'show').replace(' ', '')
                 if task_buffer is not None and len(task_buffer) > 0:
                     # Set display out to task buffered data
-                    self._press_output = task_buffer
+                    self.app_frame.press_output = task_buffer
                     # data gathered - remove tag - skip re-read
                     self._cmd_task_tag = None
-            PageUI._write_lines(self._press_output, display, x, y + 20, line_limit=2)
+            PageUI.write_lines(self.app_frame.press_output, display, x, y + 20, line_limit=2)
 
-        PageUI._write_lines(f"{host.split(".")[0]}:{cmd}", display, x, y, line_limit=2)
+        PageUI.write_lines(f"{host.split(".")[0]}:{cmd}", display, x, y, line_limit=2)
         if run:
             if self._cmd_task_tag is None:
                 _execute(display, w, h, x, y)

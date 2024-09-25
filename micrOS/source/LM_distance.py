@@ -48,7 +48,7 @@ async def __task(period_ms, dimmer, idle_cm):
         while True:
             brightness_max_cm = 200
             brightness_min_cm = 5
-            dist = int(measure_cm())
+            dist = int(measure_cm()["cm"])
             if dist > idle_cm+100:
                 await asyncio.sleep_ms(50)
                 continue
@@ -97,11 +97,11 @@ def measure_mm():
     0.34320 mm/us that is 1mm each 2.91us
     pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582
     """
-    return __send_pulse_and_wait() * 100 // 582
+    return {'mm': __send_pulse_and_wait() * 100 // 582}
 
 
 def measure_cm():
-    return (__send_pulse_and_wait() / 2) / 29.1
+    return {'cm': (__send_pulse_and_wait() / 2) / 29.1}
 
 
 def deinit():

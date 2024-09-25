@@ -2,6 +2,7 @@ from machine import Pin
 import micropython
 from Common import socket_stream, syslog
 from microIO import resolve_pin, pinmap_search
+from Types import resolve
 
 # https://www.coderdojotc.org/micropython/sensors/10-rotary-encoder/
 
@@ -42,27 +43,43 @@ class Rotary:
 
 class Data:
     ROTARY_OBJ = None
-    VAL = 0
     EVENT = True
+    VAL = 0
+    MIN_VAL = 0
+    MAX_VAL = 20
+    COLOR = (None, ())
 
 
 def _rotary_changed(change):
     if change == Rotary.ROT_CW:
         Data.EVENT = True
         Data.VAL = Data.VAL + 1
+        if Data.VAL > Data.MAX_VAL:
+            Data.VAL = Data.MIN_VAL
     elif change == Rotary.ROT_CCW:
         Data.EVENT = True
         Data.VAL = Data.VAL - 1
+        if Data.VAL < Data.MIN_VAL:
+            Data.VAL = Data.MAX_VAL
+    # Color on neopixel
+    if callable(Data.COLOR[0]):
+        try:
+            r, g, b = Data.COLOR[1][Data.VAL]
+            Data.COLOR[0](r, g, b)
+        except Exception as e:
+            syslog(f"[ERR] rencoder color: {e}")
 
 
-def load():
+def load(min_val=0, max_val=20):
     """
     Create rotary encoder
     """
     if Data.ROTARY_OBJ is None:
         # GPIO Pins 33 and 35 are for the encoder pins.
         Data.ROTARY_OBJ = Rotary(resolve_pin('rot_dt'), resolve_pin('rot_clk'))
-        Data.VAL = 0
+        Data.MIN_VAL = min_val
+        Data.MAX_VAL = max_val
+        Data.VAL = min_val
         Data.ROTARY_OBJ.add_handler(_rotary_changed)
     return 'Init RotaryEncoder with IRQs.'
 
@@ -87,11 +104,11 @@ def reset_state():
     Reset rotary encoder state to 0
     """
     msg = f"Reset state {Data.VAL} -> 0"
-    Data.VAL = 0
+    Data.VAL = Data.MIN_VAL
     return msg
 
 
-def pinmap(widgets=False):
+def pinmap():
     """
     [i] micrOS LM naming convention
     Load Module built-in help message
@@ -101,5 +118,17 @@ def pinmap(widgets=False):
     return pinmap_search(['rot_clk', 'rot_dt'])
 
 
-def help():
-    return 'load', 'read_state', 'reset_state', 'pinmap'
+def color_indicator():
+    """Encoder visualization on LED colors (LM_neopixel)"""
+    from LM_neopixel import color
+    palette_template = ((20, 0, 0), (10, 10, 0), (0, 20, 0), (0, 10, 10), (0, 0, 20))
+    repeat = int(Data.MAX_VAL / len(palette_template))+1
+    palette = palette_template * repeat
+    Data.COLOR = (color, palette)
+    color(0, 0, 0)          # initial color OFF
+    return palette
+
+
+def help(widgets=False):
+    return resolve(('load min_val=0 max_val=20', 'TEXTBOX read_state',
+                             'reset_state', 'color_indicator', 'pinmap'), widgets=widgets)

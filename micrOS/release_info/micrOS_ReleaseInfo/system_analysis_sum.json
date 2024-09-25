@@ -38,7 +38,7 @@
         ],
         "Types.py": [
             8.87,
-            26
+            28
         ],
         "Logger.py": [
             8.57,
@@ -66,7 +66,7 @@
         ],
         "microIO.py": [
             9.26,
-            41
+            42
         ],
         "micrOS.py": [
             9.29,
@@ -166,7 +166,7 @@
         ],
         "LM_neopixel.py": [
             7.59,
-            1
+            2
         ],
         "LM_cct.py": [
             8.83,
@@ -196,12 +196,16 @@
             6.52,
             1
         ],
+        "LM_veml7700.py": [
+            7.62,
+            0
+        ],
         "LM_pet_feeder.py": [
             8.0,
             0
         ],
         "LM_rencoder.py": [
-            8.92,
+            8.64,
             0
         ],
         "LM_keychain.py": [
@@ -217,7 +221,7 @@
             0
         ],
         "LM_oledui.py": [
-            8.58,
+            8.52,
             0
         ],
         "LM_telegram.py": [
@@ -274,7 +278,7 @@
         ],
         "LM_gameOfLife.py": [
             9.29,
-            2
+            3
         ],
         "LM_catgame.py": [
             8.85,
@@ -303,8 +307,8 @@
             21
         ],
         "load": [
-            8432,
-            53
+            8685,
+            54
         ],
         "core_dep": [
             true,
@@ -315,7 +319,7 @@
             5
         ],
         "core_score": 9.1,
-        "load_score": 8.22,
-        "version": "2.6.6-3"
+        "load_score": 8.21,
+        "version": "2.6.6-6"
     }
 }

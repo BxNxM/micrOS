@@ -76,3 +76,5 @@ temp6000 = const(36)   # VP  - [ADC] light sensor TEMP6000
 ph = const(39)         # VN  - [ADC] PH sensor
 ds18 = const(19)       # D19 - DS18B20 - temp. sensor
 mic = const(39)        # VN  - [ADC] microphone
+rot_dt = const(13)      # [IRQ] rotary encoder data
+rot_clk = const(12)     # [IRQ] rotary encoder clock

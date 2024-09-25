@@ -25,7 +25,7 @@ def discover():
     Discover devices
     """
     known_addresses = {hex(0x0A): "trackball", hex(0x3c): "oled",
-                       hex(0x76): "bme280"}
+                       hex(0x76): "bme280", hex(0x10): 'veml7700'}
     devices = scan()
     output = {"unknown": []}
     for k in devices:

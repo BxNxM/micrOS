@@ -625,11 +625,11 @@
             "param(s)": ""
         },
         "color_wheel": {
-            "doc": "\n    Neopixel color wheel\n    :param br: brightness value 0-100 percent\n    :param run: run led update / disable\n    ",
+            "doc": "\n    Neopixel color wheel\n    :param br: brightness value 0-100 percent\n    ",
             "param(s)": "br=None"
         },
         "display": {
-            "doc": "\n    Create kc._display task - refresh loop\n    :param period: display refresh period in ms (min. 500ms)\n    :param tts: time to sleep (in seconds)\n    ",
+            "doc": "\n    Create keychain.display task - refresh loop\n    :param period: display refresh period in ms (min. 500ms)\n    :param tts: time to sleep (in seconds)\n    ",
             "param(s)": "period=1000 tts=30"
         },
         "display_toggle": {
@@ -644,6 +644,10 @@
         "load": {
             "doc": "\n    Init OLED display 64x32 (default)\n    Init Neopixel LED (1 segment)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    :param bootmsg: First text on page at bootup, default: \"micrOS\"\n    ",
             "param(s)": "width=64 height=32 bootmsg=\"micrOS\""
+        },
+        "msgbox": {
+            "doc": null,
+            "param(s)": "msg width=64"
         },
         "neopixel_toggle": {
             "doc": "\n    Disable/Enable neopixel LED (brightness 0/default)\n    ",

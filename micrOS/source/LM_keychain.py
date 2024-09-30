@@ -1,12 +1,12 @@
 import uasyncio as asyncio
+from utime import localtime, sleep_ms
+from neopixel import NeoPixel
+from machine import Pin
 from Common import micro_task
-from utime import localtime
+from microIO import resolve_pin, pinmap_search
 from LM_oled import text, show, rect, pixel, clean, line, load as oled_lni
 from LM_ds18 import measure
 from LM_system import top, ifconfig
-from microIO import resolve_pin, pinmap_search
-from neopixel import NeoPixel
-from machine import Pin
 try:
     from LM_gameOfLife import next_gen as gol_nextgen, reset as gol_reset
 except:
@@ -141,13 +141,13 @@ async def _ui_task(period_ms, tts_ms):
     fast_period = int(period_ms/3)                  # Calculate faster refresh period
     fast_period = fast_period if fast_period > 100 else 100
 
-    # Run keychain main async loop, with update ID: kc._display
-    with micro_task(tag="kc._display") as my_task:
+    # Run keychain main async loop, with update ID: keychain.display
+    with micro_task(tag="keychain.display") as my_task:
         while True:
             if KC.DP_main_page:
                 # [MAIN MODE] Execute main page
                 await _main_page()                          #1 Run main page function
-                my_task.out = f'main page: {KC.DP_cnt}'     #2 Update task data for (task show kc._display)
+                my_task.out = f'main page: {KC.DP_cnt}'     #2 Update task data for (task show keychain.display)
                 KC.DP_cnt -= 1                              #3 Update sleep counter
                 # Async sleep - feed event loop
                 await asyncio.sleep_ms(period_ms)
@@ -167,14 +167,6 @@ async def _ui_task(period_ms, tts_ms):
             color_wheel()              # update neopixel color wheel
 
 
-def _boot_page(msg):
-    clean()
-    msg_len = len(msg)*8                # message text length in pixels
-    x_offset = int((64 - msg_len)/2)    # x (width) center-ing offset
-    text(msg, x=x_offset, y=11)         # y(height):32 TODO: Auto positioning in y axes (multi line...)
-    show()
-
-
 #############################
 #      PUBLIC FUNCTIONS     #
 #############################
@@ -187,10 +179,10 @@ def load(width=64, height=32, bootmsg="micrOS"):
     :param height: screen height (pixel)
     :param bootmsg: First text on page at bootup, default: "micrOS"
     """
-    KC.COLOR_WHEEL = __color_wheel()             #1 Init neopixel color wheel generator
+    KC.COLOR_WHEEL = __color_wheel()            #1 Init neopixel color wheel generator
     try:
         oled_lni(width, height, brightness=20)  #2 Init oled display
-        _boot_page(bootmsg)                     #3 Show boot page text
+        msgbox(bootmsg, width)                  #3 Show boot page text
         KC.INITED = True                        # Set display was successfully inited (for _task auto init)
         return "OLED INIT OK"
     except Exception as e:
@@ -198,16 +190,34 @@ def load(width=64, height=32, bootmsg="micrOS"):
         return f"OLED INIT NOK: {e}"
 
 
+def msgbox(msg, width=64):
+    clean()
+    chunk_size, char_height, line_limit = 8, 10, 3
+    # Format message: fitting and \n parsing
+    msg = msg.split('\n')
+    chunks = [line[i:i + chunk_size] for line in msg for i in range(0, len(line), chunk_size)]
+    for i, line in enumerate(chunks):
+        if i > line_limit - 1:  # max line_limit lines of 13 char
+            break
+        start_x = int((width - len(line)*8)/2)
+        start_y = char_height * i
+        for k in range(0, len(line)):
+            text(line[0:k+1], start_x, start_y)
+            show()
+            sleep_ms(100)
+    sleep_ms(2000)
+
+
 def display(period=1000, tts=30):
     """
-    Create kc._display task - refresh loop
+    Create keychain.display task - refresh loop
     :param period: display refresh period in ms (min. 500ms)
     :param tts: time to sleep (in seconds)
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 500 if period < 500 else period
     tts_ms = 5000 if tts < 5 else tts*1000
-    state = micro_task(tag="kc._display", task=_ui_task(period_ms, tts_ms))
+    state = micro_task(tag="keychain.display", task=_ui_task(period_ms, tts_ms))
     return "Starting" if state else "Already running"
 
 
@@ -222,7 +232,6 @@ def color_wheel(br=None):
     """
     Neopixel color wheel
     :param br: brightness value 0-100 percent
-    :param run: run led update / disable
     """
     def _init():
         if KC.NEOPIXEL_OBJ is None:
@@ -262,9 +271,10 @@ def neopixel_toggle():
     """
     Disable/Enable neopixel LED (brightness 0/default)
     """
-    KC.NEOPIXEL_BR = 0 if KC.NEOPIXEL_BR > 0 else 30
+    KC.NEOPIXEL_BR = 0 if KC.NEOPIXEL_BR > 0 else 20
     v = 'disabled' if KC.NEOPIXEL_BR == 0 else 'enabled'
     return f"Neopixel: {v} br: {KC.NEOPIXEL_BR}"
+
 
 def button():
     """
@@ -303,6 +313,7 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return ('load width=64 height=32 bootmsg="micrOS"',
+            'msgbox msg="micrOS"',
             'temperature', 
             'display period>=1000 tts=30',
             'button',

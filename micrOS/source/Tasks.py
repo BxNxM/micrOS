@@ -33,6 +33,7 @@ class TaskBase:
     """
     Async task base definition for common features
     """
+    __slots__ = ['task', 'done', 'out', 'tag', '__callback', '__inloop', '__sleep']
     QUEUE_SIZE = cfgget('aioqueue')     # QUEUE size from config
     TASKS = {}                          # TASK OBJ list
 
@@ -208,6 +209,7 @@ class Manager:
     """
     micrOS async task handler
     """
+    __slots__ = ['_initialized', 'idle_counter']
     INSTANCE = None                      # Manager object
     LOAD = 0                             # CPU overload measure
 

@@ -3,7 +3,7 @@ micrOS Load Module programming Official API-s
     Designed by Marcell Ban aka BxNxM
 """
 
-from Server import SocketServer, WebCli
+from Server import Server, WebCli
 from Debug import errlog_add, console_write
 from Logger import logger, log_get
 from microIO import resolve_pin
@@ -185,10 +185,10 @@ def socket_stream(func):
     """
     [LM] Decorator for Socket message stream - adds msgobj to the decorated function arg list.
     Use msgobj as print function: msgobj("hello")
-    (SocketServer singleton class - reply all bug/feature)
+    (Server singleton class - reply all bug/feature)
     """
     def wrapper(*args, **kwargs):
-        return func(*args, **kwargs, msgobj=SocketServer.reply_all)
+        return func(*args, **kwargs, msgobj=Server.reply_all)
     return wrapper
 
 

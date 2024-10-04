@@ -3,7 +3,7 @@ from re import compile
 import uasyncio as asyncio
 from Debug import errlog_add
 from Config import cfgget
-from Server import SocketServer
+from Server import Server
 from Tasks import NativeTask
 
 
@@ -40,7 +40,7 @@ class InterCon:
                     addr_info = getaddrinfo(host, InterCon.PORT, 0, SOCK_STREAM)
                     host = addr_info[-1][4][0]
                 except OSError as e:
-                    SocketServer.reply_all(f"[intercon] NoHost: {e}")
+                    Server.reply_all(f"[intercon] NoHost: {e}")
                     errlog_add(f"[intercon] send_cmd {host} oserr: {e}")
                     return ''
             else:
@@ -54,7 +54,7 @@ class InterCon:
                 # Send command over TCP/IP
                 output = await self.__run_command(cmd, hostname)
             except OSError as e:
-                SocketServer.reply_all(f"[intercon] NoHost: {e}")
+                Server.reply_all(f"[intercon] NoHost: {e}")
                 errlog_add(f"[intercon] send_cmd {host} oserr: {e}")
                 output = None
             finally:
@@ -95,7 +95,7 @@ class InterCon:
             # Successful data receive, return data
             return data
         # Skip command run: prompt and host not the same!
-        SocketServer.reply_all(f"[intercon] prompt mismatch, hostname: {hostname} prompt: {prompt}")
+        Server.reply_all(f"[intercon] prompt mismatch, hostname: {hostname} prompt: {prompt}")
         return None
 
     async def __auth_handshake(self, prompt):

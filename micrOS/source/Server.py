@@ -25,9 +25,13 @@ except:
 
 # Module load optimization, needed only for webui
 if cfgget('webui'):
-    from json import dumps, loads
-    from Tasks import lm_exec, NativeTask, lm_is_loaded
-
+    from Web import WebEngine
+else:
+    # Create dummy web engine - Laizy loading
+    class WebEngine:
+        __slots__ = []
+        def __init__(self, *args, **kwargs):
+            pass
 
 #########################################################
 #         SOCKET SERVER-CLIENT HANDLER CLASSES          #
@@ -146,15 +150,11 @@ class Client:
         Client.console(f"[Client] del: {self.client_id}")
 
 
-class WebCli(Client):
-    REST_ENDPOINTS = {}
-    AUTH = cfgget('auth')
-    REQ200 = "HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len}\r\n\r\n{data}"
-    REQ400 = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
-    REQ404 = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
+class WebCli(Client, WebEngine):
 
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer, r_size=512)
+        WebEngine.__init__(self, client=self, version=Shell.MICROS_VERSION)
 
     async def run_web(self):
         # Update server task output
@@ -175,146 +175,14 @@ class WebCli(Client):
         await self.close()
 
     @staticmethod
-    def file_type(path):
-        """File dynamic Content-Type handling"""
-        content_types = {".html": "text/html",
-                         ".css": "text/css",
-                         ".js": "application/javascript"}
-        # Extract the file extension
-        ext = path.rsplit('.', 1)[-1]
-        # Return the content type based on the file extension
-        return content_types.get(f".{ext}", "text/plain")
-
-    async def response(self, request):
-        """HTTP GET REQUEST - WEB INTERFACE"""
-        # Parse request line (first line)
-        _method, url, _version = request.split('\n')[0].split()
-        # Protocol validation
-        if _method != "GET" and _version.startswith('HTTP'):
-            _err = "Bad Request: not GET HTTP/1.1"
-            await self.a_send(self.REQ400.format(len=len(_err), data=_err))
-            return
-
-        # [1] REST API GET ENDPOINT [/rest]
-        if url.startswith('/rest'):
-            Client.console("[WebCli] --- /rest ACCEPT")
-            try:
-                await self.a_send(WebCli.rest(url))
-            except Exception as e:
-                await self.a_send(self.REQ404.format(len=len(str(e)), data=e))
-            return
-        # [2] DYNAMIC/USER ENDPOINTS (from Load Modules)
-        if await self.endpoints(url):
-            return
-        # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
-        if url.startswith('/'):
-            resource = 'index.html' if url == '/' else url.replace('/', '')
-            Client.console(f"[WebCli] --- {url} ACCEPT")
-            if resource.split('.')[-1] not in ('html', 'js', 'css'):
-                await self.a_send(self.REQ404.format(len=27, data='404 Not supported file type'))
-                return
-            try:
-                # SEND RESOURCE CONTENT: HTML, JS, CSS
-                with open(resource, 'r') as file:
-                    html = file.read()
-                await self.a_send(self.REQ200.format(dtype=WebCli.file_type(resource), len=len(html), data=html))
-            except OSError:
-                await self.a_send(self.REQ404.format(len=13, data='404 Not Found'))
-            return
-        # INVALID/BAD REQUEST
-        await self.a_send(self.REQ400.format(len=15, data='400 Bad Request'))
-
-    @staticmethod
-    def rest(url):
-        resp_schema = {'result': None, 'state': False}
-        cmd = url.replace('/rest', '')
-        if len(cmd) > 1:
-            # REST sub-parameter handling (rest commands)
-            cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"')
-                   .replace('%E2%80%9D', '"').replace('-', ' ').strip().split())
-            # request json format instead of default string output (+ handle & tasks syntax)
-            cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
-            # EXECUTE COMMAND - LoadModule
-            if WebCli.AUTH:
-                state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) or cmd[0].startswith('modules') else (True, 'Auth:Protected')
-            else:
-                state, out = lm_exec(cmd)
-            try:
-                resp_schema['result'] = loads(out)       # Load again ... hack for embedded shell json converter...
-            except:
-                resp_schema['result'] = out
-            resp_schema['state'] = state
-        else:
-            resp_schema['result'] = {"micrOS": Shell.MICROS_VERSION, 'node': cfgget('devfid'), 'auth': WebCli.AUTH}
-            if len(tuple(WebCli.REST_ENDPOINTS.keys())) > 0:
-                resp_schema['result']['usr_endpoints'] = tuple(WebCli.REST_ENDPOINTS)
-            resp_schema['state'] = True
-        response = dumps(resp_schema)
-        return WebCli.REQ200.format(dtype='text/html', len=len(response), data=response)
-
-    @staticmethod
     def register(endpoint, callback):
         # AUTO ENABLE webui when register (endpoint) called and webui is False
         if not cfgget('webui'):
             from Config import cfgput
-            if cfgput('webui', True):        # SET webui to True
+            if cfgput('webui', True):  # SET webui to True
                 from machine import reset
-                reset()                                 # HARD RESET (REBOOT)
-        WebCli.REST_ENDPOINTS[endpoint] = callback
-
-    async def endpoints(self, url):
-        url = url[1:]       # Cut first / char
-        if url in WebCli.REST_ENDPOINTS:
-            console_write(f"[WebCli] endpoint: {url}")
-            # Registered endpoint was found - exec callback
-            try:
-                # RESOLVE ENDPOINT CALLBACK
-                # dtype:
-                #   one-shot: image/jpeg | text/html | text/plain              - data: raw
-                #       task: multipart/x-mixed-replace | multipart/form-data  - data: dict=callback,content-type
-                #                   content-type: image/jpeg | audio/l16;*
-                dtype, data = WebCli.REST_ENDPOINTS[url]()
-                if dtype == 'image/jpeg':
-                    resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
-                    await self.a_send(resp, encode=None)
-                elif dtype in ('multipart/x-mixed-replace', 'multipart/form-data'):
-                    headers = (f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode('utf-8')
-                    await self.a_send(headers, encode=None)
-                    # Start Native stream async task
-                    task = NativeTask()
-                    task.create(callback=self.stream(data['callback'], task, data['content-type']),
-                                tag=f"web.stream_{self.client_id.replace('W', '')}")
-                else:  # dtype: text/html or text/plain
-                    await self.a_send(f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
-            except Exception as e:
-                await self.a_send(self.REQ404.format(len=len(str(e)), data=e))
-                errlog_add(f"[ERR] WebCli endpoints {url}: {e}")
-            return True         # Registered endpoint was found and executed
-        return False            # Not registered endpoint
-
-    async def stream(self, callback, task, content_type):
-        """
-        Async stream method
-        :param callback: sync or async function callback (auto-detect) WARNING: works for functions only (not methods!)
-        """
-        is_coroutine = 'generator' in str(type(callback))   # async function callback auto-detect
-        with task:
-            task.out = 'Stream started'
-            data_to_send = b''
-
-            while self.connected and data_to_send is not None:
-                data_to_send = await callback() if is_coroutine else callback()
-                part = (f"\r\n--micrOS_boundary\r\nContent-Type: {content_type}\r\n\r\n").encode('utf-8') + data_to_send
-                task.out = 'Data sent'
-                await self.a_send(part, encode=None)
-                await asyncio.sleep_ms(10)
-
-            # Gracefully terminate the stream
-            if self.connected:
-                closing_boundary = '\r\n--micrOS_boundary--\r\n'
-                await self.a_send(closing_boundary, encode=None)
-                await self.close()
-            task.out = 'Finished stream'
+                reset()  # HARD RESET (REBOOT)
+        WebEngine.REST_ENDPOINTS[endpoint] = callback
 
 
 class ShellCli(Client, Shell):
@@ -347,7 +215,7 @@ class ShellCli(Client, Shell):
                 self.drain_event.clear()        # set drain busy (False)
                 asyncio.get_event_loop().create_task(self.__wait_for_drain())
         else:
-            console_write(f"[ShellCli] NoCon: response>/dev/nul")
+            console_write("[ShellCli] NoCon: response>/dev/nul")
 
     async def __wait_for_drain(self):
         """
@@ -421,13 +289,14 @@ class ShellCli(Client, Shell):
 #                    SOCKET SERVER CLASS                #
 #########################################################
 
-class SocketServer:
+class Server:
     """
     Socket message data packet layer - send and receive
     Embedded command interpretation:
     - exit
     Handle user requests/commands with Shell (bash like experience)
     """
+    __slots__ = ['server', 'web', '_host', '_socqueue', '_port', '_timeout', '_initialized']
     __instance = None
 
     def __new__(cls):
@@ -437,8 +306,8 @@ class SocketServer:
         cls     - class
         """
         if not cls.__instance:
-            # SocketServer singleton properties
-            cls.__instance = super(SocketServer, cls).__new__(cls)
+            # Server singleton properties
+            cls.__instance = super(Server, cls).__new__(cls)
             cls.__instance._initialized = False
         return cls.__instance
 

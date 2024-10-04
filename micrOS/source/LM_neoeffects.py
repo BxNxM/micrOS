@@ -11,7 +11,6 @@ class DrawEffect:
 
     def __new__(cls, pixcnt=24):
         if DrawEffect.__instance is None:
-            # SocketServer singleton properties
             DrawEffect.__instance = super().__new__(cls)
             DrawEffect.__instance.pix_cnt = None
             DrawEffect.__instance.index_offset = 0

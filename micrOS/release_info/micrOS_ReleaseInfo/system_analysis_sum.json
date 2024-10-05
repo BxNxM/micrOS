@@ -22,11 +22,11 @@
         ],
         "Tasks.py": [
             9.78,
-            11
+            12
         ],
         "Config.py": [
             9.44,
-            15
+            16
         ],
         "reset.py": [
             8.75,
@@ -62,7 +62,11 @@
         ],
         "Network.py": [
             9.71,
-            8
+            9
+        ],
+        "Espnow.py": [
+            9.02,
+            1
         ],
         "Scheduler.py": [
             9.61,
@@ -228,6 +232,10 @@
             8.52,
             0
         ],
+        "LM_espnow.py": [
+            7.5,
+            0
+        ],
         "LM_telegram.py": [
             9.02,
             0
@@ -307,23 +315,23 @@
     },
     "summary": {
         "core": [
-            3209,
-            22
+            3296,
+            23
         ],
         "load": [
-            8695,
-            54
+            8711,
+            55
         ],
         "core_dep": [
             true,
             0
         ],
         "load_dep": [
-            true,
-            5
+            false,
+            6
         ],
-        "core_score": 9.14,
-        "load_score": 8.21,
-        "version": "2.7.1-0"
+        "core_score": 9.13,
+        "load_score": 8.19,
+        "version": "2.8.0-0"
     }
 }

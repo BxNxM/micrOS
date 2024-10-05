@@ -59,7 +59,7 @@ def info():
     buffer.update({'CPU clock [MHz]': int(freq() * 0.0000001), 'upython': uname()[3],
               'board': uname()[4], 'uptime': uptime()})
     try:
-        buffer['mac'] = get_mac()
+        buffer['mac'] = hexlify(get_mac(), ':').decode()
     except:
         buffer['mac'] = 'n/a'
     return buffer

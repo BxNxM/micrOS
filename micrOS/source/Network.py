@@ -55,7 +55,7 @@ def set_dev_uid():
 
 
 def get_mac():
-    return hexlify(WLAN().config('mac'), ':').decode()
+    return WLAN().config('mac')
 
 #################################################################
 #                       SET WIFI STA MODE                       #

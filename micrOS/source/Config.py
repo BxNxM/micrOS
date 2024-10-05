@@ -61,9 +61,10 @@ class Data:
                     "aioqueue": 5,
                     "utc": +60,
                     "boostmd": True,
-                    "guimeta": "...",     # special "offloaded" key indicator
+                    "guimeta": "...",       # special "offloaded" key indicator
                     "cstmpmap": "n/a",
-                    "telegram": "n/a"}    # telegram bot token
+                    "telegram": "n/a",      # telegram bot token
+                    "espnow": False}
 
     @staticmethod
     def init():

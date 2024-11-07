@@ -4,15 +4,22 @@
     100% {background-position: 0% 50%;}
 }
 body {
-    height: 200vh; /* Set the height to 100% of the viewport height */
-    width: 100vh; /* Set the width to 200% of the viewport height */
+    height: calc(100vh - 6%); /* Set the height to 100% of the viewport height */
+    width: calc(100vw - 6%); /* Set the width to 200% of the viewport height */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    margin: 40px;
+    margin: 3%;
     background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
     background-size: 200% 200%;
     animation: backgroundAnimation 15s infinite;
     color: #d9d9d9;
     font-family: 'Verdana', Sans-serif;
+}
+p {
+    word-wrap: break-word;
+}
+pre {
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }
 button {
     background-color: #e7e7e7; /* Gray */

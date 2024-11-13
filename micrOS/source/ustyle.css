@@ -33,3 +33,20 @@ button:hover {
     background-color: #555555; /* Black */
     color: white;
 }
+ol.widget {
+    list-style-type: none;
+    padding: 0px;
+    margin-right: 40px;
+}
+#widgets-section {
+  display: flex; /* Display list items horizontally */
+  flex-wrap: wrap; /* Wrap items to multiple lines if needed */
+}
+@media (max-width: 768px) { /* Adjust the breakpoint as needed */
+  #widgets-section {
+    flex-direction: column; /* Display list items vertically */
+  }
+  ol.widget {
+    margin-right: 0px;
+  }
+}

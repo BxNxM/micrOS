@@ -18,15 +18,22 @@ function containerAppendChild(elements, container) {
     // Append list of elements into the container aka draw elements :D
     if (!elements || !container) {
         console.error("Inputs array or container element is missing.");
-        return;}
+        return;
+    }
     elements.forEach(function(element) {
         container.appendChild(element);});
 }
 
-function generateElement(type, data, options={}) {
+function generateElement(type, module, lm_call="", options={}) {
     // type: slider, button, box, h1, h2, p, li, etc.
     // data: rest command
-    const container = document.getElementById('dynamicContent');
+    console.log(`type: ${type}`);
+    const data = `${module}/${lm_call}`;
+    console.log(`data: ${data}`);
+    const container = document.getElementById(`container-${module}`);
+    if(!container) {
+        console.error("No container");
+    }
     if (type === 'slider') {
         // Create slider widget
         sliderWidget(container, data, options)
@@ -44,10 +51,9 @@ function generateElement(type, data, options={}) {
         joystickWidget(container, data, options)
     } else {
         // Create other elements
-        const paragraph = document.createElement('p');
         const element = document.createElement(type);
-        element.textContent = data;
-        containerAppendChild([paragraph, element], container);
+        element.textContent = `🧬 ${module}`;
+        containerAppendChild([element], container);
     }
 }
 
@@ -67,8 +73,16 @@ function craftModuleWidgets(module, widgets) {
         console.log(`${module} no exposed widgets`);
         return;
     }
-    console.log(`Craft widgets bind to ${module}`);
-    generateElement('h2', `🧬 ${module}`);
+
+    console.log(`Craft widget to ${module}`);
+    // Create HTML elements for widgets
+    const widgets_section = document.getElementById('widgets-section');
+    const widget_container = document.createElement('ol');
+    widget_container.id = `container-${module}`;
+    widget_container.className = "widget";
+    widgets_section.appendChild(widget_container);
+    // Create widget title
+    generateElement('h2', module);
 
     const widgetTypeOptions = {
         button: item => ({title_len: autoTitleLen(widgets, item.lm_call), options: item.options }),
@@ -78,6 +92,7 @@ function craftModuleWidgets(module, widgets) {
         joystick: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range })
     };
 
+    // Create control elements for widget
     widgets.forEach(item => {
         let { type, lm_call } = item;
         lm_call = lm_call.replace(/\s/g, '/');
@@ -88,7 +103,8 @@ function craftModuleWidgets(module, widgets) {
         }
 
         try {
-            generateElement(type, `${module}/${lm_call}`, type_options);
+            console.log("adding widget controls");
+            generateElement(type, module, lm_call, type_options);
         } catch (error) {
             console.error(error);
         }

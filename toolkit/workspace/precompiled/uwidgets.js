@@ -77,7 +77,7 @@ function buttonWidget(container, command, params={}) {
         });
         paragraph.appendChild(element);
     });
-    container.appendChild(paragraph);
+    containerAppendChild([paragraph], container);
 }
 
 function textBoxWidget(container, command, params={}) {

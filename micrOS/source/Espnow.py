@@ -7,33 +7,47 @@ from Config import cfgget
 
 # https://docs.micropython.org/en/latest/library/espnow.html
 _INSTANCE = None
+_DEVFID = cfgget('devfid')
 
 
-async def execute(prompt, msg):
+async def asend(now, mac, msg):
+    prompt = f"{_DEVFID}$"
+    msg = f"{msg}\n{prompt}".encode("utf-8")
+    return await now.asend(mac, msg)
+
+
+def execute(msg, my_task):
     msg_in = msg.decode('utf-8')
-    msg_out = f"[{prompt} ECHO {msg_in}]"
-    return msg_out.encode("utf-8")
+    if msg_in.strip().endswith("$"):
+        my_task.out = f"MSG-IN: {msg_in}"
+        data = msg_in.split("\n")
+        prompt, command = data[0], data[1]
+        msg_out = f"RUN CMD: {command} ON {prompt.replace('$', '')}"
+        # TODO: execute command
+        return True, msg_out
+    return False, ""
 
 
 # Echo any received messages back to the sender
 async def _server(now):
-    prompt = f"{cfgget('devfid')} $ "
     with TaskBase.TASKS.get('espnow.server', None) as my_task:
         async for mac, msg in now:
-            my_task.out = f"MSG-IN: {msg}"
             try:
-                msg = await execute(prompt, msg)
-                await now.asend(mac, msg)
+                msg_ready, msg = execute(msg, my_task)
+                if msg_ready:
+                    await asend(now, mac, msg)
             except OSError as err:
                 if len(err.args) > 1 and err.args[1] == 'ESP_ERR_ESPNOW_NOT_FOUND':
                     now.add_peer(mac)
-                    await now.asend(mac, msg)
+                    msg_ready, msg = execute(msg, my_task)
+                    if msg_ready:
+                        await asend(now, mac, msg)
 
 
 # Send a periodic ping to a peer
 async def _send(now, peer, tag, msg):
     with TaskBase.TASKS.get(tag) as my_task:
-        if not await now.asend(peer, msg):
+        if not await asend(now, peer, msg):
             my_task.out = "Peer not responding"
         else:
             my_task.out = f"send msg: {msg}"
@@ -83,7 +97,6 @@ def espnow_send(peer, msg):
     now = initialize()
     mac = hexlify(peer, ':').decode()
     task_id = f"espnow.cli.{mac}"
-    msg = msg.encode('utf-8')
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     state = NativeTask().create(callback=_send(now, peer, task_id, msg), tag=task_id)
     return "Starting" if state else "Already running"

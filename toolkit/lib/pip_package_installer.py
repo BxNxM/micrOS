@@ -40,15 +40,21 @@ def list_packages():
     return AVAILABLE_PACKAGES
 
 
-def install_package(name):
+def install_package(name, additional_pip_param=None):
     try:
-        state = subprocess.check_call([INTERPRETER, '-m', 'pip', 'install', name])
+        if additional_pip_param is None:
+            state = subprocess.check_call([INTERPRETER, '-m', 'pip', 'install', name])
+        else:
+            state = subprocess.check_call([INTERPRETER, '-m', 'pip', 'install', name, additional_pip_param])
         if state:
             print(f"{TerminalColors.Colors.OK}[PIP] install {name} OK{TerminalColors.Colors.NC}")
         else:
             print(f"{TerminalColors.Colors.WARN}[PIP] install {name} NOK{TerminalColors.Colors.NC}")
     except subprocess.CalledProcessError as e:
         print(f"{TerminalColors.Colors.ERR}[PIP] error: {e}{TerminalColors.Colors.NC}")
+        if "externally-managed-environment" in str(e) and additional_pip_param is None:
+            print("|- Retry with --break-system-packages parameter")
+            return install_package(name, additional_pip_param='--break-system-packages')
         state = False
     return state
 

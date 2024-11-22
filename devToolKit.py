@@ -23,12 +23,17 @@ APP_DIR = os.path.join(MYPATH, 'toolkit/dashboard_apps')
 import argparse
 from toolkit import MicrOSDevEnv
 from toolkit import socketClient
-from toolkit.lib import LocalMachine, macroScript
+from toolkit.lib import LocalMachine
 try:
     from toolkit import micrOSlint
 except Exception as e:
     print(f"micrOS linter import error: {e}")
     micrOSlint = None
+try:
+    from toolkit.lib import macroScript
+except Exception as e:
+    print(f"Optional dependency missing in macroScript: {e}")
+    macroScript = None
 
 
 def arg_parse():
@@ -288,7 +293,10 @@ if __name__ == "__main__":
             sys.exit(micrOSlint.main(verbose=False))
 
     if cmd_args.macro:
-        executor = macroScript.Executor()
-        executor.run_micro_script(cmd_args.macro)
+        if macroScript is None:
+            print("macroScript not available :(")
+        else:
+            executor = macroScript.Executor()
+            executor.run_micro_script(cmd_args.macro)
 
     sys.exit(0)

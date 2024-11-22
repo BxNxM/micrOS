@@ -9,13 +9,17 @@ try:
     from .micrOSClient import micrOSClient, color
 except:
     from micrOSClient import micrOSClient, color
+try:
+    import curses
+except Exception as e:
+    print(f"Missing dependency for curses: {e}")
+    curses = None
 
 DRY_RUN = False
 
 #####################################
 #         FILE SELECTION TUI        #
 #####################################
-import curses
 
 def select_menu(directory):
     if not os.path.isdir(directory):
@@ -37,6 +41,8 @@ def select_menu(directory):
         return f"{spacer}{preview}"
 
     def display_menu(stdscr):
+        if curses is None:
+            return None
         curses.curs_set(0)  # Hide the cursor
         current_row = 0
         while True:

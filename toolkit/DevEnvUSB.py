@@ -35,29 +35,29 @@ class USB(Compile):
         self.esptool_interface = self.get_valid_esptool_cmd()
         self.dev_types_and_cmds = \
             {'esp32':
-                 {'erase': '{self.esptool_interface} --port {dev} erase_flash',
-                  'deploy': '{self.esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
+                 {'erase': '{esptool_interface} --port {dev} erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
                   'mpremote_cmd': None,
                   'cmd_line_info': '[!HINT!] PRESS [EN] BUTTON TO ENABLE DEVICE ERASE...'},
              'esp32cam':
-                  {'erase': '{self.esptool_interface} --port {dev} erase_flash',
-                   'deploy': '{self.esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
+                  {'erase': '{esptool_interface} --port {dev} erase_flash',
+                   'deploy': '{esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                    'mpremote_cmd': 'mpremote',
                    'cmd_line_info': '*** [!DISCLAIMER!] ***\n\tUSB copy not works with some serial interface\n\tCopy manually: toolkit/workspace/precompiled/micrOSloader.mpy\n\tNetwork.mpy Debug.mpy ConfigHandler.mpy main.py\n\tThen push OTA update over AP mode... Then you are done'},
              'esp32s2':
-                 {'erase': '{self.esptool_interface} --chip esp32s2 --port {dev} --after no_reset erase_flash',
-                  'deploy': '{self.esptool_interface} --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}',
+                 {'erase': '{esptool_interface} --chip esp32s2 --port {dev} --after no_reset erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!HINT!] Hold on Button 0 -> Press Button Reset -> Release Button 0 TO ENABLE DEVICE ERASE...'},
              'tinypico':
-                 {'erase': '{self.esptool_interface} --port {dev} erase_flash',
-                  'deploy': '{self.esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
+                 {'erase': '{esptool_interface} --port {dev} erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': ''},
              'tinypico_usbc':
-                 {'erase': '{self.esptool_interface} --port {dev} erase_flash',
-                  'deploy': '{self.esptool_interface} --chip esp32 --port {dev} --baud 921600 write_flash -z 0x1000 {micropython}',
+                 {'erase': '{esptool_interface} --port {dev} erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32 --port {dev} --baud 921600 write_flash -z 0x1000 {micropython}',
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
                   'mpremote_cmd': None,
                   'cmd_line_info': ''},
@@ -67,18 +67,18 @@ class USB(Compile):
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!!!] Experimental device - no stable micropython yet'},
              'esp32s3_spiram_oct':
-                 {'erase': '{self.esptool_interface} --chip esp32s3 --port {dev} erase_flash',
-                  'deploy': '{self.esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
+                 {'erase': '{esptool_interface} --chip esp32s3 --port {dev} erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!!!] Fully automatic deployment.'},
              'esp32s3':
-                 {'erase': '{self.esptool_interface} --chip esp32s3 --port {dev} erase_flash',
-                  'deploy': '{self.esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
+                 {'erase': '{esptool_interface} --chip esp32s3 --port {dev} erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!!!] Fully automatic deployment.'},
              'esp32c3':
-                 {'erase': '{self.esptool_interface} --chip esp32c3 --port {dev} erase_flash',
-                  'deploy': '{self.esptool_interface} --chip esp32c3 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}',
+                 {'erase': '{esptool_interface} --chip esp32c3 --port {dev} erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32c3 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!HINT!] Fully automatic deployment...'},
              }
@@ -155,7 +155,7 @@ class USB(Compile):
 
         selected_device = self.get_devices()[0]
         print("selected_device_port: {}".format(selected_device))
-        command = erase_cmd.format(dev=selected_device)
+        command = erase_cmd.format(dev=selected_device, esptool_interface=self.esptool_interface)
         self.console("CMD: {}".format(command))
         if self.dry_run:
             exitcode = 0
@@ -189,7 +189,8 @@ class USB(Compile):
 
         selected_device = self.get_devices()[0]
         selected_micropython = self.selected_micropython_bin
-        command = deploy_cmd.format(dev=selected_device, micropython=selected_micropython)
+        command = deploy_cmd.format(dev=selected_device, micropython=selected_micropython,
+                                    esptool_interface=self.esptool_interface)
         self.console("CMD: {}".format(command))
         if self.dry_run:
             exitcode = 0

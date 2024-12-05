@@ -82,10 +82,6 @@ def __auto_restart_event():
             - value: micros     [update was successful - reboot is necessary]
     :return:
     """
-    from sys import platform
-    if platform == 'rp2':
-        print("[loader][ota-rebooter] SKIP on platform: rp2 (webrepl block)")
-        return
 
     from utime import sleep
     trigger_is_active = False

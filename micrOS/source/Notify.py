@@ -9,7 +9,6 @@ from Debug import console_write
 #          with Telegram Class          #
 #########################################
 
-
 class Telegram:
     # Telegram bot token and chat ID
     # https://core.telegram.org/bots/api

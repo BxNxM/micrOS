@@ -141,7 +141,6 @@ def exec_cmd(cmd, skip_check=False):
     return lm_exec(cmd) if isinstance(cmd, list) else False, f"Invalid type, must be list: {type(cmd)}"
 
 
-
 def notify(text):
     """
     [LM] micrOS common notification handler (Telegram)
@@ -164,6 +163,7 @@ def notify(text):
     if out is not None and (out.startswith('Sent') or out.endswith('disabled')):
         return True
     return False
+
 
 def web_endpoint(endpoint, function):
     """

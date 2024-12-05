@@ -1,10 +1,11 @@
 import sys
-from sys import executable
 import os
 import subprocess
+import getpass
+USER = getpass.getuser()
 MYPATH = os.path.dirname(__file__)
 USER_DATA_OPT_INST_DONE = os.path.join(MYPATH, '../user_data/.opt_dep_install')
-INTERPRETER = executable
+INTERPRETER = sys.executable
 
 sys.path.append(os.path.join(MYPATH, '../'))
 from DevEnvCompile import Compile
@@ -40,21 +41,38 @@ def list_packages():
     return AVAILABLE_PACKAGES
 
 
+def run_subprocess(cmd_list: list):
+    try:
+        result = subprocess.run(
+            cmd_list,
+            capture_output=True,  # Captures stdout and stderr
+            text=True,  # Decodes output into strings
+            check=True  # Raises CalledProcessError for non-zero exit codes
+        )
+        print(f"Subprocess output: {result.stdout}")
+        return True, result.stdout
+    except subprocess.CalledProcessError as e:
+        print(f"{TerminalColors.Colors.ERR}Subprocess error:{TerminalColors.Colors.NC} {e.stderr}")
+        return False, e.stderr
+
 def install_package(name, additional_pip_param=None):
+    print(f"Install optional dependency (pip): {name}")
     try:
         if additional_pip_param is None:
-            state = subprocess.check_call([INTERPRETER, '-m', 'pip', 'install', name])
+            state, out = run_subprocess([INTERPRETER, '-m', 'pip', 'install', '--user', USER, name])
         else:
-            state = subprocess.check_call([INTERPRETER, '-m', 'pip', 'install', name, additional_pip_param])
+            state, out = run_subprocess([INTERPRETER, '-m', 'pip', 'install', '--user', USER, name, additional_pip_param])
         if state:
             print(f"{TerminalColors.Colors.OK}[PIP] install {name} OK{TerminalColors.Colors.NC}")
         else:
             print(f"{TerminalColors.Colors.WARN}[PIP] install {name} NOK{TerminalColors.Colors.NC}")
+            # Support brew installed python
+            if "This environment is externally managed" in out:
+                if "brew install" in out:
+                    print(f"Install optional dependency (brew): {name}")
+                    state, out = run_subprocess(["brew", "install", name])
     except subprocess.CalledProcessError as e:
         print(f"{TerminalColors.Colors.ERR}[PIP] error: {e}{TerminalColors.Colors.NC}")
-        if "externally-managed-environment" in str(e) and additional_pip_param is None:
-            print("|- Retry with --break-system-packages parameter")
-            return install_package(name, additional_pip_param='--break-system-packages')
         state = False
     return state
 

@@ -1,8 +1,8 @@
 import asyncio
 
 
-def open_connection(host, port):
-    return asyncio.open_connection(host, port)
+def open_connection(host, port, ssl=False):
+    return asyncio.open_connection(host, port, ssl=ssl)
 
 
 class Lock(asyncio.Lock):

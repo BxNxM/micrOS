@@ -5,7 +5,7 @@
             7
         ],
         "micrOSloader.py": [
-            7.85,
+            7.87,
             1
         ],
         "Hooks.py": [
@@ -50,7 +50,7 @@
         ],
         "Common.py": [
             9.49,
-            32
+            33
         ],
         "InterConnect.py": [
             9.4,
@@ -89,8 +89,8 @@
             0
         ],
         "urequests.py": [
-            8.94,
-            4
+            8.79,
+            5
         ],
         "LM_roboarm.py": [
             7.78,
@@ -121,7 +121,7 @@
             0
         ],
         "LM_rest.py": [
-            7.0,
+            7.78,
             0
         ],
         "LM_oled.py": [
@@ -315,11 +315,11 @@
     },
     "summary": {
         "core": [
-            3306,
+            3360,
             23
         ],
         "load": [
-            8711,
+            8745,
             55
         ],
         "core_dep": [
@@ -330,8 +330,8 @@
             true,
             6
         ],
-        "core_score": 9.13,
-        "load_score": 8.19,
-        "version": "2.8.1-0"
+        "core_score": 9.12,
+        "load_score": 8.21,
+        "version": "2.8.2-0"
     }
 }

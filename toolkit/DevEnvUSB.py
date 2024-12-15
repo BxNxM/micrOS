@@ -52,14 +52,9 @@ class USB(Compile):
                   'cmd_line_info': '[!HINT!] Hold on Button 0 -> Press Button Reset -> Release Button 0 TO ENABLE DEVICE ERASE...'},
              'tinypico':
                  {'erase': '{esptool_interface} --port {dev} erase_flash',
-                  'deploy': '{esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}',
-                  'mpremote_cmd': 'mpremote',
-                  'cmd_line_info': ''},
-             'tinypico_usbc':
-                 {'erase': '{esptool_interface} --port {dev} erase_flash',
                   'deploy': '{esptool_interface} --chip esp32 --port {dev} --baud 921600 write_flash -z 0x1000 {micropython}',
+                  'mpremote_cmd': None,         # USB update (node_config backup) not works - freeze with: mpremote
                   'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
-                  'mpremote_cmd': None,
                   'cmd_line_info': ''},
              'rpi-pico-w':
                  {'erase': None,

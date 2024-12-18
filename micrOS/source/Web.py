@@ -1,3 +1,17 @@
+"""
+Module is responsible for webserver environment
+dedicated to micrOS framework.
+Built-in-function:
+- response
+    - landing page: index.html
+    - rest/                                         - call load modules, e.x.: system/top
+    - file response (.html, .css, .js, .jped)       - generic file server feature
+    - "virtual" endpoints                           - to reply from script on a defined endpoint
+        - stream                                    - stream data (jpeg) function
+
+Designed by Marcell Ban aka BxNxM
+"""
+
 from json import dumps, loads
 import uasyncio as asyncio
 from Tasks import lm_exec, NativeTask, lm_is_loaded
@@ -77,7 +91,7 @@ class WebEngine:
             cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"')
                    .replace('%E2%80%9D', '"').replace('-', ' ').strip().split())
             # request json format instead of default string output (+ handle & tasks syntax)
-            cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
+            _ = cmd.insert(-1, '>json') if cmd[-1].startswith('&') else cmd.append('>json')
             # EXECUTE COMMAND - LoadModule
             if WebEngine.AUTH:
                 state, out = lm_exec(cmd) if lm_is_loaded(cmd[0]) or cmd[0].startswith('modules') else (

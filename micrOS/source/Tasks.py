@@ -38,22 +38,34 @@ class TaskBase:
     TASKS = {}                          # TASK OBJ list
 
     def __init__(self):
-        self.task = None             # [TASK] Store created async task object
-        self.done = asyncio.Event()  # [TASK] Store done state
-        self.out = ""                # [TASK] Store output
-        self.tag = None              # [TASK] Task tag (identification)
+        self.task = None             # Store created async task object
+        self.tag = None              # Task tag (identification)
+        self.done = asyncio.Event()  # Store task done state
+        self.out = ""                # Store task output
 
     @staticmethod
-    def is_busy(tag):
+    def is_busy(tag) -> bool:
         """
         Check task is busy by tag in TASKS
-        - exists + running = busy
+        :param tag: for task selection
         """
         task = TaskBase.TASKS.get(tag, None)
         # return True: busy OR False: not busy (inactive)
         return bool(task is not None and not task.done.is_set())
 
-    def cancel(self):
+    @staticmethod
+    def task_gc():
+        """
+        Automatic passive task deletion over QUEUE_SIZE
+        """
+        keep  = TaskBase.QUEUE_SIZE
+        passive = tuple((task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)))
+        if len(passive) >= keep:
+            for i in range(0, len(passive)-keep+1):
+                del TaskBase.TASKS[passive[i]]
+            collect()  # GC collect
+
+    def cancel(self) -> bool:
         """
         Cancel task (+cleanup)
         """
@@ -83,13 +95,13 @@ class TaskBase:
         collect()                           # GC collect
 
     @staticmethod
-    def task_gc():
-        keep  = TaskBase.QUEUE_SIZE
-        passive = tuple((task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)))
-        if len(passive) >= keep:
-            for i in range(0, len(passive)-keep+1):
-                del TaskBase.TASKS[passive[i]]
-            collect()  # GC collect
+    async def feed(sleep_ms=1):
+        """
+        Feed event loop
+        :param sleep_ms: in millisecond (min: 1)
+        """
+        # TODO: feed WDT - preemptive cooperative multitasking
+        return await asyncio.sleep_ms(sleep_ms)
 
     def __del__(self):
         try:
@@ -187,9 +199,12 @@ class MagicTask(TaskBase):
         - self.__inloop: lm call type - one-shot (False) / looped (True)
         - self.__msg_buf: lm msg object redirect to variable - store lm output
         """
+        jsonify = self.__callback[-1] == '>json'
+        if jsonify:
+            self.__callback = self.__callback[:-1]
         while True:
-            await asyncio.sleep_ms(self.__sleep)
-            state, self.out = _exec_lm_core(self.__callback)
+            await self.feed(self.__sleep)
+            state, self.out = _exec_lm_core(self.__callback, jsonify)
             if not state or not self.__inloop:
                 break
         self.task_gc()    # Task pool cleanup
@@ -265,10 +280,10 @@ class Manager:
         try:
             while True:
                 # [0] Just chill
-                await asyncio.sleep_ms(300)
+                await my_task.feed(300)
                 # [1] PROBE SYSTEM LOAD + 300ms
                 t = ticks_ms()
-                await asyncio.sleep_ms(300)
+                await my_task.feed(300)
                 delta_rate = int(((ticks_diff(ticks_ms(), t) / 300) - 1) * 100)
                 Manager.LOAD = int((Manager.LOAD + delta_rate) / 2)  # Average - smooth
                 # [2] NETWORK AUTO REPAIR
@@ -353,7 +368,6 @@ class Manager:
         - by tag: module.function
         - by tag module.*, kill all for selected module
         """
-
         def terminate(_tag):
             to_kill = TaskBase.TASKS.get(_tag, None)
             try:
@@ -399,81 +413,86 @@ class Manager:
 #################################################################
 #                      LM EXEC CORE functions                   #
 #################################################################
+def exec_builtins(func):
+    """
+    Module execution built-in commands and modifiers
+    - modules         - show active modules list
+    - task kill ...   - task termination
+           show ...   - task output dump
+    -  ... >json      - postfix to "jsonize" the output
+    """
+    def wrapper(arg_list):
+        # Ensure the parameter is a list of strings
+        if isinstance(arg_list, list) and arg_list:
+            json_flag = arg_list[-1] == '>json'
+            if json_flag:
+                arg_list = arg_list[:-1]
+            if arg_list[0] == 'modules':
+                return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_'))) + ['task']
+            # Handle task manipulation commands: list, kill, show - return True -> Command handled
+            if 'task' == arg_list[0]:
+                arg_len = len(arg_list)
+                # task list
+                if arg_len > 1 and 'list' == arg_list[1]:
+                    on, off = Manager.list_tasks(json=json_flag)
+                    # RETURN:    JSON mode                                                   Human readable mode with cpu & queue info
+                    return (True, {'active': on[3:], 'inactive': off}) if json_flag else (True, '\n'.join(on) + '\n' + '\n'.join(off) + '\n')
+                # task kill <taskID> / task show <taskID>
+                if arg_len > 2:
+                    if 'kill' == arg_list[1]:
+                        state, msg = Manager.kill(tag=arg_list[2])
+                        return True, msg
+                    if 'show' == arg_list[1]:
+                        return True, Manager.show(tag=arg_list[2])
+                return True, "Invalid task cmd! Help: task list / kill <taskID> / show <taskID>"
+            # Call the decorated function with the additional flag
+            return func(arg_list, json_flag)
+    return wrapper
 
-def lm_exec(arg_list):
+
+@exec_builtins
+def lm_exec(arg_list, jsonify):
     """
     Main LM executor function with
     - async (background)
     - sync
     (single) task execution (_exec_lm_core)
     :param arg_list: command parameters
+    :param jsonify: request json output
     Return Bool(OK/NOK), STR(Command output)
     """
 
-    def _exec_task():
-        nonlocal arg_list, arg_len
-        # [1] Handle task manipulation commands: list, kill, show - return True -> Command handled
-        if 'task' == arg_list[0]:
-            # task list
-            if arg_len > 1 and 'list' == arg_list[1]:
-                if arg_len > 2 and arg_list[2].strip() == '>json':
-                    # JSON mode
-                    on, off = Manager.list_tasks(json=True)
-                    return True, {'active': on[3:], 'inactive': off}
-                on, off = Manager.list_tasks(json=False)
-                # Human readable mode with cpu & queue info
-                return True, '\n'.join(on) + '\n' + '\n'.join(off) + '\n'  # Show active tasks and passive tasks
-            # task kill <taskID> / task show <taskID>
-            if arg_len > 2:
-                if 'kill' == arg_list[1]:
-                    state, msg = Manager.kill(tag=arg_list[2])
-                    return True, msg
-                if 'show' == arg_list[1]:
-                    return True, Manager.show(tag=arg_list[2])
-            return True, "Invalid task cmd! Help: task list / kill <taskID> / show <taskID>"
-        # [2] Start async task, postfix: &, &&
-        if arg_len > 2 and '&' in arg_list[-1]:
-            # Evaluate task mode: loop + delay
-            mode = arg_list.pop(-1)
-            loop = mode.count('&') == 2
-            delay = mode.replace('&', '').strip()
-            delay = int(delay) if delay.isdigit() else None
-            # Create and start async lm task
-            try:
-                state = Manager.create_task(arg_list, loop=loop, delay=delay)
-            except Exception as e:
-                # Valid & handled task command
-                return True, str(e)
-            tag = '.'.join(arg_list[0:2])
+    # [1] Async "background" task execution, postfix: &, &&
+    if len(arg_list) > 2 and '&' in arg_list[-1]:
+        # Evaluate task mode: loop + delay
+        mode = arg_list.pop(-1)
+        loop = mode.count('&') == 2
+        delay = mode.replace('&', '').strip()
+        delay = int(delay) if delay.isdigit() else None
+        # Create and start async lm task
+        try:
+            state = Manager.create_task(arg_list, loop=loop, delay=delay)
+        except Exception as e:
             # Valid & handled task command
-            if state:
-                return True, f"Start {tag}"
-            return True, f"{tag} is Busy"
-        # Not valid task command
-        return False, ''
+            return True, str(e)
+        tag = '.'.join(arg_list[0:2])
+        # Valid & handled task command
+        if state:
+            return True, f"Start {tag}"
+        return True, f"{tag} is Busy"
 
-    # ================ main function ================
-    # modules built-in function: show loaded LoadModules
-    arg_len = len(arg_list)
-    if arg_len > 0 and arg_list[0] == 'modules':
-        return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_'))) + ['task']
-    # [1] Run task command: start (&), list, kill, show
-    is_task, out = _exec_task()
-    if is_task:
-        return True, out
     # [2] Sync "realtime" task execution
-    state, out = _exec_lm_core(arg_list)
+    state, out = _exec_lm_core(arg_list, jsonify)
     return state, out
 
 
-def _exec_lm_core(cmd_list):
+def _exec_lm_core(cmd_list, jsonify):
     """
     [CORE] Single command executor: MODULE.FUNCTION...
     :param cmd_list: list of string parameters
         [1] module name (LM)
         [2] function
         [3...] parameters (separator: space)
-        [-1] Built-in json output handler: >json
     Return Bool(OK/NOK), STR(Command output)
     """
 
@@ -489,9 +508,6 @@ def _exec_lm_core(cmd_list):
             param = param.format(*buf)
         return param
 
-    # Check json mode for LM execution
-    json_mode = cmd_list[-1] == '>json'
-    cmd_list = cmd_list[0:-1] if json_mode else cmd_list
     # LoadModule execution
     if len(cmd_list) >= 2:
         lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], __func_params(' '.join(cmd_list[2:]))
@@ -516,11 +532,11 @@ def _exec_lm_core(cmd_list):
             # Handle LM output data
             if isinstance(lm_output, dict):
                 # json True: output->json else Format dict output "human readable"
-                lm_output = dumps(lm_output) if json_mode else '\n'.join(
+                lm_output = dumps(lm_output) if jsonify else '\n'.join(
                     [f" {key}: {value}" for key, value in lm_output.items()])
             if lm_func == 'help':
                 # Special case for help command: json True: output->json else Format dict output "human readable"
-                lm_output = dumps(lm_output) if json_mode else '\n'.join([f" {out}," for out in lm_output])
+                lm_output = dumps(lm_output) if jsonify else '\n'.join([f" {out}," for out in lm_output])
             # Return LM exec result
             return True, str(lm_output)
             # ---------------------------------------------------------------------- #
@@ -573,23 +589,11 @@ def exec_lm_pipe(taskstr):
 
 def exec_lm_pipe_schedule(taskstr):
     """
-    Scheduled Wrapper for exec_lm_pipe for IRQs (extIRQ, timIRQ)
+    Scheduled Wrapper for exec_lm_pipe for IRQs (extIRQ, timIRQ,  cronIRQ)
     """
     try:
         schedule(exec_lm_pipe, taskstr)
         return True
     except Exception as e:
         errlog_add(f"[ERR] exec_lm_pipe_schedule: {e}")
-        return False
-
-
-def exec_lm_core_schedule(arg_list):
-    """
-    Scheduled Wrapper for lm_exec for cron IRQ
-    """
-    try:
-        schedule(lm_exec, arg_list)
-        return True
-    except Exception as e:
-        errlog_add(f"[ERR] schedule_lm_exec {arg_list}: {e}")
         return False

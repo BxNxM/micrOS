@@ -1,6 +1,6 @@
 from time import localtime
 from re import compile
-from Tasks import exec_lm_core_schedule
+from Tasks import exec_lm_pipe_schedule
 from Debug import console_write, errlog_add
 from Time import Sun, suntime, ntp_time
 
@@ -179,7 +179,7 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
                 lm_state = False
                 if isinstance(crontask[1], str):
                     # [1] Execute Load Module as a string (user LMs)
-                    lm_state = exec_lm_core_schedule(crontask[1].split())
+                    lm_state = exec_lm_pipe_schedule(crontask[1])
                 else:
                     try:
                         # [2] Execute function reference (built-in functions)

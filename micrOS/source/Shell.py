@@ -2,7 +2,7 @@
 Module is responsible for shell like environment
 dedicated to micrOS framework.
 Built-in-function:
-- Shell wrapper for safe InterpreterCore interface
+- Shell wrapper for lm_exec interface
 - Configuration handling interface - state machine handling
 - Help (runtime) message generation
 
@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.8.2-0'
+    MICROS_VERSION = '2.8.3-0'
 
     def __init__(self):
         """

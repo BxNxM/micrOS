@@ -1,7 +1,6 @@
 from machine import Pin, time_pulse_us
 from utime import sleep_us
 from microIO import resolve_pin, pinmap_search
-import uasyncio as asyncio
 from Common import micro_task
 from Types import resolve
 
@@ -50,7 +49,7 @@ async def __task(period_ms, dimmer, idle_cm):
             brightness_min_cm = 5
             dist = int(measure_cm()["cm"])
             if dist > idle_cm+100:
-                await asyncio.sleep_ms(50)
+                await my_task.feed(sleep_ms=50)
                 continue
             dist = brightness_max_cm if dist > brightness_max_cm else dist   # Limit max
             dist = 0 if dist < brightness_min_cm else dist                   # Limit min
@@ -63,9 +62,8 @@ async def __task(period_ms, dimmer, idle_cm):
 
             # Store data in task cache (task show mytask)
             my_task.out = f'Dist: {dist} br: {brightness}'
-
             # Async sleep - feed event loop
-            await asyncio.sleep_ms(period_ms)
+            await my_task.feed(sleep_ms=period_ms)
 
 
 def start_dimmer_indicator(idle_distance=180):

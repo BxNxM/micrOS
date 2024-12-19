@@ -207,6 +207,7 @@ def deserialize_raw_input(cron_data):
     Scheduler/Cron input string format
     :param cron_data: raw cron tasks, time based task execution input (bytearray)
         example: WD:H:M:S!LM func;WD:H:M:S!LM func; ...
+        multi command example: WD:H:M:S!LM func;LM func2;; WD:H:M:S!LM func;; ...
 
         time_tag: timestamp / time-tag aka suntime
                 timestamp: WD:H:M:S
@@ -218,8 +219,10 @@ def deserialize_raw_input(cron_data):
     Returns tuple: (("WD:H:M:S", 'LM FUNC'), ("WD:H:M:S", 'LM FUNC'), ...)
     """
     try:
-        # Parse and create return - convert cron_data (bytearray) to string
-        return (tuple(cron.split('!')) for cron in str(cron_data, 'utf-8').split(';'))
+        # Parse and create return
+        cd = str(cron_data, 'utf-8')            # convert cron_data (bytearray) to string
+        sep = ';;' if ';;' in cd else ';'       # support multi command with ;;
+        return (tuple(cron.split('!')) for cron in cd.split(sep))
     except Exception as e:
         errlog_add(f"[ERR] cron deserialize - syntax error: {e}")
     return ()

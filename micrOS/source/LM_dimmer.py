@@ -1,7 +1,6 @@
 from sys import platform
 from microIO import resolve_pin, pinmap_search
 from Common import transition_gen, micro_task
-import uasyncio as asyncio
 from utime import sleep_ms
 from Types import resolve
 
@@ -171,7 +170,7 @@ def transition(value, sec=1.0, wake=False):
                 # Update periphery cache (value check due to toggle ON value minimum)
                 Data.DIMMER_CACHE[1] = i if i > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 my_task.out = f"Dimming: {i}"
-                await asyncio.sleep_ms(ms_period)
+                await my_task.feed(sleep_ms=ms_period)
             if Data.DIMMER_CACHE[0] == 1 or wake:
                 __state_machine(i)
             my_task.out = f"Dimming DONE: {i}"

@@ -1,4 +1,3 @@
-import uasyncio as asyncio
 from LM_servo import sduty, deinit, pinmap as servo_pinmap
 from LM_stepper import step, pinmap as stepper_pinmap
 from Common import micro_task
@@ -16,13 +15,13 @@ async def __portion_task(portion, posmin, posmax):
             # [1]Run pos fill up
             for pos in range(posmin, posmax):
                 sduty(pos)
-                await asyncio.sleep_ms(15)
+                await my_task.feed(sleep_ms=15)
             # [2]Wait between fill up / food out
-            await asyncio.sleep_ms(500)
+            await my_task.feed(sleep_ms=500)
             # [3]Run pos food out
             for pos in range(posmax, posmin, -1):
                 sduty(pos)
-                await asyncio.sleep_ms(20)
+                await my_task.feed(sleep_ms=20)
             my_task.out = "{}/{} serving".format(p+1, portion)
     deinit()
     my_task.out += ": {} task done".format(Data.TASK_TAG)

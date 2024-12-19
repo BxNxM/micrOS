@@ -3,7 +3,6 @@ from random import randint
 import LM_servo as servo
 from LM_switch import set_state, pinmap as switch_pinmap
 from Common import transition, micro_task
-import uasyncio as asyncio
 from Types import resolve
 
 
@@ -179,7 +178,7 @@ async def _play(args, deinit, delay):
             if task is not None:
                 task.out = "Roboarm X:{} Y:{}".format(x, y)
             # Async wait between steps
-            await asyncio.sleep_ms(delay)
+            await task.feed(sleep_ms=delay)
         if deinit:
             servo.deinit()
         # OFF LASER

@@ -1,9 +1,9 @@
-// Get the current hostname and create the REST API URL
-const currentHostname = window.location.hostname;
-const port = window.location.port ? `:${window.location.port}` : "";
+// CORE MICROS BACKEND INTERFACE
+
+const BASE_URL = `http://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ""}`;
 
 function restAPICore(cmd, timeout=5000) {
-    const query = `http://${currentHostname}${port}/rest/${cmd.trim().replace(/\s+/g, '/')}`;
+    const query = `${BASE_URL}/rest/${cmd.trim().replace(/\s+/g, '/')}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     const startTime = performance.now();
@@ -59,5 +59,4 @@ function restInfo() {
     });
 }
 
-// Init basic info from board
-// restInfo();
+// Designed by BxNxM |/|/|/|/

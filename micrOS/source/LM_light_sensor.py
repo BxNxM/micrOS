@@ -5,7 +5,6 @@ ADC.ATTN_2_5DB — the full range voltage: 1.5V
 ADC.ATTN_6DB — the full range voltage: 2.0V
 ADC.ATTN_11DB — the full range voltage: 3.3V
 """
-import uasyncio as asyncio
 from Common import SmartADC, micro_task
 from Types import resolve
 try:
@@ -91,7 +90,7 @@ async def _task(on, off, threshold, tolerance=2, check_ms=5000):
                         InterCon.send_cmd(host, cmd)
                     my_task.out = f"{percent}% > threshold: {threshold+tolerance}% - OFF"
                     last_ev = off
-            await asyncio.sleep_ms(check_ms)        # Sample every <check_ms> sec
+            await my_task.feed(sleep_ms=check_ms)   # Sample every <check_ms> sec
 
 
 def subscribe_intercon(on, off, threshold=4, tolerance=2, sample_sec=60):

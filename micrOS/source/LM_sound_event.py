@@ -37,7 +37,6 @@ Terminal ready
 """
 
 import LM_i2s_mic
-import uasyncio as asyncio
 import json
 
 from microIO import pinmap_search
@@ -647,7 +646,7 @@ async def __control_task(capture_duration_ms,
     :param pause_duration_ms: int - duration of pause frames to distinguish events
     :param event_buffer_length: int - number of events to store at once
     """
-    with micro_task(tag=Data.CONTROL_TASK_TAG):
+    with micro_task(tag=Data.CONTROL_TASK_TAG) as my_task:
         samples = []
         frame_size = int((frame_size_ms/1000)*LM_i2s_mic.Data.SAMPLING_RATE)
         pause_duration = int(pause_duration_ms/frame_size_ms)
@@ -674,7 +673,7 @@ async def __control_task(capture_duration_ms,
                 
                 # Wait for new samples to be taken
                 ms_period = int(len(new_samples)/LM_i2s_mic.Data.SAMPLING_RATE)
-                await asyncio.sleep_ms(ms_period)
+                await my_task.feed(sleep_ms=ms_period)
                 Data.EVENTS = Data.EVENTS[-event_buffer_length:]
             except Exception as e:
                 console(f'[ERR] sound_event: {e}')

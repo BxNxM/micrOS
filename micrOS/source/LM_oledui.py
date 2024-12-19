@@ -1,5 +1,4 @@
 from utime import localtime, ticks_ms, ticks_diff, sleep_ms
-import uasyncio as asyncio
 from Common import syslog, micro_task, manage_task, exec_cmd
 from Types import resolve
 # Core modules
@@ -106,7 +105,7 @@ class Frame(BaseFrame):
                     my_task.out = 'paused' if self.paused else f'refresh: {period_ms} ms'
                     s = self.paused
                 if self.paused:
-                    await asyncio.sleep_ms(period_ms)   # extra wait in paused mode
+                    await my_task.feed(sleep_ms=period_ms) # extra wait in paused mode
                 else:
                     # Draw/Refresh frame
                     self.draw()
@@ -115,7 +114,7 @@ class Frame(BaseFrame):
                     if self._fast_refresh:
                         self._fast_refresh = False
                         break
-                    await asyncio.sleep_ms(micro_sleep_ms)
+                    await my_task.feed(sleep_ms=micro_sleep_ms)
 
     def clb_refresh(self):
         """Fast reload app loop callbacks"""
@@ -486,7 +485,7 @@ class ScreenSaver(BaseFrame):
                 # Store data in task cache (task show mytask)
                 my_task.out = f'GameOfLife: {counter}'
                 # Async sleep - feed event loop
-                await asyncio.sleep_ms(period_ms)
+                await my_task.feed(sleep_ms=period_ms)
             my_task.out = f'GameOfLife stopped: {counter}'
 
     def run(self, fps=10):

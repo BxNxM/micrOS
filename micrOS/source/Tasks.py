@@ -19,7 +19,7 @@ from Network import sta_high_avail
 
 try:
     from gc import collect
-except:
+except ImportError:
     console_write("[SIMULATOR MODE GC IMPORT]")
     from simgc import collect
 
@@ -46,7 +46,7 @@ class TaskBase:
     @staticmethod
     def is_busy(tag) -> bool:
         """
-        Check task is busy by tag in TASKS
+        Check task is busy by tag
         :param tag: for task selection
         """
         task = TaskBase.TASKS.get(tag, None)
@@ -100,7 +100,7 @@ class TaskBase:
         Feed event loop
         :param sleep_ms: in millisecond (min: 1)
         """
-        # TODO: feed WDT - preemptive cooperative multitasking
+        # TODO: feed WDT - preemptive cooperative multitasking aka reboot if no feed until X time period
         return await asyncio.sleep_ms(sleep_ms)
 
     def __del__(self):
@@ -421,12 +421,15 @@ def exec_builtins(func):
            show ...   - task output dump
     -  ... >json      - postfix to "jsonize" the output
     """
-    def wrapper(arg_list):
+    def wrapper(arg_list, jsonify=None):
         # Ensure the parameter is a list of strings
         if isinstance(arg_list, list) and arg_list:
+            # JSONIFY: [1] >json in arg_list or [2] jsonify True/False
             json_flag = arg_list[-1] == '>json'
             if json_flag:
                 arg_list = arg_list[:-1]
+            json_flag = jsonify if isinstance(jsonify, bool) else json_flag
+            # MODULES
             if arg_list[0] == 'modules':
                 return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_'))) + ['task']
             # Handle task manipulation commands: list, kill, show - return True -> Command handled
@@ -458,8 +461,8 @@ def lm_exec(arg_list, jsonify):
     - sync
     (single) task execution (_exec_lm_core)
     :param arg_list: command parameters
-    :param jsonify: request json output
-    Return Bool(OK/NOK), STR(Command output)
+    :param jsonify: request json output (controlled by the decorator)
+    Return Bool(OK/NOK), "Command output"
     """
 
     # [1] Async "background" task execution, postfix: &, &&
@@ -493,10 +496,11 @@ def _exec_lm_core(cmd_list, jsonify):
         [1] module name (LM)
         [2] function
         [3...] parameters (separator: space)
+    :param jsonify: request json output
     Return Bool(OK/NOK), STR(Command output)
     """
 
-    def __func_params(param):
+    def _func_params(param):
         buf = None
         if "'" in param or '"' in param:
             str_index = [i for i, c in enumerate(param) if c in ('"', "'")]
@@ -510,7 +514,7 @@ def _exec_lm_core(cmd_list, jsonify):
 
     # LoadModule execution
     if len(cmd_list) >= 2:
-        lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], __func_params(' '.join(cmd_list[2:]))
+        lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], _func_params(' '.join(cmd_list[2:]))
         try:
             # ------------- LM LOAD & EXECUTE ------------- #
             # [1] LOAD MODULE - OPTIMIZED by sys.modules
@@ -556,7 +560,7 @@ def lm_is_loaded(lm_name):
     [Auth mode]
     Check lm_name in enabled modules
     """
-    static_keywords = tuple('task')
+    static_keywords = ('task', 'modules')
     loaded_mods = [lm.replace('LM_', '') for lm in modules if lm.startswith('LM_')]
     return lm_name in static_keywords or lm_name in loaded_mods
 

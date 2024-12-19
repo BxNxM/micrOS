@@ -1,4 +1,3 @@
-import uasyncio as asyncio
 from utime import localtime, sleep_ms
 from neopixel import NeoPixel
 from machine import Pin
@@ -150,12 +149,12 @@ async def _ui_task(period_ms, tts_ms):
                 my_task.out = f'main page: {KC.DP_cnt}'     #2 Update task data for (task show keychain.display)
                 KC.DP_cnt -= 1                              #3 Update sleep counter
                 # Async sleep - feed event loop
-                await asyncio.sleep_ms(period_ms)
+                await my_task.feed(sleep_ms=period_ms)
             else:
                 # [SLEEP MODE] Execute screen saver page
                 await _screen_saver()                       # Run sleep page function
                 # Async sleep - feed event loop
-                await asyncio.sleep_ms(fast_period)
+                await my_task.feed(sleep_ms=fast_period)
 
             # Auto sleep event handler - off event - go to (sleep mode)
             if KC.DP_cnt <= 0:

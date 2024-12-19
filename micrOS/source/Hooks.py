@@ -19,13 +19,17 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from Config import cfgget, cfgput
 from microIO import detect_platform
-from Debug import console_write
+from Debug import console_write, errlog_add
 from Tasks import exec_lm_pipe
 from micropython import mem_info
 from machine import freq
 try:
+    from machine import reset_cause, PWRON_RESET, HARD_RESET, WDT_RESET, DEEPSLEEP_RESET, SOFT_RESET
+except ImportError:
+    reset_cause = None
+try:
     from gc import mem_free
-except:
+except ImportError:
     from simgc import mem_free
 
 #################################################################
@@ -38,9 +42,9 @@ def bootup():
     Executes when system boots up.
     """
     # Execute LMs from boothook config parameter
-    console_write("[BOOT] EXECUTION ...")
+    console_write("[BOOT] EXECUTION...")
+    boot_cause()
     bootasks = cfgget('boothook')
-    bootasks = _migrate(bootasks)                # load_n_init -> load migration (simplify)
     if bootasks is not None and bootasks.lower() != 'n/a':
         console_write(f"|-[BOOT] TASKS: {bootasks}")
         if exec_lm_pipe(bootasks):
@@ -89,15 +93,21 @@ def profiling_info(label=""):
         mem_info()
         console_write("~"*30)
 
-def _migrate(bootstr):
-    """
-    OBSOLETE load_n_init -- REMOVE AT 2023.12
-    Use load instead
-    - auto replace in boothook param
-    """
-    if 'load_n_init' in bootstr:
-        console_write("[MIGRATE] load_n_init -> load")
-        bootstr = bootstr.replace('load_n_init', 'load')
-        cfgput('boothook', bootstr)
-    return bootstr
 
+def boot_cause():
+    reason = 0, "-Unknown"
+    if callable(reset_cause):
+        reason = 0, "Unknown"
+        reset_reason = reset_cause()
+        if reset_reason == PWRON_RESET:
+            reason = 1, "PowerOn"
+        elif reset_reason == HARD_RESET:
+            reason = 2, "HardReset"
+        elif reset_reason == WDT_RESET:
+            reason = 3, "WDTWakeUp"
+        elif reset_reason == DEEPSLEEP_RESET:
+            reason = 4, "DSWakeUp"
+        elif reset_reason == SOFT_RESET:
+            reason = 5, "SoftReset"
+    errlog_add(f"[BOOT] info: {reason[1]}")
+    return reason

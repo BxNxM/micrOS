@@ -3,7 +3,6 @@ from machine import Pin
 from sys import platform
 from utime import sleep_ms
 from Common import transition_gen, micro_task
-import uasyncio as asyncio
 from microIO import resolve_pin, pinmap_search
 from random import randint
 from Types import resolve
@@ -269,7 +268,7 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
                 Data.DCACHE[1] = g_val if g_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 Data.DCACHE[2] = b_val if b_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 my_task.out = f"Dimming: R:{r_val} G:{g_val} B:{b_val}"
-                await asyncio.sleep_ms(ms_period)
+                await my_task.feed(sleep_ms=ms_period)
             if Data.DCACHE[3] == 1 or wake:
                 __state_machine(r=r_val, g=g_val, b=b_val)
             my_task.out = f"Dimming DONE: R:{r_val} G:{g_val} B:{b_val}"

@@ -1,6 +1,5 @@
 from microIO import resolve_pin, pinmap_search
 from Common import SmartADC, micro_task, notify, syslog
-import uasyncio as asyncio
 from utime import ticks_ms
 try:
     import LM_intercon as InterCon
@@ -115,7 +114,7 @@ async def __task(ms_period, buff_size):
                 my_task.out = f"{int(Data.OFF_EV_TIMER)-1} sec until off event"
             Data.OFF_EV_TIMER -= round(ms_period / 1000, 3)
             # Async sleep - feed event loop
-            await asyncio.sleep_ms(ms_period)
+            await my_task.feed(sleep_ms=ms_period)
 
         # RUN OFF CALLBACK (local + remote)
         __exec_local_callbacks(Data.OFF_CALLBACKS)

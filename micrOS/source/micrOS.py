@@ -20,15 +20,6 @@ from Debug import errlog_add
 #            INTERRUPT HANDLER INTERFACES / WRAPPERS            #
 #################################################################
 
-
-def safe_boot():
-    try:
-        bootup()
-    except Exception as e:
-        print(f"[micrOS main] Hooks.boot() error: {e}")
-        errlog_add(f"[ERR] safe_boot: {e}")
-
-
 def irq_handler():
     try:
         enableInterrupt()
@@ -58,7 +49,11 @@ def micrOS():
     aio = Manager()
 
     # BOOT TASKS: Initial LM executions
-    safe_boot()
+    try:
+        bootup()
+    except Exception as e:
+        print(f"[micrOS main] Hooks.boot() error: {e}")
+        errlog_add(f"[ERR] safe_boot: {e}")
 
     # NETWORK setup
     nwmd = auto_nw_config()

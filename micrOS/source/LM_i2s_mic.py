@@ -49,7 +49,7 @@ async def __control_task(ms_period=50):
     querying samples. Pushing the button again reinitializes the
     microphone without having to restart dependent load modules.
     """
-    with micro_task(tag=Data.CONTROL_TASK_TAG):
+    with micro_task(tag=Data.CONTROL_TASK_TAG) as my_task:
         while True:
             if Data.CONTROL_BUTTON_PIN.value():
                 Data.MIC_ENABLED = not Data.MIC_ENABLED
@@ -59,8 +59,8 @@ async def __control_task(ms_period=50):
                     load()
 
                 # Debounce
-                await asyncio.sleep_ms(500)
-            await asyncio.sleep_ms(ms_period)
+                await my_task.feed(sleep_ms=500)
+            await my_task.feed(sleep_ms=ms_period)
 
 
 ###########################
@@ -76,7 +76,7 @@ async def __task(ms_period):
             recording_task.out = 'Capturing'
             while Data.MIC_ENABLED:
                 await Data.SREADER.readinto(sample_mv)
-                await asyncio.sleep_ms(ms_period)
+                await recording_task.feed(sleep_ms=ms_period)
             recording_task.out = 'Finished'
 
         except Exception as e:

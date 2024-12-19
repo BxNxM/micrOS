@@ -34,7 +34,6 @@ def __is_micrOS():
         False -> webrepl
         * EOE (EndOfExecution) -> off
     """
-    mode = 'micros'
     try:
         with open('.if_mode', 'r') as f:
             mode = f.read().strip().lower()

@@ -5,7 +5,6 @@ from machine import Pin, PWM
 from sys import platform
 from utime import sleep_ms
 from Common import transition_gen, micro_task
-import uasyncio as asyncio
 from microIO import resolve_pin, pinmap_search
 from random import randint
 from Types import resolve
@@ -229,7 +228,7 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
                 Data.CWWW_CACHE[0] = cw_val if cw_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 Data.CWWW_CACHE[1] = ww_val if ww_val > 5 else 5   # SAVE VALUE TO CACHE > 5 ! because toggle
                 my_task.out = f"Dimming: CW:{cw_val} WW:{ww_val}"
-                await asyncio.sleep_ms(ms_period)
+                await my_task.feed(sleep_ms=ms_period)
             if Data.CWWW_CACHE[2] == 1 or wake:
                 __state_machine(c=cw_val, w=ww_val)
             my_task.out = f"Dimming DONE: CW:{cw_val} WW:{ww_val}"
@@ -278,7 +277,7 @@ def hue_transition(percent, sec=1.0, wake=False):
                 Data.CWWW_CACHE[1] = warm if warm > 5 else 5
                 my_task.out = f"HUE {int(hue_precent*0.1)}%w - CW:{cold} WW:{warm}"
                 # Feed async loop
-                await asyncio.sleep_ms(ms_period)
+                await my_task.feed(sleep_ms=ms_period)
             __state_machine(cold, warm)
             my_task.out = f"HUE DONE {int(hue_precent*0.001)}%w - CW:{cold} WW:{warm}"
 

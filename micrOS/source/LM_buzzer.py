@@ -2,7 +2,6 @@ from sys import platform
 from utime import sleep
 from microIO import resolve_pin, pinmap_search
 from Common import micro_task
-import uasyncio as asyncio
 from Types import resolve
 
 
@@ -254,7 +253,7 @@ async def _play(rtttlstr):
         task.out = "Play song..."
         for freq, msec in tune.notes():
             __play_tone(freq, msec)
-            await asyncio.sleep_ms(10)
+            await task.feed(sleep_ms=10)
         task.out = "Song played successfully"
     del tune
 

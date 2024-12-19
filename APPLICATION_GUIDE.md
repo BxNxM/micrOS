@@ -449,7 +449,6 @@ Returns:
 **Example:** LM\_my\_task.py
 
 ```python
-import uasyncio as asyncio
 from Common import micro_task
 
 async def __task(period_ms):
@@ -464,7 +463,8 @@ async def __task(period_ms):
 			my_task.out = f'MyTask Counter: {counter}'
 		
 			# Async sleep - feed event loop
-			await asyncio.sleep_ms(period_ms)
+			await my_task.feed(sleep_ms=period_ms)
+			# [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
 
 
 def create_task():

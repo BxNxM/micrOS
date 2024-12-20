@@ -3,6 +3,7 @@ import os
 import multiprocessing
 import time
 import copy
+import json
 
 MYPATH = os.path.dirname(__file__)
 SIM_PATH = os.path.join(MYPATH, '../workspace/simulator')
@@ -144,6 +145,19 @@ class micrOSIM():
                             mod_pinmap = ''
                         # Add pinmap to doc string of pinmap() function
                         doc_str += mod_pinmap
+                    if func == 'help':
+                        console(f"[micrOSIM][Render widgets from help] LM_{mod}.help(True)")
+                        mod_help = f"\n[i] micrOS Widget Types:"
+                        try:
+                            widgets_help = eval(f"LM_{mod}.help(True)")
+                            if widgets_help is not None and isinstance(widgets_help, tuple):
+                                for widget in widgets_help:
+                                    widget = json.loads(widget)
+                                    mod_help += f"\n\t{widget}"
+                        except:
+                            mod_help += '\n\tN/A'
+                        # Add help renderes widgets to doc string
+                        doc_str += mod_help
                 except Exception as e:
                     doc_str = str(e)
                 # Update structure with doc-str

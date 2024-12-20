@@ -307,10 +307,10 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',\
-           'cycle r g b shift=True ledcnt=24',\
-           'rainbow step=1 br=<5-100> ledcnt=24',\
-           'fire r=None g=None b=None ledcnt=24',\
+    return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24 &&',\
+           'cycle r g b shift=True ledcnt=24 &&100',\
+           'rainbow step=1 br=<5-100> ledcnt=24 &&',\
+           'fire r=None g=None b=None ledcnt=24 &&50',\
            'shader size=4 offset=0 shift=True ledcnt=24',\
            'random max_val=255',\
            'color r g b', 'pinmap'

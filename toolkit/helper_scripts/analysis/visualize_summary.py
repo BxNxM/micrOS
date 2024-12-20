@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from textwrap import wrap
 
+TITLE_FONT_SIZE=18
+DARK_YELLOW="#B8860B"
+
 def load_json_files(folder_path):
     """Load and parse JSON files from the given folder."""
     data = []
@@ -31,7 +34,18 @@ def load_meta_files(folder_path):
                     meta_data.append({"version": version, "commit_id": commit_id, "message": commit_message})
     return meta_data
 
-def visualize_timeline(data, meta_data, output_pdf):
+def load_release_versions(folder_path):
+    release_versions = []
+    try:
+        with open(f"{folder_path}/release_versions.info", 'r') as f:
+            release_versions = f.read().strip().split()
+        release_versions = [ v.replace("v", '').strip() for v in release_versions ]
+    except Exception as e:
+        print("Error loading release_versions.info")
+    return release_versions
+
+
+def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
     """Generate timeline visualizations for all metrics and save to a PDF."""
     versions = [d["version"] for d in data]
 
@@ -50,6 +64,7 @@ def visualize_timeline(data, meta_data, output_pdf):
 
         #########################################################
         # Plot 1: Core System Lines and File Count
+
         fig, ax1 = plt.subplots(figsize=(15, 8))  # Wider figure for better version visibility
         ax1.plot(versions, core_lines, label="Lines of Code", color="purple", marker="o")
         ax1.set_ylabel("Lines of Code", color="purple")
@@ -58,6 +73,11 @@ def visualize_timeline(data, meta_data, output_pdf):
         ax1.set_xticks(range(len(versions)))
         ax1.set_xticklabels(versions, rotation=90, fontsize=8)
         ax1.grid(True, linestyle="--", alpha=0.1)
+
+        # Highlight specific versions
+        for idx, version in enumerate(versions):
+            if version in highlighted_versions:
+                ax1.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
 
         # Annotate the last data point
         ax1.annotate(f'{core_lines[-1]}',
@@ -80,7 +100,7 @@ def visualize_timeline(data, meta_data, output_pdf):
         ax1.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
         ax2.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
 
-        plt.title("Core System Size Evolution", fontweight="bold")
+        plt.title("Core System Size Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
         fig.tight_layout()
         pdf.savefig(fig)
         plt.close(fig)
@@ -95,6 +115,11 @@ def visualize_timeline(data, meta_data, output_pdf):
         ax1.set_xticks(range(len(versions)))
         ax1.set_xticklabels(versions, rotation=90, fontsize=8)
         ax1.grid(True, linestyle="--", alpha=0.1)
+
+        # Highlight specific versions
+        for idx, version in enumerate(versions):
+            if version in highlighted_versions:
+                ax1.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
 
         # Annotate the last data point
         ax1.annotate(f'{load_lines[-1]}',
@@ -117,7 +142,7 @@ def visualize_timeline(data, meta_data, output_pdf):
         ax1.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
         ax2.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
 
-        plt.title("Load Modules Size Evolution", fontweight="bold")
+        plt.title("Load Modules Size Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
         fig.tight_layout()
         pdf.savefig(fig)
         plt.close(fig)
@@ -135,7 +160,12 @@ def visualize_timeline(data, meta_data, output_pdf):
         ax.grid(True, linestyle="--", alpha=0.1)
         ax.legend(loc="upper center", fontsize=10, bbox_to_anchor=(0.5, 1.12), ncol=2)
 
-        plt.title("Pylint Scores Evolution", fontweight="bold")
+        # Highlight specific versions
+        for idx, version in enumerate(versions):
+            if version in highlighted_versions:
+                ax.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
+
+        plt.title("Pylint Scores Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
         fig.tight_layout()
         pdf.savefig(fig)
         plt.close(fig)
@@ -151,51 +181,51 @@ def visualize_timeline(data, meta_data, output_pdf):
         ax.grid(True, linestyle="--", alpha=0.1)
         ax.legend(loc="upper center", fontsize=10, bbox_to_anchor=(0.5, 1.12), ncol=2)
 
-        plt.title("Load Dependency Warnings Evolution", fontweight="bold")
+        plt.title("Load Dependency Warnings Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
         fig.tight_layout()
         pdf.savefig(fig)
         plt.close(fig)
 
         #########################################################
         # Plot 5: Commit Log
-        # Dynamically adjust figure height based on the number of rows
+        # Dynamically adjust the figure size and ensure the table fits within the page
+        # Plot 5: Commit Log
+        # Dynamically adjust the figure size to ensure the table fits all data lines
         rows = len(meta_data) + 1  # +1 for the header row
-        fig_height = max(6, min(0.4 * rows, 50))  # Dynamic height scaling
-        fig, ax = plt.subplots(figsize=(15, fig_height))  # Adjust height dynamically
+        row_height = 0.2  # Height for each row in the table
+        fig_width = 15  # Fixed width
+        fig_height = max(8, rows * row_height)  # Dynamically adjust height based on the number of rows
+
+        # Create the figure with adjusted height
+        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
         ax.axis('off')  # Hide axes for clean text visualization
 
-        # Prepare data for visualization, with text wrapping for the "Message" column
+        # Prepare data for visualization with wrapped text
         table_data = [["Version", "Commit ID", "Message"]]
-        wrap_width = 60  # Maximum characters per line for wrapping
+        wrap_width = 120  # Maximum characters per line for wrapping
+
         for entry in meta_data:
             wrapped_message = "\n".join(wrap(entry["message"], wrap_width))  # Wrap the message text
             table_data.append([entry["version"], entry["commit_id"], wrapped_message])
 
-        # Create the table and fit it to the page
+        # Create the table
         table = ax.table(
-            cellText=table_data, colLabels=["Version", "Commit ID", "Message"], loc='center', cellLoc='left'
+            cellText=table_data, loc='center', cellLoc='left', colWidths=[0.15, 0.3, 0.55]  # Adjust column widths
         )
 
-        # Set font size dynamically based on the number of rows
-        font_size = max(14, min(10, 200 / rows))  # Reduce font size for larger tables
-        table.auto_set_font_size(True)
-        #table.set_fontsize(font_size)
-
-        # Adjust column widths
-        table.auto_set_column_width(col=list(range(len(table_data[0]))))
-
-        # Style the table
+        # Adjust row heights and font size dynamically
         for (row, col), cell in table.get_celld().items():
+            cell.set_fontsize(10)  # Set font size
             if row == 0:  # Header row
                 cell.set_text_props(weight="bold", color="white")
                 cell.set_facecolor("#404040")
             else:
                 cell.set_facecolor("#202020")  # Optional: style for data rows
 
-        # Ensure the table fills the page
-        plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)  # Adjust spacing
-        plt.title("Version Commit Log (beta)", fontweight="bold", fontsize=font_size + 2)
-        pdf.savefig(fig)
+        # Adjust table layout to fit the full figure
+        plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)  # Adjust margins
+        plt.title("Version Commit Log (beta)", fontweight="bold", fontsize=16)  # Adjust title font size
+        pdf.savefig(fig)  # Save to PDF
         plt.close(fig)
 
 
@@ -206,9 +236,10 @@ def main():
     # Load data
     data = load_json_files(input_folder)
     meta_data = load_meta_files(input_folder)
+    release_versions = load_release_versions(input_folder)
 
     # Visualize data
-    visualize_timeline(data, meta_data, output_pdf)
+    visualize_timeline(data, meta_data, release_versions, output_pdf)
 
     print(f"Timeline visualization saved to {output_pdf}")
 

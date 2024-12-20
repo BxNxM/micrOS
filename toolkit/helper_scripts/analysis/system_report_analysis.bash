@@ -45,6 +45,10 @@ function collect_sys_analysis_resources() {
       debug_print "\n==============================\n"
       let changes_cnt+=1
   done
+  save_release_versions="$analysis_workdir/release_versions.info"
+  release_versions=($(git tag --sort=-creatordate | grep '^v'))
+  echo "${release_versions[*]}" > "$save_release_versions"
+  echo -e "Official releases: ${release_versions[@]} >save> $save_release_versions"
   popd
 }
 

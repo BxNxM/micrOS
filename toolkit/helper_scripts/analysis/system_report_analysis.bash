@@ -30,13 +30,16 @@ function collect_sys_analysis_resources() {
   git log --pretty=format:"%H %s" -- micrOS/release_info/micrOS_ReleaseInfo/system_analysis_sum.json \
   | while read commit_hash commit_message; do
       # Extract the version from the JSON
+      analysis_content=$(git show "$commit_hash:micrOS/release_info/micrOS_ReleaseInfo/system_analysis_sum.json")
       version=$(echo "$analysis_content" | jq -r '.summary.version')
+      if [[ -z "$version" ]]; then
+        debug_print "Version extraction failed or is empty.: $commit_hash\n\t$commit_message\n\t????????\n$analysis_content"
+        continue
+      fi
       # Create target path
       save_version_json="$analysis_workdir/$version.json"
       save_version_meta="$analysis_workdir/$version.meta"
-      debug_print "[${changes_cnt}] Change in system_analysis_sum.json - Commit: $commit_hash\n\t${commit_message}\n\tSave to $save_version_json
-"
-      analysis_content=$(git show "$commit_hash:micrOS/release_info/micrOS_ReleaseInfo/system_analysis_sum.json")
+      debug_print "[${changes_cnt}] Change in system_analysis_sum.json - Commit: $commit_hash\n\t${commit_message}\n\tSave to $save_version_json"
       echo "${analysis_content}" > "$save_version_json"
       echo "${commit_hash}: ${commit_message}" > "$save_version_meta"
       debug_print "\n==============================\n"

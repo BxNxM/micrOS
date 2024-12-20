@@ -124,7 +124,7 @@ def get_adc(pin, key=None):
     if isinstance(pin, int):
         pin_tag = f"ADC{pin}"
         pin = register_pin(pin_tag, pin)
-    data = SmartADC.get_singleton(pin).get()
+    data = SmartADC.get_instance(pin).get()
     data["pin"] = pin
     if key is None:
         return data

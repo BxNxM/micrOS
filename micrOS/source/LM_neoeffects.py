@@ -1,5 +1,7 @@
 from LM_neopixel import load, segment, Data, status, pinmap as pm
 from random import randint
+from Types import resolve
+from Common import manage_task
 
 
 #################################
@@ -285,6 +287,13 @@ def fire(r=None, g=None, b=None, ledcnt=24):
     effect.draw(cgen, shift=False)
     return 'fire R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
 
+
+def stop_effects():
+    """
+    Stop all running (neo)effects tasks
+    """
+    return manage_task("neoeffects.*", "kill")
+
 #######################
 # LM helper functions #
 #######################
@@ -307,10 +316,16 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24 &&',\
-           'cycle r g b shift=True ledcnt=24 &&100',\
-           'rainbow step=1 br=<5-100> ledcnt=24 &&',\
-           'fire r=None g=None b=None ledcnt=24 &&50',\
-           'shader size=4 offset=0 shift=True ledcnt=24',\
-           'random max_val=255',\
-           'color r g b', 'pinmap'
+    return resolve(('meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',
+                             'BUTTON meteor &&',
+                             'cycle r g b shift=True ledcnt=24',
+                             'BUTTON cycle &&50',
+                             'rainbow step=1 br=<5-100> ledcnt=24 &&',
+                             'BUTTON rainbow br=50 &&',
+                             'fire r=None g=None b=None ledcnt=24',
+                             'BUTTON fire &&200',
+                             'BUTTON stop_effects',
+                             'shader size=4 offset=0 shift=True ledcnt=24',
+                             'random max_val=255',
+                             'pinmap',
+                             'COLOR color r=<0-255-10> g b'), widgets=widgets)

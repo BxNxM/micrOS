@@ -429,7 +429,7 @@ Methods:
 
 * \_\_init\_\_(self, pin): Initializes the ADC object with the specified pin.
 * get(self): Reads the analog value from the ADC and returns a dictionary with the raw value, percentage, and voltage.
-* get\_singleton(pin): Returns a singleton SmartADC object for the specified pin.
+* get\_instance(pin): Returns a singleton SmartADC object for the specified pin.
 
 ------------------------------------
 

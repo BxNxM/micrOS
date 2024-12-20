@@ -345,7 +345,7 @@ def help(widgets=False):
                              'BUTTON toggle state=<True,False> smooth=True',
                              'load ledcnt=24',
                              'SLIDER brightness percent=<0-100> smooth=True wake=True',
-                             'COLOR segment r g b s=<0-n>',
+                             'segment r g b s=<0-n>',
                              'transition r g b sec=1.0 wake=False',
                              'BUTTON random smooth=True max_val=254',
                              'status',

@@ -78,7 +78,7 @@ class SmartADC:
         return {'raw': raw, 'percent': round(percent*100, 1), 'volt': volt}
 
     @staticmethod
-    def get_singleton(pin):                                         # TODO: rename to get_instance
+    def get_instance(pin):
         if pin in SmartADC.OBJS.keys():
             return SmartADC.OBJS[pin]
         SmartADC.OBJS[pin] = SmartADC(pin)

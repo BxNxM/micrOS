@@ -70,8 +70,12 @@ def _generate(type_dict, help_msg):
                 overwrite[value_type] = values
             valid_params.append(param_str)
         else:
-            param_str = f'{p}=:{"range" if "range" in type_dict else "options"}:'
-            valid_params.append(param_str)
+            if p.startswith("&"):
+                # Handle special use case - task postfix
+                valid_params.append(p)
+            else:
+                param_str = f'{p}=:{"range" if "range" in type_dict else "options"}:'
+                valid_params.append(param_str)
     type_dict['lm_call'] = f"{func} {' '.join(valid_params)}"
     return dumps(type_dict | overwrite)
 

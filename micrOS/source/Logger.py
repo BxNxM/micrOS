@@ -1,3 +1,9 @@
+"""
+Module is responsible for System and User logging
+- built-in log rotation
+
+Designed by Marcell Ban aka BxNxM
+"""
 from time import localtime
 from os import listdir, remove
 

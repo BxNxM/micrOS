@@ -7,6 +7,7 @@ from Network import get_mac, ifconfig as network_config
 from Time import ntp_time, set_time, uptime
 from Tasks import Manager
 from Types import resolve
+from Notify import Notify
 
 try:
     from gc import mem_free, mem_alloc, collect
@@ -232,6 +233,14 @@ def urequests_host_cache():
     return host_cache()
 
 
+def notifications(enable=None):
+    """
+    Global notifications control for micrOS
+    :param enable: True: Enable notifications / False: Disable notifications
+    return: state verdict
+    """
+    return Notify.notifications(state=enable)
+
 #######################
 # LM helper functions #
 #######################
@@ -246,5 +255,6 @@ def help(widgets=False):
     return resolve(('info', 'TEXTBOX top', 'gclean', 'heartbeat', 'clock',
                     'setclock year month mday hour min sec',
                     'ntp', 'rssi', 'list_stations', 'pinmap key="dhtpin"/None', 'alarms clean=False',
+                    'notifications enable=<None,True,False>',
                     'sun refresh=False', 'ifconfig', 'memory_usage',
                     'disk_usage', 'dat_dump', 'urequests_host_cache'), widgets=widgets)

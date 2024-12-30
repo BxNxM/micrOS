@@ -4,40 +4,45 @@ services:
     container_name: micros-gateway
     environment:
       - GATEWAYIP=10.0.1.1
-      - API_AUTH=usr:pwd
+      - API_AUTH=${API_AUTH:-usr:pwd}                     # Use environment variable or fallback
     ports:
-      - "5000:5000"  # Expose Flask REST API port to host
+      - "5000:5000"                                       # Expose Flask REST API port to host
     networks:
       - micros_nw
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_valume:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro  # Mount config as read-only
+      - prometheus_volume:/prometheus                       # Persist Prometheus data
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=365d'
     ports:
-      - "9090:9090"  # Expose Prometheus UI port to host
+      - "9090:9090"                                         # Expose Prometheus UI port to host
     networks:
       - micros_nw
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    depends_on:
+      - prometheus
     ports:
-      - "3000:3000"  # Expose Grafana UI port to host
+      - "3000:3000"                                         # Expose Grafana UI port to host
     networks:
       - micros_nw
     volumes:
-      - grafana_data:/var/lib/grafana  # Persist Grafana data
+      - grafana_data:/var/lib/grafana                       # Persist Grafana data
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}  # Default password
 
 networks:
   micros_nw:
     driver: bridge
 
 volumes:
-  prometheus_valume:
+  prometheus_volume:
   grafana_data:

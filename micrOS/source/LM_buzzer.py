@@ -1,7 +1,7 @@
 from sys import platform
 from utime import sleep
 from microIO import resolve_pin, pinmap_search
-from Common import micro_task
+from Common import micro_task, notify
 from Types import resolve
 
 
@@ -13,6 +13,7 @@ __BUZZER_OBJ = None
 __BUZZER_CACHE = [600]
 __PERSISTENT_CACHE = False
 __TASK_TAG = "buzzer._play"
+CHECK_NOTIFY = False
 
 #########################################
 #              BUZZER RTTL              #
@@ -229,7 +230,9 @@ def bipp(repeat=1, freq=None):
     :param freq int: 0-1000 default: 600
     :return str: Verdict string
     """
-    global __BUZZER_CACHE
+    global __BUZZER_CACHE, CHECK_NOTIFY
+    if CHECK_NOTIFY and not notify():
+        return "NoBipp - notify off"
     # restore data from cache if it was not provided
     freq = int(__BUZZER_CACHE[0] if freq is None else freq)
     for _ in range(repeat):
@@ -264,6 +267,9 @@ def play(rtttlstr='Indiana'):
     :param rtttlstr str: rttl string, default: 'd=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'
     :return str: verdict
     """
+    global CHECK_NOTIFY
+    if CHECK_NOTIFY and not notify():
+        return "NoBipp - notify off"
     state = micro_task(tag=__TASK_TAG, task=_play(rtttlstr))
     if state:
         return 'Play song'
@@ -277,22 +283,24 @@ def list_tones():
     return '\n'.join(list(_builtin_tones()))
 
 
-def load(cache=None):
+def load(cache=None, check_notify=False):
     """
     Initialize buzzer module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
     - Load .pds (state machine cache) for this load module
     - Apply loaded states to gpio pins (boot function)
-    :return str: Cache state
+    :param check_notify: check notify enabled/disabled - make noise if enabled only
+    :return str: Verdict
     """
     from sys import platform
-    global __PERSISTENT_CACHE
+    global __PERSISTENT_CACHE, CHECK_NOTIFY
     if cache is None:
         __PERSISTENT_CACHE = False if platform == 'esp8266' else True
     else:
         __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')
-    return "CACHE: {}".format(__PERSISTENT_CACHE)
+    CHECK_NOTIFY = check_notify
+    return f"CACHE: {__PERSISTENT_CACHE}, check notify: {CHECK_NOTIFY}"
 
 
 #######################
@@ -319,4 +327,4 @@ def help(widgets=False):
     return resolve(('BUTTON bipp repeat=3 freq=600',
                              'BUTTON play rtttlstr=<Indiana,TakeOnMe,StarWars,MissionImp>',
                              'list_tones',
-                             'load', 'pinmap'), widgets=widgets)
+                             'load check_notify=False', 'pinmap'), widgets=widgets)

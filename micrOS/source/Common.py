@@ -9,8 +9,7 @@ from Logger import logger, log_get
 from microIO import resolve_pin
 from Tasks import TaskBase, Manager, lm_exec
 from machine import Pin, ADC
-
-TELEGRAM = None
+from Notify import Notify
 
 ################## Common LM features ##################
 
@@ -141,22 +140,18 @@ def exec_cmd(cmd, skip_check=False):
     return lm_exec(cmd) if isinstance(cmd, list) else False, f"Invalid type, must be list: {type(cmd)}"
 
 
-def notify(text):
+def notify(text=None) -> bool:
     """
     [LM] micrOS common notification handler (Telegram)
-    :param text: notification text
+    :param text: notification text / None (return notification state)
     return: verdict: True/False
     """
-    global TELEGRAM
-    if TELEGRAM is None:
-        try:
-            from Notify import Telegram
-            TELEGRAM = Telegram()
-        except Exception as e:
-            errlog_add(f"[ERR] Import Notify.Telegram: {e}")
-            return False
+    # (1) Return notification state
+    if text is None:
+        return Notify.GLOBAL_NOTIFY
+    # (2) Send notification
     try:
-        out = TELEGRAM.notify(text)
+        out = Notify.notify(text)
     except Exception as e:
         errlog_add(f"[ERR] Notify: {e}")
         out = str(e)
@@ -165,7 +160,7 @@ def notify(text):
     return False
 
 
-def web_endpoint(endpoint, function):
+def web_endpoint(endpoint, function) -> bool:
     """
     [LM] Add test endpoint <localhost.local>/endpoint from Load Modules
     :param endpoint: simple string, name of the endpoint

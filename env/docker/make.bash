@@ -40,8 +40,15 @@ then
   docker buildx build  --no-cache -t "${IMAGE}" -f DockerfileDev .
 else
   # PROD BUILD
-  echo -e "|------- docker build --no-cache -t ${IMAGE}"
+  echo -e "|------- docker build --no-cache -t ${IMAGE} ..."
+  # Legacy way
   docker buildx build --no-cache -t "${IMAGE}" -t "${IMAGE_LATEST}" .
+
+  # Multiplatform way
+  #docker buildx create --use
+  #docker buildx inspect --bootstrap
+  #docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t "${IMAGE}" -t "${IMAGE_LATEST}" .
+
 fi
 
 echo -e "[RUN IMAGE] docker run"

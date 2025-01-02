@@ -32,53 +32,124 @@
 ### LM\_basic.py
 
 ```python
+"""
+LM_basic.py is an example of a very basic Load Module.
+
+This module demonstrates the micrOS function exposure feature.
+This means that all defined functions can be accessed via
+ShellCli (using a raw socket) and optionally via WebCli (http).
+"""
+
+
 def hello(name="Anonymous"):
-	return f"Hello {name}!"
+    """Returns a greeting message for the given name."""
+    return f"Hello {name}!"
 
 
 def add_two_numbers(a, b):
-	return f"{a}+{b} = {a+b}"
+    """Adds two numbers and returns the result in a formatted string."""
+    return f"{a} + {b} = {a + b}"
 
 
 def help(widgets=False):
-	return ("hello name='Anonymous'",
-			  "add_two_numbers a b")
+    """
+    [i] micrOS LM naming convention - built-in help message
+    :param widgets: only a placeholder here - has no effect
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
+    """
+
+    return ("hello name='Anonymous'",
+            "add_two_numbers a b")
+
 ```
 
 ### LM\_basic\_led.py
 
 ```python
-from machine import Pin	              # Import micropython Pin module
+"""
+LM_basic_led.py is an example Load Module for controlling an LED.
 
-LED = None                            # Cache created Pin instance
+This module demonstrates the micrOS function exposure feature
+for hardware interaction. It allows the user to control an LED
+connected to a specified pin through the following functions:
+- load: Initialize and cache the LED pin instance.
+- on: Turn the LED on.
+- off: Turn the LED off.
+- toggle: Toggle the LED state.
+
+These functions can be accessed via ShellCli (using a raw socket)
+and optionally via WebCli (http).
+"""
+
+from machine import Pin  	# Import MicroPython's Pin module for GPIO control
+
+LED = None  				# Cache the Pin instance for the LED
+
 
 def load(pin_number=4):
-	global LED
-	if LED is None:
-		LED = Pin(pin_number, Pin.OUT) # Init PIN 4 as OUTPUT and store (cache) in global var.
-	return LED
+    """
+    Initialize the specified pin as an output for the LED and cache the instance.
+
+    Args:
+        pin_number (int): The GPIO pin number to which the LED is connected. Default is 4.
+
+    Returns:
+        Pin: The initialized Pin instance.
+    """
+    global LED
+    if LED is None:
+        LED = Pin(pin_number, Pin.OUT)  # Initialize the pin as output and store in global variable
+    return LED
 
 
 def on():
-	pin = load()
-	pin.value(1)                      # Set pin high - LED ON
-	return "LED ON"
+    """
+    Turn the LED on by setting the pin output to high.
+
+    Returns:
+        str: Status message indicating the LED is on.
+    """
+    pin = load()
+    pin.value(1)  # Set pin high - LED ON
+    return "LED ON"
 
 
 def off():
-	pin = load()
-	pin.value(0)                      # Set pin low - LED OFF
-	return "LED OFF"
+    """
+    Turn the LED off by setting the pin output to low.
+
+    Returns:
+        str: Status message indicating the LED is off.
+    """
+    pin = load()
+    pin.value(0)  # Set pin low - LED OFF
+    return "LED OFF"
 
 
 def toggle():
-	pin = load()
-	pin.value(not pin.value())
-	return "LED ON" if pin.value() else "LED OFF"
+    """
+    Toggle the LED state.
+
+    Returns:
+        str: Status message indicating the new LED state.
+    """
+    pin = load()
+    pin.value(not pin.value())  # Toggle pin state
+    return "LED ON" if pin.value() else "LED OFF"
 
 
-def help():
-	return 'load', 'on', 'off', 'toggle'
+def help(widgets=False):
+    """
+    [i] micrOS LM naming convention - built-in help message
+    :param widgets: only a placeholder here - has no effect
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
+    """
+    return 'load', 'on', 'off', 'toggle'
+
 ```
 
 For more info: Micropython official [Pins](https://docs.micropython.org/en/latest/library/machine.Pin.html)
@@ -93,88 +164,133 @@ For more info: Micropython official [Pins](https://docs.micropython.org/en/lates
 Function naming convesions for Load Modules.
 
 ```python
+"""
+LM_template.py is a Load Module template for micrOS.
 
-from machine import Pin	
+This template demonstrates the recommended function naming conventions,
+pin registration, and hardware interaction practices in micrOS. The module
+provides functions to control an LED connected to a specified pin and
+examples of optional state management and pin mapping.
+
+Functions available in this module:
+- load: Initialize and cache the LED pin instance.
+- on: Turn the LED on.
+- off: Turn the LED off.
+- toggle: Toggle the LED state.
+- pinmap: Retrieve the logical pinmap (optional).
+- status: Report the current state of the LED (optional).
+- help: Provide a list of available functions.
+
+These functions can be accessed via ShellCli (using a raw socket) and
+optionally via WebCli.
+"""
+
+from machine import Pin
 from microIO import register_pin, pinmap_search
 
-LED = None                            # Cache created Pin instance
+LED = None  # Cache the Pin instance for the LED
+
 
 def load(pin_number=4):
-	"""
-	[RECOMMENDED]
-	Function Naming Convetion for module load/init
-	"""
-	global LED
-	if LED is None:
-		pin = register_pin('led', pin_number)            # Book pin 4 (as "led")
-		LED = Pin(pin, Pin.OUT) # Init PIN 4 as OUTPUT and store (cache) in global var.
-	return LED
+    """
+    [Naming convention]
+    Initialize the specified pin as an output for the LED and cache the instance.
+    This function follows the micrOS recommended naming convention for module load/init.
+
+    Args:
+        pin_number (int): The GPIO pin number to which the LED is connected. Default is 4.
+
+    Returns:
+        Pin: The initialized Pin instance.
+    """
+    global LED
+    if LED is None:
+        pin = register_pin('led', pin_number)  # Reserve the pin as "led"
+        LED = Pin(pin, Pin.OUT)  # Initialize the pin as output and store in global variable
+    return LED
 
 
 def on():
-	pin = load()
-	pin.value(1)                      # Set pin high - LED ON
-	return "LED ON"
+    """
+    Turn the LED on by setting the pin output to high.
+
+    Returns:
+        str: Status message indicating the LED is on.
+    """
+    pin = load()
+    pin.value(1)  # Set pin high - LED ON
+    return "LED ON"
 
 
 def off():
-	pin = load()
-	pin.value(0)                      # Set pin low - LED OFF
-	return "LED OFF"
+    """
+    Turn the LED off by setting the pin output to low.
+
+    Returns:
+        str: Status message indicating the LED is off.
+    """
+    pin = load()
+    pin.value(0)  # Set pin low - LED OFF
+    return "LED OFF"
 
 
 def toggle():
-	pin = load()
-	pin.value(not pin.value())
-	return "LED ON" if pin.value() else "LED OFF"
+    """
+    Toggle the LED state.
+
+    Returns:
+        str: Status message indicating the new LED state.
+    """
+    pin = load()
+    pin.value(not pin.value())  # Toggle pin state
+    return "LED ON" if pin.value() else "LED OFF"
 
 
 def pinmap():
-	"""
-	[OPTIONAL]
-	pinmap_search - logical pinmap resolver based on IO_<device_tag>.py + Custom pins
-	return: dict {pinkey: pinvalue, ...}
-	"""
-	return pinmap_search(['led'])
+    """
+    [Naming convention]
+    Retrieve the logical pinmap for the application.
+
+    This function uses `pinmap_search` to resolve pin mappings based on the
+    IO_<device_tag>.py configuration and any custom pin definitions.
+
+    Returns:
+        dict: A dictionary of pin mappings (e.g., {pin_key: pin_value, ...}).
+    """
+    return pinmap_search(['led'])
 
 
 def status(lmf=None):
-	"""
-	[OPTIONAL]
-	Function naming convension for
-		module state-machine return
-		return: dict
-	
-	Example:
-		return {'S': 0/1}
-	Supported keys: {S, R, G, B, BR, X, Y}
-	"""
-	return {'S': LED.value()}
+    """
+    [Naming convention]
+    Report the current state of the LED.
+
+    This function follows the micrOS naming convention for state-machine returns.
+    It provides the state of the module as a dictionary with keys like {S, R, G, B, etc.}.
+
+    Args:
+        lmf (None): Placeholder for future enhancements.
+
+    Returns:
+        dict: A dictionary containing the state of the LED. Example: {'S': 0/1}.
+    """
+    return {'S': LED.value()}
 
 
 def help(widgets=False):
     """
+    [Naming convention]
     [i] micrOS LM naming convention - built-in help message
+    :param widgets: only a placeholder here - has no effect
     :return tuple:
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-	return 'load', 'on', 'off', 'toggle', 'pinmap', 'status', 'help'
+    return 'load', 'on', 'off', 'toggle', 'pinmap', 'status', 'help'
+
 ```
 
 #### microIO.py
-
-``` python
-def resolve_pin(tag):
-    """
-    Used in LoadModules
-    tag - resolve pin name by logical name (like: switch_1)
-    This function implements IO allocation/booking (with overload protection)
-    return: integer (pin number)
-    """
-```
-
-> Note: Used for multi-device pin support (advanced)  
 
 ```python
 def register_pin(tag, number):
@@ -203,6 +319,18 @@ def pinmap_search(keys):
     Gives information where to connect the selected periphery to control WITHOUT PIN BOOKING
     """
 ```
+
+``` python
+def resolve_pin(tag):
+    """
+    Used in LoadModules
+    tag - resolve pin name by logical name (like: switch_1)
+    This function implements IO allocation/booking (with overload protection)
+    return: integer (pin number)
+    """
+```
+
+> Note: Used for multi-device pin support (advanced)  
 
 
 ```
@@ -243,69 +371,125 @@ Tags:
 ### micrOS LM\_types\_demo.py
 
 ```python
+"""
+LM_types_demo.py is a Load Module for micrOS showcasing type-based function resolutions.
+
+This module demonstrates the recommended function naming conventions,
+pin registration, and hardware interaction practices in micrOS. It also
+highlights the use of `Types.resolve` to dynamically generate function
+lists and UI widgets for micrOS interfaces.
+
+Functions available in this module:
+- load: Initialize and cache the LED pin instance.
+- on: Turn the LED on.
+- off: Turn the LED off.
+- toggle: Toggle the LED state.
+- pinmap: Retrieve the logical pinmap (optional).
+- status: Report the current state of the LED (optional).
+- help: Provide a list of available functions, with optional widget generation.
+
+These functions can be accessed via ShellCli (using a raw socket) and
+optionally via WebCli.
+"""
+
 from machine import Pin
 from microIO import register_pin, pinmap_search
 from Types import resolve
 
-LED = None  # Cache created Pin instance
+LED = None  # Cache the Pin instance for the LED
 
 
 def load(pin_number=4):
     """
-    [RECOMMENDED]
-    Function Naming Convetion for module load/init
+    [Naming convention]
+    Initialize the specified pin as an output for the LED and cache the instance.
+    This function follows the micrOS recommended naming convention for module load/init.
+
+    Args:
+        pin_number (int): The GPIO pin number to which the LED is connected. Default is 4.
+
+    Returns:
+        Pin: The initialized Pin instance.
     """
     global LED
     if LED is None:
-        pin = register_pin('led', pin_number)  # Book pin 4 (as "led")
-        LED = Pin(pin, Pin.OUT)  # Init PIN 4 as OUTPUT and store (cache) in global var.
+        pin = register_pin('led', pin_number)  # Reserve the pin as "led"
+        LED = Pin(pin, Pin.OUT)  # Initialize the pin as output and store in global variable
     return LED
 
 
 def on():
+    """
+    Turn the LED on by setting the pin output to high.
+
+    Returns:
+        str: Status message indicating the LED is on.
+    """
     pin = load()
     pin.value(1)  # Set pin high - LED ON
     return "LED ON"
 
 
 def off():
+    """
+    Turn the LED off by setting the pin output to low.
+
+    Returns:
+        str: Status message indicating the LED is off.
+    """
     pin = load()
     pin.value(0)  # Set pin low - LED OFF
     return "LED OFF"
 
 
 def toggle():
+    """
+    Toggle the LED state.
+
+    Returns:
+        str: Status message indicating the new LED state.
+    """
     pin = load()
-    pin.value(not pin.value())
+    pin.value(not pin.value())  # Toggle pin state
     return "LED ON" if pin.value() else "LED OFF"
 
 
 def pinmap():
     """
-    [OPTIONAL]
-    pinmap_search - logical pinmap resolver based on IO_<device_tag>.py + Custom pins
-    return: dict {pinkey: pinvalue, ...}
+    [Naming convention]
+    Retrieve the logical pinmap for the application.
+
+    This function uses `pinmap_search` to resolve pin mappings based on the
+    IO_<device_tag>.py configuration and any custom pin definitions.
+
+    Returns:
+        dict: A dictionary of pin mappings (e.g., {pin_key: pin_value, ...}).
     """
     return pinmap_search(['led'])
 
 
 def status(lmf=None):
     """
-    [OPTIONAL]
-    Function naming convension for
-        module state-machine return
-        return: dict
+    [Naming convention]
+    Report the current state of the LED.
 
-    Example:
-        return {'S': 0/1}
-    Supported keys: {S, R, G, B, BR, X, Y}
+    This function follows the micrOS naming convention for state-machine returns.
+    It provides the state of the module as a dictionary with keys like {S, R, G, B, etc.}.
+
+    Args:
+        lmf (None): Placeholder for future enhancements.
+
+    Returns:
+        dict: A dictionary containing the state of the LED. Example: {'S': 0/1}.
     """
     return {'S': LED.value()}
 
 
 def help(widgets=False):
     """
+    [Naming convention]
     [i] micrOS LM naming convention - built-in help message
+    :param widgets: only a placeholder here - has no effect
     :return tuple:
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
@@ -350,7 +534,7 @@ TYPE Example sytax:
                     'other_function num'), widgets=widgets)
 ```
 
-
+-------------------------------------------------------------------------------
 
 ```
  █████  ██████  ██    ██  █████  ███    ██  ██████ ███████ ██████  
@@ -385,7 +569,7 @@ Usage(s): [LM_sound_event](./micrOS/source/LM_sound_event.py) [LM_demo](./micrOS
 
 ------------------------------------
 
-### transition(from_val, to\_val, step\_ms, interval_sec)
+### transition(from\_val, to\_val, step\_ms, interval_sec)
 
 Generator for color transitions.
 

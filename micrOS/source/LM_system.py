@@ -187,8 +187,7 @@ def pinmap(keys='builtin irq1 irq2 irq3 irq4'):
     from microIO import pinmap_search, pinmap_info
     map = pinmap_info()
     keys = keys.split()
-    for k in keys:
-        map[k] = pinmap_search(k)[k]
+    map["search"] = pinmap_search(keys)
     return map
 
 @socket_stream

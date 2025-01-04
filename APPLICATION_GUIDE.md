@@ -88,12 +88,12 @@ from machine import Pin  	# Import MicroPython's Pin module for GPIO control
 LED = None  				# Cache the Pin instance for the LED
 
 
-def load(pin_number=4):
+def load(pin_number=26):
     """
     Initialize the specified pin as an output for the LED and cache the instance.
 
     Args:
-        pin_number (int): The GPIO pin number to which the LED is connected. Default is 4.
+        pin_number (int): The GPIO pin number to which the LED is connected. Default is 26.
 
     Returns:
         Pin: The initialized Pin instance.
@@ -191,14 +191,14 @@ from microIO import register_pin, pinmap_search
 LED = None  # Cache the Pin instance for the LED
 
 
-def load(pin_number=4):
+def load(pin_number=26):
     """
     [Naming convention]
     Initialize the specified pin as an output for the LED and cache the instance.
     This function follows the micrOS recommended naming convention for module load/init.
 
     Args:
-        pin_number (int): The GPIO pin number to which the LED is connected. Default is 4.
+        pin_number (int): The GPIO pin number to which the LED is connected. Default is 26.
 
     Returns:
         Pin: The initialized Pin instance.
@@ -399,14 +399,14 @@ from Types import resolve
 LED = None  # Cache the Pin instance for the LED
 
 
-def load(pin_number=4):
+def load(pin_number=26):
     """
     [Naming convention]
     Initialize the specified pin as an output for the LED and cache the instance.
     This function follows the micrOS recommended naming convention for module load/init.
 
     Args:
-        pin_number (int): The GPIO pin number to which the LED is connected. Default is 4.
+        pin_number (int): The GPIO pin number to which the LED is connected. Default is 26.
 
     Returns:
         Pin: The initialized Pin instance.

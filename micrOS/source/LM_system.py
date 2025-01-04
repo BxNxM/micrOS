@@ -178,15 +178,17 @@ def list_stations():
     return [("NoAP", '')]
 
 
-def pinmap(key='builtin'):
+def pinmap(keys='builtin irq1 irq2 irq3 irq4'):
     """
     Get Logical pin by key runtime
-    :param key str: logical pin name to resolve
+    :param keys str: logical pin name or names to resolve
     :return dict: key map
     """
     from microIO import pinmap_search, pinmap_info
     map = pinmap_info()
-    map[key] = pinmap_search(key)[key]
+    keys = keys.split()
+    for k in keys:
+        map[k] = pinmap_search(k)[k]
     return map
 
 @socket_stream

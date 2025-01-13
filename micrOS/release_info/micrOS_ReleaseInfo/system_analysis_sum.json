@@ -5,7 +5,7 @@
             7
         ],
         "micrOSloader.py": [
-            7.84,
+            8.0,
             1
         ],
         "Hooks.py": [
@@ -17,7 +17,7 @@
             3
         ],
         "Web.py": [
-            9.23,
+            9.25,
             1
         ],
         "Tasks.py": [
@@ -25,7 +25,7 @@
             12
         ],
         "Config.py": [
-            9.44,
+            9.49,
             17
         ],
         "reset.py": [
@@ -109,7 +109,7 @@
             0
         ],
         "LM_system.py": [
-            8.37,
+            8.36,
             5
         ],
         "LM_robustness.py": [
@@ -315,11 +315,11 @@
     },
     "summary": {
         "core": [
-            3253,
+            3275,
             23
         ],
         "load": [
-            8940,
+            8939,
             55
         ],
         "core_dep": [
@@ -330,8 +330,8 @@
             true,
             6
         ],
-        "core_score": 9.05,
+        "core_score": 9.06,
         "load_score": 8.22,
-        "version": "2.8.6-1"
+        "version": "2.9.0-0"
     }
 }

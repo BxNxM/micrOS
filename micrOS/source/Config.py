@@ -13,6 +13,7 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from os import remove
+from re import search
 from json import load, dump
 from utime import sleep
 from Debug import DebugCfg, console_write, errlog_add
@@ -185,6 +186,21 @@ class Data:
             # Return default value if key not exists
             return 'n/a'
 
+    @staticmethod
+    def validate_pwd(password):
+        """
+        Validate appwd parameter
+        - webrepl password
+        - micrOS auth password (Shell/WebCli)
+        - wifi access point password
+        """
+        # Check password rules
+        if 4 <= len(password) <= 9:
+            if search(r"[A-Z]", password) and search(r"[a-z]", password):
+                if search(r"\d", password):
+                    return True, ''
+        return False, 'Password must include [0-9] both [a-z][A-Z] and length between 4-9 char.'
+
 
 #################################################################
 #                  CONFIGHANDLER  FUNCTIONS                     #
@@ -204,8 +220,11 @@ def cfgget(key=None):
         errlog_add(f'[ERR] cfgget {key} error: {e}')
     return None
 
-
 def cfgput(key, value, type_check=False):
+    if key == 'appwd':
+        is_valid, verdict = Data.validate_pwd(value)
+        if not is_valid:
+            raise Exception(verdict)
     # Handle special "offloaded" keys
     if str(Data.CONFIG_CACHE.get(key, None)) == '...':
         return Data.disk_keys(key, value)

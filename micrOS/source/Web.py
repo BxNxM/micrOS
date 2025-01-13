@@ -74,9 +74,22 @@ class WebEngine:
             try:
                 # SEND RESOURCE CONTENT: HTML, JS, CSS
                 with open(resource, 'r') as file:
-                    html = file.read()
-                await self.client.a_send(self.REQ200.format(dtype=WebEngine.file_type(resource), len=len(html), data=html))
-            except OSError:
+                    data = file.read()
+                response = self.REQ200.format(dtype=WebEngine.file_type(resource), len=len(data), data=data)
+                # Send entire response data
+                await self.client.a_send(response)
+
+                # Send chunks of response data (experimental)
+                #response_len, chunk_size, position = len(response), 300, 0
+                #while position < response_len:
+                #    # Calculate the size of the next chunk
+                #    next_chunk_size = min(chunk_size, response_len - position)
+                #    chunk = response[position:position + next_chunk_size]
+                #    await self.client.a_send(chunk)
+                #    position += next_chunk_size
+            except Exception as e:
+                if 'memory allocation failed' in str(e):
+                    errlog_add(f"[ERR] WebCli {resource}: {e}")
                 await self.client.a_send(self.REQ404.format(len=13, data='404 Not Found'))
             return
         # INVALID/BAD REQUEST

@@ -21,6 +21,10 @@
 4. Select device
 5. Press upload
 
+**Youtube video series** Click on the picture:
+[![Watch the playlist](https://img.youtube.com/vi/Oh5fffbreoU/0.jpg)](https://www.youtube.com/watch?v=Oh5fffbreoU&list=PL5rjiRvmUfU5bKbKkqs3KjbrJor1dlaIH&pp=gAQB)
+
+
 ```
 ██████  ███████  ██████  ██ ███    ██ ███    ██ ███████ ██████  
 ██   ██ ██      ██       ██ ████   ██ ████   ██ ██      ██   ██ 

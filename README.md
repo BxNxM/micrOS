@@ -79,12 +79,22 @@ I would suggest to use micrOS GUI as a primary interface for micrOS development 
 
 <br/>
 
-### 1. Install python3.9+
+## 1. Prerequisites
+
+### 1.1 Install python3.9+
 
 Link for python 3.9+ [download](https://www.python.org/downloads/release/python-390/)
 
 > Note: **Allow extend system path** with that python version (installation parameter) </br>
 > On **Windows**: RUN AS ADMINISTARTOR
+
+### 1.2 Install git
+
+Link for git [download](https://git-scm.com/downloads)
+
+> Git is a distributed version control system that helps developers track changes, collaborate on code, and manage project history efficiently.
+
+It is needed to be able to download webrepl client (automatic), that is used for OverTheAir file transfers and other features.
 
 ----------------------------------------
 

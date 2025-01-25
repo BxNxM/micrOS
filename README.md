@@ -463,17 +463,20 @@ Version **3.0.0-0**
     Core:
     - Async SSL/TLS integration (micropython 1.22+ required)
         - urequest module async redesign for rest clients
-            - Notify (telegram) + server (listener - chatbot)
+            - LM_telegram (Notify) + server (listener - chatbot)
             - Time (ntp location + sunset/sunrise api)
+    - ESP-NOW (peer-to-peer communication) integration into InterCon
+    - ??? New intercon syntax ???:
+    	- rgb toggle >>RingLight.local
+    	- similar as: intercon sendcmd host="RingLight.local" cmd="rgb toggle"
 ```
 
 Version **3.1.0-0**
 
 ```
     Core:
-    - Async socket SSL/TLS integration (with auth.)
-        - WebCli (http), ShellCli (terminal) and InterCon
-        - Study of ESP-NOW (peer-to-peer communication) integration into InterCon (micropython requirements?)
+    - Async socket servers with SSL/TLS integration (with auth.)
+        - WebCli (https?), ShellCli (ssocket/sterminal) and InterCon
 ```
 
 Version **4.0.0-0**

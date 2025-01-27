@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.9.0-0'
+    MICROS_VERSION = '2.9.1-0'
 
     def __init__(self):
         """
@@ -264,8 +264,9 @@ class Shell:
                         line = "micrOSisTheBest"
                         while line:
                             line = f.readline()
-                            if line.strip().startswith('def') and '_' not in line and 'self' not in line:
-                                msg_obj(f"   {' ' * len(lm_name)}{line.replace('def ', '').split('(')[0]}")
+                            ldata = line.strip()
+                            if ldata.startswith('def ') and not ldata.split()[1].startswith("_") and 'self' not in ldata:
+                                msg_obj(f"   {' ' * len(lm_name)}{ldata.replace('def ', '').split('(')[0]}")
                 except Exception as e:
                     msg_obj(f"[{lm_path}] SHOW LM PARSER WARNING: {e}")
                     return False

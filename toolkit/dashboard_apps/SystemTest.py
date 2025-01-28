@@ -359,8 +359,9 @@ def check_robustness_recursion():
 def check_intercon(host=None):
     def _convert_return_to_dict(data):
         try:
-            data_dict = ast.literal_eval(data[1])
+            data_dict = ast.literal_eval(data[1].split("\n")[0])
         except Exception as e:
+            print(f"WARNING: cannot parse output as dir: {e}")
             data_dict = {'tag': None, 'verdict': f'{data}: {str(e)}'}
         return data[0], data_dict
 

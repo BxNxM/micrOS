@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.9.1-0'
+    MICROS_VERSION = '2.9.2-0'
 
     def __init__(self):
         """
@@ -45,9 +45,9 @@ class Shell:
         except Exception as e:
             errlog_add(f"[ERR] micrOS version export failed (config): {e}")
 
-    def send(self, msg):
+    async def a_send(self, msg):
         """
-        Must be defined by child class...
+        Must be defined by parent class...
         """
         pass
 
@@ -56,10 +56,10 @@ class Shell:
         self.__auth_ok = False
         self.__conf_mode = False
 
-    def reboot(self, hard=False):
+    async def reboot(self, hard=False):
         """Reboot micropython VM"""
-        self.send(f"{'[HARD] ' if hard else ''}Reboot micrOS system.")
-        self.send("Bye!")
+        await self.a_send(f"{'[HARD] ' if hard else ''}Reboot micrOS system.")
+        await self.a_send("Bye!")
         if hard:
             hard_reset()
         soft_reset()
@@ -70,7 +70,7 @@ class Shell:
         mode = "[configure] " if self.__conf_mode else ""
         return f"{auth}{mode}{self.__devfid} $ "
 
-    def __auth(self, msg_list):
+    async def __auth(self, msg_list):
         """Authorize user"""
         # Set user auth state
         if self.__auth_mode and not self.__auth_ok:
@@ -78,22 +78,22 @@ class Shell:
             usrpwd = cfgget('appwd')
             if usrpwd == msg_list[0].strip():
                 self.__auth_ok = True
-                self.send("AuthOk")
+                await self.a_send("AuthOk")
                 return True, []
-            self.send("AuthFailed\nBye!")
+            await self.a_send("AuthFailed\nBye!")
             return False, []
         return True, msg_list
 
-    def shell(self, msg):
+    async def shell(self, msg):
         """
         micrOS Shell main - input string handling
         :param msg: incoming shell command (command or load module call)
         """
-        state = self.__shell(msg)
-        self.send(self.prompt())
+        state = await self.__shell(msg)
+        await self.a_send(self.prompt())
         return state
 
-    def __shell(self, msg):
+    async def __shell(self, msg):
         """
         Socket server - interpreter shell
         :param msg: socket input string
@@ -118,11 +118,11 @@ class Shell:
         # Hello message
         if msg_list[0] == 'hello':
             # For low level device identification - hello msg
-            self.send(f"hello:{self.__devfid}:{self.__hwuid}")
+            await self.a_send(f"hello:{self.__devfid}:{self.__hwuid}")
             return True
 
         # [!] AUTH
-        state, msg_list = self.__auth(msg_list)
+        state, msg_list = await self.__auth(msg_list)
         if not state:
             return False
         if len(msg_list) == 0:
@@ -131,7 +131,7 @@ class Shell:
         # Version handling
         if msg_list[0] == 'version':
             # For micrOS system version info
-            self.send(str(Shell.MICROS_VERSION))
+            await self.a_send(str(Shell.MICROS_VERSION))
             return True
 
         # Reboot micropython VM
@@ -140,12 +140,12 @@ class Shell:
             if len(msg_list) >= 2 and "-h" in msg_list[1]:
                 # reboot / reboot -h
                 hard = True
-            self.reboot(hard)
+            await self.reboot(hard)
 
         if msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:
-                Shell.webrepl(msg_obj=self.send, update=True)
-            Shell.webrepl(msg_obj=self.send)
+                await Shell.webrepl(msg_obj=self.a_send, update=True)
+            await Shell.webrepl(msg_obj=self.a_send)
 
         # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
         if msg_list[0].startswith('conf'):
@@ -157,34 +157,34 @@ class Shell:
 
         # HELP MSG
         if msg_list[0] == "help":
-            self.send("[MICROS]   - built-in shell commands")
-            self.send("   hello   - hello msg - for device identification")
-            self.send("   modules - show active Load Modules")
-            self.send("   version - returns micrOS version")
-            self.send("   exit    - exit from shell socket prompt")
-            self.send("   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h")
-            self.send("   webrepl - start webrepl, for file transfers use with --update")
-            self.send("[CONF] Configure mode - built-in shell commands")
-            self.send("  conf       - Enter conf mode")
-            self.send("    dump       - Dump all data")
-            self.send("    key        - Get value")
-            self.send("    key value  - Set value")
-            self.send("  noconf     - Exit conf mode")
-            self.send("[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]")
-            self.send("  task list         - list tasks with <tag>s")
-            self.send("  task kill <tag>   - stop task")
-            self.send("  task show <tag>   - show task output")
-            self.send("[EXEC] Command mode (LMs):")
-            self.send("   help lm  - list ALL LoadModules")
+            await self.a_send("[MICROS]   - built-in shell commands")
+            await self.a_send("   hello   - hello msg - for device identification")
+            await self.a_send("   modules - show active Load Modules")
+            await self.a_send("   version - returns micrOS version")
+            await self.a_send("   exit    - exit from shell socket prompt")
+            await self.a_send("   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h")
+            await self.a_send("   webrepl - start webrepl, for file transfers use with --update")
+            await self.a_send("[CONF] Configure mode - built-in shell commands")
+            await self.a_send("  conf       - Enter conf mode")
+            await self.a_send("    dump       - Dump all data")
+            await self.a_send("    key        - Get value")
+            await self.a_send("    key value  - Set value")
+            await self.a_send("  noconf     - Exit conf mode")
+            await self.a_send("[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]")
+            await self.a_send("  task list         - list tasks with <tag>s")
+            await self.a_send("  task kill <tag>   - stop task")
+            await self.a_send("  task show <tag>   - show task output")
+            await self.a_send("[EXEC] Command mode (LMs):")
+            await self.a_send("   help lm  - list ALL LoadModules")
             if "lm" in str(msg_list):
-                return Shell._show_lm_funcs(msg_obj=self.send)
-            return Shell._show_lm_funcs(msg_obj=self.send, active_only=True)
+                return await Shell._show_lm_funcs(msg_obj=self.a_send)
+            return await Shell._show_lm_funcs(msg_obj=self.a_send, active_only=True)
 
         # [2] EXECUTE:
         # @1 Configure mode
         if self.__conf_mode and len(msg_list) > 0:
             # Lock thread under config handling is threads available
-            return Shell._configure(self.send, msg_list)
+            return await Shell._configure(self.a_send, msg_list)
         # @2 Command mode
         """
         INPUT MSG STRUCTURE
@@ -193,43 +193,43 @@ class Shell:
         """
         try:
             # Execute command via InterpreterCore
-            self.send(lm_exec(arg_list=msg_list)[1])
+            await self.a_send(lm_exec(arg_list=msg_list)[1])
             return True
         except Exception as e:
-            self.send(f"[ERROR] shell.lm_exec internal error: {e}")
+            await self.a_send(f"[ERROR] shell.lm_exec internal error: {e}")
             return False
 
     #################################################################
     #                     CONFIGURE MODE HANDLER                    #
     #################################################################
     @staticmethod
-    def _configure(msg_obj, msg_list):
+    async def _configure(msg_obj, msg_list):
         """
         :param msg_obj: shell output stream function reference (write object)
         :param msg_list: socket input param list
         :return: execution status
         """
-        def dump():
+        async def dump():
             nonlocal msg_obj, msg_list
             if msg_list[0] == 'dump':
                 search = msg_list[1] if len(msg_list) == 2 else None
                 # DUMP DATA
                 for _key, value in cfgget().items():
                     if search is None or search in _key:
-                        msg_obj(f"  {_key}{' ' * (10 - len(_key))}:{' ' * 7} {value}")
+                        await msg_obj(f"  {_key}{' ' * (10 - len(_key))}:{' ' * 7} {value}")
                 return True
             return False
 
         # [CONFIG] Get value
         if len(msg_list) == 1:
-            if dump():                      # Simple dump without param filter
+            if await dump():                      # Simple dump without param filter
                 return True
             # GET SINGLE PARAMETER VALUE
-            msg_obj(cfgget(msg_list[0]))
+            await msg_obj(cfgget(msg_list[0]))
             return True
         # [CONFIG] Set value
         if len(msg_list) >= 2:
-            if dump():                      # Dump with search option
+            if await dump():                      # Dump with search option
                 return True
             # Deserialize params
             key = msg_list[0]
@@ -237,28 +237,28 @@ class Shell:
             try:
                 output = cfgput(key, " ".join(msg_list[1:]), type_check=True)
             except Exception as e:
-                msg_obj(f"node_config write error: {e}")
+                await msg_obj(f"node_config write error: {e}")
                 output = False
             # Evaluation and reply
-            msg_obj('Saved' if output else 'Invalid key' if cfgget(key) is None else 'Failed to save')
+            await msg_obj('Saved' if output else 'Invalid key' if cfgget(key) is None else 'Failed to save')
         return True
 
     #################################################################
     #                   COMMAND MODE & LMS HANDLER                  #
     #################################################################
     @staticmethod
-    def _show_lm_funcs(msg_obj, active_only=False):
+    async def _show_lm_funcs(msg_obj, active_only=False):
         """
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
         """
-        def _help(mod):
+        async def _help(mod):
             for lm_path in (i for i in mod if i.startswith('LM_') and (i.endswith('py'))):
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
-                    msg_obj(f"   {lm_name}")
+                    await msg_obj(f"   {lm_name}")
                     if lm_path.endswith('.mpy'):
-                        msg_obj(f"   {' ' * len(lm_path.replace('LM_', '').split('.')[0])}help")
+                        await msg_obj(f"   {' ' * len(lm_path.replace('LM_', '').split('.')[0])}help")
                         continue
                     with open(lm_path, 'r') as f:
                         line = "micrOSisTheBest"
@@ -266,9 +266,9 @@ class Shell:
                             line = f.readline()
                             ldata = line.strip()
                             if ldata.startswith('def ') and not ldata.split()[1].startswith("_") and 'self' not in ldata:
-                                msg_obj(f"   {' ' * len(lm_name)}{ldata.replace('def ', '').split('(')[0]}")
+                                await msg_obj(f"   {' ' * len(lm_name)}{ldata.replace('def ', '').split('(')[0]}")
                 except Exception as e:
-                    msg_obj(f"[{lm_path}] SHOW LM PARSER WARNING: {e}")
+                    await msg_obj(f"[{lm_path}] SHOW LM PARSER WARNING: {e}")
                     return False
             return True
 
@@ -276,29 +276,29 @@ class Shell:
         if active_only:
             mod_keys = modules.keys()
             active_modules = (dir_mod for dir_mod in listdir() if dir_mod.split('.')[0] in mod_keys)
-            return _help(active_modules)
+            return await _help(active_modules)
         # [2] list all LMs on file system (ALL - help lm) - manual
-        return _help(listdir())
+        return await _help(listdir())
 
     @staticmethod
-    def webrepl(msg_obj, update=False):
+    async def webrepl(msg_obj, update=False):
         from Network import ifconfig
 
-        msg_obj(" Start micropython WEBREPL - file transfer and debugging")
-        msg_obj("  [i] restart machine shortcut: import reset")
-        msg_obj(f"  Connect over http://micropython.org/webrepl/#{ifconfig()[1][0]}:8266/")
-        msg_obj(f"  \t[!] webrepl password: {cfgget('appwd')}")
+        await msg_obj(" Start micropython WEBREPL - file transfer and debugging")
+        await msg_obj("  [i] restart machine shortcut: import reset")
+        await msg_obj(f"  Connect over http://micropython.org/webrepl/#{ifconfig()[1][0]}:8266/")
+        await msg_obj(f"  \t[!] webrepl password: {cfgget('appwd')}")
         if update:
-            msg_obj(" Restart node then start webrepl...")
-            msg_obj(" Bye!")
+            await msg_obj(" Restart node then start webrepl...")
+            await msg_obj(" Bye!")
             # Set .if_mode->webrepl (start webrepl after reboot and poll update status...)
             with open('.if_mode', 'w') as f:
                 f.write('webrepl')
             hard_reset()
         try:
             import webrepl
-            msg_obj(webrepl.start(password=cfgget('appwd')))
+            await msg_obj(webrepl.start(password=cfgget('appwd')))
         except Exception as e:
             _err_msg = f"[ERR] while starting webrepl: {e}"
-            msg_obj(_err_msg)
+            await msg_obj(_err_msg)
             errlog_add(_err_msg)

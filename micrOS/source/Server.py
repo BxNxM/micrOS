@@ -114,7 +114,7 @@ class Client:
             console_write("[Client] NoCon: response>dev/nul")
 
     def send(self, response):
-        # Implement in child class - synchronous send method
+        # Implement in child class - synchronous send (all) method
         pass
 
     async def close(self):
@@ -196,7 +196,9 @@ class ShellCli(Client, Shell):
 
     def send(self, response):
         """
-        Send response to client with non-async function
+        Synchronous send function (with drain task)
+        - not used in Shell or ShellCli
+        - Note: it is a support function for synchronous scenarios: Server.reply_all
         """
         if self.connected:
             if self.prompt() != response:
@@ -219,8 +221,7 @@ class ShellCli(Client, Shell):
 
     async def __wait_for_drain(self):
         """
-        Handle drain serialization
-        - solve output data duplicate
+        Handle drain serialization - for synchronous send function
         """
         try:
             # send write buffer
@@ -233,9 +234,18 @@ class ShellCli(Client, Shell):
         # set drain free
         self.drain_event.set()                  # set drain free (True)
 
+    async def a_send(self, response, encode='utf8'):
+        """
+        Async send for Shell (new line + prompt$)
+        """
+        if self.prompt() != response:
+            # [format] Add new line if not prompt
+            response = f"{response}\n"
+        await super().a_send(response, encode)
+
     async def close(self):
         Client.console(f"[ShellCli] Close connection {self.client_id}")
-        self.send("Bye!\n")
+        await self.a_send("Bye!")
         # Reset shell state machine
         self.reset()
         await asyncio.sleep_ms(50)
@@ -250,7 +260,7 @@ class ShellCli(Client, Shell):
         try:
             # Handle micrOS shell
             Client.console("[ShellCli] --- #Run shell")
-            state = self.shell(request)
+            state = await self.shell(request)
             if state:
                 return False      # exit_loop
             return True           # exit_loop : Close session when shell returns False (auth Failed, etc.)
@@ -258,15 +268,15 @@ class ShellCli(Client, Shell):
             Client.console(f"[ShellCli] Shell exception: {e}")
             if "ECONNRESET" in str(e):
                 return True       # exit_loop
-        self.send("[HA] Critical error - disconnect & hard reset")
+        await self.a_send("[HA] Critical error - disconnect & hard reset")
         errlog_add("[ERR] Socket critical error - reboot")
-        self.reboot()
+        await self.reboot()
 
     async def run_shell(self):
         # Update server task output
         Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
         # Init prompt
-        self.send(self.prompt())
+        await self.a_send(self.prompt())
         # Run async connection handling
         while self.connected:
             try:
@@ -418,7 +428,7 @@ class Server:
         """
         for _, cli in Client.ACTIVE_CLIS.items():
             if cli.connected:
-                cli.send(msg)
+                cli.send(f"~~~ {msg}")
 
     def __del__(self):
         Client.console("[ socket server ] <<destructor>>")

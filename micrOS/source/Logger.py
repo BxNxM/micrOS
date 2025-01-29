@@ -6,6 +6,7 @@ Designed by Marcell Ban aka BxNxM
 """
 from time import localtime
 from os import listdir, remove
+from re import match
 
 #############################################
 #        LOGGING WITH DATA ROTATION         #
@@ -66,6 +67,8 @@ def log_get(f_name, msgobj=None):
     """
     err_cnt = 0
     try:
+        if msgobj is not None:
+            msgobj(f_name)
         with open(f_name, 'r') as f:
             eline = f.readline().strip()
             while eline:
@@ -73,7 +76,7 @@ def log_get(f_name, msgobj=None):
                 err_cnt += 1 if "[ERR]" in eline else 0
                 # GIVE BACK .log file contents
                 if msgobj is not None:
-                    msgobj(eline)
+                    msgobj(f"\t{eline}")
                 eline = f.readline().strip()
     except:
         pass
@@ -82,8 +85,13 @@ def log_get(f_name, msgobj=None):
 
 def syslog(data=None, msgobj=None):
     if data is None:
-        return log_get('err.log', msgobj)
-    return logger(data, 'err.log', limit=6)
+        err_cnt = sum([log_get(f, msgobj) for f in listdir() if f.endswith(".sys.log")])
+        return err_cnt
+
+    _match = match(r"^\[([^\[\]]+)\]", data)
+    log_lvl = _match.group(1).lower() if _match else 'user'
+    f_name = f"{log_lvl}.sys.log" if log_lvl in ("err", "warn", "boot") else 'user.sys.log'
+    return logger(data, f_name, limit=4)
 
 
 def log_clean(msgobj=None):

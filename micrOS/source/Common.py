@@ -210,7 +210,7 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
 
 def syslog(msg):
     """ Wrapper of errlog_add """
-    return errlog_add(f"[U] {msg}")
+    return errlog_add(f"{msg}")
 
 
 def console(msg):

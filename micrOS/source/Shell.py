@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.9.2-0'
+    MICROS_VERSION = '2.9.3-0'
 
     def __init__(self):
         """
@@ -46,9 +46,7 @@ class Shell:
             errlog_add(f"[ERR] micrOS version export failed (config): {e}")
 
     async def a_send(self, msg):
-        """
-        Must be defined by parent class...
-        """
+        """ Must be defined by parent class... """
         pass
 
     def reset(self):
@@ -57,21 +55,20 @@ class Shell:
         self.__conf_mode = False
 
     async def reboot(self, hard=False):
-        """Reboot micropython VM"""
-        await self.a_send(f"{'[HARD] ' if hard else ''}Reboot micrOS system.")
-        await self.a_send("Bye!")
+        """ Reboot micropython VM """
+        await self.a_send(f"{'[HARD] ' if hard else ''}Reboot micrOS system.\nBye!")
         if hard:
             hard_reset()
         soft_reset()
 
     def prompt(self):
-        """Generate prompt"""
+        """ Generate prompt """
         auth = "[password] " if self.__auth_mode and not self.__auth_ok else ""
         mode = "[configure] " if self.__conf_mode else ""
         return f"{auth}{mode}{self.__devfid} $ "
 
     async def __auth(self, msg_list):
-        """Authorize user"""
+        """ Authorize user """
         # Set user auth state
         if self.__auth_mode and not self.__auth_ok:
             # check password
@@ -145,7 +142,7 @@ class Shell:
         if msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:
                 await Shell.webrepl(msg_obj=self.a_send, update=True)
-            await Shell.webrepl(msg_obj=self.a_send)
+            return await Shell.webrepl(msg_obj=self.a_send)
 
         # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
         if msg_list[0].startswith('conf'):
@@ -302,3 +299,4 @@ class Shell:
             _err_msg = f"[ERR] while starting webrepl: {e}"
             await msg_obj(_err_msg)
             errlog_add(_err_msg)
+        return True

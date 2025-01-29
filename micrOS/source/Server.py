@@ -243,55 +243,36 @@ class ShellCli(Client, Shell):
             response = f"{response}\n"
         await super().a_send(response, encode)
 
-    async def close(self):
-        Client.console(f"[ShellCli] Close connection {self.client_id}")
-        await self.a_send("Bye!")
-        # Reset shell state machine
-        self.reset()
-        await asyncio.sleep_ms(50)
-        # Used from Client parent class
-        await super().close()
-
-    async def __shell_cmd(self, request):
-        """
-        Handle micrOS shell commands
-        """
-        # Run micrOS shell with request string
-        try:
-            # Handle micrOS shell
-            Client.console("[ShellCli] --- #Run shell")
-            state = await self.shell(request)
-            if state:
-                return False      # exit_loop
-            return True           # exit_loop : Close session when shell returns False (auth Failed, etc.)
-        except Exception as e:
-            Client.console(f"[ShellCli] Shell exception: {e}")
-            if "ECONNRESET" in str(e):
-                return True       # exit_loop
-        await self.a_send("[HA] Critical error - disconnect & hard reset")
-        errlog_add("[ERR] Socket critical error - reboot")
-        await self.reboot()
-
     async def run_shell(self):
         # Update server task output
         Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
         # Init prompt
         await self.a_send(self.prompt())
         # Run async connection handling
+        _exit = False
         while self.connected:
             try:
                 # Read request msg from client
                 state, request = await self.read()
                 if state:
                     break
-                _exit = await self.__shell_cmd(request)
-                if _exit:
-                    collect()
-                    break
+                # Run micrOS shell with request string
+                Client.console("[ShellCli] --- #Run shell")
+                # Shell -> True (OK) or False (NOK) -> NOK->Close session (auth Failed, etc.)
+                _exit = not await self.shell(request)
             except Exception as e:
-                errlog_add(f"[ERR] handle_client: {e}")
+                errlog_add(f"[ERR] Shell client: {e}")
+                if "ECONNRESET" in str(e):
+                    _exit = True  # exit_loop
+                else:
+                    await self.a_send("[HA] Critical error - disconnect & hard reset")
+                    errlog_add("[ERR] Socket critical error - reboot")
+                    await self.reboot()
+            if _exit:
+                collect()
                 break
         # Close connection
+        await self.a_send("Bye!")
         await self.close()
 
 

@@ -210,8 +210,8 @@ class ConnectionData:
                         start_comm = time.time()
                         version_data = SocketDictClient(host=ip, port=port, silent_mode=True, tout=3).non_interactive(['version'])
                         elapsed_time = "{:.3f}".format(time.time() - start_comm)
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"Getting device version {fuid}:{uid} error: {e}")
 
                 # Generate line printout
                 base_info = "{uid}{spr1}{fuid}".format(uid=uid, spr1=spacer1, fuid=fuid)

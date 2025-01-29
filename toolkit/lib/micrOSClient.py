@@ -160,7 +160,7 @@ class micrOSClient:
                 self.preprompt = ""
         return _data
 
-    def __receive_data(self, read_timeout=20):
+    def __receive_data(self, read_timeout=20, stream=False):
         """
         Client Receiver Loop
         - read_timeout - wait for server to reply (should be <15, avoid msg queue-ing)
@@ -173,7 +173,11 @@ class micrOSClient:
         # Collect answer data
         if select.select([self.conn], [], [], read_timeout)[0]:
             while True:
-                data_buffer += self.conn.recv(4096).decode('utf-8')
+                incoming_data = self.conn.recv(4096).decode('utf-8')
+                if stream:
+                    incoming_data = incoming_data.replace(self.prompt, f"{color.NC}{color.BOLD}{self.prompt}{color.NC}")
+                    print(f"\r{color.LIGHT_GRAY}{incoming_data}{color.NC}", end="")
+                data_buffer += incoming_data
                 # Last line from data_buffer (handle fragmented messages - prompt detection)
                 last_line = data_buffer.strip().split("\n")[-1]
                 # Wait for prompt or special cases (exit/prompt)
@@ -200,7 +204,7 @@ class micrOSClient:
         self.isconn = False
         self.spacer = 0
 
-    def __run_command(self, cmd):
+    def __run_command(self, cmd, stream=False):
         """
         Run command on server tcp/ip connection
         - prompt check - validate device ("hostname $" = "prompt")
@@ -218,14 +222,14 @@ class micrOSClient:
             # Workaround for reboot command - micrOS async server cannot send Bye! msg before reboot.
             if reboot_request:
                 return 'Bye!'
-            data = self.__receive_data()
+            data = self.__receive_data(stream=stream)
             return data
         # Skip command run: prompt and host not the same!
         print(f"[micrOSClient] {color.ERR}prompt mismatch{color.NC}, hostname: {check_hostname} prompt: {check_prompt} ")
         # Check UID?
         return None
 
-    def send_cmd(self, cmd, timeout=3, retry=5):
+    def send_cmd(self, cmd, timeout=3, retry=5, stream=False):
         """
         Send command function - main usage for non interactive mode
         """
@@ -244,7 +248,7 @@ class micrOSClient:
 
         # @ Run command
         try:
-            out = self.__run_command(cmd)
+            out = self.__run_command(cmd, stream=stream)
         except Exception as e:
             self.dbg_print("{}[ERR]{} send_cmd error: {}".format(color.ERR, color.NC, e))
             self.dbg_print("Auto deinit connection")
@@ -261,11 +265,11 @@ class micrOSClient:
         # return output list
         return out
 
-    def send_cmd_retry(self, cmd, timeout=6, retry=5):
+    def send_cmd_retry(self, cmd, timeout=6, retry=5, stream=False):
         out = None
         for cnt in range(0, retry):
             try:
-                out = self.send_cmd(cmd, timeout)
+                out = self.send_cmd(cmd, timeout, stream=stream)
                 if out is None or isinstance(out, list):
                     break
             except OSError as e:
@@ -287,16 +291,12 @@ class micrOSClient:
             print("Telnet connect: {}".format(e))
             if "busy" in str(e) or "timed out" in str(e) or "No route to host" in str(e) or "Host is down" in str(e):
                 return
+
+        print(f"{color.BOLD}{self.preprompt}{self.prompt}{color.NC} ", end="")
         while True:
-            cmd = input("{}{} ".format(self.preprompt, self.prompt))
+            cmd = input()
             # send command
-            output = self.send_cmd(cmd)
-            # Format output to human readable
-            output = '\n'.join(output) if isinstance(output, list) else output
-            # output to STDOUT
-            if not (cmd.strip() == '' and output is None):
-                print(output)
-            # Close session
+            output = self.send_cmd(cmd, stream=True)
             if 'Bye!' in str(output):
                 break
         self.close()

@@ -16,6 +16,8 @@ class Colors:
         OKGREEN = '\033[92m'
         HEADER = '\033[95m'
         UNDERLINE = '\033[4m'
+        LIGHT_GRAY = '\033[37m'
+        GRAY = '\033[90m'
     else:
         NC = ''
         OK = ''
@@ -26,6 +28,8 @@ class Colors:
         OKGREEN = ''
         HEADER = ''
         UNDERLINE = ''
+        LIGHT_GRAY = ''
+        GRAY = ''
 
 
 if __name__ == "__main__":

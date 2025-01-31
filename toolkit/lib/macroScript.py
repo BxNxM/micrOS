@@ -303,6 +303,12 @@ system clock
             f.write(default_conf)
 
     def run_micro_script(self, path):
+        try:
+            self._run_micro_script(path)
+        except KeyboardInterrupt:
+            print("Exiting...")
+
+    def _run_micro_script(self, path):
         if os.path.isdir(path):
             path = select_menu(path)
             if path is None:

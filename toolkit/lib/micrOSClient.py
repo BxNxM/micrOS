@@ -1,6 +1,4 @@
 import socket
-import sys
-
 import select
 import re
 import time
@@ -8,6 +6,22 @@ try:
     from .TerminalColors import Colors as color
 except:
     from TerminalColors import Colors as color
+
+def load_command_history(prompt_getter):
+    """Optional command history feature"""
+    try:
+        try:
+            from .micrOSClientHistory import CommandInterface
+        except:
+            from micrOSClientHistory import CommandInterface
+    except Exception as e:
+        print(f"Command history - disabled (readline module error): {e}")
+        return None
+    try:
+        return CommandInterface(prompt=prompt_getter)
+    except Exception as e:
+        print(f"Command history error: {e}")
+    return None
 
 
 class micrOSClient:
@@ -34,6 +48,10 @@ class micrOSClient:
         self.avg_reply = [0, 0]     # delta t sum, sum cnt to calculate average communication times
         # Validate and resolve host (IP/Hostname)
         self.__address_manager()
+
+    @property
+    def telnet_prompt(self):
+        return f"{color.BOLD}{self.preprompt}{self.prompt}{color.NC} "
 
     def __address_manager(self):
         self.dbg_print("[INIT] micrOSClient")
@@ -281,7 +299,7 @@ class micrOSClient:
             time.sleep(0.2)
         return out
 
-    def telnet(self, timeout=4):
+    def telnet(self, timeout=5):
         """
         Implements interactive mode for socket communication.
         """
@@ -292,13 +310,22 @@ class micrOSClient:
             if "busy" in str(e) or "timed out" in str(e) or "No route to host" in str(e) or "Host is down" in str(e):
                 return
 
-        print(f"{color.BOLD}{self.preprompt}{self.prompt}{color.NC} ", end="")
+        history = load_command_history(self.telnet_prompt)              # History: Beta feature
+        print(self.telnet_prompt, end="")
         while True:
-            cmd = input()
-            # send command
-            output = self.send_cmd(cmd, stream=True)
-            if 'Bye!' in str(output):
+            try:
+                cmd = input()               # CANNOT contain prompt - it is coming back from response data
+                # send command
+                output = self.send_cmd(cmd, timeout=timeout, stream=True)
+                if history is not None and "Shell: for hints type help." not in output:   # History: Beta feature
+                    history.add_history(cmd)
+                if 'Bye!' in str(output):
+                    break
+            except KeyboardInterrupt:
+                print("Exiting...")
                 break
+        if history is not None:                                         # History: Beta feature
+            history.save_history()
         self.close()
 
     def dbg_print(self, msg, end='\n'):

@@ -1,6 +1,6 @@
 from usocket import socket, getaddrinfo
 try:
-    from ussl import wrap_socket    # Legacy micropython ssl usage
+    from ussl import wrap_socket    # Legacy micropython ssl usage (+simulator mode)
 except ImportError:
     from ssl import wrap_socket     # From micropython 1.23...
 from json import loads, dumps

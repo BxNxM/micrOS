@@ -2,6 +2,6 @@
   "devfid": "simulator",
   "appwd": "ADmin123",
   "webui": true,
-  "boothook": "dashboard_be load; neopixel load; #system top",
+  "boothook": "dashboard_be load; neopixel load; #telegram receiver_loop &2000",
   "aioqueue": 4,
   "telegram": "6185435843:AAH71wEyoOil8bRKecQHp4zazTQ_MmE7bvE"}

@@ -341,7 +341,7 @@ class SocketDictClient:
 #########################################################
 
 
-def main(args, host='127.0.0.1', port=9008, timeout=3, pwd=None, verbose=False):
+def main(args, host='127.0.0.1', port=9008, timeout=5, pwd=None, verbose=False):
     """ main connection wrapper function """
     answer_msg = None
 
@@ -426,7 +426,7 @@ def socket_commandline_args(arg_list):
     return ' <a> '.join(command_buffer), return_action_dict
 
 
-def run(arg_list=[], timeout=5):
+def run(arg_list=[], timeout=8):
     """ Run from code
         - Handles extra command line arguments
     """

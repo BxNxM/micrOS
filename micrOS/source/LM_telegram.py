@@ -98,35 +98,34 @@ class Telegram(Notify):
         return verdict
 
     @staticmethod
+    def __update_chat_ids(resp_json):
+        """
+        Update known chat_id-s and cache them
+        - return active chat_id frm resp_json
+        """
+        console_write("[NTFY GET] update chatIDs")
+        _cid = None
+        if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
+            _cid = resp_json["result"][-1]["message"]["chat"]["id"]
+            # LIMIT Telegram._CHAT_IDS NOTIFICATION CACHE TO 3 IDs
+            if len(Telegram._CHAT_IDS) < 4:
+                _ids = len(Telegram._CHAT_IDS)
+                Telegram._CHAT_IDS.add(_cid)
+                if len(Telegram._CHAT_IDS) - _ids > 0:  # optimized save (slow storage access)
+                    Telegram.__id_cache('s')
+        else:
+            Telegram.__id_cache('r')
+            if len(Telegram._CHAT_IDS) == 0:
+                error_message = resp_json.get("description", "Unknown error")
+                raise Exception(f"Error retrieving chat ID: {error_message}")
+        return _cid
+
+    @staticmethod
     def get_msg():
         """
         Get the last message from the Telegram chat.
         RETURN None when telegram bot token is missing
         """
-
-        def _update_chat_ids():
-            """
-            Update known chat_id-s and cache them
-            - return active chat_id frm resp_json
-            """
-            console_write("[NTFY GET] update chatIDs")
-            _cid = None
-            if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
-                _cid = resp_json["result"][-1]["message"]["chat"]["id"]
-                # LIMIT Telegram._CHAT_IDS NOTIFICATION CACHE TO 3 IDs
-                if len(Telegram._CHAT_IDS) < 4:
-                    _ids = len(Telegram._CHAT_IDS)
-                    Telegram._CHAT_IDS.add(_cid)
-                    if len(Telegram._CHAT_IDS) - _ids > 0:  # optimized save (slow storage access)
-                        Telegram.__id_cache('s')
-            else:
-                Telegram.__id_cache('r')
-                if len(Telegram._CHAT_IDS) == 0:
-                    error_message = resp_json.get("description", "Unknown error")
-                    raise Exception(f"Error retrieving chat ID: {error_message}")
-            return _cid
-
-        # --------------------- FUNCTION MAIN ------------------------ #
         console_write("[NTFY] GET MESSAGE")
         bot_token = Telegram.__bot_token()
         if bot_token is None:
@@ -134,9 +133,11 @@ class Telegram(Notify):
         response = {'sender': None, 'text': None, 'm_id': -1, 'c_id': None}
         url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram._API_PARAMS}"
         console_write(f"\t1/2[GET] request: {url}")
+
         _, resp_json = urequests.get(url, jsonify=True, sock_size=128)
+
         if len(resp_json["result"]) > 0:
-            response['c_id'] = _update_chat_ids()
+            response['c_id'] = Telegram.__update_chat_ids(resp_json)
             resp = resp_json["result"][-1]["message"]
             response['sender'] = f"{resp['chat']['first_name']}{resp['chat']['last_name']}" if resp['chat'].get(
                 'username', None) is None else resp['chat']['username']
@@ -145,16 +146,38 @@ class Telegram(Notify):
         return response
 
     @staticmethod
-    def receive_eval():
+    async def aget_msg():
+        """
+        Async: Get the last message from the Telegram chat.
+        RETURN None when telegram bot token is missing
+        """
+        console_write("[NTFY] GET MESSAGE")
+        bot_token = Telegram.__bot_token()
+        if bot_token is None:
+            return None
+        response = {'sender': None, 'text': None, 'm_id': -1, 'c_id': None}
+        url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram._API_PARAMS}"
+        console_write(f"\t1/2[GET] request: {url}")
+
+        _, resp_json = await urequests.aget(url, jsonify=True, sock_size=128)
+
+        if len(resp_json["result"]) > 0:
+            response['c_id'] = Telegram.__update_chat_ids(resp_json)
+            resp = resp_json["result"][-1]["message"]
+            response['sender'] = f"{resp['chat']['first_name']}{resp['chat']['last_name']}" if resp['chat'].get(
+                'username', None) is None else resp['chat']['username']
+            response['text'], response['m_id'] = resp['text'], resp['message_id']
+        console_write(f"\t2/2[GET] response: {response}")
+        return response
+
+    @staticmethod
+    async def receive_eval():
         """
         READ - VALIDATE - EXECUTE - REPLY LOOP
         - can be used in async loop
         RETURN None when telegram bot token is missing
         """
-
-        console_write("[NTFY] REC&EVAL sequence")
-
-        # Return data structure template
+        console_write("[NTFY] EVAL sequence")
         verdict = None
 
         def lm_execute(cmd_args):
@@ -168,8 +191,8 @@ class Telegram(Notify):
                 Telegram._IN_MSG_ID = m_id
 
         # -------------------------- FUNCTION MAIN -------------------------- #
-        # Poll telegram chat
-        data = Telegram.get_msg()
+        # Async Poll telegram chat
+        data = await Telegram.aget_msg()
         if data is None:
             return data
         # Get msg, msg_id, chat_id as main input data source
@@ -197,11 +220,40 @@ class Telegram(Notify):
                     verdict = Telegram.notifications(not param[0].strip().lower() in ("disable", "off", 'false'))
                 else:
                     verdict = Telegram.notifications()
+                # Send is still synchronous (OK)
                 Telegram.send_msg(verdict, reply_to=m_id)
         else:
             verdict = "[UP] NoExec"
-        console_write(f"\tREC&EVAL: {verdict}")
+        console_write(f"\tBOT: {verdict}")
         return verdict
+
+    @staticmethod
+    async def bot_repl(tag, period=3):
+        """
+        BOT - ReceiveEvalPrintLoop
+        :param tag: task tag (access)
+        :param period: polling period in sec, default: 3
+        """
+        cancel_cnt = 0
+        period = period if period > 0 else 1
+        with micro_task(tag=tag) as my_task:
+            my_task.out = "[UP] Running"
+            while True:
+                # Normal task period
+                await asyncio.sleep(period)
+                try:
+                    v = await Telegram.receive_eval()
+                    my_task.out = "Missing bot token" if v is None else f"{v} ({period}s)"
+                    cancel_cnt = 0
+                except Exception as e:
+                    my_task.out = str(e)
+                    # Auto scale - blocking nature - in case of serial failures (5) - hibernate task (increase async sleep)
+                    cancel_cnt += 1
+                    if cancel_cnt > 5:
+                        my_task.out = f"[DOWN] {e} (wait 1min)"
+                        cancel_cnt = 5
+                        # SLOW DOWN - hibernate task
+                        asyncio.sleep(60)
 
     @staticmethod
     def set_commands():
@@ -292,37 +344,16 @@ def receive():
     return "Missing telegram bot token" if verdict is None else verdict
 
 
-async def __task():
-    cancel_cnt = 0
-    with micro_task(tag='telegram._loop') as my_task:
-        my_task.out = "[UP] Running"
-        while True:
-            # Normal task period
-            await asyncio.sleep(5)
-            try:
-                v = TELEGRAM_OBJ.receive_eval()
-                my_task.out = "Missing bot token" if v is None else v
-                cancel_cnt = 0
-            except Exception as e:
-                my_task.out = str(e)
-                # Auto scale - blocking nature - in case of serial failures (5) - hibernate task (increase async sleep)
-                cancel_cnt += 1
-                if cancel_cnt > 5:
-                    my_task.out = f"[DOWN] {e}"
-                    cancel_cnt = 5
-                    # SLOW DOWN - hibernate task
-                    asyncio.sleep(115)
-
-
-def receiver_loop():
+def receiver_loop(period=3):
     """
-    Telegram msg receiver loop - automatic LM execution
+    Telegram BOT (repl) - ReadEvalPrintLoop for Load Modules
     - Only executes module (function) if the module is already loaded
-    on the endpoint / micrOS node
+    :param period: polling period in sec, default: 3
     """
     if TELEGRAM_OBJ is None:
         return "Network unavailable."
-    state = micro_task(tag='telegram._loop', task=__task())
+    tag = 'telegram.bot_repl'
+    state = micro_task(tag=tag, task=TELEGRAM_OBJ.bot_repl(tag=tag, period=period))
     return "Starting" if state else "Already running"
 
 
@@ -335,6 +366,6 @@ def help(widgets=False):
     """
     return ('send "text"',
             'receive',
-            'receiver_loop',
+            'receiver_loop period=3',
             'notify "message"',
             'load', 'INFO: Send & Receive messages with Telegram bot')

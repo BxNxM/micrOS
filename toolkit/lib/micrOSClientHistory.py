@@ -30,9 +30,26 @@ class CommandInterface:
         readline.set_pre_input_hook(self.pre_input_hook)
         readline.set_completion_display_matches_hook(self.completion_display)
 
+    def __auto_clear_history(self):
+        cmd_history = []
+        # Load file history in order - skip duplicates
+        if os.path.exists(self.history_file):
+            with open(self.history_file, "r") as f:
+                for line in reversed(f.readlines()):
+                    if line in cmd_history:
+                        continue
+                    cmd_history.append(line)
+            # Save cleaned history to file
+            with open(self.history_file, "w") as f:
+                f.writelines(f"{item}\n" for item in reversed(cmd_history))
+
     def load_history(self):
         """Loads command history from a file if available."""
         print(f"Command history: {self.history_file}")
+        try:
+            self.__auto_clear_history()
+        except Exception as e:
+            print(f"Auto clean history error: {e}")
         if os.path.exists(self.history_file):
             with open(self.history_file, "r") as f:
                 for line in f:

@@ -213,7 +213,8 @@ async def arequest(method, url, data=None, json=None, headers=None, sock_size=25
         status_code, body = _parse_response(response)
     except Exception as e:
         status_code = 500
-        body = f'[ERR] arequest failed: {e}'
+        # https://github.com/micropython/micropython/blob/8785645a952c03315dbf93667b5f7c7eec49762f/cc3200/simplelink/include/device.h
+        body = "[WARN] arequest ASSOC_REJECT" if "-104" == str(e) else f"[ERR] arequest failed: {e}"
         errlog_add(body)
     finally:
         if writer:

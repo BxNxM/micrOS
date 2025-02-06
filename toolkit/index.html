@@ -11,15 +11,15 @@
             50% {background-position: 100% 50%;}
             100% {background-position: 0% 50%;}}
         body {
-            height: 400vh;
-            width: 200vh;
+            height: calc(100vh - 6%); /* Set the height to 100% of the viewport height */
+            width: calc(100vw - 6%); /* Set the width to 200% of the viewport height */
             padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            margin: 40px;
+            margin: 3%;
             background: linear-gradient(110deg, #720000, #656565, #252525);
             background-size: 400% 400%;
             animation: backgroundAnimation 20s infinite;
             color: #d9d9d9;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Verdana', Sans-serif;
         }
         button {
             background-color: #e7e7e7; /* Gray */

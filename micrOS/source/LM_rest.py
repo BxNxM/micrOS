@@ -1,4 +1,3 @@
-import uasyncio as asyncio
 from urequests import get as http_get
 from urequests import aget as http_aget
 from Common import micro_task

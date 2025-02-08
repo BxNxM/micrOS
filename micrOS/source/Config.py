@@ -25,7 +25,11 @@ except:
 
 
 class Data:
-    # micrOS config path
+    """
+    Data class for managing configuration data.
+    """
+    __slots__ = []
+
     CONFIG_PATH = "node_config.json"
     CONFIG_CACHE = {"version": "n/a",
                     "auth": False,
@@ -145,20 +149,16 @@ class Data:
         value_in_cfg = Data.CONFIG_CACHE[key]
         try:
             if isinstance(value_in_cfg, bool):
-                del value_in_cfg
                 if str(value).lower() == 'true':
                     return True
                 if str(value).lower() == 'false':
                     return False
                 raise Exception("type_handler type handling error")
             if isinstance(value_in_cfg, str):
-                del value_in_cfg
                 return str(value)
             if isinstance(value_in_cfg, int):
-                del value_in_cfg
                 return int(value)
             if isinstance(value_in_cfg, float):
-                del value_in_cfg
                 return float(value)
         except Exception as e:
             console_write(f"Input value type error! {e}")

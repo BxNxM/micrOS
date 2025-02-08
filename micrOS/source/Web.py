@@ -5,7 +5,7 @@ Built-in-function:
 - response
     - landing page: index.html
     - rest/                                         - call load modules, e.x.: system/top
-    - file response (.html, .css, .js, .jped)       - generic file server feature
+    - file response (.html, .css, .js, .jpeg)       - generic file server feature
     - "virtual" endpoints                           - to reply from script on a defined endpoint
         - stream                                    - stream data (jpeg) function
 
@@ -21,7 +21,7 @@ from Config import cfgget
 
 class WebEngine:
     __slots__ = ["client"]
-    REST_ENDPOINTS = {}
+    ENDPOINTS = {}
     AUTH = cfgget('auth')
     VERSION = "n/a"
     REQ200 = "HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len}\r\n\r\n{data}"
@@ -37,7 +37,8 @@ class WebEngine:
         """File dynamic Content-Type handling"""
         content_types = {".html": "text/html",
                          ".css": "text/css",
-                         ".js": "application/javascript"}
+                         ".js": "application/javascript",
+                         ".jpeg": "image/jpeg"}
         # Extract the file extension
         ext = path.rsplit('.', 1)[-1]
         # Return the content type based on the file extension
@@ -49,7 +50,7 @@ class WebEngine:
         _method, url, _version = request.split('\n')[0].split()
         # Protocol validation
         if _method != "GET" and _version.startswith('HTTP'):
-            _err = "Bad Request: not GET HTTP/1.1"
+            _err = f"Bad Request: not GET HTTP but {_version}"
             await self.client.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
 
@@ -109,46 +110,42 @@ class WebEngine:
             else:
                 state, out = lm_exec(cmd, jsonify=True)
             try:
-                resp_schema['result'] = loads(out)  # Load again ... hack for embedded shell json converter...
+                resp_schema['result'] = loads(out)  # Load again ... hack for embedded json converter...
             except:
                 resp_schema['result'] = out
             resp_schema['state'] = state
         else:
             resp_schema['result'] = {"micrOS": WebEngine.VERSION, 'node': cfgget('devfid'), 'auth': WebEngine.AUTH}
-            if len(tuple(WebEngine.REST_ENDPOINTS.keys())) > 0:
-                resp_schema['result']['usr_endpoints'] = tuple(WebEngine.REST_ENDPOINTS)
+            if len(tuple(WebEngine.ENDPOINTS.keys())) > 0:
+                resp_schema['result']['usr_endpoints'] = tuple(WebEngine.ENDPOINTS)
             resp_schema['state'] = True
         response = dumps(resp_schema)
         return WebEngine.REQ200.format(dtype='text/html', len=len(response), data=response)
 
     async def endpoints(self, url):
         url = url[1:]  # Cut first / char
-        if url in WebEngine.REST_ENDPOINTS:
+        if url in WebEngine.ENDPOINTS:
             console_write(f"[WebCli] endpoint: {url}")
             # Registered endpoint was found - exec callback
             try:
                 # RESOLVE ENDPOINT CALLBACK
                 # dtype:
-                #   one-shot: image/jpeg | text/html | text/plain              - data: raw
-                #       task: multipart/x-mixed-replace | multipart/form-data  - data: dict=callback,content-type
-                #                   content-type: image/jpeg | audio/l16;*
-                dtype, data = WebEngine.REST_ENDPOINTS[url]()
+                #   one-shot (simple MIME types):    image/jpeg | text/html | text/plain              - data: raw
+                #       task (streaming MIME types): multipart/x-mixed-replace | multipart/form-data  - data: dict{callback,content-type}
+                #                                                                                       content-type: image/jpeg | audio/l16;*
+                dtype, data = WebEngine.ENDPOINTS[url]()
                 if dtype == 'image/jpeg':
-                    resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode(
-                        'utf8') + data
+                    resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
                     await self.client.a_send(resp, encode=None)
                 elif dtype in ('multipart/x-mixed-replace', 'multipart/form-data'):
-                    headers = (
-                        f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n").encode(
-                        'utf-8')
-                    await self.client.a_send(headers, encode=None)
+                    headers = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}; boundary=\"micrOS_boundary\"\r\n\r\n"
+                    await self.client.a_send(headers)
                     # Start Native stream async task
                     task = NativeTask()
-                    task.create(callback=self.stream(data['callback'], task, data['content-type']),
-                                tag=f"web.stream_{self.client.client_id.replace('W', '')}")
+                    tag=f"web.stream_{self.client.client_id.replace('W', '')}"
+                    task.create(callback=self.stream(data['callback'], task, data['content-type']), tag=tag)
                 else:  # dtype: text/html or text/plain
-                    await self.client.a_send(
-                        f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n{data}")
+                    await self.client.a_send(WebEngine.REQ200.format(dtype=dtype, len=len(data), data=data))
             except Exception as e:
                 await self.client.a_send(self.REQ404.format(len=len(str(e)), data=e))
                 errlog_add(f"[ERR] WebCli endpoints {url}: {e}")
@@ -159,6 +156,8 @@ class WebEngine:
         """
         Async stream method
         :param callback: sync or async function callback (auto-detect) WARNING: works for functions only (not methods!)
+        :param task: NativeTask instance (that the stream runs in)
+        :param content_type: image/jpeg | audio/l16;*
         """
         is_coroutine = 'generator' in str(type(callback))  # async function callback auto-detect
         with task:
@@ -175,6 +174,6 @@ class WebEngine:
             # Gracefully terminate the stream
             if self.client.connected:
                 closing_boundary = '\r\n--micrOS_boundary--\r\n'
-                await self.client.a_send(closing_boundary, encode=None)
+                await self.client.a_send(closing_boundary)
                 await self.client.close()
             task.out = 'Finished stream'

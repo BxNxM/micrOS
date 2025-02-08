@@ -182,7 +182,7 @@ class WebCli(Client, WebEngine):
             if cfgput('webui', True):  # SET webui to True
                 from machine import reset
                 reset()  # HARD RESET (REBOOT)
-        WebEngine.REST_ENDPOINTS[endpoint] = callback
+        WebEngine.ENDPOINTS[endpoint] = callback
 
 
 class ShellCli(Client, Shell):
@@ -413,4 +413,7 @@ class Server:
 
     def __del__(self):
         Client.console("[ socket server ] <<destructor>>")
-        self.server.close()
+        if self.server:
+            self.server.close()
+        if self.web:
+            self.web.close()

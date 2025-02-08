@@ -1,5 +1,4 @@
 from sys import modules
-import uasyncio as asyncio
 import urequests
 from Notify import Notify
 from Config import cfgget
@@ -14,6 +13,10 @@ class Telegram(Notify):
     _CHAT_IDS = set()  # Telegram bot chat IDs - multi group support - persistent caching
     _API_PARAMS = "?offset=-1&limit=1&timeout=2"  # Generic API params - optimization
     _IN_MSG_ID = None
+
+    def __init__(self):
+        # Subscribe to the notification system - provide send_msg method (over self)
+        super().add_subscriber(self)
 
     @staticmethod
     def __id_cache(mode):
@@ -236,11 +239,12 @@ class Telegram(Notify):
         """
         cancel_cnt = 0
         period = period if period > 0 else 1
+        period_ms = period * 1000
         with micro_task(tag=tag) as my_task:
             my_task.out = "[UP] Running"
             while True:
                 # Normal task period
-                await asyncio.sleep(period)
+                await my_task.feed(sleep_ms=period_ms)
                 try:
                     v = await Telegram.receive_eval()
                     my_task.out = "Missing bot token" if v is None else f"{v} ({period}s)"
@@ -253,7 +257,7 @@ class Telegram(Notify):
                         my_task.out = f"[DOWN] {e} (wait 1min)"
                         cancel_cnt = 5
                         # SLOW DOWN - hibernate task
-                        asyncio.sleep(60)
+                        await my_task.feed(sleep_ms=60_000)
 
     @staticmethod
     def set_commands():
@@ -289,7 +293,6 @@ def __init():
         _sta_available = True if ifconfig()[0] == "STA" else False
         if _sta_available:
             TELEGRAM_OBJ = Telegram()
-            Notify.add_subscriber(TELEGRAM_OBJ)
         else:
             syslog("No STA: cannot init telegram")
 

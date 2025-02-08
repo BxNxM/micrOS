@@ -25,7 +25,7 @@ def logger(data, f_name, limit):
     INFO: hardcoded max data number = 30
     """
     def _logger(_data, _f_name, _limit, f_mode='r+'):
-        _limit = 30 if _limit > 30 else _limit
+        _limit = min(_limit, 30)  # Hardcoded max data line = 30
         # [1] GET TIME STUMP
         ts_buff = [str(k) for k in localtime()]
         ts = ".".join(ts_buff[0:3]) + "-" + ":".join(ts_buff[3:6])
@@ -41,11 +41,8 @@ def logger(data, f_name, limit):
             # line data rotate
             if lines_len >= _limit:
                 lines = lines[-_limit:]
-                lines_str = ''.join(lines)
-            else:
-                lines_str = ''.join(lines)
             # write file
-            f.write(lines_str)
+            f.write(''.join(lines))
 
     # Run logger
     try:

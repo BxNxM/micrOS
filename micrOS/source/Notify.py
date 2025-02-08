@@ -35,16 +35,17 @@ class Notify:
     @staticmethod
     def message(text, reply_to=None, chat_id=None):
         """
-        Send message to all subscribers
+        Send message to all subscribers - Notify agents
         """
         exit_code = 0
         for s in Notify._SUBSCRIBERS:
             try:
+                # !!! SUBSCRIBER HAS TO DEFINE send_msg(text, reply_to, chat_id) method !!!
                 s.send_msg(text, reply_to, chat_id)
             except Exception as e:
                 errlog_add(f"[ERR] Notify: {e}")
                 exit_code+=1
-        return f"Sent N{len(Notify._SUBSCRIBERS)} ({exit_code})"
+        return f"Sent for {len(Notify._SUBSCRIBERS)} client(s), errors: ({exit_code})"
 
     @staticmethod
     def notifications(state=None):
@@ -66,7 +67,7 @@ class Notify:
 
     @staticmethod
     def lm_execute(cmd_args):
-        """Executor with basic access handling"""
+        """Load Module Executor with basic access handling"""
         if lm_is_loaded(cmd_args[0]):
             try:
                 _, out = lm_exec(cmd_args)

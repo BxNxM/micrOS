@@ -554,9 +554,9 @@ class ForwardImg(Resource):
         for devid, dev_conn_data in ListDevices.DEVICE_CACHE['online'].items():
             # IP, PORT, FID
             device = dev_conn_data[2]
-            response = SendCmd.runcmd(device, 'lmpacman module')['response']
+            response = SendCmd.runcmd(device, 'modules')['response']
             print(f"\n\n{response}\n\n")
-            if 'LM_OV2640' in response:
+            if 'OV2640' in response:
                 ForwardImg.CAM_DEVICES.add(device)
         return jsonify(list(ForwardImg.CAM_DEVICES))
 

@@ -426,7 +426,7 @@ def socket_commandline_args(arg_list):
     return ' <a> '.join(command_buffer), return_action_dict
 
 
-def run(arg_list=[], timeout=8):
+def run(arg_list=[], timeout=10):
     """ Run from code
         - Handles extra command line arguments
     """

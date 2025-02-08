@@ -9,7 +9,7 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from sys import platform
-from os import listdir
+from uos import listdir, uname
 from Logger import syslog
 
 #################################################################
@@ -29,7 +29,6 @@ def detect_platform():
     Unified platform detection for micrOS
     """
     if 'esp32' in platform:
-        from os import uname
         board = str(uname()[-1]).lower()
         if 'tinypico' in board:
             return 'tinypico'    # esp32 family - tinypico

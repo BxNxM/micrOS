@@ -15,6 +15,7 @@ import requests
 # FILL OUT
 DEVICE = '__simulator__'
 PASSWD = None
+TIMEOUT_SEC = 5
 
 
 def base_cmd():
@@ -299,7 +300,7 @@ def micros_alarm_check():
 
 
 def oled_msg_end_result(result):
-    cmd_list = ['lmpacman module >json']
+    cmd_list = ['lmpacman moduls >json']
     output = execute(cmd_list)
     if output[0] and 'LM_oled_ui' in output[1]:
         cmd_list = [f'oled_ui msgbox "{result} %"']
@@ -428,7 +429,7 @@ def measure_conn_metrics():
 
 def memory_usage():
     cmd = ['system memory_usage >json']
-    out = execute(cmd, tout=3)
+    out = execute(cmd, tout=TIMEOUT_SEC)
     state, raw_output = out[0], out[1]
     try:
         json_out = json.loads(raw_output)
@@ -436,7 +437,7 @@ def memory_usage():
         return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
 
     # {"percent": 93.11, "mem_used": 103504}
-    if json_out.get('percent') > 80:        # MEM USAGE WARNING INDICATOR: 85%
+    if json_out.get('percent') > 70:        # MEM USAGE WARNING INDICATOR: 80%
         return state, '[ST] {}WARNING{}: memory usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
                                                                              json_out.get('percent'),
                                                                              json_out.get('mem_used'))
@@ -449,7 +450,7 @@ def disk_usage():
     Check disk usage - manually defined 16% (336_000 byte) - check degradations...
     """
     cmd = ['system disk_usage >json']
-    out = execute(cmd, tout=3)
+    out = execute(cmd, tout=TIMEOUT_SEC)
     state, raw_output = out[0], out[1]
     try:
         json_out = json.loads(raw_output)
@@ -457,7 +458,7 @@ def disk_usage():
         return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
 
     # {"percent": 15.4, "fs_used": 323_584}
-    if json_out.get('fs_used') > 500_000:        # MEM USAGE WARNING INDICATOR: 500_000 bytes (500kb)
+    if json_out.get('fs_used') > 700_000:        # MEM USAGE WARNING INDICATOR: 700_000 bytes (700kb)
         return state, '[ST] {}WARNING{}: disk usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
                                                                              json_out.get('percent'),
                                                                              json_out.get('fs_used'))
@@ -467,7 +468,7 @@ def disk_usage():
 
 def task_list():
     cmd = ['task list']
-    out = execute(cmd, tout=3)
+    out = execute(cmd, tout=TIMEOUT_SEC)
     state, output = out[0], out[1]
     if state:
         return state, output.replace('\n', f'\n{" "*51}')        # TODO format output
@@ -477,12 +478,12 @@ def task_list():
 def webcli_test():
     endpoints = []
     cmd = ['conf', 'webui']
-    out = execute(cmd, tout=3)
+    out = execute(cmd, tout=TIMEOUT_SEC)
     state, output = out[0], out[1]
     if state:
         verdict = f"[ST] WEBUI IS ENABLED ({output})" if output.strip() == 'True' else f"[ST] WEBUI IS DISABLED ({output})"
         if output.strip() == 'True':
-            out = execute(['conf', 'devip'], tout=3)
+            out = execute(['conf', 'devip'], tout=TIMEOUT_SEC)
             if out[0] and out[1] is not None:
                 devip = out[1]
                 endpoints.append(f'http://{devip}')
@@ -510,7 +511,7 @@ def webcli_test():
 def after_st_reboot():
     verdict = False, 'reboot -h failed'
     cmd = ['reboot -h']
-    out = execute(cmd, tout=3)
+    out = execute(cmd, tout=TIMEOUT_SEC)
     state, output = out[0], out[1]
     if state:
         verdict = state, f'[reboot-h] commad out: {output}'
@@ -518,7 +519,7 @@ def after_st_reboot():
             print(f"[reboot-h] Wait for node up again ({retry}/{retry*2}sec)")
             time.sleep(2)
             try:
-                up, o = execute(['hello'], tout=3)
+                up, o = execute(['hello'], tout=TIMEOUT_SEC)
                 if up:
                     verdict = True, f"[reboot-h][OK] successfully rebooted: {o} (boot time: ~{retry * 2}sec)"
                     print(verdict[1])
@@ -531,7 +532,7 @@ def after_st_reboot():
 
 def get_dev_version():
     cmd = ['version']
-    out = execute(cmd, tout=3)
+    out = execute(cmd, tout=TIMEOUT_SEC)
     state, output = out[0], out[1]
     if state:
         return output

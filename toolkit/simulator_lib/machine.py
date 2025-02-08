@@ -214,3 +214,7 @@ def unique_id():
 
 def time_pulse_us():
     return time.time_ns()*1000
+
+
+def SDCard():
+    pass

@@ -1,4 +1,4 @@
-from os import statvfs, getcwd, listdir, uname
+from uos import statvfs, getcwd, listdir, uname
 from utime import localtime
 from network import WLAN, STA_IF, AP_IF
 from binascii import hexlify
@@ -190,6 +190,7 @@ def pinmap(keys='builtin irq1 irq2 irq3 irq4'):
     map["search"] = pinmap_search(keys)
     return map
 
+
 @socket_stream
 def alarms(clean=False, msgobj=None):
     """
@@ -204,19 +205,6 @@ def alarms(clean=False, msgobj=None):
     return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
 
 
-def dat_dump():
-    """
-    Generic .dat file dump
-    - logged data from LMs
-    """
-    dats = (f for f in listdir() if f.endswith('.dat'))
-    out = {}
-    for dat in dats:
-        with open(dat, 'r') as f:
-            out[dat] = f.read()
-    return out
-
-
 def ifconfig():
     """
     Show network ifconfig
@@ -224,7 +212,7 @@ def ifconfig():
     return network_config()
 
 
-def urequests_host_cache():
+def urequest_hosts():
     """
     Debug function for urequests address caching
     - returns all known http(s) host addresses
@@ -258,4 +246,4 @@ def help(widgets=False):
                     'ntp', 'rssi', 'list_stations', 'pinmap key="dhtpin"/None', 'alarms clean=False',
                     'notifications enable=<None,True,False>',
                     'sun refresh=False', 'ifconfig', 'memory_usage',
-                    'disk_usage', 'dat_dump', 'urequests_host_cache'), widgets=widgets)
+                    'disk_usage', 'urequest_hosts'), widgets=widgets)

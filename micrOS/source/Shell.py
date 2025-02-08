@@ -11,8 +11,8 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from os import listdir
 from sys import modules
+from uos import listdir
 from machine import reset as hard_reset, soft_reset
 from Config import cfgget, cfgput
 from Tasks import lm_exec
@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.9.5-0'
+    MICROS_VERSION = '2.9.6-0'
 
     def __init__(self):
         """

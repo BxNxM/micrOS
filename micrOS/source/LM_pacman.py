@@ -1,12 +1,12 @@
-from os import listdir, remove, stat, mkdir
+from uos import listdir, remove, stat
 from sys import modules
 from Common import socket_stream
 
 WEB_EXT = ('html', 'js', 'css')
-DATA_TYPES = ('log', 'pds')
+DATA_TYPES = ('log', 'pds', 'dat')
 
 def _is_app_resource(path='/'):
-    if stat(path)[0] & 0x4000:
+    if stat(path)[0] & 0x4000:      # Dir check
         return True, 'd'
     file_name = path.split("/")[-1]
     if file_name.startswith('LM_') or file_name.split('.')[-1] in WEB_EXT + DATA_TYPES:
@@ -25,6 +25,7 @@ def ls(path="/", content='*', raw=False):
     :param content: content type, default all, f-file, d-dir can be selected
     :param raw: keep raw output [(is_app, type), ...]
     """
+    path = path if path.endswith('/') else f"{path}/"
     items = []
     for item in listdir(path):
         is_app, item_type = _is_app_resource(path + item)
@@ -46,7 +47,7 @@ def rm(path):
     Linux like rm command - delete app resources and folders
     :param path: app resource name/path, ex.: LM_robustness.py
     """
-    if 'lmpacman.' in path or 'system.' in path or "/" == path.strip():
+    if 'pacman.' in path or 'system.' in path or "/" == path.strip():
         return f'Load module {path} is protected, skip delete.'
     is_app, item_type = _is_app_resource(path)
     if is_app:
@@ -57,7 +58,8 @@ def rm(path):
 
 def dirtree(path="/", raw=False):
     """Return only directories from a given path."""
-    folders = [f"{path}/{item}" for item in listdir(path) if _is_app_resource(f"{path}/{item}")[1] == 'd']
+    path = path if path.endswith('/') else f"{path}/"
+    folders = [f"{path}/{item}" for item in listdir(path) if _is_app_resource(f"{path}{item}")[1] == 'd']
     folder_contents = {folder:listdir(folder) for folder in folders}
     if raw:
         return folder_contents
@@ -160,6 +162,19 @@ def cachedump(delpds=None, msgobj=None):
         return f'{delpds}.pds not exists'
 
 
+def dat_dump():
+    """
+    Generic .dat file dump
+    - logged data from LMs, sensor datat, etc...
+    """
+    logs_dir = "/logs/"
+    dats = (f for f in listdir(logs_dir) if f.endswith('.dat'))
+    out = {}
+    for dat in dats:
+        with open(f"{logs_dir}{dat}", 'r') as f:
+            out[dat] = f.read()
+    return out
+
 #############################################
 #              Legacy features              #
 #############################################
@@ -190,8 +205,8 @@ def delmod(mod=None):
         OR delete any web resource: *.js, *.css, *.html
     """
     if mod is not None and (mod.endswith('py') or mod.split('.')[-1] in WEB_EXT):
-        # LM exception list - system and lmpacman cannot be deleted
-        if 'lmpacman.' in mod or 'system.' in mod:
+        # LM exception list - system and pacman cannot be deleted
+        if 'pacman.' in mod or 'system.' in mod:
             return f'Load module {mod} is in use, skip delete.'
         try:
             to_remove = mod if mod.split('.')[-1] in WEB_EXT else f'LM_{mod}'
@@ -223,9 +238,11 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'listmods', 'delmod mod=<module>.py/.mpy or .js/.html/.css', 'del_duplicates',\
-           'moduls unload="LM_rgb/None"',\
-           'cachedump delpds="rgb/None"', \
-           'download url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',\
-           'micros_checksum',\
-           'ls path="/" content="*/f/d"', 'rm <path>', 'dirtree path="/"'
+    return ('listmods', 'delmod mod=<module>.py/.mpy or .js/.html/.css', 'del_duplicates',
+            'moduls unload="LM_rgb/None"',
+            'cachedump delpds="rgb/None"',
+            'dat_dump',
+            'download url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
+            'micros_checksum',
+            'ls path="/" content="*/f/d"',
+            'rm <path>', 'dirtree path="/"')

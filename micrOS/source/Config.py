@@ -12,9 +12,9 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from os import remove
 from re import search
 from json import load, dump
+from uos import remove
 from utime import sleep
 from Debug import DebugCfg, console_write, errlog_add
 try:

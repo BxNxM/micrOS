@@ -179,7 +179,7 @@ def load_module_checker(categories, verbose=True):
                 _allowed.append(_allow)
         return _relation, _allowed
 
-    lm_god_mode = ['LM_system.py', 'LM_lmpacman.py', 'LM_intercon.py']
+    lm_god_mode = ['LM_system.py', 'LM_pacman.py', 'LM_intercon.py']
     state_lm_dep = True
     verdict = []
     lm_resources = categories['load_module']

@@ -1,4 +1,4 @@
-from os import listdir
+from uos import listdir
 from time import sleep
 from machine import soft_reset, reset
 

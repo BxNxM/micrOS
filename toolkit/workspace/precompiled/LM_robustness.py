@@ -9,8 +9,8 @@ def raise_error(msgobj=None):
     """
     if msgobj is not None:
         msgobj("Raise test exception")
-    syslog('Robustness TeSt ErRoR')
-    raise Exception("Test exception")
+    state = syslog('Robustness TeSt ErRoR')
+    raise Exception(f"Test exception: {'OK' if state else 'NOK'}")
 
 
 @socket_stream

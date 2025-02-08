@@ -25,7 +25,7 @@ LM_cct.py
 LM_presence.py
 LM_telegram.py
 LM_oled_sh1106.py
-LM_lmpacman.py
+LM_pacman.py
 LM_aht10.py
 LM_rgbcct.py
 LM_OV2640.py

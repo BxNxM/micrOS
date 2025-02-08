@@ -29,7 +29,7 @@
             17
         ],
         "reset.py": [
-            7.5,
+            10.0,
             0
         ],
         "Shell.py": [
@@ -89,7 +89,7 @@
             0
         ],
         "urequests.py": [
-            8.79,
+            9.02,
             5
         ],
         "LM_roboarm.py": [
@@ -315,7 +315,7 @@
     },
     "summary": {
         "core": [
-            3297,
+            3305,
             23
         ],
         "load": [
@@ -330,7 +330,7 @@
             true,
             6
         ],
-        "core_score": 9.01,
+        "core_score": 9.13,
         "load_score": 8.23,
         "version": "2.9.6-0"
     }

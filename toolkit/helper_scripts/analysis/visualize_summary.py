@@ -4,8 +4,24 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from textwrap import wrap
 
-TITLE_FONT_SIZE=18
-DARK_YELLOW="#B8860B"
+TITLE_FONT_SIZE = 18
+DARK_YELLOW = "#B8860B"
+MAX_COMMIT_HISTORY = 60
+
+def truncate_message(message, wrap_width, max_lines):
+    """
+    Wrap the message text to a given width and limit it to max_lines.
+    If the message is longer than allowed, the last line is truncated with an ellipsis.
+    """
+    lines = wrap(message, wrap_width)
+    if len(lines) > max_lines:
+        # Take the first max_lines-1 full lines and then truncate the last line
+        truncated_last_line = lines[max_lines - 1]
+        if len(truncated_last_line) > wrap_width - 3:
+            truncated_last_line = truncated_last_line[:wrap_width - 3] + '...'
+        return "\n".join(lines[:max_lines - 1] + [truncated_last_line])
+    else:
+        return "\n".join(lines)
 
 def load_json_files(folder_path):
     """Load and parse JSON files from the given folder."""
@@ -39,11 +55,10 @@ def load_release_versions(folder_path):
     try:
         with open(f"{folder_path}/release_versions.info", 'r') as f:
             release_versions = f.read().strip().split()
-        release_versions = [ v.replace("v", '').strip() for v in release_versions ]
+        release_versions = [v.replace("v", '').strip() for v in release_versions]
     except Exception as e:
         print("Error loading release_versions.info")
     return release_versions
-
 
 def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
     """Generate timeline visualizations for all metrics and save to a PDF."""
@@ -59,94 +74,98 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
     dependency_warnings = [d["load_dep"][1] for d in data]
 
     with PdfPages(output_pdf) as pdf:
-        # Settings for the gray background
+        # Use dark background style
         plt.style.use('dark_background')
 
         #########################################################
-        # Plot 1: Core System Lines and File Count
-
-        fig, ax1 = plt.subplots(figsize=(15, 8))  # Wider figure for better version visibility
-        ax1.plot(versions, core_lines, label="Lines of Code", color="purple", marker="o")
-        ax1.set_ylabel("Lines of Code", color="purple")
-        ax1.set_xlabel("Versions")
-        ax1.tick_params(axis='y', labelcolor="purple")
-        ax1.set_xticks(range(len(versions)))
-        ax1.set_xticklabels(versions, rotation=90, fontsize=8)
-        ax1.grid(True, linestyle="--", alpha=0.1)
+        # Plot 1: Core System – File Count (left) and Lines of Code (right)
+        fig, ax_left = plt.subplots(figsize=(15, 8))
+        # Left y-axis: File Count (teal)
+        ax_left.plot(versions, core_files, label="File Count", color="teal", marker="x")
+        ax_left.set_ylabel("File Count", color="teal")
+        ax_left.tick_params(axis='y', labelcolor="teal")
+        ax_left.set_xlabel("Versions")
+        ax_left.set_xticks(range(len(versions)))
+        ax_left.set_xticklabels(versions, rotation=90, fontsize=8)
+        ax_left.grid(True, linestyle="--", alpha=0.1)
 
         # Highlight specific versions
         for idx, version in enumerate(versions):
             if version in highlighted_versions:
-                ax1.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
+                ax_left.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
 
-        # Annotate the last data point
-        ax1.annotate(f'{core_lines[-1]}',
-                     xy=(len(versions) - 1, core_lines[-1]),
-                     xytext=(len(versions) + 0.5, core_lines[-1]),  # Minimal offset
-                     color="purple", fontsize=9, arrowprops=dict(arrowstyle="->", color="purple"))
+        # Annotate the last file count data point with fixed offset (10 pts to the right)
+        ax_left.annotate(f'{core_files[-1]}',
+                         xy=(len(versions)-1, core_files[-1]),
+                         xytext=(10, 0), textcoords='offset points',
+                         color="teal", fontsize=9,
+                         arrowprops=dict(arrowstyle="->", color="teal"))
 
-        ax2 = ax1.twinx()
-        ax2.plot(versions, core_files, label="File Count", color="teal", marker="x")
-        ax2.set_ylabel("File Count", color="teal")
-        ax2.tick_params(axis='y', labelcolor="teal")
-        ax2.grid(False)
+        # Right y-axis: Lines of Code (purple)
+        ax_right = ax_left.twinx()
+        ax_right.plot(versions, core_lines, label="Lines of Code", color="purple", marker="o")
+        ax_right.set_ylabel("Lines of Code", color="purple")
+        ax_right.tick_params(axis='y', labelcolor="purple")
 
-        # Annotate the last data point
-        ax2.annotate(f'{core_files[-1]}',
-                     xy=(len(versions) - 1, core_files[-1]),
-                     xytext=(len(versions) + 0.5, core_files[-1]),  # Minimal offset
-                     color="teal", fontsize=9, arrowprops=dict(arrowstyle="->", color="teal"))
+        # Annotate the last line count data point with fixed offset (10 pts to the right)
+        ax_right.annotate(f'{core_lines[-1]}',
+                          xy=(len(versions)-1, core_lines[-1]),
+                          xytext=(10, 0), textcoords='offset points',
+                          color="purple", fontsize=9,
+                          arrowprops=dict(arrowstyle="->", color="purple"))
 
-        ax1.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
-        ax2.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
+        ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
+        ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
 
-        plt.title("Core System Size Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
+        plt.title("Core System Evolution: File Count & Lines of Code", fontweight="bold", fontsize=TITLE_FONT_SIZE)
         fig.tight_layout()
         pdf.savefig(fig)
         plt.close(fig)
 
         #########################################################
-        # Plot 2: Load Modules Lines and File Count
-        fig, ax1 = plt.subplots(figsize=(15, 8))
-        ax1.plot(versions, load_lines, label="Lines of code", color="purple", marker="o")
-        ax1.set_ylabel("Lines of Code", color="purple")
-        ax1.set_xlabel("Versions")
-        ax1.tick_params(axis='y', labelcolor="purple")
-        ax1.set_xticks(range(len(versions)))
-        ax1.set_xticklabels(versions, rotation=90, fontsize=8)
-        ax1.grid(True, linestyle="--", alpha=0.1)
+        # Plot 2: Load Modules – File Count (left) and Lines of Code (right)
+        fig, ax_left = plt.subplots(figsize=(15, 8))
+        # Left y-axis: File Count (teal)
+        ax_left.plot(versions, load_files, label="File Count", color="teal", marker="x")
+        ax_left.set_ylabel("File Count", color="teal")
+        ax_left.tick_params(axis='y', labelcolor="teal")
+        ax_left.set_xlabel("Versions")
+        ax_left.set_xticks(range(len(versions)))
+        ax_left.set_xticklabels(versions, rotation=90, fontsize=8)
+        ax_left.grid(True, linestyle="--", alpha=0.1)
 
         # Highlight specific versions
         for idx, version in enumerate(versions):
             if version in highlighted_versions:
-                ax1.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
+                ax_left.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
 
-        # Annotate the last data point
-        ax1.annotate(f'{load_lines[-1]}',
-                     xy=(len(versions) - 1, load_lines[-1]),
-                     xytext=(len(versions) + 0.5, load_lines[-1]),  # Minimal offset
-                     color="purple", fontsize=9, arrowprops=dict(arrowstyle="->", color="purple"))
+        # Adjust annotation offsets so labels don't overlap:
+        # For the file count (left axis), move upward; for lines (right axis), move downward.
+        ax_left.annotate(f'{load_files[-1]}',
+                         xy=(len(versions)-1, load_files[-1]),
+                         xytext=(10, 10), textcoords='offset points',
+                         color="teal", fontsize=9,
+                         arrowprops=dict(arrowstyle="->", color="teal"))
 
-        ax2 = ax1.twinx()
-        ax2.plot(versions, load_files, label="File Count", color="teal", marker="x")
-        ax2.set_ylabel("File Count", color="teal")
-        ax2.tick_params(axis='y', labelcolor="teal")
-        ax2.grid(False)
+        # Right y-axis: Lines of Code (purple)
+        ax_right = ax_left.twinx()
+        ax_right.plot(versions, load_lines, label="Lines of Code", color="purple", marker="o")
+        ax_right.set_ylabel("Lines of Code", color="purple")
+        ax_right.tick_params(axis='y', labelcolor="purple")
 
-        # Annotate the last data point
-        ax2.annotate(f'{load_files[-1]}',
-                     xy=(len(versions) - 1, load_files[-1]),
-                     xytext=(len(versions) + 0.5, load_files[-1]-1),  # Minimal offset
-                     color="teal", fontsize=9, arrowprops=dict(arrowstyle="->", color="teal"))
+        ax_right.annotate(f'{load_lines[-1]}',
+                          xy=(len(versions)-1, load_lines[-1]),
+                          xytext=(10, -10), textcoords='offset points',
+                          color="purple", fontsize=9,
+                          arrowprops=dict(arrowstyle="->", color="purple"))
 
-        ax1.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
-        ax2.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
+        ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
+        ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
 
-        plt.title("Load Modules Size Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
+        plt.title("Load Modules Evolution: File Count & Lines of Code", fontweight="bold", fontsize=TITLE_FONT_SIZE)
         fig.tight_layout()
         pdf.savefig(fig)
         plt.close(fig)
-
 
         #########################################################
         # Plot 3: Core and Load Scores
@@ -160,7 +179,6 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
         ax.grid(True, linestyle="--", alpha=0.1)
         ax.legend(loc="upper center", fontsize=10, bbox_to_anchor=(0.5, 1.12), ncol=2)
 
-        # Highlight specific versions
         for idx, version in enumerate(versions):
             if version in highlighted_versions:
                 ax.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
@@ -187,47 +205,51 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
         plt.close(fig)
 
         #########################################################
-        # Plot 5: Commit Log
-        # Dynamically adjust the figure size and ensure the table fits within the page
-        # Plot 5: Commit Log
-        # Dynamically adjust the figure size to ensure the table fits all data lines
-        rows = len(meta_data) + 1  # +1 for the header row
-        row_height = 0.2  # Height for each row in the table
-        fig_width = 15  # Fixed width
-        fig_height = max(8, rows * row_height)  # Dynamically adjust height based on the number of rows
-
-        # Create the figure with adjusted height
-        fig, ax = plt.subplots(figsize=(fig_width, fig_height))
-        ax.axis('off')  # Hide axes for clean text visualization
-
-        # Prepare data for visualization with wrapped text
+        # Plot 5: Commit Log (Table fitted to page height with text truncation)
+        wrap_width = 105  # Maximum characters per line for wrapping
+        max_lines = 1    # Maximum number of lines allowed per commit message cell
+        meta_data = meta_data[-MAX_COMMIT_HISTORY:] # Set last 40 lines of comments
         table_data = [["Version", "Commit ID", "Message"]]
-        wrap_width = 120  # Maximum characters per line for wrapping
-
         for entry in meta_data:
-            wrapped_message = "\n".join(wrap(entry["message"], wrap_width))  # Wrap the message text
-            table_data.append([entry["version"], entry["commit_id"], wrapped_message])
+            truncated_message = truncate_message(entry["message"], wrap_width, max_lines)
+            table_data.append([entry["version"], entry["commit_id"], truncated_message])
 
-        # Create the table
-        table = ax.table(
-            cellText=table_data, loc='center', cellLoc='left', colWidths=[0.15, 0.3, 0.55]  # Adjust column widths
-        )
+        num_rows = len(table_data)
 
-        # Adjust row heights and font size dynamically
-        for (row, col), cell in table.get_celld().items():
-            cell.set_fontsize(10)  # Set font size
-            if row == 0:  # Header row
-                cell.set_text_props(weight="bold", color="white")
+        # Set figure size to fill most of the PDF page (adjust as needed)
+        fig, ax = plt.subplots(figsize=(15, 11))
+        ax.axis('off')  # Hide axes for a clean table look
+
+        # Create the table; using loc='center' so we can later force cell heights
+        table = ax.table(cellText=table_data,
+                         loc='center',
+                         cellLoc='left',
+                         colWidths=[0.06, 0.3, 0.64])
+
+        # Force a fixed font size for clarity
+        font_size = 12 if len(meta_data) < 10 else 10
+        table.auto_set_font_size(False)
+        table.set_fontsize(font_size)
+
+        # Adjust each cell’s height so that the table fits the full page height.
+        # We leave a small vertical margin (here 0.90 of the figure height is used for the table).
+        cell_height = 1 / num_rows
+        for key, cell in table.get_celld().items():
+            cell.set_height(cell_height)
+            cell.set_edgecolor("gray")
+            cell.get_text().set_color("white")
+            # Header formatting
+            if key[0] == 0:
                 cell.set_facecolor("#404040")
+                cell.set_text_props(weight="bold")
             else:
-                cell.set_facecolor("#202020")  # Optional: style for data rows
+                cell.set_facecolor("#202020")
 
-        # Adjust table layout to fit the full figure
-        plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)  # Adjust margins
-        plt.title("Version Commit Log (beta)", fontweight="bold", fontsize=16)  # Adjust title font size
-        pdf.savefig(fig)  # Save to PDF
+        # Adjust margins so that the table fills the entire figure height.
+        plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
+        plt.title(f"Version Commit History (last {MAX_COMMIT_HISTORY})", fontweight="bold", fontsize=16)
+        pdf.savefig(fig)
         plt.close(fig)
-
 
 def main():
     input_folder = "./analysis_workdir"  # Change to your folder path
@@ -240,7 +262,6 @@ def main():
 
     # Visualize data
     visualize_timeline(data, meta_data, release_versions, output_pdf)
-
     print(f"Timeline visualization saved to {output_pdf}")
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ def load_json_files(folder_path):
                 content = json.load(f)
                 summary = content["summary"]
                 summary["version"] = file_name.replace(".json", "")
+                summary["core_refs"] = {f:l[1] for f, l in content["files"].items() if "LM_" not in f}
                 data.append(summary)
     return data
 
@@ -73,9 +74,14 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
     load_scores = [d["load_score"] for d in data]
     dependency_warnings = [d["load_dep"][1] for d in data]
 
+    # Extract core_refs data per file
+    all_files = sorted(set(f for d in data for f in d["core_refs"].keys()))
+    core_refs_by_file = {f: [d["core_refs"].get(f, 0) for d in data] for f in all_files}
+
     with PdfPages(output_pdf) as pdf:
         # Use dark background style
         plt.style.use('dark_background')
+
 
         #########################################################
         # Plot 1: Core System – File Count (left) and Lines of Code (right)
@@ -122,6 +128,7 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
         pdf.savefig(fig)
         plt.close(fig)
 
+
         #########################################################
         # Plot 2: Load Modules – File Count (left) and Lines of Code (right)
         fig, ax_left = plt.subplots(figsize=(15, 8))
@@ -167,8 +174,48 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
         pdf.savefig(fig)
         plt.close(fig)
 
+
         #########################################################
-        # Plot 3: Core and Load Scores
+        # Plot 3: Core References Evolution per File
+        skip_if_ref_under = 3
+        excluded_files = []
+        fig, ax = plt.subplots(figsize=(15, 8))
+        for file, refs in core_refs_by_file.items():
+            if refs[-1] <= skip_if_ref_under:
+                excluded_files.append(f"{file} ({refs[-1]})")
+                continue
+            ax.plot(versions, refs, marker="o", label=file)
+        ax.set_ylabel("Core References Count")
+        ax.set_xlabel("Versions")
+        ax.set_xticks(range(len(versions)))
+        ax.set_xticklabels(versions, rotation=90, fontsize=8)
+        ax.grid(True, linestyle="--", alpha=0.1)
+        ax.set_xlim([-0.5, len(versions) + 20])  # Extend x-axis to make space for annotations
+        # Annotate the last data point of each file with its filename and value
+        for file, refs in core_refs_by_file.items():
+            last_index = len(versions) - 1
+            last_value = refs[-1]
+            if last_value <= skip_if_ref_under:
+                continue
+            ax.annotate(f"{file} ({last_value})",
+                        xy=(last_index, last_value),
+                        xytext=(15, 0), textcoords='offset points',
+                        fontsize=8, color='white',
+                        verticalalignment='center', horizontalalignment='left')
+        # Display excluded files list
+        if excluded_files:
+            excluded_text = "\n".join(excluded_files)
+            ax.text(len(versions) + 10, max(max(core_refs_by_file.values(), key=max)) / 4,
+                    f"Excluded Files:\n{excluded_text}", fontsize=8, color='white',
+                    verticalalignment='center', horizontalalignment='left')
+        plt.title("Core References Evolution Per File", fontweight="bold", fontsize=TITLE_FONT_SIZE)
+        fig.tight_layout()
+        pdf.savefig(fig)
+        plt.close(fig)
+
+
+        #########################################################
+        # Plot 4: Core and Load Scores
         fig, ax = plt.subplots(figsize=(15, 8))
         ax.plot(versions, core_scores, label="Core Score", color="brown", marker="o")
         ax.plot(versions, load_scores, label="Load Score", color="grey", marker="x")
@@ -188,8 +235,9 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
         pdf.savefig(fig)
         plt.close(fig)
 
+
         #########################################################
-        # Plot 4: Dependency Warnings
+        # Plot 5: Dependency Warnings
         fig, ax = plt.subplots(figsize=(15, 8))
         ax.plot(versions, dependency_warnings, label="Dependency Warnings", color="brown", marker="o")
         ax.set_ylabel("Warnings")
@@ -204,8 +252,9 @@ def visualize_timeline(data, meta_data, highlighted_versions, output_pdf):
         pdf.savefig(fig)
         plt.close(fig)
 
+
         #########################################################
-        # Plot 5: Commit Log (Table fitted to page height with text truncation)
+        # Plot 6: Commit Log (Table fitted to page height with text truncation)
         wrap_width = 105  # Maximum characters per line for wrapping
         max_lines = 1    # Maximum number of lines allowed per commit message cell
         meta_data = meta_data[-MAX_COMMIT_HISTORY:] # Set last 40 lines of comments

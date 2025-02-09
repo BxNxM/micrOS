@@ -58,14 +58,14 @@
         ],
         "Debug.py": [
             8.4,
-            17
+            18
         ],
         "Network.py": [
             9.71,
             8
         ],
         "Espnow.py": [
-            9.01,
+            8.86,
             1
         ],
         "Scheduler.py": [
@@ -315,7 +315,7 @@
     },
     "summary": {
         "core": [
-            3305,
+            3343,
             23
         ],
         "load": [
@@ -332,6 +332,6 @@
         ],
         "core_score": 9.13,
         "load_score": 8.23,
-        "version": "2.9.7-0"
+        "version": "2.9.7-1"
     }
 }

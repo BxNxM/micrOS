@@ -74,7 +74,7 @@ def app(devfid=None):
         DEVICE = devfid
 
     # Get loaded modules
-    args = base_cmd() + ['lmpacman module']
+    args = base_cmd() + ['pacman module']
     status, modules = socketClient.run(args)
     print("status: {}\nanswer: {}".format(status, modules))
 

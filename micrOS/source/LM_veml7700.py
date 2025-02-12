@@ -5,7 +5,7 @@
 from machine import SoftI2C, Pin
 from time import sleep
 from micropython import const
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Types import resolve
 
 # start const
@@ -134,7 +134,7 @@ def load():
     VEML7700 Digital light intensity sensor
     """
     if VEML7700.INSTANCE is None:
-        i2c = SoftI2C(Pin(resolve_pin('i2c_scl')), Pin(resolve_pin('i2c_sda')))
+        i2c = SoftI2C(Pin(bind_pin('i2c_scl')), Pin(bind_pin('i2c_sda')))
         VEML7700.INSTANCE = VEML7700(address=0x10, i2c=i2c, it=100, gain=1/8)
     return VEML7700.INSTANCE
 

@@ -17,9 +17,9 @@
 
 from machine import Pin, UART
 import utime
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 
-ser = UART(1, baudrate = 256000, tx=Pin(resolve_pin('tx')), rx=Pin(resolve_pin('rx')), timeout = 1)
+ser = UART(1, baudrate = 256000, tx=Pin(bind_pin('tx')), rx=Pin(bind_pin('rx')), timeout = 1)
 HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])
 TERMINATOR = bytes([0x04, 0x03, 0x02, 0x01])
 NULLDATA = bytes([])

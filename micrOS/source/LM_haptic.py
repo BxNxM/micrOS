@@ -1,4 +1,4 @@
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Types import resolve
 from machine import Pin, PWM
 from utime import sleep_ms
@@ -18,7 +18,7 @@ def load(intensity=None):
     :param intensity: low / high / None haptic feedback intensity
     """
     if Haptic.HAPTIC_OBJ is None:
-        dimmer_pin = Pin(resolve_pin('haptic'))
+        dimmer_pin = Pin(bind_pin('haptic'))
         Haptic.HAPTIC_OBJ = PWM(dimmer_pin, freq=20480)
         Haptic.HAPTIC_OBJ.duty(0)
     if intensity in ("high", "low"):

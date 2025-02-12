@@ -2,7 +2,7 @@ from micropython import const
 import ustruct
 import utime
 from machine import I2C, Pin
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 
 __TOF_OBJ = None
 
@@ -31,7 +31,7 @@ class TimeoutError(RuntimeError):
 
 class VL53L0X:
     def __init__(self, address=57):
-        self.i2c = I2C(-1, Pin(resolve_pin('i2c_scl')), Pin(resolve_pin('i2c_sda')), freq=9600)
+        self.i2c = I2C(-1, Pin(bind_pin('i2c_scl')), Pin(bind_pin('i2c_sda')), freq=9600)
         self.address = address
         self.init()
         self._started = False

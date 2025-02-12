@@ -1,7 +1,7 @@
 from machine import Pin
 import micropython
 from Common import socket_stream, syslog
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Types import resolve
 
 # https://www.coderdojotc.org/micropython/sensors/10-rotary-encoder/
@@ -76,7 +76,7 @@ def load(min_val=0, max_val=20):
     """
     if Data.ROTARY_OBJ is None:
         # GPIO Pins 33 and 35 are for the encoder pins.
-        Data.ROTARY_OBJ = Rotary(resolve_pin('rot_dt'), resolve_pin('rot_clk'))
+        Data.ROTARY_OBJ = Rotary(bind_pin('rot_dt'), bind_pin('rot_clk'))
         Data.MIN_VAL = min_val
         Data.MAX_VAL = max_val
         Data.VAL = min_val

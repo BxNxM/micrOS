@@ -1,7 +1,8 @@
 """
-Module is responsible for board independent
-input/output handling dedicated to micrOS framework.
-- Hardware based pinout handling
+This module manages board-independent input and output operations
+for the micrOS framework, ensuring compatibility across different
+microcontrollers.
+- Handles hardware-based pin configurations.
 
 Designed by Marcell Ban aka BxNxM
 """
@@ -44,7 +45,7 @@ def detect_platform():
 
 def set_pinmap(map_data=None):
     """
-    Select pin map on device (init from ConfigHandler)
+    !Select pin map on device (init from ConfigHandler!!!)
     - map_data: default None (n/a), platform detection, like: esp32 -> IO_esp32.mpy
     - map_data: string input, like: my_pinmap -> IO_my_pinmap.mpy
     Parse map_data use cases:
@@ -71,11 +72,12 @@ def set_pinmap(map_data=None):
     return PinMap.MAPPING_LUT
 
 
-def resolve_pin(tag):
+def resolve_pin(tag:str) -> int:
     """
-    Used in LoadModules
-    tag - resolve pin name by logical name (like: switch_1)
+    DEPRECATED IN LoadModules - USE bind_pin(tag) wrapper instead
     This function implements IO allocation/booking (with overload protection)
+    - based on platform/custom IO_.py lookup table file
+    :parm tag: resolve pin name by logical name (like: switch_1)
     return: integer (pin number)
     """
     # Get pin number on platform by pin key/name
@@ -93,8 +95,9 @@ def resolve_pin(tag):
     return pin_num
 
 
-def register_pin(tag, number):
+def register_pin(tag:str, number:int) -> int:
     """
+    DEPRECATED IN LoadModules - USE bind_pin(tag, number) wrapper instead
     Book pin (with overload protection) without IO_platform.py file editing
     :param tag: associated pin name for pin number
     :param number: pin number as integer
@@ -111,6 +114,21 @@ def register_pin(tag, number):
         if tag != reg_tag: # detect conflict
             raise Exception(f"[io-register] {tag}:{number} already in use: {reg_tag}")
     return number
+
+
+def bind_pin(tag, number=None) -> int:
+    """
+    Universal pin handler - assign+lock pin for a tag -> application
+    :param tag: tag for application pin booking with built-in tag detection from IO_<device>.py
+    :param number: optional parameter to overwrite default tag:pin relation
+    DO NOT HANDLE ERROR HERE - SUB ELEMENTS HAVE TO THROUGH ERROR INFO FOR LOAD MODULES
+    """
+    if number is None:
+        return resolve_pin(tag)
+    if isinstance(number, int):
+        return register_pin(tag, number)
+    raise Exception("microIO.allocate_pin number parameter must be integer!")
+
 
 
 def pinmap_info():
@@ -137,7 +155,7 @@ def pinmap_search(keys):
     return pins_cache
 
 
-def __resolve_pin(name):
+def __resolve_pin(name:str):
     """
     Dynamic const lookup table handling by var name
     :param name: logical pin name, example: neop, dht, etc.

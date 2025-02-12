@@ -1,7 +1,7 @@
 from Config import cfgget
 from utime import localtime
 from network import WLAN, STA_IF
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Network import ifconfig
 from Common import syslog, exec_cmd, manage_task
 from machine import Pin
@@ -153,7 +153,7 @@ class PageUI:
         def _set(pin_tag, callback):
             pin = None
             try:
-                pin = resolve_pin(pin_tag)
+                pin = bind_pin(pin_tag)
             except Exception as e:
                 syslog(f'[ERR] {pin_tag} IRQ: {e}')
             if pin:

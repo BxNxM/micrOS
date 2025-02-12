@@ -1,6 +1,6 @@
 from sys import platform
 from utime import sleep
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Common import micro_task, notify
 from Types import resolve
 
@@ -175,15 +175,15 @@ def _builtin_tones(tone=None):
 #########################################
 
 
-def __buzzer_init():
+def __buzzer_init(pin=None):
+    """
+    :param pin: optional number to overwrite default pin
+    """
     global __BUZZER_OBJ
     if __BUZZER_OBJ is None:
         from machine import Pin, PWM
-        dimmer_pin = Pin(resolve_pin('buzzer'))
-        if platform == 'esp8266':
-            __BUZZER_OBJ = PWM(dimmer_pin, freq=600)
-        else:
-            __BUZZER_OBJ = PWM(dimmer_pin, freq=600)
+        dimmer_pin = Pin(bind_pin('buzzer', number=pin))
+        __BUZZER_OBJ = PWM(dimmer_pin, freq=600)
         __BUZZER_OBJ.duty(512)      # 50%
     return __BUZZER_OBJ
 
@@ -283,23 +283,20 @@ def list_tones():
     return '\n'.join(list(_builtin_tones()))
 
 
-def load(cache=None, check_notify=False):
+def load(check_notify=False, pin=None, cache=True):
     """
     Initialize buzzer module
-    :param cache bool: file state machine cache: True/False/None(default: automatic True)
-    - Load .pds (state machine cache) for this load module
-    - Apply loaded states to gpio pins (boot function)
     :param check_notify: check notify enabled/disabled - make noise if enabled only
+    :param pin: optional number to overwrite default pin
+    :param cache: default True, store stages on disk (.pds)
     :return str: Verdict
     """
     from sys import platform
     global __PERSISTENT_CACHE, CHECK_NOTIFY
-    if cache is None:
-        __PERSISTENT_CACHE = False if platform == 'esp8266' else True
-    else:
-        __PERSISTENT_CACHE = cache
+    __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')
     CHECK_NOTIFY = check_notify
+    __buzzer_init(pin=pin)
     return f"CACHE: {__PERSISTENT_CACHE}, check notify: {CHECK_NOTIFY}"
 
 

@@ -6,7 +6,7 @@ https://randomnerdtutorials.com/micropython-bme280-esp32-esp8266/
 
 import utime as time
 from machine import Pin, I2C
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Common import notify
 from Types import resolve
 
@@ -299,7 +299,7 @@ class BME280:
 def __init_bme280_i2c():
     global BME280_OBJ
     if BME280_OBJ is None:
-        i2c = I2C(scl=Pin(resolve_pin('i2c_scl')), sda=Pin(resolve_pin('i2c_sda')), freq=10000)
+        i2c = I2C(scl=Pin(bind_pin('i2c_scl')), sda=Pin(bind_pin('i2c_sda')), freq=10000)
         BME280_OBJ = BME280(i2c=i2c)
     return BME280_OBJ
 

@@ -1,5 +1,5 @@
 from time import sleep
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Common import SmartADC
 
 """
@@ -12,7 +12,7 @@ ADC.ATTN_11DB — the full range voltage: 3.3V
 
 
 def __measure(samples=10):
-    adc_obj = SmartADC.get_instance(resolve_pin('ph'))
+    adc_obj = SmartADC.get_instance(bind_pin('ph'))
     mbuf = 0
     for k in range(0, samples):
         mbuf += adc_obj.get()['volt']
@@ -22,7 +22,7 @@ def __measure(samples=10):
 
 
 def measure():
-    data = SmartADC.get_instance(resolve_pin('ph')).get()
+    data = SmartADC.get_instance(bind_pin('ph')).get()
     return "ADC data: {}\nAVG V: {}".format(data, __measure())
 
 

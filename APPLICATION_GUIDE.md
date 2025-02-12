@@ -190,7 +190,7 @@ optionally via WebCli.
 """
 
 from machine import Pin
-from microIO import register_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 
 LED = None  # Cache the Pin instance for the LED
 
@@ -209,7 +209,7 @@ def load(pin_number=26):
     """
     global LED
     if LED is None:
-        pin = register_pin('led', pin_number)  # Reserve the pin as "led"
+        pin = bind_pin('led', pin_number)  # Reserve the pin as "led"
         LED = Pin(pin, Pin.OUT)  # Initialize the pin as output and store in global variable
     return LED
 
@@ -297,12 +297,11 @@ def help(widgets=False):
 #### microIO.py
 
 ```python
-def register_pin(tag, number):
+def bind_pin(tag, number):
     """
-    Book pin (with overload protection) without IO_platform.py file editing
-    :param tag: associated pin name for pin number
-    :param number: pin number as integer
-    return: pin number
+    Universal pin handler - assign+lock pin for a tag -> application
+    :param tag: tag for application pin booking with built-in tag detection from IO_<device>.py
+    :param number: optional parameter to overwrite default tag:pin relation
     """
 ```
 
@@ -321,16 +320,6 @@ def pinmap_search(keys):
     """
     :param keys: one or list of pin names (like: switch_1) to resolve physical pin number
     Gives information where to connect the selected periphery to control WITHOUT PIN BOOKING
-    """
-```
-
-``` python
-def resolve_pin(tag):
-    """
-    Used in LoadModules
-    tag - resolve pin name by logical name (like: switch_1)
-    This function implements IO allocation/booking (with overload protection)
-    return: integer (pin number)
     """
 ```
 
@@ -397,7 +386,7 @@ optionally via WebCli.
 """
 
 from machine import Pin
-from microIO import register_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Types import resolve
 
 LED = None  # Cache the Pin instance for the LED
@@ -417,7 +406,7 @@ def load(pin_number=26):
     """
     global LED
     if LED is None:
-        pin = register_pin('led', pin_number)  # Reserve the pin as "led"
+        pin = bind_pin('led', pin_number)  # Reserve the pin as "led"
         LED = Pin(pin, Pin.OUT)  # Initialize the pin as output and store in global variable
     return LED
 

@@ -5,7 +5,7 @@ from machine import Pin, PWM
 from sys import platform
 from utime import sleep_ms
 from Common import transition_gen, micro_task
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from random import randint
 from Types import resolve
 
@@ -24,10 +24,10 @@ class Data:
 #      ANALOG CCT WITH 2 channel PWM    #
 #########################################
 
-def __cwww_init():
+def __cwww_init(pin_warm=None, pin_cold=None):
     if Data.CWWW_OBJS[0] is None or Data.CWWW_OBJS[1] is None:
-        cw = Pin(resolve_pin('cwhite'))
-        ww = Pin(resolve_pin('wwhite'))
+        cw = Pin(bind_pin('cwhite', pin_cold))
+        ww = Pin(bind_pin('wwhite', pin_warm))
         if platform == 'esp8266':
             Data.CWWW_OBJS = (PWM(cw, freq=1024),
                               PWM(ww, freq=1024))
@@ -72,19 +72,16 @@ def __state_machine(c, w):
 # Application functions #
 #########################
 
-def load(cache=None):
+def load(pin_warm=None, pin_cold=None, cache=True):
     """
     Initialize Cold white / Warm white LED module
-    :param cache bool: file state machine cache: True/False/None(default: automatic True)
-    - Load .pds (state machine cache) for this load module
-    - Apply loaded states to gpio pins (boot function)
+    :param pin_warm: optional number to overwrite default pin
+    :param pin_cold: optional number to overwrite default pin
+    :param cache: save/load state machine to disk (.pds)
     :return str: Cache state
     """
-    from sys import platform
-    if cache is None:
-        Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
-    else:
-        Data.PERSISTENT_CACHE = cache
+    __cwww_init(pin_warm, pin_cold)
+    Data.PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')        # recover data cache
     if Data.CWWW_CACHE[2] == 1:
         Data.CWWW_CACHE[2] = 0             # Force ON at boot

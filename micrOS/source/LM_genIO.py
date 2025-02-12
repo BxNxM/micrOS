@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from microIO import resolve_pin, register_pin, PinMap
+from microIO import bind_pin, PinMap
 from Common import SmartADC
 from random import randint
 
@@ -10,14 +10,24 @@ from random import randint
 
 class IObjects:
     PIN_OBJS = {}
+    DENY_TAG_INPUT = True
 
     @staticmethod
-    def store_obj(pin, obj):
+    def store_obj(pin:int, obj:object) -> None:
         IObjects.PIN_OBJS[pin] = obj
 
     @staticmethod
-    def get_obj(pin):
+    def get_obj(pin:int) -> object:
         return IObjects.PIN_OBJS[pin]
+
+    @staticmethod
+    def is_unassigned(pin_number):
+        return IObjects.PIN_OBJS.get(pin_number, None) is None
+
+    @staticmethod
+    def protect_builtins(pin_num, tag):
+        if pin_num is None and IObjects.DENY_TAG_INPUT:
+            raise Exception(f"pin must be integer not {type(tag)}: {tag}")
 
 
 ##################################
@@ -28,48 +38,39 @@ def __digital_out_init(pin):
     """
     Init Digital output
     """
-    if not isinstance(pin, int):
-        pin = resolve_pin(pin)
-
-    # Register pin in microIO (drops exception if pin already booked)
-    pin_tag = f"OUT{pin}"
-    if PinMap.IO_USE_DICT.get(pin_tag, None) is None:
-        pin = register_pin(pin_tag, pin)
-        pin_obj = Pin(pin, Pin.OUT)
-        IObjects.store_obj(pin, pin_obj)
-    return IObjects.get_obj(pin)
+    pin_tag, pin = (pin, None) if isinstance(pin, str) else (f"OUT{pin}", pin)
+    IObjects.protect_builtins(pin, pin_tag)
+    pin_num = bind_pin(pin_tag, pin)
+    if IObjects.is_unassigned(pin_number=pin_num):
+        pin_obj = Pin(pin_num, Pin.OUT)
+        IObjects.store_obj(pin_num, pin_obj)
+    return IObjects.get_obj(pin_num)
 
 
 def __digital_in_init(pin):
     """
     Init Digital output
     """
-    if not isinstance(pin, int):
-        pin = resolve_pin(pin)
-
-    # Register pin in microIO (drops exception if pin already booked)
-    pin_tag = f"IN{pin}"
-    if PinMap.IO_USE_DICT.get(pin_tag, None) is None:
-        pin = register_pin(pin_tag, pin)
-        pin_obj = Pin(pin, Pin.IN, Pin.PULL_UP)
-        IObjects.store_obj(pin, pin_obj)
-    return IObjects.get_obj(pin)
+    pin_tag, pin = (pin, None) if isinstance(pin, str) else (f"IN{pin}", pin)
+    IObjects.protect_builtins(pin, pin_tag)
+    pin_num = bind_pin(pin_tag, pin)
+    if IObjects.is_unassigned(pin_number=pin_num):
+        pin_obj = Pin(pin_num, Pin.IN, Pin.PULL_UP)
+        IObjects.store_obj(pin_num, pin_obj)
+    return IObjects.get_obj(pin_num)
 
 
 def __pwm_init(pin, freq):
     """
     Init PWM signal
     """
-    if not isinstance(pin, int):
-        pin = resolve_pin(pin)
-
-    # Register pin in microIO (drops exception if pin already booked)
-    pin_tag = f"PWM{pin}"
-    if PinMap.IO_USE_DICT.get(pin_tag, None) is None:
-        pin = register_pin(pin_tag, pin)
-        pin_obj = PWM(Pin(pin), freq=freq)
-        IObjects.store_obj(pin, pin_obj)
-    return IObjects.get_obj(pin)
+    pin_tag, pin = (pin, None) if isinstance(pin, str) else (f"PWM{pin}", pin)
+    IObjects.protect_builtins(pin, pin_tag)
+    pin_num = bind_pin(pin_tag, pin)
+    if IObjects.is_unassigned(pin_number=pin_num):
+        pin_obj = PWM(Pin(pin_num), freq=freq)
+        IObjects.store_obj(pin_num, pin_obj)
+    return IObjects.get_obj(pin_num)
 
 
 ##################################
@@ -121,9 +122,9 @@ def get_adc(pin, key=None):
     :param key: select adc parameter by key
     :return dict: adc volt, percent, raw
     """
-    if isinstance(pin, int):
-        pin_tag = f"ADC{pin}"
-        pin = register_pin(pin_tag, pin)
+    pin_tag, pin = (pin, None) if isinstance(pin, str) else (f"ADC{pin}", pin)
+    IObjects.protect_builtins(pin, pin_tag)
+    pin = bind_pin(pin_tag, pin)
     data = SmartADC.get_instance(pin).get()
     data["pin"] = pin
     if key is None:
@@ -138,6 +139,19 @@ def get_in(pin):
     :return dict: pin, state
     """
     return {'pin': pin, 'state': __digital_in_init(pin).value()}
+
+
+def load(allow_tags=False):
+    """
+    Optional load function to set
+    tag input besides pin numbers.
+    [WARNING] allow_tag=True can be dangerous
+    - it can overwrite existing I/O based on
+    the provided tag
+    :param allow_tag: default False
+    """
+    IObjects.DENY_TAG_INPUT = not allow_tags
+    return "[WARNING] allow_tag=True can be dangerous, use it consciously!!!" if allow_tags else "Loaded"
 
 
 #######################
@@ -155,4 +169,5 @@ def help(widgets=False):
            'set_random_pwm pin min_duty max_duty freq=20480)',\
            'set_out pin=<int> state=<None/True/False>',\
            'get_adc pin key=None',\
-           'get_in pin'
+           'get_in pin',\
+           'load allow_tags=False'

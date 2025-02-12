@@ -3,7 +3,7 @@ from machine import Pin
 from sys import platform
 from utime import sleep_ms
 from Common import transition_gen, micro_task
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from random import randint
 from Types import resolve
 
@@ -26,13 +26,13 @@ class Data:
 #########################################
 
 
-def __init_NEOPIXEL(n=24):
+def __init_NEOPIXEL(pin=None, n=24):
     """
     Init NeoPixel module
     n - number of led fragments
     """
     if Data.NEOPIXEL_OBJ is None:
-        neopixel_pin = Pin(resolve_pin('neop'))     # Get Neopixel pin from LED PIN pool
+        neopixel_pin = Pin(bind_pin('neop', number=pin))         # Get Neopixel pin from LED PIN pool
         Data.NEOPIXEL_OBJ = NeoPixel(neopixel_pin, n)                 # initialize for max 8 segments
         del neopixel_pin
     return Data.NEOPIXEL_OBJ
@@ -72,20 +72,17 @@ def __state_machine(r, g, b):
 #             USER FUNCTIONS            #
 #########################################
 
-def load(cache=None, ledcnt=24):
+def load(ledcnt=24, pin=None, cache=True):
     """
     Initiate NeoPixel RGB module
-    :param cache bool: file state machine cache: True/False/None(default: automatic True)
-    - Load .pds (state machine cache) for this load module
-    - Apply loaded states to gpio pins (boot function)
+    :param ledcnt: number of led segments
+    :param pin: optional number to overwrite default pin
+    :param cache: default True, store stages on disk +  Load (.pds)
     :return str: Cache state
     """
-    if cache is None:
-        Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
-    else:
-        Data.PERSISTENT_CACHE = cache
+    Data.PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')         # recover data cache
-    _ledcnt = __init_NEOPIXEL(n=ledcnt).n
+    _ledcnt = __init_NEOPIXEL(pin=pin, n=ledcnt).n
     if Data.PERSISTENT_CACHE and Data.DCACHE[3] == 1:
         Data.DCACHE[3] = 0                  # Force ON at boot
         toggle(True)

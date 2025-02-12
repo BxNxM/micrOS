@@ -8,7 +8,7 @@ https://github.com/mchobby/esp8266-upy/blob/master/trackball/examples/test_color
 from utime import sleep, ticks_ms, ticks_diff
 from struct import unpack
 from machine import SoftI2C, Pin
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Common import syslog
 from micropython import schedule
 
@@ -179,7 +179,7 @@ def load(width=100, height=100, irq_sampling=50, sensitivity=5, reload=False):
     """
     global TRACKBALL
     if TRACKBALL is None or reload:
-        i2c = SoftI2C(scl=Pin(resolve_pin('i2c_scl')), sda=Pin(resolve_pin('i2c_sda')))
+        i2c = SoftI2C(scl=Pin(bind_pin('i2c_scl')), sda=Pin(bind_pin('i2c_sda')))
         TRACKBALL = Trackball(i2c, max_x=width, max_y=height, irq_sampling=irq_sampling, sensitivity=sensitivity)
         _craft_event_interrupt()
         ready_color()
@@ -253,7 +253,7 @@ def _craft_event_interrupt():
             syslog(f"[ERR] Trackball user callback: {e}")
 
     try:
-        pin = resolve_pin("trackball_int")
+        pin = bind_pin("trackball_int")
     except Exception as e:
         pin = None
         syslog(f'[ERR] trackball_int IRQ: {e}')

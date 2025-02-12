@@ -1,4 +1,4 @@
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 
 __I2C = None
 
@@ -7,7 +7,7 @@ def __init():
     global __I2C
     if __I2C is None:
         from machine import Pin, I2C
-        __I2C = I2C(-1, Pin(resolve_pin('i2c_scl')), Pin(resolve_pin('i2c_sda')))
+        __I2C = I2C(-1, Pin(bind_pin('i2c_scl')), Pin(bind_pin('i2c_sda')))
     return __I2C
 
 

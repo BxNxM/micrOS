@@ -2,7 +2,7 @@
 
 from utime import sleep_ms
 from machine import Pin
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 STEPPER_INST = None
 
 
@@ -30,10 +30,10 @@ class StepperULN2003:
                          [1, 0, 0, 1]]
             self.delay = 2
         # Init stepper pins
-        self.pin1 = Pin(resolve_pin('stppr_1'), Pin.OUT)
-        self.pin2 = Pin(resolve_pin('stppr_2'), Pin.OUT)
-        self.pin3 = Pin(resolve_pin('stppr_3'), Pin.OUT)
-        self.pin4 = Pin(resolve_pin('stppr_4'), Pin.OUT)
+        self.pin1 = Pin(bind_pin('stppr_1'), Pin.OUT)
+        self.pin2 = Pin(bind_pin('stppr_2'), Pin.OUT)
+        self.pin3 = Pin(bind_pin('stppr_3'), Pin.OUT)
+        self.pin4 = Pin(bind_pin('stppr_4'), Pin.OUT)
         # Initialize all value to 0 - "OFF"
         self.reset()
 

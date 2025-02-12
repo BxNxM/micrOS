@@ -3,7 +3,7 @@
 from micropython import const
 import framebuf
 from machine import Pin, SoftI2C
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Types import resolve
 
 __INVERT = False
@@ -165,7 +165,7 @@ def load(width=128, height=64, brightness=50):
     :param brightness: percentage
     """
     if SSD1306_I2C.OLED_OBJ is None:
-        i2c = SoftI2C(Pin(resolve_pin('i2c_scl')), Pin(resolve_pin('i2c_sda')))
+        i2c = SoftI2C(Pin(bind_pin('i2c_scl')), Pin(bind_pin('i2c_sda')))
         # TODO: scan device - abort if no device is available
         SSD1306_I2C.OLED_OBJ = SSD1306_I2C(width, height, i2c)
         SSD1306_I2C.OLED_OBJ.contrast(percent=brightness)

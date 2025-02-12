@@ -1,4 +1,4 @@
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Common import SmartADC, micro_task, notify, syslog
 from utime import ticks_ms
 try:
@@ -96,7 +96,7 @@ async def __task(ms_period, buff_size):
 
     if Data.MIC_TYPE == Data.MIC_TYPES['ADC']:
         # Create ADC object
-        Data.MIC_ADC = SmartADC.get_instance(resolve_pin('mic'))
+        Data.MIC_ADC = SmartADC.get_instance(bind_pin('mic'))
     elif Data.MIC_TYPE == Data.MIC_TYPES['I2S']:
         if Data.I2S_MIC is None:
             import LM_i2s_mic

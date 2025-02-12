@@ -1,4 +1,4 @@
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Common import data_logger
 from Types import resolve
 
@@ -14,7 +14,7 @@ def __init_DHT22():
     if __DHT_OBJ is None:
         from dht import DHT22
         from machine import Pin
-        __DHT_OBJ = DHT22(Pin(resolve_pin('dhtpin')))
+        __DHT_OBJ = DHT22(Pin(bind_pin('dhtpin')))
     return __DHT_OBJ
 
 

@@ -1,14 +1,14 @@
 from ustruct import unpack
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from Common import micro_task, web_endpoint, manage_task
 from machine import I2S, Pin
 import uasyncio as asyncio
 
 
 class Data:
-    SCK_PIN = Pin(resolve_pin('i2s_sck'))  # Serial clock
-    WS_PIN = Pin(resolve_pin('i2s_ws'))    # Word select
-    SD_PIN = Pin(resolve_pin('i2s_sd'))    # Serial data
+    SCK_PIN = Pin(bind_pin('i2s_sck'))  # Serial clock
+    WS_PIN = Pin(bind_pin('i2s_ws'))    # Word select
+    SD_PIN = Pin(bind_pin('i2s_sd'))    # Serial data
     I2S_CHANNEL = 1
     FORMAT = I2S.STEREO
     SAMPLING_RATE = 8000
@@ -276,7 +276,7 @@ def load(buf_length=Data.BUF_LENGTH, sampling_rate=Data.SAMPLING_RATE,
     
     if control_button:
         micro_task(tag=Data.CONTROL_TASK_TAG, task=__control_task())
-        Data.CONTROL_BUTTON_PIN = Pin(resolve_pin(control_button), Pin.IN)
+        Data.CONTROL_BUTTON_PIN = Pin(bind_pin(control_button), Pin.IN)
 
     Data.BUF_LENGTH = buf_length
     Data.SAMPLING_RATE = sampling_rate

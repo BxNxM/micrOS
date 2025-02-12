@@ -135,7 +135,12 @@ pin&nbsp;map:&nbsp;stppr_1,&nbsp;stppr_2,&nbsp;stppr_3,&nbsp;stppr_4</td></tr></
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;key:&nbsp;select&nbsp;adc&nbsp;parameter&nbsp;by&nbsp;key<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;adc&nbsp;volt,&nbsp;percent,&nbsp;raw</td></tr></table></td></tr><tr><th>get_in</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>pin</td></tr><tr><th>doc</th><td>Get&nbsp;digital&nbsp;input&nbsp;(high(1)/&nbsp;low&nbsp;(0))<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;pin&nbsp;number&nbsp;or&nbsp;logical&nbsp;pin<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin,&nbsp;state</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin,&nbsp;state</td></tr></table></td></tr><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>allow_tags=False</td></tr><tr><th>doc</th><td>Optional&nbsp;load&nbsp;function&nbsp;to&nbsp;set<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tag&nbsp;input&nbsp;besides&nbsp;pin&nbsp;numbers.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[WARNING]&nbsp;allow_tag=True&nbsp;can&nbsp;be&nbsp;dangerous<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;it&nbsp;can&nbsp;overwrite&nbsp;existing&nbsp;I/O&nbsp;based&nbsp;on<br>
+&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;provided&nbsp;tag<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;allow_tag:&nbsp;default&nbsp;False</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
@@ -336,11 +341,10 @@ pin&nbsp;map:&nbsp;ph</td></tr></table></td></tr><tr><th>help</th><td><table bor
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;freq&nbsp;int:&nbsp;0-1000&nbsp;default:&nbsp;600<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Verdict&nbsp;string</td></tr></table></td></tr><tr><th>play</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>rtttlstr='Indiana'</td></tr><tr><th>doc</th><td>RTTTL&nbsp;Piezzo&nbsp;Player<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;rtttlstr&nbsp;str:&nbsp;rttl&nbsp;string,&nbsp;default:&nbsp;'d=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>list_tones</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>List&nbsp;built-in&nbsp;tones</td></tr></table></td></tr><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None check_notify=False</td></tr><tr><th>doc</th><td>Initialize&nbsp;buzzer&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>list_tones</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>List&nbsp;built-in&nbsp;tones</td></tr></table></td></tr><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>check_notify=False pin=None cache=True</td></tr><tr><th>doc</th><td>Initialize&nbsp;buzzer&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;check_notify:&nbsp;check&nbsp;notify&nbsp;enabled/disabled&nbsp;-&nbsp;make&nbsp;noise&nbsp;if&nbsp;enabled&nbsp;only<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;default&nbsp;True,&nbsp;store&nbsp;stages&nbsp;on&nbsp;disk&nbsp;(.pds)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Verdict</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
@@ -471,10 +475,10 @@ pin&nbsp;map:&nbsp;tx,&nbsp;rx</td></tr></table></td></tr><tr><th>help</th><td><
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/ld2410.png?raw=true" alt="ld2410" height=150></td></tr></table></td></tr><tr><th>neopixel</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None ledcnt=24</td></tr><tr><th>doc</th><td>Initiate&nbsp;NeoPixel&nbsp;RGB&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
+	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/ld2410.png?raw=true" alt="ld2410" height=150></td></tr></table></td></tr><tr><th>neopixel</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>ledcnt=24 pin=None cache=True</td></tr><tr><th>doc</th><td>Initiate&nbsp;NeoPixel&nbsp;RGB&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ledcnt:&nbsp;number&nbsp;of&nbsp;led&nbsp;segments<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;default&nbsp;True,&nbsp;store&nbsp;stages&nbsp;on&nbsp;disk&nbsp;+&nbsp;&nbsp;Load&nbsp;(.pds)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>color</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;NEOPIXEL&nbsp;RGB&nbsp;values<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r:&nbsp;red&nbsp;value&nbsp;&nbsp;&nbsp;0-255<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g:&nbsp;green&nbsp;value&nbsp;0-255<br>
@@ -524,10 +528,10 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table b
 	{'type':&nbsp;'color',&nbsp;'lm_call':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;5]}<br>
 	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
 	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=254',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true" alt="neopixel" height=150></td></tr></table></td></tr><tr><th>cct</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Initialize&nbsp;Cold&nbsp;white&nbsp;/&nbsp;Warm&nbsp;white&nbsp;LED&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
+	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=254',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true" alt="neopixel" height=150></td></tr></table></td></tr><tr><th>cct</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>pin_warm=None pin_cold=None cache=True</td></tr><tr><th>doc</th><td>Initialize&nbsp;Cold&nbsp;white&nbsp;/&nbsp;Warm&nbsp;white&nbsp;LED&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin_warm:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin_cold:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;save/load&nbsp;state&nbsp;machine&nbsp;to&nbsp;disk&nbsp;(.pds)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>white</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cw=None ww=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cw:&nbsp;cold&nbsp;white&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ww:&nbsp;warm&nbsp;white&nbsp;value&nbsp;0-1000<br>
@@ -817,10 +821,11 @@ pin&nbsp;map:&nbsp;i2s_sck,&nbsp;i2s_ws,&nbsp;i2s_sd</td></tr></table></td></tr>
 	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'settings&nbsp;brightness=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
 	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'settings&nbsp;contrast=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
 	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'settings&nbsp;effect=:options:',&nbsp;'options':&nbsp;['NONE',&nbsp;'NEG',&nbsp;'BW',&nbsp;'RED',&nbsp;'GREEN',&nbsp;'BLUE',&nbsp;'RETRO']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'flashlight&nbsp;state=None',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true" alt="OV2640" height=150></td></tr></table></td></tr><tr><th>rgb</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;RGB&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
+	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'flashlight&nbsp;state=None',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true" alt="OV2640" height=150></td></tr></table></td></tr><tr><th>rgb</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>red_pin=None green_pin=None blue_pin=None cache=True</td></tr><tr><th>doc</th><td>Initiate&nbsp;RGB&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;red_pin:&nbsp;optional&nbsp;red&nbsp;color&nbsp;pin&nbsp;to&nbsp;overwrite&nbsp;built-in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;green_pin:&nbsp;optional&nbsp;green&nbsp;color&nbsp;pin&nbsp;to&nbsp;overwrite&nbsp;built-in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;blue_pin:&nbsp;optional&nbsp;blue&nbsp;color&nbsp;pin&nbsp;to&nbsp;overwrite&nbsp;built-in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False&nbsp;(.pds),&nbsp;default=True<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>color</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;RGB&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r&nbsp;int:&nbsp;red&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g&nbsp;int:&nbsp;green&nbsp;value&nbsp;0-1000<br>

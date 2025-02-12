@@ -5,7 +5,7 @@ from machine import Pin, PWM
 from sys import platform
 from Common import transition_gen, micro_task
 from utime import sleep_ms
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 from random import randint
 from Types import resolve
 
@@ -26,19 +26,14 @@ class Data:
 #      ANALOG rgb WITH 3 channel PWM    #
 #########################################
 
-def __RGB_init():
+def __RGB_init(red_pin=None, green_pin=None, blue_pin=None):
     if Data.RGB_OBJS[0] is None or Data.RGB_OBJS[1] is None or Data.RGB_OBJS[2] is None:
-        red = Pin(resolve_pin('redgb'))
-        green = Pin(resolve_pin('rgreenb'))
-        blue = Pin(resolve_pin('rgbue'))
-        if platform == 'esp8266':
-            Data.RGB_OBJS = (PWM(red, freq=1024),
-                          PWM(green, freq=1024),
-                          PWM(blue, freq=1024))
-        else:
-            Data.RGB_OBJS = (PWM(red, freq=20480),
-                          PWM(green, freq=20480),
-                          PWM(blue, freq=20480))
+        red = Pin(bind_pin('redgb', red_pin))
+        green = Pin(bind_pin('rgreenb', green_pin))
+        blue = Pin(bind_pin('rgbue', blue_pin))
+        Data.RGB_OBJS = (PWM(red, freq=20480),
+                         PWM(green, freq=20480),
+                         PWM(blue, freq=20480))
     return Data.RGB_OBJS
 
 
@@ -73,20 +68,18 @@ def __state_machine(r, g, b):
     __persistent_cache_manager('s')
 
 
-def load(cache=None):
+def load(red_pin=None, green_pin=None, blue_pin=None, cache=True):
     """
     Initiate RGB module
-    :param cache bool: file state machine cache: True/False/None(default: automatic True)
-    - Load .pds (state machine cache) for this load module
-    - Apply loaded states to gpio pins (boot function)
+    :param red_pin: optional red color pin to overwrite built-in
+    :param green_pin: optional green color pin to overwrite built-in
+    :param blue_pin: optional blue color pin to overwrite built-in
+    :param cache: file state machine cache: True/False (.pds), default=True
     :return str: Cache state
     """
-    from sys import platform
-    if cache is None:
-        Data.PERSISTENT_CACHE = False if platform == 'esp8266' else True
-    else:
-        Data.PERSISTENT_CACHE = cache
+    Data.PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')     # recover data cache if enabled
+    __RGB_init(red_pin, green_pin, blue_pin)
     if Data.RGB_CACHE[3] == 1:
         Data.RGB_CACHE[3] = 0           # Force ON at boot
         toggle(True)

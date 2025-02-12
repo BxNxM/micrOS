@@ -1,5 +1,5 @@
 from machine import Pin, PWM
-from microIO import resolve_pin, pinmap_search
+from microIO import bind_pin, pinmap_search
 
 #########################################
 #     ANALOG DIMMER CONTROLLER PARAMS   #
@@ -15,9 +15,9 @@ __L298N_OBJS = []
 def __l298n_init():
     global __L298N_OBJS
     if len(__L298N_OBJS) == 0:
-        __L298N_OBJS.append(PWM(Pin(resolve_pin('l298speed')), freq=50))
-        __L298N_OBJS.append(Pin(resolve_pin('l298dir_1'), Pin.OUT))
-        __L298N_OBJS.append(Pin(resolve_pin('l298dir_2'), Pin.OUT))
+        __L298N_OBJS.append(PWM(Pin(bind_pin('l298speed')), freq=50))
+        __L298N_OBJS.append(Pin(bind_pin('l298dir_1'), Pin.OUT))
+        __L298N_OBJS.append(Pin(bind_pin('l298dir_2'), Pin.OUT))
         __L298N_OBJS[0].duty(0)     # Set default speed (PWM)
         __L298N_OBJS[1].value(0)    # Set default direction for dc motor1
         __L298N_OBJS[2].value(1)    # Set default direction for dc motor1

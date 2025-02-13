@@ -221,7 +221,12 @@ async def arequest(method, url, data=None, json=None, headers=None, sock_size=25
     except Exception as e:
         status_code = 500
         # https://github.com/micropython/micropython/blob/8785645a952c03315dbf93667b5f7c7eec49762f/cc3200/simplelink/include/device.h
-        body = "[WARN] arequest ASSOC_REJECT" if "-104" == str(e) else f"[ERR] arequest failed: {e}"
+        if "-104" == str(e):
+            body = "[WARN] arequest: ASSOC_REJECT"
+        elif "ECONNABORTED" in str(e):
+            body = f"[WARN] arequest: {e}"
+        else:
+            body = f"[ERR] arequest: {e}"
         errlog_add(body)
     finally:
         if writer:

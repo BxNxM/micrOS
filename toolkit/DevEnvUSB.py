@@ -65,12 +65,13 @@ class USB(Compile):
                  {'erase': '{esptool_interface} --chip esp32s3 --port {dev} erase_flash',
                   'deploy': '{esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
                   'mpremote_cmd': 'mpremote',
-                  'cmd_line_info': '[!!!] Fully automatic deployment.'},
+                  'cmd_line_info': '[!HINNT!] Press boot button under connecting the board over USB: enables flash erase'},
              'esp32s3':
                  {'erase': '{esptool_interface} --chip esp32s3 --port {dev} erase_flash',
                   'deploy': '{esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}',
                   'mpremote_cmd': 'mpremote',
-                  'cmd_line_info': '[!!!] Fully automatic deployment.'},
+                  #'ampy_cmd': 'ampy -p {dev} -b 115200 -d 2 {args}',
+                  'cmd_line_info': '[!HINNT!] Press boot button under connecting board over USB: enables flash erase'},
              'esp32c3':
                  {'erase': '{esptool_interface} --chip esp32c3 --port {dev} erase_flash',
                   'deploy': '{esptool_interface} --chip esp32c3 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}',
@@ -239,7 +240,7 @@ class USB(Compile):
                 # Legacy ampy command (esp32 auto reboot tolerance...)
                 command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args=f'put {source}')
             else:
-                command = f'{mpremote_cmd} cp {source} :{source}'
+                command = f'{mpremote_cmd} fs cp {source} :{source}'     # new mpremote <1.24.1
             if ' ' in source:
                 self.console("[{}%][SKIP] micrOS deploy via USB: {}".format(percent, command))
                 continue
@@ -614,7 +615,7 @@ class USB(Compile):
             # Legacy ampy command (esp32 auto reboot tolerance...)
             command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args='get node_config.json')
         else:
-            command = f'{mpremote_cmd} cat node_config.json'
+            command = f'{mpremote_cmd} fs cat node_config.json'     # new mpremote <1.24.1
         if not self.dry_run:
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
             self._archive_node_config()
@@ -671,7 +672,7 @@ class USB(Compile):
             # Legacy ampy command (esp32 auto reboot tolerance...)
             command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args='ls')
         else:
-            command = f"{mpremote_cmd} ls"
+            command = f"{mpremote_cmd} fs ls"       # new mpremote <1.24.1
         if not self.dry_run:
             self.console("CMD: {}".format(command))
             exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True, debug=False)

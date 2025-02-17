@@ -110,10 +110,6 @@ def restore():
         conf_cmd_list.append(f"{key} {value}")
     conf_cmd_list.append("reboot")
 
-    verify = input(f"{Colors.WARN}This is BETA feature, are you sure?{Colors.NC} [YY/n]: ")
-    if verify != "YY":
-        print(f"{Colors.WARN}SKIP restore...{Colors.NC}")
-        return
     # Restore
     print(f"APPLY CONFIG DIFFS...{DEVICE}")
     status, answer = run_command(conf_cmd_list)

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import setuptools
-import platform
 
 # https://towardsdatascience.com/create-your-custom-python-package-that-you-can-pip-install-from-your-git-repository-f90465867893
 

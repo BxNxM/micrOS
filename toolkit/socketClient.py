@@ -4,7 +4,6 @@
 import sys
 import socket
 import os
-import select
 import time
 import json
 import threading

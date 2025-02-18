@@ -35,6 +35,11 @@ try:
 except Exception as e:
     print(f"Optional dependency missing in macroScript: {e}")
     macroScript = None
+try:
+    from toolkit.WebRepl import open_webrepl
+except Exception as e:
+    print(f"Optional dependency missing in WebRepl: {e}")
+    open_webrepl = None
 
 
 def arg_parse():
@@ -70,6 +75,7 @@ def arg_parse():
     dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server, Env. vars: API_AUTH='username:password' (optional), GATEWAYIP needed for container deployment only.")
     dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
     dev_group.add_argument("-lint", "--linter", action="store_true", help="Run micrOS system linter (pylint+)")
+    dev_group.add_argument("-webrepl", "--open_webrepl", action="store_true", help="(beta) Open webrepl in default browser, micropython repl + file transfers (built-in)")
     dev_group.add_argument("--light", action="store_true", help="Skip optional dependency deployments (low level param: add this as first argument always)")
 
     toolkit_group = parser.add_argument_group("Toolkit development")
@@ -292,6 +298,10 @@ if __name__ == "__main__":
     if cmd_args.linter:
         if micrOSlint is not None:
             sys.exit(micrOSlint.main(verbose=False))
+
+    if cmd_args.open_webrepl:
+        if open_webrepl is not None:
+            open_webrepl()
 
     if cmd_args.macro:
         if macroScript is None:

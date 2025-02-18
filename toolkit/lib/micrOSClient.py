@@ -280,7 +280,7 @@ class micrOSClient:
         f_delta_t = "{}[{:.2f}]{}".format(color.OKGREEN, delta_time, color.NC)
         self.dbg_print("{}[⏰] {} {}reply: {}{}".format(f_delta_t, cmd, color.BOLD, out, color.NC))
 
-        # return output list
+        # return output list or None
         return out
 
     def send_cmd_retry(self, cmd, timeout=6, retry=5, stream=False):
@@ -317,9 +317,12 @@ class micrOSClient:
                 cmd = input()               # CANNOT contain prompt - it is coming back from response data
                 # send command
                 output = self.send_cmd(cmd, timeout=timeout, stream=True)
-                if history is not None and "Shell: for hints type help." not in output:   # History: Beta feature
+                if not (history is None or output is None) and "Shell: for hints type help." not in output:   # History: Beta feature
                     history.add_history(cmd)
                 if 'Bye!' in str(output):
+                    break
+                if output is None:
+                    print("Exiting... client disconnected")
                     break
             except KeyboardInterrupt:
                 print("Exiting...")

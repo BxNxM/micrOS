@@ -1,4 +1,7 @@
 import subprocess
+import json
+
+OUTPUT_JSON = "analysis_workdir/contributions.json"
 
 def get_contributions():
     # Get the list of all contributors
@@ -51,4 +54,9 @@ if __name__ == "__main__":
     user_aliases(contribution_scores)
     for contributor, score in contribution_scores.items():
         print(f"{contributor}: {score:.2f}%")
+
+    print(f"Save contributors scores: {OUTPUT_JSON}")
+    with open(OUTPUT_JSON, 'w') as f:
+        json_cont = json.dumps(contribution_scores)
+        f.write(json_cont)
 

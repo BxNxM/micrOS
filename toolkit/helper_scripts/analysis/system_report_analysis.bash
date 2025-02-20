@@ -52,6 +52,21 @@ function collect_sys_analysis_resources() {
   popd
 }
 
+function get_contributions {
+
+    echo -e "Get contributors and contribution scores"
+    pushd "${SCRIPT_DIR}"
+    python3 contributors.py
+    exitcode=$?
+    popd
+
+    if [[ "$exitcode" == "0" ]]
+    then
+        echo -e "\tOK"
+    else
+        echo -e "\tNOK"
+    fi
+}
 
 function visualize {
     debug_print "Generate visualization pdf"
@@ -76,6 +91,10 @@ if ! command -v jq &> /dev/null; then
   exit 1
 fi
 
+# Data collection
 collect_sys_analysis_resources
+get_contributions
+
+# Visualize data
 visualize
 

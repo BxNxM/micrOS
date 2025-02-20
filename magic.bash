@@ -1,5 +1,22 @@
 #!/bin/bash
 
+#########################################################
+#                       magic.bash                      #
+#                                                       #
+#       Development environment generator               #
+#       - python virtual environment: ./env/venv        #
+#       - bash and zsh support                          #
+#       - for more info: ./magic.bash -h                #
+#       - create venv only: source magic.bash env       #
+#########################################################
+
+
+# Ensure compatibility with both Bash and Zsh
+if [ -n "$ZSH_VERSION" ]; then
+  # Enable Bash-like zero-based indexing in Zsh
+  setopt KSH_ARRAYS
+fi
+
 # Get command line arguments
 CMD_ARGS=${*}
 # Get current script path

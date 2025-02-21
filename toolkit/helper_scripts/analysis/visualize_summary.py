@@ -1,6 +1,7 @@
 import os
 import json
 import re
+from pprint import pprint
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -351,6 +352,45 @@ def page_contributors(pdf, user_data):
         plt.close(fig)
 
 
+def page_contributors_areas(pdf, contributors_areas):
+    """
+    Create a PDF page that lists each contributor's modified files in separate columns.
+    Each column displays the contributor's name in bold at the top and, after an empty line,
+    an alphabetical list of the files they modified.
+
+    Parameters:
+        pdf: A PdfPages object from matplotlib.backends.backend_pdf used to save the figure.
+        contributors_areas: A dict mapping each contributor's username to a list of file paths.
+    """
+    # Get a sorted list of contributors to maintain consistent order
+    contributors = list(contributors_areas.keys())
+    num_contributors = len(contributors)
+
+    # Create a subplot for each contributor
+    fig, axs = plt.subplots(1, num_contributors, figsize=(15, 10))
+    # When there is only one contributor, axs is not a list
+    if num_contributors == 1:
+        axs = [axs]
+
+    for ax, user in zip(axs, contributors):
+        # Sort the file list alphabetically for the current contributor
+        files_sorted = sorted(contributors_areas[user])
+        # Display the username in bold at the top
+        ax.text(0.05, 0.95, user, transform=ax.transAxes,
+                va="top", ha="left", fontsize=12, family="monospace", fontweight="bold")
+        # Leave an empty line and list the files below in alphabetical order
+        ax.text(0.05, 0.90, "\n".join(files_sorted), transform=ax.transAxes,
+                va="top", ha="left", fontsize=10, family="monospace")
+        ax.axis("off")  # Hide axis lines and ticks
+
+    # Add an overall title for the page
+    fig.suptitle("Contributors' File Changes", fontsize=16, fontweight="bold")
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+
+    # Save the page to the PDF and close the figure
+    pdf.savefig(fig)
+    plt.close(fig)
+
 #####################################
 #            MAIN PDF WRITER        #
 #####################################
@@ -368,6 +408,9 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
     load_scores = [d["load_score"] for d in data]
     dependency_warnings = [d["load_dep"][1] for d in data]
     contributors = extradata.get("contributors")
+    contributors_scores = contributors.get("scores")
+    contributors_areas = contributors.get("areas")
+    #pprint(contributors_areas)
 
     # Extract core_refs data per file
     all_files = sorted(set(f for d in data for f in d["core_refs"].keys()))
@@ -391,7 +434,8 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
 
         #########################################################
         # Show developer contributions
-        page_contributors(pdf, contributors)
+        page_contributors(pdf, contributors_scores)
+        page_contributors_areas(pdf, contributors_areas)
 
         #########################################################
         # Plot 4: Core and Load Scores

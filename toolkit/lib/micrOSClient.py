@@ -355,8 +355,9 @@ class micrOSClient:
             verdict.append(console_msg)
             print(f"===>\t\t{console_msg}")
         self.close()
-        verdict.append(f"SINGLE CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {round(delta_t_all/cnt, 3)} sec\n")
-        return verdict
+        delta_t_result = round(delta_t_all / cnt, 3)
+        verdict.append(f"SINGLE CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {delta_t_result} sec\n")
+        return verdict, delta_t_result
 
     def __del__(self):
         if self.dbg and self.avg_reply[1] > 0:
@@ -385,9 +386,10 @@ def micros_connection_metrics(address):
             print(f"\t\t{_console_msg}")
             all_reply.append(_console_msg)
         success_rate = int(round(_success / cnt, 2) * 100)
-        all_reply.append(f"MULTI CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {round(_all_delta_t/cnt, 3)}s, "
-                         f"SERVER AVAILABILITY: {success_rate}% ({round(_all_delta_t/_success, 3)}s)")
-        return all_reply
+        delta_t_result = round(_all_delta_t/cnt, 3)
+        all_reply.append(f"MULTI CONNECTION LOAD TEST X{cnt}, AVERAGE REPLY TIME: {delta_t_result}s, "
+                         f"SERVER AVAILABILITY: {success_rate}% ({int((_all_delta_t/_success)*1000)} ms)")
+        return all_reply, delta_t_result
 
     # ---------------------------------------------------- #
     high_level_verdict = []
@@ -395,12 +397,12 @@ def micros_connection_metrics(address):
     # [1] Create micrOSClient object + Run LOAD tests
     com_obj = micrOSClient(host=address, port=9008, pwd="ADmin123", dbg=True)
     # [1.1] Run load test in one connection
-    verdict_list = com_obj.load_test()
+    verdict_list, delta_t_single_session = com_obj.load_test()
     com_obj.close()
     high_level_verdict.append(verdict_list[-1])
 
     # [2] Run multi connection load test - reconnect - raw connection (without retry)
-    verdict_multi = multi_conn_load(address)
+    verdict_multi, delta_t_multi_session = multi_conn_load(address)
     high_level_verdict.append((verdict_multi[-1]))
 
     ############################################################################
@@ -412,7 +414,7 @@ def micros_connection_metrics(address):
     for k in verdict_multi:
         print(f"\t{k}")
 
-    return high_level_verdict
+    return high_level_verdict, delta_t_single_session, delta_t_multi_session
 
 
 if __name__ == "__main__":
@@ -446,7 +448,7 @@ if __name__ == "__main__":
     print(f"noconf out: {noconf_mode}")
     if force_close: com_obj.close()
 
-    verdict = micros_connection_metrics(address=address)
+    verdict, delta_t_single, delta_t_multi = micros_connection_metrics(address=address)
     for k in verdict:
         print(f"+\t\t{k}")
 

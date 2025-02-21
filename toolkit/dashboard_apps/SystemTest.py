@@ -5,7 +5,10 @@ import sys
 import time
 import socket
 import ast
+from pprint import pprint
+
 MYPATH = os.path.dirname(os.path.abspath(__file__))
+REPORT_OUTPUT_PATH = os.path.join(MYPATH, '../../micrOS/release_info/micrOS_ReleaseInfo/devices_system_metrics.json')
 sys.path.append(os.path.dirname(MYPATH))
 import socketClient
 sys.path.append(os.path.join(MYPATH, '../lib/'))
@@ -17,6 +20,58 @@ DEVICE = '__simulator__'
 PASSWD = None
 TIMEOUT_SEC = 5
 
+# COLLECT AND SAVE SYSTEM TEST METRICS
+ENABLE_DATA_COLLECTION = os.environ.get("ENABLE_DATA_COLLECTION", False)
+REPORT_DICT = {}
+METRICS = {}
+
+#####################################
+#               METRICS             #
+#####################################
+def load_reports():
+    global REPORT_DICT
+    previous_reports = {}
+    try:
+        with open(REPORT_OUTPUT_PATH, 'r') as f:
+            previous_reports = json.loads(f.read())
+    except FileNotFoundError:
+        pass
+    finally:
+        REPORT_DICT = previous_reports
+
+def create_report(device_name:str, metrics:dict) -> None:
+    global REPORT_DICT
+
+    if not ENABLE_DATA_COLLECTION:
+        print(f"[SKIP] system test metrics export, ENABLE_DATA_COLLECTION={ENABLE_DATA_COLLECTION}")
+        pprint(metrics)
+        return
+    load_reports()
+    version = metrics.get('version')
+    device_type = metrics.get('board_type')
+    device_type = '???' if device_type is None else device_type.split()[-1]
+    if REPORT_DICT.get(version) is None:
+        REPORT_DICT[version] = {}
+    if REPORT_DICT.get(version).get(device_type) is None:
+        REPORT_DICT[version][device_type] = {}
+    REPORT_DICT[version][device_type][device_name] = metrics
+    # Cleanup - remove redundant elements
+    REPORT_DICT[version][device_type][device_name].pop("board_type", None)
+    REPORT_DICT[version][device_type][device_name].pop("version", None)
+    # Dump report
+    print(f"Save system test report: {REPORT_OUTPUT_PATH}")
+    pprint(metrics)
+    with open(REPORT_OUTPUT_PATH, 'w') as f:
+        f.write(json.dumps(REPORT_DICT, indent=4))
+
+
+def _add_metrics(key:str, value):
+    global METRICS
+    METRICS[key] = value
+
+#####################################
+#            APP CONFIG             #
+#####################################
 
 def base_cmd():
     if PASSWD is None:
@@ -27,6 +82,15 @@ def base_cmd():
 def get_device():
     return DEVICE
 
+
+def execute(cmd_list, tout=5):
+    cmd_args = base_cmd() + cmd_list
+    print("[ST] test cmd: {}".format(cmd_args))
+    return socketClient.run(cmd_args, timeout=tout)
+
+#####################################
+#               TESTS               #
+#####################################
 
 def single_cmd_exec_check():
     info = "[ST] Run single command execution check [hello]"
@@ -44,6 +108,7 @@ def shell_cmds_check():
     cmd_list = ['modules']
     output = execute(cmd_list)
     if output[0]:
+        _add_metrics("modules", ast.literal_eval(output[1]))
         if not (output[1].startswith("[") and output[1].endswith("]")):
             return False, f"{info}modules: {output[1]}"
     cmd_list = ['version']
@@ -205,6 +270,7 @@ def micrOS_get_version():
     if output[0]:
         if '.' in output[1].strip() and '-' in output[1].strip():
             return True, f"{info} v:{output[1].strip()}"
+    _add_metrics('version', output[1])
     return False, f"{info} out: {output[1]}"
 
 
@@ -270,6 +336,7 @@ def measure_package_response_time():
     end = time.time() - start
     # Get average response time
     delta_cmd_rep_time = round(end/10, 4)
+    _add_metrics('shell_heartbeatX10_response_ms', int(delta_cmd_rep_time*1000))
     # Create verdict
     print(output)
     if output[0] and "<3 heartbeat <3" in output[1]:
@@ -417,9 +484,11 @@ def check_intercon(host=None):
 
 def measure_conn_metrics():
     try:
-        verdict = socketClient.connection_metrics(f"{get_device().strip()}.local")
+        verdict, delta_t_single, delta_t_multi = socketClient.connection_metrics(f"{get_device().strip()}.local")
+        _add_metrics("shell_single_session_dt_ms", int(delta_t_single*1000))
+        _add_metrics("shell_multi_session_dt_ms", int(delta_t_multi*1000))
         for k in verdict:
-            print("\t\t{}".format(k))
+            print(f"\t\t{k}")
         state = True if len(verdict) > 0 else False
     except Exception as e:
         state = False
@@ -437,6 +506,8 @@ def memory_usage():
         return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
 
     # {"percent": 93.11, "mem_used": 103504}
+    _add_metrics('mem_percent', json_out.get('percent'))
+    _add_metrics('mem_used_byte', json_out.get('mem_used'))
     if json_out.get('percent') > 70:        # MEM USAGE WARNING INDICATOR: 80%
         return state, '[ST] {}WARNING{}: memory usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
                                                                              json_out.get('percent'),
@@ -458,6 +529,8 @@ def disk_usage():
         return False, '[ST] {}ERR{}: {}: {}'.format(Colors.ERR, Colors.NC, raw_output, e)
 
     # {"percent": 15.4, "fs_used": 323_584}
+    _add_metrics('fs_percent', json_out.get('percent'))
+    _add_metrics('fs_used_byte', json_out.get('fs_used'))
     if json_out.get('fs_used') > 700_000:        # MEM USAGE WARNING INDICATOR: 700_000 bytes (700kb)
         return state, '[ST] {}WARNING{}: disk usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
                                                                              json_out.get('percent'),
@@ -491,22 +564,30 @@ def webcli_test():
 
             for endpoint in endpoints:
                 _start_t = time.time()
+                delta_t = -1
                 try:
                     response = requests.get(endpoint, timeout=5)
+                    delta_t = round(time.time() - _start_t, 2)
                     # Check if the request was successful
                     if not (response.status_code == 200 and ('<!DOCTYPE html>' in str(response.content) or '"micrOS"' in str(response.content))):
-                        verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({round(time.time()-_start_t, 2)}s)"
+                        verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({delta_t}s)"
                         print(response.content)
                         state = False
                     else:
-                        verdict += f" Endpoint: {endpoint} [{Colors.OK}OK{Colors.NC}]({round(time.time()-_start_t, 2)}s)"
+                        verdict += f" Endpoint: {endpoint} [{Colors.OK}OK{Colors.NC}]({delta_t}s)"
+
+                        metrics_name = 'landingpage' if "." in endpoint.split('/')[-1] else endpoint.split('/')[-1]
+                        _add_metrics(f"web_{metrics_name}_response_ms", int(delta_t*1000))
                 except Exception as e:
-                    verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({round(time.time()-_start_t, 2)}s)"
+                    verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({delta_t}s)"
                     print(f"webcli_test error: {e}")
                     state  = False
         return state, verdict
     return state, output
 
+#####################################
+#               HELPERS             #
+#####################################
 
 def after_st_reboot():
     verdict = False, 'reboot -h failed'
@@ -534,9 +615,27 @@ def get_dev_version():
     cmd = ['version']
     out = execute(cmd, tout=TIMEOUT_SEC)
     state, output = out[0], out[1]
+    _add_metrics("version", output)
     if state:
         return output
     return '0.0.0-0'
+
+def get_dev_board_type():
+    cmd = ['system info >json']
+    out = execute(cmd, tout=TIMEOUT_SEC)
+    state, output = out[0], out[1]
+    output = ast.literal_eval(output)
+    board = output.get("board")
+    upython = output.get("upython")
+    _add_metrics("board_type", board)
+    _add_metrics("micropython_version", str(upython))
+    if state:
+        return board, upython
+    return None, None
+
+#####################################
+#              MAIN APP             #
+#####################################
 
 def app(devfid=None, pwd=None):
     global DEVICE, PASSWD
@@ -545,6 +644,9 @@ def app(devfid=None, pwd=None):
     if pwd is not None:
         PASSWD = pwd
 
+    # Get device info
+    version = get_dev_version()
+    get_dev_board_type()        # update metrics
     # Get test verdict
     verdict = {'single_cmds': single_cmd_exec_check(),
                'shell_cmds': shell_cmds_check(),
@@ -575,7 +677,7 @@ def app(devfid=None, pwd=None):
     # Test Evaluation
     final_state = True
     ok_cnt = 0
-    version = get_dev_version()
+    create_report(DEVICE, METRICS)
     print(f"\n----------------------------------- micrOS System Test results on {DEVICE}:{version} device -----------------------------------")
     print("\tTEST NAME\t\tSTATE\t\tDescription\n")
     for test, state_data in verdict.items():
@@ -594,12 +696,6 @@ def app(devfid=None, pwd=None):
     print(f"RESULT: {colorful_state}")
     print("--------------------------------------------------------------------------------------\n")
     oled_msg_end_result(f"System[{state}] {pass_rate}")
-
-
-def execute(cmd_list, tout=5):
-    cmd_args = base_cmd() + cmd_list
-    print("[ST] test cmd: {}".format(cmd_args))
-    return socketClient.run(cmd_args, timeout=tout)
 
 
 if __name__ == "__main__":

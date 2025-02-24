@@ -53,6 +53,11 @@ def load_json_files(folder_path):
                     with open(file_path, "r") as f:
                         content = json.load(f)
                     extradata["contributors"] = content
+                elif file_name == "devices_system_metrics.json":
+                    file_path = os.path.join(folder_path, file_name)
+                    with open(file_path, "r") as f:
+                        content = json.load(f)
+                    extradata["system_metrics"] = content
                 else:
                     print(f"UNKNOWN JSON: {file_name}")
     return data, extradata
@@ -393,9 +398,9 @@ def page_contributors_areas(pdf, contributors_areas):
 
 
 def visualize_device_metrics(pdf, data):
+
     # Collect all relevant metrics dynamically
     time_metrics = set()
-
     for devices in data.values():
         for device_list in devices.values():
             for metrics in device_list.values():
@@ -406,13 +411,12 @@ def visualize_device_metrics(pdf, data):
     num_plots = len(time_metrics) + 2  # +2 for memory and filesystem plots
 
     # Ensure the number of subplots matches the number of metrics
-    fig, axes = plt.subplots(num_plots, 1, figsize=(15, 5 * num_plots))
+    fig, axes = plt.subplots(num_plots, 1, figsize=(15, 6 * num_plots))
     if num_plots == 1:
         axes = [axes]  # Ensure iterable for a single metric case
 
     # Prepare data structures
     device_types = {}
-
     for version, devices in data.items():
         for device_type, device_list in devices.items():
             if device_type not in device_types:
@@ -424,206 +428,71 @@ def visualize_device_metrics(pdf, data):
     for i, metric in enumerate(sorted(time_metrics)):  # Sort for consistency
         ax = axes[i]
         ax.set_title(f"{metric.replace('_', ' ').title()} by Device Type")
-
         for device_type, devices in device_types.items():
             values = [d[1].get(metric, 0) for d in devices]
             labels = [d[0] for d in devices]
             bars = ax.bar(labels, values, label=device_type)
-
             # Annotate each bar with the exact value
             for bar, value in zip(bars, values):
-                ax.annotate(f"{value} ms", xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+                ax.annotate(f"{value} ms",
+                            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
                             ha='center', va='bottom', fontsize=10, fontweight='bold')
-
         ax.set_ylabel("Time (ms)")
         ax.legend()
         ax.tick_params(axis='x', rotation=45)
 
-    # Memory Utilization Plot
+    # Memory Utilization Plot with modules list annotation
     ax = axes[len(time_metrics)]
     ax.set_title("Memory Utilization by Device Type")
-
     for device_type, devices in device_types.items():
         mem_usage = [d[1].get("mem_percent", 0) for d in devices]
         mem_used = [d[1].get("mem_used_byte", 0) / 1024 for d in devices]  # Convert bytes to KB
         labels = [d[0] for d in devices]
         bars = ax.bar(labels, mem_usage, label=device_type)
-
-        # Annotate each bar with KB usage
-        for bar, value in zip(bars, mem_used):
-            ax.annotate(f"{value:.1f} KB", xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                        ha='center', va='bottom', fontsize=10, fontweight='bold')
-
+        for i, bar in enumerate(bars):
+            kb_value = mem_used[i]
+            modules = devices[i][1].get("modules", [])
+            modules_str = ",\n".join(modules)
+            annotation_text = f"{kb_value:.1f} KB\nModules({len(modules)}):\n{modules_str}"
+            ax.annotate(annotation_text,
+                        xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+                        ha='center', va='bottom',
+                        fontsize=10, fontweight='bold')
     ax.set_ylabel("Memory Usage (%)")
+    ax.set_ylim(0, 110)
     ax.legend()
     ax.tick_params(axis='x', rotation=45)
 
     # Filesystem Utilization Plot
     ax = axes[len(time_metrics) + 1]
     ax.set_title("Filesystem Utilization by Device Type")
-
     for device_type, devices in device_types.items():
         fs_usage = [d[1].get("fs_percent", 0) for d in devices]
         fs_used = [d[1].get("fs_used_byte", 0) / 1024 for d in devices]  # Convert bytes to KB
         labels = [d[0] for d in devices]
         bars = ax.bar(labels, fs_usage, label=device_type)
-
         # Annotate each bar with KB usage
         for bar, value in zip(bars, fs_used):
-            ax.annotate(f"{value:.1f} KB", xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            ax.annotate(f"{value:.1f} KB\n55+ Modules",
+                        xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
                         ha='center', va='bottom', fontsize=10, fontweight='bold')
-
     ax.set_ylabel("Filesystem Usage (%)")
+    ax.set_ylim(0, 80)
     ax.legend()
     ax.tick_params(axis='x', rotation=45)
+
+    for ay in axes:
+        ay.yaxis.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
     # Save the figure
     fig.tight_layout()
     pdf.savefig(fig)
     plt.close(fig)
 
+
 #####################################
 #            MAIN PDF WRITER        #
 #####################################
-
-def system_test_metrics_loader():
-    # WORKAROUND - LOAD DATA PROPERLY FROM FILE
-    data = {
-    "2.9.8-0": {
-        "ESP32-PICO-D4": {
-            "TinyDevBoard": {
-                "modules": [
-                    "system",
-                    "rgb",
-                    "telegram",
-                    "cct",
-                    "dashboard_be",
-                    "intercon",
-                    "oled_ui",
-                    "oled",
-                    "gameOfLife",
-                    "task"
-                ],
-                "shell_heartbeatX10_response_ms": 28,
-                "mem_percent": 3.2,
-                "mem_used_byte": 134672,
-                "fs_percent": 24.8,
-                "fs_used_byte": 520192,
-                "web_landingpage_response_ms": 180,
-                "web_rest_response_ms": 50,
-                "shell_single_session_dt_ms": 70,
-                "shell_multi_session_dt_ms": 104,
-                "micropython_version": "v1.24.1 on 2024-11-29"
-            }
-        },
-        "ESP32": {
-            "TestBird": {
-                "micropython_version": "v1.24.1 on 2024-11-29",
-                "modules": [
-                    "types_demo",
-                    "system",
-                    "task"
-                ],
-                "shell_heartbeatX10_response_ms": 37,
-                "mem_percent": 59.6,
-                "mem_used_byte": 86224,
-                "fs_percent": 23.8,
-                "fs_used_byte": 499712,
-                "web_landingpage_response_ms": 90,
-                "web_rest_response_ms": 50,
-                "shell_single_session_dt_ms": 30,
-                "shell_multi_session_dt_ms": 77
-            },
-            "RingLamp": {
-                "micropython_version": "v1.21.0 on 2023-10-05",
-                "modules": [
-                    "neopixel",
-                    "pacman",
-                    "system",
-                    "task"
-                ],
-                "shell_heartbeatX10_response_ms": 39,
-                "mem_percent": 66.5,
-                "mem_used_byte": 100176,
-                "fs_percent": 26.2,
-                "fs_used_byte": 548864,
-                "web_landingpage_response_ms": 110,
-                "web_rest_response_ms": 40,
-                "shell_single_session_dt_ms": 29,
-                "shell_multi_session_dt_ms": 83
-            }
-        },
-        "ESP32S3": {
-            "CatLaser": {
-                "micropython_version": "v1.24.1 on 2024-11-29",
-                "modules": [
-                    "roboarm",
-                    "telegram",
-                    "system",
-                    "dashboard_be",
-                    "servo",
-                    "switch",
-                    "task"
-                ],
-                "shell_heartbeatX10_response_ms": 22,
-                "mem_percent": 1.3,
-                "mem_used_byte": 106592,
-                "fs_percent": 7.6,
-                "fs_used_byte": 479232,
-                "web_landingpage_response_ms": 100,
-                "web_rest_response_ms": 50,
-                "shell_single_session_dt_ms": 17,
-                "shell_multi_session_dt_ms": 100
-            },
-            "Entrance": {
-                "micropython_version": "v1.22.1 on 2024-01-05",
-                "modules": [
-                    "telegram",
-                    "system",
-                    "buzzer",
-                    "pacman",
-                    "task"
-                ],
-                "shell_heartbeatX10_response_ms": 50,
-                "mem_percent": 57.0,
-                "mem_used_byte": 102224,
-                "fs_percent": 8.1,
-                "fs_used_byte": 507904,
-                "shell_single_session_dt_ms": 15,
-                "shell_multi_session_dt_ms": 39
-            }
-        }
-    },
-    "2.9.7-0": {
-        "ESP32-PICO-D4": {
-            "LivingKitchen": {
-                "micropython_version": "v1.21.0 on 2023-10-06",
-                "modules": [
-                    "esp32",
-                    "rgbcct",
-                    "dimmer",
-                    "rgb",
-                    "cct",
-                    "dashboard_be",
-                    "system",
-                    "intercon",
-                    "task"
-                ],
-                "shell_heartbeatX10_response_ms": 31,
-                "mem_percent": 2.7,
-                "mem_used_byte": 111728,
-                "fs_percent": 24.0,
-                "fs_used_byte": 503808,
-                "web_landingpage_response_ms": 300,
-                "web_rest_response_ms": 50,
-                "shell_single_session_dt_ms": 22,
-                "shell_multi_session_dt_ms": 86
-            }
-        }
-    }
-}
-    return True, data
-
 
 def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_pdf):
     """Generate timeline visualizations for all metrics and save to a PDF."""
@@ -640,6 +509,7 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
     contributors = extradata.get("contributors")
     contributors_scores = contributors.get("scores")
     contributors_areas = contributors.get("areas")
+    system_metrics = extradata.get("system_metrics")
 
     # Extract core_refs data per file
     all_files = sorted(set(f for d in data for f in d["core_refs"].keys()))
@@ -678,7 +548,8 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
         # Plot 6: Commit Log (Table fitted to page height with text truncation)
         page_commit_log(pdf, meta_data)
 
-        sys_metrics_ok, sys_metrics_data = system_test_metrics_loader()
+        sys_metrics_data = system_metrics
+        sys_metrics_ok = isinstance(system_metrics, dict)
         if sys_metrics_ok:
             try:
                 visualize_device_metrics(pdf, sys_metrics_data)

@@ -159,7 +159,7 @@ class PageUI:
             if pin:
                 pin_obj = Pin(pin, Pin.IN, Pin.PULL_DOWN)
                 # [IRQ] - event type setup
-                pin_obj.irq(trigger=Pin.IRQ_RISING, handler=callback)
+                pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=callback)
 
         _set("js_right", lambda pin: self.control('next'))
         _set("js_left", lambda pin: self.control('prev'))

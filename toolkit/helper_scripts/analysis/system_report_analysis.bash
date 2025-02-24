@@ -68,6 +68,21 @@ function get_contributions {
     fi
 }
 
+function get_system_test_metrics {
+  # REPOROOT/micrOS/release_info/micrOS_ReleaseInfo/devices_system_metrics.json
+  METRICS_PATH="${SCRIPT_DIR}/../../../micrOS/release_info/micrOS_ReleaseInfo/devices_system_metrics.json"
+  if [ -e "$METRICS_PATH" ]
+  then
+    echo -e "COPY metrics to work analysis_workdir: $METRICS_PATH"
+    pushd "${SCRIPT_DIR}"
+    cp "$METRICS_PATH" "./analysis_workdir"
+    popd
+  else
+    echo -e "NO SYS METRICS WAS FOUND: $METRICS_PATH"
+  fi
+
+}
+
 function visualize {
     debug_print "Generate visualization pdf"
     pushd "${SCRIPT_DIR}"
@@ -94,7 +109,7 @@ fi
 # Data collection
 collect_sys_analysis_resources
 get_contributions
+get_system_test_metrics
 
 # Visualize data
 visualize
-

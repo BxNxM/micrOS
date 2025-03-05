@@ -218,7 +218,7 @@ class MicrOSDevTool(OTA, USB):
         table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
 
         html_tables = ""
-        for key, value in module_function_dict_html.items():
+        for key, value in dict(sorted(module_function_dict_html.items(), key=lambda item: item[0].lower())).items():
             anchor = key.replace(" ", "_")  # Replace spaces with underscores for a valid anchor
             html_tables += f'\n<br><br>\n<h2 id="{anchor}"><a href="#{anchor}">{key}</a></h2>\n'
             html_tables += json2html.json2html.convert(json=value,

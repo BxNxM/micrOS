@@ -217,8 +217,12 @@ class MicrOSDevTool(OTA, USB):
         import json2html
         table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
 
-        html_tables = ""
-        for key, value in dict(sorted(module_function_dict_html.items(), key=lambda item: item[0].lower())).items():
+        sorted_modules_w_data = dict(sorted(module_function_dict_html.items(), key=lambda item: item[0].lower()))
+        module_shortcuts = ' | '.join(
+            f'<a href="#{mod_name.replace(" ", "_")}">{mod_name}</a>'
+            for mod_name in sorted_modules_w_data)
+        html_tables = module_shortcuts + "<br><hr><br>"
+        for key, value in sorted_modules_w_data.items():
             anchor = key.replace(" ", "_")  # Replace spaces with underscores for a valid anchor
             html_tables += f'\n<br><br>\n<h2 id="{anchor}"><a href="#{anchor}">{key}</a></h2>\n'
             html_tables += json2html.json2html.convert(json=value,
@@ -272,6 +276,10 @@ Logical pin names aka pin map
   <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_esp32s2.py" target="_blank">esp32s2</a></li>
   <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_rp2.py" target="_blank">rp2 (experimental)</a></li>
 </ul>
+
+<h2>
+Built-in control modules for various peripheries.:
+</h2>
 
 """
         html_body_end = """</body>

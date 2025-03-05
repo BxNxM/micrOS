@@ -114,7 +114,7 @@ class Client:
             console_write("[Client] NoCon: response>dev/nul")
 
     def send(self, response):
-        # Implement in child class - synchronous send (all) method
+        # Optional - Implement in child class - synchronous send (all) method
         pass
 
     async def close(self):

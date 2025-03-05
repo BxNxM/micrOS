@@ -124,18 +124,18 @@ def sun(refresh=False):
     return Sun.TIME
 
 
-def setclock(year, month, mday, hour, min, sec):
+def setclock(year, month, mday, hour, minute, sec):
     """
     Set Localtime + RTC Clock manually
     :param year
     :param month
     :param mday
     :param hour
-    :param min
+    :param minute
     :param sec
     :return: localtime
     """
-    set_time(year, month, mday, hour, min, sec)
+    set_time(year, month, mday, hour, minute, sec)
     return localtime()
 
 
@@ -242,7 +242,7 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('info', 'TEXTBOX top', 'gclean', 'heartbeat', 'clock',
-                    'setclock year month mday hour min sec',
+                    'setclock year month mday hour minute sec',
                     'ntp', 'rssi', 'list_stations', 'pinmap key="dhtpin"/None', 'alarms clean=False',
                     'notifications enable=<None,True,False>',
                     'sun refresh=False', 'ifconfig', 'memory_usage',

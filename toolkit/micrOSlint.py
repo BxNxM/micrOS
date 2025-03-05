@@ -172,7 +172,7 @@ def core_dep_checker(categories, verbose=True):
 def load_module_checker(categories, verbose=True):
 
     def _is_allowed(_relation):
-        _allowed_whitelist = ['Common', 'microIO', 'Types']
+        _allowed_whitelist = ['Common', 'microIO', 'Types', 'urequests']
         _allowed = []
         for _allow in _relation:
             if _allow in _allowed_whitelist:
@@ -239,7 +239,7 @@ def _run_pylint(file_name):
 
 def run_pylint(categories, verbose=True, dry_run=False):
     # ERROR CONFIG: drop error if this is in pylint output
-    error_msg_core = ['syntax-error', 'undefined-variable', 'no-member']
+    error_msg_core = ['syntax-error', 'undefined-variable', 'bad-indentation']  # 'no-member' ?
     # BYPASS 'no-member' due to duty and sleep_ms micropython functions is drops false alarm, etc.
     error_msg_lm = ['syntax-error', 'undefined-variable']
 
@@ -467,7 +467,7 @@ def short_report(categories, states, verbose=True):
     print(f"load_module_checker:                load module dependency check (no core): {c_OK if lm_dep[0] else c_NOK} {'' if lm_dep[1] == 0 else f'{lm_dep[1]}{_vis(lm_dep_diff)} warning(s)'}")
     print(f"  core pylint score:                {core_pylint}{_pyl_vis(core_score_diff)}")
     print(f"load module pylint score:           {lm_pylint}{_pyl_vis(load_score_diff)}")
-    print(f"pylint resource check (syntax):     {c_OK if pylint_check[0] else f'{c_NOK}: {pylint_check[1]}' }")
+    print(f"pylint resource check (syntax?):     {c_OK if pylint_check[0] else f'{c_NOK}: {pylint_check[1]}' }")
 
     exitcode = sum([1 for k, v in states.items() if not v[0]])
     print(f"micrOSlint verdict: {c_OK if exitcode == 0 else c_NOK}")

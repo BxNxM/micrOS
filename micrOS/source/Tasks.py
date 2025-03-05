@@ -415,7 +415,7 @@ class Manager:
 #################################################################
 def exec_builtins(func):
     """
-    Module execution built-in commands and modifiers
+    [Decorator] Module execution built-in commands and modifiers
     - modules         - show active modules list
     - task kill ...   - task termination
            show ...   - task output dump

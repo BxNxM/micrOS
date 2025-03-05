@@ -33,6 +33,10 @@ class Notify:
         raise Exception("Subscribe error, Notify parent missing")
 
     @staticmethod
+    def send_msg(text, reply_to=None, chat_id=None):
+        raise NotImplementedError("Child class must implement send_msg method")
+
+    @staticmethod
     def message(text, reply_to=None, chat_id=None):
         """
         Send message to all subscribers - Notify agents

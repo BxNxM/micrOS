@@ -50,6 +50,7 @@ Access rest api over browser: `http://<nodename>.local`
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32-and-more)
 3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS/#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
+5. Built-in app modules: [link](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
 7. micrOS create custom Load Modules: [link](./APPLICATION_GUIDE.md)
@@ -342,7 +343,7 @@ LogicalPin lookup tables:
 - [raspberryPicoW](./micrOS/source/IO_rp2.py) - reset needed after ota update (webrepl limitation)
 - `IO_*.py` [etc.](./micrOS/source)
 
-> Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte steams -> `.mpy`
+> Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte streams -> `.mpy`
 
 ![MicrOStinyPicopinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
 

@@ -79,7 +79,6 @@ def __recovery_mode():
         reset()
 
 
-
 def __auto_restart_event():
     """
     Poll .if_mode value main loop in case of webrepl (background) mode:

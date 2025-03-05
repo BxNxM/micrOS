@@ -214,12 +214,18 @@ class MicrOSDevTool(OTA, USB):
         _url = hardcoded_manual["task"]["img"]
         hardcoded_manual['task']['img'] = f'<img src="{_url}" alt="tasks" height=150>'
         module_function_dict_html.update(hardcoded_manual)
-        module_function_json = json.dumps(module_function_dict_html, indent=4)
         import json2html
         table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
-        html_table = json2html.json2html.convert(json=module_function_json,
-                                                 table_attributes=table_attributes,
-                                                 clubbing=True, escape=False, encode=False)
+
+        html_tables = ""
+        for key, value in module_function_dict_html.items():
+            anchor = key.replace(" ", "_")  # Replace spaces with underscores for a valid anchor
+            html_tables += f'\n<br><br>\n<h2 id="{anchor}"><a href="#{anchor}">{key}</a></h2>\n'
+            html_tables += json2html.json2html.convert(json=value,
+                                             table_attributes=table_attributes,
+                                             clubbing=True,
+                                             escape=False,
+                                             encode=False)
 
         # http://corelangs.com/css/table/tablecolor.html
         # http://corelangs.com/css/table/tablecolor.html
@@ -271,7 +277,7 @@ Logical pin names aka pin map
         html_body_end = """</body>
 </html>"""
 
-        html_page = html_body_start + html_table + html_body_end
+        html_page = html_body_start + html_tables + html_body_end
         # Write html to file
         with open(static_help_html_path, 'w') as f:
             f.write(html_page)

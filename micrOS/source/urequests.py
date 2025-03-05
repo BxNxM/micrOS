@@ -116,7 +116,7 @@ def _parse_response(response):
 #          micropython HTTP request         #
 #############################################
 
-def request(method, url, data=None, json=None, headers=None, sock_size=256, jsonify=False):
+def request(method:str, url:str, data:str=None, json=None, headers:dict=None, sock_size=256, jsonify=False):
     """
     Micropython syncronous HTTP request function for REST API handling
     :param method: GET/POST
@@ -181,7 +181,7 @@ def request(method, url, data=None, json=None, headers=None, sock_size=256, json
 #       async micropython HTTP request      #
 #############################################
 
-async def arequest(method, url, data=None, json=None, headers=None, sock_size=256, jsonify=False):
+async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=None, sock_size=256, jsonify=False):
     """
     Micropython asynchronous HTTP request function for REST API handling
     :param method: GET/POST
@@ -239,14 +239,16 @@ async def arequest(method, url, data=None, json=None, headers=None, sock_size=25
 #      Implement http get/post functions    #
 #############################################
 
-def get(url, headers={}, sock_size=256, jsonify=False):
+def get(url:str, headers:dict=None, sock_size=256, jsonify=False):
     """
     GENERIC HTTP GET FUNCTION
     """
+    if headers is None:
+        headers = {}
     return request('GET', url, headers=headers, sock_size=sock_size, jsonify=jsonify)
 
 
-def post(url, data=None, json=None, headers={}, sock_size=256, jsonify=False):
+def post(url:str, data=None, json=None, headers:dict=None, sock_size=256, jsonify=False):
     """
     GENERIC HTTP POST FUNCTION
     :param data: string body (handle bare string as data for POST method)
@@ -255,14 +257,14 @@ def post(url, data=None, json=None, headers={}, sock_size=256, jsonify=False):
     return request('POST', url, data=data, json=json, headers=headers, sock_size=sock_size, jsonify=jsonify)
 
 
-async def aget(url, headers={}, sock_size=256, jsonify=False):
+async def aget(url:str, headers:dict=None, sock_size=256, jsonify=False):
     """
     GENERIC ASYNC HTTP GET FUNCTION
     """
     return await arequest('GET', url, headers=headers, sock_size=sock_size, jsonify=jsonify)
 
 
-async def apost(url, data=None, json=None, headers={}, sock_size=256, jsonify=False):
+async def apost(url, data=None, json=None, headers:dict=None, sock_size=256, jsonify=False):
     """
     GENERIC ASYNC HTTP POST FUNCTION
     :param data: string body (handle bare string as data for POST method)

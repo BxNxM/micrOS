@@ -24,17 +24,17 @@ class Sun:
     BOOTIME = None       # Initialize BOOTIME: Not SUN, but for system uptime
 
 
-def set_time(year, month, mday, hour, min, sec):
+def set_time(year, month, mday, hour, minute, sec):
     """
     Set Localtime + RTC Clock manually + update BOOTIME/uptime
         https://docs.micropython.org/en/latest/library/machine.RTC.html
     """
     # Make time from tuple to sec
-    time_sec = mktime((year, month, mday, hour, min, sec, 0, 0))
+    time_sec = mktime((year, month, mday, hour, minute, sec, 0, 0))
     # Set localtime
     localtime(time_sec)
     # Set RTC
-    RTC().datetime((year, month, mday, 0, hour, min, sec, 0))
+    RTC().datetime((year, month, mday, 0, hour, minute, sec, 0))
     # (re)set uptime when settime - normally at boot time
     if Sun.BOOTIME is None:
         Sun.BOOTIME = time()
@@ -95,19 +95,18 @@ def __sun_cache(mode):
     """
     if mode == 's':
         # SAVE CACHE
-        temp = {}
         try:
             with open('sun.pds', 'w') as f:
-                for k, v in Sun.TIME.items():
-                    temp[k] = tuple([str(t) for t in v])
-                f.write(';'.join([f'{k}:{"-".join(v)}' for k, v in temp.items()]))
+                cache = {k:tuple([str(t) for t in v]) for k, v in Sun.TIME.items()}
+                f.write(';'.join([f'{k}:{"-".join(v)}' for k, v in cache.items()]))
         except:
             errlog_add("[ERR] Cannot write sun cache")
         return
     try:
         # RESTORE CACHE
         with open('sun.pds', 'r') as f:
-            buff = {data.split(':')[0]: data.split(':')[1].split('-') for data in f.read().strip().split(';')}
+            buff = {data.split(':')[0]: data.split(':')[1].split('-')
+                    for data in f.read().strip().split(';')}
             for k, v in buff.items():
                 Sun.TIME[k] = tuple([int(e) for e in v])
     except:

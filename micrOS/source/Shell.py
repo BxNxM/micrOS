@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.9.8-0'
+    MICROS_VERSION = '2.9.9-0'
 
     def __init__(self):
         """
@@ -46,8 +46,8 @@ class Shell:
             errlog_add(f"[ERR] micrOS version export failed (config): {e}")
 
     async def a_send(self, msg):
-        """ Must be defined by parent class... """
-        pass
+        """ Must be defined by child class... """
+        raise NotImplementedError("Child class must implement a_send method")
 
     def reset(self):
         """Reset shell state"""

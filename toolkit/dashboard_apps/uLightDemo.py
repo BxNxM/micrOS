@@ -4,28 +4,23 @@ import os
 import sys
 import time
 MYPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(MYPATH))
-import socketClient
 sys.path.append(os.path.join(MYPATH, '../lib/'))
 from TerminalColors import Colors
 
-# FILL OUT
-DEVICE = 'node01'
+try:
+    from ._app_base import AppBase
+except:
+    from _app_base import AppBase
 
-
-def base_cmd():
-    return ['--dev', DEVICE]
-
+CLIENT = None
 
 def light_demo(modules, smooth=True, sample=10):
     verdict = [True, []]
     smooth_str = '[smooth]' if smooth else '[simple]'
 
-    if 'LM_rgb' in modules:
-        args = base_cmd() + [f'rgb random {smooth}'] * sample + ['rgb toggle False']
-        print(args)
+    if 'rgb' in modules:
         delta_t = time.time()
-        status_rgb, answer_rgb = socketClient.run(args)
+        status_rgb, answer_rgb =  CLIENT.run([f'rgb random {smooth}'] * sample + ['rgb toggle False'])
         delta_t = round((time.time() - delta_t) / sample, 2)
         if status_rgb:
             msg = f"{smooth_str} rgb module random color func: {Colors.OK}OK{Colors.NC} [{delta_t}sec]"
@@ -35,10 +30,9 @@ def light_demo(modules, smooth=True, sample=10):
             verdict[1].append(msg)
             verdict[0] &= False
 
-    if 'LM_cct' in modules:
-        args = base_cmd() + [f'cct random {smooth}'] * sample + ['cct toggle False']
+    if 'cct' in modules:
         delta_t = time.time()
-        status_cct, answer_cct = socketClient.run(args)
+        status_cct, answer_cct =  CLIENT.run([f'cct random {smooth}'] * sample + ['cct toggle False'])
         delta_t = round((time.time() - delta_t) / sample, 2)
         if status_cct:
             msg = f"{smooth_str} cct module random color func: {Colors.OK}OK{Colors.NC} [{delta_t}sec]"
@@ -48,10 +42,9 @@ def light_demo(modules, smooth=True, sample=10):
             verdict[1].append(msg)
             verdict[0] &= False
 
-    if 'LM_neopixel' in modules:
-        args = base_cmd() + [f'neopixel random {smooth}'] * sample + ['neopixel toggle False']
+    if 'neopixel' in modules:
         delta_t = time.time()
-        status_neo, answer_neo = socketClient.run(args)
+        status_neo, answer_neo = CLIENT.run([f'neopixel random {smooth}'] * sample + ['neopixel toggle False'])
         delta_t = round((time.time() - delta_t) / sample, 2)
         if status_neo:
             msg = f"{smooth_str} neopixel module random color func: {Colors.OK}OK{Colors.NC} [{delta_t}sec]"
@@ -63,19 +56,17 @@ def light_demo(modules, smooth=True, sample=10):
     return verdict
 
 
-def app(devfid=None):
+def app(devfid=None, pwd=None):
     """
     devfid: selected device input
         send command(s) over socket connection [socketClient.run(args)]
         list load module commands and send in single connection
     """
-    global DEVICE
-    if devfid is not None:
-        DEVICE = devfid
+    global CLIENT
+    CLIENT = AppBase(device=devfid, password=pwd)
 
     # Get loaded modules
-    args = base_cmd() + ['pacman module']
-    status, modules = socketClient.run(args)
+    status, modules = CLIENT.run(['modules'])
     print("status: {}\nanswer: {}".format(status, modules))
 
     if not status:

@@ -3,18 +3,15 @@
 import os
 import sys
 import time
+
 MYPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(MYPATH))
-import socketClient
 sys.path.append(os.path.join(MYPATH, '../lib/'))
 from TerminalColors import Colors
 
-# FILL OUT
-DEVICE = 'node01'
-
-
-def base_cmd():
-    return ['--dev', DEVICE]
+try:
+    from ._app_base import AppBase
+except:
+    from _app_base import AppBase
 
 
 def test():
@@ -68,22 +65,21 @@ def test():
     return status
 
 
-def app(devfid=None):
+def app(devfid=None, pwd=None):
     """
     devfid: selected device input
         send command(s) over socket connection [socketClient.run(args)]
     """
-    global DEVICE
-    if devfid is not None:
-        DEVICE = devfid
+    global CLIENT
+    CLIENT = AppBase(device=devfid, password=pwd)
+
     verdict = test()
     col = Colors.OK if verdict else Colors.ERR
     print("VERDICT: {}{}{}".format(col, verdict, Colors.NC))
 
 
 def send_cmd(cmd_list):
-    args = base_cmd() + cmd_list
-    status, answer = socketClient.run(args)
+    status, answer = CLIENT.run(cmd_list)
     col = Colors.OK if status else Colors.ERR
     print("CMDS: {}\n{}{}{}\n".format(cmd_list, col, answer, Colors.NC))
     return status

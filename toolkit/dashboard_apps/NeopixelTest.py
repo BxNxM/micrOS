@@ -5,19 +5,15 @@ import sys
 import time
 import random
 MYPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(MYPATH))
-import socketClient
-import time
 sys.path.append(os.path.join(MYPATH, '../lib/'))
 from TerminalColors import Colors
 
-# FILL OUT
-DEVICE = 'node01'
+try:
+    from ._app_base import AppBase
+except:
+    from _app_base import AppBase
 
-
-def base_cmd():
-    return ['--dev', DEVICE]
-
+CLIENT = None
 
 def test_random_colors(test_len=8, smooth=False):
     main_function = 'neopixel color'
@@ -31,12 +27,12 @@ def test_random_colors(test_len=8, smooth=False):
 
     # Generate command
     cmd_list_str = " <a> ".join(["{} {} {} {} {} >json".format(main_function, k[0], k[1], k[2], smooth) for k in color_list])
-    args = base_cmd() + [cmd_list_str]
+    args = [cmd_list_str]
     print("{} Generated command {} - multi message single connection single connection: {} r g b {}\n{}".format(Colors.HEADER, Colors.NC, main_function, smooth, args))
 
     start_t = time.time()
     # SEND MESSSAGE OVER micrOS client
-    status, answer = socketClient.run(args)
+    status, answer = CLIENT.run(args)
     delta_t = round((time.time() - start_t)/test_len, 1)
 
     #Evaluate last message
@@ -53,14 +49,14 @@ def test_random_colors(test_len=8, smooth=False):
 
 def test_toogle():
     main_function = 'neopixel toggle'
-    args_on = base_cmd() + [f'{main_function} True >json']
-    args_toggle = base_cmd() + [f'{main_function} >json']
+    args_on = [f'{main_function} True >json']
+    args_toggle = [f'{main_function} >json']
 
     # SEND MESSSAGE OVER micrOS client
-    status, answer = socketClient.run(args_on)
+    status, answer = CLIENT.run(args_on)
     if status and '"S": 1' in answer:
         # SEND MESSSAGE OVER micrOS client
-        status, answer = socketClient.run(args_toggle)
+        status, answer = CLIENT.run(args_toggle)
         if status and '"S": 0' in answer:
             return True, '{} works {}OK{}'.format(main_function, Colors.OK, Colors.NC)
     return False, '{} not works {}NOK{}: {}'.format(main_function, Colors.ERR, Colors.NC, answer)
@@ -68,24 +64,23 @@ def test_toogle():
 
 def test_brightness():
     main_function = 'neopixel brightness'
-    args_10 = base_cmd() + [f'{main_function} 10 >json']
-    args_50 = base_cmd() + [f'{main_function} 50 >json']
-    args_actual_br = base_cmd() + [f'{main_function} >json']
+    args_10 = [f'{main_function} 10 >json']
+    args_50 = [f'{main_function} 50 >json']
+    args_actual_br = [f'{main_function} >json']
 
-    status, answer = socketClient.run(args_10)
+    status, answer = CLIENT.run(args_10)
     if status:
-        status, answer = socketClient.run(args_50)
+        status, answer = CLIENT.run(args_50)
         if status:
-            status, answer = socketClient.run(args_actual_br)
+            status, answer = CLIENT.run(args_actual_br)
             if status and "50.0 %" in answer:
                 return True, "{} function {}OK{} (50.0 % == {})".format(main_function, Colors.OK, Colors.NC, answer)
     return False, "{} function {}NOK{} (50.0 % == {})".format(main_function, Colors.ERR, Colors.NC, answer)
 
 
-def app(devfid=None):
-    global DEVICE
-    if devfid is not None:
-        DEVICE = devfid
+def app(devfid=None, pwd=None):
+    global CLIENT
+    CLIENT = AppBase(device=devfid, password=pwd)
 
     test_pool = { 'Color change test': test_random_colors(test_len=8, smooth=False),
                   'Color smooth test': test_random_colors(test_len=4, smooth=True),

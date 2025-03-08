@@ -5,26 +5,16 @@ import sys
 import json
 MYPATH = os.path.dirname(os.path.abspath(__file__))
 BACKUP_DIR = os.path.join(MYPATH, "../user_data/node_config_archive/")
-sys.path.append(os.path.dirname(MYPATH))
-import socketClient
 sys.path.append(os.path.join(MYPATH, '../lib/'))
 from TerminalColors import Colors
 
-# FILL OUT
-DEVICE = 'node01'
-PASSWD = None
+try:
+    from ._app_base import AppBase
+except:
+    from _app_base import AppBase
 
-def base_cmd():
-    if PASSWD is None:
-        return ['--dev', DEVICE]
-    return ['--dev', DEVICE, '--password', PASSWD]
+CLIENT = None
 
-
-def run_command(cmd):
-    # EDIT YOUR COMMAND
-    args = base_cmd() + cmd
-    status, answer = socketClient.run(args)
-    return status, answer
 
 ###########################################################
 def _value_type(value):
@@ -42,15 +32,16 @@ def _value_type(value):
 
 
 def backup():
-    print(f"\tBackup name format: {DEVICE}-<tag>-node_config.json")
-    print(f"\t\t tag is optional (press simply enter): {DEVICE}-node_config.json")
-    backup_tag = input(f"\tFill backup tag for {DEVICE}: ").strip()
+    device = CLIENT.get_device()
+    print(f"\tBackup name format: {device}-<tag>-node_config.json")
+    print(f"\t\t tag is optional (press simply enter): {device}-node_config.json")
+    backup_tag = input(f"\tFill backup tag for {device}: ").strip()
     backup_tag = "" if len(backup_tag) == 0 else f"-{backup_tag}"
-    backup_name = f"{DEVICE}{backup_tag}-node_config.json"
+    backup_name = f"{device}{backup_tag}-node_config.json"
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     print(f"\tBackup path: {backup_path}")
 
-    status, answer = run_command(["conf", "dump"])
+    status, answer = CLIENT.run(["conf", "dump"])
     if status:
         configuration = {line.split(":")[0].strip(): _value_type(':'.join(line.split(":")[1:])) for line in answer.strip().split("\n") if ":" in line}
         with open(backup_path, 'w') as f:
@@ -61,7 +52,8 @@ def backup():
 
 
 def restore():
-    print(f"\tRestore backup for: {DEVICE}")
+    device = CLIENT.get_device()
+    print(f"\tRestore backup for: {device}")
     diff_config = {}
 
     # SELECT AND LOAD CONFIG BACKUP
@@ -81,7 +73,7 @@ def restore():
     print(f"BACKUP CONFIG DICT:\n{backup_dict}")
 
     # LOAD LIVE DEVICE CONFIG - create config diff
-    status, answer = run_command(["conf", "dump"])
+    status, answer = CLIENT.run(["conf", "dump"])
     if not status:
         return f"Cannot load live device config"
     live_configuration = {line.split(":")[0].strip(): _value_type(':'.join(line.split(":")[1:])) for line in answer.strip().split("\n") if ":" in line}
@@ -103,7 +95,7 @@ def restore():
         print(f"{Colors.WARN}SKIP restore...{Colors.NC}")
         return
 
-    print(f"PACKAGE CONFIG DIFFS...{DEVICE}")
+    print(f"PACKAGE CONFIG DIFFS...{device}")
     conf_cmd_list = ["conf"]
     for key, value in diff_config.items():
         print(f"\tADD {key} : {value}")
@@ -111,8 +103,8 @@ def restore():
     conf_cmd_list.append("reboot")
 
     # Restore
-    print(f"APPLY CONFIG DIFFS...{DEVICE}")
-    status, answer = run_command(conf_cmd_list)
+    print(f"APPLY CONFIG DIFFS...{device}")
+    status, answer = CLIENT.run(conf_cmd_list)
     if status:
         print(f"{Colors.OKGREEN}Backup was successfully restored:{Colors.NC} {backup_path}\nRebooting...")
     else:
@@ -144,15 +136,12 @@ def app(devfid=None, pwd=None):
         send command(s) over socket connection [socketClient.run(args)]
         list load module commands and send in single connection
     """
-    global DEVICE, PASSWD
-    if devfid is not None:
-        DEVICE = devfid
-    if pwd is not None:
-        PASSWD = pwd
+    global CLIENT
+    CLIENT = AppBase(device=devfid, password=pwd)
 
     print(f"{Colors.WARN}Backup & Restore management{Colors.NC}\n")
     while True:
-        print(f"{Colors.UNDERLINE}Operations on {DEVICE}{Colors.NC}")
+        print(f"{Colors.UNDERLINE}Operations on {CLIENT.get_device()}{Colors.NC}")
         print("\t[1]  Backup")
         print("\t[2]  Restore")
         print("\t[3]  Delete backups")

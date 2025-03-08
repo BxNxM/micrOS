@@ -2,28 +2,16 @@
 
 import os
 import sys
-import time
 MYPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(MYPATH))
-import socketClient
 sys.path.append(os.path.join(MYPATH, '../lib/'))
 from TerminalColors import Colors
 
-# FILL OUT
-DEVICE = 'node01'
-PASSWD = None
+try:
+    from ._app_base import AppBase
+except:
+    from _app_base import AppBase
 
-def base_cmd():
-    if PASSWD is None:
-        return ['--dev', DEVICE]
-    return ['--dev', DEVICE, '--password', PASSWD]
-
-def run_command(cmd):
-    # EDIT YOUR COMMAND
-    args = base_cmd() + cmd
-    status, answer = socketClient.run(args)
-    return status, answer
-
+CLIENT = None
 
 def app(devfid=None, pwd=None):
     """
@@ -31,13 +19,13 @@ def app(devfid=None, pwd=None):
         send command(s) over socket connection [socketClient.run(args)]
         list load module commands and send in single connection
     """
-    global DEVICE, PASSWD
-    if devfid is not None:
-        DEVICE = devfid
-    if pwd is not None:
-        PASSWD = pwd
+    global CLIENT
+    CLIENT = AppBase(device=devfid, password=pwd)
 
-    status, answer = run_command(['help', 'version'])
+    output = CLIENT.execute(['help', 'version'])
+    status = output[0]
+    result = output[1]
+    print(f"{Colors.WARN}[{status}]{Colors.NC} {result}")
 
 
 if __name__ == "__main__":

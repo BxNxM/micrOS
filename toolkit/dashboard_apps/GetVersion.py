@@ -4,31 +4,23 @@ import os
 import sys
 import time
 MYPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(MYPATH))
-import socketClient
 
-# FILL OUT
-DEVICE = 'node01'
-PASSWD = None
+try:
+    from ._app_base import AppBase
+except:
+    from _app_base import AppBase
 
-
-def base_cmd():
-    if PASSWD is None:
-        return ['--dev', DEVICE]
-    return ['--dev', DEVICE, '--password', PASSWD]
-
+CLIENT = None
 
 
 def app(devfid=None, pwd=None):
-    global DEVICE, PASSWD
-    if devfid is not None:
-        DEVICE = devfid
-    if pwd is not None:
-        PASSWD = pwd
+    global CLIENT
+    CLIENT = AppBase(device=devfid, password=pwd)
+
     # EDIT YOUR COMMAND
-    args = base_cmd() + ['version']
-    status, answer = socketClient.run(args)
-    print("[micrOS] {}: {}".format(DEVICE, answer).upper())
+    args = ['version']
+    status, answer = CLIENT.run(args)
+    print("[micrOS] {}: {}".format(CLIENT.get_device(), answer).upper())
 
 
 if __name__ == "__main__":

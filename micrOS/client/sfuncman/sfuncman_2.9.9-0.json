@@ -463,32 +463,32 @@
     },
     "espnow": {
         "add_peer": {
-            "doc": "No module named 'aioespnow'",
+            "doc": "\n    Add ESPNOW peer to known hosts\n    - It is needed before first send(...)\n    ",
             "param(s)": "peer"
         },
         "help": {
-            "doc": "No module named 'aioespnow'",
+            "doc": "\n    [beta] ESPNOW sender/receiver with LM execution\n    \n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/espnow.png?raw=true",
         "load": {
-            "doc": "No module named 'aioespnow'",
+            "doc": "\n    Initialize ESPNOW protocal\n    ",
             "param(s)": ""
         },
         "mac_address": {
-            "doc": "No module named 'aioespnow'",
+            "doc": "\n    Get ESPNOW compatible mac address\n    ",
             "param(s)": ""
         },
         "send": {
-            "doc": "No module named 'aioespnow'",
-            "param(s)": "peer msg='ping'"
+            "doc": "\n    Send message to peer (by mac address)\n    :param peer: mac address of espnow device\n    :param msg: message string/load module call\n    ",
+            "param(s)": "peer msg='modules'"
         },
         "start_server": {
-            "doc": "No module named 'aioespnow'",
+            "doc": "\n    Start ESPNOW server/listener\n    - this can receive espnow messages\n    - it includes Load Module execution logic (beta)\n    ",
             "param(s)": ""
         },
         "stats": {
-            "doc": "No module named 'aioespnow'",
+            "doc": "\n    Get ESPNOW stats\n    ",
             "param(s)": ""
         }
     },

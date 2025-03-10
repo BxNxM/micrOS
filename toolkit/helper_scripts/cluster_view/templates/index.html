@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Network Visualization</title>
+  <!-- Load vis.js from a CDN -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+  <style type="text/css">
+    #network {
+      width: 800px;
+      height: 600px;
+      border: 1px solid lightgray;
+      position: relative;
+    }
+    /* Floating details table */
+    #node-details {
+      position: absolute;
+      z-index: 10;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 10px;
+      display: none;
+      pointer-events: none; /* so it doesn't block mouse events */
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    table, th, td {
+      border: 1px solid #333;
+    }
+    th, td {
+      padding: 5px;
+      text-align: left;
+    }
+    /* Refresh button style */
+    #refresh-btn {
+      margin-bottom: 10px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+<h2>Network Visualization</h2>
+<!-- Refresh button -->
+<button id="refresh-btn">Refresh</button>
+<div id="network"></div>
+<!-- Floating details table (initially hidden) -->
+<div id="node-details">
+  <h3 style="margin: 0 0 5px 0; font-size: 14px;">Node Details</h3>
+  <table>
+    <tbody id="details-body">
+      <!-- Node details will be populated here -->
+    </tbody>
+  </table>
+</div>
+<script type="text/javascript">
+  // Create data sets from Flask-rendered JSON data
+  var nodesData = new vis.DataSet({{ nodes|tojson }});
+  var edgesData = new vis.DataSet({{ edges|tojson }});
+
+  // Create the network visualization
+  var container = document.getElementById('network');
+  var data = {
+    nodes: nodesData,
+    edges: edgesData
+  };
+  var options = {
+    interaction: { hover: true },
+    nodes: { shape: 'box' }
+  };
+  var network = new vis.Network(container, data, options);
+
+  var detailsDiv = document.getElementById('node-details');
+  var detailsBody = document.getElementById('details-body');
+
+  // Display node details on hover; format list values if needed.
+  network.on("hoverNode", function(params) {
+    var nodeId = params.node;
+    var node = nodesData.get(nodeId);
+    detailsBody.innerHTML = "";
+    for (var key in node) {
+      if (node.hasOwnProperty(key)) {
+        var value = node[key];
+        if (Array.isArray(value)) {
+          value = value.join(", ");
+        }
+        detailsBody.innerHTML += "<tr><th>" + key + "</th><td>" + value + "</td></tr>";
+      }
+    }
+    detailsDiv.style.display = "block";
+  });
+
+  // Hide details when not hovering over a node
+  network.on("blurNode", function() {
+    detailsDiv.style.display = "none";
+  });
+
+  // Move the floating details table with the cursor when visible
+  container.addEventListener('mousemove', function(event) {
+    if(detailsDiv.style.display === "block") {
+      detailsDiv.style.left = (event.pageX + 15) + "px";
+      detailsDiv.style.top = (event.pageY + 15) + "px";
+    }
+  });
+
+  // Refresh button: reloads the page
+  document.getElementById("refresh-btn").addEventListener("click", function() {
+    window.location.reload();
+  });
+</script>
+</body>
+</html>
+

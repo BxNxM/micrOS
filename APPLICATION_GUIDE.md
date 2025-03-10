@@ -297,7 +297,7 @@ def help(widgets=False):
 #### microIO.py
 
 ```python
-def bind_pin(tag, number):
+def bind_pin(tag, number=None):
     """
     Universal pin handler - assign+lock pin for a tag -> application
     :param tag: tag for application pin booking with built-in tag detection from IO_<device>.py

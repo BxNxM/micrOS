@@ -469,7 +469,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
     - (3) New intercon syntax - command level integration:                      [TODO]
     	- rgb toggle >>RingLight.local
     	- similar as: intercon sendcmd host="RingLight.local" cmd="rgb toggle"
-	- (4) Create multi level project structure (curret is flat fs)               [TODO] FS
+    - (4) Create multi level project structure (curret is flat fs)               [TODO] FS
 		- New micrOS FS structure:
 			- Note:
 				- On device (boot) micrOS Hooks.py/os_dir_fs_hook (check+correct)  [Phase1-FS:TODO]
@@ -483,6 +483,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- Shell.py (core)
 				- Web.py (core)
 				- Server.py (core)
+				- node_config,json (core config)
 				- etc... (core)
 
 			- module folder - mip complient: /lib

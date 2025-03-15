@@ -458,20 +458,55 @@ Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gatew
 
 ## FUTURE RELEASE PLANS
 
-Version **3.0.0-0**
+Version **3.0.0-0** `micrOS-Autonomous`
 
 ```
     Core:
-    - Async SSL/TLS integration (micropython 1.22+ required)         [DONE]
-        - urequest module async redesign for rest clients            [OK]
-            - LM_telegram (Notify) + server (listener - chatbot)     [OK]
-    - ESP-NOW (peer-to-peer communication) integration into InterCon [PoC]
-    - ??? New intercon syntax ???:
+    - (1) Async SSL/TLS integration (micropython 1.22+ required)                [DONE]
+        - urequest module async redesign for rest clients                       [OK]
+            - LM_telegram (Notify) + server (listener - chatbot)                [OK]
+    - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [PoC][TODO]
+    - (3) New intercon syntax - command level integration:                      [TODO]
     	- rgb toggle >>RingLight.local
     	- similar as: intercon sendcmd host="RingLight.local" cmd="rgb toggle"
+	- (4) Create multi level project structure (curret is flat fs)               [TODO] FS
+		- New micrOS FS structure:
+			- Note:
+				- On device (boot) micrOS Hooks.py/os_dir_fs_hook (check+correct)  [Phase1-FS:TODO]
+				- DevToolKit USB & OTA feature adaptation                          [Phase2-FS:TODO]
+					- os_dir_fs_handler (usb+webrepl) features
+
+			- root fs (stays untouched (approx.: 24)): /
+				- micrOS.py (core)
+				- Config.py (core)
+				- Tasks.py (core)
+				- Shell.py (core)
+				- Web.py (core)
+				- Server.py (core)
+				- etc... (core)
+
+			- module folder - mip complient: /lib
+				- LM_* (approx.: 54)
+				- IO_* (approx.: 5)
+				- *.py/.mpy (driver)
+				- Dynamic/Runtime (approx.: 0-8):
+					- *.pds (LM app cache - persistent data storage)
+					- *.dat (Common datalogger output)
+
+			- web folder: /web
+				- *.html
+				- *.js
+				- *.css
+
+		- (5) Proper mip installer support (/lib)                                [TODO]
+			- Note: Autonomous package management over wifi (github) 
+				- pacman download
+				- pacman ls
+				- pacman dirtree
+				- pacman ...
 ```
 
-Version **3.1.0-0**
+Version **3.1.0-0** `micrOS-PowerSec`
 
 ```
     Core:
@@ -480,9 +515,13 @@ Version **3.1.0-0**
     - Low power mode with ESPNOW + (AP mode?)
     	- Remote controller / Sensor UseCase
     	- --- client mode (fyi: normally micrOS operates in server mode) 
+    - Intercon-Wire (?)
+    	- Idea of wired message communication protocol same as Intercon-Shell/Intercon-espnow
+    	- Possible HW protocols: i2c / onewire / uart BUT it should support bidirectional message transfers
+    	- Goal: CoProcessor easy integration feature - Arduino env support 
 ```
 
-Version **4.0.0-0**
+Version **4.0.0-0** `micrOS-BleLTS`
 
 ```
     Core:
@@ -490,6 +529,7 @@ Version **4.0.0-0**
         - Network
             - wifi (defualt, current interfaces)
             - Study of BLE (Shell)
+            - Com. (wifi/now/ble...lora?/etc?.) as plugin architecture (?)
     - Low power mode (with BLE) and soft-sleep / deep-sleep
 ```
 

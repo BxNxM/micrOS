@@ -507,7 +507,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- pacman ...
 ```
 
-Version **3.1.0-0** `micrOS-PowerSec`
+Version **3.1.0-0** `micrOS-SecurePower`
 
 ```
     Core:
@@ -522,7 +522,7 @@ Version **3.1.0-0** `micrOS-PowerSec`
     	- Goal: CoProcessor easy integration feature - Arduino env support 
 ```
 
-Version **4.0.0-0** `micrOS-BleLTS`
+Version **4.0.0-0** `micrOS-???`
 
 ```
     Core:

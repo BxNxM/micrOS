@@ -12,6 +12,7 @@ try:
     from .lib.TerminalColors import Colors
     from .lib.SafeInput import input_with_timeout
     from .lib.file_extensions import check_all_extensions
+    from .lib.Repository import git_clone_archive, git_clone
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from DevEnvCompile import Compile
@@ -19,8 +20,10 @@ except Exception as e:
     from lib.TerminalColors import Colors
     from lib.SafeInput import input_with_timeout
     from lib.file_extensions import check_all_extensions
-    sys.path.append(MYPATH)
-    import socketClient
+    from lib.Repository import git_clone_archive, git_clone
+
+sys.path.append(MYPATH)
+import socketClient
 
 
 #################################################
@@ -52,15 +55,17 @@ class OTA(Compile):
             # Change workdir
             workdir_handler = LocalMachine.SimplePopPushd()
             workdir_handler.pushd(os.path.dirname(os.path.dirname(webrepl_path)))
+            webrepl_url = 'https://github.com/micropython/webrepl.git'
 
-            command = 'git clone {url} {name}'.format(
-                name='webrepl',
-                url='https://github.com/micropython/webrepl.git')
-            self.console("Clone webrepl repo: {}".format(command))
+            self.console(f"Clone webrepl repo: {webrepl_url}")
             if self.dry_run:
-                exitcode, stdout, stderr = 0, 'dry-run', ''
+                exitcode, stdout, stderr = 0, "", ""
             else:
-                exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+                # Git clone with command line tool
+                exitcode, stdout, stderr = git_clone(url=webrepl_url)
+                if exitcode != 0:
+                    # Git clone archive - without git
+                    exitcode, stdout, stderr = git_clone_archive(url=webrepl_url)
 
             # Restore workdir
             workdir_handler.popd()
@@ -156,7 +161,6 @@ class OTA(Compile):
     def update_with_webrepl(self, force=False, device=None, lm_only=False, loader_update=False, ota_password='ADmin123'):
         """
         OTA UPDATE via webrepl
-            git clone https://github.com/micropython/webrepl.git
             info: https://techoverflow.net/2020/02/22/how-to-upload-files-to-micropython-using-webrepl-using-webrepl_cli-py/
             ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
         """

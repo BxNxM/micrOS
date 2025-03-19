@@ -4,6 +4,11 @@ from Notify import Notify
 from Config import cfgget
 from Common import micro_task, syslog, console_write
 from LM_system import ifconfig
+from utime import localtime
+
+def _timestamp():
+    _time = [str(k) for k in localtime()[3:6]]
+    return ':'.join(_time)
 
 
 class Telegram(Notify):
@@ -106,12 +111,12 @@ class Telegram(Notify):
         Update known chat_id-s and cache them
         - return active chat_id frm resp_json
         """
-        console_write("[NTFY GET] update chatIDs")
         _cid = None
         if resp_json.get("ok", None) and len(resp_json["result"]) > 0:
             _cid = resp_json["result"][-1]["message"]["chat"]["id"]
             # LIMIT Telegram._CHAT_IDS NOTIFICATION CACHE TO 3 IDs
-            if len(Telegram._CHAT_IDS) < 4:
+            if len(Telegram._CHAT_IDS) < 4 and _cid not in Telegram._CHAT_IDS:
+                console_write("[NTFY GET] update chatIDs")
                 _ids = len(Telegram._CHAT_IDS)
                 Telegram._CHAT_IDS.add(_cid)
                 if len(Telegram._CHAT_IDS) - _ids > 0:  # optimized save (slow storage access)
@@ -135,7 +140,7 @@ class Telegram(Notify):
             return None
         response = {'sender': None, 'text': None, 'm_id': -1, 'c_id': None}
         url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram._API_PARAMS}"
-        console_write(f"\t1/2[GET] request: {url}")
+        console_write(f"\t[GET] request: {url}")
 
         _, resp_json = urequests.get(url, jsonify=True, sock_size=128)
 
@@ -145,7 +150,7 @@ class Telegram(Notify):
             response['sender'] = f"{resp['chat']['first_name']}{resp['chat']['last_name']}" if resp['chat'].get(
                 'username', None) is None else resp['chat']['username']
             response['text'], response['m_id'] = resp['text'], resp['message_id']
-        console_write(f"\t2/2[GET] response: {response}")
+        console_write(f"\t\t[GET] response: {response}")
         return response
 
     @staticmethod
@@ -160,7 +165,7 @@ class Telegram(Notify):
             return None
         response = {'sender': None, 'text': None, 'm_id': -1, 'c_id': None}
         url = f"https://api.telegram.org/bot{bot_token}/getUpdates{Telegram._API_PARAMS}"
-        console_write(f"\t1/2[GET] request: {url}")
+        console_write(f"\t[aGET] request: {url}")
 
         _, resp_json = await urequests.aget(url, jsonify=True, sock_size=128)
 
@@ -170,7 +175,7 @@ class Telegram(Notify):
             response['sender'] = f"{resp['chat']['first_name']}{resp['chat']['last_name']}" if resp['chat'].get(
                 'username', None) is None else resp['chat']['username']
             response['text'], response['m_id'] = resp['text'], resp['message_id']
-        console_write(f"\t2/2[GET] response: {response}")
+        console_write(f"\t\t[aGET] response: {response}")
         return response
 
     @staticmethod
@@ -183,14 +188,14 @@ class Telegram(Notify):
         console_write("[NTFY] EVAL sequence")
         verdict = None
 
-        def lm_execute(cmd_args):
+        def _lm_execute(cmd_args):
             nonlocal verdict, m_id
             access, output = Telegram.lm_execute(cmd_args)
             if access:
-                verdict = f'[UP] Exec: {" ".join(cmd_args[0])}'
+                verdict = f'{_timestamp()} [UP] Exec: {" ".join(cmd_args[0])}'
                 Telegram.send_msg(output, reply_to=m_id)
             else:
-                verdict = f'[UP] NoAccess: {cmd_args[0]}'
+                verdict = f'{_timestamp()} [UP] NoAccess: {cmd_args[0]}'
                 Telegram._IN_MSG_ID = m_id
 
         # -------------------------- FUNCTION MAIN -------------------------- #
@@ -211,12 +216,12 @@ class Telegram(Notify):
                 cmd_lm = msg_in.strip().split()[1:]
                 # [Compare] cmd selected device param with DEVFID (device/prompt name)
                 if cmd_lm[0] in Telegram._DEVFID:
-                    lm_execute(cmd_lm[1:])
+                    _lm_execute(cmd_lm[1:])
                 else:
-                    verdict = f'[UP] NoSelected: {cmd_lm[0]}'
+                    verdict = f'{_timestamp()} [UP] NoSelected: {cmd_lm[0]}'
             elif msg_in.startswith('/cmd'):
                 cmd_lm = msg_in.strip().split()[1:]
-                lm_execute(cmd_lm)
+                _lm_execute(cmd_lm)
             elif msg_in.startswith('/notify'):
                 param = msg_in.strip().split()[1:]
                 if len(param) > 0:
@@ -226,8 +231,7 @@ class Telegram(Notify):
                 # Send is still synchronous (OK)
                 Telegram.send_msg(verdict, reply_to=m_id)
         else:
-            verdict = "[UP] NoExec"
-        console_write(f"\tBOT: {verdict}")
+            verdict = f"{_timestamp()} [UP] NoExec"
         return verdict
 
     @staticmethod
@@ -241,11 +245,12 @@ class Telegram(Notify):
         period = period if period > 0 else 1
         period_ms = period * 1000
         with micro_task(tag=tag) as my_task:
-            my_task.out = "[UP] Running"
+            my_task.out = f"{_timestamp()} [UP] Running"
             while True:
                 # Normal task period
                 await my_task.feed(sleep_ms=period_ms)
                 try:
+                    # await asyncio.wait_for(Telegram.receive_eval(), 5)    # 5 sec timeout???
                     v = await Telegram.receive_eval()
                     my_task.out = "Missing bot token" if v is None else f"{v} ({period}s)"
                     cancel_cnt = 0
@@ -254,7 +259,7 @@ class Telegram(Notify):
                     # Auto scale - blocking nature - in case of serial failures (5) - hibernate task (increase async sleep)
                     cancel_cnt += 1
                     if cancel_cnt > 5:
-                        my_task.out = f"[DOWN] {e} (wait 1min)"
+                        my_task.out = f"{_timestamp()} [DOWN] {e} (wait 1min)"
                         cancel_cnt = 5
                         # SLOW DOWN - hibernate task
                         await my_task.feed(sleep_ms=60_000)

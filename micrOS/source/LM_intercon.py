@@ -4,6 +4,7 @@ from Common import syslog
 
 def sendcmd(*args, **kwargs):
     """
+    [!!!] OBSOLETE - NEW SYNTAX: system top >>node01.local
     Implements send command function towards micrOS devices
         example: sendcmd "hello" host="IP/hostname.local") OR sendcmd host="IP/hostname.local" cmd="system rssi")
     :param host[0]: host IP or Hostname
@@ -34,6 +35,7 @@ def sendcmd(*args, **kwargs):
 
 def addr_cache():
     """
+    [!!!] OBSOLETE -> new command: system hosts
     Dump intercon connection cache
     :return dict: device-ip pairs
     """

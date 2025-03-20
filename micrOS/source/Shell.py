@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.9.9-1'
+    MICROS_VERSION = '2.10.0-0'
 
     def __init__(self):
         """
@@ -167,12 +167,13 @@ class Shell:
             await self.a_send("    key        - Get value")
             await self.a_send("    key value  - Set value")
             await self.a_send("  noconf     - Exit conf mode")
-            await self.a_send("[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]")
+            await self.a_send("[TASK] postfix: ...&x - one-time, ...&&x - periodic, x: wait ms [x min: 20ms]")
             await self.a_send("  task list         - list tasks with <tag>s")
             await self.a_send("  task kill <tag>   - stop task")
             await self.a_send("  task show <tag>   - show task output")
             await self.a_send("[EXEC] Command mode (LMs):")
-            await self.a_send("   help lm  - list ALL LoadModules")
+            await self.a_send("  ...>>node01.local  - INTERCON postfix, execute command on remote device")
+            await self.a_send("  help lm            - list ALL LoadModules")
             if "lm" in str(msg_list):
                 return await Shell._show_lm_funcs(msg_obj=self.a_send)
             return await Shell._show_lm_funcs(msg_obj=self.a_send, active_only=True)

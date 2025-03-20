@@ -449,11 +449,13 @@ pin&nbsp;map:&nbsp;i2s_sck,&nbsp;i2s_ws,&nbsp;i2s_sd</td></tr></table></td></tr>
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/i2s_mic.png?raw=true" alt="i2s_mic" height=150></td></tr></table>
 <br><br>
 <h2 id="intercon"><a href="#intercon">intercon</a></h2>
-<table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>sendcmd</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>*args **kwargs</td></tr><tr><th>doc</th><td>Implements&nbsp;send&nbsp;command&nbsp;function&nbsp;towards&nbsp;micrOS&nbsp;devices<br>
+<table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>sendcmd</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>*args **kwargs</td></tr><tr><th>doc</th><td>[!!!]&nbsp;OBSOLETE&nbsp;-&nbsp;NEW&nbsp;SYNTAX:&nbsp;system&nbsp;top&nbsp;>>node01.local<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Implements&nbsp;send&nbsp;command&nbsp;function&nbsp;towards&nbsp;micrOS&nbsp;devices<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;example:&nbsp;sendcmd&nbsp;"hello"&nbsp;host="IP/hostname.local")&nbsp;OR&nbsp;sendcmd&nbsp;host="IP/hostname.local"&nbsp;cmd="system&nbsp;rssi")<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;host[0]:&nbsp;host&nbsp;IP&nbsp;or&nbsp;Hostname<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cmd[1]:&nbsp;command&nbsp;-&nbsp;module&nbsp;func&nbsp;arg(s)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;reply</td></tr></table></td></tr><tr><th>addr_cache</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Dump&nbsp;intercon&nbsp;connection&nbsp;cache<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;reply</td></tr></table></td></tr><tr><th>addr_cache</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[!!!]&nbsp;OBSOLETE&nbsp;->&nbsp;new&nbsp;command:&nbsp;system&nbsp;hosts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Dump&nbsp;intercon&nbsp;connection&nbsp;cache<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;device-ip&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
@@ -1172,9 +1174,9 @@ pin&nbsp;map:&nbsp;switch_1,&nbsp;switch_2,&nbsp;switch_3,&nbsp;switch_4</td></t
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;keys&nbsp;str:&nbsp;logical&nbsp;pin&nbsp;name&nbsp;or&nbsp;names&nbsp;to&nbsp;resolve<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;key&nbsp;map<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
-pin&nbsp;map:&nbsp;map,&nbsp;booked,&nbsp;custom,&nbsp;search</td></tr></table></td></tr><tr><th>alarms</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>clean=False</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>ifconfig</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;network&nbsp;ifconfig</td></tr></table></td></tr><tr><th>urequest_hosts</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Debug&nbsp;function&nbsp;for&nbsp;urequests&nbsp;address&nbsp;caching<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;returns&nbsp;all&nbsp;known&nbsp;http(s)&nbsp;host&nbsp;addresses<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;cache&nbsp;only&nbsp;in&nbsp;memory</td></tr></table></td></tr><tr><th>notifications</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>enable=None</td></tr><tr><th>doc</th><td>Global&nbsp;notifications&nbsp;control&nbsp;for&nbsp;micrOS<br>
+pin&nbsp;map:&nbsp;map,&nbsp;booked,&nbsp;custom,&nbsp;search</td></tr></table></td></tr><tr><th>alarms</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>clean=False</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>ifconfig</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Show&nbsp;network&nbsp;ifconfig</td></tr></table></td></tr><tr><th>hosts</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Dump&nbsp;cached&nbsp;hosts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;urequests&nbsp;(only&nbsp;memory&nbsp;cache)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;intercon&nbsp;connection&nbsp;cache</td></tr></table></td></tr><tr><th>notifications</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>enable=None</td></tr><tr><th>doc</th><td>Global&nbsp;notifications&nbsp;control&nbsp;for&nbsp;micrOS<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;enable:&nbsp;True:&nbsp;Enable&nbsp;notifications&nbsp;/&nbsp;False:&nbsp;Disable&nbsp;notifications<br>
 &nbsp;&nbsp;&nbsp;&nbsp;return:&nbsp;state&nbsp;verdict</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>

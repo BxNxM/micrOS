@@ -199,12 +199,9 @@ class MagicTask(TaskBase):
         - self.__inloop: lm call type - one-shot (False) / looped (True)
         - self.__msg_buf: lm msg object redirect to variable - store lm output
         """
-        jsonify = self.__callback[-1] == '>json'
-        if jsonify:
-            self.__callback = self.__callback[:-1]
         while True:
             await self.feed(self.__sleep)
-            state, self.out = _exec_lm_core(self.__callback, jsonify)
+            state, self.out = _exec_lm_core(self.__callback)
             if not state or not self.__inloop:
                 break
         self.task_gc()    # Task pool cleanup
@@ -227,6 +224,7 @@ class Manager:
     __slots__ = ['_initialized', 'idle_counter']
     INSTANCE = None                      # Manager object
     LOAD = 0                             # CPU overload measure
+    INTERCON = None                      # Dynamic ref. for interconnect calls
 
     def __new__(cls):
         """
@@ -419,19 +417,34 @@ def exec_builtins(func):
     - modules         - show active modules list
     - task kill ...   - task termination
            show ...   - task output dump
-    -  ... >json      - postfix to "jsonize" the output
+    -  ... >json      - postfix to jsonify the output
     """
-    def wrapper(arg_list, jsonify=None):
+    def wrapper(arg_list:list, jsonify=None):
         # Ensure the parameter is a list of strings
         if isinstance(arg_list, list) and arg_list:
-            # JSONIFY: [1] >json in arg_list or [2] jsonify True/False
-            json_flag = arg_list[-1] == '>json'
-            if json_flag:
-                arg_list = arg_list[:-1]
+            # Postfix operator handling
+            # ... >json               - command output format option
+            # ... >>node01.local      - intercon: command execution on remote device by hostname/IP address
+            arg_list, json_flag = (arg_list[:-1], True) if arg_list[-1] == '>json' else (arg_list, False)
+            arg_list, intercon_target = (arg_list[:-1], arg_list[-1].replace(">>", "")) if arg_list[-1].startswith('>>') else (arg_list, None)
             json_flag = jsonify if isinstance(jsonify, bool) else json_flag
+
+            # INTERCONNECT
+            if intercon_target:
+                if Manager.INTERCON is None:
+                    from InterConnect import send_cmd
+                    Manager.INTERCON = send_cmd
+                try:
+                    out = Manager.INTERCON(host=intercon_target, cmd=' '.join(arg_list))
+                except Exception as e:
+                    out = []
+                    errlog_add(f"[ERR] Intercon: {e}")
+                return True, out
+
             # MODULES
             if arg_list[0] == 'modules':
                 return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_'))) + ['task']
+
             # Handle task manipulation commands: list, kill, show - return True -> Command handled
             if 'task' == arg_list[0]:
                 arg_len = len(arg_list)
@@ -448,13 +461,13 @@ def exec_builtins(func):
                     if 'show' == arg_list[1]:
                         return True, Manager.show(tag=arg_list[2])
                 return True, "Invalid task cmd! Help: task list / kill <taskID> / show <taskID>"
+
             # Call the decorated function with the additional flag
             return func(arg_list, json_flag)
     return wrapper
 
 
-@exec_builtins
-def lm_exec(arg_list, jsonify):
+def lm_exec(arg_list, jsonify=None):
     """
     Main LM executor function with
     - async (background)
@@ -489,6 +502,7 @@ def lm_exec(arg_list, jsonify):
     return state, out
 
 
+@exec_builtins
 def _exec_lm_core(cmd_list, jsonify):
     """
     [CORE] Single command executor: MODULE.FUNCTION...
@@ -535,11 +549,12 @@ def _exec_lm_core(cmd_list, jsonify):
             # ------------ LM output format: dict(jsonify) / str(raw) ------------- #
             # Handle LM output data
             if isinstance(lm_output, dict):
-                # json True: output->json else Format dict output "human readable"
+                # jsonify (True) json output, (False) default, "human readable" output)
                 lm_output = dumps(lm_output) if jsonify else '\n'.join(
                     [f" {key}: {value}" for key, value in lm_output.items()])
             if lm_func == 'help':
-                # Special case for help command: json True: output->json else Format dict output "human readable"
+                # Special case:
+                #   jsonify (True) json output, (False) default, "human readable" formatted output)
                 lm_output = dumps(lm_output) if jsonify else '\n'.join([f" {out}," for out in lm_output])
             # Return LM exec result
             return True, str(lm_output)

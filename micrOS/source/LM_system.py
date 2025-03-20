@@ -212,14 +212,15 @@ def ifconfig():
     return network_config()
 
 
-def urequest_hosts():
+def hosts():
     """
-    Debug function for urequests address caching
-    - returns all known http(s) host addresses
-    - cache only in memory
+    Dump cached hosts
+    - urequests (only memory cache)
+    - intercon connection cache
     """
     from urequests import host_cache
-    return host_cache()
+    from InterConnect import host_cache as ihost_cache
+    return {"urequests": host_cache(), "intercon":  ihost_cache()}
 
 
 def notifications(enable=None):
@@ -246,4 +247,4 @@ def help(widgets=False):
                     'ntp', 'rssi', 'list_stations', 'pinmap key="dhtpin"/None', 'alarms clean=False',
                     'notifications enable=<None,True,False>',
                     'sun refresh=False', 'ifconfig', 'memory_usage',
-                    'disk_usage', 'urequest_hosts'), widgets=widgets)
+                    'disk_usage', 'hosts'), widgets=widgets)

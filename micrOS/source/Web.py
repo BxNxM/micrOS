@@ -102,8 +102,9 @@ class WebEngine:
         cmd = url.replace('/rest', '')
         if len(cmd) > 1:
             # REST sub-parameter handling (rest commands)
-            cmd = (cmd.replace('/', ' ').replace('%22', '"').replace('%E2%80%9C', '"')
-                   .replace('%E2%80%9D', '"').replace('-', ' ').strip().split())
+            cmd = (cmd.replace('/', ' ').replace('-', ' ').replace("%3E", ">")
+                   .replace('%22', '"').replace('%E2%80%9C', '"').replace('%E2%80%9D', '"')
+                   .strip().split())
             # EXECUTE COMMAND - LoadModule
             if WebEngine.AUTH:
                 state, out = lm_exec(cmd, jsonify=True) if lm_is_loaded(cmd[0]) else (True, 'Auth:Protected')

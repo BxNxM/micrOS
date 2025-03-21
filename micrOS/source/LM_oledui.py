@@ -4,13 +4,8 @@ from Types import resolve
 # Core modules
 from Config import cfgget
 from Time import uptime
-
 # Load Modules
-from LM_system import top, memory_usage, ifconfig, rssi as sta_rssi, list_stations
-try:
-    import LM_intercon as InterCon
-except:
-    InterCon = None             # Optional function handling
+from LM_system import top, memory_usage, ifconfig, rssi as sta_rssi, list_stations, hosts
 try:
     from LM_esp32 import temp as cpu_temp
 except Exception as e:
@@ -785,10 +780,13 @@ class PageUI:
             # Check open host connection
             try:
                 # Send CMD to other device & show result
-                data_meta = InterCon.send_cmd(host, cmd)
-                self._cmd_task_tag = data_meta['tag']
-                if "Task is Busy" in data_meta['verdict'] and not run:
-                    self.app_frame.press_output = data_meta['verdict']     # Otherwise the task start output not relevant on UI
+                state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True, skip_check=True)
+                if state:
+                    self._cmd_task_tag = data_meta['tag']
+                    if "Task is Busy" in data_meta['verdict'] and not run:
+                        self.app_frame.press_output = data_meta['verdict']     # Otherwise the task start output not relevant on UI
+                else:
+                    self.app_frame.press_output = f"Error: {data_meta}"
             except Exception as e:
                 self.app_frame.press_output = str(e)
 
@@ -803,7 +801,7 @@ class PageUI:
                     self._cmd_task_tag = None
             PageUI.write_lines(self.app_frame.press_output, display, x, y + 20, line_limit=2)
 
-        PageUI.write_lines(f"{host.split(".")[0]}:{cmd}", display, x, y, line_limit=2)
+        PageUI.write_lines(f"{host.split(".")[0]}:{' '.join(cmd)}", display, x, y, line_limit=2)
         if run:
             if self._cmd_task_tag is None:
                 _execute(display, w, h, x, y)
@@ -829,14 +827,13 @@ def _system_page(display, w, h, x, y):
     return True
 
 def _intercon_nodes_page(display, w, h, x, y):
-    if InterCon is None:
-        return False
     line_limit = 3
     line_start = y+5
     line_cnt = 1
     display.text("InterCon cache", x, line_start)
-    if sum([1 for _ in InterCon.host_cache()]) > 0:
-        for key, val in InterCon.host_cache().items():
+    cache = hosts()["intercon"]
+    if sum([1 for _ in cache]) > 0:
+        for key, val in cache.items():
             key = key.split('.')[0]
             val = '.'.join(val.split('.')[-2:])
             display.text(f" {val} {key}", x, line_start + (line_cnt * 10))
@@ -934,7 +931,7 @@ def intercon_genpage(cmd=None, run=False):
     """
     raw = cmd.split()
     host = raw[0]
-    cmd = ' '.join(raw[1:])
+    cmd = raw[1:]
     try:
         # Create page for intercon command
         PageUI.INSTANCE.add_page(lambda display, w, h, x, y: PageUI.INSTANCE.intercon_exec_page(host, cmd, run, display, w, h, x, y))

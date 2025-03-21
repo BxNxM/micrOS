@@ -1,6 +1,6 @@
 from socket import getaddrinfo, SOCK_STREAM
 from re import compile
-import uasyncio as asyncio
+from uasyncio import open_connection
 from Debug import errlog_add
 from Config import cfgget
 from Server import Server
@@ -22,7 +22,7 @@ class InterCon:
         pattern = compile(r'^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$')
         return bool(pattern.match(str_in))
 
-    async def send_cmd(self, host, cmd):
+    async def send_cmd(self, host:str, cmd:list):
         """
         Async Main method to implement device-device communication with
         - dhcp host resolve and IP caching
@@ -50,7 +50,7 @@ class InterCon:
         if InterCon.validate_ipv4(host):
             try:
                 # Create socket object
-                self.reader, self.writer = await asyncio.open_connection(host, InterCon.PORT)
+                self.reader, self.writer = await open_connection(host, InterCon.PORT)
                 # Send command over TCP/IP
                 output = await self.__run_command(cmd, hostname)
             except OSError as e:
@@ -72,14 +72,13 @@ class InterCon:
             errlog_add(f"[ERR][intercon] Invalid host: {host}")
         return ''
 
-    async def __run_command(self, cmd, hostname):
+    async def __run_command(self, cmd:list, hostname:str):
         """
         Implements receive data on open connection, command query and result collection
         :param cmd: command string to server socket shell
         :param hostname: hostname for prompt checking
         Return None here will trigger retry mechanism... + deletes cached IP
         """
-        cmd = str.encode(cmd)
         data, prompt = await self.__receive_data()
         if "Connection is busy. Bye!" in prompt:
             return None
@@ -87,7 +86,7 @@ class InterCon:
         if hostname is None or prompt is None or str(prompt).replace('$', '').strip() == str(hostname).split('.')[0]:
             # Run command on validated device
             # TODO: Handle multiple cmd as input, separated by ; (????)
-            self.writer.write(cmd)
+            self.writer.write(str.encode(' '.join(cmd)))
             await self.writer.drain()
             data, _ = await self.__receive_data(prompt=prompt)
             if data == '\0':
@@ -141,7 +140,7 @@ class InterCon:
         return data, prompt
 
 
-async def _send_cmd(host, cmd, com_obj):
+async def _send_cmd(host:str, cmd:list, com_obj):
     """
     Async send command wrapper for further async task integration and sync send_cmd usage (main)
     :param host: hostname / IP address
@@ -154,12 +153,12 @@ async def _send_cmd(host, cmd, com_obj):
             out = await com_obj.send_cmd(host, cmd)     # Send CMD
             if out is not None:                         # Retry mechanism
                 break
-            await asyncio.sleep_ms(100)                 # Retry mechanism
+            await com_obj.task.feed(sleep_ms=100)       # Retry mechanism
         com_obj.task.out = '' if out is None else out
     return com_obj.task.out
 
 
-def send_cmd(host, cmd):
+def send_cmd(host:str, cmd:list|str) -> dict:
     """
     Sync wrapper of async _send_cmd (InterCon.send_cmd consumer with retry)
     :param host: hostname / IP address
@@ -167,10 +166,14 @@ def send_cmd(host, cmd):
     """
     def _tagify():
         nonlocal host, cmd
-        _mod = cmd.split(' ')[0].strip()
+        _mod = cmd[0]
         if InterCon.validate_ipv4(host):
             return f"{'.'.join(host.split('.')[-2:])}.{_mod}"
         return f"{host.replace('.local', '')}.{_mod}"
+
+    # Handle legacy string input
+    if isinstance(cmd, str):
+        cmd = cmd.split()
 
     com_obj = InterCon()
     tag = f"con.{_tagify()}"
@@ -182,7 +185,7 @@ def send_cmd(host, cmd):
     return result
 
 
-def host_cache():
+def host_cache() -> dict:
     """
     Dump InterCon connection cache
     """

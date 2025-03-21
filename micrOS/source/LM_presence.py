@@ -1,10 +1,7 @@
 from microIO import bind_pin, pinmap_search
-from Common import SmartADC, micro_task, notify, syslog
+from Common import SmartADC, micro_task, notify, syslog, exec_cmd
 from utime import ticks_ms
-try:
-    import LM_intercon as InterCon
-except:
-    InterCon = None
+
 
 class Data:
     TASK_TAG = 'presence._capture'
@@ -68,9 +65,9 @@ def __run_intercon(state):
         try:
             cmd = Data.ON_INTERCON_CLBK.split()
             host = cmd[0]
-            cmd = ' '.join(cmd[1:])
-            # Send CMD to other device & show result
-            InterCon.send_cmd(host, cmd)
+            cmd = cmd[1:]
+            # Send CMD to other device
+            state, _ = exec_cmd(cmd + [f">>{host}"], jsonify=True, skip_check=True)
         except Exception as e:
             syslog(f"__run_intercon error: {e}")
     if state.lower() == "off":
@@ -79,9 +76,9 @@ def __run_intercon(state):
         try:
             cmd = Data.OFF_INTERCON_CLBK.split()
             host = cmd[0]
-            cmd = ' '.join(cmd[1:])
-            # Send CMD to other device & show result
-            InterCon.send_cmd(host, cmd)
+            cmd = cmd[1:]
+            # Send CMD to other device
+            state, _ = exec_cmd(cmd + [f">>{host}"], jsonify=True, skip_check=True)
         except Exception as e:
             syslog(f"__run_intercon error: {e}")
 

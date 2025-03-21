@@ -456,7 +456,8 @@ pin&nbsp;map:&nbsp;i2s_sck,&nbsp;i2s_ws,&nbsp;i2s_sd</td></tr></table></td></tr>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cmd[1]:&nbsp;command&nbsp;-&nbsp;module&nbsp;func&nbsp;arg(s)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;reply</td></tr></table></td></tr><tr><th>addr_cache</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[!!!]&nbsp;OBSOLETE&nbsp;->&nbsp;new&nbsp;command:&nbsp;system&nbsp;hosts<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Dump&nbsp;intercon&nbsp;connection&nbsp;cache<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;device-ip&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;device-ip&nbsp;pairs</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[!!!]&nbsp;OBSOLETE<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
@@ -741,11 +742,11 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;joystick:&nbsp;init&nbsp;joystick&nbsp;irq&nbsp;pin-s&nbsp;(default:&nbsp;True)</td></tr></table></td></tr><tr><th>draw</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Refresh&nbsp;page&nbsp;on&nbsp;PageUI</td></tr></table></td></tr><tr><th>control</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cmd='next'</td></tr><tr><th>doc</th><td>OLED&nbsp;UI&nbsp;control<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cmd&nbsp;str:&nbsp;next,&nbsp;prev,&nbsp;press,&nbsp;on,&nbsp;off<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>msgbox</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>msg='micrOS msg'</td></tr><tr><th>doc</th><td>POP-UP&nbsp;message&nbsp;function<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;msg:&nbsp;message&nbsp;string</td></tr></table></td></tr><tr><th>intercon_genpage</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cmd=None run=False</td></tr><tr><th>doc</th><td>Create&nbsp;intercon&nbsp;pages&nbsp;dynamically&nbsp;:)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;msg:&nbsp;message&nbsp;string</td></tr></table></td></tr><tr><th>intercon_genpage</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cmd:str=None run=False</td></tr><tr><th>doc</th><td>Create&nbsp;intercon&nbsp;pages&nbsp;dynamically&nbsp;:)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;based&nbsp;on&nbsp;cmd&nbsp;value.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cmd:&nbsp;'host&nbsp;hello'&nbsp;or&nbsp;'host&nbsp;system&nbsp;clock'<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;run:&nbsp;run&nbsp;button&nbsp;event&nbsp;at&nbsp;page&nbsp;init:&nbsp;True/False<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;page&nbsp;creation&nbsp;verdict</td></tr></table></td></tr><tr><th>cmd_genpage</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cmd=None run=False</td></tr><tr><th>doc</th><td>Create&nbsp;load&nbsp;module&nbsp;execution&nbsp;pages&nbsp;dynamically&nbsp;:)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;page&nbsp;creation&nbsp;verdict</td></tr></table></td></tr><tr><th>cmd_genpage</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cmd:str=None run=False</td></tr><tr><th>doc</th><td>Create&nbsp;load&nbsp;module&nbsp;execution&nbsp;pages&nbsp;dynamically&nbsp;:)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;based&nbsp;on&nbsp;cmd&nbsp;value:&nbsp;load_module&nbsp;function&nbsp;(args)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cmd:&nbsp;'load_module&nbsp;function&nbsp;(args)'&nbsp;string<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;run:&nbsp;run&nbsp;button&nbsp;event&nbsp;at&nbsp;page&nbsp;init:&nbsp;True/False<br>

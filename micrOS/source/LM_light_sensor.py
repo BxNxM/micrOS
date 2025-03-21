@@ -5,12 +5,8 @@ ADC.ATTN_2_5DB — the full range voltage: 1.5V
 ADC.ATTN_6DB — the full range voltage: 2.0V
 ADC.ATTN_11DB — the full range voltage: 3.3V
 """
-from Common import SmartADC, micro_task
+from Common import SmartADC, micro_task, exec_cmd
 from Types import resolve
-try:
-    import LM_intercon as InterCon
-except:
-    InterCon = None
 from microIO import bind_pin, pinmap_search
 
 
@@ -76,19 +72,15 @@ async def _task(on, off, threshold, tolerance=2, check_ms=5000):
             # TURN ON
             if percent <= threshold:
                 if on != last_ev:
-                    if InterCon is not None:
-                        host = on[0]
-                        cmd = ' '.join(on[1:])
-                        InterCon.send_cmd(host, cmd)
-                    my_task.out = f"{percent}% <= threshold: {threshold}% - ON"
+                    host = on[0]
+                    state, _ = exec_cmd(on[1:] + [f">>{host}"], jsonify=True, skip_check=True)
+                    my_task.out = f"{percent}% <= threshold: {threshold}% - ON [{'OK' if state else 'NOK'}]"
                     last_ev = on
             elif percent > threshold+tolerance:     # +tolerance to avoid "on/off/on/off" on threshold limit
                 if off != last_ev:
-                    if InterCon is not None:
-                        host = off[0]
-                        cmd = ' '.join(off[1:])
-                        InterCon.send_cmd(host, cmd)
-                    my_task.out = f"{percent}% > threshold: {threshold+tolerance}% - OFF"
+                    host = off[0]
+                    state, _ = exec_cmd(off[1:] + [f">>{host}"], jsonify=True, skip_check=True)
+                    my_task.out = f"{percent}% > threshold: {threshold+tolerance}% - OFF [{'OK' if state else 'NOK'}]"
                     last_ev = off
             await my_task.feed(sleep_ms=check_ms)   # Sample every <check_ms> sec
 

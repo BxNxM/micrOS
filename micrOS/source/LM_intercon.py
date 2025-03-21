@@ -48,6 +48,7 @@ def addr_cache():
 
 def help(widgets=False):
     """
+    [!!!] OBSOLETE
     [i] micrOS LM naming convention - built-in help message
     :return tuple:
         (widgets=False) list of functions implemented by this application

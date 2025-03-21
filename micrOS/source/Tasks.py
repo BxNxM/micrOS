@@ -435,9 +435,9 @@ def exec_builtins(func):
                     from InterConnect import send_cmd
                     Manager.INTERCON = send_cmd
                 try:
-                    out = Manager.INTERCON(host=intercon_target, cmd=' '.join(arg_list))
+                    out = Manager.INTERCON(host=intercon_target, cmd=arg_list)
                 except Exception as e:
-                    out = []
+                    out = {}
                     errlog_add(f"[ERR] Intercon: {e}")
                 return True, out
 
@@ -467,7 +467,7 @@ def exec_builtins(func):
     return wrapper
 
 
-def lm_exec(arg_list, jsonify=None):
+def lm_exec(arg_list:list, jsonify:bool=None):
     """
     Main LM executor function with
     - async (background)
@@ -597,7 +597,7 @@ def exec_lm_pipe(taskstr):
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
             if len(cmd) > 0 and cmd[0].startswith("#"):
                 console_write(f"[SKIP] exec_lm_pipe: {' '.join(cmd)}")
-                return True
+                continue
             if not lm_exec(cmd)[0]:
                 errlog_add(f"[WARN] exec_lm_pipe: {cmd}")
     except Exception as e:

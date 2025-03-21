@@ -33,7 +33,7 @@
             0
         ],
         "Shell.py": [
-            9.39,
+            9.34,
             1
         ],
         "Notify.py": [
@@ -53,7 +53,7 @@
             34
         ],
         "InterConnect.py": [
-            9.4,
+            9.41,
             3
         ],
         "Debug.py": [
@@ -109,7 +109,7 @@
             0
         ],
         "LM_oled_ui.py": [
-            9.02,
+            8.64,
             0
         ],
         "LM_system.py": [
@@ -233,7 +233,7 @@
             0
         ],
         "LM_oledui.py": [
-            8.16,
+            7.95,
             0
         ],
         "LM_espnow.py": [
@@ -261,7 +261,7 @@
             0
         ],
         "LM_light_sensor.py": [
-            8.97,
+            9.17,
             0
         ],
         "LM_rp2w.py": [
@@ -269,7 +269,7 @@
             0
         ],
         "LM_presence.py": [
-            8.77,
+            8.9,
             4
         ],
         "LM_trackball.py": [
@@ -298,7 +298,7 @@
         ],
         "LM_intercon.py": [
             8.18,
-            4
+            0
         ],
         "LM_ds18.py": [
             6.0,
@@ -315,11 +315,11 @@
     },
     "summary": {
         "core": [
-            3375,
+            3378,
             23
         ],
         "load": [
-            9093,
+            9077,
             55
         ],
         "core_dep": [
@@ -331,7 +331,7 @@
             5
         ],
         "core_score": 9.22,
-        "load_score": 8.21,
-        "version": "2.10.0-0"
+        "load_score": 8.2,
+        "version": "2.10.1-0"
     }
 }

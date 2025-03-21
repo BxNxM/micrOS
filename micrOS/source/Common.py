@@ -2,7 +2,6 @@
 micrOS Load Module programming Official API-s
     Designed by Marcell Ban aka BxNxM
 """
-
 from Server import Server, WebCli
 from Debug import errlog_add, console_write
 from Logger import logger, log_get
@@ -126,18 +125,19 @@ def manage_task(tag, operation):
     raise Exception(f"Invalid operation: {operation}")
 
 
-def exec_cmd(cmd, skip_check=False):
+def exec_cmd(cmd, jsonify:bool=None, skip_check=False):
     """
     [LM] Single (sync) LM execution
     :param cmd: command string list
+    :param jsonify: request json output
     :param skip_check: skip cmd type check, micropython bug
     return state, output
     """
     # [BUG] Solution with isinstance/type is not reliable... micropython 1.22
     #          Invalid type, must be list: <class list>" ...
     if skip_check:
-        return lm_exec(cmd)
-    return lm_exec(cmd) if isinstance(cmd, list) else False, f"Invalid type, must be list: {type(cmd)}"
+        return lm_exec(cmd, jsonify=jsonify)
+    return lm_exec(cmd, jsonify=jsonify) if isinstance(cmd, list) else False, f"CMD {type(cmd)}, must be list!"
 
 
 def notify(text=None) -> bool:

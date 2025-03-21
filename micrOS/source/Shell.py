@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.10.0-0'
+    MICROS_VERSION = '2.10.1-0'
 
     def __init__(self):
         """
@@ -113,7 +113,7 @@ class Shell:
         ##########################################
 
         # Hello message
-        if msg_list[0] == 'hello':
+        if len(msg_list) == 1 and msg_list[0] == 'hello':
             # For low level device identification - hello msg
             await self.a_send(f"hello:{self.__devfid}:{self.__hwuid}")
             return True
@@ -154,13 +154,13 @@ class Shell:
 
         # HELP MSG
         if msg_list[0] == "help":
-            await self.a_send("[MICROS]   - built-in shell commands")
-            await self.a_send("   hello   - hello msg - for device identification")
-            await self.a_send("   modules - show active Load Modules")
-            await self.a_send("   version - returns micrOS version")
-            await self.a_send("   exit    - exit from shell socket prompt")
-            await self.a_send("   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h")
-            await self.a_send("   webrepl - start webrepl, for file transfers use with --update")
+            await self.a_send("[MICROS]     - built-in shell commands")
+            await self.a_send("   hello     - hello msg - for device identification")
+            await self.a_send("   modules   - show active Load Modules")
+            await self.a_send("   version   - returns micrOS version")
+            await self.a_send("   exit      - exit from shell socket prompt")
+            await self.a_send("   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h")
+            await self.a_send("   webrepl   - start webrepl, for file transfers use with --update")
             await self.a_send("[CONF] Configure mode - built-in shell commands")
             await self.a_send("  conf       - Enter conf mode")
             await self.a_send("    dump       - Dump all data")
@@ -168,12 +168,13 @@ class Shell:
             await self.a_send("    key value  - Set value")
             await self.a_send("  noconf     - Exit conf mode")
             await self.a_send("[TASK] postfix: ...&x - one-time, ...&&x - periodic, x: wait ms [x min: 20ms]")
-            await self.a_send("  task list         - list tasks with <tag>s")
+            await self.a_send("  task list         - list tasks by <tag>s")
             await self.a_send("  task kill <tag>   - stop task")
             await self.a_send("  task show <tag>   - show task output")
             await self.a_send("[EXEC] Command mode (LMs):")
-            await self.a_send("  ...>>node01.local  - INTERCON postfix, execute command on remote device")
-            await self.a_send("  help lm            - list ALL LoadModules")
+            await self.a_send("  >>node01.local    - INTERCON postfix, execute command on remote device")
+            await self.a_send("  >json             - JSON postfix, request json formatted output")
+            await self.a_send("  help lm           - list ALL LoadModules")
             if "lm" in str(msg_list):
                 return await Shell._show_lm_funcs(msg_obj=self.a_send)
             return await Shell._show_lm_funcs(msg_obj=self.a_send, active_only=True)

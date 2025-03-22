@@ -215,9 +215,8 @@ class ConnectionData:
                 # Generate line printout
                 base_info = "{uid}{spr1}{fuid}".format(uid=uid, spr1=spacer1, fuid=fuid)
                 spacer1 = " " * (spr_offset2 - len(base_info))
-                data_line_str = "{base}{spr2}{ip}\t{stat}\t\t{version}\t\t{elapt}" \
-                    .format(base=base_info, spr2=spacer1, ip=ip,
-                            stat=is_online, version=version_data, elapt=elapsed_time)
+                spacer2 = "\t" if len(version_data) > 7 else "\t\t"
+                data_line_str = f"{base_info}{spacer1}{ip}\t{is_online}\t\t{version_data}{spacer2}{elapsed_time}"
                 return data_line_str, online_ip
             return None
 

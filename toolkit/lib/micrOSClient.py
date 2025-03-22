@@ -85,10 +85,22 @@ class micrOSClient:
 
     @staticmethod
     def validate_ipv4(str_in):
-        pattern = "^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$"
-        if bool(re.match(pattern, str_in)):
-            return True
-        return False
+        parts = str_in.split(".")
+        # An IPv4 address must have exactly 4 parts
+        if len(parts) != 4:
+            return False
+        for part in parts:
+            # Each part must be a number and not empty
+            if not part.isdigit():
+                return False
+            num = int(part)
+            # Each number must be in the valid range (0-255)
+            if num < 0 or num > 255:
+                return False
+            # Prevents leading zeros (e.g., "01" is invalid)
+            if part != str(num):
+                return False
+        return True
 
     def __connect(self, timeout):
         # Server connection - create socket
@@ -312,13 +324,20 @@ class micrOSClient:
 
         history = load_command_history(self.telnet_prompt)              # History: Beta feature
         print(self.telnet_prompt, end="")
+        is_empty = False                                                # Empty input support
         while True:
             try:
-                cmd = input()               # CANNOT contain prompt - it is coming back from response data
-                # send command
+                # INPUT HANDLING
+                cmd = input(self.telnet_prompt if is_empty else '')     # CANNOT contain prompt - it is coming back from response data
+                if len(cmd.strip()) == 0:
+                    is_empty = True
+                    continue
+                is_empty = False
+                # SEND COMMAND
                 output = self.send_cmd(cmd, timeout=timeout, stream=True)
                 if not (history is None or output is None) and "Shell: for hints type help." not in output:   # History: Beta feature
                     history.add_history(cmd)
+                # OUTPUT HANDLING
                 if 'Bye!' in str(output):
                     break
                 if output is None:

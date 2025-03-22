@@ -1,6 +1,7 @@
 import os
 import json
 import re
+from packaging.version import Version
 from pprint import pprint
 
 import matplotlib.pyplot as plt
@@ -33,11 +34,21 @@ def _is_version_jsonn(filename):
     version_pattern = r'^\d+\.\d+\.\d+(?:-\d+)?\.json$'
     return re.match(version_pattern, filename)
 
+def _ordered_file_list(folder_path):
+    files = os.listdir(folder_path)
+    valid_files = [f for f in files if _is_version_jsonn(f)]
+    files_without_version =  [f for f in files if not _is_version_jsonn(f)]
+    # Sort using Version from packaging
+    sorted_files = sorted(valid_files, key=lambda f: Version(os.path.splitext(f)[0]))
+    return sorted_files, files_without_version
+
 def load_json_files(folder_path):
     """Load and parse JSON files from the given folder."""
     data = []
     extradata = {}
-    for file_name in sorted(os.listdir(folder_path)):  # Incremental version order
+    version_files, additional_files = _ordered_file_list(folder_path)
+    all_files = version_files + additional_files
+    for file_name in all_files:  # Incremental version order
         if file_name.endswith(".json"):
             if _is_version_jsonn(file_name):
                 file_path = os.path.join(folder_path, file_name)
@@ -65,7 +76,9 @@ def load_json_files(folder_path):
 def load_meta_files(folder_path):
     """Load and parse .meta files from the given folder."""
     meta_data = []
-    for file_name in sorted(os.listdir(folder_path)):  # Incremental version order
+    version_files, additional_files = _ordered_file_list(folder_path)
+    all_files = version_files + additional_files
+    for file_name in  all_files:  # Incremental version order
         if file_name.endswith(".meta"):
             file_path = os.path.join(folder_path, file_name)
             with open(file_path, "r") as f:

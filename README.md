@@ -457,11 +457,11 @@ Version **3.0.0-0** `micrOS-Autonomous`
     - (1) Async SSL/TLS integration (micropython 1.22+ required)                [DONE]
         - urequest module async redesign for rest clients                       [OK]
             - LM_telegram (Notify) + server (listener - chatbot)                [OK]
-    - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [PoC][TODO]
-    - (3) New intercon syntax - command level integration:                      [TODO]
+    - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [PoC:OK][TODO]
+    - (3) New intercon syntax - command level integration:                      [DONE]
     	- rgb toggle >>RingLight.local
-    	- similar as: intercon sendcmd host="RingLight.local" cmd="rgb toggle"
-    - (4) Create multi level project structure (curret is flat fs)               [TODO] FS
+    	- similar as (obsolete): intercon sendcmd host="RingLight.local" cmd="rgb toggle"
+    - (4) Create multi level project structure (curret is flat fs)               [TODO?] FS
 		- New micrOS FS structure:
 			- Note:
 				- On device (boot) micrOS Hooks.py/os_dir_fs_hook (check+correct)  [Phase1-FS:TODO]
@@ -490,6 +490,9 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- *.html
 				- *.js
 				- *.css
+
+			- /logs
+				- still there (created runtime) 
 
 		- (5) Proper mip installer support (/lib)                                [TODO]
 			- Note: Autonomous package management over wifi (github) 
@@ -694,8 +697,6 @@ devToolKit.py -c -p '--dev BedLamp help'
       help
    dht22
         help
-   intercon
-           help
    robustness
              help
    system
@@ -825,8 +826,6 @@ BedLamp $ help
       help
    dht22
         help
-   intercon
-           help
    robustness
              help
    system
@@ -917,10 +916,9 @@ micrOS Load Module resources
 43	105	LM_lmpacman.py           (mlint: True)	(pylint: 8.38)	(ref.: 0)
 44	176	LM_gameOfLife.py         (mlint: True)	(pylint: 9.29)	(ref.: 2)
 45	58	LM_catgame.py            (mlint: True)	(pylint: 8.46)	(ref.: 0)
-46	42	LM_intercon.py           (mlint: True)	(pylint: 8.18)	(ref.: 3)
-47	43	LM_ds18.py               (mlint: True)	(pylint: 5.0)	(ref.: 2)
-48	250	LM_i2s_mic.py            (mlint: False)	(pylint: 8.71)	(ref.: 1)
-49	34	LM_sdcard.py             (mlint: True)	(pylint: 7.88)	(ref.: 0)
+46	43	LM_ds18.py               (mlint: True)	(pylint: 5.0)	(ref.: 2)
+47	250	LM_i2s_mic.py            (mlint: False)	(pylint: 8.71)	(ref.: 1)
+48	34	LM_sdcard.py             (mlint: True)	(pylint: 7.88)	(ref.: 0)
 
 SUM CODE LINES (WITH COMMENTS, WITHOUT EMPTY LINES): 6822
 ```
@@ -1011,7 +1009,6 @@ micrOS/toolkit/workspace/precompiled
     │   ├── LM_esp32.py
     │   ├── LM_genIO.mpy
     │   ├── LM_i2c.py
-    │   ├── LM_intercon.mpy
     │   ├── LM_light_sensor.mpy
     │   ├── LM_neoeffects.mpy
     │   ├── LM_neopixel.mpy

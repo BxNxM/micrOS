@@ -44,7 +44,7 @@ class TaskBase:
         self.out = ""                # Store task output
 
     @staticmethod
-    def is_busy(tag) -> bool:
+    def is_busy(tag:str) -> bool:
         """
         Check task is busy by tag
         :param tag: for task selection

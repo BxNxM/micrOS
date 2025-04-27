@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.10.2-0'
+    MICROS_VERSION = '2.10.3-0'
 
     def __init__(self):
         """
@@ -155,27 +155,30 @@ class Shell:
 
         # HELP MSG
         if local_cmd and msg_list[0] == "help":
-            await self.a_send("[MICROS]     - built-in shell commands")
+            await self.a_send("[MICROS]")
             await self.a_send("   hello     - hello msg - for device identification")
             await self.a_send("   modules   - show active Load Modules")
             await self.a_send("   version   - returns micrOS version")
-            await self.a_send("   exit      - exit from shell socket prompt")
+            await self.a_send("   exit      - exit shell session")
             await self.a_send("   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h")
             await self.a_send("   webrepl   - start webrepl, for file transfers use with --update")
-            await self.a_send("[CONF] Configure mode - built-in shell commands")
+            await self.a_send("[CONF] Configuration mode")
             await self.a_send("  conf       - Enter conf mode")
-            await self.a_send("    dump       - Dump all data")
+            await self.a_send("    dump       - Dump all data, filter: dump <str>")
             await self.a_send("    key        - Get value")
             await self.a_send("    key value  - Set value")
             await self.a_send("  noconf     - Exit conf mode")
-            await self.a_send("[TASK] postfix: ...&x - one-time, ...&&x - periodic, x: wait ms [x min: 20ms]")
-            await self.a_send("  task list         - list tasks by <tag>s")
+            await self.a_send("[TASK] Task operations")
+            await self.a_send("  task list         - list tasks by tags")
             await self.a_send("  task kill <tag>   - stop task")
             await self.a_send("  task show <tag>   - show task output")
-            await self.a_send("[EXEC] Command mode (LMs):")
-            await self.a_send("  >>node01.local    - INTERCON postfix, execute command on remote device")
-            await self.a_send("  >json             - JSON postfix, request json formatted output")
-            await self.a_send("  help lm           - list ALL LoadModules")
+            await self.a_send("[EXEC] Command mode, syntax(...): <module> <function> <params> <postfix>")
+            await self.a_send("  Postfix hints:")
+            await self.a_send("    ... &<x>            - start one-shot task")
+            await self.a_send("    ... &&<x>           - start periodic task, where <x>: delay ms [x min: 20ms]")
+            await self.a_send("    ... >>hostname      - remote command execution (intercon)")
+            await self.a_send("    ... >json           - request json formatted output")
+            await self.a_send("  help lm           - list ALL available LoadModules")
             if "lm" in str(msg_list):
                 return await Shell._show_lm_funcs(msg_obj=self.a_send)
             return await Shell._show_lm_funcs(msg_obj=self.a_send, active_only=True)
@@ -256,9 +259,9 @@ class Shell:
             for lm_path in (i for i in mod if i.startswith('LM_') and (i.endswith('py'))):
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
-                    await msg_obj(f"   {lm_name}")
+                    await msg_obj(f"  {lm_name}")
                     if lm_path.endswith('.mpy'):
-                        await msg_obj(f"   {' ' * len(lm_path.replace('LM_', '').split('.')[0])}help")
+                        await msg_obj(f"  {' ' * len(lm_path.replace('LM_', '').split('.')[0])}help")
                         continue
                     with open(lm_path, 'r') as f:
                         line = "micrOSisTheBest"
@@ -266,12 +269,13 @@ class Shell:
                             line = f.readline()
                             ldata = line.strip()
                             if ldata.startswith('def ') and not ldata.split()[1].startswith("_") and 'self' not in ldata:
-                                await msg_obj(f"   {' ' * len(lm_name)}{ldata.replace('def ', '').split('(')[0]}")
+                                await msg_obj(f"  {' ' * len(lm_name)}{ldata.replace('def ', '').split('(')[0]}")
                 except Exception as e:
                     await msg_obj(f"[{lm_path}] SHOW LM PARSER WARNING: {e}")
                     return False
             return True
 
+        await msg_obj("")
         # [1] list active modules (default in shell)
         if active_only:
             mod_keys = modules.keys()

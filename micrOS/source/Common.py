@@ -125,10 +125,10 @@ def manage_task(tag, operation):
     raise Exception(f"Invalid operation: {operation}")
 
 
-def exec_cmd(cmd, jsonify:bool=None, skip_check=False):
+def exec_cmd(cmd:list, jsonify:bool=None, skip_check=False):
     """
     [LM] Single (sync) LM execution
-    :param cmd: command string list
+    :param cmd: command string list, ex.: ['system', 'clock']
     :param jsonify: request json output
     :param skip_check: skip cmd type check, micropython bug
     return state, output

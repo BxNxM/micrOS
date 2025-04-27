@@ -26,14 +26,14 @@
         ],
         "Config.py": [
             9.48,
-            17
+            18
         ],
         "reset.py": [
             10.0,
             0
         ],
         "Shell.py": [
-            9.34,
+            9.36,
             1
         ],
         "Notify.py": [
@@ -50,7 +50,7 @@
         ],
         "Common.py": [
             9.78,
-            34
+            35
         ],
         "InterConnect.py": [
             9.41,
@@ -237,7 +237,7 @@
             0
         ],
         "LM_espnow.py": [
-            7.5,
+            7.89,
             0
         ],
         "LM_telegram.py": [
@@ -271,6 +271,10 @@
         "LM_presence.py": [
             8.9,
             4
+        ],
+        "LM_mqtt_pro.py": [
+            9.35,
+            0
         ],
         "LM_trackball.py": [
             8.31,
@@ -315,12 +319,12 @@
     },
     "summary": {
         "core": [
-            3380,
+            3429,
             23
         ],
         "load": [
-            9077,
-            55
+            9236,
+            56
         ],
         "core_dep": [
             true,
@@ -328,10 +332,10 @@
         ],
         "load_dep": [
             true,
-            5
+            6
         ],
         "core_score": 9.22,
-        "load_score": 8.2,
-        "version": "2.10.2-0"
+        "load_score": 8.23,
+        "version": "2.10.3-0"
     }
 }

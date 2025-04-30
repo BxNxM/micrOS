@@ -89,7 +89,7 @@
             0
         ],
         "urequests.py": [
-            8.99,
+            8.96,
             5
         ],
         "LM_roboarm.py": [
@@ -319,7 +319,7 @@
     },
     "summary": {
         "core": [
-            3429,
+            3436,
             23
         ],
         "load": [
@@ -336,6 +336,6 @@
         ],
         "core_score": 9.22,
         "load_score": 8.23,
-        "version": "2.10.3-0"
+        "version": "2.10.3-1"
     }
 }

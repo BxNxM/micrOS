@@ -197,10 +197,19 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
     addr = _host_to_addr(host, port)
     reader, writer = None, None
 
+    # Open a connection
     try:
-        # Open a connection
         reader, writer = await asyncio.open_connection(addr[0], port, ssl=(proto == 'https:'))
+    except Exception as e:
+        # Refresh host address & reconnect
+        if "EHOSTUNREACH" in str(e):
+            addr = _host_to_addr(host, port, force=True)
+            reader, writer = await asyncio.open_connection(addr[0], port, ssl=(proto == 'https:'))
+        else:
+            errlog_add(f"[ERR] arequest connection: {e}")
 
+    # Send request + Wait for the response
+    try:
         # Build the HTTP request
         http_request = _build_request(host, method, path, headers, data, json)
 

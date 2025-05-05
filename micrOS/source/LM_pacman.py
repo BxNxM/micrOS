@@ -1,73 +1,56 @@
-from uos import listdir, remove, stat
 from sys import modules
 from Common import socket_stream
-
-WEB_EXT = ('html', 'js', 'css')
-DATA_TYPES = ('log', 'pds', 'dat')
-
-def _is_app_resource(path='/'):
-    if stat(path)[0] & 0x4000:      # Dir check
-        return True, 'd'
-    file_name = path.split("/")[-1]
-    if file_name.startswith('LM_') or file_name.split('.')[-1] in WEB_EXT + DATA_TYPES:
-        return True, 'f'
-    return False, '?'
+from Files import _is_module, list_fs, ilist_fs, remove_fs
 
 
 #############################################
 #     Safe file system handler functions    #
 #############################################
 
-def ls(path="/", content='*', raw=False):
+def ls(path="/", content='*', raw=False, select='*'):
     """
     Linux like ls command - list app resources and app folders
     :param path: path to list, default: /
     :param content: content type, default all, f-file, d-dir can be selected
     :param raw: keep raw output [(is_app, type), ...]
+    :param select: select specific app resource: LM or IO, default: all
     """
-    path = path if path.endswith('/') else f"{path}/"
-    items = []
-    for item in listdir(path):
-        is_app, item_type = _is_app_resource(path + item)
-        if is_app and (content == "*" or item_type == content):
-            items.append((item_type, item))
+    items = list_fs(path, content, select=select)
     if raw:
         return items
-    formatted_output = ""
-    i = 0
-    for f in items:
-        i += 1
-        spacer = " " * (4 - len(str(i)))
-        formatted_output += f"{i}{spacer}{f[0]}   {f[1]}\n"
-    return formatted_output
+
+    # Build a formatted output (just like `ls -l` style index)
+    lines = ""
+    for i, f in enumerate(items):
+        spacer = " " * (4 - len(str(i+1)))
+        if content == "*":
+            lines += f"{i+1}{spacer}{f[0]}   {f[1]}\n"
+        else:
+            lines += f"{i + 1}{spacer}{f}\n"
+    return lines
 
 
-def rm(path):
+def rm(path, allow_dir=False):
     """
     Linux like rm command - delete app resources and folders
     :param path: app resource name/path, ex.: LM_robustness.py
+    :param allow_dir: enable directory deletion, default: False
     """
-    if 'pacman.' in path or 'system.' in path or "/" == path.strip():
-        return f'Load module {path} is protected, skip delete.'
-    is_app, item_type = _is_app_resource(path)
-    if is_app:
-        remove(path)
-        return f"Remove: {path} {'dir' if item_type == 'd' else 'file'}"
-    return f"Invalid path {path}"
+    return remove_fs(path, allow_dir)
 
 
 def dirtree(path="/", raw=False):
     """Return only directories from a given path."""
     path = path if path.endswith('/') else f"{path}/"
-    folders = [f"{path}/{item}" for item in listdir(path) if _is_app_resource(f"{path}{item}")[1] == 'd']
-    folder_contents = {folder:listdir(folder) for folder in folders}
+    folders = [f"{path}/{item}" for item in ilist_fs(path, type_filter='d')]
+    folder_contents = {folder:list_fs(folder) for folder in folders}
     if raw:
         return folder_contents
     formatted_output = ""
     for k, v in folder_contents.items():
         formatted_output += f"{k}\n"
         for val in v:
-            formatted_output += f"\t{val}\n"
+            formatted_output += f"\t{val[0]}   {val[1]}\n"
     return formatted_output
 
 
@@ -108,18 +91,20 @@ def del_duplicates():
     - delete duplicated .mpy and .py resources, keep .mpy resource!
     """
     msg_buf = []
-    py = list((res.split('.')[0] for res in listdir() if res.endswith('.py')))       # Normally smaller list
-    mpy = (res.split('.')[0] for res in listdir() if res.endswith('.mpy'))
+    files =  list_fs(type_filter='f', select='LM')
+    py = list((res.split('.')[0] for res in files if res.endswith('.py')))       # Normally smaller list
+    mpy = (res.split('.')[0] for res in files if res.endswith('.mpy'))
     for m in mpy:
         # Iterate over mpy resources
         state = True
         if m in py and m != 'main':
             to_delete = f'{m}.py'
             try:
-                remove(to_delete)
+                verdict = remove_fs(to_delete)
             except:
+                verdict = "n/a"
                 state = False
-            msg_buf.append(f'   Delete {to_delete} {state}')
+            msg_buf.append(f'   Delete {to_delete} {state} - {verdict}')
     return '\n'.join(msg_buf) if len(msg_buf) > 0 else 'Nothing to delete.'
 
 
@@ -147,7 +132,7 @@ def cachedump(delpds=None, msgobj=None):
     if delpds is None:
         # List pds files aka application cache
         msg_buf = []
-        for pds in (_pds for _pds in listdir() if _pds.endswith('.pds')):
+        for pds in (_pds for _pds in ilist_fs(type_filter='f') if _pds.endswith('.pds')):
             with open(pds, 'r') as f:
                 if msgobj is None:
                     msg_buf.append(f'{pds}: {f.read()}')
@@ -156,8 +141,8 @@ def cachedump(delpds=None, msgobj=None):
         return msg_buf if len(msg_buf) > 0 else ''
     # Remove given pds file
     try:
-        remove(f'{delpds}.pds')
-        return f'{delpds}.pds delete done.'
+        verdict = remove_fs(f'{delpds}.pds')
+        return f'{delpds}.pds delete done.: {verdict}'
     except:
         return f'{delpds}.pds not exists'
 
@@ -168,7 +153,7 @@ def dat_dump():
     - logged data from LMs, sensor datat, etc...
     """
     logs_dir = "/logs/"
-    dats = (f for f in listdir(logs_dir) if f.endswith('.dat'))
+    dats = (f for f in ilist_fs(type_filter='f') if f.endswith('.dat'))
     out = {}
     for dat in dats:
         with open(f"{logs_dir}{dat}", 'r') as f:
@@ -188,8 +173,7 @@ def listmods(msgobj=None):
     """
     # Dump available LMs
     msg_buf = []
-    for k in (res.replace('LM_', '') for res in listdir("/")
-              if res.startswith('LM_') or res.split('.')[-1] in WEB_EXT):
+    for k in (res.replace('LM_', '') for res in ilist_fs(type_filter='f', select='LM')):
         if msgobj is None:
             msg_buf.append(f'   {k}')
         else:
@@ -197,21 +181,17 @@ def listmods(msgobj=None):
     return msg_buf if len(msg_buf) > 0 else ''
 
 
-def delmod(mod=None):
+def delmod(mod):
     """
     Module package manager
     :param mod:
         Delete Load Module with full name: module.py or module.mpy
         OR delete any web resource: *.js, *.css, *.html
     """
-    if mod is not None and (mod.endswith('py') or mod.split('.')[-1] in WEB_EXT):
-        # LM exception list - system and pacman cannot be deleted
-        if 'pacman.' in mod or 'system.' in mod:
-            return f'Load module {mod} is in use, skip delete.'
+    if mod.endswith('py') or _is_module(mod):
         try:
-            to_remove = mod if mod.split('.')[-1] in WEB_EXT else f'LM_{mod}'
-            remove(to_remove)
-            return f'Delete module: {mod}'
+            to_remove = f'LM_{mod}' if mod.endswith('py') else mod
+            return remove_fs(to_remove)
         except Exception as e:
             return f'Cannot delete: {mod}: {e}'
     return f'Invalid value: {mod}'
@@ -223,7 +203,7 @@ def micros_checksum(msgobj=None):
     from binascii import hexlify
     from Config import cfgget
 
-    for f_name in (_pds for _pds in listdir() if _pds.endswith('py')):
+    for f_name in ilist_fs(type_filter='f', select='LM'):
         with open(f_name, 'rb') as f:
             cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
         msgobj(f"{cs} {f_name}")
@@ -244,5 +224,5 @@ def help(widgets=False):
             'dat_dump',
             'download url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
             'micros_checksum',
-            'ls path="/" content="*/f/d"',
+            'ls path="/" content="*/f/d" select="*/LM/IO"',
             'rm <path>', 'dirtree path="/"')

@@ -1,4 +1,4 @@
-from uos import statvfs, getcwd, listdir, uname
+from uos import statvfs, getcwd, uname
 from utime import localtime
 from network import WLAN, STA_IF, AP_IF
 from binascii import hexlify

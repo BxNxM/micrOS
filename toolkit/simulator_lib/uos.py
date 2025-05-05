@@ -31,12 +31,12 @@ def __mock_sim_dir(path):
     """
     micropython sim hack
     """
-    if MOCK_SIM:
-        cwd = getcwd()
+    cwd = getcwd()
+    cwd = cwd if cwd.endswith(os.sep) else f"{cwd}{os.sep}"                 # CHECK AND FIX CWD / ENDING
+    if MOCK_SIM or "workspace/simulator" not in path:
         path = f"{cwd}{path}"
-        print(f"[!!!] [uos.SIM] CWD PATH HACK: {path}")
-    elif "workspace/simulator" not in path:
-        path = f"{getcwd()}{path}"
+        if MOCK_SIM:
+            print(f"[!!!] [uos.SIM][MOCK:{MOCK_SIM}] CWD PATH HACK: {path}")
     return path
 
 

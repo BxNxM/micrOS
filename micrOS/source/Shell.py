@@ -12,9 +12,9 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from sys import modules
-from uos import listdir
 from machine import reset as hard_reset, soft_reset
 from Config import cfgget, cfgput
+from Files import ilist_fs
 from Tasks import lm_exec
 from Debug import errlog_add
 
@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.10.3-1'
+    MICROS_VERSION = '2.10.4-0'
 
     def __init__(self):
         """
@@ -255,8 +255,8 @@ class Shell:
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
         """
-        async def _help(mod):
-            for lm_path in (i for i in mod if i.startswith('LM_') and (i.endswith('py'))):
+        async def _help(mods):
+            for lm_path in mods:
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
                     await msg_obj(f"  {lm_name}")
@@ -279,10 +279,10 @@ class Shell:
         # [1] list active modules (default in shell)
         if active_only:
             mod_keys = modules.keys()
-            active_modules = (dir_mod for dir_mod in listdir() if dir_mod.split('.')[0] in mod_keys)
+            active_modules = (dir_mod for dir_mod in ilist_fs(type_filter='f', select="LM") if dir_mod.split('.')[0] in mod_keys)
             return await _help(active_modules)
         # [2] list all LMs on file system (ALL - help lm) - manual
-        return await _help(listdir())
+        return await _help(ilist_fs(type_filter='f', select="LM"))
 
     @staticmethod
     async def webrepl(msg_obj, update=False):

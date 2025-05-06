@@ -11,7 +11,6 @@ def _is_module(path:str='/', pyprefix:str='*') -> bool:
     # micrOS file types
     allowed_exts = ('html', 'js', 'css', 'log', 'pds', 'dat')
     mod_prefixes = ('LM', "IO")
-
     fname = path.split("/")[-1]
     if fname.split("_")[0] in mod_prefixes or fname.split('.')[-1] in allowed_exts:
         if pyprefix == '*':
@@ -24,12 +23,10 @@ def _is_module(path:str='/', pyprefix:str='*') -> bool:
 
 
 def _type_mask_to_str(item_type:int=None) -> str:
-    # Bit‑masks from the MicroPython docs
-    dir_mask, file_mask = 0x4000, 0x8000
     # Map the raw bit-mask to a single character
-    if item_type & dir_mask:
+    if item_type & 0x4000:              # Dir bit-mask
         item_type = 'd'
-    elif item_type & file_mask:
+    elif item_type & 0x8000:            # File bit-mask
         item_type = 'f'
     else:
         item_type = 'o'
@@ -83,9 +80,22 @@ def remove_fs(path, allow_dir=False):
     # protect some resources
     if 'pacman.mpy' in path or 'system.mpy' in path or "/" == path.strip():
         return f'Load module {path} is protected, skip deletion'
-    is_app  = _is_module(path)
-    item_type = _type_mask_to_str(stat(path)[0])
-    if is_app or (item_type == 'd' and allow_dir):
+    _is_dir = is_dir(path)
+    if _is_module(path) or (_is_dir and allow_dir):
         remove(path)
-        return f"Removed: {path} {'dir' if item_type == 'd' else 'file'}"
+        return f"Removed: {path} {'dir' if _is_dir else 'file'}"
     return f"Protected path: {path}"
+
+
+def is_dir(path):
+    try:
+        return stat(path)[0] & 0x4000
+    except OSError:
+        return False
+
+
+def is_file(path):
+    try:
+        return stat(path)[0] & 0x8000
+    except OSError:
+        return False

@@ -6,7 +6,8 @@ Designed by Marcell Ban aka BxNxM
 """
 from time import localtime
 from re import match
-from uos import listdir, remove, stat, mkdir, getcwd
+from uos import remove, mkdir, getcwd
+from Files import ilist_fs, is_dir
 
 #############################################
 #        LOGGING WITH DATA ROTATION         #
@@ -18,14 +19,7 @@ def _init_logger():
     global LOG_FOLDER
     if LOG_FOLDER is None:
         LOG_FOLDER = f"{getcwd()}logs"
-        do_create = True
-        try:
-            if stat(LOG_FOLDER)[0] & 0x4000:
-                # Dir exists - skip create
-                do_create = False
-        except:
-            pass
-        if do_create:
+        if not is_dir(LOG_FOLDER):
             try:
                 mkdir(LOG_FOLDER)
                 syslog(f"[BOOT] log dir {LOG_FOLDER} init")
@@ -107,7 +101,7 @@ def log_get(f_name, msgobj=None):
 
 def syslog(data=None, msgobj=None):
     if data is None:
-        err_cnt = sum([log_get(f, msgobj) for f in listdir(LOG_FOLDER) if f.endswith(".sys.log")])
+        err_cnt = sum([log_get(f, msgobj) for f in ilist_fs(LOG_FOLDER, type_filter='f') if f.endswith(".sys.log")])
         return err_cnt
 
     _match = match(r"^\[([^\[\]]+)\]", data)
@@ -117,7 +111,7 @@ def syslog(data=None, msgobj=None):
 
 
 def log_clean(msgobj=None):
-    to_del = [file for file in listdir(LOG_FOLDER) if file.endswith('.log')]
+    to_del = [file for file in ilist_fs(LOG_FOLDER, type_filter='f') if file.endswith('.log')]
     for _del in to_del:
         _del = f"{LOG_FOLDER}/{_del}"
         if msgobj is not None:

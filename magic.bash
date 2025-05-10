@@ -18,7 +18,7 @@ if [ -n "$ZSH_VERSION" ]; then
 fi
 
 # Get command line arguments
-CMD_ARGS=${*}
+CMD_ARGS=(${*})
 # Get current script path
 MY_PATH="$(dirname "${BASH_SOURCE[0]}")"
 # Create script global path variables
@@ -168,7 +168,7 @@ function help {
 # CMD ARGUMENT: env
 if [[ -n "${CMD_ARGS[0]}" ]]
 then
-  echo -e "params: ${CMD_ARGS}"
+  echo -e "params: ${CMD_ARGS[*]}"
 
   # Check recreation is requested or not - optional cleanup
   if [[ "${CMD_ARGS[0]}" == "recreate" ]]

@@ -335,7 +335,7 @@ class Manager:
             _tasks = []
             tag_parts = tag.split('.')
             for t in TaskBase.TASKS:
-                if t.startswith(tag_parts[0]) and len(tag_parts) > 1 and tag_parts[1] == '*':
+                if len(tag_parts) > 1 and t.startswith('.'.join(tag_parts[0:-1])) and tag_parts[-1] == '*':
                     _tasks.append(t)
             if len(_tasks) == 0:
                 return []

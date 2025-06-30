@@ -52,7 +52,7 @@ else
 fi
 
 echo -e "[RUN IMAGE] docker run"
-docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -d "${IMAGE}"
+docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -d "${IMAGE}"
 
 
 if [[ $? -eq 0 && "${DEV}" == "false" ]]

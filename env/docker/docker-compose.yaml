@@ -1,12 +1,12 @@
 services:
   micros-gateway:
-    image: bxnxm/micros-gateway:2.4.1
+    image: bxnxm/micros-gateway:2.10.6
     container_name: micros-gateway
     environment:
       - GATEWAYIP=10.0.1.1
       - API_AUTH=${API_AUTH:-usr:pwd}                     # Use environment variable or fallback
     ports:
-      - "5000:5000"                                       # Expose Flask REST API port to host
+      - "5005:5005"                                       # Expose Flask REST API port to host
     networks:
       - micros_nw
 

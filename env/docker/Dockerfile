@@ -10,13 +10,13 @@ RUN apk add --no-cache iputils-ping git
 WORKDIR /gateway
 
 # Install micrOS
-RUN python3 -m pip install micrOSDevToolKit==2.8.7
+RUN python3 -m pip install micrOSDevToolKit==2.10.6
 
 # Change to the micrOS directory
 WORKDIR /gateway/micrOS
 
 # Expose port
-EXPOSE 5000
+EXPOSE 5005
 
 # Start the gateway
 ENTRYPOINT ["devToolKit.py", "--light", "-s", "-gw"]

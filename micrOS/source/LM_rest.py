@@ -10,7 +10,7 @@ class Rest:
 def load(gateway_url=None):
     """
     Set gateway url aka main domain
-    :param gateway_url: base url of gateway, like: http://gateway.local:5000
+    :param gateway_url: base url of gateway, like: http://gateway.local:5005
     """
     if gateway_url is None:
         if Rest.GATEWAY_HOST is None:
@@ -77,6 +77,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return ('load gateway_url=<http://gateway.local:5000>',
+    return ('load gateway_url=<http://gateway.local:5005>',
             'url subdomain=</webhooks/template>',
             'aurl subdomain=</webhooks/template>')

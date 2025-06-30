@@ -154,7 +154,7 @@ class Hello(Resource):
 
 class SendCmd(Resource):
     """
-    http://127.0.0.1:5000/sendcmd/micr240ac4f679e8OS/rgb+toggle
+    http://127.0.0.1:5005/sendcmd/micr240ac4f679e8OS/rgb+toggle
         {
           "cmd": [
             "rgb",
@@ -621,11 +621,11 @@ api.add_resource(WebHook, '/webhooks', '/webhooks/<string:payload>', '/webhooks/
 
 def gateway(debug=True):
     global API_URL_CACHE
-    API_URL_CACHE = f"http://{my_local_ip()}:5000"
+    API_URL_CACHE = f"http://{my_local_ip()}:5005"
     print("\n############### START MICROS GATEWAY ###############")
     print("#             {}            #".format(API_URL_CACHE))
     print("####################################################\n")
-    app.run(debug=debug, use_reloader=debug, host='0.0.0.0', port=5000)     # host='0.0.0.0' automatic, manual: host=my_local_ip()
+    app.run(debug=debug, use_reloader=debug, host='0.0.0.0', port=5005)     # host='0.0.0.0' automatic, manual: host=my_local_ip()
 
 
 # driver function

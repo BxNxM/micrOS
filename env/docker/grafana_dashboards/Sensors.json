@@ -54,7 +54,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "\n<div>\nPortainer:\n<a href=\"http://gateway.local:9000\" target=\"_blank\">\n    <img src=\"https://img.shields.io/badge/Portainer-blue\" alt=\"micrOS_Gateway\">\n</a>\n\nDatabase and scraper: \n<a href=\"http://gateway.local:9090\" target=\"_blank\">\n    <img src=\"https://img.shields.io/badge/Prometheus-gray\" alt=\"   DockerHub\">\n</a>\n\n</div>\n\nmicrOS REST API:\n<a href=\"http://gateway.local:5000\" target=\"_blank\">\n    <img src=\"https://img.shields.io/badge/Gateway-purple\" alt=\"micrOS_Gateway\">\n</a>",
+        "content": "\n<div>\nPortainer:\n<a href=\"http://gateway.local:9000\" target=\"_blank\">\n    <img src=\"https://img.shields.io/badge/Portainer-blue\" alt=\"micrOS_Gateway\">\n</a>\n\nDatabase and scraper: \n<a href=\"http://gateway.local:9090\" target=\"_blank\">\n    <img src=\"https://img.shields.io/badge/Prometheus-gray\" alt=\"   DockerHub\">\n</a>\n\n</div>\n\nmicrOS REST API:\n<a href=\"http://gateway.local:5005\" target=\"_blank\">\n    <img src=\"https://img.shields.io/badge/Gateway-purple\" alt=\"micrOS_Gateway\">\n</a>",
         "mode": "html"
       },
       "pluginVersion": "10.1.2",

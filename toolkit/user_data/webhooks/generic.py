@@ -2,7 +2,7 @@
 
 """
 Generic webhook for socketClient that can invoke LoadModule calls remotely from any device.
-Example: http://10.0.1.61:5000/webhooks/generic/TinyDevBoard+system+clock
+Example: http://10.0.1.61:5005/webhooks/generic/TinyDevBoard+system+clock
 """
 
 import sys, os

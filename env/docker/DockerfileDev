@@ -19,11 +19,10 @@ WORKDIR /gateway/micrOS
 # Build with specific PYPI version
 RUN python3 -m pip install -e .
 
-EXPOSE 5000
+EXPOSE 5005
 
 # Run start command
 # Search and start gateway and start simulator (beta)
 #ENTRYPOINT devToolKit.py -s -gw -sim
 # Search and start gateway
-ENTRYPOINT devToolKit.py --light -s -gw
-
+ENTRYPOINT ["devToolKit.py", "--light", "-s", "-gw"]

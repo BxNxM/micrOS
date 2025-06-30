@@ -3,7 +3,7 @@
 """
 Template for webhook creation
 - replies with basic response message
-Example: http://10.0.1.61:5000/webhooks/template
+Example: http://10.0.1.61:5005/webhooks/template
 """
 
 import sys, os

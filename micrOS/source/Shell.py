@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.10.5-0'
+    MICROS_VERSION = '2.10.6-0'
 
     def __init__(self):
         """
@@ -106,7 +106,8 @@ class Shell:
             # No msg to work with
             return True
         msg_list = msg.strip().split()
-        local_cmd = not msg_list[-1].startswith(">>")   # intercon request check for shell commands
+        # INTERCON embedding: conf mode and remote call request check
+        is_local_cmd = self.__conf_mode or not msg_list[-1].startswith(">>")
 
         ##########################################
         #   [1] Handle built-in shell commands   #
@@ -114,7 +115,7 @@ class Shell:
         ##########################################
 
         # Hello message
-        if local_cmd and msg_list[0] == 'hello':
+        if is_local_cmd and msg_list[0] == 'hello':
             # For low level device identification - hello msg
             await self.a_send(f"hello:{self.__devfid}:{self.__hwuid}")
             return True
@@ -127,34 +128,34 @@ class Shell:
             return True
 
         # Version handling
-        if local_cmd and msg_list[0] == 'version':
+        if is_local_cmd and msg_list[0] == 'version':
             # For micrOS system version info
             await self.a_send(str(Shell.MICROS_VERSION))
             return True
 
         # Reboot micropython VM
-        if local_cmd and msg_list[0] == 'reboot':
+        if is_local_cmd and msg_list[0] == 'reboot':
             hard = False
             if len(msg_list) >= 2 and "-h" in msg_list[1]:
                 # reboot / reboot -h
                 hard = True
             await self.reboot(hard)
 
-        if local_cmd and msg_list[0].startswith('webrepl'):
+        if is_local_cmd and msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:
                 await Shell.webrepl(msg_obj=self.a_send, update=True)
             return await Shell.webrepl(msg_obj=self.a_send)
 
         # CONFIGURE MODE STATE: ACCESS FOR NODE_CONFIG.JSON
-        if local_cmd and msg_list[0].startswith('conf'):
+        if is_local_cmd and msg_list[0].startswith('conf'):
             self.__conf_mode = True
             return True
-        if local_cmd and msg_list[0].startswith('noconf'):
+        if is_local_cmd and msg_list[0].startswith('noconf'):
             self.__conf_mode = False
             return True
 
         # HELP MSG
-        if local_cmd and msg_list[0] == "help":
+        if is_local_cmd and msg_list[0] == "help":
             await self.a_send("[MICROS]")
             await self.a_send("   hello     - hello msg - for device identification")
             await self.a_send("   modules   - show active Load Modules")
@@ -185,7 +186,7 @@ class Shell:
 
         # [2] EXECUTE:
         # @1 Configure mode
-        if local_cmd and self.__conf_mode and len(msg_list) > 0:
+        if is_local_cmd and self.__conf_mode and len(msg_list) > 0:
             # Lock thread under config handling is threads available
             return await Shell._configure(self.a_send, msg_list)
         # @2 Command mode

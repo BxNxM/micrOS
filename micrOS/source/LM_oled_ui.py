@@ -15,6 +15,7 @@ try:
 except:
     gol_nextgen = None          # Optional function handling
 
+from utime import ticks_ms, ticks_diff     # For IRQ joystick handling
 
 #################################
 # PAGE MANAGER CLASS DEFINITION #
@@ -157,11 +158,23 @@ class PageUI:
                 # [IRQ] - event type setup
                 pin_obj.irq(trigger=Pin.IRQ_FALLING, handler=callback)
 
-        _set("js_right", lambda pin: self.control('next'))
-        _set("js_left", lambda pin: self.control('prev'))
-        _set("js_up", lambda pin: self.control('on'))
-        _set("js_down", lambda pin: self.control('off'))
-        _set("js_press", lambda pin: self.control('press'))
+        def _event_handler(control_command, prell_ms=150):
+            nonlocal  _p_last
+            _last = _p_last.get(control_command)
+            last = 0 if _last is None else _last
+            # Calculate time difference between last trigger action and now tick.
+            diff = ticks_diff(ticks_ms(), last)
+            if abs(diff) > prell_ms:
+                # Save now tick - last trigger action
+                _p_last[control_command] = ticks_ms()
+                self.control(control_command)
+
+        _p_last = {}
+        _set("js_right", lambda pin: _event_handler('next'))
+        _set("js_left", lambda pin: _event_handler('prev'))
+        _set("js_up", lambda pin: _event_handler('on'))
+        _set("js_down", lambda pin: _event_handler('off'))
+        _set("js_press", lambda pin: _event_handler('press'))
         self.irq_ok = True
 
     def __power_save(self):

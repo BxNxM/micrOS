@@ -2,9 +2,23 @@ import Espnow
 
 def load():
     """
-    Initialize ESPNOW protocal
+    OBSOLETE - remove
+    [DEBUG ONLY] ENABLE ESPNOW IN NODE CONFIG INSTEAD OF HERE!
+        Initialize ESPNOW protocal
     """
     return Espnow.initialize()
+
+def start_server():
+    """
+    OBSOLETE - remove
+    [DEBUG ONLY] ENABLE ESPNOW IN NODE CONFIG INSTEAD OF HERE!
+        Start ESPNOW server/listener
+        - this can receive espnow messages
+        - it includes Load Module execution logic (beta)
+    """
+    now = Espnow.initialize()
+    return now.start_server()
+
 
 def send(peer:bytes|str, msg:str='modules'):
     """
@@ -14,15 +28,6 @@ def send(peer:bytes|str, msg:str='modules'):
     """
     now = Espnow.initialize()
     return now.send(peer, msg)
-
-def start_server():
-    """
-    Start ESPNOW server/listener
-    - this can receive espnow messages
-    - it includes Load Module execution logic (beta)
-    """
-    now = Espnow.initialize()
-    return now.start_server()
 
 def stats():
     """

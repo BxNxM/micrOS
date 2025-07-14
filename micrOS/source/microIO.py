@@ -30,19 +30,19 @@ def detect_platform():
     """
     Unified platform detection for micrOS
     """
-    if 'esp32' in platform:
+    if 'esp32' in platform:     # esp32 family
         board = str(uname()[-1]).lower()
         if 'tinypico' in board:
-            return 'tinypico'    # esp32 family - tinypico
+            return 'tinypico'
         if 'esp32s2' in board:
-            return 'esp32s2'     # esp32 family - esp32S2
+            return 'esp32s2'
         if 'esp32s3' in board:
-            return 'esp32s3'     # esp32 family - esp32s3
+            return 'esp32s3'
         if 'esp32c3' in board:
-            return 'esp32c3'     # esp32 family - esp32c3
+            return 'esp32c3'
         if 'esp32c6' in board:
             return 'esp32c6'
-        return 'esp32'           # esp32 family - general
+        return 'esp32'           # esp32 family: general
     return platform              # esp8266 or something else
 
 

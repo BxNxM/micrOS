@@ -111,3 +111,18 @@ def boot_cause():
             reason = 5, "SoftReset"
     errlog_add(f"[BOOT] info: {reason[1]}")
     return reason
+
+
+def enableESPNow() -> str:
+    """
+    Enable ESP-NOW communication
+    """
+    if cfgget('espnow'):
+        try:
+            from Espnow import ESPNowSS
+            verdict = ESPNowSS().start_server()
+            console_write(f"[TASK] Start ESPNow-InterCon server: {verdict}")
+        except Exception as e:
+            errlog_add(f"[ERR] Start ESPNow-InterCon server: {e}")
+            return str(e)
+    return "ESPNow disabled"

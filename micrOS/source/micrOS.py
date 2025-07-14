@@ -9,7 +9,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from Time import ntp_time, suntime
 from Tasks import Manager
-from Hooks import bootup, profiling_info
+from Hooks import bootup, profiling_info, enableESPNow
 from Network import auto_nw_config
 from Server import Server
 from Interrupts import enableInterrupt, enableCron, initEventIRQs
@@ -74,7 +74,10 @@ def micrOS():
 
     # [Server] as async task
     aio.create_task(Server().run_server(), tag='server')
-    profiling_info(label='[memUsage] SYSTEM IS UP')
+
+    # [ESPNow] server as async task
+    enableESPNow()
+    profiling_info(label='[memUsage] SYSTEM IS UP AND RUNNING')
 
     # [EVENT LOOP] Start async event loop
     aio.run_forever()

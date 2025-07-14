@@ -13,7 +13,7 @@
             1
         ],
         "Hooks.py": [
-            9.85,
+            9.61,
             1
         ],
         "Server.py": [
@@ -70,18 +70,18 @@
         ],
         "Espnow.py": [
             9.57,
-            1
+            2
         ],
         "Scheduler.py": [
             9.62,
             1
         ],
         "microIO.py": [
-            9.43,
+            9.44,
             42
         ],
         "micrOS.py": [
-            9.25,
+            9.27,
             1
         ],
         "Interrupts.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            3554,
+            3570,
             24
         ],
         "load": [
-            9227,
+            9231,
             56
         ],
         "core_dep": [
@@ -338,8 +338,8 @@
             true,
             6
         ],
-        "core_score": 9.25,
+        "core_score": 9.24,
         "load_score": 8.23,
-        "version": "2.10.6-0"
+        "version": "2.10.7-0"
     }
 }

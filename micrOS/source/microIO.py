@@ -40,6 +40,8 @@ def detect_platform():
             return 'esp32s3'     # esp32 family - esp32s3
         if 'esp32c3' in board:
             return 'esp32c3'     # esp32 family - esp32c3
+        if 'esp32c6' in board:
+            return 'esp32c6'
         return 'esp32'           # esp32 family - general
     return platform              # esp8266 or something else
 

@@ -1,5 +1,5 @@
 CP210x Macintosh OS VCP Driver v6 Release Notes
-Copyright (C) 2017-2021 Silicon Laboratories Inc.
+Copyright (C) 2017-2025 Silicon Laboratories Inc.
 
 This release contains the following components:
 
@@ -32,6 +32,7 @@ Uninstalling the Driver
 
 Release Dates
 -------------
+	CP210x Macintosh OS VCP Driver 6.0.3     - May 23, 2025
 	CP210x Macintosh OS VCP Driver 6.0.2     - October 26, 2021
 	CP210x Macintosh OS VCP Driver 6.0.1     - March 26, 2021
 	CP210x Macintosh OS VCP Driver 6.0       - December 18, 2020
@@ -73,6 +74,21 @@ Release Dates
 
 CP210x Macintosh OS Driver Revision History
 --------------------------------------------
+Version 6.0.3
+	Added a feature where the CP210x device sends an XOFF signal to the connected device when macOS goes to sleep.
+	Resolved an issue with driver uninstallation on macOS 13.
+	Fixed an issue where the Mac OSX CP210x v6.0.2 VCP Driver could crash during stress testing.
+	Added VID/PID for UAB DIELEKTRIK.
+	Added VID/PID for Quell Tech Ltd.
+	Added VID/PID for Profoto.
+	Added VID/PID for Cambo Fotografische Industrie BV.
+	Added VID/PID for ZTC WND-7300.
+	Added VID/PID for Integrel Solutions Ltd.
+	Added VID/PID for BRAIN MAGIC.
+	Added VID/PID for ELV Elektronik AG.
+	Added VID/PID for TDK Corporation.
+	Added VID/PID for Regula Forensics.
+	Added VID/PID for ALC Embedded Systems Ltd.
 Version 6.0.2
 	On macOS Big Sur:
 		Fix issue that Xoff state is not remembered when macOS goes to sleep.

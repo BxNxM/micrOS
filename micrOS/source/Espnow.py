@@ -225,7 +225,7 @@ class ESPNowSS:
         peer_name = hexlify(peer, ':').decode() if peer_name is None else peer_name
         task_id = f"con.espnow.{peer_name}"
         # Create an asynchronous sending task.
-        state = NativeTask().create(callback=INSTANCE._asend_task(peer, task_id, msg), tag=task_id)
+        state = NativeTask().create(callback=self._asend_task(peer, task_id, msg), tag=task_id)
         return "Starting" if state else "Already running"
 
     # ----------- OTHER METHODS --------------

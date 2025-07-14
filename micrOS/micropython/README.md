@@ -25,3 +25,5 @@ esp32cam [micropython-camera-driver
 ## Experimental models
 
 rpi-pico-w [RPI_PICO_W](https://micropython.org/download/RPI_PICO_W/)
+
+esp32c6 [ESP32C6](https://micropython.org/download/ESP32_GENERIC_C6/)

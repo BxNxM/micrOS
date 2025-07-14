@@ -69,7 +69,7 @@
             8
         ],
         "Espnow.py": [
-            9.5,
+            9.57,
             1
         ],
         "Scheduler.py": [
@@ -338,7 +338,7 @@
             true,
             6
         ],
-        "core_score": 9.24,
+        "core_score": 9.25,
         "load_score": 8.23,
         "version": "2.10.6-0"
     }

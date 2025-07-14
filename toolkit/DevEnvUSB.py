@@ -77,6 +77,11 @@ class USB(Compile):
                   'deploy': '{esptool_interface} --chip esp32c3 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}',
                   'mpremote_cmd': 'mpremote',
                   'cmd_line_info': '[!HINT!] Fully automatic deployment...'},
+             'esp32c6':
+                 {'erase': '{esptool_interface} --chip esp32c6 --port {dev} erase_flash',
+                  'deploy': '{esptool_interface} --chip esp32c6 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}',
+                  'mpremote_cmd': 'mpremote',
+                  'cmd_line_info': '[!HINT!] Fully automatic deployment...'},
              }
         if not USB.usb_driver_ok:
             # Optimization - driver check

@@ -79,7 +79,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true",
         "measure": {
-            "doc": "\n    Experimental\n    ",
+            "doc": "\n    Experimental - Time of Flight Distance Sensor\n    ",
             "param(s)": ""
         },
         "pinmap": {
@@ -154,33 +154,6 @@
         "play": {
             "doc": "\n    RTTTL Piezzo Player\n    :param rtttlstr str: rttl string, default: 'd=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'\n    :return str: verdict\n    ",
             "param(s)": "rtttlstr='Indiana'"
-        }
-    },
-    "catgame": {
-        "game": {
-            "doc": "\n    Servo cat toy \"mover\" - left-right\n    :param repeat int: repeat servo pos change\n    :param delta int: center(75) +/-delta(35)\n    :return str: verdict\n    ",
-            "param(s)": "repeat=10 delta=20"
-        },
-        "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'game repeat=10', 'options': ['None']}\n\t{'type': 'slider', 'lm_call': 'live_game chance=:range:', 'range': [10, 90, 2]}\n\t{'type': 'button', 'lm_call': 'stop ', 'options': ['None']}",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/catgame.png?raw=true",
-        "live_game": {
-            "doc": "\n    Generate game\n    :param chance int: percent value 0-100\n    :return str: verdict (action / no action)\n    ",
-            "param(s)": "chance=10"
-        },
-        "load": {
-            "doc": "\n    Initialize catgame-servo module\n    ",
-            "param(s)": ""
-        },
-        "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2",
-            "param(s)": ""
-        },
-        "stop": {
-            "doc": "\n    Stop game - home position (75) + deinit\n    :return str: servo verdict\n    ",
-            "param(s)": ""
         }
     },
     "cct": {
@@ -264,45 +237,6 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dashboard_be.png?raw=true",
         "load": {
-            "doc": null,
-            "param(s)": ""
-        }
-    },
-    "demo": {
-        "calculator": {
-            "doc": null,
-            "param(s)": "a b op=\"+\""
-        },
-        "dice_cube": {
-            "doc": null,
-            "param(s)": ""
-        },
-        "exec_info": {
-            "doc": null,
-            "param(s)": ""
-        },
-        "hello": {
-            "doc": null,
-            "param(s)": "name=\"MrNobody\""
-        },
-        "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/demo.png?raw=true",
-        "links": {
-            "doc": null,
-            "param(s)": ""
-        },
-        "load": {
-            "doc": "\n    Initialize demo module\n    ",
-            "param(s)": ""
-        },
-        "source": {
-            "doc": null,
-            "param(s)": ""
-        },
-        "yes_no": {
             "doc": null,
             "param(s)": ""
         }
@@ -637,21 +571,6 @@
         "set_volume": {
             "doc": "\n    Change default volume by positive/negative bitwise shift\n    :param mic: shift_size, positive shift increases volume (int)\n    ",
             "param(s)": "shift_size=0"
-        }
-    },
-    "intercon": {
-        "addr_cache": {
-            "doc": "\n    [!!!] OBSOLETE -> new command: system hosts\n    Dump intercon connection cache\n    :return dict: device-ip pairs\n    ",
-            "param(s)": ""
-        },
-        "help": {
-            "doc": "\n    [!!!] OBSOLETE\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/intercon.png?raw=true",
-        "sendcmd": {
-            "doc": "\n    [!!!] OBSOLETE - NEW SYNTAX: system top >>node01.local\n    Implements send command function towards micrOS devices\n        example: sendcmd \"hello\" host=\"IP/hostname.local\") OR sendcmd host=\"IP/hostname.local\" cmd=\"system rssi\")\n    :param host[0]: host IP or Hostname\n    :param cmd[1]: command - module func arg(s)\n    :return str: reply\n    ",
-            "param(s)": "*args **kwargs"
         }
     },
     "keychain": {
@@ -1199,21 +1118,6 @@
         "serve_w_stepper": {
             "doc": "\n    Pet feeder (beta) - with stepper motor\n    :param count: number of portions\n    :param forward: s\n    :param back:\n    ",
             "param(s)": "portion=1 forward=135 back=10"
-        }
-    },
-    "ph_sensor": {
-        "help": {
-            "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ph_sensor.png?raw=true",
-        "measure": {
-            "doc": null,
-            "param(s)": ""
-        },
-        "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: ph",
-            "param(s)": ""
         }
     },
     "presence": {

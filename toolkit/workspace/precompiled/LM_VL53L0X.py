@@ -343,7 +343,7 @@ class VL53L0X:
 
 def measure():
     """
-    Experimental
+    Experimental - Time of Flight Distance Sensor
     """
     global __TOF_OBJ
     if __TOF_OBJ is None:

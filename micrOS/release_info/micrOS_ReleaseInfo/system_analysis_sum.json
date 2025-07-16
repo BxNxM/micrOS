@@ -2,7 +2,7 @@
     "files": {
         "Time.py": [
             9.16,
-            7
+            6
         ],
         "Files.py": [
             9.6,
@@ -46,7 +46,7 @@
         ],
         "Types.py": [
             8.91,
-            29
+            27
         ],
         "Logger.py": [
             8.9,
@@ -54,11 +54,11 @@
         ],
         "Common.py": [
             9.78,
-            35
+            32
         ],
         "InterConnect.py": [
             9.41,
-            3
+            2
         ],
         "Debug.py": [
             8.4,
@@ -78,7 +78,7 @@
         ],
         "microIO.py": [
             9.44,
-            44
+            42
         ],
         "micrOS.py": [
             9.27,
@@ -152,10 +152,6 @@
             8.04,
             0
         ],
-        "LM_ph_sensor.py": [
-            5.79,
-            0
-        ],
         "LM_buzzer.py": [
             8.8,
             0
@@ -166,7 +162,7 @@
         ],
         "LM_servo.py": [
             7.73,
-            3
+            2
         ],
         "LM_rgbcct.py": [
             8.62,
@@ -296,21 +292,9 @@
             8.32,
             1
         ],
-        "LM_demo.py": [
-            8.57,
-            0
-        ],
         "LM_gameOfLife.py": [
             9.29,
             3
-        ],
-        "LM_catgame.py": [
-            8.85,
-            0
-        ],
-        "LM_intercon.py": [
-            8.18,
-            0
         ],
         "LM_ds18.py": [
             6.0,
@@ -335,8 +319,8 @@
             24
         ],
         "load": [
-            9497,
-            58
+            9280,
+            54
         ],
         "core_dep": [
             true,
@@ -344,10 +328,10 @@
         ],
         "load_dep": [
             true,
-            6
+            5
         ],
         "core_score": 9.24,
-        "load_score": 8.25,
+        "load_score": 8.28,
         "version": "2.10.7-1"
     }
 }

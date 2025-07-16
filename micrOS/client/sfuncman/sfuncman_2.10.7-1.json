@@ -1243,7 +1243,7 @@
             "param(s)": "on off"
         }
     },
-    "qmi8685": {
+    "qmi8658": {
         "acceleration": {
             "doc": null,
             "param(s)": ""
@@ -1256,7 +1256,7 @@
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/qmi8685.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/qmi8658.png?raw=true",
         "load": {
             "doc": "\n    Load the QMI8658 sensor instance.\n    The QMI8658 is a motion sensor that measures acceleration, angular velocity (gyroscope), and temperature\n    ",
             "param(s)": ""

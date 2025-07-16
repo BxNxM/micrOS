@@ -424,7 +424,7 @@ def socket_commandline_args(arg_list):
     return ' <a> '.join(command_buffer), return_action_dict
 
 
-def run(arg_list=[], timeout=10):
+def run(arg_list=[], timeout=10, verbose=False):
     """ Run from code
         - Handles extra command line arguments
     """
@@ -434,7 +434,8 @@ def run(arg_list=[], timeout=10):
     output = False, ''
     try:
         #print("Socket run (args): {}".format(args))
-        output = main(args, host=host, port=port, timeout=timeout, pwd=action['password'], verbose=action['verbose'])
+        verbose = verbose or action['verbose']
+        output = main(args, host=host, port=port, timeout=timeout, pwd=action['password'], verbose=verbose)
     except Exception as e:
         if "TimeOut" in str(e):
             print("Resolve device by host ... {}.local {}:{}:{}".format(fid, host, port, uid))

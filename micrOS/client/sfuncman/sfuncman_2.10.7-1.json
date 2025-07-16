@@ -841,6 +841,45 @@
             "param(s)": ""
         }
     },
+    "neomatrix": {
+        "brightness": {
+            "doc": null,
+            "param(s)": "br: int"
+        },
+        "clear": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "draw": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "fill": {
+            "doc": null,
+            "param(s)": "r: int g: int b: int"
+        },
+        "help": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "param(s)": "widgets=False"
+        },
+        "hsv_to_rgb": {
+            "doc": "module 'LM_neomatrix' has no attribute 'hsv_to_rgb'",
+            "param(s)": "h s v"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
+        "load": {
+            "doc": null,
+            "param(s)": "width=8 height=8"
+        },
+        "pixel": {
+            "doc": null,
+            "param(s)": "x y color= 10 3 0"
+        },
+        "test": {
+            "doc": null,
+            "param(s)": "speed_ms=50"
+        }
+    },
     "neopixel": {
         "brightness": {
             "doc": "\n    Set neopixel brightness\n    :param percent: (int) brightness percentage: 0-100\n    :param smooth: (bool) enable smooth color transition: True(default)/False\n    :param wake: bool - wake up output / if off turn on with new brightness\n    :return dict: rgb status - states: R, G, B, S\n    ",

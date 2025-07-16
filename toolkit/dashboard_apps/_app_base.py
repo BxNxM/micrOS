@@ -20,10 +20,10 @@ class AppBase:
     def get_device(self):
         return self.device
 
-    def execute(self, cmd_list, tout=5):
+    def execute(self, cmd_list, tout=5, verbose=False):
         cmd_args = self.base_cmd() + cmd_list
         print(f"Execute: {cmd_args}")
-        return socketClient.run(cmd_args, timeout=tout)
+        return socketClient.run(cmd_args, timeout=tout, verbose=verbose)
 
     def run(self, cmd_list):
         """Legacy"""

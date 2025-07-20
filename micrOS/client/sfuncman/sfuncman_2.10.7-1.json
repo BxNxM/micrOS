@@ -769,13 +769,29 @@
             "doc": null,
             "param(s)": ""
         },
+        "color_fill": {
+            "doc": null,
+            "param(s)": "r: int g: int b: int"
+        },
+        "cube": {
+            "doc": null,
+            "param(s)": "speed_ms=10"
+        },
         "draw": {
             "doc": null,
             "param(s)": ""
         },
-        "fill": {
-            "doc": null,
-            "param(s)": "r: int g: int b: int"
+        "effect_cube": {
+            "doc": "module 'LM_neomatrix' has no attribute 'effect_cube'",
+            "param(s)": "max_radius:int = 3"
+        },
+        "effect_rainbow": {
+            "doc": "module 'LM_neomatrix' has no attribute 'effect_rainbow'",
+            "param(s)": ""
+        },
+        "effect_snake": {
+            "doc": "module 'LM_neomatrix' has no attribute 'effect_snake'",
+            "param(s)": ""
         },
         "help": {
             "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
@@ -792,11 +808,19 @@
         },
         "pixel": {
             "doc": null,
-            "param(s)": "x y color= 10 3 0"
+            "param(s)": "x y color=None show=True"
         },
-        "test": {
+        "rainbow": {
             "doc": null,
-            "param(s)": "speed_ms=50"
+            "param(s)": "speed_ms=2 rt_draw=False"
+        },
+        "snake": {
+            "doc": null,
+            "param(s)": "speed_ms:int=50 length:int=5"
+        },
+        "stop": {
+            "doc": null,
+            "param(s)": ""
         }
     },
     "neopixel": {
@@ -1657,6 +1681,25 @@
         },
         "list": {
             "doc": "list micrOS tasks by taskID",
+            "param(s)": ""
+        }
+    },
+    "tcs3472": {
+        "help": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "param(s)": "widgest=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true",
+        "load": {
+            "doc": "\n    Load the TCS3472 Color sensor instance.\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
             "param(s)": ""
         }
     },

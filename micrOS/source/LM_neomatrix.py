@@ -12,15 +12,20 @@ class AnimationPlayer:
     Generic async animation (generator) player.
     """
 
-    def __init__(self, animation:callable=None, realtime_draw:bool=True, tag:str=None):
+    def __init__(self, animation:callable=None, realtime_draw:bool=True,
+                 batch_draw:bool=False, batch_size:int|None=None, tag:str=None):
         """
         Initialize the AnimationPlayer with an optional animation.
         :param animation: Function to GENERATE animation data
         :param realtime_draw: If True - draw each change immediately, otherwise draw complete frames.
         :param tag: Optional task tag for micro_task management.
+        :param batch_draw: If True - draw in batches
+        :param batch_size: Number of pixels per batch when drawing
         """
         self.animation:callable = None
         self.realtime_draw:bool = realtime_draw
+        self.batch_draw:bool = batch_draw
+        self._batch_size:int = batch_size if isinstance(batch_size, int) else 8
         self._player_speed_ms:int = 10
         self._main_tag:str = tag if tag else "animation"
         if animation is not None and not self._set_animation(animation):
@@ -36,36 +41,47 @@ class AnimationPlayer:
             return True
         return False
 
+    async def _render(self, my_task):
+        current_animation = self.animation
+        frame_counter = 0
+        # Clear the display before each frame
+        if self.realtime_draw:
+            self.clear()
+        for data in self.animation():
+            # Check if animation has changed under the loop
+            if not self._running or self.animation != current_animation:
+                # Animation changed — restarting loop.
+                break
+            # Update data cache
+            self.update(*data)
+            # Real-time draw mode
+            if self.realtime_draw:
+                # Draw each change
+                self.draw()
+                await my_task.feed(sleep_ms=self._player_speed_ms)
+            # Batched draw mode
+            if self.batch_draw:
+                frame_counter += 1
+                if frame_counter >= self._batch_size:
+                    self.draw()
+                    frame_counter = 0
+                # Test async speed (0.001 ms)
+                await my_task.feed(sleep_ms=self._player_speed_ms)
+        if self.batch_draw:
+            # Draw after generator exhausted in batch mode.
+            self.draw()
+            await my_task.feed(sleep_ms=self._player_speed_ms)
+
     async def _player(self):
         """
         Async task to play the current animation.
         """
 
         with micro_task(tag=f"{self._main_tag}.player") as my_task:
-            current_animation = self.animation
-
             while self._running:
                 my_task.out = f"Play {self.animation.__name__} ({self._player_speed_ms}ms/frame)"
                 try:
-                    # Clear the display before each frame
-                    if self.realtime_draw:
-                        self.clear()
-                    for data in self.animation():
-                        # Check if animation has changed (+ stop trigger)
-                        if self._running and self.animation != current_animation:
-                            current_animation = self.animation
-                            # Animation changed — restarting loop.
-                            break
-                        # Update data cache
-                        self.update(*data)
-                        if self.realtime_draw:
-                            # Draw each change
-                            self.draw()
-                            await my_task.feed(sleep_ms=self._player_speed_ms)
-                    if not self.realtime_draw:
-                        # Draw complete frame only after loop completes
-                        self.draw()
-                        await my_task.feed(sleep_ms=self._player_speed_ms)
+                    await self._render(my_task)
                 except IndexError:
                     # Restart animation if IndexError occurs
                     my_task.out = "Restart animation"
@@ -75,22 +91,42 @@ class AnimationPlayer:
                     break
             my_task.out = f"Animation stopped...{my_task.out}"
 
-    def play_speed(self, speed_ms=None):
+    def control(self, play_speed_ms:int|None, rt_draw:bool=None,
+                      bt_draw:bool=None, bt_size:int=None):
         """
         Set/Get current play speed of the animation.
-        :param speed_ms: player loop speed in milliseconds.
+        :param play_speed_ms: player loop speed in milliseconds.
+        :param rt_draw: Real-time drawing flag.
+        :param bt_draw: batch drawing flag.
+        :param bt_size: batch drawing size.
         """
-        if speed_ms is None:
-            return self._player_speed_ms
-        self._player_speed_ms = max(1, min(10000, int(speed_ms)))
-        return self._player_speed_ms
 
-    def play(self, animation=None, speed_ms=None, rt_draw=True):
+        if isinstance(play_speed_ms, int):
+            self._player_speed_ms = max(0, min(10000, int(play_speed_ms)))
+
+        if isinstance(rt_draw, bool):
+            self.realtime_draw = rt_draw
+
+        if isinstance(bt_draw, bool):
+            self.batch_draw = bt_draw
+            # Disable real-time drawing when batch drawing is enabled.
+            if self.batch_draw:
+                self.realtime_draw = False
+
+        if isinstance(bt_size, int):
+            self._batch_size = bt_size
+
+        return {"rt": self.realtime_draw, "bt": self.batch_draw, "bs": self._batch_size, "ps": self._player_speed_ms}
+
+
+    def play(self, animation=None, speed_ms=None, rt_draw=True, bt_draw=False, bt_size=None):
         """
         Play animation via generator function.
         :param animation: Animation generator function.
         :param speed_ms: Speed of the animation in milliseconds. (min.: 3ms)
         :param rt_draw: Real-time drawing flag.
+        :param bt_draw: batch drawing flag.
+        :param bt_size: batch drawing size.
         """
 
         if animation is not None:
@@ -100,11 +136,8 @@ class AnimationPlayer:
         if self.animation is None:
             return "No animation to play"
 
-        if isinstance(speed_ms, int):
-            self.play_speed(speed_ms)
-
-        if isinstance(rt_draw, bool):
-            self.realtime_draw = rt_draw
+        # Handle player settings
+        self.control(play_speed_ms=speed_ms, rt_draw=rt_draw, bt_draw=bt_draw, bt_size=bt_size)
 
         # Ensure async loop set up correctly. (After stop operation, it is needed)
         self._running = True
@@ -118,9 +151,13 @@ class AnimationPlayer:
         Stop the animation.
         """
         self._running = False
+        try:
+            self.clear()
+        except:
+            pass
         return "Stop animation player"
 
-
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def update(self, *arg, **kwargs):
         """
         Child class must implement this method to handle drawing logic.
@@ -167,7 +204,6 @@ class NeoPixelMatrix(AnimationPlayer):
     def clear(self):
         # Animation player will call this method to clear the display.
         for i in range(self.num_pixels):
-            #self._color_buffer[i] = (0, 0, 0)
             # Write pixel buffer before write to ws2812
             self.pixels[i] = (0, 0, 0)
         # Send buffer to device
@@ -290,12 +326,13 @@ def brightness(br: int):
     return load().brightness(br)
 
 
-def player_speed(ms=None):
+def player_control(speed_ms=None, rt_draw:bool=None, bt_draw:bool=None):
     """
     Change the speed of frame generation for animations.
     """
-    ms = load().play_speed(speed_ms=ms)
-    return f"Player speed: {ms} ms/frame generation"
+    data = load().control(play_speed_ms=speed_ms, rt_draw=rt_draw, bt_draw=bt_draw)
+    _speed_ms = data.get("ps", None)
+    return f"Control state: {data} (speed: {_speed_ms}ms)"
 
 
 def stop():
@@ -308,7 +345,7 @@ def stop():
 # -----------------------------------------------------------------------------
 
 
-def rainbow(speed_ms=2, rt_draw=False):
+def rainbow(speed_ms=0):
     def effect_rainbow():
         def hsv_to_rgb(h, s, v):
             max_color = 150   #255
@@ -346,9 +383,8 @@ def rainbow(speed_ms=2, rt_draw=False):
                     hue = ((index + frame) % 64) / 64.0
                     r, g, b = hsv_to_rgb(hue, 1.0, 0.7)
                     yield x, y, (r, g, b)
-                NeoPixelMatrix.INSTANCE.draw()          # Workaround...
 
-    return load().play(effect_rainbow, speed_ms=speed_ms, rt_draw=rt_draw)
+    return load().play(effect_rainbow, speed_ms=speed_ms, rt_draw=False, bt_draw=True, bt_size=8)
 
 
 def snake(speed_ms:int=50, length:int=5):
@@ -410,6 +446,6 @@ def help(widgets=False):
                              'SLIDER brightness br=<0-60-2>',
                              'BUTTON stop',
                              'BUTTON snake speed_ms=50 length=5',
-                             'BUTTON rainbow speed_ms=2',
-                             'BUTTON cube',
-                             'SLIDER player_speed ms=<5-200-5>'), widgets=widgets)
+                             'BUTTON rainbow',
+                             'BUTTON cube speed_ms=10',
+                             'SLIDER player_control speed_ms=<2-200-2> rt_draw=None bt_draw=None'), widgets=widgets)

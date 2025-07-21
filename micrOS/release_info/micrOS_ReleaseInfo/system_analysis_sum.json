@@ -313,17 +313,17 @@
             0
         ],
         "LM_neomatrix.py": [
-            9.0,
+            8.87,
             0
         ]
     },
     "summary": {
         "core": [
-            3570,
+            3572,
             24
         ],
         "load": [
-            9528,
+            9555,
             55
         ],
         "core_dep": [
@@ -335,7 +335,7 @@
             5
         ],
         "core_score": 9.24,
-        "load_score": 8.31,
-        "version": "2.10.7-1"
+        "load_score": 8.3,
+        "version": "2.10.8-0"
     }
 }

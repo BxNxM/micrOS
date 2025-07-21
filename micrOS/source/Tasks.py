@@ -98,9 +98,11 @@ class TaskBase:
     async def feed(sleep_ms=1):
         """
         Feed event loop
-        :param sleep_ms: in millisecond (min: 1)
+        :param sleep_ms: in millisecond
         """
         # TODO: feed WDT - preemptive cooperative multitasking aka reboot if no feed until X time period
+        if sleep_ms <= 0:
+            return await asyncio.sleep(0.000_000_1)     # 0 means: 100ns (Absolute minimum)
         return await asyncio.sleep_ms(sleep_ms)
 
     def __del__(self):

@@ -21,17 +21,16 @@ class AnimationPlayer:
         """
         self.animation:callable = None
         self.realtime_draw:bool = realtime_draw
-        self.player_speed_ms:int = 10
+        self._player_speed_ms:int = 10
         self._main_tag:str = tag if tag else "animation"
-        self._set_animation(animation)
+        if animation is not None and not self._set_animation(animation):
+            raise Exception("Invalid animation function provided.")
         self._running:bool = True
 
-    def _set_animation(self, animation) -> bool:
+    def _set_animation(self, animation:callable) -> bool:
         """
         Set/Change the current animation to be played.
         """
-        if animation is None:
-            return False
         if callable(animation):
             self.animation = animation
             return True
@@ -46,7 +45,7 @@ class AnimationPlayer:
             current_animation = self.animation
 
             while self._running:
-                my_task.out = f"Play {self.animation.__name__} ({self.player_speed_ms}ms/frame)"
+                my_task.out = f"Play {self.animation.__name__} ({self._player_speed_ms}ms/frame)"
                 try:
                     # Clear the display before each frame
                     if self.realtime_draw:
@@ -62,17 +61,29 @@ class AnimationPlayer:
                         if self.realtime_draw:
                             # Draw each change
                             self.draw()
-                            await my_task.feed(sleep_ms=self.player_speed_ms)
+                            await my_task.feed(sleep_ms=self._player_speed_ms)
                     if not self.realtime_draw:
                         # Draw complete frame only after loop completes
                         self.draw()
-                        await my_task.feed(sleep_ms=self.player_speed_ms)
+                        await my_task.feed(sleep_ms=self._player_speed_ms)
                 except IndexError:
                     # Restart animation if IndexError occurs
+                    my_task.out = "Restart animation"
                     pass
                 except Exception as e:
-                    print(f"Error: {e}")
+                    my_task.out = f"Error: {e}"
                     break
+            my_task.out = f"Animation stopped...{my_task.out}"
+
+    def play_speed(self, speed_ms=None):
+        """
+        Set/Get current play speed of the animation.
+        :param speed_ms: player loop speed in milliseconds.
+        """
+        if speed_ms is None:
+            return self._player_speed_ms
+        self._player_speed_ms = max(1, min(10000, int(speed_ms)))
+        return self._player_speed_ms
 
     def play(self, animation=None, speed_ms=None, rt_draw=True):
         """
@@ -90,7 +101,7 @@ class AnimationPlayer:
             return "No animation to play"
 
         if isinstance(speed_ms, int):
-            self.player_speed_ms = speed_ms if speed_ms > 1 else 2
+            self.play_speed(speed_ms)
 
         if isinstance(rt_draw, bool):
             self.realtime_draw = rt_draw
@@ -101,7 +112,6 @@ class AnimationPlayer:
         # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
         state = micro_task(tag=f"{self._main_tag}.player", task=self._player())
         return "Starting" if state else "Already running..."
-
 
     def stop(self):
         """
@@ -134,7 +144,7 @@ class AnimationPlayer:
 
 class NeoPixelMatrix(AnimationPlayer):
     INSTANCE = None
-    DEFAULT_COLOR = (20, 5, 0)  # Default color for the matrix
+    DEFAULT_COLOR = (100, 23, 0)  # Default color for the matrix
 
     def __init__(self, width: int = 8, height: int = 8, pin: int = 0):
         super().__init__(tag="neomatrix")
@@ -142,7 +152,8 @@ class NeoPixelMatrix(AnimationPlayer):
         self.height = height
         self.num_pixels = width * height
         self.pixels = NeoPixel(Pin(pin, Pin.OUT), self.num_pixels)
-        self.buffer = [(0, 0, 0)] * self.num_pixels  # Store original RGB values
+        self._color_buffer = [(0, 0, 0)] * self.num_pixels      # Store original RGB values
+        self._brightness = 0.25                                 # Brightness level, default 25%
         NeoPixelMatrix.INSTANCE = self
 
     def update(self, x:int, y:int, color:tuple[int, int, int]):
@@ -156,48 +167,69 @@ class NeoPixelMatrix(AnimationPlayer):
     def clear(self):
         # Animation player will call this method to clear the display.
         for i in range(self.num_pixels):
-            self.buffer[i] = (0, 0, 0)
+            #self._color_buffer[i] = (0, 0, 0)
+            # Write pixel buffer before write to ws2812
             self.pixels[i] = (0, 0, 0)
+        # Send buffer to device
         self.draw()
 
     def _coord_to_index(self, x: int, y: int):
-        # Zigzag layout: even rows left-to-right, odd rows right-to-left
+        """
+        Zigzag layout: even rows left-to-right, odd rows right-to-left
+        """
         if y % 2 == 0:
             return y * self.width + x
         return y * self.width + (self.width - 1 - x)
 
-    @staticmethod
-    def _rgb_to_grb(color: tuple[int, int, int]):
-        return color[1], color[0], color[2]  # GRB format
+    def _rgb_to_grb_with_br(self, color: tuple[int, int, int]):
+        """
+        Converts RGB to GRB with brightness adjustment.
+        """
+        def scale(val):
+            return max(0, min(255, int(val * self._brightness)))
+
+        return scale(color[1]), scale(color[0]), scale(color[2])
 
     def set_pixel(self, x: int, y: int, color: tuple[int, int, int]):
+        """
+        Set pixel at (x, y) with RGB
+        """
         if 0 <= x < self.width and 0 <= y < self.height:
             index = self._coord_to_index(x, y)
-            self.buffer[index] = color  # store original RGB for brightness control
-            self.pixels[index] = self._rgb_to_grb(color)
+            self._color_buffer[index] = color  # store original RGB for brightness control
+            self.pixels[index] = self._rgb_to_grb_with_br(color)
 
     def color(self, color: tuple[int, int, int]):
+        """
+        Fill color OR Animation color change.
+        :param color: tuple[int, int, int] range: 0-255
+        :return: str
+        """
+        r, g, b = max(0, min(color[0], 255)), max(0, min(color[1], 255)), max(0, min(color[2], 255))
+        color = (r, g, b)
+        NeoPixelMatrix.DEFAULT_COLOR = color
         if manage_task(f"{self._main_tag}.player", "isbusy"):
-            NeoPixelMatrix.DEFAULT_COLOR = color
             return f"Set animation color to {color}"
         for i in range(self.num_pixels):
-            self.buffer[i] = color
-            NeoPixelMatrix.DEFAULT_COLOR = color
-            self.pixels[i] = self._rgb_to_grb(color)
+            self._color_buffer[i] = color
+            # Write pixel buffer before write to ws2812
+            self.pixels[i] = self._rgb_to_grb_with_br(color)
+        # Send buffer to device
         self.draw()
         return f"Set all pixels to {color}"
 
     def brightness(self, br: int):
+        """
+        Change the brightness of all pixels.
+        """
         br = max(0, min(br, 100))  # clamp brightness to 0–100%
+        self._brightness = br / 100.0
         # Set color matrix brightness
-        for i, (r, g, b) in enumerate(self.buffer):
-            scaled = (
-                min(255, max(0, int(r * br / 100))),
-                min(255, max(0, int(g * br / 100))),
-                min(255, max(0, int(b * br / 100)))
-            )
-            self.pixels[i] = self._rgb_to_grb(scaled)
+        for i, color in enumerate(self._color_buffer):
+            # Write pixel buffer before write to ws2812
+            self.pixels[i] = self._rgb_to_grb_with_br(color)
         self.draw()
+        return f"Set brightness to {br}%"
 
 
 ##########################################################################################################
@@ -205,12 +237,18 @@ class NeoPixelMatrix(AnimationPlayer):
 # --- Example usage with micrOS framework ---
 
 def load(width=8, height=8):
+    """
+    Load NeoPixelMatrix instance. If not already loaded
+    """
     if NeoPixelMatrix.INSTANCE is None:
         NeoPixelMatrix(width=width, height=height, pin=bind_pin('neop'))
     return NeoPixelMatrix.INSTANCE
 
 
 def pixel(x, y, color=None, show=True):
+    """
+    Set pixel at (x,y) to RGB color.
+    """
     color = NeoPixelMatrix.DEFAULT_COLOR if color is None else color
     matrix = load()
     matrix.set_pixel(x, y, color)
@@ -221,27 +259,50 @@ def pixel(x, y, color=None, show=True):
 
 
 def draw():
+    """
+    Draw the current frame manually on the screen.
+    """
     load().draw()
     return "Draw screen"
 
 
 def clear():
+    """
+    Clear the screen.
+    """
     load().clear()
     return "Clear screen"
 
 
 def color_fill(r: int, g: int, b: int):
+    """
+    Fill the screen with a solid color.
+    OR
+    Change animation color (when possible)
+    """
     return load().color((r, g, b))
 
 
 def brightness(br: int):
-    load().brightness(br)
-    return f"Set brightness to {br}%"
+    """
+    Change the brightness of the display. (0-100)
+    """
+    return load().brightness(br)
+
+
+def player_speed(ms=None):
+    """
+    Change the speed of frame generation for animations.
+    """
+    ms = load().play_speed(speed_ms=ms)
+    return f"Player speed: {ms} ms/frame generation"
 
 
 def stop():
+    """
+    Stop the current animation
+    """
     return load().stop()
-
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -285,7 +346,7 @@ def rainbow(speed_ms=2, rt_draw=False):
                     hue = ((index + frame) % 64) / 64.0
                     r, g, b = hsv_to_rgb(hue, 1.0, 0.7)
                     yield x, y, (r, g, b)
-                NeoPixelMatrix.INSTANCE.draw()
+                NeoPixelMatrix.INSTANCE.draw()          # Workaround...
 
     return load().play(effect_rainbow, speed_ms=speed_ms, rt_draw=rt_draw)
 
@@ -345,9 +406,10 @@ def help(widgets=False):
     return resolve(('load width=8 height=8',
                              'pixel x y color=(10, 3, 0) show=True',
                              'BUTTON clear',
-                             'COLOR color_fill r=<0-255> g=<0-255> b=<0-255>',
-                             'SLIDER brightness br=<0-100>',
+                             'COLOR color_fill r=<0-255-5> g=<0-255-5> b=<0-255-5>',
+                             'SLIDER brightness br=<0-60-2>',
                              'BUTTON stop',
                              'BUTTON snake speed_ms=50 length=5',
                              'BUTTON rainbow speed_ms=2',
-                             'BUTTON cube'), widgets=widgets)
+                             'BUTTON cube',
+                             'SLIDER player_speed ms=<5-200-5>'), widgets=widgets)

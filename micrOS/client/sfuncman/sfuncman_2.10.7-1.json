@@ -762,15 +762,15 @@
     },
     "neomatrix": {
         "brightness": {
-            "doc": null,
+            "doc": "\n    Change the brightness of the display. (0-100)\n    ",
             "param(s)": "br: int"
         },
         "clear": {
-            "doc": null,
+            "doc": "\n    Clear the screen.\n    ",
             "param(s)": ""
         },
         "color_fill": {
-            "doc": null,
+            "doc": "\n    Fill the screen with a solid color.\n    OR\n    Change animation color (when possible)\n    ",
             "param(s)": "r: int g: int b: int"
         },
         "cube": {
@@ -778,7 +778,7 @@
             "param(s)": "speed_ms=10"
         },
         "draw": {
-            "doc": null,
+            "doc": "\n    Draw the current frame manually on the screen.\n    ",
             "param(s)": ""
         },
         "effect_cube": {
@@ -803,23 +803,31 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
         "load": {
-            "doc": null,
+            "doc": "\n    Load NeoPixelMatrix instance. If not already loaded\n    ",
             "param(s)": "width=8 height=8"
         },
         "pixel": {
-            "doc": null,
+            "doc": "\n    Set pixel at (x,y) to RGB color.\n    ",
             "param(s)": "x y color=None show=True"
+        },
+        "player_speed": {
+            "doc": "\n    Change the speed of frame generation for animations.\n    ",
+            "param(s)": "ms=None"
         },
         "rainbow": {
             "doc": null,
             "param(s)": "speed_ms=2 rt_draw=False"
+        },
+        "scale": {
+            "doc": "module 'LM_neomatrix' has no attribute 'scale'",
+            "param(s)": "val"
         },
         "snake": {
             "doc": null,
             "param(s)": "speed_ms:int=50 length:int=5"
         },
         "stop": {
-            "doc": null,
+            "doc": "\n    Stop the current animation\n    ",
             "param(s)": ""
         }
     },

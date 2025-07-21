@@ -3,28 +3,30 @@
 
 ## Basic models
 
-- esp32 [ESP32\_GENERIC](https://micropython.org/download/ESP32_GENERIC/)
+- **2/5**⭐️ esp32 [ESP32\_GENERIC](https://micropython.org/download/ESP32_GENERIC/)
 
-- esp32c3 [ESP32\_GENERIC\_C3](https://micropython.org/download/ESP32_GENERIC_C3/)
+- **1/5**⭐️ esp32c3 [ESP32\_GENERIC\_C3](https://micropython.org/download/ESP32_GENERIC_C3/)
 
-- esp32s2 [ESP32\_GENERIC\_S2](https://micropython.org/download/ESP32_GENERIC_S2/)
+- **2/5**⭐️ esp32s2 [ESP32\_GENERIC\_S2](https://micropython.org/download/ESP32_GENERIC_S2/)
 
-- esp32s2-LOLIN_MINI [LOLIN\_S2\_MINI](https://micropython.org/download/LOLIN_S2_MINI/)
+- **2/5**⭐️ esp32s2-LOLIN_MINI [LOLIN\_S2\_MINI](https://micropython.org/download/LOLIN_S2_MINI/)
 
 ## Pro models
 
-- esp32s3 [ESP32\_GENERIC\_S3](https://micropython.org/download/ESP32_GENERIC_S3/)
+- **5/5**⭐️ esp32s3 [ESP32\_GENERIC\_S3](https://micropython.org/download/ESP32_GENERIC_S3/)
 
-> esp32s3 default required flash size: 8Mb
+> Micropython **esp32s3 default flash size: 8Mb**
 
-- esp32s3\_spiram\_oct [ESP32\_GENERIC\_S3 - Octal-SPIRAM](https://micropython.org/download/ESP32_GENERIC_S3/) 
+> Additional esp32s3 4MB flash support
+
+- **5/5**⭐️ esp32s3\_spiram\_oct [ESP32\_GENERIC\_S3 - Octal-SPIRAM](https://micropython.org/download/ESP32_GENERIC_S3/) 
 
 - tinypico [UM\_TINYPICO](https://micropython.org/download/UM_TINYPICO/)
 
-- esp32cam [micropython-camera-driver
+- **4/5**⭐️ esp32cam [micropython-camera-driver
 ](https://github.com/lemariva/micropython-camera-driver/tree/master/firmware)
 
-- esp32c6 [ESP32C6](https://micropython.org/download/ESP32_GENERIC_C6/)
+- **4/5**⭐️ esp32c6 [ESP32C6](https://micropython.org/download/ESP32_GENERIC_C6/)
 
 ## Experimental models
 

@@ -186,9 +186,9 @@ def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
     :param write: send color buffer to neopixel (update LEDs)
     :return dict: rgb status - states: R, G, B, S
     """
-    r = Data.DCACHE[0] if r is None else r
-    g = Data.DCACHE[1] if g is None else g
-    b = Data.DCACHE[2] if b is None else b
+    r = int(Data.DCACHE[0]) if r is None else r
+    g = int(Data.DCACHE[1]) if g is None else g
+    b = int(Data.DCACHE[2]) if b is None else b
     neo_n = __init_NEOPIXEL().n
     if s <= neo_n:
         Data.NEOPIXEL_OBJ[s] = (r, g, b)

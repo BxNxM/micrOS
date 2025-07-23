@@ -719,41 +719,65 @@
     },
     "neoeffects": {
         "color": {
-            "doc": "\n    Set color buffer - for runtime effect color change\n    :param r int: red channel 0-255 (default: None - cached value)\n    :param g int: green channel 0-255 (default: None - cached value)\n    :param b int: blue channel 0-255 (default: None - cached value)\n    :return dict: rgb status - states: R, G, B, S\n    ",
-            "param(s)": "r=None g=None b=None"
+            "doc": "\n    Set color buffer - for runtime effect color change\n    :param r: red channel 0-255 (default: None - cached value)\n    :param g: green channel 0-255 (default: None - cached value)\n    :param b: blue channel 0-255 (default: None - cached value)\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "r:int=None g:int=None b:int=None"
         },
         "cycle": {
-            "doc": "\n    Cycle effect\n    :param r int: red value 0-1000\n    :param g int: green value 0-1000\n    :param b int: blue value 0-1000\n    :param shift bool: automatic effect shifting\n    :param ledcnt int: number of neopixel elements in chain (default: 24)\n    :return str: verdict\n    ",
-            "param(s)": "r=None g=None b=None shift=True ledcnt=24"
+            "doc": "\n    Cycle effect\n    :param speed_ms: animation speed in milliseconds\n    :param shift: automatic effect rotation\n    :param batch: enable/disable batch update mode\n    ",
+            "param(s)": "speed_ms:int=30 shift:bool=True batch:bool=True"
+        },
+        "effect_cycle": {
+            "doc": "module 'LM_neoeffects' has no attribute 'effect_cycle'",
+            "param(s)": ""
+        },
+        "effect_fire": {
+            "doc": "module 'LM_neoeffects' has no attribute 'effect_fire'",
+            "param(s)": ""
+        },
+        "effect_meteor": {
+            "doc": "module 'LM_neoeffects' has no attribute 'effect_meteor'",
+            "param(s)": ""
+        },
+        "effect_rainbow": {
+            "doc": "module 'LM_neoeffects' has no attribute 'effect_rainbow'",
+            "param(s)": ""
+        },
+        "effect_shader": {
+            "doc": "module 'LM_neoeffects' has no attribute 'effect_shader'",
+            "param(s)": ""
         },
         "fire": {
-            "doc": null,
-            "param(s)": "r=None g=None b=None ledcnt=24"
+            "doc": "\n    Fire effect\n    :param speed_ms: animation speed in milliseconds\n    :param br: max brightness 0-100%\n    :param batch: batch update\n    ",
+            "param(s)": "speed_ms:int=1 br:int=50 batch:bool=True"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'meteor &&', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'cycle &&50', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'rainbow br=50 &&', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'fire &&200', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'stop_effects ', 'options': ['None']}\n\t{'type': 'color', 'lm_call': 'color r=:range: g=:range: b=:range:', 'range': [0, 255, 10]}",
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'meteor ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'cycle ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'rainbow ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'fire ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'stop_effects ', 'options': ['None']}\n\t{'type': 'color', 'lm_call': 'color r=:range: g=:range: b=:range:', 'range': [0, 255, 10]}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true",
+        "load": {
+            "doc": "\n    Load LM_neopixel and DrawEffectV2\n    ",
+            "param(s)": "pixel_cnt=24"
+        },
         "meteor": {
-            "doc": "\n    Meteor effect\n    :param r int: red value 0-1000\n    :param g int: green value 0-1000\n    :param b int: blue value 0-1000\n    :param shift bool: automatic effect shifting\n    :param ledcnt int: number of neopixel elements in chain (default: 24)\n    :return str: verdict\n    ",
-            "param(s)": "r=None g=None b=None shift=True ledcnt=24"
+            "doc": "\n    Meteor effect\n    :param speed_ms: animation speed in milliseconds\n    :param shift: automatic effect rotation\n    :param batch: batch mode\n    :return str: verdict\n    ",
+            "param(s)": "speed_ms:int=1 shift:bool=True batch:bool=True"
         },
         "pinmap": {
             "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: neop",
             "param(s)": ""
         },
         "rainbow": {
-            "doc": "\n    Rainbow effect\n    :param step int: color weel resolution in step (default: 1)\n    :param br int: brightness in percentage\n    :param ledcnt int: number of neopixel elements in chain (default: 24)\n    :return str: verdict\n    ",
-            "param(s)": "step=1 br=50 ledcnt=24"
+            "doc": null,
+            "param(s)": "speed_ms=1 br=25 batch=True"
         },
         "random": {
             "doc": "\n    Demo function: implements random color change\n    :param max_val: set channel maximum generated value: 0-255\n    :return str: rgb status - states: R, G, B\n    ",
             "param(s)": "max_val=255"
         },
         "shader": {
-            "doc": "\n    Shader for ring lamp\n    :param size int: shader size (disabled LEDs)\n    :param offset int: rotate shader 0-(ledcnt-1)\n    :param shift bool: auto shift shader effect (False)\n    :param ledcnt int: number of neopixel elements in chain (default: 24)\n    :return str: verdict\n    ",
-            "param(s)": "size=6 offset=0 shift=False ledcnt=24"
+            "doc": null,
+            "param(s)": "offset=0 size=6"
         },
         "stop_effects": {
             "doc": "\n    Stop all running (neo)effects tasks\n    ",
@@ -812,7 +836,7 @@
         },
         "player_control": {
             "doc": "\n    Change the speed of frame generation for animations.\n    ",
-            "param(s)": "speed_ms=None rt_draw:bool=None bt_draw:bool=None"
+            "param(s)": "speed_ms=None bt_draw:bool=None"
         },
         "rainbow": {
             "doc": null,

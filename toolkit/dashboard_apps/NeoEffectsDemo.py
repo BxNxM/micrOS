@@ -25,40 +25,33 @@ def app(devfid=None, pwd=None):
     status, answer = CLIENT.run(args)
     time.sleep(2)
 
-    status, answer = CLIENT.run(['neoeffects rainbow &&'])
+    status, answer = CLIENT.run(['neoeffects rainbow'])
     time.sleep(2)
-    status, answer = CLIENT.run(['task kill neoeffects.rainbow'])
 
     status, answer = CLIENT.run(['neoeffects color 122 18 0'])
 
-    status, answer = CLIENT.run(['neoeffects cycle &&'])
+    status, answer = CLIENT.run(['neoeffects cycle'])
     time.sleep(2)
-    status, answer = CLIENT.run(['task kill neoeffects.cycle'])
 
-    status, answer = CLIENT.run(['neoeffects meteor &&'])
+    status, answer = CLIENT.run(['neoeffects meteor'])
     time.sleep(2)
-    status, answer = CLIENT.run(['task kill neoeffects.meteor'])
 
-    status, answer = CLIENT.run(['neoeffects fire &&'])
+    status, answer = CLIENT.run(['neoeffects fire'])
     time.sleep(2)
-    status, answer = CLIENT.run(['task kill neoeffects.fire'])
 
-    time.sleep(1)
 
     status, answer = CLIENT.run(['neoeffects random &&500'])
 
-    status, answer = CLIENT.run(['neoeffects cycle &&'])
+    status, answer = CLIENT.run(['neoeffects cycle'])
     time.sleep(3)
-    status, answer = CLIENT.run(['task kill neoeffects.cycle'])
 
-    status, answer = CLIENT.run(['neoeffects meteor &&'])
+    status, answer = CLIENT.run(['neoeffects meteor'])
     time.sleep(3)
-    status, answer = CLIENT.run(['task kill neoeffects.meteor'])
 
-    status, answer = CLIENT.run(['neoeffects fire &&'])
+    status, answer = CLIENT.run(['neoeffects fire'])
     time.sleep(3)
-    status, answer = CLIENT.run(['task kill neoeffects.fire'])
 
+    status, answer = CLIENT.run(['task kill neoeffects.player'])
     status, answer = CLIENT.run(['task kill neoeffects.random'])
     status, answer = CLIENT.run(['neopixel color 122 18 0'])
 

@@ -1,4 +1,4 @@
-
+from sim_console import console
 
 class NeoPixel:
     __instance = None
@@ -17,9 +17,10 @@ class NeoPixel:
         return cls.__pix_list[key]
 
     def __setitem__(cls, key, value):
+        console(f"Update NeoPixel at index {key} to {value}")
         cls.__pix_list[key] = value
 
     def write(cls):
-        pass
+        console(f"Neopixel write: {cls.__pix_list}")
 
 

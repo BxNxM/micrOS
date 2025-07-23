@@ -53,7 +53,7 @@
             4
         ],
         "Common.py": [
-            9.78,
+            9.77,
             33
         ],
         "InterConnect.py": [
@@ -197,7 +197,7 @@
             0
         ],
         "LM_neoeffects.py": [
-            6.86,
+            9.05,
             0
         ],
         "LM_i2c.py": [
@@ -313,17 +313,17 @@
             0
         ],
         "LM_neomatrix.py": [
-            8.87,
+            8.61,
             0
         ]
     },
     "summary": {
         "core": [
-            3572,
+            3696,
             24
         ],
         "load": [
-            9555,
+            9369,
             55
         ],
         "core_dep": [
@@ -335,7 +335,7 @@
             5
         ],
         "core_score": 9.24,
-        "load_score": 8.3,
+        "load_score": 8.34,
         "version": "2.10.8-0"
     }
 }

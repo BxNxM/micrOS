@@ -1,167 +1,107 @@
-from LM_neopixel import load, segment, Data, status, pinmap as pm
+from LM_neopixel import load as neoload, segment, Data, status, pinmap as pm
 from random import randint
 from Types import resolve
-from Common import manage_task
+from Common import manage_task, AnimationPlayer
 
 
 #################################
 #  NEOPIXEL EFFECT DRAWER CLASS #
 #################################
 
-class DrawEffect:
-    __instance = None
+class DrawEffectV2(AnimationPlayer):
+    INSTANCE = None
 
-    def __new__(cls, pixcnt=24):
-        if DrawEffect.__instance is None:
-            DrawEffect.__instance = super().__new__(cls)
-            DrawEffect.__instance.pix_cnt = None
-            DrawEffect.__instance.index_offset = 0
-            DrawEffect.__instance.color_wheel = 0
-            DrawEffect.__instance.__init_effect(pixcnt)
-            DrawEffect.__instance.offset_gen = None
-            DrawEffect.__instance.auto_shift = False
-        return DrawEffect.__instance
+    def __init__(self, pix_cnt=24):
+        super().__init__(tag="neoeffects")
+        neoload(ledcnt=pix_cnt)
+        DrawEffectV2.INSTANCE = self
 
-    def __init_effect(cls, ledcnt):
-        """
-        Set neopixel object & store pixel cnt
-        """
-        if Data.NEOPIXEL_OBJ is None:
-            load(ledcnt=ledcnt)
-            cls.pix_cnt = Data.NEOPIXEL_OBJ.n
-        if cls.pix_cnt is None:
-            cls.pix_cnt = Data.NEOPIXEL_OBJ.n
-        return cls.pix_cnt
+    @staticmethod
+    def normalize_index(value) -> int:
+        return value % Data.NEOPIXEL_OBJ.n
 
-    def __offset(cls, shift):
-        def _gen():
-            while True:
-                if cls.auto_shift:
-                    # Step rotation cycle - shift True
-                    cls.index_offset += 1
-                    if cls.index_offset > cls.pix_cnt - 1:
-                        cls.index_offset = 0
-                for k in range(cls.index_offset, cls.pix_cnt):
-                    yield k
-                for k in range(0, cls.index_offset):
-                    yield k
-        cls.auto_shift = shift
-        if cls.offset_gen is None:
-            cls.offset_gen = _gen()
-        return cls.offset_gen
+    @staticmethod
+    def color_code(r:int=None, g:int=None, b:int=None) -> tuple[float, float, float]:
+        _r, _g, _b, _ = Data.DCACHE
+        r = _r if r is None else r
+        g = _g if g is None else g
+        b = _b if b is None else b
+        return r, g, b
 
-    def draw(cls, iterable, shift=False):
-        """
-        DRAW GENERATED COLORS (RGB)
-        HELPER FUNCTION with auto shift (offset) sub function
-        :param iterable: Colors generator object / iterable
-        :param shift: automatic color map rotation
-        :return: None
-        """
-        offset_gen = cls.__offset(shift=shift)
-        r, g, b, i = 0, 0, 0, 0
-        for r, g, b in iterable:
-            # Handle index offset - rotate effect
-            i = next(offset_gen)
-            # Write data to neopixel - write / segment :)
-            segment(int(r), int(g), int(b), s=i, cache=False, write=False)
-        segment(int(r), int(g), int(b), s=i, cache=False, write=True)
-        return True
+    def update(self, index:int, r:int|float, g:int|float, b:int|float):
+        # Animation player will call this method to update pixels.
+        segment(r=int(r), g=int(g), b=int(b), s=index, cache=False, write=False)
 
+    def draw(self):
+        # Animation player will call this method to update pixels.
+        Data.NEOPIXEL_OBJ.write()
 
-def __color_input(r, g, b):
-    _r, _g, _b, _ = Data.DCACHE
-    r = _r if r is None else r
-    g = _g if g is None else g
-    b = _b if b is None else b
-    return r, g, b
+    def clear(self):
+        # Animation player will call this method to update pixels.
+        for i in range(0, Data.NEOPIXEL_OBJ.n):
+            self.update(i, 0, 0, 0)
+        self.draw()
 
+##################################################################################
+#                                  EFFECTS                                       #
+##################################################################################
 
-#################################
-#         DEFINE EFFECTS        #
-#################################
-
-def meteor(r=None, g=None, b=None, shift=True, ledcnt=24):
+def meteor(speed_ms:int=1, shift:bool=True, batch:bool=True):
     """
     Meteor effect
-    :param r int: red value 0-1000
-    :param g int: green value 0-1000
-    :param b int: blue value 0-1000
-    :param shift bool: automatic effect shifting
-    :param ledcnt int: number of neopixel elements in chain (default: 24)
+    :param speed_ms: animation speed in milliseconds
+    :param shift: automatic effect rotation
+    :param batch: batch mode
     :return str: verdict
     """
-    def __effect(r, g, b, pixel):
+    def effect_meteor():
         """
         Describe one full length color map
-        :param r: red target color
-        :param g: green target color
-        :param b: blue target color
-        :param pixel: number of led segments
         :return: yield tuple with r,g,b
         """
-        step = float(0.9 / pixel)
-        for k in range(0, pixel):
-            fade = (k+1) * step
-            data = round(r * fade), round(g * fade), round(b * fade)
-            yield data
+        nonlocal shift, pix_cnt
+        max_offset = pix_cnt if shift else 1
+        for offset in range(0, max_offset):
+            r, g, b = DrawEffectV2.color_code()
+            for pixel in range(0, pix_cnt):
+                br, norm = 0.6, pixel/pix_cnt
+                fade = br * norm ** 0.9         # exponent < 1 simulates log-like curve
+                yield DrawEffectV2.normalize_index(pixel+offset), r*fade, g*fade, b*fade
 
-    # Conditional value load - with neopixel cache
-    r, g, b = __color_input(r, g, b)
-
-    # Init custom params
-    effect = DrawEffect(pixcnt=ledcnt)
-    # Create effect data
-    cgen = __effect(r, g, b, effect.pix_cnt)
-    # Draw effect data
-    effect.draw(cgen, shift=shift)
-    return 'Meteor R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
+    neoeffect = load()
+    pix_cnt = Data.NEOPIXEL_OBJ.n
+    return neoeffect.play(effect_meteor, speed_ms=speed_ms, bt_draw=batch, bt_size=pix_cnt)
 
 
-def cycle(r=None, g=None, b=None, shift=True, ledcnt=24):
+def cycle(speed_ms:int=30, shift:bool=True, batch:bool=True):
     """
     Cycle effect
-    :param r int: red value 0-1000
-    :param g int: green value 0-1000
-    :param b int: blue value 0-1000
-    :param shift bool: automatic effect shifting
-    :param ledcnt int: number of neopixel elements in chain (default: 24)
-    :return str: verdict
+    :param speed_ms: animation speed in milliseconds
+    :param shift: automatic effect rotation
+    :param batch: enable/disable batch update mode
     """
-    def __effect(r, g, b, pixel):
+    def effect_cycle():
         """
         Describe one full length color map
-        :param r: red target color
-        :param g: green target color
-        :param b: blue target color
-        :param pixel: number of led segments
-        :return: yield tuple with r,g,b
+        :return: yield tuple with index, r,g,b
         """
-        lightrgb = round(r*0.1), round(g*0.1), round(b*0.1)
-        yield lightrgb
-        yield r, g, b
-        yield lightrgb
-        for i in range(3, pixel):
-            yield 0, 0, 0
+        nonlocal shift
+        max_offset = Data.NEOPIXEL_OBJ.n if shift else 1
+        for offset in range(0, max_offset):
+            r, g, b = DrawEffectV2.color_code()
+            lr, lg, lb = int(r * 0.1), int(g * 0.1), int(b * 0.1)
+            # Clean last pixel
+            yield DrawEffectV2.normalize_index(offset-1), 0, 0, 0
+            # Draw pattern
+            yield DrawEffectV2.normalize_index(offset), lr, lg, lb
+            yield DrawEffectV2.normalize_index(offset + 1), r, g, b
+            yield DrawEffectV2.normalize_index(offset + 2), lr, lg, lb
 
-    # Conditional value load - with neopixel cache
-    r, g, b = __color_input(r, g, b)
-
-    effect = DrawEffect(pixcnt=ledcnt)
-    cgen = __effect(r, g, b, effect.pix_cnt)
-    effect.draw(cgen, shift=shift)
-    return 'Cycle R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
+    return load().play(effect_cycle, speed_ms=speed_ms, bt_draw=batch, bt_size=4)
 
 
-def rainbow(step=1, br=50, ledcnt=24):
-    """
-    Rainbow effect
-    :param step int: color weel resolution in step (default: 1)
-    :param br int: brightness in percentage
-    :param ledcnt int: number of neopixel elements in chain (default: 24)
-    :return str: verdict
-    """
-    def __wheel(pos):
+def rainbow(speed_ms=1, br=25, batch=True):
+    def _wheel(pos):
         # Input a value 0 to 255 to get a color value.
         # The colours are a transition r - g - b - back to r.
         if pos < 0 or pos > 255:
@@ -174,59 +114,82 @@ def rainbow(step=1, br=50, ledcnt=24):
         pos -= 170
         return pos * 3, 0, 255 - pos * 3
 
-    def __effect(cnt, step, br):
+    def effect_rainbow():
         """
         :param cnt: led segment count
         :param br: max brightness 0-100%
         :param step: step size
         """
-        cw = DrawEffect().color_wheel
-        DrawEffect().color_wheel = 0 if cw >= 255 else cw+step
-        for i in range(0, cnt):
-            rc_index = (i * 256 // cnt) + DrawEffect().color_wheel
-            r, g, b = __wheel(rc_index & 255)
-            yield round(r*br*0.01), round(g*br*0.01), round(b*br*0.01)
+        nonlocal pix_cnt, br
+        color_step = 3
+        for color_wheel in range(0, 255, color_step):
+            for index in range(0, pix_cnt):
+                rc_index = (index * 256 // pix_cnt) + color_wheel
+                r, g, b = _wheel(rc_index & 255)
+                yield DrawEffectV2.normalize_index(index+color_wheel), round(r*br*0.01), round(g*br*0.01), round(b*br*0.01)
 
-    effect = DrawEffect(pixcnt=ledcnt)
-    cgen = __effect(effect.pix_cnt, step=step, br=br)
-    effect.draw(cgen, shift=True)
-    return 'Rainbow'
+    neoeffect = load()
+    pix_cnt = Data.NEOPIXEL_OBJ.n
+    return neoeffect.play(effect_rainbow, speed_ms=speed_ms, bt_draw=batch, bt_size=pix_cnt)
 
 
-def shader(size=6, offset=0, shift=False, ledcnt=24):
+def fire(speed_ms:int=1, br:int=50, batch:bool=True):
     """
-    Shader for ring lamp
-    :param size int: shader size (disabled LEDs)
-    :param offset int: rotate shader 0-(ledcnt-1)
-    :param shift bool: auto shift shader effect (False)
-    :param ledcnt int: number of neopixel elements in chain (default: 24)
-    :return str: verdict
+    Fire effect
+    :param speed_ms: animation speed in milliseconds
+    :param br: max brightness 0-100%
+    :param batch: batch update
     """
-    def __effect(size, offset, pixcnt):
+    def effect_fire():
+        nonlocal pix_cnt, br
+        max_value = int(255 * (br/100))
+        for index in range(pix_cnt):
+            r, g, b = DrawEffectV2.color_code()
+            rand_percent = float(round(randint(1, max_value)/max_value, 2))
+            new_r = min(max(int(r * rand_percent), 0), max_value)
+            new_g = min(max(int(g * rand_percent), 0), max_value)
+            new_b = min(max(int(b * rand_percent), 0), max_value)
+            yield index, new_r, new_g, new_b
+
+    neoeffect = load()
+    pix_cnt = Data.NEOPIXEL_OBJ.n
+    return neoeffect.play(effect_fire, speed_ms=speed_ms, bt_draw=batch, bt_size=pix_cnt)
+
+def shader(offset=0, size=6):
+    def effect_shader():
+        nonlocal size, offset, neoeffect
+        pix_cnt = Data.NEOPIXEL_OBJ.n
         # Conditional value load - with neopixel cache
-        r, g, b, _ = Data.DCACHE
+        r, g, b = DrawEffectV2.color_code()
         # calculate 0->24 range
-        _slice1 = pixcnt if size + offset > pixcnt else size + offset
+        _slice1 = pix_cnt if size + offset > pix_cnt else size + offset
         # calculate 24->0-> range (overflow)
-        _slice2 = size + offset - pixcnt if size + offset > pixcnt else 0
-        for i in range(0, pixcnt):
-            if offset < i < _slice1:
-                yield 0, 0, 0
-            elif 0 <= i < _slice2:
-                yield 0, 0, 0
+        _slice2 = size + offset - pix_cnt if size + offset > pix_cnt else 0
+        for i in range(0, pix_cnt):
+            if offset <= i < _slice1 or 0 <= i < _slice2:
+                neoeffect.update(i, 0, 0, 0)
             else:
-                yield r, g, b
+                neoeffect.update(i, r, g, b)
+        neoeffect.draw()
 
-    # Init custom params
-    effect = DrawEffect(pixcnt=ledcnt)
-    # Create effect data
-    if size < effect.pix_cnt:
-        cgen = __effect(size, offset, effect.pix_cnt)
-        # Draw effect data
-        effect.index_offset = 0     # reset auto shift offset
-        effect.draw(cgen, shift=shift)
-        return 'Shader size: {} ->{} ({})'.format(size, offset, effect.pix_cnt)
-    return 'Shader invalid size: {} ({})'.format(size, effect.pix_cnt)
+    neoeffect = load()
+    effect_shader()
+    return "Shader was set."
+
+def color(r:int=None, g:int=None, b:int=None):
+    """
+    Set color buffer - for runtime effect color change
+    :param r: red channel 0-255 (default: None - cached value)
+    :param g: green channel 0-255 (default: None - cached value)
+    :param b: blue channel 0-255 (default: None - cached value)
+    :return dict: rgb status - states: R, G, B, S
+    """
+    # Conditional value load - with neopixel cache
+    r, g, b = DrawEffectV2.color_code(r, g, b)
+    Data.DCACHE[0] = r
+    Data.DCACHE[1] = g
+    Data.DCACHE[2] = b
+    return status()
 
 
 def random(max_val=255):
@@ -244,55 +207,20 @@ def random(max_val=255):
     return "Set random: R:{} G: B:{}".format(r, g, b)
 
 
-def color(r=None, g=None, b=None):
-    """
-    Set color buffer - for runtime effect color change
-    :param r int: red channel 0-255 (default: None - cached value)
-    :param g int: green channel 0-255 (default: None - cached value)
-    :param b int: blue channel 0-255 (default: None - cached value)
-    :return dict: rgb status - states: R, G, B, S
-    """
-    # Conditional value load - with neopixel cache
-    r, g, b = __color_input(r, g, b)
-    Data.DCACHE[0] = r
-    Data.DCACHE[1] = g
-    Data.DCACHE[2] = b
-    return status()
-
-
-def fire(r=None, g=None, b=None, ledcnt=24):
-
-    def __effect(r, g, b, pixcnt):
-        for _ in range(pixcnt):
-            rand_percent = round(randint(1, 200)/100, 2)
-
-            rgb = [
-                r * rand_percent,
-                g * rand_percent,
-                b * rand_percent
-            ]
-
-            for i, color in enumerate(rgb):
-                if color > 255:
-                    rgb[i] = 255
-                if color < 0:
-                    rgb[i] = 0
-            yield rgb
-
-    # Conditional value load - with neopixel cache
-    r, g, b = __color_input(r, g, b)
-
-    effect = DrawEffect(pixcnt=ledcnt)
-    cgen = __effect(r, g, b, effect.pix_cnt)
-    effect.draw(cgen, shift=False)
-    return 'fire R{}:G{}:B{} N:{}'.format(r, g, b, effect.pix_cnt)
-
-
 def stop_effects():
     """
     Stop all running (neo)effects tasks
     """
     return manage_task("neoeffects.*", "kill")
+
+
+def load(pixel_cnt=24):
+    """
+    Load LM_neopixel and DrawEffectV2
+    """
+    if DrawEffectV2.INSTANCE is None:
+        DrawEffectV2(pix_cnt=pixel_cnt)
+    return DrawEffectV2.INSTANCE
 
 #######################
 # LM helper functions #
@@ -316,16 +244,17 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('meteor r=<0-255> g=<0-255> b=<0-255> shift=True ledcnt=24',
-                             'BUTTON meteor &&',
-                             'cycle r g b shift=True ledcnt=24',
-                             'BUTTON cycle &&50',
-                             'rainbow step=1 br=<5-100> ledcnt=24 &&',
-                             'BUTTON rainbow br=50 &&',
-                             'fire r=None g=None b=None ledcnt=24',
-                             'BUTTON fire &&200',
+    return resolve(('load pixel_cnt=24',
+                             'meteor speed_ms=1 shift=True batch=True',
+                             'BUTTON meteor',
+                             'cycle speed_ms=30 shift=True batch=True',
+                             'BUTTON cycle',
+                             'rainbow speed_ms=1 br=25 batch=True',
+                             'BUTTON rainbow',
+                             'fire speed_ms=1, br=50, batch=True',
+                             'BUTTON fire',
                              'BUTTON stop_effects',
-                             'shader size=4 offset=0 shift=True ledcnt=24',
+                             'shader offset=0 size=6',
                              'random max_val=255',
                              'pinmap',
                              'COLOR color r=<0-255-10> g b'), widgets=widgets)

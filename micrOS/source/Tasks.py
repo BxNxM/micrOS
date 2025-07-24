@@ -118,7 +118,7 @@ class NativeTask(TaskBase):
     - could be built in function or custom code from load modules
     """
 
-    def create(self, callback=None, tag=None):
+    def create(self, callback:callable=None, tag:str=None) -> bool:
         """
         Create async task with coroutine callback (no queue limit check!)
         + async socket server task
@@ -168,7 +168,7 @@ class MagicTask(TaskBase):
         self.__inloop = False        # [LM] Task while loop for LM callback
         self.__sleep = 20            # [LM] Task while loop - async wait (proc feed) [ms]
 
-    def create(self, callback=None, loop=None, sleep=None):
+    def create(self, callback:list=None, loop:bool=None, sleep:int=None) -> bool:
         """
         Create async task with function callback (with queue limit check)
         - wrap (sync) function into async task (task_wrapper)
@@ -297,11 +297,12 @@ class Manager:
         my_task.done.set()
 
     @staticmethod
-    def create_task(callback, tag=None, loop=False, delay=None):
+    def create_task(callback, tag:str=None, loop:bool=False, delay:int=None):
         """
         Primary interface
         Generic task creator method
             Create async Task with coroutine/list(lm call) callback
+        :param callback: list|callable
         """
         if isinstance(callback, list):
             # Check queue if task is Load Module

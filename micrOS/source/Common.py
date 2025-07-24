@@ -15,13 +15,14 @@ from Notify import Notify
 #                                     SYSTEM                                        #
 #####################################################################################
 
-def micro_task(tag, task=None):
+def micro_task(tag:str, task=None):
     """
     [LM] Async task creation
     :param tag:
         [1] tag=None: return task generator object
         [2] tag=taskID: return existing task object by tag
-    :param task: coroutine to execute (with built-in overload protection and lcm)
+    :param task: coroutine to execute (with built-in overload protection and lcm) [list|callable]
+    return bool|callable
     """
     if task is None:
         # [1] Task is None -> Get task mode by tag
@@ -34,7 +35,7 @@ def micro_task(tag, task=None):
         return None
     # [3] Create task (not running) + task coroutine was provided
     # RETURN task creation state - success (True) / fail (False)
-    state = Manager().create_task(callback=task, tag=tag)
+    state:bool = Manager().create_task(callback=task, tag=tag)
     return state
 
 
@@ -232,7 +233,7 @@ class AnimationPlayer:
     Generic async animation (generator) player.
     """
 
-    def __init__(self, animation:callable=None, tag:str=None, batch_draw:bool=False, batch_size:int|None=None):
+    def __init__(self, animation:callable=None, tag:str=None, batch_draw:bool=False, batch_size:int=None):
         """
         Initialize the AnimationPlayer with an optional animation.
         :param animation: Function to GENERATE animation data
@@ -242,8 +243,10 @@ class AnimationPlayer:
         """
         self.animation:callable = None
         self.batch_draw:bool = batch_draw
-        self._batch_size:int = batch_size if isinstance(batch_size, int) else 8
-        self._player_speed_ms:int = 10
+        self.__max_batch_size:int = 256                     # MAX BATCH SIZE - ASYNC PROTECTION
+        self.__batch_size:int = 8                           # Default batch size: 8
+        self._set_batch_size(batch_size)                    # Set batch size from parameter
+        self._player_speed_ms:int = 10                      # Default speed in ms between frames
         main_tag:str = tag if tag else "animation"
         self._task_tag:str = f"{main_tag}.player"
         if animation is not None and not self._set_animation(animation):
@@ -252,42 +255,52 @@ class AnimationPlayer:
 
     def _set_animation(self, animation:callable) -> bool:
         """
-        Set/Change the current animation to be played.
+        Setter to change/set current animation.
         """
         if callable(animation):
             self.animation = animation
             return True
         return False
 
+    def _set_batch_size(self, batch_size:int) -> None:
+        """
+        Setter to change/set batch size.
+        - with max batch size check (due to async event loop feeding)
+        """
+        if batch_size is None:
+            return
+        self.__batch_size = max(0, min(batch_size, self.__max_batch_size))
+
     async def _render(self, my_task):
+        # Cache methods for speed
+        clear = self.clear
+        update = self.update
+        draw = self.draw
+        # Cache the current animation for comparison
         current_animation = self.animation
         frame_counter = 0
         # Clear the display before each frame
         if not self.batch_draw:
-            self.clear()
+            clear()
         for data in self.animation():
             # Check if animation has changed under the loop
             if not self._running or self.animation != current_animation:
-                # Animation changed — clean and restart animation loop.
-                self.clear()
+                # Animation changed — break — clean and restart animation loop.
+                clear()
                 break
             # Update data cache
-            self.update(*data)
+            update(*data)
             if self.batch_draw:
                 # Batched draw mode
                 frame_counter += 1
-                if frame_counter >= self._batch_size:
-                    self.draw()
+                if frame_counter >= self.__batch_size:
+                    draw()
                     frame_counter = 0
-                await my_task.feed(sleep_ms=self._player_speed_ms)
+                    await my_task.feed(sleep_ms=self._player_speed_ms)
             else:
                 # Real-time draw mode
-                self.draw()
+                draw()
                 await my_task.feed(sleep_ms=self._player_speed_ms)
-        if self.batch_draw:
-            # Draw after generator exhausted in batch mode.
-            self.draw()
-            await my_task.feed(sleep_ms=self._player_speed_ms)
 
     async def _player(self):
         """
@@ -299,7 +312,9 @@ class AnimationPlayer:
                 try:
                     await self._render(my_task)
                 except IndexError:
-                    # Restart animation if IndexError occurs
+                    # Draw after generator exhausted and Restart animation if IndexError occurs
+                    self.draw()
+                    await my_task.feed(sleep_ms=self._player_speed_ms)
                     my_task.out = "Restart animation"
                     pass
                 except Exception as e:
@@ -307,7 +322,7 @@ class AnimationPlayer:
                     break
             my_task.out = f"Animation stopped...{my_task.out}"
 
-    def control(self, play_speed_ms:int|None, bt_draw:bool=None, bt_size:int=None):
+    def control(self, play_speed_ms:int, bt_draw:bool=None, bt_size:int=None):
         """
         Set/Get current play speed of the animation.
         :param play_speed_ms: player loop speed in milliseconds.
@@ -319,9 +334,9 @@ class AnimationPlayer:
         if isinstance(bt_draw, bool):
             self.batch_draw = bt_draw
         if isinstance(bt_size, int):
-            self._batch_size = bt_size
+            self._set_batch_size(bt_size)
         return {"realtime": not self.batch_draw, "batched": self.batch_draw,
-                "batch_size": self._batch_size, "payer_speed": self._player_speed_ms}
+                "size": self.__batch_size, "speed_ms": self._player_speed_ms}
 
 
     def play(self, animation=None, speed_ms=None, bt_draw=False, bt_size=None):
@@ -339,22 +354,20 @@ class AnimationPlayer:
         if self.animation is None:
             return "No animation to play"
         # Handle player settings
-        self.control(play_speed_ms=speed_ms, bt_draw=bt_draw, bt_size=bt_size)
+        settings = self.control(play_speed_ms=speed_ms, bt_draw=bt_draw, bt_size=bt_size)
         # Ensure async loop set up correctly. (After stop operation, it is needed)
         self._running = True
         # [!] ASYNC TASK CREATION
-        state = micro_task(tag=self._task_tag, task=self._player())
-        return "Starting" if state else "Already running..."
+        raw_state:bool = micro_task(tag=self._task_tag, task=self._player())
+        state = "starting" if raw_state else "running"
+        settings["state"] = state
+        return settings
 
     def stop(self):
         """
         Stop the animation.
         """
         self._running = False
-        try:
-            self.clear()
-        except:
-            pass
         return "Stop animation player"
 
     def update(self, *arg, **kwargs):

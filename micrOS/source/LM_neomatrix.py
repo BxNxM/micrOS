@@ -96,6 +96,18 @@ class NeoPixelMatrix(AnimationPlayer):
         return f"Set brightness to {br}%"
 
 
+    def draw_colormap(self, bitmap:list):
+        """
+        Draw a bitmap on the Neopixel
+        bitmap: [(x, y, (r, g, b)),
+                 (x, y, (r, g, b)), ...]
+        """
+        for bm in bitmap:
+            x, y, color = bm
+            self.set_pixel(x, y, color)
+        self.draw()
+
+
 ##########################################################################################################
 ##########################################################################################################
 # --- Example usage with micrOS framework ---
@@ -154,7 +166,7 @@ def brightness(br: int):
     return load().brightness(br)
 
 
-def player_control(speed_ms=None, bt_draw:bool=None):
+def control(speed_ms=None, bt_draw:bool=None):
     """
     Change the speed of frame generation for animations.
     """
@@ -169,6 +181,13 @@ def stop():
     """
     return load().stop()
 
+
+def draw_colormap(bitmap):
+    try:
+        load().draw_colormap(bitmap)
+    except Exception as e:
+        return str(e)
+    return "Done."
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
@@ -278,4 +297,6 @@ def help(widgets=False):
                              'BUTTON snake speed_ms=50 length=5',
                              'BUTTON rainbow',
                              'BUTTON cube speed_ms=10',
-                             'SLIDER player_control speed_ms=<2-200-2> bt_draw=None'), widgets=widgets)
+                             'SLIDER control speed_ms=<2-200-2> bt_draw=None',
+                             'draw_colormap bitmap=[(0,0,(10,2,0)),(x,y,color),...]'
+                    ), widgets=widgets)

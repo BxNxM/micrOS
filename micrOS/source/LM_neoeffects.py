@@ -46,7 +46,7 @@ class DrawEffectV2(AnimationPlayer):
 #                                  EFFECTS                                       #
 ##################################################################################
 
-def meteor(speed_ms:int=1, shift:bool=True, batch:bool=True):
+def meteor(speed_ms:int=60, shift:bool=True, batch:bool=True):
     """
     Meteor effect
     :param speed_ms: animation speed in milliseconds
@@ -73,7 +73,7 @@ def meteor(speed_ms:int=1, shift:bool=True, batch:bool=True):
     return neoeffect.play(effect_meteor, speed_ms=speed_ms, bt_draw=batch, bt_size=pix_cnt)
 
 
-def cycle(speed_ms:int=30, shift:bool=True, batch:bool=True):
+def cycle(speed_ms:int=60, shift:bool=True, batch:bool=True):
     """
     Cycle effect
     :param speed_ms: animation speed in milliseconds
@@ -100,7 +100,7 @@ def cycle(speed_ms:int=30, shift:bool=True, batch:bool=True):
     return load().play(effect_cycle, speed_ms=speed_ms, bt_draw=batch, bt_size=4)
 
 
-def rainbow(speed_ms=1, br=25, batch=True):
+def rainbow(speed_ms=20, br=15, batch=True):
     def _wheel(pos):
         # Input a value 0 to 255 to get a color value.
         # The colours are a transition r - g - b - back to r.
@@ -133,7 +133,7 @@ def rainbow(speed_ms=1, br=25, batch=True):
     return neoeffect.play(effect_rainbow, speed_ms=speed_ms, bt_draw=batch, bt_size=pix_cnt)
 
 
-def fire(speed_ms:int=1, br:int=50, batch:bool=True):
+def fire(speed_ms:int=150, br:int=30, batch:bool=True):
     """
     Fire effect
     :param speed_ms: animation speed in milliseconds
@@ -155,6 +155,7 @@ def fire(speed_ms:int=1, br:int=50, batch:bool=True):
     pix_cnt = Data.NEOPIXEL_OBJ.n
     return neoeffect.play(effect_fire, speed_ms=speed_ms, bt_draw=batch, bt_size=pix_cnt)
 
+
 def shader(offset=0, size=6):
     def effect_shader():
         nonlocal size, offset, neoeffect
@@ -175,6 +176,7 @@ def shader(offset=0, size=6):
     neoeffect = load()
     effect_shader()
     return "Shader was set."
+
 
 def color(r:int=None, g:int=None, b:int=None):
     """
@@ -207,11 +209,21 @@ def random(max_val=255):
     return "Set random: R:{} G: B:{}".format(r, g, b)
 
 
-def stop_effects():
+def stop():
     """
     Stop all running (neo)effects tasks
     """
-    return manage_task("neoeffects.*", "kill")
+    player_info = load().stop()
+    random_task = manage_task("neoeffects.random", "kill")
+    return f"{player_info}\n{random_task}"
+
+def control(speed_ms=None, batch:bool=None):
+    """
+    Change the speed of frame generation for animations.
+    """
+    data = load().control(play_speed_ms=speed_ms, bt_draw=batch)
+    _speed_ms = data.get("player_speed", None)
+    return f"Control state: {data} (speed: {_speed_ms}ms)"
 
 
 def load(pixel_cnt=24):
@@ -245,16 +257,18 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return resolve(('load pixel_cnt=24',
-                             'meteor speed_ms=1 shift=True batch=True',
-                             'BUTTON meteor',
-                             'cycle speed_ms=30 shift=True batch=True',
-                             'BUTTON cycle',
-                             'rainbow speed_ms=1 br=25 batch=True',
+                             'meteor speed_ms=60 shift=True batch=True',
+                             'BUTTON meteor speed_ms=60',
+                             'cycle speed_ms=60 shift=True batch=True',
+                             'BUTTON cycle speed_ms=60',
+                             'rainbow speed_ms=20 br=15 batch=True',
                              'BUTTON rainbow',
-                             'fire speed_ms=1, br=50, batch=True',
-                             'BUTTON fire',
-                             'BUTTON stop_effects',
+                             'fire speed_ms=150 br=30 batch=True',
+                             'BUTTON fire speed_ms=150',
+                             'BUTTON stop',
                              'shader offset=0 size=6',
+                             'control speed_ms=None batch=None',
                              'random max_val=255',
                              'pinmap',
-                             'COLOR color r=<0-255-10> g b'), widgets=widgets)
+                             'COLOR color r=<0-255-10> g b'
+                    ), widgets=widgets)

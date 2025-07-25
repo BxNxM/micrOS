@@ -37,11 +37,11 @@ class NeoPixelMatrix(AnimationPlayer):
         # Send buffer to device
         self.draw()
 
-    def _coord_to_index(self, x: int, y: int):
+    def _coord_to_index(self, x: int, y: int, zigzag:bool=True):
         """
         Zigzag layout: even rows left-to-right, odd rows right-to-left
         """
-        if y % 2 == 0:
+        if (zigzag is None or zigzag) and y % 2 == 0:
             return y * self.width + x
         return y * self.width + (self.width - 1 - x)
 
@@ -54,12 +54,12 @@ class NeoPixelMatrix(AnimationPlayer):
 
         return scale(color[1]), scale(color[0]), scale(color[2])
 
-    def set_pixel(self, x: int, y: int, color: tuple[int, int, int]):
+    def set_pixel(self, x: int, y: int, color: tuple[int, int, int], zigzag:bool=True):
         """
         Set pixel at (x, y) with RGB
         """
         if 0 <= x < self.width and 0 <= y < self.height:
-            index = self._coord_to_index(x, y)
+            index = self._coord_to_index(x, y, zigzag=zigzag)
             self._color_buffer[index] = color  # store original RGB for brightness control
             self.pixels[index] = self._rgb_to_grb_with_br(color)
 
@@ -104,7 +104,7 @@ class NeoPixelMatrix(AnimationPlayer):
         """
         for bm in bitmap:
             x, y, color = bm
-            self.set_pixel(x, y, color)
+            self.set_pixel(x, y, color, zigzag=False)
         self.draw()
 
 

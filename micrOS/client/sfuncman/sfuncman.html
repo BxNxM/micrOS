@@ -86,7 +86,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>list_tones</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>List&nbsp;built-in&nbsp;tones</td></tr></table></td></tr><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>check_notify=False pin=None cache=True</td></tr><tr><th>doc</th><td>Initialize&nbsp;buzzer&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;check_notify:&nbsp;check&nbsp;notify&nbsp;enabled/disabled&nbsp;-&nbsp;make&nbsp;noise&nbsp;if&nbsp;enabled&nbsp;only<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;default&nbsp;True,&nbsp;store&nbsp;stages&nbsp;on&nbsp;disk&nbsp;(.pds)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;default&nbsp;True,&nbsp;store&nbsp;stages&nbsp;on&nbsp;disk&nbsp;(.cache)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Verdict</td></tr></table></td></tr><tr><th>pinmap</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
@@ -105,7 +105,7 @@ pin&nbsp;map:&nbsp;buzzer</td></tr></table></td></tr><tr><th>help</th><td><table
 <table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>pin_warm=None pin_cold=None cache=True</td></tr><tr><th>doc</th><td>Initialize&nbsp;Cold&nbsp;white&nbsp;/&nbsp;Warm&nbsp;white&nbsp;LED&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin_warm:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin_cold:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;save/load&nbsp;state&nbsp;machine&nbsp;to&nbsp;disk&nbsp;(.pds)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;save/load&nbsp;state&nbsp;machine&nbsp;to&nbsp;disk&nbsp;(.cache)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>white</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cw=None ww=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;CCT&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cw:&nbsp;cold&nbsp;white&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ww:&nbsp;warm&nbsp;white&nbsp;value&nbsp;0-1000<br>
@@ -222,7 +222,7 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 <h2 id="dimmer"><a href="#dimmer">dimmer</a></h2>
 <table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Initialize&nbsp;dimmer&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.cache&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>set_value</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>value=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;dimmer&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;value:&nbsp;(int)&nbsp;value&nbsp;0-1000&nbsp;default:&nbsp;None&nbsp;(set&nbsp;cached&nbsp;value)<br>
@@ -560,7 +560,7 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table b
 <table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>ledcnt=24 pin=None cache=True</td></tr><tr><th>doc</th><td>Initiate&nbsp;NeoPixel&nbsp;RGB&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ledcnt:&nbsp;number&nbsp;of&nbsp;led&nbsp;segments<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;optional&nbsp;number&nbsp;to&nbsp;overwrite&nbsp;default&nbsp;pin<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;default&nbsp;True,&nbsp;store&nbsp;stages&nbsp;on&nbsp;disk&nbsp;+&nbsp;&nbsp;Load&nbsp;(.pds)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;default&nbsp;True,&nbsp;store&nbsp;stages&nbsp;on&nbsp;disk&nbsp;+&nbsp;&nbsp;Load&nbsp;(.cache)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>color</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;NEOPIXEL&nbsp;RGB&nbsp;values<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r:&nbsp;red&nbsp;value&nbsp;&nbsp;&nbsp;0-255<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g:&nbsp;green&nbsp;value&nbsp;0-255<br>
@@ -576,7 +576,7 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table b
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g:&nbsp;green&nbsp;value&nbsp;0-255<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;b:&nbsp;blue&nbsp;value&nbsp;0-255<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;s:&nbsp;segment&nbsp;-&nbsp;index&nbsp;0-ledcnt<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;cache&nbsp;color&nbsp;(update&nbsp;.pds&nbsp;file)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;cache&nbsp;color&nbsp;(update&nbsp;.cache&nbsp;file)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;write:&nbsp;send&nbsp;color&nbsp;buffer&nbsp;to&nbsp;neopixel&nbsp;(update&nbsp;LEDs)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rgb&nbsp;status&nbsp;-&nbsp;states:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>toggle</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;led&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state:&nbsp;True(1)/False(0)<br>
@@ -788,8 +788,8 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;delete&nbsp;duplicated&nbsp;.mpy&nbsp;and&nbsp;.py&nbsp;resources,&nbsp;keep&nbsp;.mpy&nbsp;resource!</td></tr></table></td></tr><tr><th>moduls</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>unload=None</td></tr><tr><th>doc</th><td>List&nbsp;/&nbsp;unload&nbsp;loaded&nbsp;upython&nbsp;Load&nbsp;Modules<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;unload:&nbsp;module&nbsp;name&nbsp;to&nbsp;unload<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;unload:&nbsp;None&nbsp;-&nbsp;list&nbsp;active&nbsp;modules<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>cachedump</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>delpds=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>dat_dump</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Generic&nbsp;.dat&nbsp;file&nbsp;dump<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;logged&nbsp;data&nbsp;from&nbsp;LMs,&nbsp;sensor&nbsp;datat,&nbsp;etc...</td></tr></table></td></tr><tr><th>listmods</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>delmod</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>mod</td></tr><tr><th>doc</th><td>Module&nbsp;package&nbsp;manager<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>cachedump</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>delete=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>datdump</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Generic&nbsp;.dat&nbsp;file&nbsp;dump<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;logged&nbsp;data&nbsp;from&nbsp;LMs,&nbsp;sensor&nbsp;data,&nbsp;etc...</td></tr></table></td></tr><tr><th>listmods</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>delmod</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>mod</td></tr><tr><th>doc</th><td>Module&nbsp;package&nbsp;manager<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;mod:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Delete&nbsp;Load&nbsp;Module&nbsp;with&nbsp;full&nbsp;name:&nbsp;module.py&nbsp;or&nbsp;module.mpy<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OR&nbsp;delete&nbsp;any&nbsp;web&nbsp;resource:&nbsp;*.js,&nbsp;*.css,&nbsp;*.html</td></tr></table></td></tr><tr><th>micros_checksum</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
@@ -883,7 +883,7 @@ pin&nbsp;map:&nbsp;rot_clk,&nbsp;rot_dt</td></tr></table></td></tr><tr><th>color
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;red_pin:&nbsp;optional&nbsp;red&nbsp;color&nbsp;pin&nbsp;to&nbsp;overwrite&nbsp;built-in<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;green_pin:&nbsp;optional&nbsp;green&nbsp;color&nbsp;pin&nbsp;to&nbsp;overwrite&nbsp;built-in<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;blue_pin:&nbsp;optional&nbsp;blue&nbsp;color&nbsp;pin&nbsp;to&nbsp;overwrite&nbsp;built-in<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False&nbsp;(.pds),&nbsp;default=True<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False&nbsp;(.cache),&nbsp;default=True<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>color</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>r=None g=None b=None smooth=True</td></tr><tr><th>doc</th><td>Set&nbsp;RGB&nbsp;values&nbsp;with&nbsp;PWM&nbsp;signal<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;r&nbsp;int:&nbsp;red&nbsp;value&nbsp;&nbsp;&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;g&nbsp;int:&nbsp;green&nbsp;value&nbsp;0-1000<br>
@@ -1079,7 +1079,7 @@ pin&nbsp;map:&nbsp;stppr_1,&nbsp;stppr_2,&nbsp;stppr_3,&nbsp;stppr_4</td></tr></
 <h2 id="switch"><a href="#switch">switch</a></h2>
 <table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>cache=None ch_init=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;switch&nbsp;module&nbsp;(4&nbsp;switch&nbsp;pack)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;cache&nbsp;bool:&nbsp;file&nbsp;state&nbsp;machine&nbsp;cache:&nbsp;True/False/None(default:&nbsp;automatic&nbsp;True)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.pds&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Load&nbsp;.cache&nbsp;(state&nbsp;machine&nbsp;cache)&nbsp;for&nbsp;this&nbsp;load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Apply&nbsp;loaded&nbsp;states&nbsp;to&nbsp;gpio&nbsp;pins&nbsp;(boot&nbsp;function)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;Cache&nbsp;state</td></tr></table></td></tr><tr><th>set_state</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>state=None</td></tr><tr><th>doc</th><td>Set&nbsp;switch&nbsp;(1)&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state&nbsp;bool:&nbsp;True/False/None(default:&nbsp;use&nbsp;cached&nbsp;value)<br>

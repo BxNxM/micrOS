@@ -5,6 +5,7 @@ micrOS Load Module programming Official API-s
 from Server import Server, WebCli
 from Debug import errlog_add, console_write
 from Logger import logger, log_get
+from Files import OSPath, path_join
 from microIO import resolve_pin
 from Tasks import TaskBase, Manager, lm_exec
 from machine import Pin, ADC
@@ -149,6 +150,16 @@ def console(msg):
     """ Wrapper of console_write """
     return console_write(msg)
 
+
+def data_dir(f_name=None):
+    """
+    Access for data dir path
+    :param f_name: if given, returns full path, otherwise returns data dir root path
+    """
+    root_path = OSPath.DATA
+    if f_name is None:
+        return root_path
+    return path_join(root_path, f_name)
 
 #####################################################################################
 #                             CHANNEL: SIGNAL GENERATORS                            #

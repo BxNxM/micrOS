@@ -1,7 +1,6 @@
-from sys import platform
 from utime import sleep
 from microIO import bind_pin, pinmap_search
-from Common import micro_task, notify
+from Common import micro_task, notify, data_dir
 from Types import resolve
 
 
@@ -13,6 +12,7 @@ __BUZZER_OBJ = None
 __BUZZER_CACHE = [600]
 __PERSISTENT_CACHE = False
 __TASK_TAG = "buzzer._play"
+__FILE_CACHE = data_dir('buzzer.cache')
 CHECK_NOTIFY = False
 
 #########################################
@@ -190,7 +190,7 @@ def __buzzer_init(pin=None):
 
 def __persistent_cache_manager(mode='r'):
     """
-    pds - persistent data structure
+    File cache
     modes:
         r - recover, s - save
     """
@@ -199,12 +199,12 @@ def __persistent_cache_manager(mode='r'):
     global __BUZZER_CACHE
     if mode == 's':
         # SAVE CACHE
-        with open('buzzer.pds', 'w') as f:
+        with open(__FILE_CACHE, 'w') as f:
             f.write(','.join([str(k) for k in __BUZZER_CACHE]))
         return
     try:
         # RESTORE CACHE
-        with open('buzzer.pds', 'r') as f:
+        with open(__FILE_CACHE, 'r') as f:
             __BUZZER_CACHE = [int(data) for data in f.read().strip().split(',')]
     except:
         pass
@@ -288,10 +288,9 @@ def load(check_notify=False, pin=None, cache=True):
     Initialize buzzer module
     :param check_notify: check notify enabled/disabled - make noise if enabled only
     :param pin: optional number to overwrite default pin
-    :param cache: default True, store stages on disk (.pds)
+    :param cache: default True, store stages on disk (.cache)
     :return str: Verdict
     """
-    from sys import platform
     global __PERSISTENT_CACHE, CHECK_NOTIFY
     __PERSISTENT_CACHE = cache
     __persistent_cache_manager('r')

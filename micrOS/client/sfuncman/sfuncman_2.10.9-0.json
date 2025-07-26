@@ -144,7 +144,7 @@
             "param(s)": ""
         },
         "load": {
-            "doc": "\n    Initialize buzzer module\n    :param check_notify: check notify enabled/disabled - make noise if enabled only\n    :param pin: optional number to overwrite default pin\n    :param cache: default True, store stages on disk (.pds)\n    :return str: Verdict\n    ",
+            "doc": "\n    Initialize buzzer module\n    :param check_notify: check notify enabled/disabled - make noise if enabled only\n    :param pin: optional number to overwrite default pin\n    :param cache: default True, store stages on disk (.cache)\n    :return str: Verdict\n    ",
             "param(s)": "check_notify=False pin=None cache=True"
         },
         "pinmap": {
@@ -171,7 +171,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true",
         "load": {
-            "doc": "\n    Initialize Cold white / Warm white LED module\n    :param pin_warm: optional number to overwrite default pin\n    :param pin_cold: optional number to overwrite default pin\n    :param cache: save/load state machine to disk (.pds)\n    :return str: Cache state\n    ",
+            "doc": "\n    Initialize Cold white / Warm white LED module\n    :param pin_warm: optional number to overwrite default pin\n    :param pin_cold: optional number to overwrite default pin\n    :param cache: save/load state machine to disk (.cache)\n    :return str: Cache state\n    ",
             "param(s)": "pin_warm=None pin_cold=None cache=True"
         },
         "pinmap": {
@@ -294,7 +294,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true",
         "load": {
-            "doc": "\n    Initialize dimmer module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
+            "doc": "\n    Initialize dimmer module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .cache (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None"
         },
         "pinmap": {
@@ -878,7 +878,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true",
         "load": {
-            "doc": "\n    Initiate NeoPixel RGB module\n    :param ledcnt: number of led segments\n    :param pin: optional number to overwrite default pin\n    :param cache: default True, store stages on disk +  Load (.pds)\n    :return str: Cache state\n    ",
+            "doc": "\n    Initiate NeoPixel RGB module\n    :param ledcnt: number of led segments\n    :param pin: optional number to overwrite default pin\n    :param cache: default True, store stages on disk +  Load (.cache)\n    :return str: Cache state\n    ",
             "param(s)": "ledcnt=24 pin=None cache=True"
         },
         "pinmap": {
@@ -890,7 +890,7 @@
             "param(s)": "smooth=True max_val=255"
         },
         "segment": {
-            "doc": "\n    Set single segment by index on neopixel\n    :param r: red value 0-255\n    :param g: green value 0-255\n    :param b: blue value 0-255\n    :param s: segment - index 0-ledcnt\n    :param cache: cache color (update .pds file)\n    :param write: send color buffer to neopixel (update LEDs)\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "doc": "\n    Set single segment by index on neopixel\n    :param r: red value 0-255\n    :param g: green value 0-255\n    :param b: blue value 0-255\n    :param s: segment - index 0-ledcnt\n    :param cache: cache color (update .cache file)\n    :param write: send color buffer to neopixel (update LEDs)\n    :return dict: rgb status - states: R, G, B, S\n    ",
             "param(s)": "r=None g=None b=None s=0 cache=False write=True"
         },
         "status": {
@@ -1117,10 +1117,10 @@
     "pacman": {
         "cachedump": {
             "doc": null,
-            "param(s)": "delpds=None"
+            "param(s)": "delete=None"
         },
-        "dat_dump": {
-            "doc": "\n    Generic .dat file dump\n    - logged data from LMs, sensor datat, etc...\n    ",
+        "datdump": {
+            "doc": "\n    Generic .dat file dump\n    - logged data from LMs, sensor data, etc...\n    ",
             "param(s)": ""
         },
         "del_duplicates": {
@@ -1303,7 +1303,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true",
         "load": {
-            "doc": "\n    Initiate RGB module\n    :param red_pin: optional red color pin to overwrite built-in\n    :param green_pin: optional green color pin to overwrite built-in\n    :param blue_pin: optional blue color pin to overwrite built-in\n    :param cache: file state machine cache: True/False (.pds), default=True\n    :return str: Cache state\n    ",
+            "doc": "\n    Initiate RGB module\n    :param red_pin: optional red color pin to overwrite built-in\n    :param green_pin: optional green color pin to overwrite built-in\n    :param blue_pin: optional blue color pin to overwrite built-in\n    :param cache: file state machine cache: True/False (.cache), default=True\n    :return str: Cache state\n    ",
             "param(s)": "red_pin=None green_pin=None blue_pin=None cache=True"
         },
         "pinmap": {
@@ -1594,7 +1594,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true",
         "load": {
-            "doc": "\n    Initiate switch module (4 switch pack)\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .pds (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
+            "doc": "\n    Initiate switch module (4 switch pack)\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .cache (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
             "param(s)": "cache=None ch_init=None"
         },
         "pinmap": {

@@ -2,7 +2,7 @@ from utime import sleep_ms
 from random import randint
 import LM_servo as servo
 from LM_switch import set_state, pinmap as switch_pinmap
-from Common import transition, micro_task
+from Common import transition, micro_task, data_dir
 from Types import resolve
 
 
@@ -13,23 +13,24 @@ class RoboArm:
     SPEED_MS = 10                           # Set default speed between steps (ms)
     MOVE_RECORD = []                        # Buffer for XY move record/replay
     PLAY_TAG = 'roboarm._play'
+    FILE_CACHE = data_dir('rarm.cache')
 
 
 def __persistent_cache_manager(mode):
     """
-    pds - persistent data structure
+    File state cache
     modes:
         r - recover, s - save
     """
 
     if mode == 's':
         # SAVE CACHE
-        with open('rarm.pds', 'w') as f:
+        with open(RoboArm.FILE_CACHE, 'w') as f:
             f.write(','.join([str(k) for k in RoboArm.MOVE_RECORD]))
         return
     try:
         # RESTORE CACHE
-        with open('rarm.pds', 'r') as f:
+        with open(RoboArm.FILE_CACHE, 'r') as f:
             RoboArm.MOVE_RECORD = [int(data) for data in f.read().strip().split(',')]
     except:
         pass

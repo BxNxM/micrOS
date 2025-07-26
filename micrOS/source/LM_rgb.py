@@ -2,8 +2,7 @@
 #       ANALOG rgb CONTROLLER PARAMS    #
 #########################################
 from machine import Pin, PWM
-from sys import platform
-from Common import transition_gen, micro_task
+from Common import transition_gen, micro_task, data_dir
 from utime import sleep_ms
 from microIO import bind_pin, pinmap_search
 from random import randint
@@ -20,6 +19,7 @@ class Data:
     CH_MAX = 1000                          # maximum value per channel
     TASK_STATE = False
     RGB_TASK_TAG = "rgb._tran"
+    FILE_CACHE = data_dir('rgb.cache')
 
 
 #########################################
@@ -39,7 +39,7 @@ def __RGB_init(red_pin=None, green_pin=None, blue_pin=None):
 
 def __persistent_cache_manager(mode):
     """
-    pds - persistent data structure
+    File state cache
     modes:
         r - recover, s - save
     """
@@ -47,12 +47,12 @@ def __persistent_cache_manager(mode):
         return
     if mode == 's':
         # SAVE CACHE
-        with open('rgb.pds', 'w') as f:
+        with open(Data.FILE_CACHE, 'w') as f:
             f.write(','.join([str(k) for k in Data.RGB_CACHE]))
         return
     try:
         # RESTORE CACHE
-        with open('rgb.pds', 'r') as f:
+        with open(Data.FILE_CACHE, 'r') as f:
             Data.RGB_CACHE = [float(data) for data in f.read().strip().split(',')]
     except:
         pass
@@ -74,7 +74,7 @@ def load(red_pin=None, green_pin=None, blue_pin=None, cache=True):
     :param red_pin: optional red color pin to overwrite built-in
     :param green_pin: optional green color pin to overwrite built-in
     :param blue_pin: optional blue color pin to overwrite built-in
-    :param cache: file state machine cache: True/False (.pds), default=True
+    :param cache: file state machine cache: True/False (.cache), default=True
     :return str: Cache state
     """
     Data.PERSISTENT_CACHE = cache

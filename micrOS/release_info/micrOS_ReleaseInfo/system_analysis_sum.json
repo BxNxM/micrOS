@@ -1,12 +1,12 @@
 {
     "files": {
         "Time.py": [
-            9.16,
+            9.17,
             6
         ],
         "Files.py": [
             9.35,
-            5
+            8
         ],
         "micrOSloader.py": [
             7.33,
@@ -49,12 +49,12 @@
             28
         ],
         "Logger.py": [
-            8.99,
+            9.05,
             4
         ],
         "Common.py": [
-            9.83,
-            33
+            9.84,
+            34
         ],
         "InterConnect.py": [
             9.41,
@@ -97,7 +97,7 @@
             5
         ],
         "LM_roboarm.py": [
-            7.76,
+            7.72,
             0
         ],
         "LM_stepper.py": [
@@ -105,7 +105,7 @@
             1
         ],
         "LM_pacman.py": [
-            8.92,
+            8.95,
             0
         ],
         "LM_genIO.py": [
@@ -157,11 +157,11 @@
             0
         ],
         "LM_buzzer.py": [
-            8.8,
+            8.81,
             0
         ],
         "LM_switch.py": [
-            8.66,
+            8.68,
             1
         ],
         "LM_servo.py": [
@@ -185,11 +185,11 @@
             0
         ],
         "LM_neopixel.py": [
-            7.43,
+            7.54,
             2
         ],
         "LM_cct.py": [
-            9.03,
+            9.04,
             1
         ],
         "LM_L9110_DCmotor.py": [
@@ -257,7 +257,7 @@
             0
         ],
         "LM_rgb.py": [
-            8.75,
+            8.88,
             1
         ],
         "LM_distance.py": [
@@ -293,7 +293,7 @@
             0
         ],
         "LM_dimmer.py": [
-            8.32,
+            8.33,
             1
         ],
         "LM_gameOfLife.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            3739,
+            3763,
             24
         ],
         "load": [
-            9398,
+            9410,
             55
         ],
         "core_dep": [
@@ -334,8 +334,8 @@
             true,
             5
         ],
-        "core_score": 9.23,
-        "load_score": 8.34,
+        "core_score": 9.24,
+        "load_score": 8.35,
         "version": "2.10.9-0"
     }
 }

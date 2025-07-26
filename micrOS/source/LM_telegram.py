@@ -2,7 +2,7 @@ from sys import modules
 import urequests
 from Notify import Notify
 from Config import cfgget
-from Common import micro_task, syslog, console_write
+from Common import micro_task, syslog, console_write, data_dir
 from LM_system import ifconfig
 from utime import localtime
 
@@ -18,6 +18,7 @@ class Telegram(Notify):
     _CHAT_IDS = set()  # Telegram bot chat IDs - multi group support - persistent caching
     _API_PARAMS = "?offset=-1&limit=1&timeout=2"  # Generic API params - optimization
     _IN_MSG_ID = None
+    _FILE_CACHE = data_dir('telegram.cache')
 
     def __init__(self):
         # Subscribe to the notification system - provide send_msg method (over self)
@@ -26,20 +27,20 @@ class Telegram(Notify):
     @staticmethod
     def __id_cache(mode):
         """
-        pds - persistent data structure
+        File cache
         modes:
             r - recover, s - save
         """
         if mode == 's':
             # SAVE CACHE
             console_write("[NTFY] Save chatIDs cache...")
-            with open('telegram.pds', 'w') as f:
+            with open(Telegram._FILE_CACHE, 'w') as f:
                 f.write(','.join([str(k) for k in Telegram._CHAT_IDS]))
             return
         try:
             # RESTORE CACHE
             console_write("[NTFY] Restore chatIDs cache...")
-            with open('telegram.pds', 'r') as f:
+            with open(Telegram._FILE_CACHE, 'r') as f:
                 # set() comprehension
                 Telegram._CHAT_IDS = {int(k) for k in f.read().strip().split(',')}
         except:

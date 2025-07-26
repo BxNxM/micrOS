@@ -1,6 +1,6 @@
 from sys import platform
 from microIO import bind_pin, pinmap_search
-from Common import transition_gen, micro_task
+from Common import transition_gen, micro_task, data_dir
 from utime import sleep_ms
 from Types import resolve
 
@@ -15,6 +15,7 @@ class Data:
     PERSISTENT_CACHE = False
     DIMM_TASK_TAG = "dimmer._tran"
     TASK_STATE = False
+    FILE_CACHE = data_dir('dimmer.cache')
 
 
 #########################################
@@ -34,7 +35,7 @@ def __dimmer_init():
 
 def __persistent_cache_manager(mode='r'):
     """
-    pds - persistent data structure
+    File cache
     modes:
         r - recover, s - save
     """
@@ -42,12 +43,12 @@ def __persistent_cache_manager(mode='r'):
         return
     if mode == 's':
         # SAVE CACHE
-        with open('dimmer.pds', 'w') as f:
+        with open(Data.FILE_CACHE, 'w') as f:
             f.write(','.join([str(k) for k in Data.DIMMER_CACHE]))
         return
     try:
         # RESTORE CACHE
-        with open('dimmer.pds', 'r') as f:
+        with open(Data.FILE_CACHE, 'r') as f:
             Data.DIMMER_CACHE = [int(data) for data in f.read().strip().split(',')]
     except:
         pass
@@ -71,7 +72,7 @@ def load(cache=None):
     """
     Initialize dimmer module
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
-    - Load .pds (state machine cache) for this load module
+    - Load .cache (state machine cache) for this load module
     - Apply loaded states to gpio pins (boot function)
     :return str: Cache state
     """

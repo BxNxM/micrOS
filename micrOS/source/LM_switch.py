@@ -1,5 +1,6 @@
 from machine import Pin
 from microIO import bind_pin, pinmap_search
+from Common import data_dir
 from Types import resolve
 
 #########################################
@@ -8,6 +9,7 @@ from Types import resolve
 __SWITCH_OBJ = [None, None, None, None]
 __PERSISTENT_CACHE = False
 __SWITCH_STATE = [0, 0, 0, 0]
+__FILE_CACHE = data_dir('switch.cache')
 
 
 #########################################
@@ -16,7 +18,7 @@ __SWITCH_STATE = [0, 0, 0, 0]
 
 def __persistent_cache_manager(mode):
     """
-    pds - persistent data structure
+    File cache
     modes:
         r - recover, s - save
     """
@@ -25,12 +27,12 @@ def __persistent_cache_manager(mode):
     global __SWITCH_STATE
     if mode == 's':
         # SAVE CACHE
-        with open('switch.pds', 'w') as f:
+        with open(__FILE_CACHE, 'w') as f:
             f.write(','.join([str(k) for k in __SWITCH_STATE]))
         return
     try:
         # RESTORE CACHE
-        with open('switch.pds', 'r') as f:
+        with open(__FILE_CACHE, 'r') as f:
             __SWITCH_STATE = [int(data) for data in f.read().strip().split(',')]
     except:
         pass
@@ -54,7 +56,7 @@ def load(cache=None, ch_init=None):
     """
     Initiate switch module (4 switch pack)
     :param cache bool: file state machine cache: True/False/None(default: automatic True)
-    - Load .pds (state machine cache) for this load module
+    - Load .cache (state machine cache) for this load module
     - Apply loaded states to gpio pins (boot function)
     :return str: Cache state
     """

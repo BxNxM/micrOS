@@ -9,7 +9,7 @@ def _is_module(path:str='/', pyprefix:str='*') -> bool:
     :param pyprefix: python resource filter prefix, default: * (all: LM and IO)
     """
     # micrOS file types
-    allowed_exts = ('html', 'js', 'css', 'log', 'pds', 'dat')
+    allowed_exts = ('html', 'js', 'css', 'log', 'cache', 'dat')
     mod_prefixes = ('LM', "IO")
     fname = path.split("/")[-1]
     if fname.split("_")[0] in mod_prefixes or fname.split('.')[-1] in allowed_exts:
@@ -112,7 +112,7 @@ def path_join(*parts):
 class OSPath:
     _ROOT = getcwd()
     LOGS = path_join(_ROOT, '/logs')        # system/user logs
-    DATA = path_join(_ROOT,'/data')         # appdata
+    DATA = path_join(_ROOT,'/data')         # application data
     WEB = path_join(_ROOT,'/web')           # web resources
 
     @property

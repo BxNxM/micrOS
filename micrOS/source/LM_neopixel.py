@@ -1,8 +1,7 @@
 from neopixel import NeoPixel
 from machine import Pin
-from sys import platform
 from utime import sleep_ms
-from Common import transition_gen, micro_task
+from Common import transition_gen, micro_task, data_dir
 from microIO import bind_pin, pinmap_search
 from random import randint
 from Types import resolve
@@ -19,6 +18,7 @@ class Data:
     PERSISTENT_CACHE = False
     RGB_TASK_TAG = "neopixel._tran"
     TASK_STATE = False
+    FILE_CACHE = data_dir('neopixel.cache')
 
 
 #########################################
@@ -40,7 +40,7 @@ def __init_NEOPIXEL(pin=None, n=24):
 
 def __persistent_cache_manager(mode):
     """
-    pds - persistent data structure
+    File cache
     modes:
         r - recover, s - save
     """
@@ -48,12 +48,12 @@ def __persistent_cache_manager(mode):
         return
     if mode == 's':
         # SAVE CACHE
-        with open('neopixel.pds', 'w') as f:
+        with open(Data.FILE_CACHE, 'w') as f:
             f.write(','.join([str(k) for k in Data.DCACHE]))
         return
     try:
         # RESTORE CACHE
-        with open('neopixel.pds', 'r') as f:
+        with open(Data.FILE_CACHE, 'r') as f:
             Data.DCACHE = [float(data) for data in f.read().strip().split(',')]
     except:
         pass
@@ -77,7 +77,7 @@ def load(ledcnt=24, pin=None, cache=True):
     Initiate NeoPixel RGB module
     :param ledcnt: number of led segments
     :param pin: optional number to overwrite default pin
-    :param cache: default True, store stages on disk +  Load (.pds)
+    :param cache: default True, store stages on disk +  Load (.cache)
     :return str: Cache state
     """
     Data.PERSISTENT_CACHE = cache
@@ -182,7 +182,7 @@ def segment(r=None, g=None, b=None, s=0, cache=False, write=True):
     :param g: green value 0-255
     :param b: blue value 0-255
     :param s: segment - index 0-ledcnt
-    :param cache: cache color (update .pds file)
+    :param cache: cache color (update .cache file)
     :param write: send color buffer to neopixel (update LEDs)
     :return dict: rgb status - states: R, G, B, S
     """

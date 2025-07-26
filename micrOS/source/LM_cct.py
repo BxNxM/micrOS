@@ -4,7 +4,7 @@
 from machine import Pin, PWM
 from sys import platform
 from utime import sleep_ms
-from Common import transition_gen, micro_task
+from Common import transition_gen, micro_task, data_dir
 from microIO import bind_pin, pinmap_search
 from random import randint
 from Types import resolve
@@ -18,6 +18,7 @@ class Data:
     CCT_TASK_TAG = 'cct._tran'
     HUE_TASK_TAG = 'cct._hue'
     TASK_STATE = False
+    FILE_CACHE = data_dir('cwww.cache')
 
 
 #########################################
@@ -39,7 +40,7 @@ def __cwww_init(pin_warm=None, pin_cold=None):
 
 def __persistent_cache_manager(mode):
     """
-    pds - persistent data structure
+    File state cache
     modes:
         r - recover, s - save
     """
@@ -47,12 +48,12 @@ def __persistent_cache_manager(mode):
         return
     if mode == 's':
         # SAVE CACHE
-        with open('cwww.pds', 'w') as f:
+        with open(Data.FILE_CACHE, 'w') as f:
             f.write(','.join([str(k) for k in Data.CWWW_CACHE]))
         return
     try:
         # RESTORE CACHE
-        with open('cwww.pds', 'r') as f:
+        with open(Data.FILE_CACHE, 'r') as f:
             Data.CWWW_CACHE = [float(data) for data in f.read().strip().split(',')]
     except:
         pass
@@ -77,7 +78,7 @@ def load(pin_warm=None, pin_cold=None, cache=True):
     Initialize Cold white / Warm white LED module
     :param pin_warm: optional number to overwrite default pin
     :param pin_cold: optional number to overwrite default pin
-    :param cache: save/load state machine to disk (.pds)
+    :param cache: save/load state machine to disk (.cache)
     :return str: Cache state
     """
     __cwww_init(pin_warm, pin_cold)

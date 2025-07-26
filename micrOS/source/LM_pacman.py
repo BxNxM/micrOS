@@ -125,39 +125,42 @@ def moduls(unload=None):
 
 
 @socket_stream
-def cachedump(delpds=None, msgobj=None):
+def cachedump(delete=None, msgobj=None):
     """
-    Cache system persistent data storage files (.pds)
-    :param delpds: cache name to delete
+    Cache system persistent data storage files (.cache)
+    :param delete: cache name to delete
     """
-    if delpds is None:
-        # List pds files aka application cache
+    data_dir = OSPath.DATA
+    if delete is None:
+        # List cache files aka application cache
         msg_buf = []
-        for pds in (_pds for _pds in ilist_fs(type_filter='f') if _pds.endswith('.pds')):
-            with open(pds, 'r') as f:
+        for cache in (c for c in ilist_fs(data_dir, type_filter='f') if c.endswith('.cache')):
+            _path = path_join(data_dir, cache)
+            with open(_path, 'r') as f:
                 if msgobj is None:
-                    msg_buf.append(f'{pds}: {f.read()}')
+                    msg_buf.append(f'{_path}: {f.read()}')
                 else:
-                    msgobj(f'{pds}: {f.read()}')
+                    msgobj(f'{_path}: {f.read()}')
         return msg_buf if len(msg_buf) > 0 else ''
-    # Remove given pds file
+    # Remove given cache file
     try:
-        verdict = remove_fs(f'{delpds}.pds')
-        return f'{delpds}.pds delete done.: {verdict}'
+        delete_cache = path_join(data_dir, f"{delete}.cache")
+        verdict = remove_fs(delete_cache)
+        return f'{delete_cache} delete done.: {verdict}'
     except:
-        return f'{delpds}.pds not exists'
+        return f'{delete}.cache not exists'
 
 
-def dat_dump():
+def datdump():
     """
     Generic .dat file dump
-    - logged data from LMs, sensor datat, etc...
+    - logged data from LMs, sensor data, etc...
     """
-    logs_dir = OSPath.LOGS
-    dats = (f for f in ilist_fs(type_filter='f') if f.endswith('.dat'))
+    data_dir = OSPath.DATA
+    dats = (f for f in ilist_fs(data_dir, type_filter='f') if f.endswith('.dat'))
     out = {}
     for dat in dats:
-        with open(path_join(logs_dir, dat), 'r') as f:
+        with open(path_join(data_dir, dat), 'r') as f:
             out[dat] = f.read()
     return out
 
@@ -221,8 +224,8 @@ def help(widgets=False):
     """
     return ('listmods', 'delmod mod=<module>.py/.mpy or .js/.html/.css', 'del_duplicates',
             'moduls unload="LM_rgb/None"',
-            'cachedump delpds="rgb/None"',
-            'dat_dump',
+            'cachedump delete=None',
+            'datdump',
             'download url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
             'micros_checksum',
             'ls path="/" content="*/f/d" select="*/LM/IO"',

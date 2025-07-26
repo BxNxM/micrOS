@@ -16,12 +16,14 @@ from utime import sleep_ms, time, mktime, localtime
 from Config import cfgput, cfgget
 from Debug import errlog_add, console_write
 from urequests import get as http_get
+from Files import OSPath, path_join
 
 
 class Sun:
     TIME = {}
     UTC = cfgget('utc')  # STORED IN MINUTE
     BOOTIME = None       # Initialize BOOTIME: Not SUN, but for system uptime
+    FILE_CACHE = path_join(OSPath.DATA, 'sun.cache')
 
 
 def set_time(year, month, mday, hour, minute, sec):
@@ -89,14 +91,14 @@ def ntp_time():
 
 def __sun_cache(mode):
     """
-    pds - persistent data structure
+    File cache
     modes:
         r - recover, s - save
     """
     if mode == 's':
         # SAVE CACHE
         try:
-            with open('sun.pds', 'w') as f:
+            with open(Sun.FILE_CACHE, 'w') as f:
                 cache = {k:tuple([str(t) for t in v]) for k, v in Sun.TIME.items()}
                 f.write(';'.join([f'{k}:{"-".join(v)}' for k, v in cache.items()]))
         except:
@@ -104,7 +106,7 @@ def __sun_cache(mode):
         return
     try:
         # RESTORE CACHE
-        with open('sun.pds', 'r') as f:
+        with open(Sun.FILE_CACHE, 'r') as f:
             buff = {data.split(':')[0]: data.split(':')[1].split('-')
                     for data in f.read().strip().split(';')}
             for k, v in buff.items():

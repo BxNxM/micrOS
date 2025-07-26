@@ -5,15 +5,15 @@
             6
         ],
         "Files.py": [
-            9.6,
-            4
+            9.35,
+            5
         ],
         "micrOSloader.py": [
             7.33,
             1
         ],
         "Hooks.py": [
-            9.61,
+            9.67,
             1
         ],
         "Server.py": [
@@ -49,7 +49,7 @@
             28
         ],
         "Logger.py": [
-            8.9,
+            8.99,
             4
         ],
         "Common.py": [
@@ -319,7 +319,7 @@
     },
     "summary": {
         "core": [
-            3708,
+            3739,
             24
         ],
         "load": [
@@ -334,7 +334,7 @@
             true,
             5
         ],
-        "core_score": 9.24,
+        "core_score": 9.23,
         "load_score": 8.34,
         "version": "2.10.9-0"
     }

@@ -1,6 +1,7 @@
 from sys import modules
 from Common import socket_stream
 from Files import _is_module, list_fs, ilist_fs, remove_fs
+from Files import OSPath, path_join
 
 
 #############################################
@@ -42,7 +43,7 @@ def rm(path, allow_dir=False):
 def dirtree(path="/", raw=False):
     """Return only directories from a given path."""
     path = path if path.endswith('/') else f"{path}/"
-    folders = [f"{path}/{item}" for item in ilist_fs(path, type_filter='d')]
+    folders = [path_join(path, item) for item in ilist_fs(path, type_filter='d')]
     folder_contents = {folder:list_fs(folder) for folder in folders}
     if raw:
         return folder_contents
@@ -152,11 +153,11 @@ def dat_dump():
     Generic .dat file dump
     - logged data from LMs, sensor datat, etc...
     """
-    logs_dir = "/logs/"
+    logs_dir = OSPath.LOGS
     dats = (f for f in ilist_fs(type_filter='f') if f.endswith('.dat'))
     out = {}
     for dat in dats:
-        with open(f"{logs_dir}{dat}", 'r') as f:
+        with open(path_join(logs_dir, dat), 'r') as f:
             out[dat] = f.read()
     return out
 

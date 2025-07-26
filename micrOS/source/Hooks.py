@@ -21,6 +21,8 @@ from Config import cfgget, cfgput
 from microIO import detect_platform
 from Debug import console_write, errlog_add
 from Tasks import exec_lm_pipe
+from Files import OSPath, is_dir
+from uos import mkdir
 from micropython import mem_info
 from machine import freq
 try:
@@ -43,7 +45,7 @@ def bootup():
     """
     # Execute LMs from boothook config parameter
     console_write("[BOOT] EXECUTION...")
-    boot_cause()
+    _init_micros_dirs()
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
         console_write(f"|-[BOOT] TASKS: {bootasks}")
@@ -52,7 +54,49 @@ def bootup():
         else:
             console_write("|-[BOOT] ERROR")
 
-    # Set boostmd (boost mode)
+    # Load and Save boot cause
+    boot_cause()
+    # Autotune queue size
+    _tune_queue_size()
+    # Configure CPU performance
+    _tune_performance()
+
+
+def _init_micros_dirs():
+    """
+    Init micrOS root file system directories
+    """
+    root_dirs = [
+        getattr(OSPath, key)
+        for key in dir(OSPath)
+        if not key.startswith("_") and isinstance(getattr(OSPath, key), str)
+    ]
+    console_write(f"|-[BOOT] rootFS validation: {root_dirs}")
+    for dir_path in root_dirs:
+        if not is_dir(dir_path):
+            try:
+                mkdir(dir_path)
+                errlog_add(f"[BOOT] init dir: {dir_path}")
+            except Exception as e:
+                errlog_add(f"[ERR][BOOT] cannot init dir {dir_path}: {e}")
+
+
+def _tune_queue_size():
+    """
+    Tune queue size based on available ram
+    between 5-50
+    """
+    min_queue, max_queue, task_req_kb = 5, 20, 20       # 400kb max for tasks management
+    est_queue = int(mem_free()/1000/task_req_kb)
+    est_queue = max(est_queue, min_queue)
+    est_queue = min(est_queue, max_queue)
+    current_queue = cfgget('aioqueue')
+    if est_queue > current_queue:
+        cfgput('aioqueue', est_queue)
+
+
+def _tune_performance():
+    # Set boosted (boost mode)
     platform = detect_platform()
     if cfgget('boostmd') is True:
         console_write(f"[BOOT HOOKS] Set up CPU high Hz - boostmd: {cfgget('boostmd')}")
@@ -66,22 +110,6 @@ def bootup():
             freq(80_000_000)   # 80 Mhz / Half the max CPU clock
         elif 'esp32' in platform:
             freq(160_000_000)   # 160 Mhz / Half the max CPU clock
-    # Autotune queue size
-    tune_queue_size()
-
-
-def tune_queue_size():
-    """
-    Tune queue size based on available ram
-    between 5-50
-    """
-    min_queue, max_queue, task_req_kb = 5, 20, 20       # 400kb max for tasks management
-    est_queue = int(mem_free()/1000/task_req_kb)
-    est_queue = max(est_queue, min_queue)
-    est_queue = min(est_queue, max_queue)
-    current_queue = cfgget('aioqueue')
-    if est_queue > current_queue:
-        cfgput('aioqueue', est_queue)
 
 
 def profiling_info(label=""):

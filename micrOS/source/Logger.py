@@ -6,27 +6,23 @@ Designed by Marcell Ban aka BxNxM
 """
 from time import localtime
 from re import match
-from uos import remove, mkdir, getcwd
-from Files import ilist_fs, is_dir
+from uos import remove, mkdir
+from Files import OSPath, path_join, ilist_fs, is_dir
 
 #############################################
 #        LOGGING WITH DATA ROTATION         #
 #############################################
-LOG_FOLDER = None
 
 def _init_logger():
     """ Init /logs folder """
-    global LOG_FOLDER
-    if LOG_FOLDER is None:
-        LOG_FOLDER = f"{getcwd()}logs"
-        if not is_dir(LOG_FOLDER):
-            try:
-                mkdir(LOG_FOLDER)
-                syslog(f"[BOOT] log dir {LOG_FOLDER} init")
-            except Exception as e:
-                LOG_FOLDER = getcwd()
-                syslog(f"[BOOT] log dir {LOG_FOLDER} fallback: {e}")
-    return LOG_FOLDER
+    if not is_dir(OSPath.LOGS):
+        try:
+            mkdir(OSPath.LOGS)
+            syslog(f"[BOOT] log dir {OSPath.LOGS} init")
+        except Exception as e:
+            OSPath.LOGS = OSPath.ROOT
+            syslog(f"[BOOT] log dir {OSPath.LOGS} fallback: {e}")
+    return OSPath.LOGS
 
 
 def logger(data, f_name, limit):
@@ -61,7 +57,7 @@ def logger(data, f_name, limit):
             # write file
             f.write(''.join(lines))
 
-    f_name = f"{LOG_FOLDER}/{f_name}"
+    f_name = path_join(OSPath.LOGS, f_name)
     # Run logger
     try:
         # There is file - append 'r+'
@@ -80,7 +76,8 @@ def log_get(f_name, msgobj=None):
     Get and stream (ver osocket/stdout) .log file's content and count "critical" errors
     - critical error tag in log line: [ERR]
     """
-    f_name = f"{LOG_FOLDER}/{f_name}"
+
+    f_name = path_join(OSPath.LOGS, f_name)
     err_cnt = 0
     try:
         if msgobj is not None:
@@ -101,7 +98,7 @@ def log_get(f_name, msgobj=None):
 
 def syslog(data=None, msgobj=None):
     if data is None:
-        err_cnt = sum([log_get(f, msgobj) for f in ilist_fs(LOG_FOLDER, type_filter='f') if f.endswith(".sys.log")])
+        err_cnt = sum([log_get(f, msgobj) for f in ilist_fs(OSPath.LOGS, type_filter='f') if f.endswith(".sys.log")])
         return err_cnt
 
     _match = match(r"^\[([^\[\]]+)\]", data)
@@ -111,9 +108,10 @@ def syslog(data=None, msgobj=None):
 
 
 def log_clean(msgobj=None):
-    to_del = [file for file in ilist_fs(LOG_FOLDER, type_filter='f') if file.endswith('.log')]
+    logs_dir = OSPath.LOGS
+    to_del = [file for file in ilist_fs(logs_dir, type_filter='f') if file.endswith('.log')]
     for _del in to_del:
-        _del = f"{LOG_FOLDER}/{_del}"
+        _del = path_join(logs_dir, _del)
         if msgobj is not None:
             msgobj(f" Delete: {_del}")
         remove(_del)

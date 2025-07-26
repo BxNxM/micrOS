@@ -1,4 +1,4 @@
-from uos import ilistdir, remove, stat
+from uos import ilistdir, remove, stat, getcwd
 
 ################################   Helper functions   #####################################
 
@@ -99,3 +99,22 @@ def is_file(path):
         return stat(path)[0] & 0x8000
     except OSError:
         return False
+
+
+def path_join(*parts):
+    path = "/".join(part.strip("/") for part in parts if part)
+    if parts and parts[0].startswith("/"):
+        path = "/" + path
+    return path
+
+
+# micrOS system file structure
+class OSPath:
+    _ROOT = getcwd()
+    LOGS = path_join(_ROOT, '/logs')        # system/user logs
+    DATA = path_join(_ROOT,'/data')         # appdata
+    WEB = path_join(_ROOT,'/web')           # web resources
+
+    @property
+    def ROOT(self):
+        return self._ROOT

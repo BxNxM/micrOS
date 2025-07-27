@@ -18,11 +18,9 @@ from Notify import Notify
 
 def micro_task(tag:str, task=None):
     """
-    [LM] Async task creation
-    :param tag:
-        [1] tag=None: return task generator object
-        [2] tag=taskID: return existing task object by tag
-    :param task: coroutine to execute (with built-in overload protection and lcm) [list|callable]
+    [LM] Async task manager.
+    :param tag: task tag string
+    :param task: coroutine (or list of command arguments) to contract a task with the given async task callback
     return bool|callable
     """
     if task is None:
@@ -40,7 +38,7 @@ def micro_task(tag:str, task=None):
     return state
 
 
-def manage_task(tag, operation):
+def manage_task(tag:str, operation:str):
     """
     [LM] Async task management
     :param tag: task tag
@@ -58,19 +56,15 @@ def manage_task(tag, operation):
     raise Exception(f"Invalid operation: {operation}")
 
 
-def exec_cmd(cmd:list, jsonify:bool=None, skip_check=False):
+def exec_cmd(cmd:list, jsonify:bool=None, skip_check=None):
     """
     [LM] Single (sync) LM execution
     :param cmd: command string list, ex.: ['system', 'clock']
     :param jsonify: request json output
-    :param skip_check: skip cmd type check, micropython bug
+    :param skip_check: legacy (check was removed) - remove parameter
     return state, output
     """
-    # [BUG] Solution with isinstance/type is not reliable... micropython 1.22
-    #          Invalid type, must be list: <class list>" ...
-    if skip_check:
-        return lm_exec(cmd, jsonify=jsonify)
-    return lm_exec(cmd, jsonify=jsonify) if isinstance(cmd, list) else False, f"CMD {type(cmd)}, must be list!"
+    return lm_exec(cmd, jsonify=jsonify)
 
 
 def notify(text=None) -> bool:
@@ -327,7 +321,6 @@ class AnimationPlayer:
                     self.draw()
                     await my_task.feed(sleep_ms=self._player_speed_ms)
                     my_task.out = "Restart animation"
-                    pass
                 except Exception as e:
                     my_task.out = f"Error: {e}"
                     break

@@ -102,6 +102,9 @@ class NeoPixelMatrix(AnimationPlayer):
         bitmap: [(x, y, (r, g, b)),
                  (x, y, (r, g, b)), ...]
         """
+        if len(bitmap) == 0:
+            self.clear()
+            return
         for bm in bitmap:
             x, y, color = bm
             self.set_pixel(x, y, color, zigzag=False)

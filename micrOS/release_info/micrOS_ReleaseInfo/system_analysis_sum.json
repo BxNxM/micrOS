@@ -61,7 +61,7 @@
             2
         ],
         "Debug.py": [
-            8.4,
+            7.37,
             18
         ],
         "Network.py": [
@@ -97,7 +97,7 @@
             5
         ],
         "LM_roboarm.py": [
-            7.72,
+            7.78,
             0
         ],
         "LM_stepper.py": [
@@ -157,7 +157,7 @@
             0
         ],
         "LM_buzzer.py": [
-            8.81,
+            9.11,
             0
         ],
         "LM_switch.py": [
@@ -313,13 +313,13 @@
             0
         ],
         "LM_neomatrix.py": [
-            8.7,
+            8.72,
             0
         ]
     },
     "summary": {
         "core": [
-            3763,
+            3723,
             24
         ],
         "load": [
@@ -334,8 +334,8 @@
             true,
             5
         ],
-        "core_score": 9.24,
+        "core_score": 9.19,
         "load_score": 8.35,
-        "version": "2.10.9-0"
+        "version": "2.11.0-0"
     }
 }

@@ -1,5 +1,43 @@
 from micropython import const
 
+#### DEFINE CUSTOM PROGRESS LED LOGIC ####
+class APA102:
+    DOTSTAR = None
+    COLOR_WHEEL = None
+    COLOR_INDEX:int = 0
+
+try:
+    # init apa102
+    from machine import Pin
+    from machine import SoftSPI
+    from dotstar import DotStar
+    from tinypico import DOTSTAR_CLK, DOTSTAR_DATA, SPI_MISO, set_dotstar_power, dotstar_color_wheel
+    spi = SoftSPI(sck=Pin(DOTSTAR_CLK), mosi=Pin(DOTSTAR_DATA), miso=Pin(SPI_MISO))
+    # Create a DotStar instance
+    APA102.DOTSTAR = DotStar(spi, 1, brightness=0.4)  # Just one DotStar, half brightness
+    # Turn on the power to the DotStar
+    set_dotstar_power(True)
+    APA102.COLOR_WHEEL = dotstar_color_wheel
+except Exception as e:
+    print(f"[Error] IO error, tinypico apa102: {e}")
+
+def _step_apa102(pin=False):
+    if pin:
+        return None
+    # Get the R,G,B values of the next colour
+    r, g, b = APA102.COLOR_WHEEL(APA102.COLOR_INDEX*2)
+    # Set the colour on the DOTSTAR
+    APA102.DOTSTAR[0] = (int(r * 0.6), g, b, 0.4)
+    # Increase the wheel index
+    APA102.COLOR_INDEX = 0 if APA102.COLOR_INDEX > 1000 else APA102.COLOR_INDEX + 2
+    return True                  # No double-blink
+
+###################################################
+
+
+# BUILTIN LED
+builtin = _step_apa102
+
 # ANALOG RGB + WW + CW
 redgb = const(25)       # D25 - rgb red channel [PWM CH1]
 rgreenb = const(26)     # D26 - rgb green channel [PWM CH2]

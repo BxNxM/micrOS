@@ -1,20 +1,26 @@
 from micropython import const
-from machine import Pin
-
 
 #### DEFINE CUSTOM PROGRESS LED LOGIC ####
+class WS2812:
+    NEOPIXEL = None
+    WHEEL = None
+    PIN = const(5)                                      # BUILT IN LED - progress_led
+    PIN_ENABLE = const(8)                               # Power ON LED
+
 try:
+    # init ws2812
     from neopixel import NeoPixel
-    Pin(8, Pin.OUT).value(1)        # Power ON LED
-    PLED_OBJ = NeoPixel(Pin(5), 1)  # Init neopixel
-    NEO_WHEEL = None
+    from machine import Pin
+    Pin(WS2812.PIN_ENABLE, Pin.OUT).value(1)            # Power ON LED
+    WS2812.NEOPIXEL = NeoPixel(Pin(WS2812.PIN), 1)      # BUILT IN LED - progress_led
 except Exception as e:
-    print(f"[PLED CUSTOM] ws2812 error: {e}")
-    PLED_OBJ = None
+    print(f"[Error] IO error, esp21se ws2812: {e}")
 
 
-def _step_ws2812():
-    global PLED_OBJ, NEO_WHEEL
+def _step_ws2812(pin=False):
+    if pin:
+        return WS2812.PIN
+
     def _color_wheel():
         while True:
             yield 10, 0, 0
@@ -23,15 +29,14 @@ def _step_ws2812():
             yield 0, 5, 5
             yield 0, 0, 10
             yield 5, 0, 5
-    if PLED_OBJ is None:
-        return False
-    if NEO_WHEEL is None:
-        NEO_WHEEL = _color_wheel()
-    PLED_OBJ[0] = next(NEO_WHEEL)
-    PLED_OBJ.write()
-    return True
-###########################################
 
+    if WS2812.WHEEL is None:
+        WS2812.WHEEL = _color_wheel()
+    WS2812.NEOPIXEL[0] = next(WS2812.WHEEL)
+    WS2812.NEOPIXEL.write()
+    return True  # No double-blink
+
+###########################################
 
 # BUILTIN LED
 builtin = _step_ws2812

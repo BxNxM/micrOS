@@ -46,14 +46,14 @@ Access rest api over browser: `http://<nodename>.local`
 🚀🎈Lightweight and high performance core system that leaves you space 😎
 
 ## ◉ Shortcuts:
-1. micrOS Client Application [link](https://github.com/BxNxM/micrOS/#micros-client-application)
+1. 📲 micrOS Client Application [link](https://github.com/BxNxM/micrOS/#micros-client-application)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32-and-more)
 3. micrOS Tutorials [link](https://github.com/BxNxM/micrOS/#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
-5. Built-in app modules: [link](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
+5. 🎮 Built-in app modules: [link](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
-7. micrOS create custom Load Modules: [link](./APPLICATION_GUIDE.md)
+7. 🧑‍💻 micrOS create custom Load Modules: [link](./APPLICATION_GUIDE.md)
 8. micrOS Gateway server with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
 9. Release notes: [link](https://github.com/BxNxM/micrOS/#relese-note)
 

@@ -862,3 +862,99 @@ def _response():
 ```
 
 Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
+
+--------------------------
+
+### AnimationPlayer(animation:callable=None, tag:str=None, batch\_draw:bool=False, batch\_size:int=None)
+
+Base class for asyncronous animation playing. `animation` must be a generator.
+
+```python3
+
+class AnimationPlayer:
+    """
+    Generic async animation (generator) player.
+    """
+
+    def __init__(self, animation:callable=None, tag:str=None, batch_draw:bool=False, batch_size:int=None):
+        """
+        Initialize the AnimationPlayer with an optional animation.
+        :param animation: Function to GENERATE animation data
+        :param tag: Optional task tag for micro_task management.
+        :param batch_draw: If True - draw in batches
+        :param batch_size: Number of pixels per batch when drawing
+        """
+
+    def control(self, play_speed_ms:int, bt_draw:bool=None, bt_size:int=None):
+        """
+        Set/Get current play speed of the animation.
+        :param play_speed_ms: player loop speed in milliseconds.
+        :param bt_draw: batch drawing flag.
+        :param bt_size: batch drawing size.
+        return: {"realtime": not self.batch_draw, "batched": self.batch_draw,
+                "size": self.__batch_size, "speed_ms": self._player_speed_ms}
+        """
+
+    def play(self, animation=None, speed_ms=None, bt_draw=False, bt_size=None):
+        """
+        Play animation via generator function.
+        :param animation: Animation generator function.
+        :param speed_ms: Speed of the animation in milliseconds. (min.: 3ms)
+        :param bt_draw: batch drawing flag.
+        :param bt_size: batch drawing size.
+        return: verdict str/bool
+        """
+
+    def stop(self):
+        """
+        Stop the animation.
+        """
+
+    def update(self, *arg, **kwargs):
+        """
+        Child class must implement this method to handle data update logic.
+        """
+        raise NotImplementedError("Child class must implement update method.")
+
+    def draw(self):
+        """
+        Child class must implement this method to handle drawing logic.
+        """
+        raise NotImplementedError("Child class must implement draw method.")
+
+    def clear(self):
+        """
+        Clear the display logic.
+        """
+        raise NotImplementedError("Child class must implement clear method.")
+```
+
+#### Generator example:
+
+```python
+def generator():
+    while True:
+        yield 10, 0, 0
+        yield 5, 5, 0
+        yield 0, 10, 0
+        yield 0, 5, 5
+        yield 0, 0, 10
+        yield 5, 0, 5
+```
+
+Usage(s): [LM_neomatrix](./micrOS/source/LM_neomatrix.py) [LM_neoeffects.](./micrOS/source/LM_neoeffects.py)
+
+--------------------------
+
+### data_dir(f\_name=None)
+
+Get data working directory path. If f_name is given returns a the full data path file file name.
+
+```python
+def data_dir(f_name=None):
+    """
+    Access for data dir path
+    :param f_name: if given, returns full path, otherwise returns data dir root path
+    """
+```
+

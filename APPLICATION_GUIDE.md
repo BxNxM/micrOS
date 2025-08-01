@@ -876,32 +876,35 @@ class AnimationPlayer:
     Generic async animation (generator) player.
     """
 
-    def __init__(self, animation:callable=None, tag:str=None, batch_draw:bool=False, batch_size:int=None):
+    def __init__(self, animation:callable=None, tag:str=None, batch_draw:bool=False, batch_size:int=None, loop:bool=True):
         """
         Initialize the AnimationPlayer with an optional animation.
         :param animation: Function to GENERATE animation data
         :param tag: Optional task tag for micro_task management.
         :param batch_draw: If True - draw in batches
         :param batch_size: Number of pixels per batch when drawing
+        :param loop: If True - loop the animation (default)
         """
 
-    def control(self, play_speed_ms:int, bt_draw:bool=None, bt_size:int=None):
+    def control(self, play_speed_ms:int, bt_draw:bool=None, bt_size:int=None, loop=True):
         """
         Set/Get current play speed of the animation.
         :param play_speed_ms: player loop speed in milliseconds.
         :param bt_draw: batch drawing flag.
         :param bt_size: batch drawing size.
+        :param loop: loop flag.
         return: {"realtime": not self.batch_draw, "batched": self.batch_draw,
                 "size": self.__batch_size, "speed_ms": self._player_speed_ms}
         """
 
-    def play(self, animation=None, speed_ms=None, bt_draw=False, bt_size=None):
+    def play(self, animation=None, speed_ms=None, bt_draw=False, bt_size=None, loop=True):
         """
         Play animation via generator function.
         :param animation: Animation generator function.
         :param speed_ms: Speed of the animation in milliseconds. (min.: 3ms)
         :param bt_draw: batch drawing flag.
         :param bt_size: batch drawing size.
+        :param loop: Loop the animation.
         return: verdict str/bool
         """
 

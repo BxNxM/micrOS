@@ -222,7 +222,9 @@ def _run_pylint(file_name):
         '--disable=broad-exception-caught',         # Disable BROAD exception
         '--disable=broad-exception-raised',         # Disable BROAD exception
         '--disable=too-many-return-statements',     # :D I don't think so :D
-        '--disable=too-many-branches'               # :D I don't think so :D
+        '--disable=too-many-branches',              # :D I don't think so :D
+        '--disable=too-many-positional-arguments',  # :D I don't think so :D
+        '--disable=too-many-instance-attributes'    # :D I don't think so :D
     ]
     if file_name in ['Tasks.py', 'microIO.py', 'Types.py']:
         pylint_opts.append('--disable=exec-used')   # Disable micrOS execution core exec/eval warning

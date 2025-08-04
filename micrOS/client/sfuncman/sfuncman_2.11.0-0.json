@@ -829,6 +829,10 @@
             "doc": "module 'LM_neomatrix' has no attribute 'effect_snake'",
             "param(s)": ""
         },
+        "get_colormap": {
+            "doc": "module 'LM_neomatrix' has no attribute 'get_colormap'",
+            "param(s)": ""
+        },
         "help": {
             "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
             "param(s)": "widgets=False"
@@ -856,7 +860,7 @@
         },
         "snake": {
             "doc": null,
-            "param(s)": "speed_ms:int=50 length:int=5"
+            "param(s)": "speed_ms:int=30 length:int=5"
         },
         "stop": {
             "doc": "\n    Stop the current animation\n    ",

@@ -45,6 +45,17 @@ class NeoPixelMatrix(AnimationPlayer):
             return y * self.width + x
         return y * self.width + (self.width - 1 - x)
 
+    def _index_to_coord(self, index: int, zigzag:bool=True) -> tuple[int, int]:
+        """
+        Converts a linear index to (x, y) coordinates.
+        Zigzag layout: even rows left-to-right, odd rows right-to-left.
+        """
+        y = index // self.width
+        x = index % self.width
+        if (zigzag is None or zigzag) and y % 2 == 1:
+            x = self.width - 1 - x
+        return x, y
+
     def _rgb_to_grb_with_br(self, color: tuple[int, int, int]):
         """
         Converts RGB to GRB with brightness adjustment.
@@ -95,7 +106,6 @@ class NeoPixelMatrix(AnimationPlayer):
         self.draw()
         return f"Set brightness to {br}%"
 
-
     def draw_colormap(self, bitmap:list):
         """
         Draw a bitmap on the Neopixel
@@ -110,6 +120,15 @@ class NeoPixelMatrix(AnimationPlayer):
             self.set_pixel(x, y, color, zigzag=False)
         self.draw()
 
+    def export_colormap(self):
+        """
+        Export the current screen as bitmap
+        """
+        colormap = []
+        for i, color in enumerate(self._color_buffer):
+            x, y = self._index_to_coord(i, zigzag=False)
+            colormap.append((x, y, color))
+        return colormap
 
 ##########################################################################################################
 ##########################################################################################################
@@ -191,9 +210,13 @@ def draw_colormap(bitmap):
     except Exception as e:
         return str(e)
     return "Done."
-# -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
 
+
+def get_colormap():
+    return load().export_colormap()
+
+# -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 def rainbow(speed_ms=0):
     def effect_rainbow():
@@ -237,10 +260,11 @@ def rainbow(speed_ms=0):
     return load().play(effect_rainbow, speed_ms=speed_ms, bt_draw=True, bt_size=8)
 
 
-def snake(speed_ms:int=50, length:int=5):
+def snake(speed_ms:int=30, length:int=5):
     def effect_snake():
         clear_color = (0, 0, 0)
-        total_steps = 8 * 8 + length  # run just past the end to clear tail
+        total_pixels = 8 * 8
+        total_steps = total_pixels + length  # run just past the end to clear tail
 
         for step in range(total_steps):
             # 1) clear the tail pixel once the snake is longer than `length`
@@ -249,12 +273,17 @@ def snake(speed_ms:int=50, length:int=5):
                 tx, ty = tail_idx % 8, tail_idx // 8
                 yield tx, ty, clear_color
 
-            # 2) move the head (only while head index < 64)
-            if step < 8 * 8:
-                hx, hy = step % 8, step // 8
-                yield hx, hy, NeoPixelMatrix.DEFAULT_COLOR
+            # 2) draw the snake segments with decreasing brightness
+            for i in range(length):
+                seg_idx = step - i
+                if 0 <= seg_idx < total_pixels:
+                    x, y = seg_idx % 8, seg_idx // 8
+                    br = 1.0 - (i / length) ** 0.6
+                    r, g, b = NeoPixelMatrix.DEFAULT_COLOR
+                    color = (int(r * br), int(g * br), int(b * br))
+                    yield x, y, color
 
-    return load().play(effect_snake, speed_ms=speed_ms)
+    return load().play(effect_snake, speed_ms=speed_ms, bt_draw=False)
 
 
 def cube(speed_ms=10):
@@ -287,7 +316,7 @@ def cube(speed_ms=10):
                     if 0 <= x < width and 0 <= y < height:
                         yield x, y, NeoPixelMatrix.DEFAULT_COLOR
 
-    return load().play(effect_cube, speed_ms=speed_ms)
+    return load().play(effect_cube, speed_ms=speed_ms, bt_draw=False)
 
 
 def help(widgets=False):
@@ -300,6 +329,7 @@ def help(widgets=False):
                              'BUTTON snake speed_ms=50 length=5',
                              'BUTTON rainbow',
                              'BUTTON cube speed_ms=10',
-                             'SLIDER control speed_ms=<2-200-2> bt_draw=None',
-                             'draw_colormap bitmap=[(0,0,(10,2,0)),(x,y,color),...]'
+                             'SLIDER control speed_ms=<1-200-2> bt_draw=None',
+                             'draw_colormap bitmap=[(0,0,(10,2,0)),(x,y,color),...]',
+                             'get_colormap'
                     ), widgets=widgets)

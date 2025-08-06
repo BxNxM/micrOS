@@ -133,12 +133,13 @@ class Compile:
 
     def __cleanup_precompiled_dir(self):
         self.console("Delete precompiled components: {}".format(self.precompiled_micrOS_dir_path))
-        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
-                       if check_all_extensions(pysource)]:
+        for source in LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path):
             to_remove_path = os.path.join(self.precompiled_micrOS_dir_path, source)
-            self.console("\t|-remove: {}".format(to_remove_path), state='imp')
-            if not self.dry_run:
-                LocalMachine.FileHandler.remove(to_remove_path)
+            if check_all_extensions(source) or LocalMachine.FileHandler.path_is_exists(to_remove_path)[1] == "d":
+                self.console("\t|-remove: {}".format(to_remove_path), state='imp')
+                if not self.dry_run:
+                    if not LocalMachine.FileHandler.remove(to_remove_path):
+                        self.console(f"\t\t|-ERROR: Failed to remove {to_remove_path}", state="err")
 
     def get_micros_version_from_repo(self):
         # Get repo version
@@ -235,17 +236,21 @@ class Compile:
         workdir_handler = LocalMachine.SimplePopPushd()
         workdir_handler.pushd(self.micrOS_dir_path)
 
-        self.console("COPY additional resources")
-        # Filter component source
-        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path) if
-                       check_web_extensions(pysource)]:
+        self.console("COPY additional resources...", state="ok")
+        for source in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path):
             source_path = os.path.join(self.micrOS_dir_path, source)
-            if self.dry_run:
-                state = True
-            else:
-                state = LocalMachine.FileHandler.copy(source_path, self.precompiled_micrOS_dir_path)
-            if not state:
-                self.console("Copy error", state='err')
+            # COPY DIRECTORY RESOURCES (/web)
+            if (LocalMachine.FileHandler.path_is_exists(source_path)[1] == 'd' and
+                    not (source.startswith("_") or source.startswith("."))):
+                if self.dry_run:
+                    state = True
+                else:
+                    target_dir = os.path.join(self.precompiled_micrOS_dir_path, source)
+                    self.console(f"|- COPY DIR: {source_path} -> {target_dir}", state="ok")
+                    state = LocalMachine.FileHandler.copy(source_path, target_dir)
+                if not state:
+                    self.console("Copy error", state='err')
+
         workdir_handler.popd()
 
 

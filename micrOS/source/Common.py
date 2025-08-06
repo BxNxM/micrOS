@@ -155,6 +155,16 @@ def data_dir(f_name=None):
         return root_path
     return path_join(root_path, f_name)
 
+def web_dir(f_name=None):
+    """
+    Access for web dir path
+    :param f_name: if given, returns full path, otherwise returns web dir root path
+    """
+    root_path = OSPath.WEB
+    if f_name is None:
+        return root_path
+    return path_join(root_path, f_name)
+
 #####################################################################################
 #                             CHANNEL: SIGNAL GENERATORS                            #
 #####################################################################################

@@ -5,7 +5,7 @@
             6
         ],
         "Files.py": [
-            9.35,
+            9.37,
             8
         ],
         "micrOSloader.py": [
@@ -21,7 +21,7 @@
             3
         ],
         "Web.py": [
-            9.26,
+            9.64,
             1
         ],
         "Tasks.py": [
@@ -53,7 +53,7 @@
             4
         ],
         "Common.py": [
-            9.73,
+            9.74,
             34
         ],
         "InterConnect.py": [
@@ -105,7 +105,7 @@
             1
         ],
         "LM_pacman.py": [
-            8.95,
+            8.92,
             0
         ],
         "LM_genIO.py": [
@@ -313,17 +313,17 @@
             0
         ],
         "LM_neomatrix.py": [
-            8.72,
+            8.8,
             0
         ]
     },
     "summary": {
         "core": [
-            3733,
+            3750,
             24
         ],
         "load": [
-            9410,
+            9449,
             55
         ],
         "core_dep": [
@@ -334,8 +334,8 @@
             true,
             5
         ],
-        "core_score": 9.21,
-        "load_score": 8.38,
-        "version": "2.11.0-0"
+        "core_score": 9.23,
+        "load_score": 8.39,
+        "version": "2.12.0-0"
     }
 }

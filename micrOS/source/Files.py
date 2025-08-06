@@ -111,9 +111,10 @@ def path_join(*parts):
 # micrOS system file structure
 class OSPath:
     _ROOT = getcwd()
-    LOGS = path_join(_ROOT, '/logs')        # system/user logs
-    DATA = path_join(_ROOT,'/data')         # application data
-    WEB = path_join(_ROOT,'/web')           # web resources
+    LOGS = path_join(_ROOT, '/logs')        # Logs system and user
+    DATA = path_join(_ROOT,'/data')         # Application data
+    WEB = path_join(_ROOT,'/web')           # Web resources
+    MODULES = path_join(_ROOT, '/modules')  # Application modules (todo)
 
     @property
     def ROOT(self):

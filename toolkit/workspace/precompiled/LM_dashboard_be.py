@@ -1,4 +1,4 @@
-from Common import web_endpoint, syslog
+from Common import web_dir, web_endpoint, syslog
 
 ENDPOINT_INITED = False
 
@@ -8,7 +8,7 @@ def load():
 
 def _dashboard_clb():
     try:
-        with open('dashboard.html', 'r') as html:
+        with open(web_dir('dashboard.html'), 'r') as html:
             html_content = html.read()
         return 'text/html', html_content
     except Exception as e:

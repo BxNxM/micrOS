@@ -17,6 +17,7 @@ import uasyncio as asyncio
 from Tasks import lm_exec, NativeTask, lm_is_loaded
 from Debug import errlog_add, console_write
 from Config import cfgget
+from Files import OSPath, path_join
 
 
 class WebEngine:
@@ -27,6 +28,14 @@ class WebEngine:
     REQ200 = "HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len}\r\n\r\n{data}"
     REQ400 = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
     REQ404 = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
+    CONTENT_TYPES = {"html": "text/html",
+                     "css": "text/css",
+                     "js": "application/javascript",
+                     "json": "application/json",
+                     "ico": "image/x-icon",             # favicon
+                     "jpeg": "image/jpeg",
+                     "png": "image/png",
+                     "gif": "image/gif"}
 
     def __init__(self, client, version):
         self.client = client
@@ -35,14 +44,11 @@ class WebEngine:
     @staticmethod
     def file_type(path):
         """File dynamic Content-Type handling"""
-        content_types = {".html": "text/html",
-                         ".css": "text/css",
-                         ".js": "application/javascript",
-                         ".jpeg": "image/jpeg"}
+        default_type = "text/plain"
         # Extract the file extension
         ext = path.rsplit('.', 1)[-1]
         # Return the content type based on the file extension
-        return content_types.get(f".{ext}", "text/plain")
+        return WebEngine.CONTENT_TYPES.get(ext, default_type)
 
     async def response(self, request):
         """HTTP GET REQUEST - WEB INTERFACE"""
@@ -68,13 +74,14 @@ class WebEngine:
         # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
         if url.startswith('/'):
             resource = 'index.html' if url == '/' else url.replace('/', '')
-            self.client.console(f"[WebCli] --- {url} ACCEPT")
-            if resource.split('.')[-1] not in ('html', 'js', 'css'):
+            web_resource = path_join(OSPath.WEB, resource)                  # Redirect path to web folder
+            self.client.console(f"[WebCli] --- {url} ACCEPT -> {web_resource}")
+            if resource.split('.')[-1] not in tuple(self.CONTENT_TYPES.keys()):
                 await self.client.a_send(self.REQ404.format(len=27, data='404 Not supported file type'))
                 return
             try:
-                # SEND RESOURCE CONTENT: HTML, JS, CSS
-                with open(resource, 'r') as file:
+                # SEND RESOURCE CONTENT: HTML, JS, CSS (WebEngine.CONTENT_TYPES)
+                with open(web_resource, 'r') as file:
                     data = file.read()
                 response = self.REQ200.format(dtype=WebEngine.file_type(resource), len=len(data), data=data)
                 # Send entire response data
@@ -98,7 +105,7 @@ class WebEngine:
 
     @staticmethod
     def rest(url):
-        resp_schema = {'result': None, 'state': False}
+        resp_schema = {'result': {}, 'state': False}
         cmd = url.replace('/rest', '')
         if len(cmd) > 1:
             # REST sub-parameter handling (rest commands)

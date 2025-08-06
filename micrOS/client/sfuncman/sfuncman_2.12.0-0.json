@@ -1156,6 +1156,10 @@
             "doc": "\n    Linux like ls command - list app resources and app folders\n    :param path: path to list, default: /\n    :param content: content type, default all, f-file, d-dir can be selected\n    :param raw: keep raw output [(is_app, type), ...]\n    :param select: select specific app resource: LM or IO, default: all\n    ",
             "param(s)": "path=\"/\" content='*' raw=False select='*'"
         },
+        "makedir": {
+            "doc": "\n    Create directory command\n    ",
+            "param(s)": "path"
+        },
         "micros_checksum": {
             "doc": null,
             "param(s)": ""

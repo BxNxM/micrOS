@@ -186,11 +186,13 @@ class FileHandler:
                     os.remove(path)
                 elif type_ == 'd':
                     shutil.rmtree(path)
+                return True
         except Exception as e:
             if ignore:
                 debug_print("[DEBUG] Removing " + path + " is forced to ignore failure: " + str(e))
             else:
                 raise Exception("Cannot remove " + path + ": " + str(e))
+        return False
 
     @staticmethod
     def extract_tar(targz, extract_path):
@@ -210,7 +212,10 @@ class FileHandler:
     def copy(from_path, to_path):
         debug_print("[DEBUG] Copy " + from_path + " to " + to_path)
         try:
-            shutil.copy(from_path, to_path)
+            if os.path.isdir(from_path):
+                shutil.copytree(from_path, to_path, dirs_exist_ok=True)
+            else:
+                shutil.copy(from_path, to_path)
             return True
         except Exception as e:
             debug_print("Copy error: {}".format(e))

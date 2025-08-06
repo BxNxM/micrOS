@@ -1,7 +1,6 @@
 from sys import modules
 from Common import socket_stream
-from Files import _is_module, list_fs, ilist_fs, remove_fs
-from Files import OSPath, path_join
+from Files import _is_module, list_fs, ilist_fs, remove_fs, OSPath, path_join
 
 
 #############################################
@@ -164,6 +163,18 @@ def datdump():
             out[dat] = f.read()
     return out
 
+
+def makedir(path):
+    """
+    Create directory command
+    """
+    from uos import mkdir
+    try:
+        mkdir(path)
+        return f"{path} dir created."
+    except Exception as e:
+        return f"{path} failed to create: {e}"
+
 #############################################
 #              Legacy features              #
 #############################################
@@ -229,4 +240,6 @@ def help(widgets=False):
             'download url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
             'micros_checksum',
             'ls path="/" content="*/f/d" select="*/LM/IO"',
-            'rm <path>', 'dirtree path="/"')
+            'rm <path>',
+            'dirtree path="/"',
+            'makedir <path>')

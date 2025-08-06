@@ -13,12 +13,14 @@ try:
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
     from .lib.SerialDriverHandler import install_usb_serial_driver
+    from .MicrosFiles import micros_resource_list
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from DevEnvCompile import Compile
     from lib import LocalMachine
     from lib.TerminalColors import Colors
     from lib.SerialDriverHandler import install_usb_serial_driver
+    from MicrosFiles import micros_resource_list
 
 
 class USB(Compile):
@@ -207,6 +209,38 @@ class USB(Compile):
             self.console("Deployment failed.\n{} - {}".format(stdout, stderr), state='err')
             return False
 
+    def _mkdir_on_dev(self, folders:list):
+        mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
+        device = self.get_devices()[0]
+        if mpremote_cmd is None:
+            # Legacy ampy command (esp32 auto reboot tolerance...)
+            mkdir_cmd = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args=f'mkdir')
+        else:
+            mkdir_cmd = f'{mpremote_cmd} fs mkdir'
+
+        status = 0
+        for folder in folders:
+            _mkdir_cmd = f"{mkdir_cmd} {folder}"
+            self.console(f"Create directory on device: {_mkdir_cmd}")
+            if self.dry_run:
+                pass
+            else:
+                try:
+                    exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(_mkdir_cmd, shell=True)
+                    if exitcode != 0:
+                        verdict = stdout + stderr
+                        if "File exists" in verdict or "Directory already exists" in verdict:
+                            exitcode = 0
+                        else:
+                            self.console(f"MKDIR ERROR:\n{stdout}\n{stderr}", state="err")
+                except Exception as e:
+                    self.console(f"MKDIR ERROR {_mkdir_cmd}: {e}", state="err")
+                    exitcode = 1
+                status += exitcode
+
+        return True if status == 0 else False
+
+
     def put_micros_to_dev(self):
         self.select_board_n_micropython()
         status = True
@@ -223,17 +257,20 @@ class USB(Compile):
                 self.console(f"... wait for reset {10-k} sec", state='imp')
                 time.sleep(1)
 
+        # Parse micrOS resources with folders
+        _source_to_put_device, dir_list_to_create = micros_resource_list(self.precompiled_micrOS_dir_path)
+        self.console(f"CREATE FOLDERS: {dir_list_to_create}", state="ok")
+        # Create sub folders
+        if not self._mkdir_on_dev(dir_list_to_create):
+            self.console(f"Error creating directories on device: {dir_list_to_create}")
+            sys.exit(1)
+        # Generate resource list to be put on the device
+        source_to_put_device = list([s.replace(self.precompiled_micrOS_dir_path + "/", '') for s in _source_to_put_device])
+        # Set source order - main, boot
+        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index("main.py")))
+
         mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
         device = self.get_devices()[0]
-        source_to_put_device = LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
-        # Set source order - main, boot
-        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index('main.py')))
-        try:
-            # PIP deployment generates this ...
-            source_to_put_device.remove('__pycache__')      # remove if accidentally left here
-        except:
-            pass
-
         # Change workdir
         workdir_handler = LocalMachine.SimplePopPushd()
         workdir_handler.pushd(self.precompiled_micrOS_dir_path)
@@ -243,7 +280,7 @@ class USB(Compile):
             self.console("[{}%] micrOS deploy via USB - {}".format(percent, device))
             if mpremote_cmd is None:
                 # Legacy ampy command (esp32 auto reboot tolerance...)
-                command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args=f'put {source}')
+                command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args=f'put {source} /{source}')
             else:
                 command = f'{mpremote_cmd} fs cp {source} :{source}'     # new mpremote <1.24.1
             if ' ' in source:

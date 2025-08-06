@@ -5,22 +5,26 @@ MYPATH = os.path.dirname(__file__)
 print("Module [DevEnvOTA] path: {} __package__: {} __name__: {} __file__: {}".format(
     sys.path[0], __package__, __name__, MYPATH))
 
+from pprint import pprint
+
 try:
     from .DevEnvCompile import Compile
     from . import socketClient
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
     from .lib.SafeInput import input_with_timeout
-    from .lib.file_extensions import check_all_extensions
+    from .lib.file_extensions import check_all_extensions, check_web_extensions, check_python_extensions
     from .lib.Repository import git_clone_archive, git_clone
+    from .MicrosFiles import micros_resource_list
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from DevEnvCompile import Compile
     from lib import LocalMachine
     from lib.TerminalColors import Colors
     from lib.SafeInput import input_with_timeout
-    from lib.file_extensions import check_all_extensions
+    from lib.file_extensions import check_all_extensions, check_web_extensions, check_python_extensions
     from lib.Repository import git_clone_archive, git_clone
+    from MicrosFiles import micros_resource_list
 
 sys.path.append(MYPATH)
 import socketClient
@@ -241,9 +245,9 @@ class OTA(Compile):
         self.console("  loader update: {}".format(force_mode), state='OK')
 
         # Parse files from precompiled dir
-        resource_list_to_upload = [os.path.join(self.precompiled_micrOS_dir_path, pysource) for pysource in
-                                   LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path)
-                                   if check_all_extensions(pysource)]
+        resource_list_to_upload, dir_list_to_create = micros_resource_list(self.precompiled_micrOS_dir_path)
+        # LIMITATION: WEBREPL Cannot create directories with remote command...
+
         # Apply upload settings on parsed resources
         for index, source in enumerate(resource_list_to_upload):
             source_name = os.path.basename(source)
@@ -268,7 +272,8 @@ class OTA(Compile):
             # Add source to upload
             upload_path_list.append(source)
         # Upload files / sources
-        return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list, ota_password=webrepl_password)
+        return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list,
+                                            ota_password=webrepl_password, upload_root_dir=self.precompiled_micrOS_dir_path)
 
     def _enable_micros_ota_update_via_webrepl(self, device=None, ota_password=None):
         # Get specific device from device list
@@ -401,7 +406,8 @@ class OTA(Compile):
             print(f"[SIM] 'OTA' COPY FILES... {source} -> {target}")
             LocalMachine.FileHandler().copy(source, target)
 
-    def ota_webrepl_update_core(self, device=None, upload_path_list=[], ota_password='ADmin123', force_lm=False):
+    def ota_webrepl_update_core(self, device=None, upload_path_list=None, ota_password='ADmin123',
+                                force_lm=False, upload_root_dir=None):
         """
         Generic file uploader for micrOS - over webrepl
             info: https://techoverflow.net/2020/02/22/how-to-upload-files-to-micropython-using-webrepl-using-webrepl_cli-py/
@@ -410,7 +416,11 @@ class OTA(Compile):
         upload_path_list: file path list to upload
         ota_password - accessing webrepl to upload files
         force_lm - use prefix as 'LM_' for every file - for user file upload / GUI drag n drop
+        upload_root_dir - root directory to upload files (subdir support)
         """
+        if upload_path_list is None:
+            upload_path_list = []
+
         if device[0] == "__simulator__":
             OTA.sim_ota_update(upload_path_list, force_lm)
             return
@@ -457,7 +467,18 @@ class OTA(Compile):
             # Copy retry mechanism
             exitcode = -1
             source_name = os.path.basename(source)
-            source_name_target = source_name
+            if upload_root_dir is None:
+                # Drag-n-Drop file upload file type check and folder adjustment
+                if check_web_extensions(source_name):
+                    source_name_target = os.path.join('web', source_name)
+                elif not check_python_extensions(source_name) and not source_name.endswith("node_config.json"):
+                    source_name_target = os.path.join('data', source_name)
+                else:
+                    # Copy file to micrOS root folder (.mpy and .py or node_config.json)
+                    source_name_target = source_name
+            else:
+                # MAIN USE-CASE
+                source_name_target = source.replace(upload_root_dir, '')
 
             # Force LM update - user load modules - drag n drop files
             if force_lm and not source_name.startswith('LM_') and source_name.endswith('.py'):

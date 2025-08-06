@@ -62,8 +62,16 @@ class MicrOSDevTool(OTA, USB):
                 if f.endswith('.json'):
                     continue
                 f_path = os.path.join(self.micrOS_dir_path, f)
-                self.console("[SIM] Copy micrOS resources: {} -> {}".format(f_path, self.micros_sim_workspace))
-                LocalMachine.FileHandler().copy(f_path, self.micros_sim_workspace)
+                if f.startswith("_") or f.startswith("."):
+                    # SKIP files startswith `_` and `.`
+                    continue
+                _, f_type = LocalMachine.FileHandler.path_is_exists(f_path)
+                target_dir = self.micros_sim_workspace
+                if f_type == "d":
+                    target_dir = os.path.join(self.micros_sim_workspace, f)
+                self.console(f"[SIM] Copy micrOS resources: {f_path} -> {target_dir}")
+                if not LocalMachine.FileHandler().copy(f_path, target_dir):
+                    self.console(f"[ERROR] Failed to copy: {f_path}")
 
             if prepare_only:
                 # In case of automatic node_conf creation

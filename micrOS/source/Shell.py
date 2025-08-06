@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.11.0-0'
+    MICROS_VERSION = '2.12.0-0'
 
     def __init__(self):
         """

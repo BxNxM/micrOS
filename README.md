@@ -449,7 +449,7 @@ Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gatew
 ----------------------------------------
 
 
-## FUTURE RELEASE PLANS
+## FUTURE MAIN RELEASE PLANS
 
 Version **3.0.0-0** `micrOS-Autonomous`
 
@@ -462,14 +462,14 @@ Version **3.0.0-0** `micrOS-Autonomous`
     - (3) New intercon syntax - command level integration:                      [DONE]
     	- rgb toggle >>RingLight.local
     	- similar as (obsolete): intercon sendcmd host="RingLight.local" cmd="rgb toggle"
-    - (4) Create multi level project structure (curret is flat fs)               [TODO?] FS
+    - (4) Create multi level project structure (curret is flat fs)              [TODO] FS
 		- New micrOS FS structure:
-			- Note:
-				- On device (boot) micrOS Hooks.py/os_dir_fs_hook (check+correct)  [Phase1-FS:TODO]
-				- DevToolKit USB & OTA feature adaptation                          [Phase2-FS:TODO]
-					- os_dir_fs_handler (usb+webrepl) features
-
-			- root fs (stays untouched (approx.: 24)): /
+			- Automatic dir creation at bootup: '/logs', '/web', '/data' 
+			- Automatic sub-dir handling /source and /precompiled
+			- Automatic dir creation over USB
+			
+			Structure:
+			- [DONE] root fs (stays untouched (approx.: 24)): /
 				- micrOS.py (core)
 				- Config.py (core)
 				- Tasks.py (core)
@@ -479,7 +479,16 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- node_config,json (core config)
 				- etc... (core)
 
-			- module folder - mip complient: /lib
+			- [DONE] web folder: /web
+				- *.html
+				- *.js
+				- *.css
+				- etc.
+
+			- [DONE] /logs
+				- still there (created runtime) 
+
+			- [TODO] module folder /modules - (mip complient: /modules/lib)
 				- LM_* (approx.: 54)
 				- IO_* (approx.: 5)
 				- *.py/.mpy (driver)
@@ -487,15 +496,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 					- *.pds (LM app cache - persistent data storage)
 					- *.dat (Common datalogger output)
 
-			- web folder: /web
-				- *.html
-				- *.js
-				- *.css
-
-			- /logs
-				- still there (created runtime) 
-
-		- (5) Proper mip installer support (/lib)                                [TODO]
+		- (5) [TODO] Proper mip installer support (/modules or /modules/lib or /web)
 			- Note: Autonomous package management over wifi (github) 
 				- pacman download
 				- pacman ls

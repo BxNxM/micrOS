@@ -951,13 +951,25 @@ Usage(s): [LM_neomatrix](./micrOS/source/LM_neomatrix.py) [LM_neoeffects.](./mic
 
 ### data_dir(f\_name=None)
 
-Get data working directory path. If f_name is given returns a the full data path file file name.
+Get data working directory path. If f_name is given returns a the full data path with file name.
 
 ```python
 def data_dir(f_name=None):
     """
     Access for data dir path
     :param f_name: if given, returns full path, otherwise returns data dir root path
+    """
+```
+
+### web_dir(f\_name=None)
+
+Get web working directory path. If f_name is given returns a the full web path with file name.
+
+```python
+def web_dir(f_name=None):
+    """
+    Access for web dir path
+    :param f_name: if given, returns full path, otherwise returns web dir root path
     """
 ```
 

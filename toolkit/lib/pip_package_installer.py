@@ -66,8 +66,11 @@ def install_package(name, additional_pip_param=None):
             print(f"{TerminalColors.Colors.OK}[PIP] install {name} OK{TerminalColors.Colors.NC}")
         else:
             print(f"{TerminalColors.Colors.WARN}[PIP] install {name} NOK{TerminalColors.Colors.NC}")
-            # Support brew installed python
-            if "This environment is externally managed" in out:
+            if "--break-system-packages" in out:
+                # (Retry) Support system wide package install
+                install_package(name, additional_pip_param="--break-system-packages")
+            elif "This environment is externally managed" in out:
+                # (Retry-Fallback) Support brew installed python
                 if "brew install" in out:
                     print(f"Install optional dependency (brew): {name}")
                     state, out = run_subprocess(["brew", "install", name])

@@ -1,7 +1,7 @@
 from time import localtime
 from re import compile
 from Tasks import exec_lm_pipe_schedule
-from Debug import console_write, errlog_add
+from Debug import console_write, syslog
 from Time import Sun, suntime, ntp_time
 
 """
@@ -101,7 +101,7 @@ def __resolve_time_tag(check_time, crontask):
         # Resolve tag
         value = Sun.TIME.get(tag, None)
         if value is None or len(value) < 3:
-            errlog_add(f'[ERR] cron syntax error: {tag}:{value}')
+            syslog(f'[ERR] cron syntax error: {tag}:{value}')
             return ()
 
         # Update check_time with resolved value by tag
@@ -186,7 +186,7 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
                         console_write(f"[builtin cron] {crontask[1]()}")
                         lm_state = True
                     except Exception as e:
-                        errlog_add(f"[ERR] cron function exec error: {e}")
+                        syslog(f"[ERR] cron function exec error: {e}")
                 if not lm_state:
                     console_write(f"[cron]now[{cron_time_now}]  \
                         {__convert_sec_to_time(tolerance_min_sec)} <-> {__convert_sec_to_time(tolerance_max_sec)}  \
@@ -224,7 +224,7 @@ def deserialize_raw_input(cron_data):
         sep = ';;' if ';;' in cd else ';'       # support multi command with ;;
         return (tuple(cron.split('!')) for cron in cd.split(sep))
     except Exception as e:
-        errlog_add(f"[ERR] cron deserialize - syntax error: {e}")
+        syslog(f"[ERR] cron deserialize - syntax error: {e}")
     return ()
 
 
@@ -256,5 +256,5 @@ def scheduler(cron_data, irqperiod):
             state |= __scheduler_trigger(cron_time_now, cron, deltasec=irqperiod)
         return state
     except Exception as e:
-        errlog_add(f'[ERR] cron callback error: {e}')
+        syslog(f'[ERR] cron callback error: {e}')
         return False

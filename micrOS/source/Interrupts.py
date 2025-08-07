@@ -19,7 +19,7 @@ Reference: https://docs.micropython.org/en/latest/library/machine.Pin.html
 from machine import Pin
 from utime import ticks_ms, ticks_diff
 from Config import cfgget
-from Debug import console_write, errlog_add
+from Debug import console_write, syslog
 from Tasks import exec_lm_pipe_schedule
 from microIO import resolve_pin
 if cfgget('cron'):
@@ -157,7 +157,7 @@ def initEventIRQs():
         try:
             return resolve_pin(_p)
         except Exception as e:
-            errlog_add(f'[ERR][!] EVENT {_p} IO error: {e}')
+            syslog(f'[ERR][!] EVENT {_p} IO error: {e}')
         return None
 
     # Load External IRQ (1-4) execution data set from node config

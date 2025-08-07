@@ -6,9 +6,9 @@ micrOS Console and Log write interface implementations.
 
 from machine import Pin
 try:
-    from Logger import syslog
+    from Logger import syslog as logger_syslog
 except:
-    syslog = None
+    logger_syslog = None
 try:
     from microIO import resolve_pin, pinmap_search, register_pin
 except:
@@ -46,13 +46,13 @@ class DebugCfg:
                 # Set function callback for step function (simple led - blink)
                 DebugCfg.PLED_STEP = lambda: led_obj.value(not led_obj.value())  # # double-blink: return None
             except Exception as e:
-                errlog_add(f"[PLED] led error: {e}")
+                syslog(f"[PLED] led error: {e}")
         elif callable(pled):
             # [MODE] OVERRIDE PROGRESS LED WITH CUSTOM step FUNCTION
             DebugCfg.PLED_STEP = pled
             DebugCfg._auto_register_pin()
         else:
-            errlog_add(f"[WARN] pled type not supported: {pled}")
+            syslog(f"[WARN] pled type not supported: {pled}")
 
 
     @staticmethod
@@ -62,7 +62,7 @@ class DebugCfg:
             if isinstance(pin, int):
                 register_pin('builtin', pin)
         except Exception as e:
-            errlog_add(f"[ERR] pled pin registration: {e}", console=False)
+            syslog(f"[ERR] pled pin registration: {e}", console=False)
 
 
     @staticmethod
@@ -75,7 +75,7 @@ class DebugCfg:
             if callable(DebugCfg.PLED_STEP):
                 return DebugCfg.PLED_STEP()         # Run step function (return None: double-blink OR True: no d-b)
         except Exception as e:
-            errlog_add(f"[PLED] step error: {e}")
+            syslog(f"[PLED] step error: {e}")
         return True
 
 
@@ -87,10 +87,10 @@ def console_write(msg):
             if analog is None:
                 DebugCfg.step()             # Double-blink
         except Exception as e:
-            errlog_add(f"[ERR] console_write: {e}", console=False)
+            syslog(f"[ERR] console_write: {e}", console=False)
 
 
-def errlog_add(data, console=True):
+def syslog(data, console=True):
     """
     :param data: msg string / data
     :param console: activate console_write (default: True)
@@ -98,4 +98,4 @@ def errlog_add(data, console=True):
     """
     if console:
         console_write(data)
-    return False if syslog is None else syslog(data)
+    return False if logger_syslog is None else logger_syslog(data)

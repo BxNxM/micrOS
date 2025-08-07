@@ -12,10 +12,10 @@ try:
 except:
     traceback = None
 try:
-    from Debug import errlog_add
+    from Debug import syslog
 except Exception as e:
     print(f"[loader] Import error: {e}")
-    errlog_add = None
+    syslog = None
 from machine import reset
 
 
@@ -70,8 +70,8 @@ def __recovery_mode():
         import webrepl
         webrepl.start(password=pwd)
     except Exception as e:
-        if callable(errlog_add):
-            errlog_add(f"[ERR][micrOSloader] webrepl failed: {e}")
+        if callable(syslog):
+            syslog(f"[ERR][micrOSloader] webrepl failed: {e}")
         print("[loader] Reset .if_mode to micros and reboot")
         with open('.if_mode', 'w') as f:
             f.write("micros")
@@ -126,8 +126,8 @@ def main():
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
             print(f"[loader][main mode] micrOS start failed: {e}")
             print("[loader][main mode] -> [recovery mode]")
-            if callable(errlog_add):
-                errlog_add(f"[ERR][micrOSloader] start failed: {e}")
+            if callable(syslog):
+                syslog(f"[ERR][micrOSloader] start failed: {e}")
     # Recovery aka webrepl mode
     __recovery_mode()
     __auto_restart_event()

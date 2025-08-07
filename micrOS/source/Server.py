@@ -13,7 +13,7 @@ Designed by Marcell Ban aka BxNxM GitHub
 import uasyncio as asyncio
 from utime import ticks_ms, ticks_diff
 from Config import cfgget
-from Debug import console_write, errlog_add
+from Debug import console_write, syslog
 from Network import ifconfig
 from Tasks import Manager
 from Shell import Shell
@@ -99,7 +99,7 @@ class Client:
             except Exception as e:
                 # Maintain ACTIVE_CLIS - remove closed connection by peer.
                 await self.close()
-                errlog_add(f"[WARN] Client.a_send (auto-drop) {self.client_id}: {e}")
+                syslog(f"[WARN] Client.a_send (auto-drop) {self.client_id}: {e}")
                 return          # Abort async send (no drain)
             # Send buffered data with async task - hacky
             try:
@@ -169,7 +169,7 @@ class WebCli(Client, WebEngine):
                     break
                 await self.response(request)
             except Exception as e:
-                errlog_add(f"[ERR] Client.run_web: {e}")
+                syslog(f"[ERR] Client.run_web: {e}")
                 break
         # Close connection
         await self.close()
@@ -211,7 +211,7 @@ class ShellCli(Client, Shell):
             except:
                 # Maintain ACTIVE_CLIS - remove closed connection by peer.
                 Client.drop_client(self.client_id)
-                errlog_add(f"[WARN] ShellCli.send (auto-drop) {self.client_id}")
+                syslog(f"[WARN] ShellCli.send (auto-drop) {self.client_id}")
             # Send buffered data with async task - hacky
             if self.drain_event.is_set():
                 self.drain_event.clear()        # set drain busy (False)
@@ -261,12 +261,12 @@ class ShellCli(Client, Shell):
                 # Shell -> True (OK) or False (NOK) -> NOK->Close session (auth Failed, etc.)
                 _exit = not await self.shell(request)
             except Exception as e:
-                errlog_add(f"[ERR] Shell client: {e}")
+                syslog(f"[ERR] Shell client: {e}")
                 if "ECONNRESET" in str(e):
                     _exit = True  # exit_loop
                 else:
                     await self.a_send("[HA] Critical error - disconnect & hard reset")
-                    errlog_add("[ERR] Socket critical error - reboot")
+                    syslog("[ERR] Socket critical error - reboot")
                     await self.reboot()
             if _exit:
                 collect()

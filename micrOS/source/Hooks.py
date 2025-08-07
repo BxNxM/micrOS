@@ -19,7 +19,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from Config import cfgget, cfgput
 from microIO import detect_platform
-from Debug import console_write, errlog_add
+from Debug import console_write, syslog
 from Tasks import exec_lm_pipe
 from Files import OSPath, is_dir
 from uos import mkdir
@@ -76,9 +76,9 @@ def _init_micros_dirs():
         if not is_dir(dir_path):
             try:
                 mkdir(dir_path)
-                errlog_add(f"[BOOT] init dir: {dir_path}")
+                syslog(f"[BOOT] init dir: {dir_path}")
             except Exception as e:
-                errlog_add(f"[ERR][BOOT] cannot init dir {dir_path}: {e}")
+                syslog(f"[ERR][BOOT] cannot init dir {dir_path}: {e}")
 
 
 def _tune_queue_size():
@@ -137,7 +137,7 @@ def boot_cause():
             reason = 4, "DSWakeUp"
         elif reset_reason == SOFT_RESET:
             reason = 5, "SoftReset"
-    errlog_add(f"[BOOT] info: {reason[1]}")
+    syslog(f"[BOOT] info: {reason[1]}")
     return reason
 
 
@@ -151,6 +151,6 @@ def enableESPNow() -> str:
             verdict = ESPNowSS().start_server()
             console_write(f"[TASK] Start ESPNow-InterCon server: {verdict}")
         except Exception as e:
-            errlog_add(f"[ERR] Start ESPNow-InterCon server: {e}")
+            syslog(f"[ERR] Start ESPNow-InterCon server: {e}")
             return str(e)
     return "ESPNow disabled"

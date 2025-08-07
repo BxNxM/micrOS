@@ -116,7 +116,7 @@ def syslog(data=None, msgobj=None):
     # WRITE LOGS - [target].sys.log automatic log level detection
     _match = match(r"^\[([^\[\]]+)\]", data)
     log_lvl = _match.group(1).lower() if _match else 'user'
-    f_name = f"{log_lvl}.sys.log" if log_lvl in ("err", "warn", "boot") else 'user.sys.log'
+    f_name = f"{log_lvl}.sys.log" if log_lvl in ("err", "warn", "boot", "info") else 'user.sys.log'
     return logger(data, f_name, limit=4)
 
 

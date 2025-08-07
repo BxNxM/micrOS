@@ -19,7 +19,7 @@ from utime import sleep_ms
 from network import AP_IF, STA_IF, WLAN
 from machine import unique_id
 from Config import cfgget, cfgput
-from Debug import console_write, errlog_add
+from Debug import console_write, syslog
 
 
 class NW:
@@ -51,7 +51,7 @@ def set_dev_uid():
     try:
         cfgput('hwuid', f'micr{hexlify(unique_id()).decode("utf-8")}OS')
     except Exception as e:
-        errlog_add(f"[ERR] set_dev_uid error: {e}")
+        syslog(f"[ERR] set_dev_uid error: {e}")
 
 
 def get_mac():
@@ -77,7 +77,7 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
                 try:
                     return essid, str(raw_pwd.split(';')[idx]).strip()
                 except Exception as e:
-                    errlog_add(f'[ERR][SET STA] stapwd config error: {e}')
+                    syslog(f'[ERR][SET STA] stapwd config error: {e}')
             sleep_ms(400)
     return None, ''
 
@@ -149,7 +149,7 @@ def __set_wifi_dev_static_ip(sta_if):
                 sta_if.ifconfig(tuple(conn_ips))
                 return True     # was reconfigured
             except Exception as e:
-                errlog_add(f"[ERR][STA] StaticIP conf failed: {e}")
+                syslog(f"[ERR][STA] StaticIP conf failed: {e}")
         else:
             console_write(f"[NW: STA][SKIP] StaticIP conf.: {stored_ip} ? {conn_ips[0]}")
     else:
@@ -184,9 +184,9 @@ def set_access_point(_essid, _pwd, _authmode=3):
             # Config #2 (rp2-w)???
             ap_if.config(essid=_essid, password=_pwd)
         except Exception as e2:
-            errlog_add(f"[ERR][AP] config failed: {e2}")
+            syslog(f"[ERR][AP] config failed: {e2}")
     if not (ap_if.active() and str(ap_if.config('essid')) == str(_essid)):
-        errlog_add("[ERR][AP] error")
+        syslog("[ERR][AP] error")
     console_write(f"\t|\t| [NW: AP] network config: {str(ap_if.ifconfig())}")
     set_dev_uid()
     NW.NIF = ap_if

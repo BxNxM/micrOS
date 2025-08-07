@@ -14,7 +14,7 @@ from network import WLAN, STA_IF
 from utime import sleep_ms, time, mktime, localtime
 
 from Config import cfgput, cfgget
-from Debug import errlog_add, console_write
+from Debug import syslog, console_write
 from urequests import get as http_get
 from Files import OSPath, path_join
 
@@ -49,7 +49,7 @@ def ntp_time():
     :return: ntp date struct
     """
     if not WLAN(STA_IF).isconnected():
-        errlog_add("STA not connected: ntptime")
+        syslog("[WARN] STA not connected: ntptime")
         return False
 
     def get_ntp():
@@ -85,7 +85,7 @@ def ntp_time():
             console_write(f"ntptime error.:{e}")
             err = e
         sleep_ms(100)
-    errlog_add(f"[ERR] ntptime: {err}")
+    syslog(f"[ERR] ntptime: {err}")
     return False
 
 
@@ -102,7 +102,7 @@ def __sun_cache(mode):
                 cache = {k:tuple([str(t) for t in v]) for k, v in Sun.TIME.items()}
                 f.write(';'.join([f'{k}:{"-".join(v)}' for k, v in cache.items()]))
         except:
-            errlog_add("[ERR] Cannot write sun cache")
+            syslog("[ERR] Cannot write sun cache")
         return
     try:
         # RESTORE CACHE
@@ -141,7 +141,7 @@ def suntime():
         Sun.UTC = int(response.get('offset') / 60)      # IN MINUTE
         cfgput('utc', Sun.UTC, True)
     except Exception as e:
-        errlog_add(f'[ERR] ip-api: {e} data: {response}')
+        syslog(f'[ERR] ip-api: {e} data: {response}')
         return Sun.TIME
 
     # SUNSET-SUNRISE API REQUEST HANDLING
@@ -156,7 +156,7 @@ def suntime():
             sun = {'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
                    'sunset': time_regex.search(results.get('sunset')).group(1).split(':')}
         except Exception as e:
-            errlog_add(f'[ERR] sunrise-api: {e} data: {response}')
+            syslog(f'[ERR] sunrise-api: {e} data: {response}')
     # Try to parse response by expected sun_keys
     try:
         for key in sun:
@@ -164,7 +164,7 @@ def suntime():
             sun[key][0] += int(Sun.UTC / 60)
             sun[key] = tuple(sun[key])
     except Exception as e:
-        errlog_add(f'sunrise-api parse error: {e} sun: {sun}')
+        syslog(f'[WARN] sunrise-api parse error: {e} sun: {sun}')
         # Retrieve cached data and return
         __sun_cache('r')  # Using Sun.TIME
         console_write('[suntime] loaded from cache')

@@ -3,7 +3,7 @@ micrOS Load Module programming Official API-s
     Designed by Marcell Ban aka BxNxM
 """
 from Server import Server, WebCli
-from Debug import errlog_add, console_write
+from Debug import syslog as debug_syslog, console_write
 from Logger import logger, log_get
 from Files import OSPath, path_join
 from microIO import resolve_pin
@@ -80,7 +80,7 @@ def notify(text=None) -> bool:
     try:
         out = Notify.notify(text)
     except Exception as e:
-        errlog_add(f"[ERR] Notify: {e}")
+        debug_syslog(f"[ERR] Notify: {e}")
         out = str(e)
     if out is not None and (out.startswith('Sent') or out.endswith('disabled')):
         return True
@@ -136,8 +136,8 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
 
 
 def syslog(msg):
-    """ Wrapper of errlog_add """
-    return errlog_add(f"{msg}")
+    """ Wrapper of debug_syslog """
+    return debug_syslog(f"{msg}")
 
 
 def console(msg):

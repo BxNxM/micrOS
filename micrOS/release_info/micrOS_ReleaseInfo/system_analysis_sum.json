@@ -5,7 +5,7 @@
             6
         ],
         "Files.py": [
-            9.37,
+            9.38,
             8
         ],
         "micrOSloader.py": [
@@ -319,7 +319,7 @@
     },
     "summary": {
         "core": [
-            3750,
+            3751,
             24
         ],
         "load": [
@@ -336,6 +336,6 @@
         ],
         "core_score": 9.23,
         "load_score": 8.39,
-        "version": "2.12.0-0"
+        "version": "2.13.0-0"
     }
 }

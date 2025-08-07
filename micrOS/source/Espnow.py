@@ -4,7 +4,7 @@ from Tasks import NativeTask, TaskBase, lm_exec, lm_is_loaded
 import uasyncio as asyncio
 from Network import get_mac
 from Config import cfgget
-from Debug import errlog_add
+from Debug import syslog
 
 
 # ----------- PARSE AND RENDER MSG PROTOCOL  --------------
@@ -14,7 +14,7 @@ def render_response(tid, oper, data, prompt) -> str:
     Render ESPNow custom message (protocol)
     """
     if oper not in ("REQ", "RSP"):
-        errlog_add(f"[ERR] espnow render_response, unknown oper: {oper}")
+        syslog(f"[ERR] espnow render_response, unknown oper: {oper}")
     tmp = "{tid}|{oper}|{data}|{prompt}$"
     tmp = tmp.replace("{tid}", str(tid))
     tmp = tmp.replace("{oper}", str(oper))
@@ -68,7 +68,7 @@ class ResponseRouter:
         # USE <tid> for proper session response mapping
         router = ResponseRouter._routes.get(mac)
         if router is None:
-            errlog_add(f"[WARN][ESPNOW] No response route for {mac}")
+            syslog(f"[WARN][ESPNOW] No response route for {mac}")
             return
         router.response = response
         router._event.set()
@@ -157,7 +157,7 @@ class ESPNowSS:
                     if state:
                         await self.__asend_raw(mac, response)
                     else:
-                        errlog_add(response)
+                        syslog(response)
                 except OSError as err:
                     # If the peer is not yet added, add it and retry.
                     if len(err.args) > 1 and err.args[1] == 'ESP_ERR_ESPNOW_NOT_FOUND':
@@ -166,10 +166,10 @@ class ESPNowSS:
                         if state:
                             await self.__asend_raw(mac, response)
                         else:
-                            errlog_add(response)
+                            syslog(response)
                     else:
                         # Optionally handle or log other OSErrors here.
-                        errlog_add(f"[ERR][NOW SERVER] {err}")
+                        syslog(f"[ERR][NOW SERVER] {err}")
 
     def start_server(self):
         """

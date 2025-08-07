@@ -15,7 +15,7 @@ Designed by Marcell Ban aka BxNxM
 from json import dumps, loads
 import uasyncio as asyncio
 from Tasks import lm_exec, NativeTask, lm_is_loaded
-from Debug import errlog_add, console_write
+from Debug import syslog, console_write
 from Config import cfgget
 from Files import OSPath, path_join
 
@@ -97,7 +97,7 @@ class WebEngine:
                 #    position += next_chunk_size
             except Exception as e:
                 if 'memory allocation failed' in str(e):
-                    errlog_add(f"[ERR] WebCli {resource}: {e}")
+                    syslog(f"[ERR] WebCli {resource}: {e}")
                 await self.client.a_send(self.REQ404.format(len=13, data='404 Not Found'))
             return
         # INVALID/BAD REQUEST
@@ -156,7 +156,7 @@ class WebEngine:
                     await self.client.a_send(WebEngine.REQ200.format(dtype=dtype, len=len(data), data=data))
             except Exception as e:
                 await self.client.a_send(self.REQ404.format(len=len(str(e)), data=e))
-                errlog_add(f"[ERR] WebCli endpoints {url}: {e}")
+                syslog(f"[ERR] WebCli endpoints {url}: {e}")
             return True  # Registered endpoint was found and executed
         return False  # Not registered endpoint
 

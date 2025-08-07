@@ -11,7 +11,7 @@ try:
     from ussl import wrap_socket    # Legacy micropython ssl usage (+simulator mode)
 except ImportError:
     from ssl import wrap_socket     # From micropython 1.23...
-from Debug import errlog_add
+from Debug import syslog
 import uasyncio as asyncio
 
 
@@ -147,7 +147,7 @@ def request(method:str, url:str, data:str=None, json=None, headers:dict=None, so
     try:
         sock = wrap_socket(sock) if proto == 'https:' else sock
     except Exception as e:
-        errlog_add(f'[ERR] https soc-wrap: {e}')
+        syslog(f'[ERR] https soc-wrap: {e}')
 
     # [1] BUILD REQUEST
     http_request = _build_request(host, method, path, headers, data, json)
@@ -206,7 +206,7 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
             addr = _host_to_addr(host, port, force=True)
             reader, writer = await asyncio.open_connection(addr[0], port, ssl=(proto == 'https:'))
         else:
-            errlog_add(f"[ERR] arequest connection: {e}")
+            syslog(f"[ERR] arequest connection: {e}")
 
     # Send request + Wait for the response
     try:
@@ -236,7 +236,7 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
             body = f"[WARN] arequest: {e}"
         else:
             body = f"[ERR] arequest: {e}"
-        errlog_add(body)
+        syslog(body)
     finally:
         if writer:
             writer.close()

@@ -13,7 +13,7 @@ from Hooks import bootup, profiling_info, enableESPNow
 from Network import auto_nw_config
 from Server import Server
 from Interrupts import enableInterrupt, enableCron, initEventIRQs
-from Debug import errlog_add
+from Debug import syslog
 
 
 #################################################################
@@ -26,7 +26,7 @@ def irq_handler():
         enableCron()
     except Exception as e:
         print(f"[micrOS main] InterruptHandler.enableInterrupt/CronInterrupt error: {e}")
-        errlog_add(f"[ERR] irq_handler error: {e}")
+        syslog(f"[ERR] irq_handler error: {e}")
 
 
 def external_irq_handler():
@@ -34,7 +34,7 @@ def external_irq_handler():
         initEventIRQs()
     except Exception as e:
         print(f"[micrOS main] InterruptHandler.initEventIRQs error: {e}")
-        errlog_add(f"[ERR] external_irq_handler error: {e}")
+        syslog(f"[ERR] external_irq_handler error: {e}")
 
 
 #################################################################
@@ -53,7 +53,7 @@ def micrOS():
         bootup()
     except Exception as e:
         print(f"[micrOS main] Hooks.boot() error: {e}")
-        errlog_add(f"[ERR] safe_boot: {e}")
+        syslog(f"[ERR] safe_boot: {e}")
 
     # NETWORK setup
     nwmd = auto_nw_config()
@@ -83,4 +83,4 @@ def micrOS():
     aio.run_forever()
 
     # UNEXPECTED RESTART ???
-    errlog_add("[ERR] !!! Unexpected micrOS restart")
+    syslog("[ERR] !!! Unexpected micrOS restart")

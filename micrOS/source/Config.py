@@ -16,11 +16,11 @@ from re import search
 from json import load, dump
 from uos import remove
 from utime import sleep
-from Debug import DebugCfg, console_write, errlog_add
+from Debug import DebugCfg, console_write, syslog
 try:
     from microIO import set_pinmap
 except:
-    errlog_add("[ERR] LogicalPins import: set_pinmap")
+    syslog("[ERR] LogicalPins import: set_pinmap")
     set_pinmap = None
 
 
@@ -109,7 +109,7 @@ class Data:
             Data.write_cfg_file()
             console_write("[CONF] Save conf successful")
         except Exception as e:
-            errlog_add(f"[ERR] Save (__inject) conf failed: {e}")
+            syslog(f"[ERR] Save (__inject) conf failed: {e}")
         finally:
             del liveconf
 
@@ -127,7 +127,7 @@ class Data:
                 if nosafe:
                     break
                 sleep(0.2)
-                errlog_add(f'[ERR] read_cfg_file error: {e}')
+                syslog(f'[ERR] read_cfg_file error: {e}')
         # Return config cache
         return conf
 
@@ -140,7 +140,7 @@ class Data:
                     dump(Data.CONFIG_CACHE, f)
                 break
             except Exception as e:
-                errlog_add(f'[ERR] write_cfg_file {Data.CONFIG_PATH} (json): {e}')
+                syslog(f'[ERR] write_cfg_file {Data.CONFIG_PATH} (json): {e}')
             sleep(0.2)
         return True
 
@@ -217,7 +217,7 @@ def cfgget(key=None):
             return Data.disk_keys(key)
         return val
     except Exception as e:
-        errlog_add(f'[ERR] cfgget {key} error: {e}')
+        syslog(f'[ERR] cfgget {key} error: {e}')
     return None
 
 def cfgput(key, value, type_check=False):
@@ -242,7 +242,7 @@ def cfgput(key, value, type_check=False):
         del value
         return True
     except Exception as e:
-        errlog_add(f'[ERR] cfgput {key} error: {e}')
+        syslog(f'[ERR] cfgput {key} error: {e}')
         return False
 
 #################################################################

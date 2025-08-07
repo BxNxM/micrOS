@@ -1,7 +1,7 @@
 from socket import getaddrinfo, SOCK_STREAM
 from re import compile
 from uasyncio import open_connection
-from Debug import errlog_add
+from Debug import syslog
 from Config import cfgget
 from Server import Server
 from Tasks import NativeTask
@@ -41,7 +41,7 @@ class InterCon:
                     host = addr_info[-1][4][0]
                 except OSError as e:
                     Server.reply_all(f"[intercon] NoHost: {e}")
-                    errlog_add(f"[intercon] send_cmd {host} oserr: {e}")
+                    syslog(f"[intercon] send_cmd {host} oserr: {e}")
                     return ''
             else:
                 # Restore IP from cache by hostname
@@ -55,7 +55,7 @@ class InterCon:
                 output = await self.__run_command(cmd, hostname)
             except OSError as e:
                 Server.reply_all(f"[intercon] NoHost: {e}")
-                errlog_add(f"[intercon] send_cmd {host} oserr: {e}")
+                syslog(f"[intercon] send_cmd {host} oserr: {e}")
                 output = None
             finally:
                 if self.writer:
@@ -69,7 +69,7 @@ class InterCon:
             # None: ServerBusy(or \0) or Prompt mismatch (auto delete cached IP), STR: valid comm. output
             return output
         else:
-            errlog_add(f"[ERR][intercon] Invalid host: {host}")
+            syslog(f"[ERR][intercon] Invalid host: {host}")
         return ''
 
     async def __run_command(self, cmd:list, hostname:str):
@@ -103,7 +103,7 @@ class InterCon:
             await self.writer.drain()
             data, prompt = await self.__receive_data(prompt=prompt)
         except Exception as e:
-            errlog_add(f'[intercon][ERR] Auth: {e}')
+            syslog(f'[intercon][ERR] Auth: {e}')
             data = 'AuthFailed'
         if 'AuthOk' in data:
             return True             # AuthOk

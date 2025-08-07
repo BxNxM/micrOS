@@ -16,7 +16,7 @@ from machine import reset as hard_reset, soft_reset
 from Config import cfgget, cfgput
 from Files import ilist_fs
 from Tasks import lm_exec
-from Debug import errlog_add
+from Debug import syslog
 
 
 #################################################################
@@ -25,7 +25,7 @@ from Debug import errlog_add
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.12.0-0'
+    MICROS_VERSION = '2.13.0-0'
 
     def __init__(self):
         """
@@ -43,7 +43,7 @@ class Shell:
         try:
             cfgput('version', Shell.MICROS_VERSION)
         except Exception as e:
-            errlog_add(f"[ERR] micrOS version export failed (config): {e}")
+            syslog(f"[ERR] micrOS version export failed (config): {e}")
 
     async def a_send(self, msg):
         """ Must be defined by child class... """
@@ -306,5 +306,5 @@ class Shell:
         except Exception as e:
             _err_msg = f"[ERR] while starting webrepl: {e}"
             await msg_obj(_err_msg)
-            errlog_add(_err_msg)
+            syslog(_err_msg)
         return True

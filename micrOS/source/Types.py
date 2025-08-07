@@ -12,7 +12,7 @@ USAGE:
     SLIDER brightness br=<0-100-5>
 """
 from json import dumps
-from Debug import errlog_add
+from Debug import syslog
 
 ########################################################
 #                 HELP TUPLE RESOLVER                  #
@@ -90,7 +90,7 @@ def resolve(help_data, widgets=False):
                 try:
                     help_msg.append(_generate(resolved_tag, msg))
                 except Exception as e:
-                    errlog_add(f"[ERR] resolve {tag} help msg: {e}")
+                    syslog(f"[ERR] resolve {tag} help msg: {e}")
                 continue
             help_msg.append(msg.replace(tag, '').strip())
         elif not widgets:

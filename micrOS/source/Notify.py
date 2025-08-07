@@ -11,7 +11,7 @@ Designed by Marcell Ban aka BxNxM
 
 from Config import cfgget
 from Tasks import lm_exec, lm_is_loaded
-from Debug import errlog_add
+from Debug import syslog
 
 #########################################
 #          micrOS Notifications         #
@@ -47,7 +47,7 @@ class Notify:
                 # !!! SUBSCRIBER HAS TO DEFINE send_msg(text, reply_to, chat_id) method !!!
                 s.send_msg(text, reply_to, chat_id)
             except Exception as e:
-                errlog_add(f"[ERR] Notify: {e}")
+                syslog(f"[ERR] Notify: {e}")
                 exit_code+=1
         return f"Sent for {len(Notify._SUBSCRIBERS)} client(s), errors: ({exit_code})"
 

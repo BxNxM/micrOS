@@ -13,7 +13,7 @@ from json import dumps
 import uasyncio as asyncio
 from micropython import schedule
 from utime import ticks_ms, ticks_diff
-from Debug import console_write, errlog_add
+from Debug import console_write, syslog
 from Config import cfgget
 from Network import sta_high_avail
 
@@ -75,12 +75,12 @@ class TaskBase:
                     self.task.cancel()  # Try to cancel task by asyncio
                 except Exception as e:
                     if "can't cancel self" != str(e):
-                        errlog_add(f"[WARN] IRQ Task cancel: {e}")
+                        syslog(f"[WARN] IRQ Task cancel: {e}")
                 self.__task_del()
             else:
                 return False
         except Exception as e:
-            errlog_add(f"[ERR] Task kill: {e}")
+            syslog(f"[ERR] Task kill: {e}")
             return False
         return True
 
@@ -109,7 +109,7 @@ class TaskBase:
         try:
             self.__task_del(keep_cache=True)
         except Exception as e:
-            errlog_add(f"[ERR] TaskBase.__del__: {e}")
+            syslog(f"[ERR] TaskBase.__del__: {e}")
 
 
 class NativeTask(TaskBase):
@@ -240,7 +240,7 @@ class Manager:
             cls.INSTANCE._initialized = False
             # Set async event loop exception handler
             asyncio.get_event_loop().set_exception_handler(lambda loop=None, context=None:
-                                                           errlog_add(f"[aio] exception: {loop}:{context}"))
+                                                           syslog(f"[aio] exception: {loop}:{context}"))
         return cls.INSTANCE
 
     def __init__(self):
@@ -265,7 +265,7 @@ class Manager:
         """
         if Manager._queue_len() >= TaskBase.QUEUE_SIZE:
             msg = f"[aio] Task queue full: {TaskBase.QUEUE_SIZE}"
-            errlog_add(msg)
+            syslog(msg)
             raise Exception(msg)
 
     async def idle_task(self):
@@ -293,7 +293,7 @@ class Manager:
                     sta_high_avail()
                 self.idle_counter += 1  # Increase counter
         except Exception as e:
-            errlog_add(f"[ERR] Idle task exists: {e}")
+            syslog(f"[ERR] Idle task exists: {e}")
         my_task.done.set()
 
     @staticmethod
@@ -374,7 +374,7 @@ class Manager:
             try:
                 return False if to_kill is None else to_kill.cancel()
             except Exception as e:
-                errlog_add(f"[ERR] Task kill: {e}")
+                syslog(f"[ERR] Task kill: {e}")
                 return False
 
         # Handle task group kill (module.*)
@@ -400,7 +400,7 @@ class Manager:
         try:
             asyncio.get_event_loop().run_forever()
         except Exception as e:
-            errlog_add(f"[aio] loop stopped: {e}")
+            syslog(f"[aio] loop stopped: {e}")
             asyncio.get_event_loop().close()
 
     @staticmethod
@@ -441,7 +441,7 @@ def exec_builtins(func):
                     out = Manager.INTERCON(host=intercon_target, cmd=arg_list)
                 except Exception as e:
                     out = {}
-                    errlog_add(f"[ERR] Intercon: {e}")
+                    syslog(f"[ERR] Intercon: {e}")
                 return True, out
 
             # MODULES
@@ -602,9 +602,9 @@ def exec_lm_pipe(taskstr):
                 console_write(f"[SKIP] exec_lm_pipe: {' '.join(cmd)}")
                 continue
             if not lm_exec(cmd)[0]:
-                errlog_add(f"[WARN] exec_lm_pipe: {cmd}")
+                syslog(f"[WARN] exec_lm_pipe: {cmd}")
     except Exception as e:
-        errlog_add(f"[ERR] exec_lm_pipe {taskstr}: {e}")
+        syslog(f"[ERR] exec_lm_pipe {taskstr}: {e}")
         return False
     return True
 
@@ -617,5 +617,5 @@ def exec_lm_pipe_schedule(taskstr):
         schedule(exec_lm_pipe, taskstr)
         return True
     except Exception as e:
-        errlog_add(f"[ERR] exec_lm_pipe_schedule: {e}")
+        syslog(f"[ERR] exec_lm_pipe_schedule: {e}")
         return False

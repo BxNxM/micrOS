@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="black" media="(prefers-color-scheme: dark)" />
+  <title>micrOS Matrix Drawer</title>
+  <link rel="stylesheet" href="ustyle.css" />
+  <script src="uapi.js" defer></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    .matrix {
+      display: grid;
+      gap: 2px;
+      margin: 20px auto;
+      touch-action: none;
+    }
+    .pixel {
+      width: 30px;
+      height: 30px;
+      background: #000000;
+      border: 1px solid #333;
+      cursor: pointer;
+      user-select: none;
+    }
+    input[type="number"], input[type="color"] {
+      margin: 10px;
+      padding: 4px;
+    }
+    button {
+      margin: 10px;
+      padding: 6px 12px;
+    }
+    pre {
+      text-align: left;
+      max-width: 800px;
+      margin: auto;
+      background: #111;
+      color: #0f0;
+      padding: 10px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
+  <h1>🟢 LED Matrix Drawer</h1>
+
+  <!-- Controls: color picker, size, and clear button -->
+  <input type="color" id="colorPicker" value="#00ff00" title="Pick LED color" class="custom-color-picker" />
+  <input type="number" id="matrixSize" value="8" min="1" max="64" title="Matrix size (NxN)" />
+  <button onclick="applySize()">Resize</button>
+  <button onclick="clearMatrix()">🧹 Clear Screen</button>
+
+  <!-- Matrix grid container -->
+  <div id="matrix" class="matrix"></div>
+
+  <!-- REST Debug Console -->
+  <hr>
+  <h3>🛠 REST Debug Console</h3>
+  <p id="restConsoleUrl"></p>
+  <pre id="restConsoleResponse"></pre>
+  <p id="restConsoleTime"></p>
+
+  <script>
+    const matrixContainer = document.getElementById('matrix');
+    const colorPicker = document.getElementById('colorPicker');
+    const sizeInput = document.getElementById('matrixSize');
+    let pixels = [];
+    let drawing = false;
+
+    function hexToRgb(hex) {
+      const val = parseInt(hex.slice(1), 16);
+      return [(val >> 16) & 255, (val >> 8) & 255, val & 255];
+    }
+
+    function buildMatrix(size) {
+      matrixContainer.innerHTML = "";
+      pixels = [];
+      matrixContainer.style.gridTemplateColumns = `repeat(${size}, 30px)`;
+      matrixContainer.style.gridTemplateRows = `repeat(${size}, 30px)`;
+
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const cell = document.createElement('div');
+          cell.className = "pixel";
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          cell.dataset.color = "#000000";
+          cell.style.backgroundColor = "#000000";
+          cell.addEventListener('pointerdown', () => {
+            drawing = true;
+            paintPixel(cell);
+          });
+          cell.addEventListener('pointerenter', () => {
+            if (drawing) paintPixel(cell);
+          });
+          matrixContainer.appendChild(cell);
+          pixels.push(cell);
+        }
+      }
+
+      window.addEventListener('pointerup', () => { drawing = false; });
+      window.addEventListener('pointercancel', () => { drawing = false; });
+
+      sendClearCommand();
+    }
+
+    function paintPixel(pixelDiv) {
+      const color = colorPicker.value;
+      pixelDiv.dataset.color = color;
+      pixelDiv.style.backgroundColor = color;
+
+      const [r, g, b] = hexToRgb(color);
+      const x = pixelDiv.dataset.x;
+      const y = pixelDiv.dataset.y;
+      const cmd = `neomatrix/draw_colormap/[(${x},${y},(${r},${g},${b}))]`;
+      restAPI(cmd, true).catch(err => console.warn("Single pixel update failed:", err));
+    }
+
+    function clearMatrix() {
+      pixels.forEach(p => {
+        p.dataset.color = "#000000";
+        p.style.backgroundColor = "#000000";
+      });
+      sendClearCommand();
+    }
+
+    function sendClearCommand() {
+      restAPI("neomatrix/draw_colormap/[]", true).catch(err => console.warn("Clear failed:", err));
+    }
+
+    function applySize() {
+      let newSize = parseInt(sizeInput.value, 10);
+      if (!newSize || newSize < 1) newSize = 8;
+      buildMatrix(newSize);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      buildMatrix(parseInt(sizeInput.value, 10) || 8);
+    });
+  </script>
+</body>
+</html>

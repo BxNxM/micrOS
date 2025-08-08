@@ -175,14 +175,21 @@ class WebCli(Client, WebEngine):
         await self.close()
 
     @staticmethod
-    def register(endpoint, callback):
+    def register(endpoint:str, callback:callable, auto_enable:bool=True):
+        """
+        :param endpoint: name of the endpoint
+        :param callback: callback function (WebEngine compatible: return:  html_type, content)
+        :param auto_enable: enable webui when register (endpoint)
+        """
+        if cfgget('webui'):
+            WebEngine.ENDPOINTS[endpoint] = callback
+            return
         # AUTO ENABLE webui when register (endpoint) called and webui is False
-        if not cfgget('webui'):
+        if auto_enable:
             from Config import cfgput
             if cfgput('webui', True):  # SET webui to True
                 from machine import reset
                 reset()  # HARD RESET (REBOOT)
-        WebEngine.ENDPOINTS[endpoint] = callback
 
 
 class ShellCli(Client, Shell):

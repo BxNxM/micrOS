@@ -84,7 +84,7 @@ def notify(text=None) -> bool:
     return False
 
 
-def web_endpoint(endpoint, function) -> bool:
+def web_endpoint(endpoint, function, auto_enable=True) -> bool:
     """
     [LM] Add test endpoint <localhost.local>/endpoint from Load Modules
     :param endpoint: simple string, name of the endpoint
@@ -95,8 +95,9 @@ def web_endpoint(endpoint, function) -> bool:
         [2] Stream function return tuple (multipart_type, data):
             multipart/x-mixed-replace | multipart/form-data, <data>
                 <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
+    :param auto_enable: if True will enable webui (if disabled) when register endpoint
     """
-    WebCli.register(endpoint=endpoint, callback=function)
+    WebCli.register(endpoint=endpoint, callback=function, auto_enable=auto_enable)
     return True
 
 

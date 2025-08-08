@@ -44,9 +44,6 @@ def manage_task(tag:str, operation:str):
     :param tag: task tag
     :param operation: kill / show / isbusy
     """
-    if Manager is None:
-        # RETURN: None - cannot utilize async task functionality
-        return None
     if operation == "show":
         return str(Manager().show(tag=tag))
     if operation == "kill":

@@ -82,5 +82,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'm1_control direc=<0/1> speed=<0-1023>', 'set_speed <0-1023>',\
+    return 'm1_control direc=<0/1> speed=<0-1000>', 'set_speed <0-1000>',\
            'set_direction <0-1>', 'stop', 'pinmap'

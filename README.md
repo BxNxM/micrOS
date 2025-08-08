@@ -55,7 +55,7 @@ Access rest api over browser: `http://<nodename>.local`
 6. micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
 7. 🧑‍💻 micrOS create custom Load Modules: [link](./APPLICATION_GUIDE.md)
 8. micrOS Gateway server with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
-9. Release notes: [link](https://github.com/BxNxM/micrOS/#relese-note)
+9. Release notes: [release-note](https://github.com/BxNxM/micrOS/#release-note)
 
 ----------------------------------------
 ----------------------------------------
@@ -531,6 +531,9 @@ Version **4.0.0-0** `micrOS-???`
     - Low power mode (with BLE) and soft-sleep / deep-sleep
 ```
 
+
+<a id="release-note"></a>
+## Release notes
 
 |  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |  SUPPORTED DEVICE(S) | APP PROFILES | Load Modules  |     NOTE       |
 | :----------: | :----------------: | :------------------------:   |  :-----------------: | :------------: | :------------:| -------------- |

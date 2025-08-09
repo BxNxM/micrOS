@@ -56,6 +56,8 @@
   <input type="number" id="matrixSize" value="8" min="1" max="64" title="Matrix size (NxN)" />
   <button onclick="applySize()">Resize</button>
   <button onclick="clearMatrix()">🧹 Clear Screen</button>
+  <button onclick="restAPI('neomatrix/stop', true)">⏹️ Stop Animation</button>
+  <button onclick="restAPI('neomatrix/snake', true)">▶️ Start Animation</button>
 
   <!-- Matrix grid container -->
   <div id="matrix" class="matrix"></div>

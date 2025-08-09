@@ -1,12 +1,32 @@
 import os
 
 try:
-    from .lib import LocalMachine
-    from .lib.file_extensions import check_all_extensions, check_web_extensions
+    from . import LocalMachine
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
-    from lib import LocalMachine
-    from lib.file_extensions import check_all_extensions, check_web_extensions
+    import LocalMachine
+
+PYTHON_EXTENSIONS = ('py', 'mpy')
+WEB_ONLY = ('js', 'html', 'css', 'json', 'ico', 'jpeg', 'png')
+ENABLED_EXTENSIONS = PYTHON_EXTENSIONS + WEB_ONLY
+
+def check_all_extensions(path):
+    extension = path.split('.')[-1]
+    if extension in ENABLED_EXTENSIONS:
+        return True
+    return False
+
+def check_web_extensions(path):
+    extension = path.split('.')[-1]
+    if extension in WEB_ONLY:
+        return True
+    return False
+
+def check_python_extensions(path):
+    extension = path.split('.')[-1]
+    if extension in PYTHON_EXTENSIONS:
+        return True
+    return False
 
 def micros_resource_list(root_folder):
     resources_path = []

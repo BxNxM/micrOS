@@ -34,6 +34,7 @@ class NeoPixelMatrix(AnimationPlayer):
         for i in range(self.num_pixels):
             # Write pixel buffer before write to ws2812
             self.pixels[i] = (0, 0, 0)
+            self._color_buffer[i] = (0, 0, 0)
         # Send buffer to device
         self.draw()
 

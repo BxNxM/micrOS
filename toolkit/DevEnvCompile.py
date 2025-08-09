@@ -9,12 +9,12 @@ print("Module [DevEnvBase] path: {} __package__: {} __name__: {} __file__: {}".f
 try:
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
-    from .lib.file_extensions import check_all_extensions, check_web_extensions
+    from .lib.MicrosFiles import check_all_extensions, check_web_extensions
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from lib import LocalMachine
     from lib.TerminalColors import Colors
-    from lib.file_extensions import check_all_extensions, check_web_extensions
+    from lib.MicrosFiles import check_all_extensions, check_web_extensions
 
 try:
     import mpy_cross

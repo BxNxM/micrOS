@@ -13,14 +13,14 @@ try:
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
     from .lib.SerialDriverHandler import install_usb_serial_driver
-    from .MicrosFiles import micros_resource_list
+    from .lib.MicrosFiles import micros_resource_list
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from DevEnvCompile import Compile
     from lib import LocalMachine
     from lib.TerminalColors import Colors
     from lib.SerialDriverHandler import install_usb_serial_driver
-    from MicrosFiles import micros_resource_list
+    from lib.MicrosFiles import micros_resource_list
 
 
 class USB(Compile):

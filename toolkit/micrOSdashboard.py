@@ -29,14 +29,14 @@ try:
     from . import socketClient
     from . import dashboard_apps
     from .lib import LocalMachine
-    from .lib.file_extensions import check_all_extensions
+    from .lib.MicrosFiles import check_all_extensions
 except Exception as e:
     print("Import warning: {}".format(e))
     import MicrOSDevEnv
     import socketClient
     import dashboard_apps
     from lib import LocalMachine
-    from lib.file_extensions import check_all_extensions
+    from lib.MicrosFiles import check_all_extensions
 
 APP_DIR = os.path.join(MYPATH, 'dashboard_apps')
 

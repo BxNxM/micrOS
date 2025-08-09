@@ -13,18 +13,16 @@ try:
     from .lib import LocalMachine
     from .lib.TerminalColors import Colors
     from .lib.SafeInput import input_with_timeout
-    from .lib.file_extensions import check_all_extensions, check_web_extensions, check_python_extensions
+    from .lib.MicrosFiles import check_all_extensions, check_web_extensions, check_python_extensions, micros_resource_list
     from .lib.Repository import git_clone_archive, git_clone
-    from .MicrosFiles import micros_resource_list
 except Exception as e:
     print("Import warning __name__:{}: {}".format(__name__, e))
     from DevEnvCompile import Compile
     from lib import LocalMachine
     from lib.TerminalColors import Colors
     from lib.SafeInput import input_with_timeout
-    from lib.file_extensions import check_all_extensions, check_web_extensions, check_python_extensions
+    from lib.MicrosFiles import check_all_extensions, check_web_extensions, check_python_extensions, micros_resource_list
     from lib.Repository import git_clone_archive, git_clone
-    from MicrosFiles import micros_resource_list
 
 sys.path.append(MYPATH)
 import socketClient

@@ -462,13 +462,14 @@ Version **3.0.0-0** `micrOS-Autonomous`
     - (3) New intercon syntax - command level integration:                      [DONE]
     	- rgb toggle >>RingLight.local
     	- similar as (obsolete): intercon sendcmd host="RingLight.local" cmd="rgb toggle"
-    - (4) Create multi level project structure (curret is flat fs)              [TODO] FS
+    - (4) Create multi level project structure (curret is flat fs)              [WIP] FS
 		- New micrOS FS structure:
-			- Automatic dir creation at bootup: '/logs', '/web', '/data' 
+			- Automatic dir creation at bootup: '/logs', '/web', '/data', '/config', '/modules'
 			- Automatic sub-dir handling /source and /precompiled
 			- Automatic dir creation over USB
+			- Adapt precompilation from /modules and /config/IO_*                 [TODO]
 			
-			Structure:
+			System Core File Structure:
 			- [DONE] root fs (stays untouched (approx.: 24)): /
 				- micrOS.py (core)
 				- Config.py (core)
@@ -476,31 +477,36 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- Shell.py (core)
 				- Web.py (core)
 				- Server.py (core)
-				- node_config,json (core config)
 				- etc... (core)
-
 			- [DONE] web folder: /web
 				- *.html
 				- *.js
 				- *.css
 				- etc.
+			- [DONE][RUNTIME] data folder: /data
+			   - Dynamic/Runtime (approx.: 0-8):
+				   - *.pds (LM app cache - persistent data storage)
+					- *.dat (Common datalogger output)
+				- Or store any application data here
+			- [DONE][RUNTIME] logs folder: /logs
+				- *.log
+				- *.sys.log
 
-			- [DONE] /logs
-				- still there (created runtime) 
 
+			- [TODO] config folder /config
+             - node_config.json (core config)
+             - *.key files (offloaded core config values, like: guimeta)
+             - IO_* (approx.: 5)
 			- [TODO] module folder /modules - (mip complient: /modules/lib)
 				- LM_* (approx.: 54)
-				- IO_* (approx.: 5)
 				- *.py/.mpy (driver)
-				- Dynamic/Runtime (approx.: 0-8):
-					- *.pds (LM app cache - persistent data storage)
-					- *.dat (Common datalogger output)
+
 
 		- (5) [TODO] Proper mip installer support (/modules or /modules/lib or /web)
 			- Note: Autonomous package management over wifi (github) 
-				- pacman download
-				- pacman ls
-				- pacman dirtree
+				- pacman download            [POC][DONE][TODO]
+				- pacman ls                  [DONE]
+				- pacman dirtree             [DONE]
 				- pacman ...
 ```
 
@@ -514,21 +520,9 @@ Version **3.1.0-0** `micrOS-SecurePower`
     	- Remote controller / Sensor UseCase
     	- --- client mode (fyi: normally micrOS operates in server mode) 
     - Intercon-Wire (?)
-    	- Idea of wired message communication protocol same as Intercon-Shell/Intercon-espnow
+    	- Idea of wired message communication protocol same as Intercon-Shell/Intercon-ESPNow
     	- Possible HW protocols: i2c / onewire / uart BUT it should support bidirectional message transfers
     	- Goal: CoProcessor easy integration feature - Arduino env support 
-```
-
-Version **4.0.0-0** `micrOS-???`
-
-```
-    Core:
-    - Network stack redesign
-        - Network
-            - wifi (defualt, current interfaces)
-            - Study of BLE (Shell)
-            - Com. (wifi/now/ble...lora?/etc?.) as plugin architecture (?)
-    - Low power mode (with BLE) and soft-sleep / deep-sleep
 ```
 
 

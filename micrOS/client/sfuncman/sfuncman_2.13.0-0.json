@@ -772,15 +772,15 @@
             "param(s)": ""
         },
         "rainbow": {
-            "doc": null,
-            "param(s)": "speed_ms=20 br=15 batch=True"
+            "doc": "\n    Rainbow effect animation\n    :param speed_ms: animation speed in milliseconds\n    :param br: Brightness of the pixels (0-100)\n    :param batch: Batch drawing of pixels (True/False)\n    ",
+            "param(s)": "speed_ms=50 br=15 batch=True"
         },
         "random": {
             "doc": "\n    Demo function: implements random color change\n    :param max_val: set channel maximum generated value: 0-255\n    :return str: rgb status - states: R, G, B\n    ",
             "param(s)": "max_val=255"
         },
         "shader": {
-            "doc": null,
+            "doc": "\n    Shader effect on neopixel ring.\n    :param offset: start pixel index\n    :param size: shader size (number of pixels)\n    ",
             "param(s)": "offset=0 size=6"
         },
         "stop": {

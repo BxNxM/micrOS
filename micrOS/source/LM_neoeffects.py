@@ -100,7 +100,13 @@ def cycle(speed_ms:int=60, shift:bool=True, batch:bool=True):
     return load().play(effect_cycle, speed_ms=speed_ms, bt_draw=batch, bt_size=4)
 
 
-def rainbow(speed_ms=20, br=15, batch=True):
+def rainbow(speed_ms=50, br=15, batch=True):
+    """
+    Rainbow effect animation
+    :param speed_ms: animation speed in milliseconds
+    :param br: Brightness of the pixels (0-100)
+    :param batch: Batch drawing of pixels (True/False)
+    """
     def _wheel(pos):
         # Input a value 0 to 255 to get a color value.
         # The colours are a transition r - g - b - back to r.
@@ -121,8 +127,7 @@ def rainbow(speed_ms=20, br=15, batch=True):
         :param step: step size
         """
         nonlocal pix_cnt, br
-        color_step = 3
-        for color_wheel in range(0, 255, color_step):
+        for color_wheel in range(0, 255):
             for index in range(0, pix_cnt):
                 rc_index = (index * 256 // pix_cnt) + color_wheel
                 r, g, b = _wheel(rc_index & 255)
@@ -157,6 +162,11 @@ def fire(speed_ms:int=150, br:int=30, batch:bool=True):
 
 
 def shader(offset=0, size=6):
+    """
+    Shader effect on neopixel ring.
+    :param offset: start pixel index
+    :param size: shader size (number of pixels)
+    """
     def effect_shader():
         nonlocal size, offset, neoeffect
         pix_cnt = Data.NEOPIXEL_OBJ.n
@@ -261,7 +271,7 @@ def help(widgets=False):
                              'BUTTON meteor speed_ms=60',
                              'cycle speed_ms=60 shift=True batch=True',
                              'BUTTON cycle speed_ms=60',
-                             'rainbow speed_ms=20 br=15 batch=True',
+                             'rainbow speed_ms=50 br=15 batch=True',
                              'BUTTON rainbow',
                              'fire speed_ms=150 br=30 batch=True',
                              'BUTTON fire speed_ms=150',

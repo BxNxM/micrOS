@@ -9,7 +9,7 @@ def _is_module(path:str='/', pyprefix:str='*') -> bool:
     :param pyprefix: python resource filter prefix, default: * (all: LM and IO)
     """
     # micrOS file types
-    allowed_exts = ('html', 'js', 'css', 'log', 'cache', 'dat')
+    allowed_exts = ('html', 'js', 'css', 'log', 'cache', 'dat', 'app_json')
     mod_prefixes = ('LM', "IO")
     fname = path.split("/")[-1]
     if fname.split("_")[0] in mod_prefixes or fname.split('.')[-1] in allowed_exts:

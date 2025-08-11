@@ -54,6 +54,15 @@ def dirtree(path="/", raw=False):
     return formatted_output
 
 
+def cat(path):
+    """
+    Dump any file content
+    """
+    with open(path, 'r') as f:
+        content = f.read()
+    return content
+
+
 def download(url=None, package=None):
     """
     [BETA] Load Module downloader with mip

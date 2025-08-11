@@ -142,7 +142,7 @@ class Client:
         if Client.ACTIVE_CLIS.get(client_id, None) is not None:
             Client.ACTIVE_CLIS.pop(client_id)
         # Update server task output (? test ?)
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
+        Manager().task_msg('server', ','.join(list(Client.ACTIVE_CLIS)))
 
     def __del__(self):
         """Client GC collect"""
@@ -158,7 +158,7 @@ class WebCli(Client, WebEngine):
 
     async def run_web(self):
         # Update server task output
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
+        Manager().task_msg('server', ','.join(list(Client.ACTIVE_CLIS)))
 
         # Run async connection handling
         while self.connected:
@@ -252,7 +252,7 @@ class ShellCli(Client, Shell):
 
     async def run_shell(self):
         # Update server task output
-        Manager().server_task_msg(','.join(list(Client.ACTIVE_CLIS)))
+        Manager().task_msg('server', ','.join(list(Client.ACTIVE_CLIS)))
         # Init prompt
         await self.a_send(self.prompt())
         # Run async connection handling

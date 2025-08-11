@@ -1,24 +1,5 @@
 import Espnow
 
-def load():
-    """
-    OBSOLETE - remove
-    [DEBUG ONLY] ENABLE ESPNOW IN NODE CONFIG INSTEAD OF HERE!
-        Initialize ESPNOW protocal
-    """
-    return Espnow.initialize()
-
-def start_server():
-    """
-    OBSOLETE - remove
-    [DEBUG ONLY] ENABLE ESPNOW IN NODE CONFIG INSTEAD OF HERE!
-        Start ESPNOW server/listener
-        - this can receive espnow messages
-        - it includes Load Module execution logic (beta)
-    """
-    now = Espnow.initialize()
-    return now.start_server()
-
 
 def send(peer:bytes|str, msg:str='modules'):
     """
@@ -36,13 +17,25 @@ def stats():
     now = Espnow.initialize()
     return now.stats()
 
+
 def add_peer(peer:bytes, dev_name:str=None):
     """
-    Add ESPNOW peer to known hosts
-    - It is needed before first send(...)
+    OBSOLETE
+    Legacy function - use handshake instead
+    """
+    return handshake(peer)
+
+
+def handshake(peer:bytes):
+    """
+    Handshake with ESPNow Peer
+    :param peer: mac address of espnow device
+    - device name detection
+    - address:name caching
     """
     now = Espnow.initialize()
-    return now.add_peer(peer, dev_name)
+    return now.handshake(peer)
+
 
 def mac_address():
     """
@@ -50,8 +43,12 @@ def mac_address():
     """
     return Espnow.mac_address()
 
+
 def help():
     """
     [beta] ESPNOW sender/receiver with LM execution
     """
-    return 'load', 'send <peer> "ping"', 'start_server', 'add_peer <peer> dev_name=None', 'stats', 'mac_address'
+    return ('send <peer> "hello"',
+            'stats',
+            'mac_address',
+            'handshake peer <bytes>')

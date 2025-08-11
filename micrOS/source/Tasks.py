@@ -65,6 +65,17 @@ class TaskBase:
                 del TaskBase.TASKS[passive[i]]
             collect()  # GC collect
 
+    @staticmethod
+    async def feed(sleep_ms=1):
+        """
+        Feed event loop
+        :param sleep_ms: in millisecond
+        """
+        # TODO: feed WDT - preemptive cooperative multitasking aka reboot if no feed until X time period
+        if sleep_ms <= 0:
+            return await asyncio.sleep(0.000_000_1)     # 0 means: 100ns (Absolute minimum)
+        return await asyncio.sleep_ms(sleep_ms)
+
     def cancel(self) -> bool:
         """
         Cancel task (+cleanup)
@@ -94,16 +105,16 @@ class TaskBase:
                 del TaskBase.TASKS[self.tag]
         collect()                           # GC collect
 
-    @staticmethod
-    async def feed(sleep_ms=1):
+    async def wait_result(self, timeout:int=5):
         """
-        Feed event loop
-        :param sleep_ms: in millisecond
+        Wait for task completion with timeout
+        :param timeout: in seconds
         """
-        # TODO: feed WDT - preemptive cooperative multitasking aka reboot if no feed until X time period
-        if sleep_ms <= 0:
-            return await asyncio.sleep(0.000_000_1)     # 0 means: 100ns (Absolute minimum)
-        return await asyncio.sleep_ms(sleep_ms)
+        try:
+            await asyncio.wait_for(self.done.wait(), timeout)
+        except asyncio.TimeoutError:
+            return "Timeout has beed exceeded"
+        return self.out
 
     def __del__(self):
         try:
@@ -404,11 +415,19 @@ class Manager:
             asyncio.get_event_loop().close()
 
     @staticmethod
-    def server_task_msg(msg):
-        server_task = TaskBase.TASKS.get('server', None)
-        if server_task is None:
-            return
-        server_task.out = msg
+    def task_msg(tag:str, msg:str=None) -> bool|str:
+        """
+        Set/Get task message (for server virtual task, etc.)
+        """
+        _task = TaskBase.TASKS.get(tag, None)
+        if _task is None:
+            return False
+        # Get task output
+        if tag is None:
+            return _task.out
+        # Set task output
+        _task.out = msg
+        return True
 
 
 #################################################################
@@ -467,6 +486,8 @@ def exec_builtins(func):
 
             # Call the decorated function with the additional flag
             return func(arg_list, json_flag)
+        return False, None
+
     return wrapper
 
 

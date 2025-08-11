@@ -397,18 +397,18 @@
     },
     "espnow": {
         "add_peer": {
-            "doc": "\n    Add ESPNOW peer to known hosts\n    - It is needed before first send(...)\n    ",
+            "doc": "\n    OBSOLETE\n    Legacy function - use handshake instead\n    ",
             "param(s)": "peer:bytes dev_name:str=None"
+        },
+        "handshake": {
+            "doc": "\n    Handshake with ESPNow Peer\n    :param peer: mac address of espnow device\n    - device name detection\n    - address:name caching\n    ",
+            "param(s)": "peer:bytes"
         },
         "help": {
             "doc": "\n    [beta] ESPNOW sender/receiver with LM execution\n    \n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/espnow.png?raw=true",
-        "load": {
-            "doc": "\n    OBSOLETE - remove\n    [DEBUG ONLY] ENABLE ESPNOW IN NODE CONFIG INSTEAD OF HERE!\n        Initialize ESPNOW protocal\n    ",
-            "param(s)": ""
-        },
         "mac_address": {
             "doc": "\n    Get ESPNOW compatible mac address\n    ",
             "param(s)": ""
@@ -416,10 +416,6 @@
         "send": {
             "doc": "\n    Send message to peer (by mac address)\n    :param peer: mac address of espnow device\n    :param msg: message string/load module call\n    ",
             "param(s)": "peer:bytes|str msg:str='modules'"
-        },
-        "start_server": {
-            "doc": "\n    OBSOLETE - remove\n    [DEBUG ONLY] ENABLE ESPNOW IN NODE CONFIG INSTEAD OF HERE!\n        Start ESPNOW server/listener\n        - this can receive espnow messages\n        - it includes Load Module execution logic (beta)\n    ",
-            "param(s)": ""
         },
         "stats": {
             "doc": "\n    Get ESPNOW stats\n    ",
@@ -1122,6 +1118,10 @@
         "cachedump": {
             "doc": null,
             "param(s)": "delete=None"
+        },
+        "cat": {
+            "doc": "\n    Dump any file content\n    ",
+            "param(s)": "path"
         },
         "datdump": {
             "doc": "\n    Generic .dat file dump\n    - logged data from LMs, sensor data, etc...\n    ",

@@ -1,10 +1,12 @@
 from aioespnow import AIOESPNow
 from binascii import hexlify
-from Tasks import NativeTask, TaskBase, lm_exec, lm_is_loaded
+from json import load, dump
 import uasyncio as asyncio
+from Tasks import NativeTask, TaskBase, lm_exec, lm_is_loaded
 from Network import get_mac
 from Config import cfgget
 from Debug import syslog
+from Files import OSPath, path_join, is_file
 
 
 # ----------- PARSE AND RENDER MSG PROTOCOL  --------------
@@ -99,6 +101,21 @@ class ESPNowSS:
             self.devices: dict[bytes, str] = {}         # mapping for { "mac address": "devfid" } pairs
             self._initialized = True
             self.server_ready = False
+            self.peer_cache = path_join(OSPath.DATA, "espnow_peers.app_json")
+            self._load_peers()
+
+    def _load_peers(self):
+        if not is_file(self.peer_cache):
+            return
+        try:
+            with open(self.peer_cache, 'r') as f:
+                devices_map = load(f)
+                self.devices = {bytes(k): v for k, v in devices_map}
+            for mac in self.devices:
+                # PEER REGISTRATION
+                self.espnow.add_peer(mac)
+        except Exception as e:
+            syslog(f"[ERR][ESPNOW] Loading peers: {e}")
 
     # ----------- SERVER METHODS --------------
     def _request_handler(self, msg:bytes, my_task:NativeTask, mac:bytes):
@@ -126,6 +143,11 @@ class ESPNowSS:
         if operation == "REQ":
             command = request["data"].split()
             module = command[0]
+            # Handle default hello - handshake message
+            if len(command) == 1 and module == "hello":
+                rendered_out = render_response(tid="?", oper="RSP", data=f"hello {prompt}", prompt=self.devfid)
+                return True, rendered_out
+            # COMMAND EXECUTION
             if lm_is_loaded(module):
                 try:
                     state, out = lm_exec(command)
@@ -134,39 +156,43 @@ class ESPNowSS:
                     return state, rendered_out
                 except Exception as e:
                     # Optionally log the exception here.
-                    state, out = False, f"[ERR][_ESPNOW] {command}: {e}"
+                    syslog(f"[ERR][_ESPNOW] {command}: {e}")
+                    state, out = False, ""
             else:
-                state, out = False, f"[WARN][_ESPNOW] NotAllowed {module}"
+                warning_msg = f"[WARN][_ESPNOW] NotAllowed {module}"
+                syslog(warning_msg)
+                rendered_out = render_response(tid="?", oper="RSP", data=warning_msg,
+                                               prompt=self.devfid)
+                state, out = True, rendered_out
             return state, out
         if operation == "RSP":
             resp_data = request["data"]
             ResponseRouter.update_response(mac, resp_data)          # USE <tid> for proper session response mapping
-        return False, f"[_ESPNOW] No action, {request}"
+        #syslog(f"[_ESPNOW] No action, {request}")
+        return False, ""
 
     async def _server(self, tag:str):
         """
         ESPnow async listener task
         :param tag: micro_task tag for task access
         """
+
         with TaskBase.TASKS.get(tag, None) as my_task:
             self.server_ready = True
             my_task.out = "ESPNow receiver running"
             async for mac, msg in self.espnow:
                 try:
-                    state, response = self._request_handler(msg, my_task, mac)
-                    if state:
+                    reply, response = self._request_handler(msg, my_task, mac)
+                    if reply:
                         await self.__asend_raw(mac, response)
-                    else:
-                        syslog(response)
                 except OSError as err:
                     # If the peer is not yet added, add it and retry.
                     if len(err.args) > 1 and err.args[1] == 'ESP_ERR_ESPNOW_NOT_FOUND':
-                        self.add_peer(mac)
-                        state, response = self._request_handler(msg, my_task, mac)
-                        if state:
+                        # AUTOMATIC PEER REGISTRATION
+                        self.espnow.add_peer(mac)
+                        reply, response = self._request_handler(msg, my_task, mac)
+                        if reply:
                             await self.__asend_raw(mac, response)
-                        else:
-                            syslog(response)
                     else:
                         # Optionally handle or log other OSErrors here.
                         syslog(f"[ERR][NOW SERVER] {err}")
@@ -178,7 +204,7 @@ class ESPNowSS:
         # Create an asynchronous task with tag 'espnow.server'
         tag = 'espnow.server'
         state = NativeTask().create(callback=self._server(tag), tag=tag)
-        return "Starting" if state else "Already running"
+        return {tag: "Starting"} if state else {tag: "Already running"}
 
     #----------- SEND METHODS --------------
     async def __asend_raw(self, mac:bytes, msg:str):
@@ -207,7 +233,7 @@ class ESPNowSS:
         peer = matches[0] if matches else None
         return peer
 
-    def send(self, peer:bytes|str, msg:str) -> str:
+    def send(self, peer:bytes|str, msg:str) -> dict:
         """
         Send a command over ESPNow.
         :param peer: Binary MAC address of another device.
@@ -218,7 +244,7 @@ class ESPNowSS:
             # Peer as device name (prompt)
             _peer = self.mac_by_peer_name(peer)
             if _peer is None:
-                return f"Unknown device: {peer}"
+                return {peer: "Unknown device"}
             peer_name = peer
             peer = _peer
 
@@ -226,24 +252,49 @@ class ESPNowSS:
         task_id = f"con.espnow.{peer_name}"
         # Create an asynchronous sending task.
         state = NativeTask().create(callback=self._asend_task(peer, task_id, msg), tag=task_id)
-        return "Starting" if state else "Already running"
+        return {task_id: "Starting"} if state else {task_id: "Already running"}
 
     # ----------- OTHER METHODS --------------
 
-    def add_peer(self, peer:bytes, devfid:str=None):
+    async def _handshake(self, peer:bytes, tag:str):
         """
-        Add a peer given its MAC address.
-        :param peer: Binary MAC address of a peer (e.g. b'\xbb\xbb\xbb\xbb\xbb\xbb').
-        :param devfid: optional parameter to register dev uid for mac address
+        Handshake with peer
+        - with device caching
         """
-        try:
-            self.espnow.add_peer(peer)
-            if devfid is not None:
-                # Update known devices
-                self.devices[peer] = devfid
-        except Exception as e:
-            return f"Peer error: {e}"
-        return "Peer register done"
+        with TaskBase.TASKS.get(tag, None) as my_task:
+            if self.devices.get(peer) is not None:
+                my_task.out = "Already registered"
+                return
+            my_task.out = "ESPNow Add Peer"
+            try:
+                # PEER REGISTRATION
+                self.espnow.add_peer(peer)
+            except Exception as e:
+                my_task.out = f"ESPNow Peer Error: {e}"
+                return
+            my_task.out = "Handshake In Progress..."
+            sender = self.send(peer, "hello")
+            task_key = list(sender.keys())[0]
+            sender_task = TaskBase.TASKS.get(task_key, None)
+            result = await sender_task.wait_result(timeout=10)
+            expected_response =  f"hello {self.devfid}"
+            is_ok = False
+            if result == expected_response:
+                try:
+                    with open(self.peer_cache, "w") as f:
+                        dump([[list(k), v] for k, v in self.devices.items()], f)
+                    is_ok = True
+                except Exception as e:
+                    syslog(f"[ERR][ESPNOW] Saving peers: {e}")
+            my_task.out = f"Handshake: {result} from {self.devices.get(peer)} [{'OK' if is_ok else 'NOK'}]"
+            sender_task.cancel()    # Delete sender task (cleanup)
+
+
+    def handshake(self, peer:bytes):
+        task_id = f"con.espnow.handshake"
+        # Create an asynchronous sending task.
+        state = NativeTask().create(callback=self._handshake(peer, task_id), tag=task_id)
+        return {task_id: "Starting"} if state else {task_id: "Already running"}
 
     def stats(self):
         """

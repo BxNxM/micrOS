@@ -6,7 +6,7 @@
         ],
         "Files.py": [
             9.38,
-            8
+            9
         ],
         "micrOSloader.py": [
             7.33,
@@ -25,7 +25,7 @@
             1
         ],
         "Tasks.py": [
-            9.38,
+            9.43,
             12
         ],
         "Config.py": [
@@ -69,7 +69,7 @@
             8
         ],
         "Espnow.py": [
-            9.57,
+            9.46,
             2
         ],
         "Scheduler.py": [
@@ -105,7 +105,7 @@
             1
         ],
         "LM_pacman.py": [
-            8.92,
+            8.88,
             0
         ],
         "LM_genIO.py": [
@@ -245,7 +245,7 @@
             0
         ],
         "LM_espnow.py": [
-            7.89,
+            6.88,
             0
         ],
         "LM_telegram.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            3757,
+            3815,
             24
         ],
         "load": [
-            9470,
+            9471,
             55
         ],
         "core_dep": [
@@ -334,8 +334,8 @@
             true,
             5
         ],
-        "core_score": 9.23,
-        "load_score": 8.39,
+        "core_score": 9.22,
+        "load_score": 8.37,
         "version": "2.13.0-0"
     }
 }

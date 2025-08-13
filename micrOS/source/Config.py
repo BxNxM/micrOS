@@ -17,6 +17,8 @@ from json import load, dump
 from uos import remove
 from utime import sleep
 from Debug import DebugCfg, console_write, syslog
+from Files import OSPath, path_join, is_file
+from uos import rename as move_file
 try:
     from microIO import set_pinmap
 except:
@@ -30,7 +32,8 @@ class Data:
     """
     __slots__ = []
 
-    CONFIG_PATH = "node_config.json"
+    CONFIG_NAME = "node_config.json"
+    CONFIG_PATH = path_join(OSPath.CONFIG, CONFIG_NAME)
     CONFIG_CACHE = {"version": "n/a",
                     "auth": False,
                     "staessid": "your_wifi_name",
@@ -73,6 +76,10 @@ class Data:
 
     @staticmethod
     def init():
+        # Migrate config from / to /config
+        if is_file(Data.CONFIG_NAME):
+            console_write(f"[CONF] Migrate {Data.CONFIG_NAME} to {Data.CONFIG_PATH}")
+            move_file(Data.CONFIG_NAME, Data.CONFIG_PATH)
         # Inject user config into template
         Data.__inject_default_conf()
         # [!!!] Init selected pinmap - default pinmap calculated by platform
@@ -171,16 +178,17 @@ class Data:
         These kind of parameters are not cached in memory
         """
         # Write str value to file
+        offloaded_key = path_join(OSPath.CONFIG, f'.{key}.key')
         if isinstance(value, str) and key in Data.CONFIG_CACHE:
             try:
-                with open(f'.{key}.key', 'w') as f:
+                with open(offloaded_key, 'w') as f:
                     f.write(value)
                 return True
             except Exception:
                 return False
         # Read str value from file
         try:
-            with open(f'.{key}.key', 'r') as f:
+            with open(offloaded_key, 'r') as f:
                 return f.read().strip()
         except Exception:
             # Return default value if key not exists

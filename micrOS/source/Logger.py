@@ -6,7 +6,7 @@ Designed by Marcell Ban aka BxNxM
 """
 from time import localtime
 from re import match
-from uos import remove, mkdir
+from uos import remove
 from Files import OSPath, path_join, ilist_fs, is_dir
 
 #############################################
@@ -16,12 +16,7 @@ from Files import OSPath, path_join, ilist_fs, is_dir
 def _init_logger():
     """ Init /logs folder """
     if not is_dir(OSPath.LOGS):
-        try:
-            mkdir(OSPath.LOGS)
-            syslog(f"[BOOT] log dir {OSPath.LOGS} init")
-        except Exception as e:
-            OSPath.LOGS = OSPath.ROOT
-            syslog(f"[BOOT] log dir {OSPath.LOGS} fallback: {e}")
+        OSPath.LOGS = OSPath._ROOT
     return OSPath.LOGS
 
 

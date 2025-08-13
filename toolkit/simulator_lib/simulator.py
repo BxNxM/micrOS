@@ -29,6 +29,7 @@ class micrOSIM():
     def __init__(self, doc_resolve=False):
         if doc_resolve:
             console("[micrOSIM] Create micrOS LM doc (env proc)")
+            self._init_sim_doc_resolve()
             # json_structure, html_structure
             self.doc_output = (None, None)
         else:
@@ -38,7 +39,19 @@ class micrOSIM():
             self.pid = None
             micrOSIM.SIM_PROCESS_LIST.append(self.process)
 
+    def _init_sim_doc_resolve(self):
+        """
+        Init micrOS in simulator - folder structure creation
+        """
+        sim_path = LocalMachine.SimplePopPushd()
+        sim_path.pushd(SIM_PATH)
+        import micrOS               # Init micrOS - DO NOT REMOVE
+        sim_path.popd()
+
     def micrOS_sim_worker(self, trace=False):
+        """
+        Start micrOS in python simulator
+        """
         sim_path = LocalMachine.SimplePopPushd()
         sim_path.pushd(SIM_PATH)
         console("[micrOSIM] Start micrOS loader in: {}".format(SIM_PATH))

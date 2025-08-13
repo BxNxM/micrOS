@@ -62,7 +62,7 @@ def get_mac():
 #################################################################
 
 
-def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
+def __select_available_wifi_nw(sta_if:STA_IF, raw_essid:str, raw_pwd:str):
     """
     raw_essid: essid parameter, in case of multiple values separator is ;
     raw_pwd: essid pwd parameter,  in case of multiple values separator is ;
@@ -82,8 +82,8 @@ def __select_available_wifi_nw(sta_if, raw_essid, raw_pwd):
     return None, ''
 
 
-def set_wifi(essid, pwd, timeout=60):
-    console_write(f'[NW: STA] SET WIFI STA NW {essid}')
+def set_wifi(essid:str, pwd:str, timeout=60):
+    console_write('[NW: STA] Enable')
 
     # Disable AP mode
     ap_if = WLAN(AP_IF)
@@ -118,7 +118,7 @@ def set_wifi(essid, pwd, timeout=60):
                 timeout -= 1
                 sleep_ms(500)
             # Set static IP - here because some data comes from connection. (subnet, etc.)
-            if sta_if.isconnected() and __set_wifi_dev_static_ip(sta_if):
+            if sta_if.isconnected() and _set_wifi_dev_static_ip(sta_if):
                 sta_if.disconnect()
                 del sta_if
                 return set_wifi(essid, pwd)
@@ -135,7 +135,7 @@ def set_wifi(essid, pwd, timeout=60):
     return sta_if.isconnected()
 
 
-def __set_wifi_dev_static_ip(sta_if):
+def _set_wifi_dev_static_ip(sta_if:STA_IF):
     console_write("[NW: STA] Set device static IP.")
     stored_ip = cfgget('devip')
     if 'n/a' not in stored_ip.lower() and '.' in stored_ip:
@@ -162,7 +162,7 @@ def __set_wifi_dev_static_ip(sta_if):
 #################################################################
 
 
-def set_access_point(_essid, _pwd, _authmode=3):
+def set_access_point(_essid:str, _pwd:str, _authmode:int=3):
     console_write(f"[NW: AP] SET AP MODE: {_essid} - {_pwd} - auth mode: {_authmode} (if possible)")
 
     sta_if = WLAN(STA_IF)
@@ -228,7 +228,7 @@ def sta_high_avail():
         raw_essid = cfgget("staessid")
         wifi_avail = False
         # [CHECK 2] check known network is available
-        for idx, essid in enumerate(raw_essid.split(';')):
+        for essid in raw_essid.split(';'):
             essid = essid.strip()
             # Scan wifi network - retry workaround
             for _ in range(0, 2):
@@ -241,7 +241,7 @@ def sta_high_avail():
         if wifi_avail or not ap_if.active():
             # ACTION: Restart micrOS node (boot phase automatically detects nw mode)
             from machine import reset
-            console_write("[Restart] network repair")
+            syslog("[WARN] Restart, network repair")
             reset()
         return f'{cfgget("nwmd")} mode NOK, wifi avail: {wifi_avail}'
     return f'{cfgget("nwmd")} mode OK'

@@ -68,6 +68,7 @@ def rename(old_path, new_path):
     print(f"[uos.SIM] rename: {old_path} -> {new_path}")
     os.rename(old_path, new_path)
 
+
 def _stat_eval(stat_result):
     """
     micropython converter
@@ -81,6 +82,7 @@ def _stat_eval(stat_result):
         # DIRECTORY
         return (micropython_file_identifier['dir'],)
     return (0x0,)
+
 
 def stat(path):
     path = __mock_sim_dir(path)

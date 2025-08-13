@@ -491,15 +491,15 @@ Version **3.0.0-0** `micrOS-Autonomous`
 			- [DONE][RUNTIME] logs folder: /logs
 				- *.log
 				- *.sys.log
-
-
-			- [TODO] config folder /config
+			- [DONE] config folder /config
              - node_config.json (core config)
              - *.key files (offloaded core config values, like: guimeta)
+
+
+          - [TODO] config folder /config
              - IO_* (approx.: 5)
-			- [TODO] module folder /modules - (mip complient: /modules/lib)
+          - [TODO] module folder /modules - (mip complient: /modules/lib)
 				- LM_* (approx.: 54)
-				- *.py/.mpy (driver)
 
 
 		- (5) [TODO] Proper mip installer support (/modules or /modules/lib or /web)

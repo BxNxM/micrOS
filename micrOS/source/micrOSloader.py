@@ -1,5 +1,6 @@
 """
 Module is responsible for invoke micrOS or recovery webrepl mode
+[IMPORTANT] This module must never use any micrOS specific functions in main scope.
 
 Designed by Marcell Ban aka BxNxM
 """
@@ -11,11 +12,6 @@ try:
     import traceback
 except:
     traceback = None
-try:
-    from Debug import syslog
-except Exception as e:
-    print(f"[loader] Import error: {e}")
-    syslog = None
 from machine import reset
 
 
@@ -70,9 +66,7 @@ def __recovery_mode():
         import webrepl
         webrepl.start(password=pwd)
     except Exception as e:
-        if callable(syslog):
-            syslog(f"[ERR][micrOSloader] webrepl failed: {e}")
-        print("[loader] Reset .if_mode to micros and reboot")
+        print(f"[loader] webrepl failed: {e} - Reset .if_mode to micros and reboot")
         with open('.if_mode', 'w') as f:
             f.write("micros")
         # Reboot machine
@@ -126,8 +120,6 @@ def main():
             # Handle micrOS system crash (never happened...but) -> webrepl mode default pwd: ADmin123
             print(f"[loader][main mode] micrOS start failed: {e}")
             print("[loader][main mode] -> [recovery mode]")
-            if callable(syslog):
-                syslog(f"[ERR][micrOSloader] start failed: {e}")
     # Recovery aka webrepl mode
     __recovery_mode()
     __auto_restart_event()

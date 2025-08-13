@@ -1,6 +1,6 @@
 from sys import modules
 from Common import socket_stream
-from Files import _is_module, list_fs, ilist_fs, remove_fs, OSPath, path_join
+from Files import is_protected, list_fs, ilist_fs, remove_fs, OSPath, path_join
 
 
 #############################################
@@ -212,13 +212,14 @@ def delmod(mod):
         Delete Load Module with full name: module.py or module.mpy
         OR delete any web resource: *.js, *.css, *.html
     """
-    if mod.endswith('py') or _is_module(mod):
-        try:
-            to_remove = f'LM_{mod}' if mod.endswith('py') else mod
-            return remove_fs(to_remove)
-        except Exception as e:
-            return f'Cannot delete: {mod}: {e}'
-    return f'Invalid value: {mod}'
+    if mod.endswith('py'):
+        to_remove = f'LM_{mod}'
+    else:
+        return f'Invalid {mod}, must ends with .py or .mpy'
+    try:
+        return remove_fs(to_remove)
+    except Exception as e:
+        return f'Cannot delete: {mod}: {e}'
 
 
 @socket_stream

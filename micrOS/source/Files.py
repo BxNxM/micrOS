@@ -1,26 +1,42 @@
-from uos import ilistdir, remove, stat, getcwd
+"""
+Module is responsible high level micropython file system opeartions
+[IMPORTANT] This module must never use any micrOS specific functions or classes.
+"""
+
+from uos import ilistdir, remove, stat, getcwd, rename, mkdir
 
 ################################   Helper functions   #####################################
 
-def _is_module(path:str='/', pyprefix:str='*') -> bool:
+def _filter(path:str='/', ext:tuple=None, prefix:tuple=None, hide_core:bool=True) -> bool:
     """
-    Filter application modules, LM_.* (pyprefix) or app data or web resource
+    Filter files
     :param path: file to check
-    :param pyprefix: python resource filter prefix, default: * (all: LM and IO)
+    :param ext: tuple of extensions to filter by, default: None (all)
+    :param hide_core: hide core files (mpy, py), default: True
     """
-    # micrOS file types
-    allowed_exts = ('html', 'js', 'css', 'log', 'cache', 'dat', 'app_json')
-    mod_prefixes = ('LM', "IO")
     fname = path.split("/")[-1]
-    if fname.split("_")[0] in mod_prefixes or fname.split('.')[-1] in allowed_exts:
-        if pyprefix == '*':
-            # MODE: ALL app resources
-            return True
-        if fname.startswith(f"{pyprefix.upper()}_"):
-            # MODE: SELECTED app resources
-            return True
+    _ext = fname.split(".")[-1]
+    if hide_core and _ext in ("mpy", "py") and not (fname.startswith("LM_") or fname.startswith("IO_")):
+        return False
+    if ext is None and prefix is None:
+        return True
+    if isinstance(prefix, tuple) and fname.split("_")[0] in prefix:
+        return True
+    if isinstance(ext, tuple) and fname.split(".")[-1] in ext:
+        return True
     return False
 
+def is_protected(path:str='/') -> bool:
+    """
+    Check is file protected
+        - deny deletion
+    """
+    protected_entities = ("", "node_config.json", "modules", "config", "logs", "web", "data",
+                          "LM_pacman.mpy", "LM_system.mpy")
+    entity = path.split("/")[-1].replace("/", "")
+    if entity in protected_entities:
+        return True
+    return False
 
 def _type_mask_to_str(item_type:int=None) -> str:
     # Map the raw bit-mask to a single character
@@ -33,6 +49,19 @@ def _type_mask_to_str(item_type:int=None) -> str:
     return item_type
 
 ###########################   Public functions   #############################
+def is_dir(path):
+    try:
+        return stat(path)[0] & 0x4000
+    except OSError:
+        return False
+
+
+def is_file(path):
+    try:
+        return stat(path)[0] & 0x8000
+    except OSError:
+        return False
+
 
 def ilist_fs(path:str="/", type_filter:str='*', select:str='*', core:bool=False):
     """
@@ -52,7 +81,8 @@ def ilist_fs(path:str="/", type_filter:str='*', select:str='*', core:bool=False)
         item_type = _type_mask_to_str(item_type)
         if type_filter in ("*", item_type):
             # Mods only
-            if not core and item_type == 'f' and not _is_module(path+item, pyprefix=select):
+            _select = None if select == "*" else (select,)
+            if item_type == 'f' and not _filter(item, prefix=_select, hide_core=not core):
                 continue
             if select != '*' and item_type == 'd':
                 continue
@@ -78,33 +108,19 @@ def remove_fs(path, allow_dir=False):
     :param allow_dir: enable directory deletion, default: False
     """
     # protect some resources
-    if 'pacman.mpy' in path or 'system.mpy' in path or "/" == path.strip():
-        return f'Load module {path} is protected, skip deletion'
-    _is_dir = is_dir(path)
-    if _is_module(path) or (_is_dir and allow_dir):
+    if is_protected(path):
+        return f'{path} is protected, skip deletion'
+    _is_file = is_file(path)
+    if _is_file or allow_dir:
         remove(path)
-        return f"Removed: {path} {'dir' if _is_dir else 'file'}"
-    return f"Protected path: {path}"
-
-
-def is_dir(path):
-    try:
-        return stat(path)[0] & 0x4000
-    except OSError:
-        return False
-
-
-def is_file(path):
-    try:
-        return stat(path)[0] & 0x8000
-    except OSError:
-        return False
+        return f"{path} deleted"
+    return f"Cannot delete {'file' if _is_file else 'dir'}: {path}"
 
 
 def path_join(*parts):
     path = "/".join(part.strip("/") for part in parts if part)
     if parts and parts[0].startswith("/"):
-        path = "/" + path
+        path = path if path.startswith("/") else "/" + path
     return path
 
 
@@ -115,8 +131,23 @@ class OSPath:
     DATA = path_join(_ROOT,'/data')         # Application data (.dat, .cache, etc.)
     WEB = path_join(_ROOT,'/web')           # Web resources (.html, .css, .js, .json, etc.)
     MODULES = path_join(_ROOT, '/modules')  # Application modules (.mpy, .py) (todo)
-    CONFIG = path_join(_ROOT, '/config')    # System configuration files (node_config.json, etc.)(todo)
+    CONFIG = path_join(_ROOT, '/config')    # System configuration files (node_config.json, etc.)
 
-    @property
-    def ROOT(self):
-        return self._ROOT
+
+def init_micros_dirs():
+    """
+    Init micrOS root file system directories
+    """
+    root_dirs = [
+        getattr(OSPath, key)
+        for key in dir(OSPath)
+        if not key.startswith("_") and isinstance(getattr(OSPath, key), str)
+    ]
+    print(f"[BOOT] rootFS validation: {root_dirs}")
+    for dir_path in root_dirs:
+        if not is_dir(dir_path):
+            try:
+                mkdir(dir_path)
+                print(f"[BOOT] init dir: {dir_path}")
+            except Exception as e:
+                print(f"[ERR][BOOT] cannot init dir {dir_path}: {e}")

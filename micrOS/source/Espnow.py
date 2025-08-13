@@ -2,7 +2,7 @@ from aioespnow import AIOESPNow
 from binascii import hexlify
 from json import load, dump
 import uasyncio as asyncio
-from Tasks import NativeTask, TaskBase, lm_exec, lm_is_loaded
+from Tasks import NativeTask, lm_exec, lm_is_loaded
 from Network import get_mac
 from Config import cfgget
 from Debug import syslog
@@ -11,17 +11,15 @@ from Files import OSPath, path_join, is_file
 
 # ----------- PARSE AND RENDER MSG PROTOCOL  --------------
 
-def render_response(tid, oper, data, prompt) -> str:
+def render_response(tid:str, oper:str, data:str, prompt:str) -> str:
     """
     Render ESPNow custom message (protocol)
     """
     if oper not in ("REQ", "RSP"):
         syslog(f"[ERR] espnow render_response, unknown oper: {oper}")
     tmp = "{tid}|{oper}|{data}|{prompt}$"
-    tmp = tmp.replace("{tid}", str(tid))
-    tmp = tmp.replace("{oper}", str(oper))
-    tmp = tmp.replace("{data}", str(data))
-    tmp = tmp.replace("{prompt}", str(prompt))
+    tmp = (tmp.replace("{tid}", tid).replace("{oper}", oper)
+           .replace("{data}", str(data)).replace("{prompt}", prompt))
     return tmp
 
 def parse_request(msg:bytes) -> (bool, dict|str):
@@ -177,7 +175,7 @@ class ESPNowSS:
         :param tag: micro_task tag for task access
         """
 
-        with TaskBase.TASKS.get(tag, None) as my_task:
+        with NativeTask.TASKS.get(tag, None) as my_task:
             self.server_ready = True
             my_task.out = "ESPNow receiver running"
             async for mac, msg in self.espnow:
@@ -217,7 +215,7 @@ class ESPNowSS:
         """
         ESPNow client task: send a command to a peer and update task status.
         """
-        with TaskBase.TASKS.get(tag, None) as my_task:
+        with NativeTask.TASKS.get(tag, None) as my_task:
             router = ResponseRouter(peer)
             # rendered_output: "{tid}|{oper}|{data}|{prompt}$"
             rendered_out = render_response(tid="?", oper="REQ", data=msg, prompt=self.devfid)
@@ -261,7 +259,7 @@ class ESPNowSS:
         Handshake with peer
         - with device caching
         """
-        with TaskBase.TASKS.get(tag, None) as my_task:
+        with NativeTask.TASKS.get(tag, None) as my_task:
             if self.devices.get(peer) is not None:
                 my_task.out = "Already registered"
                 return
@@ -275,7 +273,7 @@ class ESPNowSS:
             my_task.out = "Handshake In Progress..."
             sender = self.send(peer, "hello")
             task_key = list(sender.keys())[0]
-            sender_task = TaskBase.TASKS.get(task_key, None)
+            sender_task = NativeTask.TASKS.get(task_key, None)
             result = await sender_task.wait_result(timeout=10)
             expected_response =  f"hello {self.devfid}"
             is_ok = False

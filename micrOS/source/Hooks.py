@@ -21,8 +21,6 @@ from Config import cfgget, cfgput
 from microIO import detect_platform
 from Debug import console_write, syslog
 from Tasks import exec_lm_pipe
-from Files import OSPath, is_dir
-from uos import mkdir
 from micropython import mem_info
 from machine import freq
 try:
@@ -45,7 +43,6 @@ def bootup():
     """
     # Execute LMs from boothook config parameter
     console_write("[BOOT] EXECUTION...")
-    _init_micros_dirs()
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
         console_write(f"|-[BOOT] TASKS: {bootasks}")
@@ -60,25 +57,6 @@ def bootup():
     _tune_queue_size()
     # Configure CPU performance
     _tune_performance()
-
-
-def _init_micros_dirs():
-    """
-    Init micrOS root file system directories
-    """
-    root_dirs = [
-        getattr(OSPath, key)
-        for key in dir(OSPath)
-        if not key.startswith("_") and isinstance(getattr(OSPath, key), str)
-    ]
-    console_write(f"|-[BOOT] rootFS validation: {root_dirs}")
-    for dir_path in root_dirs:
-        if not is_dir(dir_path):
-            try:
-                mkdir(dir_path)
-                syslog(f"[BOOT] init dir: {dir_path}")
-            except Exception as e:
-                syslog(f"[ERR][BOOT] cannot init dir {dir_path}: {e}")
 
 
 def _tune_queue_size():

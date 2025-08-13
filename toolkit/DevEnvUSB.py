@@ -35,6 +35,7 @@ class USB(Compile):
         self.micrOS_node_config_archive = os.path.join(MYPATH, "user_data/node_config_archive")
         self.node_config_profiles_path = os.path.join(MYPATH, "../micrOS/release_info/node_config_profiles/")
         self.esptool_interface = self.get_valid_esptool_cmd()
+        self.micrOS_node_config_path = "/config/node_config.json"
         self.dev_types_and_cmds = \
             {'esp32':
                  {'erase': '{esptool_interface} --port {dev} erase_flash',
@@ -436,10 +437,14 @@ class USB(Compile):
         selected_index = int(input("Select index: "))
         # Use (already existing) selected config to restore
         selected_config = conf_list[selected_index]
-        if '-' in selected_config:
+        if selected_config.endswith(".json"):
             # Restore saved config
-            target_path = os.path.join(self.precompiled_micrOS_dir_path, selected_config.split('-')[1])
+            selected_config_target = selected_config
+            if '-' in selected_config:
+                # Remove prefix (device name / profile name)
+                selected_config_target = selected_config.split('-')[-1]
             source_path = os.path.join(self.micrOS_node_config_archive, selected_config)
+            target_path = os.path.join(self.precompiled_micrOS_dir_path, selected_config_target)
         elif selected_index == len(conf_list) - 1:
             # SKIP restore config - use the local version in mpy-micrOS folder
             target_path = os.path.join(self.precompiled_micrOS_dir_path, 'node_config.json')
@@ -448,7 +453,7 @@ class USB(Compile):
             # Create new config - from micrOS folder path -> mpy-micrOS folder
             target_path = os.path.join(self.precompiled_micrOS_dir_path, selected_config)
             source_path = os.path.join(self.micrOS_dir_path, selected_config)
-        self.console("Restore config: {} -> {}".format(source_path, target_path))
+        self.console(f"Restore config: {source_path} -> {target_path}")
         if source_path is not None:
             LocalMachine.FileHandler.copy(source_path, target_path)
 
@@ -485,9 +490,11 @@ class USB(Compile):
         else:
             self.console("Profile was selected: {}{}{}".format(Colors.OK, profile_list[int(profile)], Colors.NC))
         # Read default conf
-        default_conf_path = os.path.join(self.micros_sim_workspace, 'node_config.json')
+        default_conf_path = os.path.join(self.micrOS_dir_path, 'node_config.json')
         if not os.path.isfile(default_conf_path):
-            self.micrOS_sim_default_conf_create()
+            if not self.__generate_default_config():
+                self.console(f"Missing default config: {default_conf_path}", state="warn")
+                return None
         with open(default_conf_path, 'r') as f:
             default_conf_dict = json.load(f)
         # Read profile
@@ -650,21 +657,28 @@ class USB(Compile):
         return processid
 
     def __get_node_config(self):
+
+        def _get_config(path):
+            mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
+            if mpremote_cmd is None:
+                # Legacy ampy command (esp32 auto reboot tolerance...)
+                _command = (self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd']
+                           .format(dev=device, args=f'get {path}'))
+            else:
+                _command = f'{mpremote_cmd} fs cat {path}'  # new mpremote <1.24.1
+            _exitcode, _stdout, _stderr = LocalMachine.CommandHandler.run_command(_command, shell=True)
+            return _exitcode, _stdout, _stderr
+
         device = self.get_devices()[0]
         self.console(f"Get node config over USB: {device}")
-        mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
-        if mpremote_cmd is None:
-            # Legacy ampy command (esp32 auto reboot tolerance...)
-            command = self.dev_types_and_cmds[self.selected_device_type]['ampy_cmd'].format(dev=device, args='get node_config.json')
+        if self.dry_run:
+            exitcode, stdout, stderr = 0, '{"key": "Dummy stdout"}', ''
         else:
-            command = f'{mpremote_cmd} fs cat node_config.json'     # new mpremote <1.24.1
-        if not self.dry_run:
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(command, shell=True)
+            exitcode, stdout, stderr = _get_config("node_config.json")                  # Legacy
+            if exitcode != 0:
+                exitcode, stdout, stderr = _get_config(self.micrOS_node_config_path)    # New
             self._archive_node_config()
-        else:
-            exitcode = 0
-            stdout = '{"key": "Dummy stdout"}'
-            stderr = ''
+
         if '\n' in stdout:
             stdout = stdout.strip().splitlines()
             stdout = str([line for line in stdout if '{' in line and '}' in line][0])
@@ -687,7 +701,7 @@ class USB(Compile):
 
     def _archive_node_config(self):
         self.console("ARCHIVE NODE_CONFIG.JSON")
-        local_node_config = os.path.join(self.precompiled_micrOS_dir_path, 'node_config.json')
+        local_node_config = self.precompiled_micrOS_dir_path + self.micrOS_node_config_path
         if os.path.isfile(local_node_config):
             with open(local_node_config, 'r') as f:
                 node_devfid = json.load(f)['devfid']
@@ -699,8 +713,8 @@ class USB(Compile):
                 LocalMachine.FileHandler.copy(local_node_config, archive_node_config)
 
     def __override_local_config_from_node(self, node_config=None):
-        node_config_path = os.path.join(self.precompiled_micrOS_dir_path, 'node_config.json')
-        self.console("Overwrite node_config.json with connected node config: {}".format(node_config_path), state='ok')
+        node_config_path = self.precompiled_micrOS_dir_path + self.micrOS_node_config_path
+        self.console(f"Overwrite node_config.json with connected node config: {node_config_path}", state='ok')
         if not self.dry_run and node_config is not None:
             with open(node_config_path, 'w') as f:
                 f.write(node_config)

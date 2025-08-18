@@ -165,10 +165,9 @@ async def _init_client():
         
         # Initialize mqtt topics
         if not micro_task(tag=MQTT.SUB_TASK, task=_subscribe(MQTT.DEFAULT_TOPIC)):
-            syslog(f"Failed start mqtt subscribe: {state}")
+            syslog(f"Failed start mqtt subscribe")
         if not micro_task(tag=MQTT.UP_TASK, task=_up()):
-            syslog(f"Failed start mqtt up: {state}")
-
+            syslog(f"Failed start mqtt up")
         # Async listener loop
         await _receiver()
         my_task.out = "Receiver closed"

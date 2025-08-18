@@ -8,6 +8,7 @@ __MOTOR_SPEEDS = [0, 0] # motor1, motor2
 __L298N_OBJS = []
 
 PWM_FREQ = 50
+# Deprecated LM_L298N_DCmotor: l298speed, l298dir_1, l298dir_2
 PIN_BINDINGS = [
     ('l298n_ENA', 10), ('l298n_INA', 12), ('l298n_INB', 11),  # motor 1
     ('l298n_ENB', 3),  ('l298n_INC', 9),  ('l298n_IND', 40),  # motor 2
@@ -47,8 +48,24 @@ def __get_motor_state(motor_index):
 # Application functions #
 #########################
 
+def load(pwm_freq:int=None):
+    """
+    [i] micrOS LM naming convention
+    Load the L298N motor driver module
+    """
+    global PWM_FREQ
+    if pwm_freq is not None:
+        PWM_FREQ = pwm_freq
+    __l298n_init()
+    return "Motor driver loaded successfully."
+
 
 def state(motor=0):
+    """
+    [i] micrOS LM naming convention
+    Get the current state of a motor or all motors
+    :param motor: Motor number (1 or 2) or None for all motors
+    """
     if motor == 1:
         return {'motor1': __get_motor_state(0)}
     elif motor == 2:
@@ -67,7 +84,13 @@ def _control_motor(motor, in1, in2):
     objlist[motor_index + 2].value(in2)
 
 
-def speed(motor, speed=1023):
+def speed(motor, speed:int=1023):
+    """
+    Set the speed of a motor
+    :param motor: Motor number (1 or 2)
+    :param speed: Speed value (0-1023)
+    :return: Current motor state
+    """
     if not (0 <= speed <= 1023):
         return {'speed': 'value range error'}
     pwm_index = 0 if motor == 1 else 3
@@ -78,16 +101,31 @@ def speed(motor, speed=1023):
 
 
 def direction(motor, forward: bool=True):
+    """
+    Set the direction of a motor
+    :param motor: Motor number (1 or 2)
+    :param forward: True if motor should move forward, False if backward
+    :return: Current motor state
+    """
     _control_motor(motor, 1 if forward else 0, 0 if forward else 1)
     return state(motor)
 
 
 def coast(motor):
+    """
+    Coast the motor
+    :param motor: Motor number (1 or 2)
+    """
     _control_motor(motor, 0, 0)
     return state(motor)
 
 
 def brake(motor):
+    """
+    Brake the motor
+    :param motor: Motor number (1 or 2)
+    :return: Current motor state
+    """
     _control_motor(motor, 1, 1)
     return state(motor)
 

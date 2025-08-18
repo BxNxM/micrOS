@@ -25,7 +25,7 @@ from Debug import syslog
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.14.0-0'
+    MICROS_VERSION = '2.14.0-1'
 
     def __init__(self):
         """

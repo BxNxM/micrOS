@@ -214,7 +214,7 @@ def _configure(username: str, password: str, server_ip: str, server_port: str):
     return config
 
 
-def load(username:str, password:str, server_ip:str, server_port:str='1883', qos:str=1):
+def load(username: str, password: str, server_ip: str, server_port: str='1883', qos: str=1):
     """
     Configure, initialize, and start the MQTT client.
     Requires that the micropython-mqtt package is installed. You can install it with:
@@ -243,3 +243,4 @@ def help(widgets=False):
     return ('load username:str password:str server_ip:str server_port:str="1883"',
             'get_config',
             'publish topic:str message:str retain=False')
+

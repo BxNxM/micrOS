@@ -146,5 +146,117 @@
                 "shell_multi_session_dt_ms": 86
             }
         }
+    },
+    "2.14.0-0": {
+        "ESP32": {
+            "Cabinet": {
+                "micropython_version": "v1.21.0 on 2023-10-05",
+                "modules": [
+                    "system",
+                    "cct",
+                    "dht22",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 47,
+                "mem_percent": 67.2,
+                "mem_used_byte": 101184,
+                "fs_percent": 31.6,
+                "fs_used_byte": 663552,
+                "web_landingpage_response_ms": 100,
+                "web_rest_response_ms": 60,
+                "shell_single_session_dt_ms": 34,
+                "shell_multi_session_dt_ms": 89
+            },
+            "RingLamp": {
+                "micropython_version": "v1.21.0 on 2023-10-05",
+                "modules": [
+                    "neopixel",
+                    "pacman",
+                    "system",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 44,
+                "mem_percent": 69.6,
+                "mem_used_byte": 105504,
+                "fs_percent": 31.4,
+                "fs_used_byte": 659456,
+                "web_landingpage_response_ms": 100,
+                "web_rest_response_ms": 50,
+                "shell_single_session_dt_ms": 33,
+                "shell_multi_session_dt_ms": 85
+            }
+        },
+        "ESP32-PICO-D4": {
+            "TinyDevBoard": {
+                "micropython_version": "v1.24.1 on 2024-11-29",
+                "modules": [
+                    "system",
+                    "rgb",
+                    "pacman",
+                    "cct",
+                    "telegram",
+                    "dashboard_be",
+                    "oled",
+                    "oled_ui",
+                    "gameOfLife",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 29,
+                "mem_percent": 3.7,
+                "mem_used_byte": 153664,
+                "fs_percent": 30.5,
+                "fs_used_byte": 638976,
+                "web_landingpage_response_ms": 160,
+                "web_rest_response_ms": 250,
+                "shell_single_session_dt_ms": 46,
+                "shell_multi_session_dt_ms": 110
+            }
+        },
+        "ESP32S3": {
+            "Entrance": {
+                "micropython_version": "v1.22.1 on 2024-01-05",
+                "modules": [
+                    "pacman",
+                    "buzzer",
+                    "system",
+                    "telegram",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 38,
+                "mem_percent": 62.5,
+                "mem_used_byte": 112000,
+                "fs_percent": 9.6,
+                "fs_used_byte": 606208,
+                "web_landingpage_response_ms": 100,
+                "web_rest_response_ms": 50,
+                "shell_single_session_dt_ms": 23,
+                "shell_multi_session_dt_ms": 47
+            }
+        }
+    },
+    "2.14.0-1": {
+        "ESP32-PICO-D4": {
+            "LivingKitchen": {
+                "micropython_version": "v1.21.0 on 2023-10-06",
+                "modules": [
+                    "rgbcct",
+                    "dimmer",
+                    "rgb",
+                    "cct",
+                    "dashboard_be",
+                    "system",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 35,
+                "mem_percent": 2.7,
+                "mem_used_byte": 112096,
+                "fs_percent": 30.1,
+                "fs_used_byte": 630784,
+                "web_landingpage_response_ms": 160,
+                "web_rest_response_ms": 50,
+                "shell_single_session_dt_ms": 22,
+                "shell_multi_session_dt_ms": 105
+            }
+        }
     }
 }

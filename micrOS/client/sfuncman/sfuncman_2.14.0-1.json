@@ -704,20 +704,20 @@
     },
     "mqtt_client": {
         "get_config": {
-            "doc": "No module named 'mqtt_as'",
+            "doc": "\n    Get configuration for MQTT client.\n    :return: MQTT configuration dict.\n    ",
             "param(s)": ""
         },
         "help": {
-            "doc": "No module named 'mqtt_as'",
+            "doc": "\n    Show public functions. Return a tuple of public function usage strings for the MQTT module.\n    :param widgets: Unused, reserved for extra help formatting.\n    :return: Tuple of help strings.\n    \n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mqtt_client.png?raw=true",
         "load": {
-            "doc": "No module named 'mqtt_as'",
+            "doc": "\n    Configure, initialize, and start the MQTT client.\n    Requires that the micropython-mqtt package is installed. You can install it with:\n    mpremote mip install github:peterhinch/micropython-mqtt\n    :param username: Broker username.\n    :param password: Broker password.\n    :param server_ip: Broker IP or hostname.\n    :param server_port: MQTT port (default 1883).\n    :param qos: MQTT Quality of Service level (0, 1, or 2). Controls delivery guarantee.\n    :return: Status dict showing whether the client is starting or already running.\n    ",
             "param(s)": "username: str password: str server_ip: str server_port: str='1883' qos: str=1"
         },
         "publish": {
-            "doc": "No module named 'mqtt_as'",
+            "doc": "\n    Wrapper to publish a message to the specified topic.\n    Creates a micro_task for asynchronous publishing.\n    :param topic: MQTT topic string.\n    :param message: Message string.\n    :param retain: Whether to retain the message on the broker (default False).\n    :return: Status message string.\n    ",
             "param(s)": "topic: str message: str retain: bool = False"
         }
     },
@@ -1145,7 +1145,7 @@
         },
         "dirtree": {
             "doc": "Return only directories from a given path.",
-            "param(s)": "path=\"/\" raw=False"
+            "param(s)": "path=\"/\" raw=False core=False"
         },
         "download": {
             "doc": "\n    [BETA] Load Module downloader with mip\n    :param url: github url path, ex. BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py\n    :param package: mip package name or raw url (hack)\n    ",
@@ -1161,8 +1161,8 @@
             "param(s)": ""
         },
         "ls": {
-            "doc": "\n    Linux like ls command - list app resources and app folders\n    :param path: path to list, default: /\n    :param content: content type, default all, f-file, d-dir can be selected\n    :param raw: keep raw output [(is_app, type), ...]\n    :param select: select specific app resource: LM or IO, default: all\n    ",
-            "param(s)": "path=\"/\" content='*' raw=False select='*'"
+            "doc": "\n    Linux like ls command - list app resources and app folders\n    :param path: path to list, default: /\n    :param content: content type, default all, f-file, d-dir can be selected\n    :param raw: keep raw output [(is_app, type), ...]\n    :param select: select specific app resource: LM or IO, default: all\n    :param core: include core system files\n    ",
+            "param(s)": "path=\"/\" content='*' raw=False select='*' core=False"
         },
         "makedir": {
             "doc": "\n    Create directory command\n    ",

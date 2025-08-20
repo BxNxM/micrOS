@@ -7,15 +7,16 @@ from Files import is_protected, list_fs, ilist_fs, remove_fs, OSPath, path_join
 #     Safe file system handler functions    #
 #############################################
 
-def ls(path="/", content='*', raw=False, select='*'):
+def ls(path="/", content='*', raw=False, select='*', core=False):
     """
     Linux like ls command - list app resources and app folders
     :param path: path to list, default: /
     :param content: content type, default all, f-file, d-dir can be selected
     :param raw: keep raw output [(is_app, type), ...]
     :param select: select specific app resource: LM or IO, default: all
+    :param core: include core system files
     """
-    items = list_fs(path, content, select=select)
+    items = list_fs(path, content, select=select, core=core)
     if raw:
         return items
 
@@ -39,10 +40,10 @@ def rm(path, allow_dir=False):
     return remove_fs(path, allow_dir)
 
 
-def dirtree(path="/", raw=False):
+def dirtree(path="/", raw=False, core=False):
     """Return only directories from a given path."""
     path = path if path.endswith('/') else f"{path}/"
-    folders = [path_join(path, item) for item in ilist_fs(path, type_filter='d')]
+    folders = [path_join(path, item) for item in ilist_fs(path, type_filter='d', core=core)]
     folder_contents = {folder:list_fs(folder) for folder in folders}
     if raw:
         return folder_contents

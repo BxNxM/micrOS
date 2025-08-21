@@ -610,20 +610,34 @@ Methods:
 
 ------------------------------------
 
-### micro\_task(tag, task=None)
+### micro\_task(tag, task=None, \_wrap=False)
 
 Async task creation from LoadModules.
 
-Parameters:
+```python
+def micro_task(tag: str, task=None, _wrap=False):
+    """
+    [LM] Async task manager.
+    Modes:
+      A) GET:
+         micro_task("tag") -> existing task object or None
+      B) CREATE:
+         micro_task("tag", task=...) -> True | None | False
+         Creates a new async task with the given tag if not already running.
+      C) CREATE AS DECORATOR (shortcut):
+         @micro_task("main", _wrap=True)
+         async def mytask(tag, ...): ...
+         # Calling mytask(...) will create/start a new task under "main._mytask"
 
-* tag: If None, returns the task generator object. If a taskID is provided, returns the existing task object by tag.
-* task: Coroutine to execute.
+    :param tag: Task tag string
+    :param task: Coroutine (or list of command arguments) to contract a task with
+                 the given async task callback
+    :param _wrap: When True, return a decorator factory (for use as @micro_task(...))
+    :return: Task object (GET), bool|None|False (CREATE), or decorator (DECORATOR)
+    """
+```
 
-Returns:
-
-* If tag is None, returns the task generator object. If a taskID is provided, returns the existing task object by tag. If task is provided, returns the task creation state: True for success, False for failure.
-
-**Example:** LM\_my\_task.py
+#### Example: LM\_task\_example.py
 
 ```python
 from Common import micro_task
@@ -652,13 +666,15 @@ def create_task():
     return "Starting" if state else "Already running"
 ```
 
+> Than you can call `task_example create_task` function.
+
 **New Decorator way - shorter more efficient**
 
 ```python
-from Common import publish_micro_task
+from Common import micro_task
 
-@publish_micro_task("microtask")
-async def task(tag, period_ms=30):
+@micro_task("microtask", _wrap=True)
+async def mytask(tag, period_ms=30):
     """
     New shorter way of task creation
      with decorator function
@@ -676,6 +692,8 @@ async def task(tag, period_ms=30):
             await my_task.feed(sleep_ms=period_ms)
             # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
 ```
+
+> Than you can call `task_example mytask` function.
 
 Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) [LM_robustness](./micrOS/source/LM_robustness.py) etc.
 

@@ -1,5 +1,5 @@
 from LM_system import memory_usage
-from Common import socket_stream, syslog, micro_task, publish_micro_task
+from Common import socket_stream, syslog, micro_task
 
 
 @socket_stream
@@ -87,8 +87,8 @@ def create_task():
     return "Starting" if state else "Already running"
 
 
-@publish_micro_task("microtask")
-async def task(tag, period_ms=30):
+@micro_task("microtask", _wrap=True)
+async def mytask(tag, period_ms=30):
     """
     New shorter way of task creation
      with decorator function
@@ -117,5 +117,5 @@ def help(widgets=False):
     """
     return 'NOTE: This is a test module to validate system robustness', \
            'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14', \
-           'create_task', 'task'
+           'create_task', 'mytask'
 

@@ -145,7 +145,7 @@ class MicrOSDevTool(OTA, USB):
         def _is_private_func(_line):
             nonlocal decorator, line
             if 'def ' in line and 'def _' not in line:
-                if "async" in line and decorator is not None and "publish_micro_task" in decorator:
+                if "async" in line and decorator is not None and "@micro_task" in decorator:
                     # Enable (adjust) async task method with publish_micro_task decorator
                     line = line.replace("async", "").strip()
                     return False

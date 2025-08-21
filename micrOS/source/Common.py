@@ -15,40 +15,48 @@ from Notify import Notify
 #####################################################################################
 #                                     SYSTEM                                        #
 #####################################################################################
-
-def micro_task(tag:str, task=None):
+def micro_task(tag: str, task=None, _wrap=False):
     """
     [LM] Async task manager.
-
     Modes:
-      A) GET    : micro_task("tag") -> task obj or None
-      B) CREATE : micro_task("tag", task=...) -> True | None | False
-    :param tag: task tag string
-    :param task: coroutine (or list of command arguments) to contract a task with the given async task callback
-    return bool|callable
-    """
-    if task is None:
-        return TaskBase.TASKS.get(tag, None)
-    if TaskBase.is_busy(tag):
-        return None     # if task is already running
-    return Manager().create_task(callback=task, tag=tag)
+      A) GET:
+         micro_task("tag") -> existing task object or None
+      B) CREATE:
+         micro_task("tag", task=...) -> True | None | False
+         Creates a new async task with the given tag if not already running.
+      C) CREATE AS DECORATOR (shortcut):
+         @micro_task("main", _wrap=True)
+         async def mytask(tag, ...): ...
+         # Calling mytask(...) will create/start a new task under "main._mytask"
 
-def publish_micro_task(main_tag: str):
+    :param tag: Task tag string
+    :param task: Coroutine (or list of command arguments) to contract a task with
+                 the given async task callback
+    :param _wrap: When True, return a decorator factory (for use as @micro_task(...))
+    :return: Task object (GET), bool|None|False (CREATE), or decorator (DECORATOR)
     """
-    [LM] Decorator for micro_task - async task creation.
-    Example:
-        @publish_micro_task("rgb")
-        async def animation(tag, period_ms=100): ...
-        # call directly: animation() or animation(period_ms=50)
-        # final task tag = "rgb.animation"
-    """
-    def _decorator(async_fn):
-        task_tag = f"{main_tag}._{async_fn.__name__}"
-        return lambda *args, **kwargs: micro_task(
-            task_tag,
-            task=async_fn(task_tag, *args, **kwargs)
-        )
-    return _decorator
+    # --- CREATE (original) ---
+    if task is not None:
+        if TaskBase.is_busy(tag):
+            return None     # task already running
+        return Manager().create_task(callback=task, tag=tag)
+
+    # --- CREATE WITH DECORATOR FACTORY (simplified) ---
+    if _wrap:
+        def _decorator(async_fn):
+            task_tag = f"{tag}._{async_fn.__name__}"
+            _launcher = (
+                lambda *args, **kwargs:
+                None if TaskBase.is_busy(task_tag)
+                else Manager().create_task(
+                    callback=async_fn(task_tag, *args, **kwargs),
+                    tag=task_tag)
+            )
+            return _launcher
+        return _decorator
+
+    # --- GET (_wrap=False): return task object or None if not existing ---
+    return TaskBase.TASKS.get(tag, None)
 
 
 def manage_task(tag:str, operation:str):
@@ -66,12 +74,11 @@ def manage_task(tag:str, operation:str):
     raise Exception(f"Invalid operation: {operation}")
 
 
-def exec_cmd(cmd:list, jsonify:bool=None, skip_check=None):
+def exec_cmd(cmd:list, jsonify:bool=None):
     """
     [LM] Single (sync) LM execution
     :param cmd: command string list, ex.: ['system', 'clock']
     :param jsonify: request json output
-    :param skip_check: legacy (check was removed) - remove parameter
     return state, output
     """
     return lm_exec(cmd, jsonify=jsonify)

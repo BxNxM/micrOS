@@ -19,23 +19,36 @@ from Notify import Notify
 def micro_task(tag:str, task=None):
     """
     [LM] Async task manager.
+
+    Modes:
+      A) GET    : micro_task("tag") -> task obj or None
+      B) CREATE : micro_task("tag", task=...) -> True | None | False
     :param tag: task tag string
     :param task: coroutine (or list of command arguments) to contract a task with the given async task callback
     return bool|callable
     """
     if task is None:
-        # [1] Task is None -> Get task mode by tag
-        # RETURN task obj (access obj.out + obj.done (automatic - with keyword arg))
-        async_task = TaskBase.TASKS.get(tag, None)
-        return async_task
+        return TaskBase.TASKS.get(tag, None)
     if TaskBase.is_busy(tag):
-        # [2] Shortcut: Check task state by tag
-        # RETURN: None - if task is already running
-        return None
-    # [3] Create task (not running) + task coroutine was provided
-    # RETURN task creation state - success (True) / fail (False)
-    state:bool = Manager().create_task(callback=task, tag=tag)
-    return state
+        return None     # if task is already running
+    return Manager().create_task(callback=task, tag=tag)
+
+def publish_micro_task(main_tag: str):
+    """
+    [LM] Decorator for micro_task - async task creation.
+    Example:
+        @publish_micro_task("rgb")
+        async def animation(tag, period_ms=100): ...
+        # call directly: animation() or animation(period_ms=50)
+        # final task tag = "rgb.animation"
+    """
+    def _decorator(async_fn):
+        task_tag = f"{main_tag}._{async_fn.__name__}"
+        return lambda *args, **kwargs: micro_task(
+            task_tag,
+            task=async_fn(task_tag, *args, **kwargs)
+        )
+    return _decorator
 
 
 def manage_task(tag:str, operation:str):

@@ -628,29 +628,56 @@ Returns:
 ```python
 from Common import micro_task
 
-async def __task(period_ms):
-	counter = 0
-	with micro_task(tag="mytask") as my_task:
-		while True:
-			
-			# DO something here in the async loop...
-			counter += 1
+async def __task(tag, period_ms):
+    counter = 0
+    with micro_task(tag=tag) as my_task:
+        while True:
+            # DO something here in the async loop...
+            counter += 1
 
-			# Store data in task cache (task show mytask)
-			my_task.out = f'MyTask Counter: {counter}'
-		
-			# Async sleep - feed event loop
-			await my_task.feed(sleep_ms=period_ms)
-			# [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
+            # Store data in task cache (task show mytask)
+            my_task.out = f'MyTask Counter: {counter}'
 
+            # Async sleep - feed event loop
+            await my_task.feed(sleep_ms=period_ms)
+            # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
 
 def create_task():
-	# [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-	state = micro_task(tag="mytask", task=__task(period_ms=5))
-	return "Starting" if state else "Already running"
+    """
+    Legacy way of task creation (with exact task tagging)
+    """
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    task_tag = "microtask.run"
+    state = micro_task(tag=task_tag, task=__task(tag=task_tag, period_ms=5))
+    return "Starting" if state else "Already running"
 ```
 
-Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) etc.
+**New Decorator way - shorter more efficient**
+
+```python
+from Common import publish_micro_task
+
+@publish_micro_task("microtask")
+async def task(tag, period_ms=30):
+    """
+    New shorter way of task creation
+     with decorator function
+    """
+    counter = 0
+    with micro_task(tag=tag) as my_task:
+        while True:
+            # DO something here in the async loop...
+            counter += 1
+
+            # Store data in task cache (task show mytask)
+            my_task.out = f'MyTask Counter: {counter}'
+
+            # Async sleep - feed event loop
+            await my_task.feed(sleep_ms=period_ms)
+            # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
+```
+
+Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) [LM_robustness](./micrOS/source/LM_robustness.py) etc.
 
 ------------------------------------
 

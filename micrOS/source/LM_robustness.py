@@ -1,5 +1,5 @@
 from LM_system import memory_usage
-from Common import socket_stream, syslog
+from Common import socket_stream, syslog, micro_task, publish_micro_task
 
 
 @socket_stream
@@ -61,6 +61,52 @@ def _recursion(cnt, msgobj=None):
         remain = 0
     return remain
 
+################## TEST micro_task UCs ##########################
+
+async def __task(tag, period_ms):
+    counter = 0
+    with micro_task(tag=tag) as my_task:
+        while True:
+            # DO something here in the async loop...
+            counter += 1
+
+            # Store data in task cache (task show mytask)
+            my_task.out = f'MyTask Counter: {counter}'
+
+            # Async sleep - feed event loop
+            await my_task.feed(sleep_ms=period_ms)
+            # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
+
+def create_task():
+    """
+    Legacy way of task creation (with exact task tagging)
+    """
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    task_tag = "microtask.run"
+    state = micro_task(tag=task_tag, task=__task(tag=task_tag, period_ms=5))
+    return "Starting" if state else "Already running"
+
+
+@publish_micro_task("microtask")
+async def task(tag, period_ms=30):
+    """
+    New shorter way of task creation
+     with decorator function
+    """
+    counter = 0
+    with micro_task(tag=tag) as my_task:
+        while True:
+            # DO something here in the async loop...
+            counter += 1
+
+            # Store data in task cache (task show mytask)
+            my_task.out = f'MyTask Counter: {counter}'
+
+            # Async sleep - feed event loop
+            await my_task.feed(sleep_ms=period_ms)
+            # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
+
+##############################################################################
 
 def help(widgets=False):
     """
@@ -70,5 +116,6 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return 'NOTE: This is a test module to validate system robustness', \
-           'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14'
+           'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14', \
+           'create_task', 'task'
 

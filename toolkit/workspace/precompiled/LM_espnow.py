@@ -1,14 +1,14 @@
 import Espnow
 
 
-def send(peer:bytes|str, msg:str='modules'):
+def send(peer:bytes|str, cmd:str='modules'):
     """
     Send message to peer (by mac address)
     :param peer: mac address of espnow device
-    :param msg: message string/load module call
+    :param cmd: message string/load module call
     """
     now = Espnow.initialize()
-    return now.send(peer, msg)
+    return now.send(peer, cmd)
 
 def stats():
     """
@@ -18,15 +18,7 @@ def stats():
     return now.stats()
 
 
-def add_peer(peer:bytes, dev_name:str=None):
-    """
-    OBSOLETE
-    Legacy function - use handshake instead
-    """
-    return handshake(peer)
-
-
-def handshake(peer:bytes):
+def handshake(peer:bytes|str):
     """
     Handshake with ESPNow Peer
     :param peer: mac address of espnow device
@@ -37,18 +29,10 @@ def handshake(peer:bytes):
     return now.handshake(peer)
 
 
-def mac_address():
-    """
-    Get ESPNOW compatible mac address
-    """
-    return Espnow.mac_address()
-
-
 def help():
     """
-    [beta] ESPNOW sender/receiver with LM execution
+    ESPNOW sender/receiver with LM execution
     """
-    return ('send <peer> "hello"',
-            'stats',
-            'mac_address',
-            'handshake peer <bytes>')
+    return ('handshake peer=<mac-address>',
+            'send peer=<peer-name> cmd="hello"',
+            'stats')

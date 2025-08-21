@@ -3,7 +3,6 @@ from binascii import hexlify
 from json import load, dump
 import uasyncio as asyncio
 from Tasks import NativeTask, lm_exec, lm_is_loaded
-from Network import get_mac
 from Config import cfgget
 from Debug import syslog
 from Files import OSPath, path_join, is_file
@@ -288,11 +287,17 @@ class ESPNowSS:
             sender_task.cancel()    # Delete sender task (cleanup)
 
 
-    def handshake(self, peer:bytes):
+    def handshake(self, peer:bytes|str):
         task_id = f"con.espnow.handshake"
         # Create an asynchronous sending task.
-        state = NativeTask().create(callback=self._handshake(peer, task_id), tag=task_id)
-        return {task_id: "Starting"} if state else {task_id: "Already running"}
+        if isinstance(peer, str) and ":" in peer:
+            # Convert 50:02:91:86:34:28 format to b'P\x02\x91\x864(' bytes
+            peer = bytes(int(x, 16) for x in peer.split(":"))
+        if isinstance(peer, bytes):
+            state = NativeTask().create(callback=self._handshake(peer, task_id), tag=task_id)
+            return {task_id: "Starting"} if state else {task_id: "Already running"}
+        else:
+            return {None: "Invalid MAC address format. Use 50:02:91:86:34:28 or b'P\\x02\\x91\\x864('"}
 
     def stats(self):
         """
@@ -322,10 +327,3 @@ def initialize():
     if INSTANCE is None:
         INSTANCE = ESPNowSS()
     return INSTANCE
-
-
-def mac_address():
-    """
-    Get the binary MAC address.
-    """
-    return get_mac()

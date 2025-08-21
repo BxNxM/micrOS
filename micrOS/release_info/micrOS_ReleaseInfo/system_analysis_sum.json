@@ -66,10 +66,10 @@
         ],
         "Network.py": [
             9.78,
-            8
+            7
         ],
         "Espnow.py": [
-            9.45,
+            9.41,
             2
         ],
         "Scheduler.py": [
@@ -125,7 +125,7 @@
             5
         ],
         "LM_robustness.py": [
-            7.57,
+            8.36,
             0
         ],
         "LM_qmi8658.py": [
@@ -245,7 +245,7 @@
             0
         ],
         "LM_espnow.py": [
-            6.88,
+            6.67,
             0
         ],
         "LM_telegram.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            3822,
+            3835,
             24
         ],
         "load": [
-            9564,
+            9579,
             55
         ],
         "core_dep": [
@@ -334,8 +334,8 @@
             true,
             5
         ],
-        "core_score": 9.22,
-        "load_score": 8.34,
+        "core_score": 9.21,
+        "load_score": 8.35,
         "version": "2.14.0-1"
     }
 }

@@ -1,5 +1,33 @@
 # ![LOGO](./media/logo_mini.png?raw=true)
 
+## Beginner level
+- [LM\_basic.py](#lmbasicpy)
+- [LM\_basic\_led.py](#lmbasic_ledpy)
+- [LM\_template.py](#micros-lm_templatepy)
+- [microIO.py](#microiopy)
+
+## Intermediate level
+- [micrOS Types.py module](#-micros-typespy-module)
+- [micrOS LM\_types\_demo.py](#micros-lm_types_demopy)
+
+## Advanced level
+- [micrOS Common.py module](#micros-commonpy-module)
+  - [console(msg)](#consolemsg)
+  - [transition(from\_val, to\_val, step\_ms, interval\_sec)](#transitionfrom_val-to_val-step_ms-interval_sec)
+  - [transition\_gen(\*args, interval\_sec=1.0)](#transition_genargs-interval_sec10)
+  - [class SmartADC](#class-smartadc)
+  - [micro\_task(tag, task=None, \_wrap=False)](#micro_tasktag-tasknone-_wrapfalse)
+  - [manage\_task(tag, operation)](#manage_tasktag-operation)
+  - [exec\_cmd(cmd)](#exec_cmdcmd)
+  - [data\_logger(f\_name, data=None, limit=12, msgobj=None)](#data_loggerf_name-datanone-limit12-msgobjnone)
+  - [notify(text)](#notifytext)
+  - [web\_endpoint(endpoint, function)](#web_endpointendpoint-function)
+  - [AnimationPlayer(animation: callable=None, tag: str=None, batch\_draw: bool=False, batch\_size: int=None)](#animationplayeranimationcallablenone-tagstrnone-batch_drawboolfalse-batch_sizeintnone)
+  - [data\_dir(f\_name=None)](#data_dirf_namenone)
+  - [web\_dir(f\_name=None)](#web_dirf_namenone)
+
+---
+
 ```
 ██       ██████   █████  ██████      ███    ███  ██████  ██████  ██    ██ ██      ███████ ███████ 
 ██      ██    ██ ██   ██ ██   ██     ████  ████ ██    ██ ██   ██ ██    ██ ██      ██      ██      
@@ -30,10 +58,12 @@
 ██   ██ ██      ██       ██ ████   ██ ████   ██ ██      ██   ██ 
 ██████  █████   ██   ███ ██ ██ ██  ██ ██ ██  ██ █████   ██████  
 ██   ██ ██      ██    ██ ██ ██  ██ ██ ██  ██ ██ ██      ██   ██ 
-██████  ███████  ██████  ██ ██   ████ ██   ████ ███████ ██   ██ level
+██████  ███████  ██████  ██ ██   ████ ██   ████ ███████ ██   ██
 ```
 
-### LM\_basic.py
+# Beginner level
+
+## LM\_basic.py
 
 ```python
 """
@@ -69,7 +99,7 @@ def help(widgets=False):
 
 ```
 
-### LM\_basic\_led.py
+## LM\_basic\_led.py
 
 ```python
 """
@@ -163,7 +193,7 @@ For more info: Micropython official [Pins](https://docs.micropython.org/en/lates
 -------------------------------------------------------------------------------
 
 
-### micrOS LM\_template.py
+## micrOS LM\_template.py
 
 Function naming convesions for Load Modules.
 
@@ -294,7 +324,7 @@ def help(widgets=False):
 
 ```
 
-#### microIO.py
+## microIO.py
 
 ```python
 def bind_pin(tag, number=None):
@@ -331,8 +361,10 @@ def pinmap_search(keys):
 ██ ████   ██    ██    ██      ██   ██ ████  ████ ██      ██   ██ ██ ██   ██    ██    ██      
 ██ ██ ██  ██    ██    █████   ██████  ██ ████ ██ █████   ██   ██ ██ ███████    ██    █████   
 ██ ██  ██ ██    ██    ██      ██   ██ ██  ██  ██ ██      ██   ██ ██ ██   ██    ██    ██      
-██ ██   ████    ██    ███████ ██   ██ ██      ██ ███████ ██████  ██ ██   ██    ██    ███████ level
+██ ██   ████    ██    ███████ ██   ██ ██      ██ ███████ ██████  ██ ██   ██    ██    ███████
 ```
+
+# Inermediate level
 
 ## ![dashboard](./media/web_dashboard.png?raw=true) micrOS Types.py module
 
@@ -361,7 +393,7 @@ Tags:
 * Implementation of [TYPES](./micrOS/source/Types.py)
 
 
-### micrOS LM\_types\_demo.py
+## micrOS LM\_types\_demo.py
 
 ```python
 """
@@ -534,19 +566,21 @@ TYPE Example sytax:
 ██   ██ ██   ██ ██    ██ ██   ██ ████   ██ ██      ██      ██   ██ 
 ███████ ██   ██ ██    ██ ███████ ██ ██  ██ ██      █████   ██   ██ 
 ██   ██ ██   ██  ██  ██  ██   ██ ██  ██ ██ ██      ██      ██   ██ 
-██   ██ ██████    ████   ██   ██ ██   ████  ██████ ███████ ██████  level
+██   ██ ██████    ████   ██   ██ ██   ████  ██████ ███████ ██████
                                                                     
 ```
 
+# Advanced level
+
 ## micrOS Common.py module
 
-#### Common module with additinal features for LoadModule-s
+**Common module with additinal features for LoadModule-s**
 
 Module responsible for collecting additional feature definitions dedicated to the micrOS framework and LoadModules. Code: [micrOS/source/Common.py](./micrOS/source/Common.py)
 
 ------------------------------------
 
-### console
+### console(msg)
 
 **Example:** LM\_my\_module.py
 
@@ -637,7 +671,7 @@ def micro_task(tag: str, task=None, _wrap=False):
     """
 ```
 
-#### Example: LM\_task\_example.py
+**Example: LM\_task\_example.py**
 
 ```python
 from Common import micro_task
@@ -977,7 +1011,7 @@ class AnimationPlayer:
         raise NotImplementedError("Child class must implement clear method.")
 ```
 
-#### Generator example:
+**Generator example:**
 
 ```python
 def generator():

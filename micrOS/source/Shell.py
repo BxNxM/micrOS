@@ -177,8 +177,8 @@ class Shell:
             await self.a_send("  Postfix hints:")
             await self.a_send("    ... &<x>            - start one-shot task")
             await self.a_send("    ... &&<x>           - start periodic task, where <x>: delay ms [x min: 20ms]")
-            await self.a_send("    ... >>hostname      - remote command execution (intercon)")
             await self.a_send("    ... >json           - request json formatted output")
+            await self.a_send("    ... >>hostname      - remote command execution (intercon)")
             await self.a_send("  help lm           - list ALL available LoadModules")
             if "lm" in str(msg_list):
                 return await Shell._show_lm_funcs(msg_obj=self.a_send)

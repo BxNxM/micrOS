@@ -1,5 +1,7 @@
 # ![LOGO](./media/logo_mini.png?raw=true)
 
+This guide provides a detailed walkthrough for building, testing, and uploading Load Modules for micrOS. It is organized from beginner to advanced with links to examples and utilities
+
 ## Beginner level
 - [LM\_basic.py](#lmbasicpy)
 - [LM\_basic\_led.py](#lmbasic_ledpy)

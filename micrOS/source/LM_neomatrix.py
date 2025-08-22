@@ -42,9 +42,11 @@ class NeoPixelMatrix(AnimationPlayer):
         """
         Zigzag layout: even rows left-to-right, odd rows right-to-left
         """
-        if (zigzag is None or zigzag) and y % 2 == 0:
-            return y * self.width + x
-        return y * self.width + (self.width - 1 - x)
+        if zigzag is None or zigzag:
+            if y % 2 == 0:
+                return y * self.width + x
+            return y * self.width + (self.width - 1 - x)
+        return y * self.width + x
 
     def _index_to_coord(self, index: int, zigzag:bool=True) -> tuple[int, int]:
         """

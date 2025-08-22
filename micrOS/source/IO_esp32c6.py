@@ -2,42 +2,38 @@ from micropython import const
 
 """
 [BETA version]
-Fucked up pinout, but thanks to
-https://docs.cirkitdesigner.com/component/fb9bd4d6-797c-4836-b41b-663033d7fd47/seeed-studio-xiao-esp32c6
-    **
-3	D0	Digital I/O Pin 0
-4	D1	Digital I/O Pin 1
-5	D2	Digital I/O Pin 2
-6	D3	Digital I/O Pin 3
-7	D4	Digital I/O Pin 4
-8	D5	Digital I/O Pin 5
-9	D6	Digital I/O Pin 6
-10	D7	Digital I/O Pin 7
-11	D8	Digital I/O Pin 8
-12	D9	Digital I/O Pin 9
-13	D10	Digital I/O Pin 10
+Seeed Studio XIAO ESP32-C6
 
-20	RX	UART Receive Pin
-21	TX	UART Transmit Pin
-22	SCL	I2C Clock Pin
-23	SDA	I2C Data Pin
+BOARD        MICROPYTHON
+D0/A0    -   GPIO 0
+D1/A1    -   GPIO 1
+D2/A2    -   GPIO 2
+D3       -   GPIO 21
+D4 SDA   -   GPIO 22
+D5 SCL   -   GPIO 23
+D6 TX0   -   GPIO 16
+D7 RX0   -   GPIO 17
+D8 SCK   -   GPIO 19
+D9 MISO  -   GPIO 20
+D10 MOSI -   GPIO 18
+BUILTIN LED - GPIO 15
 """
 
 # BUILTIN LED
-builtin = const(-15)    # BUILT IN LED - progress_led
+builtin = const(-15)     # BUILT IN LED - progress_led
 
 
 # I2C BUS
-i2c_sda = const(7)      # D4 - data
-i2c_scl = const(8)      # D5 - clock
+i2c_sda = const(22)      # D4 - data
+i2c_scl = const(23)      # D5 - clock
 
 
 # EXTERNAL EVENT IRQ
-irq1 = const(6)         # D3 - event irq1 pin
-irq2 = const(5)         # D2 - event irq2 pin
-irq3 = const(4)         # D1 - event irq3 pin
-irq4 = const(3)         # D0 - event irq4 pin
+irq1 = const(21)         # D3 - event irq1 pin
+irq2 = const(2)          # D2 - event irq2 pin
+irq3 = const(1)          # D1 - event irq3 pin
+irq4 = const(0)          # D0 - event irq4 pin
 
 
-neop = const(13)        # D10 - neopixel OneWire bus [PWM]
+neop = const(18)         # D10 - neopixel OneWire bus [PWM]
 

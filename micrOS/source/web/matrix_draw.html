@@ -26,6 +26,7 @@
       border: 1px solid #333;
       cursor: pointer;
       user-select: none;
+      touch-action: none;
     }
     input[type="number"], input[type="color"] {
       margin: 10px;
@@ -47,11 +48,10 @@
   </style>
 </head>
 <body>
+  <h1>microWeb Matrix LED Drawer</h1>
+  <p id="restInfo"></p>
 
-  <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
-  <h1>🟢 LED Matrix Drawer</h1>
-
-  <!-- Controls: color picker, size, and clear button -->
+  <!-- Controls -->
   <input type="color" id="colorPicker" value="#00ff00" title="Pick LED color" class="custom-color-picker" />
   <input type="number" id="matrixSize" value="8" min="1" max="64" title="Matrix size (NxN)" />
   <button onclick="applySize()">Resize</button>
@@ -59,7 +59,7 @@
   <button onclick="restAPI('neomatrix/stop', true)">⏹️ Stop Animation</button>
   <button onclick="restAPI('neomatrix/snake', true)">▶️ Start Animation</button>
 
-  <!-- Matrix grid container -->
+  <!-- Matrix grid -->
   <div id="matrix" class="matrix"></div>
 
   <!-- REST Debug Console -->
@@ -75,6 +75,84 @@
     const sizeInput = document.getElementById('matrixSize');
     let pixels = [];
     let drawing = false;
+    let activePointerId = null;
+    const supportsPointer = window.PointerEvent;
+
+    // Track last painted pixel
+    let lastX = null;
+    let lastY = null;
+
+    // --- Queue system (no overlapping REST calls) ---
+    let updateQueue = [];
+    let updating = false;
+
+    async function processQueue() {
+      if (updating || updateQueue.length === 0) return;
+      updating = true;
+      const { cmd } = updateQueue.shift();
+      try {
+        await restAPI(cmd, true);
+      } catch (err) {
+        console.warn("REST call failed:", err);
+      }
+      updating = false;
+      if (updateQueue.length > 0) processQueue();
+    }
+
+    function queueUpdate(cmd) {
+      updateQueue.push({ cmd });
+      processQueue();
+    }
+    // -------------------------------------------------
+
+    function startDrawing(e) {
+      drawing = true;
+      if (supportsPointer) {
+        activePointerId = e.pointerId;
+        matrixContainer.setPointerCapture(activePointerId);
+      }
+      paintPixel(e.target);
+      e.preventDefault();
+    }
+
+    function moveDrawing(e) {
+      if (!drawing) return;
+      let target;
+      if (supportsPointer) {
+        target = document.elementFromPoint(e.clientX, e.clientY);
+      } else if (e.touches && e.touches.length) {
+        const t = e.touches[0];
+        target = document.elementFromPoint(t.clientX, t.clientY);
+        e.preventDefault();
+      } else {
+        target = document.elementFromPoint(e.clientX, e.clientY);
+      }
+      if (target && target.classList.contains('pixel')) {
+        paintPixel(target);
+      }
+    }
+
+    function stopDrawing() {
+      drawing = false;
+      lastX = null;
+      lastY = null;
+      if (supportsPointer && activePointerId !== null) {
+        matrixContainer.releasePointerCapture(activePointerId);
+        activePointerId = null;
+      }
+    }
+
+    if (supportsPointer) {
+      matrixContainer.addEventListener('pointermove', moveDrawing);
+      window.addEventListener('pointerup', stopDrawing);
+      window.addEventListener('pointercancel', stopDrawing);
+    } else {
+      matrixContainer.addEventListener('mousemove', moveDrawing);
+      matrixContainer.addEventListener('touchmove', moveDrawing, { passive: false });
+      window.addEventListener('mouseup', stopDrawing);
+      window.addEventListener('touchend', stopDrawing);
+      window.addEventListener('touchcancel', stopDrawing);
+    }
 
     function hexToRgb(hex) {
       const val = parseInt(hex.slice(1), 16);
@@ -95,34 +173,35 @@
           cell.dataset.y = y;
           cell.dataset.color = "#000000";
           cell.style.backgroundColor = "#000000";
-          cell.addEventListener('pointerdown', () => {
-            drawing = true;
-            paintPixel(cell);
-          });
-          cell.addEventListener('pointerenter', () => {
-            if (drawing) paintPixel(cell);
-          });
+          if (supportsPointer) {
+            cell.addEventListener('pointerdown', startDrawing);
+          } else {
+            cell.addEventListener('mousedown', startDrawing);
+            cell.addEventListener('touchstart', startDrawing, { passive: false });
+          }
           matrixContainer.appendChild(cell);
           pixels.push(cell);
         }
       }
-
-      window.addEventListener('pointerup', () => { drawing = false; });
-      window.addEventListener('pointercancel', () => { drawing = false; });
-
       sendClearCommand();
     }
 
     function paintPixel(pixelDiv) {
       const color = colorPicker.value;
+      const x = parseInt(pixelDiv.dataset.x);
+      const y = parseInt(pixelDiv.dataset.y);
+
+      // Only update if new pixel
+      if (x === lastX && y === lastY) return;
+      lastX = x;
+      lastY = y;
+
       pixelDiv.dataset.color = color;
       pixelDiv.style.backgroundColor = color;
 
       const [r, g, b] = hexToRgb(color);
-      const x = pixelDiv.dataset.x;
-      const y = pixelDiv.dataset.y;
       const cmd = `neomatrix/draw_colormap/[(${x},${y},(${r},${g},${b}))]`;
-      restAPI(cmd, true).catch(err => console.warn("Single pixel update failed:", err));
+      queueUpdate(cmd);
     }
 
     function clearMatrix() {
@@ -134,17 +213,19 @@
     }
 
     function sendClearCommand() {
-      restAPI("neomatrix/draw_colormap/[]", true).catch(err => console.warn("Clear failed:", err));
+      queueUpdate("neomatrix/draw_colormap/[]");
     }
 
     function applySize() {
-      let newSize = parseInt(sizeInput.value, 10);
-      if (!newSize || newSize < 1) newSize = 8;
-      buildMatrix(newSize);
+      buildMatrix(parseInt(sizeInput.value, 10));
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      buildMatrix(parseInt(sizeInput.value, 10) || 8);
+    // Initialize matrix
+    buildMatrix(parseInt(sizeInput.value, 10));
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Add device info
+        restInfo(showPages=false);
     });
   </script>
 </body>

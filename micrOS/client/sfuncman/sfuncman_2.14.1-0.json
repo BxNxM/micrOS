@@ -801,10 +801,6 @@
             "doc": "\n    Change the speed of frame generation for animations.\n    ",
             "param(s)": "speed_ms=None bt_draw:bool=None"
         },
-        "cube": {
-            "doc": null,
-            "param(s)": "speed_ms=10"
-        },
         "draw": {
             "doc": "\n    Draw the current frame manually on the screen.\n    ",
             "param(s)": ""
@@ -813,18 +809,6 @@
             "doc": null,
             "param(s)": "bitmap"
         },
-        "effect_cube": {
-            "doc": "module 'LM_neomatrix' has no attribute 'effect_cube'",
-            "param(s)": "max_radius:int = 3"
-        },
-        "effect_rainbow": {
-            "doc": "module 'LM_neomatrix' has no attribute 'effect_rainbow'",
-            "param(s)": ""
-        },
-        "effect_snake": {
-            "doc": "module 'LM_neomatrix' has no attribute 'effect_snake'",
-            "param(s)": ""
-        },
         "get_colormap": {
             "doc": null,
             "param(s)": ""
@@ -832,10 +816,6 @@
         "help": {
             "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
             "param(s)": "widgets=False"
-        },
-        "hsv_to_rgb": {
-            "doc": "module 'LM_neomatrix' has no attribute 'hsv_to_rgb'",
-            "param(s)": "h s v"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
         "load": {
@@ -857,6 +837,10 @@
         "snake": {
             "doc": null,
             "param(s)": "speed_ms:int=30 length:int=5"
+        },
+        "spiral": {
+            "doc": null,
+            "param(s)": "speed_ms=40"
         },
         "stop": {
             "doc": "\n    Stop the current animation\n    ",

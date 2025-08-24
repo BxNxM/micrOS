@@ -1,7 +1,6 @@
 from micropython import const
 
 """
-[BETA version]
 Seeed Studio XIAO ESP32-C6
 
 BOARD        MICROPYTHON

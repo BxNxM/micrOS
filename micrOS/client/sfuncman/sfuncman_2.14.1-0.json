@@ -1726,7 +1726,7 @@
     },
     "tcs3472": {
         "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "doc": "\n    TCS3472 Color sensor\n    \n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgest=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true",

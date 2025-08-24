@@ -74,20 +74,26 @@ def _tune_queue_size():
 
 
 def _tune_performance():
-    # Set boosted (boost mode)
+    # {(platforms, ...): (min_clock, max_clock), ...}
+    cpu_clocks = {
+        ('esp32c3', 'esp32c6'): (80_000_000, 160_000_000),
+        ('esp32',): (160_000_000, 240_000_000),  # default
+    }
     platform = detect_platform()
-    if cfgget('boostmd') is True:
-        console_write(f"[BOOT HOOKS] Set up CPU high Hz - boostmd: {cfgget('boostmd')}")
-        if platform == 'esp32c3':
-            freq(160_000_000)   # 160 Mhz (max)
-        elif 'esp32' in platform:
-            freq(240_000_000)   # 240 Mhz (max)
+    cpu_min_max = cpu_clocks[('esp32',)]
+    for platforms, clocks in cpu_clocks.items():
+        if platform in platforms:
+            cpu_min_max = clocks
+            break
+    # Set boosted (boost mode)
+    if cfgget('boostmd'):
+        max_hz = cpu_min_max[1]
+        console_write(f"[BOOT HOOKS] CPU boost mode ON: {max_hz} Hz")
+        freq(max_hz)
     else:
-        console_write(f"[BOOT HOOKS] Set up CPU low Hz - boostmd: {cfgget('boostmd')}")
-        if platform == 'esp32c3':
-            freq(80_000_000)   # 80 Mhz / Half the max CPU clock
-        elif 'esp32' in platform:
-            freq(160_000_000)   # 160 Mhz / Half the max CPU clock
+        min_hz = cpu_min_max[0]
+        console_write(f"[BOOT HOOKS] CPU boost mode OFF: {min_hz} Hz")
+        freq(min_hz)
 
 
 def profiling_info(label=""):

@@ -220,6 +220,10 @@ def stop():
 
 
 def draw_colormap(bitmap):
+    """
+    Draw colors as a color map
+    [(x, y, (r, g,b)), ...]
+    """
     try:
         load().draw_colormap(bitmap)
     except Exception as e:

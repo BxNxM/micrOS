@@ -105,7 +105,7 @@ class TaskBase:
                 del TaskBase.TASKS[self.tag]
         collect()                           # GC collect
 
-    async def wait_result(self, timeout:int=5):
+    async def await_result(self, timeout:int=5):
         """
         Wait for task completion with timeout
         :param timeout: in seconds

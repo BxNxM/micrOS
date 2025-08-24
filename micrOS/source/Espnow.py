@@ -259,21 +259,19 @@ class ESPNowSS:
         - with device caching
         """
         with NativeTask.TASKS.get(tag, None) as my_task:
-            if self.devices.get(peer) is not None:
-                my_task.out = "Already registered"
-                return
-            my_task.out = "ESPNow Add Peer"
-            try:
-                # PEER REGISTRATION
-                self.espnow.add_peer(peer)
-            except Exception as e:
-                my_task.out = f"ESPNow Peer Error: {e}"
-                return
+            if self.devices.get(peer) is None:
+                my_task.out = "ESPNow Add Peer"
+                try:
+                    # PEER REGISTRATION
+                    self.espnow.add_peer(peer)
+                except Exception as e:
+                    my_task.out = f"ESPNow Peer Error: {e}"
+                    return
             my_task.out = "Handshake In Progress..."
             sender = self.send(peer, "hello")
             task_key = list(sender.keys())[0]
             sender_task = NativeTask.TASKS.get(task_key, None)
-            result = await sender_task.wait_result(timeout=10)
+            result = await sender_task.await_result(timeout=10)
             expected_response =  f"hello {self.devfid}"
             is_ok = False
             if result == expected_response:

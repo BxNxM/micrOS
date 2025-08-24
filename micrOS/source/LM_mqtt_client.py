@@ -102,14 +102,15 @@ async def _subscribe(topic: str):
             my_task.out = f"Error: {e}"
 
 
-async def _publish(message: str, topic: str, retain: bool):
+async def _publish(tag, message: str, topic: str, retain: bool):
     """
     Asynchronously publish a message to the given MQTT topic.
     :param message: The message payload as a string.
     :param topic: The MQTT topic string.
     :param retain: Whether the message should be retained on the broker.
     """
-    await MQTT.CLIENT.publish(topic, message, qos=MQTT.QOS, retain=retain)
+    with micro_task(tag) as my_task:
+        await MQTT.CLIENT.publish(topic, message, qos=MQTT.QOS, retain=retain)
 
 
 def publish(topic: str, message: str, retain: bool = False):
@@ -122,7 +123,7 @@ def publish(topic: str, message: str, retain: bool = False):
     :return: Status message string.
     """
     unique_tag = f'mqtt.publish.{topic}.{time.ticks_ms()}'
-    state = micro_task(tag=unique_tag, task=_publish(message, topic, retain))
+    state = micro_task(tag=unique_tag, task=_publish(unique_tag, message, topic, retain))
     return f"Message was sent {state}"
 
 

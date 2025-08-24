@@ -69,7 +69,7 @@
             7
         ],
         "Espnow.py": [
-            9.41,
+            9.4,
             2
         ],
         "Scheduler.py": [
@@ -285,7 +285,7 @@
             1
         ],
         "LM_mqtt_client.py": [
-            8.53,
+            8.45,
             0
         ],
         "LM_dashboard_be.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            3846,
+            3844,
             24
         ],
         "load": [
-            9630,
+            9631,
             55
         ],
         "core_dep": [
@@ -336,6 +336,6 @@
         ],
         "core_score": 9.24,
         "load_score": 8.32,
-        "version": "2.14.1-0"
+        "version": "2.14.1-1"
     }
 }

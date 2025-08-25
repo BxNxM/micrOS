@@ -30,7 +30,7 @@
         ],
         "Config.py": [
             9.43,
-            18
+            19
         ],
         "reset.py": [
             10.0,
@@ -54,7 +54,7 @@
         ],
         "Common.py": [
             9.85,
-            34
+            35
         ],
         "InterConnect.py": [
             9.41,
@@ -66,11 +66,11 @@
         ],
         "Network.py": [
             9.78,
-            7
+            8
         ],
         "Espnow.py": [
-            9.4,
-            2
+            9.5,
+            3
         ],
         "Scheduler.py": [
             9.62,
@@ -240,12 +240,16 @@
             8.52,
             0
         ],
+        "LM_cluster.py": [
+            8.52,
+            0
+        ],
         "LM_oledui.py": [
             8.55,
             0
         ],
         "LM_espnow.py": [
-            6.67,
+            6.0,
             0
         ],
         "LM_telegram.py": [
@@ -319,12 +323,12 @@
     },
     "summary": {
         "core": [
-            3844,
+            3845,
             24
         ],
         "load": [
-            9631,
-            55
+            9719,
+            56
         ],
         "core_dep": [
             true,
@@ -332,10 +336,10 @@
         ],
         "load_dep": [
             true,
-            5
+            6
         ],
         "core_score": 9.24,
-        "load_score": 8.32,
-        "version": "2.14.1-1"
+        "load_score": 8.31,
+        "version": "2.15.0-0"
     }
 }

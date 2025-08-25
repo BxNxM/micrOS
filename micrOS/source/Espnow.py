@@ -84,6 +84,7 @@ class ESPNowSS:
     _instance = None
 
     def __new__(cls, *args, **kwargs):
+        # SINGLETON PATTERN
         if cls._instance is None:
             # first time: actually create it
             cls._instance = super().__new__(cls)
@@ -92,11 +93,11 @@ class ESPNowSS:
     def __init__(self):
         # __init__ still runs each time, so guard if needed
         if not hasattr(self, '_initialized'):
+            self._initialized = True
             self.espnow = AIOESPNow()                   # Instance with async support
             self.espnow.active(True)
             self.devfid = cfgget('devfid')
             self.devices: dict[bytes, str] = {}         # mapping for { "mac address": "devfid" } pairs
-            self._initialized = True
             self.server_ready = False
             self.peer_cache = path_join(OSPath.DATA, "espnow_peers.app_json")
             self._load_peers()
@@ -251,6 +252,15 @@ class ESPNowSS:
         state = NativeTask().create(callback=self._asend_task(peer, task_id, msg), tag=task_id)
         return {task_id: "Starting"} if state else {task_id: "Already running"}
 
+    def cluster_send(self, msg):
+        """
+        Send message for all peers
+        """
+        _tasks = []
+        for peer_name in self.devices.values():
+            _tasks.append(self.send(peer_name, msg))
+        return _tasks
+
     # ----------- OTHER METHODS --------------
 
     async def _handshake(self, peer:bytes, tag:str):
@@ -312,16 +322,3 @@ class ESPNowSS:
         except Exception as e:
             _peers = str(e)
         return {"stats": _stats, "peers": _peers, "map": self.devices, "ready": self.server_ready}
-
-
-###################################################
-#                   Control functions             #
-###################################################
-INSTANCE = ESPNowSS()
-
-def initialize():
-    # TODO: remove, use ESPNowSS() class instead
-    global INSTANCE
-    if INSTANCE is None:
-        INSTANCE = ESPNowSS()
-    return INSTANCE

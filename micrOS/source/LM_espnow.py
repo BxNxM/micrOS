@@ -1,4 +1,5 @@
-import Espnow
+from Espnow import ESPNowSS
+ESPNOW = ESPNowSS()
 
 
 def send(peer:bytes|str, cmd:str='modules'):
@@ -7,15 +8,13 @@ def send(peer:bytes|str, cmd:str='modules'):
     :param peer: mac address of espnow device
     :param cmd: message string/load module call
     """
-    now = Espnow.initialize()
-    return now.send(peer, cmd)
+    return ESPNOW.send(peer, cmd)
 
 def stats():
     """
     Get ESPNOW stats
     """
-    now = Espnow.initialize()
-    return now.stats()
+    return ESPNOW.stats()
 
 
 def handshake(peer:bytes|str):
@@ -25,8 +24,7 @@ def handshake(peer:bytes|str):
     - device name detection
     - address:name caching
     """
-    now = Espnow.initialize()
-    return now.handshake(peer)
+    return ESPNOW.handshake(peer)
 
 
 def help():

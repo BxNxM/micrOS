@@ -27,7 +27,7 @@ except:
 if cfgget('webui'):
     from Web import WebEngine
 else:
-    # Create dummy web engine - Laizy loading
+    # Create dummy web engine - Lazy loading
     class WebEngine:
         __slots__ = []
         def __init__(self, *args, **kwargs):
@@ -175,14 +175,20 @@ class WebCli(Client, WebEngine):
         await self.close()
 
     @staticmethod
-    def register(endpoint:str, callback:callable, auto_enable:bool=True):
+    def register(endpoint:str, callback:callable, method:str='GET', auto_enable:bool=True):
         """
         :param endpoint: name of the endpoint
         :param callback: callback function (WebEngine compatible: return:  html_type, content)
+        :param method: HTTP method name
         :param auto_enable: enable webui when register (endpoint)
         """
+        if method not in WebEngine.METHODS:
+            raise ValueError(f"method must be one of {WebEngine.METHODS}")
+
         if cfgget('webui'):
-            WebEngine.ENDPOINTS[endpoint] = callback
+            if not endpoint in WebEngine.ENDPOINTS:
+                WebEngine.ENDPOINTS[endpoint] = {}
+            WebEngine.ENDPOINTS[endpoint][method] = callback
             return
         # AUTO ENABLE webui when register (endpoint) called and webui is False
         if auto_enable:

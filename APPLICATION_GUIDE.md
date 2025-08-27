@@ -891,9 +891,9 @@ Usage(s): [LM_presence](./micrOS/source/LM_presence.py)
 
 ------------------------------------
 
-### web\_endpoint(endpoint, function):
+### web\_endpoint(endpoint, function, method):
 
-Custom endpoint creation in order to receive GET requests. `<localhost.local>/endpoint` from Load Modules to WebCli web server.
+Custom endpoint creation in order to handle GET or POST requests. `<localhost.local>/endpoint` from Load Modules to WebCli web server.
 
 **Prerequisite**
 > Enable `webui True` in node config.
@@ -902,7 +902,11 @@ Parameters:
 
 * **endpoint**: name of the http endpoint after the main address, like `localhost.local/my_endpoint`, in this case the `my_endpoint` is the input paramater here.
 
-* Simple **function** return: callback function, this will be called when endpoint is called, it must return 2 values: html type and data for example `html/text, data` data for example: `hello world`. Supported data types: `text/html`, `text/plain`, `image/jpeg`. In short:
+* Simple **function** return: callback function, this will be called when endpoint is called. Depending on the request method, takes different number of arguments:
+    - "GET" method: the function takes no arguments
+    - "POST" method: single argument handled, populated by the request body, passed as a string
+
+The function must return 2 values: html type and data for example `html/text, data` data for example: `hello world`. Supported data types: `text/html`, `text/plain`, `image/jpeg`. In short:
 
 ```python
 return "image/jpeg" | "text/html" | "text/plain", <data>
@@ -919,6 +923,8 @@ return "multipart/x-mixed-replace" | "multipart/form-data", <data>
 # <data>: {'callback':<func>, 'content-type': 'image/jpeg' | 'audio/l16;...'}
 ```
 > select one from between | signs
+
+* request **method**: either GET or POST.
 
 Returns:
 

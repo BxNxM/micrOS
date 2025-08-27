@@ -36,6 +36,7 @@ class WebEngine:
                      "jpeg": "image/jpeg",
                      "png": "image/png",
                      "gif": "image/gif"}
+    METHODS = ["GET", "POST"]
 
     def __init__(self, client, version):
         self.client = client
@@ -52,16 +53,36 @@ class WebEngine:
 
     async def response(self, request):
         """HTTP GET REQUEST - WEB INTERFACE"""
-        # Parse request line (first line)
-        _method, url, _version = request.split('\n')[0].split()
         # Protocol validation
-        if _method != "GET" and _version.startswith('HTTP'):
-            _err = f"Bad Request: not GET HTTP but {_version}"
-            await self.client.a_send(self.REQ400.format(len=len(_err), data=_err))
+        lines = request.splitlines()
+        if not lines:
+            _err = "Empty request"
+            await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
 
+        request_parts = lines[0].split()
+        if len(request_parts) != 3:
+            _err = "Malformed request line"
+            await self.a_send(self.REQ400.format(len=len(_err), data=_err))
+            return
+
+        _method, url, _version = request_parts
+
+        if _method not in self.METHODS or not _version.startswith('HTTP/'):
+            _err = f"Unsupported method: {_method} {_version}"
+            await self.a_send(self.REQ400.format(len=len(_err), data=_err))
+            return
+
+        try:
+            blank_index = lines.index("")
+            body_lines = lines[blank_index+1:]
+        except ValueError:
+            body_lines = []
+
+        body = "\n".join(body_lines)
+
         # [1] REST API GET ENDPOINT [/rest]
-        if url.startswith('/rest'):
+        if url.startswith('/rest') and _method == "GET":
             self.client.console("[WebCli] --- /rest ACCEPT")
             try:
                 await self.client.a_send(WebEngine.rest(url))
@@ -69,10 +90,10 @@ class WebEngine:
                 await self.client.a_send(self.REQ404.format(len=len(str(e)), data=e))
             return
         # [2] DYNAMIC/USER ENDPOINTS (from Load Modules)
-        if await self.endpoints(url):
+        if await self.endpoints(url, _method, body):
             return
         # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
-        if url.startswith('/'):
+        if url.startswith('/') and _method == "GET":
             resource = 'index.html' if url == '/' else url.replace('/', '')
             web_resource = path_join(OSPath.WEB, resource)                  # Redirect path to web folder
             self.client.console(f"[WebCli] --- {url} ACCEPT -> {web_resource}")
@@ -130,9 +151,9 @@ class WebEngine:
         response = dumps(resp_schema)
         return WebEngine.REQ200.format(dtype='text/html', len=len(response), data=response)
 
-    async def endpoints(self, url):
+    async def endpoints(self, url, method, body):
         url = url[1:]  # Cut first / char
-        if url in WebEngine.ENDPOINTS:
+        if url in WebEngine.ENDPOINTS and method in WebEngine.ENDPOINTS[url]:
             console_write(f"[WebCli] endpoint: {url}")
             # Registered endpoint was found - exec callback
             try:
@@ -141,7 +162,11 @@ class WebEngine:
                 #   one-shot (simple MIME types):    image/jpeg | text/html | text/plain              - data: raw
                 #       task (streaming MIME types): multipart/x-mixed-replace | multipart/form-data  - data: dict{callback,content-type}
                 #                                                                                       content-type: image/jpeg | audio/l16;*
-                dtype, data = WebEngine.ENDPOINTS[url]()
+                if method == "POST":
+                    dtype, data = WebEngine.ENDPOINTS[url][method](body)
+                else:
+                    dtype, data = WebEngine.ENDPOINTS[url][method]()
+
                 if dtype == 'image/jpeg':
                     resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('utf8') + data
                     await self.client.a_send(resp, encode=None)

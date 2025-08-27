@@ -73,13 +73,13 @@ async def _task(on, off, threshold, tolerance=2, check_ms=5000):
             if percent <= threshold:
                 if on != last_ev:
                     host = on[0]
-                    state, _ = exec_cmd(on[1:] + [f">>{host}"], jsonify=True, skip_check=True)
+                    state, _ = exec_cmd(on[1:] + [f">>{host}"], jsonify=True)
                     my_task.out = f"{percent}% <= threshold: {threshold}% - ON [{'OK' if state else 'NOK'}]"
                     last_ev = on
             elif percent > threshold+tolerance:     # +tolerance to avoid "on/off/on/off" on threshold limit
                 if off != last_ev:
                     host = off[0]
-                    state, _ = exec_cmd(off[1:] + [f">>{host}"], jsonify=True, skip_check=True)
+                    state, _ = exec_cmd(off[1:] + [f">>{host}"], jsonify=True)
                     my_task.out = f"{percent}% > threshold: {threshold+tolerance}% - OFF [{'OK' if state else 'NOK'}]"
                     last_ev = off
             await my_task.feed(sleep_ms=check_ms)   # Sample every <check_ms> sec

@@ -117,7 +117,7 @@
             0
         ],
         "LM_oled_ui.py": [
-            8.51,
+            8.78,
             0
         ],
         "LM_system.py": [
@@ -241,11 +241,11 @@
             0
         ],
         "LM_cluster.py": [
-            8.52,
+            8.69,
             0
         ],
         "LM_oledui.py": [
-            8.55,
+            8.7,
             0
         ],
         "LM_espnow.py": [
@@ -273,7 +273,7 @@
             0
         ],
         "LM_light_sensor.py": [
-            7.5,
+            9.17,
             0
         ],
         "LM_rp2w.py": [
@@ -281,7 +281,7 @@
             0
         ],
         "LM_presence.py": [
-            8.05,
+            8.9,
             4
         ],
         "LM_trackball.py": [
@@ -317,17 +317,17 @@
             0
         ],
         "LM_neomatrix.py": [
-            8.6,
+            8.66,
             0
         ]
     },
     "summary": {
         "core": [
-            3845,
+            3848,
             24
         ],
         "load": [
-            9719,
+            9744,
             56
         ],
         "core_dep": [
@@ -339,7 +339,7 @@
             6
         ],
         "core_score": 9.24,
-        "load_score": 8.31,
-        "version": "2.15.0-0"
+        "load_score": 8.36,
+        "version": "2.15.1-0"
     }
 }

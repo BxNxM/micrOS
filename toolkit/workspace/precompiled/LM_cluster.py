@@ -9,7 +9,7 @@ ShellCli (socket) extension (todo)
 from machine import soft_reset
 from Config import cfgget, cfgput
 from Network import _select_available_wifi_nw, ifconfig
-from Common import micro_task
+from Common import micro_task, exec_cmd
 if cfgget("espnow"):
     from Espnow import ESPNowSS
     ESPNOW = ESPNowSS()
@@ -17,8 +17,12 @@ else:
     ESPNOW = None
 
 
+#########################################################
+#           CLUSTER - LOCAL EXECUTION "ON TARGET"       #
+#########################################################
+
 @micro_task("cluster", _wrap=True)
-async def _reboot(tag):
+async def _reboot(tag:str):
     """
     Restart in the background
     (Enable function return before restart...)
@@ -28,7 +32,7 @@ async def _reboot(tag):
         soft_reset()
 
 
-def _update_wifi(ssid, pwd):
+def _update_wifi(ssid:str, pwd:str):
     """
     Local Config Setter - Add WiFi settings
     :param ssid: str - SSID
@@ -69,6 +73,14 @@ def _update_wifi(ssid, pwd):
     return "Wifi is in Access Point mode, skip sync"
 
 
+def _run(cmd:str):
+    state, out = exec_cmd(cmd.split(), secure=True)
+    return f"[{'OK' if state else 'NOK'}] {out}"
+
+#########################################################
+#                 CLUSTER WIDE FEATURES                 #
+#########################################################
+
 def sync_wifi():
     """
     ESPNow Cluster Wifi Settings Sync for Station (STA) Connection Mode
@@ -83,6 +95,18 @@ def sync_wifi():
     _ssid, _pwd = _select_available_wifi_nw(cfgget("staessid"), cfgget("stapwd"))
     # [2] Send command: 'cluster _update_wifi "<ssid>" "<pwd>"'
     command = f"cluster _update_wifi '{_ssid}' '{_pwd}'"
+    sync_tasks = ESPNOW.cluster_send(command)
+    return sync_tasks
+
+
+
+def run(cmd:str):
+    """
+    Run a command on the cluster
+    :param cmd: str - command to run on the cluster
+        Example: cmd='system heartbeat'
+    """
+    command = f"cluster _run '{cmd}'"
     sync_tasks = ESPNOW.cluster_send(command)
     return sync_tasks
 
@@ -112,4 +136,5 @@ def help(widgets=True):
     return ("load",
             "sync_wifi",
             "health",
+            "run 'command'"
             "[Info] Get command results: task show con.espnow.*")

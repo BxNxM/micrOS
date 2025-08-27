@@ -1,3 +1,4 @@
+from random import randint
 from neopixel import NeoPixel
 from machine import Pin
 from utime import sleep_ms
@@ -280,7 +281,7 @@ def rainbow(speed_ms=0):
     return load().play(_effect_rainbow, speed_ms=speed_ms, bt_draw=True, bt_size=8)
 
 
-def snake(speed_ms:int=30, length:int=5):
+def snake(speed_ms:int=30, length:int=6):
     def _effect_snake():
         clear_color = (0, 0, 0)
         total_pixels = 8 * 8
@@ -351,12 +352,12 @@ def spiral(speed_ms=40):
         def _warp(ax, ay):
             return (W - 1 - ax, ay) if (ay & 1) else (ax, ay)
 
-        r0, g0, b0 = NeoPixelMatrix.DEFAULT_COLOR
         off = (0, 0, 0)
 
         def _shade(k):
+            r0, g0, b0 = NeoPixelMatrix.DEFAULT_COLOR
             k = max(0.0, min(1.0, k)) ** 0.9
-            return (int(r0 * k), int(g0 * k), int(b0 * k))
+            return int(r0 * k), int(g0 * k), int(b0 * k)
 
         try:
             NeoPixelMatrix.INSTANCE.clear()
@@ -396,6 +397,19 @@ def spiral(speed_ms=40):
     return load().play(_effect_spiral, speed_ms=speed_ms, bt_draw=True, bt_size=8)
 
 
+def noise(speed_ms:int=85):
+    def _effect_noise():
+        total_steps = 8 * 8
+        for step in range(total_steps):
+            x, y = step % 8, step // 8
+            r, g, b = NeoPixelMatrix.DEFAULT_COLOR
+            br = float(randint(0, 100) * 0.01)              # Generate random brightness
+            color = (int(r * br), int(g * br), int(b * br))
+            yield x, y, color
+
+    return load().play(_effect_noise, speed_ms=speed_ms, bt_draw=True, bt_size=4)
+
+
 def help(widgets=False):
     return resolve(('load width=8 height=8',
                              'pixel x y color=(10, 3, 0) show=True',
@@ -406,6 +420,7 @@ def help(widgets=False):
                              'BUTTON snake speed_ms=50 length=5',
                              'BUTTON rainbow',
                              'BUTTON spiral speed_ms=40',
+                             'BUTTON noise speed_ms=85',
                              'SLIDER control speed_ms=<1-200-2> bt_draw=None',
                              'draw_colormap bitmap=[(0,0,(10,2,0)),(x,y,color),...]',
                              'get_colormap'

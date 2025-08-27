@@ -7,7 +7,7 @@ from Debug import syslog as debug_syslog, console_write
 from Logger import logger, log_get
 from Files import OSPath, path_join
 from microIO import resolve_pin
-from Tasks import TaskBase, Manager, lm_exec
+from Tasks import TaskBase, Manager, lm_exec, lm_is_loaded
 from machine import Pin, ADC
 from Notify import Notify
 
@@ -74,13 +74,16 @@ def manage_task(tag:str, operation:str):
     raise Exception(f"Invalid operation: {operation}")
 
 
-def exec_cmd(cmd:list, jsonify:bool=None):
+def exec_cmd(cmd:list, jsonify:bool=None, secure=False):
     """
     [LM] Single (sync) LM execution
     :param cmd: command string list, ex.: ['system', 'clock']
     :param jsonify: request json output
+    :param secure: check LM is loaded, if NOT skip execution 'NotAllowed'
     return state, output
     """
+    if secure and not lm_is_loaded(cmd[0]):
+        return False, f"NotAllowed {cmd[0]}"
     return lm_exec(cmd, jsonify=jsonify)
 
 

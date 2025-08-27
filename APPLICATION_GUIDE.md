@@ -757,13 +757,19 @@ Usage(s): [LM\_oled\_ui](./micrOS/source/LM_oled_ui.py) [LM\_i2s\_mic](./micrOS/
 
 ------------------------------------
 
-### exec_cmd(cmd)
+### exec\_cmd(cmd:list, jsonify:bool=None, secure=False
 
 Run sync task from LoadModules by string list.
 
 Parameters:
 
-- `cmd`: String list for Load Module execution
+```
+  Single (sync) LM execution
+    :param cmd: command string list, ex.: ['system', 'clock']
+    :param jsonify: request json output
+    :param secure: check LM is loaded, if NOT skip execution 'NotAllowed'
+  return state, output
+```
 
 Example:
 
@@ -776,15 +782,6 @@ Where `"system"` is the module name and `"info"` is the function name, and it no
 
 
 > Note: `cmd` can contain only one command with its optional paramater. So this method not supports multi command execution.
-
-```python
-def exec_cmd(cmd):
-    """
-    Single (sync) LM execution - user interface
-    :param cmd: command string list
-    return state, output
-    """
-```
 
 Usage(s): [LM\_oled_ui](./micrOS/source/LM_oled_ui.py)
 

@@ -136,5 +136,5 @@ def help(widgets=True):
     return ("load",
             "sync_wifi",
             "health",
-            "run 'command'"
+            "run 'command'",
             "[Info] Get command results: task show con.espnow.*")

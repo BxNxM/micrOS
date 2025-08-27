@@ -41,18 +41,21 @@ function restConsole(apiUrl, data, delta) {
     document.getElementById('restConsoleTime').innerHTML = `⏱ Response time: ${delta} ms`;
 }
 
-function restInfo() {
+function restInfo(showPages=true) {
     // UPDATES: 'restInfo' and restConsole(...)
-    restAPICore(cmd='').then(({ response, delta, query }) => {
+    restAPICore(cmd = '').then(({ response, delta, query }) => {
         // Update API Console
         restConsole(query, response, delta)
-        // Update 'SysApiInfo' tag
+        // Update 'restInfo' tag
         const result = response['result'];
         const auth = result.auth ? "🔑" : "";
         let infoHeader = `micrOS: ${result.micrOS} ❖ node: ${result.node}${auth}`;
-        let infoSubpages = (response['result']['usr_endpoints'] ? "<br><br>📎 " + Object.entries(response['result']['usr_endpoints'])
-            .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value} </a>`)
-            .join(' | ') : '');
+        let infoSubpages = "";
+        if (showPages && result['usr_endpoints']) {
+            infoSubpages = "<br><br>📎 " + Object.entries(result['usr_endpoints'])
+                .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value} </a>`)
+                .join(' | ');
+        }
         document.getElementById('restInfo').innerHTML = infoHeader + infoSubpages;
     }).catch(error => {
         console.error('Error in restAPI:', error);

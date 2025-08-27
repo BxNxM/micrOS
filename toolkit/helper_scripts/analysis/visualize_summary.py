@@ -137,7 +137,7 @@ def page_core_system(pdf, versions, core_files, highlighted_versions, core_lines
     # Annotate the last line count data point with fixed offset (10 pts to the right)
     ax_right.annotate(f'{core_lines[-1]}',
                       xy=(len(versions) - 1, core_lines[-1]),
-                      xytext=(10, 0), textcoords='offset points',
+                      xytext=(10, -8), textcoords='offset points',
                       color="purple", fontsize=9,
                       arrowprops=dict(arrowstyle="->", color="purple"))
 

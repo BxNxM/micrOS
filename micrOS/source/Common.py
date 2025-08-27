@@ -7,7 +7,7 @@ from Debug import syslog as debug_syslog, console_write
 from Logger import logger, log_get
 from Files import OSPath, path_join
 from microIO import resolve_pin
-from Tasks import TaskBase, Manager, lm_exec
+from Tasks import TaskBase, Manager, lm_exec, lm_is_loaded
 from machine import Pin, ADC
 from Notify import Notify
 
@@ -15,27 +15,48 @@ from Notify import Notify
 #####################################################################################
 #                                     SYSTEM                                        #
 #####################################################################################
-
-def micro_task(tag:str, task=None):
+def micro_task(tag: str, task=None, _wrap=False):
     """
     [LM] Async task manager.
-    :param tag: task tag string
-    :param task: coroutine (or list of command arguments) to contract a task with the given async task callback
-    return bool|callable
+    Modes:
+      A) GET:
+         micro_task("tag") -> existing task object or None
+      B) CREATE:
+         micro_task("tag", task=...) -> True | None | False
+         Creates a new async task with the given tag if not already running.
+      C) CREATE AS DECORATOR (shortcut):
+         @micro_task("main", _wrap=True)
+         async def mytask(tag, ...): ...
+         # Calling mytask(...) will create/start a new task under "main._mytask"
+
+    :param tag: Task tag string
+    :param task: Coroutine (or list of command arguments) to contract a task with
+                 the given async task callback
+    :param _wrap: When True, return a decorator factory (for use as @micro_task(...))
+    :return: Task object (GET), bool|None|False (CREATE), or decorator (DECORATOR)
     """
-    if task is None:
-        # [1] Task is None -> Get task mode by tag
-        # RETURN task obj (access obj.out + obj.done (automatic - with keyword arg))
-        async_task = TaskBase.TASKS.get(tag, None)
-        return async_task
-    if TaskBase.is_busy(tag):
-        # [2] Shortcut: Check task state by tag
-        # RETURN: None - if task is already running
-        return None
-    # [3] Create task (not running) + task coroutine was provided
-    # RETURN task creation state - success (True) / fail (False)
-    state:bool = Manager().create_task(callback=task, tag=tag)
-    return state
+    # --- CREATE (original) ---
+    if task is not None:
+        if TaskBase.is_busy(tag):
+            return None     # task already running
+        return Manager().create_task(callback=task, tag=tag)
+
+    # --- CREATE WITH DECORATOR FACTORY (simplified) ---
+    if _wrap:
+        def _decorator(async_fn):
+            task_tag = f"{tag}._{async_fn.__name__}"
+            _launcher = (
+                lambda *args, **kwargs:
+                None if TaskBase.is_busy(task_tag)
+                else Manager().create_task(
+                    callback=async_fn(task_tag, *args, **kwargs),
+                    tag=task_tag)
+            )
+            return _launcher
+        return _decorator
+
+    # --- GET (_wrap=False): return task object or None if not existing ---
+    return TaskBase.TASKS.get(tag, None)
 
 
 def manage_task(tag:str, operation:str):
@@ -53,14 +74,16 @@ def manage_task(tag:str, operation:str):
     raise Exception(f"Invalid operation: {operation}")
 
 
-def exec_cmd(cmd:list, jsonify:bool=None, skip_check=None):
+def exec_cmd(cmd:list, jsonify:bool=None, secure=False):
     """
     [LM] Single (sync) LM execution
     :param cmd: command string list, ex.: ['system', 'clock']
     :param jsonify: request json output
-    :param skip_check: legacy (check was removed) - remove parameter
+    :param secure: check LM is loaded, if NOT skip execution 'NotAllowed'
     return state, output
     """
+    if secure and not lm_is_loaded(cmd[0]):
+        return False, f"NotAllowed {cmd[0]}"
     return lm_exec(cmd, jsonify=jsonify)
 
 

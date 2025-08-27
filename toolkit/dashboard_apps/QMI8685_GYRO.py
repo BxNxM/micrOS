@@ -26,7 +26,7 @@ def print_table(data):
 
 def app(devfid=None, pwd=None):
     CLIENT = AppBase(device=devfid, password=pwd)
-    measure_cmd = 'qmi8685 measure >json'
+    measure_cmd = 'qmi8658 measure >json'
 
     mp.set_start_method('spawn', force=True)
     queue = mp.Queue()

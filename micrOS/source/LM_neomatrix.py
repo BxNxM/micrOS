@@ -1,3 +1,4 @@
+from random import randint
 from neopixel import NeoPixel
 from machine import Pin
 from utime import sleep_ms
@@ -18,7 +19,7 @@ class NeoPixelMatrix(AnimationPlayer):
         self.num_pixels = width * height
         self.pixels = NeoPixel(Pin(pin, Pin.OUT), self.num_pixels)
         self._color_buffer = [(0, 0, 0)] * self.num_pixels      # Store original RGB values
-        self._brightness = 0.25                                 # Brightness level, default 25%
+        self._brightness = 0.20                                 # Brightness level, default 20%
         NeoPixelMatrix.INSTANCE = self
 
     def update(self, x:int, y:int, color:tuple[int, int, int]):
@@ -42,9 +43,11 @@ class NeoPixelMatrix(AnimationPlayer):
         """
         Zigzag layout: even rows left-to-right, odd rows right-to-left
         """
-        if (zigzag is None or zigzag) and y % 2 == 0:
-            return y * self.width + x
-        return y * self.width + (self.width - 1 - x)
+        if zigzag is None or zigzag:
+            if y % 2 == 0:
+                return y * self.width + x
+            return y * self.width + (self.width - 1 - x)
+        return y * self.width + x
 
     def _index_to_coord(self, index: int, zigzag:bool=True) -> tuple[int, int]:
         """
@@ -218,6 +221,10 @@ def stop():
 
 
 def draw_colormap(bitmap):
+    """
+    Draw colors as a color map
+    [(x, y, (r, g,b)), ...]
+    """
     try:
         load().draw_colormap(bitmap)
     except Exception as e:
@@ -233,8 +240,8 @@ def get_colormap():
 # -----------------------------------------------------------------------------
 
 def rainbow(speed_ms=0):
-    def effect_rainbow():
-        def hsv_to_rgb(h, s, v):
+    def _effect_rainbow():
+        def _hsv_to_rgb(h, s, v):
             max_color = 150   #255
             h = float(h)
             s = float(s)
@@ -268,14 +275,14 @@ def rainbow(speed_ms=0):
                 for x in range(width):
                     index = y * width + x
                     hue = ((index + frame) % 64) / 64.0
-                    r, g, b = hsv_to_rgb(hue, 1.0, 0.7)
+                    r, g, b = _hsv_to_rgb(hue, 1.0, 0.7)
                     yield x, y, (r, g, b)
 
-    return load().play(effect_rainbow, speed_ms=speed_ms, bt_draw=True, bt_size=8)
+    return load().play(_effect_rainbow, speed_ms=speed_ms, bt_draw=True, bt_size=8)
 
 
-def snake(speed_ms:int=30, length:int=5):
-    def effect_snake():
+def snake(speed_ms:int=30, length:int=6):
+    def _effect_snake():
         clear_color = (0, 0, 0)
         total_pixels = 8 * 8
         total_steps = total_pixels + length  # run just past the end to clear tail
@@ -297,40 +304,110 @@ def snake(speed_ms:int=30, length:int=5):
                     color = (int(r * br), int(g * br), int(b * br))
                     yield x, y, color
 
-    return load().play(effect_snake, speed_ms=speed_ms, bt_draw=False)
+    return load().play(_effect_snake, speed_ms=speed_ms, bt_draw=False)
 
 
-def cube(speed_ms=10):
-    def effect_cube(max_radius:int = 3):
+def spiral(speed_ms=40):
+    def _effect_spiral(trail=12, hold=6):
         """
-        Generator yielding (x, y, color) for a centered 2×2 square ("cube")
-        that expands outward to `max_radius` then collapses back.
+        Center-out spiral with row-prewarp so the visual is continuous
+        even when set_pixel() applies zigzag=True internally.
         """
-        width, height = 8, 8
-        # Center the 2×2 core in an 8×8 grid
-        cx, cy = width // 2 - 1, height // 2 - 1
+        try:
+            W = NeoPixelMatrix.INSTANCE.width
+            H = NeoPixelMatrix.INSTANCE.height
+        except:
+            W = H = 8
 
-        # Expansion phase: radius 0 (2×2) up to max_radius
-        for r in range(0, max_radius + 1):
-            for dx in range(-r, r + 2):
-                for dy in range(-r, r + 2):
-                    x, y = cx + dx, cy + dy
-                    if 0 <= x < width and 0 <= y < height:
-                        yield x, y, NeoPixelMatrix.DEFAULT_COLOR
-        # Clear matrix
+        # --- build center-out spiral path in true matrix coords (x,y) ---
+        # exact center on odd sizes; upper-left of center 2x2 on even sizes
+        cx = (W // 2 - 1) if (W % 2 == 0) else (W // 2)
+        cy = (H // 2 - 1) if (H % 2 == 0) else (H // 2)
+
+        x, y = cx, cy
+        path, seen = [], set()
+
+        def _add(ax, ay):
+            if 0 <= ax < W and 0 <= ay < H and (ax, ay) not in seen:
+                seen.add((ax, ay))
+                path.append((ax, ay))
+
+        _add(x, y)
+        dirs = ((1, 0), (0, 1), (-1, 0), (0, -1))  # R, D, L, U
+        step_len, d = 1, 0
+        while len(path) < W * H:
+            for _ in range(2):
+                dx, dy = dirs[d & 3]
+                for _ in range(step_len):
+                    x += dx; y += dy
+                    _add(x, y)
+                    if len(path) >= W * H: break
+                d += 1
+                if len(path) >= W * H: break
+            step_len += 1
+
+        # --- PREWARP ---
+        # Cancel the internal zigzag mapping: flip x on odd rows so
+        # set_pixel(zigzag=True) flips it back -> visually linear.
+        def _warp(ax, ay):
+            return (W - 1 - ax, ay) if (ay & 1) else (ax, ay)
+
+        off = (0, 0, 0)
+
+        def _shade(k):
+            r0, g0, b0 = NeoPixelMatrix.DEFAULT_COLOR
+            k = max(0.0, min(1.0, k)) ** 0.9
+            return int(r0 * k), int(g0 * k), int(b0 * k)
+
         try:
             NeoPixelMatrix.INSTANCE.clear()
         except:
             pass
-        # Collapse phase: back down, skipping the largest to avoid duplicate
-        for r in range(max_radius - 1, -1, -1):
-            for dx in range(-r, r + 2):
-                for dy in range(-r, r + 2):
-                    x, y = cx + dx, cy + dy
-                    if 0 <= x < width and 0 <= y < height:
-                        yield x, y, NeoPixelMatrix.DEFAULT_COLOR
 
-    return load().play(effect_cube, speed_ms=speed_ms, bt_draw=False)
+        # expand with tail
+        for n in range(len(path)):
+            clear_at = n - trail - 1
+            if clear_at >= 0:
+                cx_, cy_ = _warp(*path[clear_at])
+                yield cx_, cy_, off
+
+            start = 0 if n < trail else (n - trail + 1)
+            span = max(1, n - start + 1)
+            for i in range(start, n + 1):
+                k = (i - start + 1) / span
+                px, py = _warp(*path[i])
+                yield px, py, _shade(k)
+
+        # brief hold
+        hx, hy = _warp(*path[-1])
+        for _ in range(hold):
+            yield hx, hy, _shade(1.0)
+
+        # shrink with fading tail
+        for n in range(len(path) - 1, -1, -1):
+            px, py = _warp(*path[n])
+            yield px, py, off
+            start = max(0, n - trail + 1)
+            span = max(1, n - start)
+            for i in range(start, n):
+                k = (i - start + 1) / span
+                qx, qy = _warp(*path[i])
+                yield qx, qy, _shade(k)
+
+    return load().play(_effect_spiral, speed_ms=speed_ms, bt_draw=True, bt_size=8)
+
+
+def noise(speed_ms:int=85):
+    def _effect_noise():
+        total_steps = 8 * 8
+        for step in range(total_steps):
+            x, y = step % 8, step // 8
+            r, g, b = NeoPixelMatrix.DEFAULT_COLOR
+            br = float(randint(0, 100) * 0.01)              # Generate random brightness
+            color = (int(r * br), int(g * br), int(b * br))
+            yield x, y, color
+
+    return load().play(_effect_noise, speed_ms=speed_ms, bt_draw=True, bt_size=4)
 
 
 def help(widgets=False):
@@ -342,7 +419,8 @@ def help(widgets=False):
                              'BUTTON stop',
                              'BUTTON snake speed_ms=50 length=5',
                              'BUTTON rainbow',
-                             'BUTTON cube speed_ms=10',
+                             'BUTTON spiral speed_ms=40',
+                             'BUTTON noise speed_ms=85',
                              'SLIDER control speed_ms=<1-200-2> bt_draw=None',
                              'draw_colormap bitmap=[(0,0,(10,2,0)),(x,y,color),...]',
                              'get_colormap'

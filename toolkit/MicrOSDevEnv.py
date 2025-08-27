@@ -142,6 +142,20 @@ class MicrOSDevTool(OTA, USB):
         [!] name dependency with micrOS internal manual provider
         """
 
+        def _is_private_func(_line):
+            nonlocal decorator, line
+            if 'def ' in line and 'def _' not in line:
+                if "async" in line and decorator is not None and "@micro_task" in decorator:
+                    # Enable (adjust) async task method with publish_micro_task decorator
+                    line = line.replace("async", "").strip()
+                    return False
+                if '(self' in line or '(cls' in _line or (decorator is not None and "staticmethod" in decorator):
+                    # Ignore class methods
+                    return True
+                return False
+            # Ignore non functions, and hidden functions (starts with _)
+            return True
+
         if not os.path.isdir(self.sfuncman_output_path):
             self.console('DOC GEN DISABLED', state="WARN")
             return
@@ -165,25 +179,26 @@ class MicrOSDevTool(OTA, USB):
                         line = f.readline()
                         if not line:
                             break
-                        if 'def ' in line and 'def _' not in line:
-                            if '(self' in line or '(cls' in line or (decorator is not None and "staticmethod" in decorator):
-                                continue
-                            # Gen proper func name
-                            command = '{}'.format(line.split(')')[0]).replace("def", '').strip()
-                            command = command.replace('(', ' ') \
-                                .replace(',', '') \
-                                .replace('msgobj=None', '') \
-                                .replace('force=True', '')
-                            func = command.strip().split()[0]
-                            param = ' '.join(command.strip().split()[1:])
-                            # Save record
-                            if module_function_dict[module_name].get(func, None) is None:
-                                module_function_dict[module_name][func] = {}
-                            module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else ""
-                        elif line.strip().startswith("@"):
-                            decorator = line.strip()
-                        else:
-                            decorator = None
+                        if _is_private_func(line):
+                            if line.strip().startswith("@"):
+                                decorator = line.strip()
+                            else:
+                                decorator = None
+                            continue
+
+                        # Gen proper func name
+                        command = '{}'.format(line.split(')')[0]).replace("def", '').strip()
+                        command = command.replace('(', ' ') \
+                            .replace(',', '') \
+                            .replace('msgobj=None', '') \
+                            .replace('force=True', '')
+                        func = command.strip().split()[0]
+                        param = ' '.join(command.strip().split()[1:])
+                        # Save record
+                        if module_function_dict[module_name].get(func, None) is None:
+                            module_function_dict[module_name][func] = {}
+                        module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else ""
+
                 # Create / update module data fields
                 module_function_dict[module_name]['img'] = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
             except Exception as e:

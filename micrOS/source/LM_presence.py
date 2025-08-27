@@ -67,7 +67,7 @@ def __run_intercon(state):
             host = cmd[0]
             cmd = cmd[1:]
             # Send CMD to other device
-            state, _ = exec_cmd(cmd + [f">>{host}"], jsonify=True, skip_check=True)
+            state, _ = exec_cmd(cmd + [f">>{host}"], jsonify=True)
         except Exception as e:
             syslog(f"__run_intercon error: {e}")
     if state.lower() == "off":
@@ -78,7 +78,7 @@ def __run_intercon(state):
             host = cmd[0]
             cmd = cmd[1:]
             # Send CMD to other device
-            state, _ = exec_cmd(cmd + [f">>{host}"], jsonify=True, skip_check=True)
+            state, _ = exec_cmd(cmd + [f">>{host}"], jsonify=True)
         except Exception as e:
             syslog(f"__run_intercon error: {e}")
 

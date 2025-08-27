@@ -341,7 +341,7 @@ class PageUI:
             self.open_intercons.append(host)
             try:
                 # Send CMD to other device & show result
-                state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True, skip_check=True)
+                state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True)
                 if state:
                     self.cmd_task_tag = data_meta['tag']
                     if "Task is Busy" in data_meta['verdict'] and not run:
@@ -386,7 +386,7 @@ class PageUI:
             try:
                 cmd_list = cmd.strip().split()
                 # Send CMD to other device & show result
-                state, out = exec_cmd(cmd_list, skip_check=True)
+                state, out = exec_cmd(cmd_list)
                 try:
                     self.cmd_out = ''.join(out.strip().split()).replace(' ', '')
                 except Exception:

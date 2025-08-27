@@ -745,7 +745,7 @@ class PageUI:
             try:
                 cmd_list = cmd.strip().split()
                 # Send CMD to other device & show result
-                state, out = exec_cmd(cmd_list, skip_check=True)
+                state, out = exec_cmd(cmd_list)
                 cmd_out = out.strip()
             except Exception as e:
                 cmd_out = str(e)
@@ -780,7 +780,7 @@ class PageUI:
             # Check open host connection
             try:
                 # Send CMD to other device & show result
-                state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True, skip_check=True)
+                state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True)
                 if state:
                     self._cmd_task_tag = data_meta['tag']
                     if "Task is Busy" in data_meta['verdict'] and not run:

@@ -3,7 +3,6 @@ from binascii import hexlify
 from json import load, dump
 import uasyncio as asyncio
 from Tasks import NativeTask, lm_exec, lm_is_loaded
-from Network import get_mac
 from Config import cfgget
 from Debug import syslog
 from Files import OSPath, path_join, is_file
@@ -85,6 +84,7 @@ class ESPNowSS:
     _instance = None
 
     def __new__(cls, *args, **kwargs):
+        # SINGLETON PATTERN
         if cls._instance is None:
             # first time: actually create it
             cls._instance = super().__new__(cls)
@@ -93,11 +93,11 @@ class ESPNowSS:
     def __init__(self):
         # __init__ still runs each time, so guard if needed
         if not hasattr(self, '_initialized'):
+            self._initialized = True
             self.espnow = AIOESPNow()                   # Instance with async support
             self.espnow.active(True)
             self.devfid = cfgget('devfid')
             self.devices: dict[bytes, str] = {}         # mapping for { "mac address": "devfid" } pairs
-            self._initialized = True
             self.server_ready = False
             self.peer_cache = path_join(OSPath.DATA, "espnow_peers.app_json")
             self._load_peers()
@@ -252,6 +252,15 @@ class ESPNowSS:
         state = NativeTask().create(callback=self._asend_task(peer, task_id, msg), tag=task_id)
         return {task_id: "Starting"} if state else {task_id: "Already running"}
 
+    def cluster_send(self, msg):
+        """
+        Send message for all peers
+        """
+        _tasks = []
+        for peer_name in self.devices.values():
+            _tasks.append(self.send(peer_name, msg))
+        return _tasks
+
     # ----------- OTHER METHODS --------------
 
     async def _handshake(self, peer:bytes, tag:str):
@@ -260,21 +269,19 @@ class ESPNowSS:
         - with device caching
         """
         with NativeTask.TASKS.get(tag, None) as my_task:
-            if self.devices.get(peer) is not None:
-                my_task.out = "Already registered"
-                return
-            my_task.out = "ESPNow Add Peer"
-            try:
-                # PEER REGISTRATION
-                self.espnow.add_peer(peer)
-            except Exception as e:
-                my_task.out = f"ESPNow Peer Error: {e}"
-                return
+            if self.devices.get(peer) is None:
+                my_task.out = "ESPNow Add Peer"
+                try:
+                    # PEER REGISTRATION
+                    self.espnow.add_peer(peer)
+                except Exception as e:
+                    my_task.out = f"ESPNow Peer Error: {e}"
+                    return
             my_task.out = "Handshake In Progress..."
             sender = self.send(peer, "hello")
             task_key = list(sender.keys())[0]
             sender_task = NativeTask.TASKS.get(task_key, None)
-            result = await sender_task.wait_result(timeout=10)
+            result = await sender_task.await_result(timeout=10)
             expected_response =  f"hello {self.devfid}"
             is_ok = False
             if result == expected_response:
@@ -288,11 +295,17 @@ class ESPNowSS:
             sender_task.cancel()    # Delete sender task (cleanup)
 
 
-    def handshake(self, peer:bytes):
+    def handshake(self, peer:bytes|str):
         task_id = f"con.espnow.handshake"
         # Create an asynchronous sending task.
-        state = NativeTask().create(callback=self._handshake(peer, task_id), tag=task_id)
-        return {task_id: "Starting"} if state else {task_id: "Already running"}
+        if isinstance(peer, str) and ":" in peer:
+            # Convert 50:02:91:86:34:28 format to b'P\x02\x91\x864(' bytes
+            peer = bytes(int(x, 16) for x in peer.split(":"))
+        if isinstance(peer, bytes):
+            state = NativeTask().create(callback=self._handshake(peer, task_id), tag=task_id)
+            return {task_id: "Starting"} if state else {task_id: "Already running"}
+        else:
+            return {None: "Invalid MAC address format. Use 50:02:91:86:34:28 or b'P\\x02\\x91\\x864('"}
 
     def stats(self):
         """
@@ -309,23 +322,3 @@ class ESPNowSS:
         except Exception as e:
             _peers = str(e)
         return {"stats": _stats, "peers": _peers, "map": self.devices, "ready": self.server_ready}
-
-
-###################################################
-#                   Control functions             #
-###################################################
-INSTANCE = ESPNowSS()
-
-def initialize():
-    # TODO: remove, use ESPNowSS() class instead
-    global INSTANCE
-    if INSTANCE is None:
-        INSTANCE = ESPNowSS()
-    return INSTANCE
-
-
-def mac_address():
-    """
-    Get the binary MAC address.
-    """
-    return get_mac()

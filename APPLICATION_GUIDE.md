@@ -1,5 +1,35 @@
 # ![LOGO](./media/logo_mini.png?raw=true)
 
+This guide provides a detailed walkthrough for building, testing, and uploading Load Modules for micrOS. It is organized from beginner to advanced with links to examples and utilities
+
+## Beginner level
+- [LM\_basic.py](#lmbasicpy)
+- [LM\_basic\_led.py](#lmbasic_ledpy)
+- [LM\_template.py](#micros-lm_templatepy)
+- [microIO.py](#microiopy)
+
+## Intermediate level
+- [micrOS Types.py module](#-micros-typespy-module)
+- [micrOS LM\_types\_demo.py](#micros-lm_types_demopy)
+
+## Advanced level
+- [micrOS Common.py module](#micros-commonpy-module)
+  - [console(msg)](#consolemsg)
+  - [transition(from\_val, to\_val, step\_ms, interval\_sec)](#transitionfrom_val-to_val-step_ms-interval_sec)
+  - [transition\_gen(\*args, interval\_sec=1.0)](#transition_genargs-interval_sec10)
+  - [class SmartADC](#class-smartadc)
+  - [micro\_task(tag, task=None, \_wrap=False)](#micro_tasktag-tasknone-_wrapfalse)
+  - [manage\_task(tag, operation)](#manage_tasktag-operation)
+  - [exec\_cmd(cmd)](#exec_cmdcmd)
+  - [data\_logger(f\_name, data=None, limit=12, msgobj=None)](#data_loggerf_name-datanone-limit12-msgobjnone)
+  - [notify(text)](#notifytext)
+  - [web\_endpoint(endpoint, function)](#web_endpointendpoint-function)
+  - [AnimationPlayer(animation: callable=None, tag: str=None, batch\_draw: bool=False, batch\_size: int=None)](#animationplayeranimationcallablenone-tagstrnone-batch_drawboolfalse-batch_sizeintnone)
+  - [data\_dir(f\_name=None)](#data_dirf_namenone)
+  - [web\_dir(f\_name=None)](#web_dirf_namenone)
+
+---
+
 ```
 ██       ██████   █████  ██████      ███    ███  ██████  ██████  ██    ██ ██      ███████ ███████ 
 ██      ██    ██ ██   ██ ██   ██     ████  ████ ██    ██ ██   ██ ██    ██ ██      ██      ██      
@@ -30,10 +60,12 @@
 ██   ██ ██      ██       ██ ████   ██ ████   ██ ██      ██   ██ 
 ██████  █████   ██   ███ ██ ██ ██  ██ ██ ██  ██ █████   ██████  
 ██   ██ ██      ██    ██ ██ ██  ██ ██ ██  ██ ██ ██      ██   ██ 
-██████  ███████  ██████  ██ ██   ████ ██   ████ ███████ ██   ██ level
+██████  ███████  ██████  ██ ██   ████ ██   ████ ███████ ██   ██
 ```
 
-### LM\_basic.py
+# Beginner level
+
+## LM\_basic.py
 
 ```python
 """
@@ -69,7 +101,7 @@ def help(widgets=False):
 
 ```
 
-### LM\_basic\_led.py
+## LM\_basic\_led.py
 
 ```python
 """
@@ -163,7 +195,7 @@ For more info: Micropython official [Pins](https://docs.micropython.org/en/lates
 -------------------------------------------------------------------------------
 
 
-### micrOS LM\_template.py
+## micrOS LM\_template.py
 
 Function naming convesions for Load Modules.
 
@@ -294,7 +326,7 @@ def help(widgets=False):
 
 ```
 
-#### microIO.py
+## microIO.py
 
 ```python
 def bind_pin(tag, number=None):
@@ -331,8 +363,10 @@ def pinmap_search(keys):
 ██ ████   ██    ██    ██      ██   ██ ████  ████ ██      ██   ██ ██ ██   ██    ██    ██      
 ██ ██ ██  ██    ██    █████   ██████  ██ ████ ██ █████   ██   ██ ██ ███████    ██    █████   
 ██ ██  ██ ██    ██    ██      ██   ██ ██  ██  ██ ██      ██   ██ ██ ██   ██    ██    ██      
-██ ██   ████    ██    ███████ ██   ██ ██      ██ ███████ ██████  ██ ██   ██    ██    ███████ level
+██ ██   ████    ██    ███████ ██   ██ ██      ██ ███████ ██████  ██ ██   ██    ██    ███████
 ```
+
+# Inermediate level
 
 ## ![dashboard](./media/web_dashboard.png?raw=true) micrOS Types.py module
 
@@ -361,7 +395,7 @@ Tags:
 * Implementation of [TYPES](./micrOS/source/Types.py)
 
 
-### micrOS LM\_types\_demo.py
+## micrOS LM\_types\_demo.py
 
 ```python
 """
@@ -534,19 +568,21 @@ TYPE Example sytax:
 ██   ██ ██   ██ ██    ██ ██   ██ ████   ██ ██      ██      ██   ██ 
 ███████ ██   ██ ██    ██ ███████ ██ ██  ██ ██      █████   ██   ██ 
 ██   ██ ██   ██  ██  ██  ██   ██ ██  ██ ██ ██      ██      ██   ██ 
-██   ██ ██████    ████   ██   ██ ██   ████  ██████ ███████ ██████  level
+██   ██ ██████    ████   ██   ██ ██   ████  ██████ ███████ ██████
                                                                     
 ```
 
+# Advanced level
+
 ## micrOS Common.py module
 
-#### Common module with additinal features for LoadModule-s
+**Common module with additinal features for LoadModule-s**
 
 Module responsible for collecting additional feature definitions dedicated to the micrOS framework and LoadModules. Code: [micrOS/source/Common.py](./micrOS/source/Common.py)
 
 ------------------------------------
 
-### console
+### console(msg)
 
 **Example:** LM\_my\_module.py
 
@@ -610,47 +646,92 @@ Methods:
 
 ------------------------------------
 
-### micro\_task(tag, task=None)
+### micro\_task(tag, task=None, \_wrap=False)
 
 Async task creation from LoadModules.
 
-Parameters:
+```python
+def micro_task(tag: str, task=None, _wrap=False):
+    """
+    [LM] Async task manager.
+    Modes:
+      A) GET:
+         micro_task("tag") -> existing task object or None
+      B) CREATE:
+         micro_task("tag", task=...) -> True | None | False
+         Creates a new async task with the given tag if not already running.
+      C) CREATE AS DECORATOR (shortcut):
+         @micro_task("main", _wrap=True)
+         async def mytask(tag, ...): ...
+         # Calling mytask(...) will create/start a new task under "main._mytask"
 
-* tag: If None, returns the task generator object. If a taskID is provided, returns the existing task object by tag.
-* task: Coroutine to execute.
+    :param tag: Task tag string
+    :param task: Coroutine (or list of command arguments) to contract a task with
+                 the given async task callback
+    :param _wrap: When True, return a decorator factory (for use as @micro_task(...))
+    :return: Task object (GET), bool|None|False (CREATE), or decorator (DECORATOR)
+    """
+```
 
-Returns:
-
-* If tag is None, returns the task generator object. If a taskID is provided, returns the existing task object by tag. If task is provided, returns the task creation state: True for success, False for failure.
-
-**Example:** LM\_my\_task.py
+**Example: LM\_task\_example.py**
 
 ```python
 from Common import micro_task
 
-async def __task(period_ms):
-	counter = 0
-	with micro_task(tag="mytask") as my_task:
-		while True:
-			
-			# DO something here in the async loop...
-			counter += 1
+async def __task(tag, period_ms):
+    counter = 0
+    with micro_task(tag=tag) as my_task:
+        while True:
+            # DO something here in the async loop...
+            counter += 1
 
-			# Store data in task cache (task show mytask)
-			my_task.out = f'MyTask Counter: {counter}'
-		
-			# Async sleep - feed event loop
-			await my_task.feed(sleep_ms=period_ms)
-			# [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
+            # Store data in task cache (task show mytask)
+            my_task.out = f'MyTask Counter: {counter}'
 
+            # Async sleep - feed event loop
+            await my_task.feed(sleep_ms=period_ms)
+            # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
 
 def create_task():
-	# [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-	state = micro_task(tag="mytask", task=__task(period_ms=5))
-	return "Starting" if state else "Already running"
+    """
+    Legacy way of task creation (with exact task tagging)
+    """
+    # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
+    task_tag = "microtask.run"
+    state = micro_task(tag=task_tag, task=__task(tag=task_tag, period_ms=5))
+    return "Starting" if state else "Already running"
 ```
 
-Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) etc.
+> Than you can call `task_example create_task` function.
+
+**New Decorator way - shorter more efficient**
+
+```python
+from Common import micro_task
+
+@micro_task("microtask", _wrap=True)
+async def mytask(tag, period_ms=30):
+    """
+    New shorter way of task creation
+     with decorator function
+    """
+    counter = 0
+    with micro_task(tag=tag) as my_task:
+        while True:
+            # DO something here in the async loop...
+            counter += 1
+
+            # Store data in task cache (task show mytask)
+            my_task.out = f'MyTask Counter: {counter}'
+
+            # Async sleep - feed event loop
+            await my_task.feed(sleep_ms=period_ms)
+            # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
+```
+
+> Than you can call `task_example mytask` function.
+
+Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) [LM_robustness](./micrOS/source/LM_robustness.py) etc.
 
 ------------------------------------
 
@@ -676,13 +757,19 @@ Usage(s): [LM\_oled\_ui](./micrOS/source/LM_oled_ui.py) [LM\_i2s\_mic](./micrOS/
 
 ------------------------------------
 
-### exec_cmd(cmd)
+### exec\_cmd(cmd:list, jsonify:bool=None, secure=False
 
 Run sync task from LoadModules by string list.
 
 Parameters:
 
-- `cmd`: String list for Load Module execution
+```
+  Single (sync) LM execution
+    :param cmd: command string list, ex.: ['system', 'clock']
+    :param jsonify: request json output
+    :param secure: check LM is loaded, if NOT skip execution 'NotAllowed'
+  return state, output
+```
 
 Example:
 
@@ -695,15 +782,6 @@ Where `"system"` is the module name and `"info"` is the function name, and it no
 
 
 > Note: `cmd` can contain only one command with its optional paramater. So this method not supports multi command execution.
-
-```python
-def exec_cmd(cmd):
-    """
-    Single (sync) LM execution - user interface
-    :param cmd: command string list
-    return state, output
-    """
-```
 
 Usage(s): [LM\_oled_ui](./micrOS/source/LM_oled_ui.py)
 
@@ -938,7 +1016,7 @@ class AnimationPlayer:
         raise NotImplementedError("Child class must implement clear method.")
 ```
 
-#### Generator example:
+**Generator example:**
 
 ```python
 def generator():

@@ -55,16 +55,15 @@ def set_dev_uid():
 
 
 def get_mac():
-    return WLAN().config('mac')
+    return NW.NIF.config('mac')
 
 #################################################################
 #                       SET WIFI STA MODE                       #
 #################################################################
 
 
-def __select_available_wifi_nw(sta_if:STA_IF, raw_essid:str, raw_pwd:str):
+def _select_available_wifi_nw(raw_essid:str, raw_pwd:str):
     """
-    raw_essid: essid parameter, in case of multiple values separator is ;
     raw_pwd: essid pwd parameter,  in case of multiple values separator is ;
     return detected essid with corresponding password
     """
@@ -72,7 +71,7 @@ def __select_available_wifi_nw(sta_if:STA_IF, raw_essid:str, raw_pwd:str):
         essid = essid.strip()
         # Scan wifi network - retry workaround
         for _ in range(0, 2):
-            if essid in (wifispot[0].decode('utf-8') for wifispot in sta_if.scan()):
+            if essid in (wifispot[0].decode('utf-8') for wifispot in NW.NIF.scan()):
                 console_write(f'\t| - [NW: STA] ESSID WAS FOUND: {essid}')
                 try:
                     return essid, str(raw_pwd.split(';')[idx]).strip()
@@ -94,6 +93,7 @@ def set_wifi(essid:str, pwd:str, timeout=60):
     # Set STA and Connect
     sta_if = WLAN(STA_IF)
     sta_if.active(True)
+    NW.NIF = sta_if
     # Handle rsp2-w limitation (try)
     try:
         # Set custom DHCP hostname for dhcp name resolve
@@ -105,7 +105,7 @@ def set_wifi(essid:str, pwd:str, timeout=60):
         console_write(f"\t| [NW: STA] ALREADY CONNECTED TO {essid}")
     else:
         # Multiple essid and pwd handling with retry mechanism
-        essid, pwd = __select_available_wifi_nw(sta_if, essid, pwd)
+        essid, pwd = _select_available_wifi_nw(essid, pwd)
 
         # Connect to the located wifi network
         if essid is not None:
@@ -131,7 +131,6 @@ def set_wifi(essid:str, pwd:str, timeout=60):
     # Store STA IP (make it static ip)
     cfgput("devip", str(sta_if.ifconfig()[0]))
     set_dev_uid()
-    NW.NIF = sta_if
     return sta_if.isconnected()
 
 
@@ -171,6 +170,7 @@ def set_access_point(_essid:str, _pwd:str, _authmode:int=3):
 
     ap_if = WLAN(AP_IF)
     ap_if.active(True)
+    NW.NIF = ap_if
     # Set WiFi access point name (formally known as ESSID) and WiFi authmode (3): WPA2-PSK
     try:
         # Config #1 (esp)
@@ -189,7 +189,6 @@ def set_access_point(_essid:str, _pwd:str, _authmode:int=3):
         syslog("[ERR][AP] error")
     console_write(f"\t|\t| [NW: AP] network config: {str(ap_if.ifconfig())}")
     set_dev_uid()
-    NW.NIF = ap_if
     return ap_if.active()
 
 #################################################################

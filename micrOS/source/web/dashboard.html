@@ -38,6 +38,7 @@
 </head>
 <body>
     <h1> micrOS dashboard </h1>
+    <p id="restInfo"></p>
     <!-- Container for the dynamically generated list -->
     <section id="widgets-section"></section>
     <br><br><br>
@@ -54,6 +55,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Init basic info from board after DOM is fully loaded
+            restInfo(showPages=false);
 
             // INIT DASHBOARD (load active modules -> build page)
             DynamicWidgetLoad();

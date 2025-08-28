@@ -22,7 +22,7 @@ from uos import rename as move_file
 try:
     from microIO import set_pinmap
 except:
-    syslog("[ERR] LogicalPins import: set_pinmap")
+    syslog("[ERR] microIO import: set_pinmap")
     set_pinmap = None
 
 

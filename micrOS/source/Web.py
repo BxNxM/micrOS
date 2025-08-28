@@ -9,7 +9,7 @@ Built-in-function:
     - "virtual" endpoints                           - to reply from script on a defined endpoint
         - stream                                    - stream data (jpeg) function
 
-Designed by Marcell Ban aka BxNxM
+Designed by Marcell Ban aka BxNxM and szeka9 (GitHub)
 """
 
 from json import dumps, loads
@@ -18,6 +18,10 @@ from Tasks import lm_exec, NativeTask, lm_is_loaded
 from Debug import syslog, console_write
 from Config import cfgget
 from Files import OSPath, path_join
+try:
+    from gc import mem_free, collect
+except:
+    from simgc import mem_free, collect  # simulator mode
 
 
 class WebEngine:
@@ -36,14 +40,18 @@ class WebEngine:
                      "jpeg": "image/jpeg",
                      "png": "image/png",
                      "gif": "image/gif"}
-    METHODS = ["GET", "POST"]
+    METHODS = ("GET", "POST")
+    UI_RAM_REQ = 50_000            # in bytes (50 kb)
 
     def __init__(self, client, version):
         self.client = client
         WebEngine.VERSION = version
 
+    async def a_send(self, response:str, encode:str='utf8'):
+        raise NotImplementedError("Child class must implement a_send coroutine.")
+
     @staticmethod
-    def file_type(path):
+    def file_type(path:str):
         """File dynamic Content-Type handling"""
         default_type = "text/plain"
         # Extract the file extension
@@ -51,35 +59,32 @@ class WebEngine:
         # Return the content type based on the file extension
         return WebEngine.CONTENT_TYPES.get(ext, default_type)
 
-    async def response(self, request):
-        """HTTP GET REQUEST - WEB INTERFACE"""
-        # Protocol validation
+    @staticmethod
+    def is_mem_limited():
+        """Check if memory is limited for the FE"""
+        collect()
+        if mem_free() < WebEngine.UI_RAM_REQ:
+            return True
+        return False
+
+    async def response(self, request:str):
+        """HTTP GET/POST REQUEST - WEB INTERFACE"""
+        # [0] PROTOCOL VALIDATION AND PARSING
         lines = request.splitlines()
         if not lines:
             _err = "Empty request"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
-
         request_parts = lines[0].split()
         if len(request_parts) != 3:
             _err = "Malformed request line"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
-
         _method, url, _version = request_parts
-
         if _method not in self.METHODS or not _version.startswith('HTTP/'):
             _err = f"Unsupported method: {_method} {_version}"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
-
-        try:
-            blank_index = lines.index("")
-            body_lines = lines[blank_index+1:]
-        except ValueError:
-            body_lines = []
-
-        body = "\n".join(body_lines)
 
         # [1] REST API GET ENDPOINT [/rest]
         if url.startswith('/rest') and _method == "GET":
@@ -90,7 +95,12 @@ class WebEngine:
                 await self.client.a_send(self.REQ404.format(len=len(str(e)), data=e))
             return
         # [2] DYNAMIC/USER ENDPOINTS (from Load Modules)
-        if await self.endpoints(url, _method, body):
+        payload = lines if _method == "POST" else []
+        if await self.endpoints(url, _method, payload):
+            return
+        if self.is_mem_limited():
+            _err = "Low memory: serving API only."
+            await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
         # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
         if url.startswith('/') and _method == "GET":
@@ -105,17 +115,8 @@ class WebEngine:
                 with open(web_resource, 'r') as file:
                     data = file.read()
                 response = self.REQ200.format(dtype=WebEngine.file_type(resource), len=len(data), data=data)
-                # Send entire response data
+                # Send entire response data (implement chunking if necessary)
                 await self.client.a_send(response)
-
-                # Send chunks of response data (experimental)
-                #response_len, chunk_size, position = len(response), 300, 0
-                #while position < response_len:
-                #    # Calculate the size of the next chunk
-                #    next_chunk_size = min(chunk_size, response_len - position)
-                #    chunk = response[position:position + next_chunk_size]
-                #    await self.client.a_send(chunk)
-                #    position += next_chunk_size
             except Exception as e:
                 if 'memory allocation failed' in str(e):
                     syslog(f"[ERR] WebCli {resource}: {e}")
@@ -151,7 +152,7 @@ class WebEngine:
         response = dumps(resp_schema)
         return WebEngine.REQ200.format(dtype='text/html', len=len(response), data=response)
 
-    async def endpoints(self, url, method, body):
+    async def endpoints(self, url:str, method:str, payload:list):
         url = url[1:]  # Cut first / char
         if url in WebEngine.ENDPOINTS and method in WebEngine.ENDPOINTS[url]:
             console_write(f"[WebCli] endpoint: {url}")
@@ -163,7 +164,12 @@ class WebEngine:
                 #       task (streaming MIME types): multipart/x-mixed-replace | multipart/form-data  - data: dict{callback,content-type}
                 #                                                                                       content-type: image/jpeg | audio/l16;*
                 if method == "POST":
-                    dtype, data = WebEngine.ENDPOINTS[url][method](body)
+                    try:
+                        blank_index = payload.index("")
+                        body_lines = payload[blank_index + 1:]
+                    except ValueError:
+                        body_lines = []
+                    dtype, data = WebEngine.ENDPOINTS[url][method]("\n".join(body_lines))
                 else:
                     dtype, data = WebEngine.ENDPOINTS[url][method]()
 

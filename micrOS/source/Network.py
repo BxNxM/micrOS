@@ -20,6 +20,7 @@ from network import AP_IF, STA_IF, WLAN
 from machine import unique_id
 from Config import cfgget, cfgput
 from Debug import console_write, syslog
+from microIO import detect_platform
 
 
 class NW:
@@ -48,13 +49,27 @@ def ifconfig():
 
 
 def set_dev_uid():
+    if detect_platform() == "esp32c6":
+        # ESP32-C6: unique_id() not unique (can return same ID on different boards)
+        try:
+            sta = WLAN(STA_IF)
+            was = sta.active()
+            if not was: sta.active(True)
+            uid = hexlify(sta.config('mac')).decode()
+            if not was: sta.active(False)
+            cfgput('hwuid', f"micr{uid}OS")
+            return
+        except Exception as e:
+            syslog(f"[ERR] set_dev_uid (esp32c6): {e}")
+    # Legacy micrOS device UID generation (+fallback)
     try:
         cfgput('hwuid', f'micr{hexlify(unique_id()).decode("utf-8")}OS')
     except Exception as e:
-        syslog(f"[ERR] set_dev_uid error: {e}")
+        syslog(f"[ERR] set_dev_uid: {e}")
 
 
 def get_mac():
+    """ Get AP/STA mac address as raw binary data"""
     return NW.NIF.config('mac')
 
 #################################################################

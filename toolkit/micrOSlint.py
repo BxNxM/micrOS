@@ -226,7 +226,8 @@ def _run_pylint(file_name):
         '--disable=too-many-positional-arguments',  # :D I don't think so :D
         '--disable=too-many-instance-attributes',   # :D I don't think so :D
         '--disable=wrong-import-position',          # :D I don't think so :D !!! It is needed due to optimizations
-        '--disable=too-many-arguments'
+        '--disable=too-many-arguments',             # :D I know what I am doing...
+        '--disable=multiple-statements',            # :D I line oneliners
     ]
     if file_name in ['Tasks.py', 'microIO.py', 'Types.py']:
         pylint_opts.append('--disable=exec-used')   # Disable micrOS execution core exec/eval warning

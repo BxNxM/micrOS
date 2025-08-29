@@ -167,7 +167,8 @@ class WebCli(Client, WebEngine):
                 state, request = await self.read()
                 if state:
                     break
-                await self.response(request)
+                if not await self.response(request):
+                    break
             except Exception as e:
                 syslog(f"[ERR] Client.run_web: {e}")
                 break

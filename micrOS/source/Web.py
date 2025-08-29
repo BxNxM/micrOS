@@ -68,24 +68,28 @@ class WebEngine:
             return True, mfree
         return False, mfree
 
-    async def response(self, request:str):
+    async def response(self, request:str) -> bool:
         """HTTP GET/POST REQUEST - WEB INTERFACE"""
         # [0] PROTOCOL VALIDATION AND PARSING
         lines = request.splitlines()
         if not lines:
             _err = "Empty request"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
-            return
+            return True
         request_parts = lines[0].split()
         if len(request_parts) != 3:
+            if request_parts[0] not in self.METHODS:
+                # INVALID REQUEST - REQUEST OVERFLOW - NO RESPONSE
+                syslog(f"[WARN] WebCli REQ Overflow: {len(lines[0])}")
+                return False                    # Close connection...
             _err = "Malformed request line"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
-            return
+            return True
         _method, url, _version = request_parts
         if _method not in self.METHODS or not _version.startswith('HTTP/'):
             _err = f"Unsupported method: {_method} {_version}"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
-            return
+            return True
 
         # [1] REST API GET ENDPOINT [/rest]
         if url.startswith('/rest') and _method == "GET":
@@ -94,16 +98,16 @@ class WebEngine:
                 await self.client.a_send(WebEngine.rest(url))
             except Exception as e:
                 await self.client.a_send(self.REQ404.format(len=len(str(e)), data=e))
-            return
+            return True
         # [2] DYNAMIC/USER ENDPOINTS (from Load Modules)
         payload = lines if _method == "POST" else []
         if await self.endpoints(url, _method, payload):
-            return
+            return True
         mem_limited, free = self.is_mem_limited()
         if mem_limited:
             _err = f"Low memory ({free} kb): serving API only."
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
-            return
+            return True
         # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
         if url.startswith('/') and _method == "GET":
             resource = 'index.html' if url == '/' else url.replace('/', '')
@@ -111,7 +115,7 @@ class WebEngine:
             self.client.console(f"[WebCli] --- {url} ACCEPT -> {web_resource}")
             if resource.split('.')[-1] not in tuple(self.CONTENT_TYPES.keys()):
                 await self.client.a_send(self.REQ404.format(len=27, data='404 Not supported file type'))
-                return
+                return True
             try:
                 # SEND RESOURCE CONTENT: HTML, JS, CSS (WebEngine.CONTENT_TYPES)
                 with open(web_resource, 'r') as file:
@@ -123,9 +127,10 @@ class WebEngine:
                 if 'memory allocation failed' in str(e):
                     syslog(f"[ERR] WebCli {resource}: {e}")
                 await self.client.a_send(self.REQ404.format(len=13, data='404 Not Found'))
-            return
+            return True
         # INVALID/BAD REQUEST
         await self.client.a_send(self.REQ400.format(len=15, data='400 Bad Request'))
+        return True
 
     @staticmethod
     def rest(url):

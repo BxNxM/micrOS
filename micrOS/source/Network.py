@@ -114,7 +114,13 @@ def set_wifi(essid:str, pwd:str, timeout=60):
         # Set custom DHCP hostname for dhcp name resolve
         sta_if.config(dhcp_hostname=cfgget('devfid'))
     except Exception as e:
-        console_write(f"dhcp_hostname conf error: {e}")
+        syslog(f"[ERR] STA dhcp_hostname: {e}")
+    if cfgget("espnow"):
+        try:
+            # prevents Wi-Fi PS from dropping ESP-NOW frames while STA is connected.
+            sta_if.config(pm=sta_if.PM_NONE)
+        except Exception as e:
+            syslog(f"[ERR] ESPNow STA PM_NONE: {e}")
     # Check are we already connected
     if sta_if.isconnected():
         console_write(f"\t| [NW: STA] ALREADY CONNECTED TO {essid}")

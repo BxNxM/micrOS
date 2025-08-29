@@ -236,6 +236,15 @@ def get_colormap():
     return load().export_colormap()
 
 
+def status():
+    """
+    Get the current status of the matrix
+    """
+    r, g, b = NeoPixelMatrix.DEFAULT_COLOR
+    br = NeoPixelMatrix.INSTANCE._brightness
+    return {'r': r, 'g': g, 'b': b, 'br': int(br*100)}
+
+
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 
@@ -423,5 +432,6 @@ def help(widgets=False):
                              'BUTTON noise speed_ms=85',
                              'SLIDER control speed_ms=<1-200-2> bt_draw=None',
                              'draw_colormap bitmap=[(0,0,(10,2,0)),(x,y,color),...]',
-                             'get_colormap'
+                             'get_colormap',
+                             'status'
                     ), widgets=widgets)

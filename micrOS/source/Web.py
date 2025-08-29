@@ -41,7 +41,7 @@ class WebEngine:
                      "png": "image/png",
                      "gif": "image/gif"}
     METHODS = ("GET", "POST")
-    UI_RAM_REQ = 50_000            # in bytes (50 kb)
+    UI_RAM_REQ = 50            # in kilobytes
 
     def __init__(self, client, version):
         self.client = client
@@ -60,12 +60,13 @@ class WebEngine:
         return WebEngine.CONTENT_TYPES.get(ext, default_type)
 
     @staticmethod
-    def is_mem_limited():
+    def is_mem_limited() -> (bool, int):
         """Check if memory is limited for the FE"""
         collect()
-        if mem_free() < WebEngine.UI_RAM_REQ:
-            return True
-        return False
+        mfree = int(mem_free() * 0.001)
+        if mfree < WebEngine.UI_RAM_REQ:
+            return True, mfree
+        return False, mfree
 
     async def response(self, request:str):
         """HTTP GET/POST REQUEST - WEB INTERFACE"""
@@ -98,8 +99,9 @@ class WebEngine:
         payload = lines if _method == "POST" else []
         if await self.endpoints(url, _method, payload):
             return
-        if self.is_mem_limited():
-            _err = "Low memory: serving API only."
+        mem_limited, free = self.is_mem_limited()
+        if mem_limited:
+            _err = f"Low memory ({free} kb): serving API only."
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return
         # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]

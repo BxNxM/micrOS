@@ -222,7 +222,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/cluster.png?raw=true",
         "load": {
-            "doc": "\n    Enable ESPNow protocol 'cluster' module access\n    :param anchor: create AP as Channel Anchor (Channel Leader Role)\n    :param refresh: refresh channel sync period in seconds (AP)\n    ",
+            "doc": "\n    Enable ESPNow protocol 'cluster' module access\n    :param anchor: create AP as Channel Anchor (Channel Leader Role)\n    :param refresh: refresh channel sync period in minute (AP)\n    ",
             "param(s)": "anchor:bool=False refresh:int=None"
         },
         "members": {

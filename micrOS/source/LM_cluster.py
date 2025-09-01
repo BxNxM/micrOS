@@ -3,6 +3,7 @@ micrOS ESPNow cluster module.
   -- STA/AP Channel sync            [OK]
   -- wifi settings sync             [OK]
   -- health (cluster availability)  [OK]
+  -- cluster run <cmd>              [OK]
 ShellCli (socket) extension (todo)
   -- health (cluster availability)
 """
@@ -22,7 +23,7 @@ class Cluster:
     CHANNEL = 6                     # Leader channel to align with
     ANCHOR_SSID_POSTFIX = "-mCSA"   # micrOS (Wifi) Channel Sync Anchor
     ANCHOR_ENABLED = False          # Anchor indicator
-    REFRESH_MS = 60                 # Refresh channel sync period (AP mode)
+    REFRESH_MS = 20 * 60_000        # 20min - refresh channel sync period (AP mode)
 
 #########################################################
 #           CLUSTER - LOCAL EXECUTION "ON TARGET"       #
@@ -97,7 +98,7 @@ async def _align_channel(tag:str, sta:STA_IF, ap:AP_IF):
             for s, b, c, *_ in sta.scan():
                 sta_name = (s.decode() if isinstance(s, bytes) else s)
                 if sta_name.endswith(Cluster.ANCHOR_SSID_POSTFIX):
-                    my_task.out = f"Anchor {sta_name} channel: {c} (refresh: {_refresh_ms}s)"
+                    my_task.out = f"Anchor {sta_name} channel: {c} (refresh: {int(_refresh_ms/60_000)}min)"
                     _channel = c
 
             if not _initialized or _channel != Cluster.CHANNEL:
@@ -139,23 +140,22 @@ def __configure_cluster_network(anchor=False):
         if not sta.active(): sta.active(True)
         return sta
 
-    micros_nw = ifconfig()[0]               # System mode: STA or AP
     # CONFIGURE WIFI CHANNEL SYNC ROLES
-    if anchor:
-        # CLUSTER LEADER - ANCHOR ROLE - WIFI CHANNEL SYNC
-        if micros_nw == "STA":
+    micros_nw = ifconfig()[0]
+    # MICROS in STA MODE
+    if micros_nw == "STA":
+        if anchor:
             # CREATE CHANNEL ANCHOR - AP channel is inherited from STA
             Cluster.ANCHOR_ENABLED = _conf_ap_anchor()
-        else:
-            # NO AP MODE ANCHOR FEATURE IS SUPPORTED (YET)
-            return f"micrOS Anchor feature is not supported in {micros_nw} mode"
     else:
-        # CLUSTER FOLLOWER - JOIN ROLE - WIFI CHANNEL SYNC
-        if micros_nw == "AP":
-            ap, sta = WLAN(AP_IF), _enable_sta()
-            _align_channel(sta, ap)
-    return {"channel": Cluster.CHANNEL, "primary_nw": micros_nw,
-            "anchor": Cluster.ANCHOR_ENABLED, "refresh": Cluster.REFRESH_MS}
+        # MICROS in AP MODE: CLUSTER FOLLOWER - WIFI CHANNEL SYNC WITH ANCHOR
+        ap, sta = WLAN(AP_IF), _enable_sta()
+        _align_channel(sta, ap)
+        if anchor:
+            # MICROS in AP MODE - RECONFIGURE AP NAME to match Anchor
+            # EXPERIMENTAL FEATURE: Scans and Advertise the channel as well.
+            Cluster.ANCHOR_ENABLED = _conf_ap_anchor()
+    return status()
 
 
 #########################################################
@@ -210,26 +210,30 @@ def members():
     return {hexlify(mac, ':').decode(): name for mac, name in ESPNOW.devices.items()}
 
 
-def load(anchor:bool=False, refresh:int=None):
-    """
-    Enable ESPNow protocol 'cluster' module access
-    :param anchor: create AP as Channel Anchor (Channel Leader Role)
-    :param refresh: refresh channel sync period in seconds (AP)
-    """
-    if ESPNOW is None:
-        return "ESPNow is disabled"
-    if refresh is not None:
-        Cluster.REFRESH_MS = 15_000 if refresh < 15 else refresh * 1000
-    out = __configure_cluster_network(anchor)
-    return f"Enable cluster module access\n{out}"
-
-
 def status():
     """
     Cluster setup status
     """
-    return {"channel": Cluster.CHANNEL, "primary_nw": ifconfig()[0],
-            "anchor": Cluster.ANCHOR_ENABLED, "refresh": Cluster.REFRESH_MS}
+    nw_if = ifconfig()[0]
+    cluster_settings = {"channel": Cluster.CHANNEL, "primary_nw": nw_if,
+                        "anchor": Cluster.ANCHOR_ENABLED}
+    if nw_if == "AP":
+        cluster_settings["refresh"] = Cluster.REFRESH_MS
+    return cluster_settings
+
+
+def load(anchor:bool=False, refresh:int=None):
+    """
+    Enable ESPNow protocol 'cluster' module access
+    :param anchor: create AP as Channel Anchor (Channel Leader Role)
+    :param refresh: refresh channel sync period in minute (AP)
+    """
+    if ESPNOW is None:
+        return "ESPNow is disabled"
+    if refresh is not None:
+        Cluster.REFRESH_MS = 60_000 if refresh < 1 else refresh * 60_000
+    out = __configure_cluster_network(anchor)
+    return f"Enable cluster module access\n{out}"
 
 
 def help(widgets=True):
@@ -237,7 +241,7 @@ def help(widgets=True):
     [BETA]
     Show help for cluster commands
     """
-    return ("load anchor=False refresh=60",
+    return ("load anchor=False refresh=20",
             "run 'command'",
             "sync_wifi",
             "health",

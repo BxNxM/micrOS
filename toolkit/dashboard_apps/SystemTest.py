@@ -551,8 +551,8 @@ def webcli_test():
             out = CLIENT.execute(['conf', 'devip'], tout=TIMEOUT_SEC)
             if out[0] and out[1] is not None:
                 devip = out[1]
-                endpoints.append(f'http://{devip}')
                 endpoints.append(f'http://{devip}/rest')
+                endpoints.append(f'http://{devip}')
 
             for endpoint in endpoints:
                 _start_t = time.time()

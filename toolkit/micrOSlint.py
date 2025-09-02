@@ -18,7 +18,7 @@ MICROS_SOURCE_DIR = os.path.join(MYPATH, '../micrOS/source')
 RELEASE_INFO_PATH = os.path.join(MYPATH, '../micrOS/release_info/micrOS_ReleaseInfo')
 
 # MICROS LINTER CONFIG
-ALLOWED_LM_DEP_WARNS = 6        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
+ALLOWED_LM_DEP_WARNS = 4        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
 
 def parse_micros_file_categories(verbose=True):
     """
@@ -27,11 +27,17 @@ def parse_micros_file_categories(verbose=True):
     file_ignore_list = ['.DS_Store']
     # micrOS file categories
     categories = {'core': [], 'load_module': [], 'pin_maps': [], 'other': []}
-    files = [f for f in LocalMachine.FileHandler.list_dir(MICROS_SOURCE_DIR) if f not in file_ignore_list]
+    modules_path = os.path.join(MICROS_SOURCE_DIR, "modules")
+    web_path = os.path.join(MICROS_SOURCE_DIR, "web")
+    check_file = lambda _b, _f: os.path.isfile(os.path.join(_b, _f)) and _f not in file_ignore_list
+    root_files = [f for f in LocalMachine.FileHandler.list_dir(MICROS_SOURCE_DIR) if check_file(MICROS_SOURCE_DIR, f)]
+    module_files = [f"modules/{f}" for f in LocalMachine.FileHandler.list_dir(modules_path) if check_file(modules_path, f)]
+    web_files = [f"web/{f}" for f in LocalMachine.FileHandler.list_dir(web_path) if check_file(web_path, f)]
+    files = root_files + module_files + web_files
     for f in files:
-        if f.startswith('LM_') and f.endswith('.py'):
+        if f.endswith('.py') and "LM_" in f:
             categories['load_module'].append(f)
-        elif f.startswith('IO_') and f.endswith('.py'):
+        elif f.endswith('.py') and "IO_" in f:
             categories['pin_maps'].append(f)
         elif f.endswith('.py'):
             categories['core'].append(f)
@@ -179,7 +185,8 @@ def load_module_checker(categories, verbose=True):
                 _allowed.append(_allow)
         return _relation, _allowed
 
-    lm_god_mode = ['LM_system.py', 'LM_pacman.py', 'LM_intercon.py']
+    lm_god_mode = ['modules/LM_system.py', 'modules/LM_pacman.py',
+                   'modules/LM_espnow.py', 'modules/LM_cluster.py']
     state_lm_dep = True
     verdict = []
     lm_resources = categories['load_module']
@@ -472,7 +479,7 @@ def short_report(categories, states, verbose=True):
     print(f"load_module_checker:                load module dependency check (no core): {c_OK if lm_dep[0] else c_NOK} {'' if lm_dep[1] == 0 else f'{lm_dep[1]}{_vis(lm_dep_diff)} warning(s)'}")
     print(f"  core pylint score:                {core_pylint}{_pyl_vis(core_score_diff)}")
     print(f"load module pylint score:           {lm_pylint}{_pyl_vis(load_score_diff)}")
-    print(f"pylint resource check (syntax?):     {c_OK if pylint_check[0] else f'{c_NOK}: {pylint_check[1]}' }")
+    print(f"pylint resource check (syntax):     {c_OK if pylint_check[0] else f'{c_NOK}: {pylint_check[1]}' }")
 
     exitcode = sum([1 for k, v in states.items() if not v[0]])
     print(f"micrOSlint verdict: {c_OK if exitcode == 0 else c_NOK}")

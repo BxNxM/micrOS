@@ -14,7 +14,7 @@ Designed by Marcell Ban aka BxNxM
 from sys import modules
 from machine import reset as hard_reset, soft_reset
 from Config import cfgget, cfgput
-from Files import ilist_fs
+from Files import OSPath, ilist_fs, path_join
 from Tasks import lm_exec
 from Debug import syslog
 
@@ -25,7 +25,7 @@ from Debug import syslog
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.16.1-0'
+    MICROS_VERSION = '2.17.0-0'
 
     def __init__(self):
         """
@@ -257,6 +257,7 @@ class Shell:
         Dump LM module with help function call - in case of [mpy] files
         """
         async def _help(mods):
+            nonlocal mpath
             for lm_path in mods:
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:
@@ -264,7 +265,7 @@ class Shell:
                     if lm_path.endswith('.mpy'):
                         await msg_obj(f"  {' ' * len(lm_path.replace('LM_', '').split('.')[0])}help")
                         continue
-                    with open(lm_path, 'r') as f:
+                    with open(path_join(mpath, lm_path), 'r') as f:
                         line = "micrOSisTheBest"
                         while line:
                             line = f.readline()
@@ -278,12 +279,14 @@ class Shell:
 
         await msg_obj("")
         # [1] list active modules (default in shell)
+        mpath = OSPath.MODULES
         if active_only:
             mod_keys = modules.keys()
-            active_modules = (dir_mod for dir_mod in ilist_fs(type_filter='f', select="LM") if dir_mod.split('.')[0] in mod_keys)
+            active_modules = (dir_mod for dir_mod in ilist_fs(path=mpath, type_filter='f', select="LM")
+                              if dir_mod.split('.')[0] in mod_keys)
             return await _help(active_modules)
         # [2] list all LMs on file system (ALL - help lm) - manual
-        return await _help(ilist_fs(type_filter='f', select="LM"))
+        return await _help(ilist_fs(path=mpath, type_filter='f', select="LM"))
 
     @staticmethod
     async def webrepl(msg_obj, update=False):

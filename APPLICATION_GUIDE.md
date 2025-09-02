@@ -549,7 +549,7 @@ simulator $ types_demo help True
  {"type": "button", "lm_call": "toggle ", "options": ["None"]},
 ```
 
-Usage(s): [LM_neopixel](./micrOS/source/LM_neopixel.py), etc. in most of the modules :)
+Usage(s): [LM_neopixel](micrOS/source/modules/LM_neopixel.py), etc. in most of the modules :)
 
 TYPE Example sytax:
 
@@ -594,7 +594,7 @@ def write_and_light(msg="Hello world!"):
                        #     When dbg=True in node_config
 ```
 
-Usage(s): [LM_sound_event](./micrOS/source/LM_sound_event.py) [LM_demo](./micrOS/source/LM_demo.py) 
+Usage(s): [LM_sound_event](micrOS/source/modules/LM_sound_event.py) [LM_demo](./micrOS/source/LM_demo.py) 
 
 ------------------------------------
 
@@ -613,7 +613,7 @@ Returns:
 
 * A generator that yields the intermediate values between from_val and to_val in steps of step_ms.
 
-Usage(s): [LM_rgb](./micrOS/source/LM_rgb.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_servo](./micrOS/source/LM_servo.py)
+Usage(s): [LM_rgb](micrOS/source/modules/LM_rgb.py) [LM_cct](micrOS/source/modules/LM_cct.py) [LM_servo](micrOS/source/modules/LM_servo.py)
 
 ------------------------------------
 
@@ -630,7 +630,7 @@ Returns:
 
 * If only one transition generator is created, it returns the generator and the step size in milliseconds (gen, step_ms). If multiple transition generators are created, it returns a list of generators and the step size in milliseconds ([gen1, gen2, ...], step_ms).
 
-Usage(s): [LM_rgb](./micrOS/source/LM_rgb.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_servo](./micrOS/source/LM_servo.py)
+Usage(s): [LM_rgb](micrOS/source/modules/LM_rgb.py) [LM_cct](micrOS/source/modules/LM_cct.py) [LM_servo](micrOS/source/modules/LM_servo.py)
 
 ------------------------------------
 
@@ -731,7 +731,7 @@ async def mytask(tag, period_ms=30):
 
 > Than you can call `task_example mytask` function.
 
-Usage(s): [LM_presence](./micrOS/source/LM_presence.py) [LM_buzzer](./micrOS/source/LM_buzzer.py) [LM_cct](./micrOS/source/LM_cct.py) [LM_dimmer](./micrOS/source/LM_dimmer.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_neopixel](./micrOS/source/LM_neopixel.py) [LM_rgb](./micrOS/source/LM_rgb.py) [LM_roboarm](./micrOS/source/LM_roboarm.py) [LM_robustness](./micrOS/source/LM_robustness.py) etc.
+Usage(s): [LM_presence](micrOS/source/modules/LM_presence.py) [LM_buzzer](micrOS/source/modules/LM_buzzer.py) [LM_cct](micrOS/source/modules/LM_cct.py) [LM_dimmer](micrOS/source/modules/LM_dimmer.py) [LM_neopixel](micrOS/source/modules/LM_neopixel.py) [LM_neopixel](micrOS/source/modules/LM_neopixel.py) [LM_rgb](micrOS/source/modules/LM_rgb.py) [LM_roboarm](micrOS/source/modules/LM_roboarm.py) [LM_robustness](micrOS/source/modules/LM_robustness.py) etc.
 
 ------------------------------------
 
@@ -753,7 +753,7 @@ def manage_task(tag, operation):
     """
 ```
 
-Usage(s): [LM\_oled\_ui](./micrOS/source/LM_oled_ui.py) [LM\_i2s\_mic](./micrOS/source/LM_i2s_mic.py)
+Usage(s): [LM\_oled\_ui](micrOS/source/modules/LM_oled_ui.py) [LM\_i2s\_mic](micrOS/source/modules/LM_i2s_mic.py)
 
 ------------------------------------
 
@@ -783,7 +783,7 @@ Where `"system"` is the module name and `"info"` is the function name, and it no
 
 > Note: `cmd` can contain only one command with its optional paramater. So this method not supports multi command execution.
 
-Usage(s): [LM\_oled_ui](./micrOS/source/LM_oled_ui.py)
+Usage(s): [LM\_oled_ui](micrOS/source/modules/LM_oled_ui.py)
 
 ------------------------------------
 
@@ -829,7 +829,7 @@ def help(widgets=False):
 	return 'log_data data="value"', 'get_data'
 ```
 
-Usage(s): [LM_dht22](./micrOS/source/LM_dht22.py)
+Usage(s): [LM_dht22](micrOS/source/modules/LM_dht22.py)
 
 ------------------------------------
 
@@ -848,7 +848,7 @@ def function_name(arg1, arg2, ..., msgobj=None):
     msgobj("Reply from Load Module to shellCli :)")
 ```
 
-Usage(s): [LM_system](./micrOS/source/LM_system.py) 
+Usage(s): [LM_system](micrOS/source/modules/LM_system.py) 
 
 ------------------------------------
 
@@ -886,7 +886,7 @@ def send_notification(msg="Hello from micrOS board"):
 	return "notify, msg was sent."
 ```
 
-Usage(s): [LM_presence](./micrOS/source/LM_presence.py)
+Usage(s): [LM_presence](micrOS/source/modules/LM_presence.py)
 
 
 ------------------------------------
@@ -945,7 +945,7 @@ def _response():
 	return 'text/plain', reply
 ```
 
-Usage(s): [LM_OV2640](./micrOS/source/LM_OV2640.py)
+Usage(s): [LM_OV2640](micrOS/source/modules/LM_OV2640.py)
 
 --------------------------
 
@@ -1029,7 +1029,7 @@ def generator():
         yield 5, 0, 5
 ```
 
-Usage(s): [LM_neomatrix](./micrOS/source/LM_neomatrix.py) [LM_neoeffects.](./micrOS/source/LM_neoeffects.py)
+Usage(s): [LM_neomatrix](micrOS/source/modules/LM_neomatrix.py) [LM_neoeffects.](micrOS/source/modules/LM_neoeffects.py)
 
 --------------------------
 

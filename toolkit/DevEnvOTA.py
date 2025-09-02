@@ -404,6 +404,30 @@ class OTA(Compile):
             print(f"[SIM] 'OTA' COPY FILES... {source} -> {target}")
             LocalMachine.FileHandler().copy(source, target)
 
+    @staticmethod
+    def _dynamic_file_target(source_name, force_lm):
+        """
+        Dynamic file target path based on file extension.
+        -> web
+        -> modules
+        -> config
+        -> data
+        """
+        # Force LM update - user load modules - drag n drop files
+        if force_lm and not source_name.startswith('LM_') and source_name.endswith('py'):
+            source_name = 'LM_{}'.format(source_name)
+        # Drag-n-Drop file upload file type check and folder adjustment
+        if check_web_extensions(source_name):
+            source_name_target = os.path.join('web', source_name)
+        elif check_python_extensions(source_name):
+            source_name_target = os.path.join('modules', source_name)
+        elif source_name.endswith("node_config.json"):
+            source_name_target = os.path.join('config', source_name)
+        else:
+            # Copy file to micrOS data folder (not web, not module, not config)
+            source_name_target = os.path.join('data', source_name)
+        return source_name_target
+
     def ota_webrepl_update_core(self, device=None, upload_path_list=None, ota_password='ADmin123',
                                 force_lm=False, upload_root_dir=None):
         """
@@ -466,21 +490,10 @@ class OTA(Compile):
             exitcode = -1
             source_name = os.path.basename(source)
             if upload_root_dir is None:
-                # Drag-n-Drop file upload file type check and folder adjustment
-                if check_web_extensions(source_name):
-                    source_name_target = os.path.join('web', source_name)
-                elif not check_python_extensions(source_name) and not source_name.endswith("node_config.json"):
-                    source_name_target = os.path.join('data', source_name)
-                else:
-                    # Copy file to micrOS root folder (.mpy and .py or node_config.json)
-                    source_name_target = source_name
+                source_name_target = self._dynamic_file_target(source_name, force_lm)
             else:
                 # MAIN USE-CASE
                 source_name_target = source.replace(upload_root_dir, '')
-
-            # Force LM update - user load modules - drag n drop files
-            if force_lm and not source_name.startswith('LM_') and source_name.endswith('.py'):
-                source_name_target = 'LM_{}'.format(source_name)
 
             command = '{python} {api} -p {pwd} {input_file} {host}:{target_path}'.format(
                 python=self.python_interpreter,

@@ -143,7 +143,7 @@ class micrOSIM():
                 console(f"[micrOSIM][Extract doc-str] LM_{mod}.{func}.__doc__")
                 try:
                     # Get function doc string
-                    exec(f"import LM_{mod}")
+                    exec(f"from modules import LM_{mod}")
                     doc_str = eval(f"LM_{mod}.{func}.__doc__")
                     # Get function pin map
                     if func == 'pinmap':

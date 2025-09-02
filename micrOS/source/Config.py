@@ -83,7 +83,7 @@ class Data:
         # Inject user config into template
         Data.__inject_default_conf()
         # [!!!] Init selected pinmap - default pinmap calculated by platform
-        if set_pinmap is not None:
+        if callable(set_pinmap):
             pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
             console_write(f"[PIN MAP] {pinmap}")
         # SET dbg based on config settings (inject user conf)

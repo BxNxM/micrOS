@@ -3,7 +3,8 @@ Module is responsible high level micropython file system opeartions
 [IMPORTANT] This module must never use any micrOS specific functions or classes.
 """
 
-from uos import ilistdir, remove, stat, getcwd, rename, mkdir
+from uos import ilistdir, remove, stat, getcwd, mkdir
+from sys import path as upath
 
 ################################   Helper functions   #####################################
 
@@ -130,7 +131,7 @@ class OSPath:
     LOGS = path_join(_ROOT, '/logs')        # Logs (.log)
     DATA = path_join(_ROOT,'/data')         # Application data (.dat, .cache, etc.)
     WEB = path_join(_ROOT,'/web')           # Web resources (.html, .css, .js, .json, etc.)
-    MODULES = path_join(_ROOT, '/modules')  # Application modules (.mpy, .py) (todo)
+    MODULES = path_join(_ROOT, '/modules')  # Application modules (.mpy, .py)
     CONFIG = path_join(_ROOT, '/config')    # System configuration files (node_config.json, etc.)
 
 
@@ -138,6 +139,10 @@ def init_micros_dirs():
     """
     Init micrOS root file system directories
     """
+    # ENABLE MODULES ACCESS
+    if OSPath.MODULES not in upath:
+        upath.insert(0, OSPath.MODULES)
+
     root_dirs = [
         getattr(OSPath, key)
         for key in dir(OSPath)

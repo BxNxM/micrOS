@@ -5,7 +5,7 @@
             6
         ],
         "Files.py": [
-            9.63,
+            9.64,
             10
         ],
         "micrOSloader.py": [
@@ -37,7 +37,7 @@
             0
         ],
         "Shell.py": [
-            9.36,
+            9.37,
             1
         ],
         "Notify.py": [
@@ -96,238 +96,238 @@
             9.65,
             5
         ],
-        "LM_roboarm.py": [
+        "modules/LM_roboarm.py": [
             7.78,
             0
         ],
-        "LM_stepper.py": [
+        "modules/LM_stepper.py": [
             8.9,
-            1
+            0
         ],
-        "LM_L298N.py": [
+        "modules/LM_L298N.py": [
             8.25,
             0
         ],
-        "LM_pacman.py": [
-            8.81,
-            0
-        ],
-        "LM_genIO.py": [
-            9.12,
-            0
-        ],
-        "LM_oled_ui.py": [
-            8.78,
-            0
-        ],
-        "LM_system.py": [
-            8.45,
-            5
-        ],
-        "LM_robustness.py": [
-            8.36,
-            0
-        ],
-        "LM_qmi8658.py": [
-            9.1,
-            0
-        ],
-        "LM_co2.py": [
-            8.5,
-            0
-        ],
-        "LM_rest.py": [
-            8.18,
-            0
-        ],
-        "LM_tcs3472.py": [
-            9.0,
-            0
-        ],
-        "LM_oled.py": [
-            9.37,
-            4
-        ],
-        "LM_tinyrgb.py": [
+        "modules/LM_pacman.py": [
             7.95,
             0
         ],
-        "LM_aht10.py": [
-            8.79,
+        "modules/LM_genIO.py": [
+            9.12,
             0
         ],
-        "LM_bme280.py": [
-            8.09,
+        "modules/LM_oled_ui.py": [
+            8.78,
             0
         ],
-        "LM_buzzer.py": [
-            9.11,
-            0
-        ],
-        "LM_switch.py": [
-            8.68,
-            1
-        ],
-        "LM_servo.py": [
-            7.73,
-            2
-        ],
-        "LM_rgbcct.py": [
-            8.62,
-            0
-        ],
-        "LM_oled_sh1106.py": [
-            9.2,
-            2
-        ],
-        "LM_haptic.py": [
-            9.25,
-            1
-        ],
-        "LM_ld2410.py": [
-            9.07,
-            0
-        ],
-        "LM_neopixel.py": [
-            7.78,
-            2
-        ],
-        "LM_cct.py": [
-            9.04,
-            1
-        ],
-        "LM_L9110_DCmotor.py": [
-            7.69,
-            0
-        ],
-        "LM_neoeffects.py": [
-            9.08,
-            0
-        ],
-        "LM_i2c.py": [
-            7.6,
-            0
-        ],
-        "LM_dht22.py": [
-            7.94,
-            0
-        ],
-        "LM_esp32.py": [
-            6.52,
-            1
-        ],
-        "LM_veml7700.py": [
-            7.62,
-            0
-        ],
-        "LM_pet_feeder.py": [
-            7.94,
-            0
-        ],
-        "LM_rencoder.py": [
-            8.65,
-            0
-        ],
-        "LM_keychain.py": [
-            9.17,
-            0
-        ],
-        "LM_dht11.py": [
-            7.94,
-            0
-        ],
-        "LM_sound_event.py": [
-            8.52,
-            0
-        ],
-        "LM_cluster.py": [
-            8.87,
-            0
-        ],
-        "LM_oledui.py": [
-            8.7,
-            0
-        ],
-        "LM_espnow.py": [
-            6.0,
-            0
-        ],
-        "LM_telegram.py": [
-            9.58,
-            0
-        ],
-        "LM_OV2640.py": [
-            9.27,
-            0
-        ],
-        "LM_rgb.py": [
-            9.01,
-            1
-        ],
-        "LM_distance.py": [
-            8.87,
-            0
-        ],
-        "LM_VL53L0X.py": [
-            9.07,
-            0
-        ],
-        "LM_light_sensor.py": [
-            9.17,
-            0
-        ],
-        "LM_rp2w.py": [
-            4.44,
-            0
-        ],
-        "LM_presence.py": [
-            8.9,
-            4
-        ],
-        "LM_trackball.py": [
-            8.6,
-            1
-        ],
-        "LM_mqtt_client.py": [
+        "modules/LM_system.py": [
             8.45,
             0
         ],
-        "LM_dashboard_be.py": [
+        "modules/LM_robustness.py": [
+            8.36,
+            0
+        ],
+        "modules/LM_qmi8658.py": [
+            9.1,
+            0
+        ],
+        "modules/LM_co2.py": [
+            8.5,
+            0
+        ],
+        "modules/LM_rest.py": [
+            8.18,
+            0
+        ],
+        "modules/LM_tcs3472.py": [
+            9.0,
+            0
+        ],
+        "modules/LM_oled.py": [
+            9.37,
+            0
+        ],
+        "modules/LM_tinyrgb.py": [
+            7.95,
+            0
+        ],
+        "modules/LM_aht10.py": [
+            8.79,
+            0
+        ],
+        "modules/LM_bme280.py": [
+            8.09,
+            0
+        ],
+        "modules/LM_buzzer.py": [
+            9.11,
+            0
+        ],
+        "modules/LM_switch.py": [
+            8.68,
+            0
+        ],
+        "modules/LM_servo.py": [
+            7.73,
+            0
+        ],
+        "modules/LM_rgbcct.py": [
+            8.62,
+            0
+        ],
+        "modules/LM_oled_sh1106.py": [
+            9.2,
+            0
+        ],
+        "modules/LM_haptic.py": [
+            9.25,
+            0
+        ],
+        "modules/LM_ld2410.py": [
+            9.07,
+            0
+        ],
+        "modules/LM_neopixel.py": [
+            7.78,
+            0
+        ],
+        "modules/LM_cct.py": [
+            9.04,
+            0
+        ],
+        "modules/LM_L9110_DCmotor.py": [
+            7.69,
+            0
+        ],
+        "modules/LM_neoeffects.py": [
+            9.08,
+            0
+        ],
+        "modules/LM_i2c.py": [
+            7.6,
+            0
+        ],
+        "modules/LM_dht22.py": [
+            7.94,
+            0
+        ],
+        "modules/LM_esp32.py": [
+            6.52,
+            0
+        ],
+        "modules/LM_veml7700.py": [
+            7.62,
+            0
+        ],
+        "modules/LM_pet_feeder.py": [
+            7.94,
+            0
+        ],
+        "modules/LM_rencoder.py": [
+            8.65,
+            0
+        ],
+        "modules/LM_keychain.py": [
+            9.17,
+            0
+        ],
+        "modules/LM_dht11.py": [
+            7.94,
+            0
+        ],
+        "modules/LM_sound_event.py": [
+            8.52,
+            0
+        ],
+        "modules/LM_cluster.py": [
+            8.87,
+            0
+        ],
+        "modules/LM_oledui.py": [
+            8.7,
+            0
+        ],
+        "modules/LM_espnow.py": [
+            6.0,
+            0
+        ],
+        "modules/LM_telegram.py": [
+            9.58,
+            0
+        ],
+        "modules/LM_OV2640.py": [
+            9.27,
+            0
+        ],
+        "modules/LM_rgb.py": [
+            9.01,
+            0
+        ],
+        "modules/LM_distance.py": [
+            8.87,
+            0
+        ],
+        "modules/LM_VL53L0X.py": [
+            9.07,
+            0
+        ],
+        "modules/LM_light_sensor.py": [
+            9.17,
+            0
+        ],
+        "modules/LM_rp2w.py": [
+            4.44,
+            0
+        ],
+        "modules/LM_presence.py": [
+            8.9,
+            0
+        ],
+        "modules/LM_trackball.py": [
+            8.6,
+            0
+        ],
+        "modules/LM_mqtt_client.py": [
+            8.45,
+            0
+        ],
+        "modules/LM_dashboard_be.py": [
             6.5,
             0
         ],
-        "LM_dimmer.py": [
+        "modules/LM_dimmer.py": [
             8.33,
-            1
+            0
         ],
-        "LM_gameOfLife.py": [
+        "modules/LM_gameOfLife.py": [
             9.29,
-            3
+            0
         ],
-        "LM_ds18.py": [
+        "modules/LM_ds18.py": [
             6.0,
-            2
+            0
         ],
-        "LM_i2s_mic.py": [
+        "modules/LM_i2s_mic.py": [
             8.43,
-            2
+            0
         ],
-        "LM_sdcard.py": [
+        "modules/LM_sdcard.py": [
             7.88,
             0
         ],
-        "LM_neomatrix.py": [
+        "modules/LM_neomatrix.py": [
             8.75,
             0
         ]
     },
     "summary": {
         "core": [
-            3917,
+            3923,
             24
         ],
         "load": [
-            9843,
+            9871,
             56
         ],
         "core_dep": [
@@ -336,10 +336,10 @@
         ],
         "load_dep": [
             true,
-            6
+            4
         ],
         "core_score": 9.24,
-        "load_score": 8.37,
-        "version": "2.16.1-0"
+        "load_score": 8.35,
+        "version": "2.17.0-0"
     }
 }

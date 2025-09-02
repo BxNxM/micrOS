@@ -135,11 +135,10 @@ class Compile:
         self.console("Delete precompiled components: {}".format(self.precompiled_micrOS_dir_path))
         for source in LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path):
             to_remove_path = os.path.join(self.precompiled_micrOS_dir_path, source)
-            if check_all_extensions(source) or LocalMachine.FileHandler.path_is_exists(to_remove_path)[1] == "d":
-                self.console("\t|-remove: {}".format(to_remove_path), state='imp')
-                if not self.dry_run:
-                    if not LocalMachine.FileHandler.remove(to_remove_path):
-                        self.console(f"\t\t|-ERROR: Failed to remove {to_remove_path}", state="err")
+            self.console("\t|-remove: {}".format(to_remove_path), state='imp')
+            if not self.dry_run:
+                if not LocalMachine.FileHandler.remove(to_remove_path):
+                    self.console(f"\t\t|-ERROR: Failed to remove {to_remove_path}", state="err")
 
     def get_micros_version_from_repo(self):
         # Get repo version
@@ -150,6 +149,10 @@ class Compile:
         return repo_version
 
     def precompile_micros(self):
+        def ensure_target_dir():
+            modules_dir = os.path.join(self.precompiled_micrOS_dir_path, "modules")
+            if not LocalMachine.FileHandler.path_is_exists(modules_dir)[0]:
+                LocalMachine.FileHandler.create_dir(modules_dir)
         self.console("------------------------------------------")
         self.console("-             PRECOMPILE MICROS          -", state='imp')
         self.console("------------------------------------------")
@@ -161,17 +164,21 @@ class Compile:
             return False
 
         self.__cleanup_precompiled_dir()
+        ensure_target_dir()
 
-        file_prefix_blacklist = ['LM_', 'main.py', 'boot.py']
+        file_prefix_blacklist = ['modules/LM_', 'main.py', 'boot.py']
         tmp_precompile_set = set()
         tmp_skip_compile_set = set()
         error_cnt = 0
         # Filter component source
-        for source in [pysource for pysource in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path) if
+        root_resources = LocalMachine.FileHandler.list_dir(self.micrOS_dir_path)
+        module_resources = list([f"modules/{m}" for m in LocalMachine.FileHandler.list_dir(os.path.join(self.micrOS_dir_path, "modules"))])
+        all_resources = root_resources + module_resources
+        for source in [pysource for pysource in all_resources if
                        pysource.endswith('.py')]:
             is_blacklisted = False
             for black_prefix in file_prefix_blacklist:
-                if source.startswith(black_prefix) and source not in self.precompile_LM_whitelist:
+                if source.startswith(black_prefix) and source not in [f"modules/{m}" for m in self.precompile_LM_whitelist]:
                     is_blacklisted = True
             if is_blacklisted:
                 tmp_skip_compile_set.add(source)
@@ -216,7 +223,8 @@ class Compile:
             if self.dry_run:
                 state = True
             else:
-                state = LocalMachine.FileHandler.copy(source_path, self.precompiled_micrOS_dir_path)
+                parent_dir = os.path.dirname(skip_compile)
+                state = LocalMachine.FileHandler.copy(source_path, os.path.join(self.precompiled_micrOS_dir_path, parent_dir))
             if not state:
                 self.console("Copy error", state='err')
                 error_cnt += 1
@@ -237,7 +245,8 @@ class Compile:
         workdir_handler.pushd(self.micrOS_dir_path)
 
         self.console("COPY additional resources...", state="ok")
-        for source in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path):
+        micros_other_resources = [f for f in LocalMachine.FileHandler.list_dir(self.micrOS_dir_path) if not f.startswith("modules")]
+        for source in micros_other_resources:
             source_path = os.path.join(self.micrOS_dir_path, source)
             # COPY DIRECTORY RESOURCES (/web)
             if (LocalMachine.FileHandler.path_is_exists(source_path)[1] == 'd' and

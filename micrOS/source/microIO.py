@@ -11,7 +11,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from sys import platform
 from uos import uname
-from Files import ilist_fs
+from Files import ilist_fs, OSPath
 from Logger import syslog
 
 #################################################################
@@ -68,7 +68,7 @@ def set_pinmap(map_data=None):
 
     # SELECT LOOKUP TABLE BASED ON PLATFORM / User input
     if isinstance(io_file, str) and io_file != 'n/a':
-        if f"IO_{io_file}" in [io.split('.')[0] for io in ilist_fs(type_filter='f', select="IO")]:
+        if f"IO_{io_file}" in [io.split('.')[0] for io in ilist_fs(OSPath.MODULES, type_filter='f', select="IO")]:
             PinMap.MAPPING_LUT = io_file
             return PinMap.MAPPING_LUT
     PinMap.MAPPING_LUT = detect_platform()

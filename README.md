@@ -328,11 +328,11 @@ So prefer boards with more psram 2Mb-8Mb, **minumum requirement for the full fla
 
 LogicalPin lookup tables:
 
-- [tinypico](./micrOS/source/IO_tinypico.py)
-- [esp32](./micrOS/source/IO_esp32.py)
-- [esp32s2](./micrOS/source/IO_esp32s2.py)
-- [esp32s3](./micrOS/source/IO_esp32s3.py)
-- [raspberryPicoW](./micrOS/source/IO_rp2.py) - reset needed after ota update (webrepl limitation)
+- [tinypico](micrOS/source/modules/IO_tinypico.py)
+- [esp32](micrOS/source/modules/IO_esp32.py)
+- [esp32s2](micrOS/source/modules/IO_esp32s2.py)
+- [esp32s3](micrOS/source/modules/IO_esp32s3.py)
+- [raspberryPicoW](micrOS/source/modules/IO_rp2.py) - reset needed after ota update (webrepl limitation)
 - `IO_*.py` [etc.](./micrOS/source)
 
 > Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte streams -> `.mpy`
@@ -467,7 +467,6 @@ Version **3.0.0-0** `micrOS-Autonomous`
 			- Automatic dir creation at bootup: '/logs', '/web', '/data', '/config', '/modules'
 			- Automatic sub-dir handling /source and /precompiled
 			- Automatic dir creation over USB
-			- Adapt precompilation from /modules and /config/IO_*                 [TODO]
 			
 			System Core File Structure:
 			- [DONE] root fs (stays untouched (approx.: 24)): /
@@ -494,15 +493,12 @@ Version **3.0.0-0** `micrOS-Autonomous`
 			- [DONE] config folder /config
              - node_config.json (core config)
              - *.key files (offloaded core config values, like: guimeta)
-
-
-          - [TODO] config folder /config
-             - IO_* (approx.: 5)
-          - [TODO] module folder /modules - (mip complient: /modules/lib)
+          - [DONE] module folder /modules - (mip complient: /modules/lib)
 				- LM_* (approx.: 54)
+				- IO_* (approx.: 5)
 
 
-		- (5) [TODO] Proper mip installer support (/modules or /modules/lib or /web)
+		- (5) [TODO] Proper mip installer support (/modules or /lib or /web)
 			- Note: Autonomous package management over wifi (github) 
 				- pacman download            [POC][DONE][TODO]
 				- pacman ls                  [DONE]

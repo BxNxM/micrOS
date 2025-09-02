@@ -464,7 +464,7 @@
             "param(s)": "w=32 h=16 custom=None"
         },
         "my_config": {
-            "doc": "module 'LM_gameOfLife' has no attribute 'my_config'",
+            "doc": "module 'modules.LM_gameOfLife' has no attribute 'my_config'",
             "param(s)": "add_cells"
         },
         "next_gen": {
@@ -758,23 +758,23 @@
             "param(s)": "speed_ms:int=60 shift:bool=True batch:bool=True"
         },
         "effect_cycle": {
-            "doc": "module 'LM_neoeffects' has no attribute 'effect_cycle'",
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_cycle'",
             "param(s)": ""
         },
         "effect_fire": {
-            "doc": "module 'LM_neoeffects' has no attribute 'effect_fire'",
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_fire'",
             "param(s)": ""
         },
         "effect_meteor": {
-            "doc": "module 'LM_neoeffects' has no attribute 'effect_meteor'",
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_meteor'",
             "param(s)": ""
         },
         "effect_rainbow": {
-            "doc": "module 'LM_neoeffects' has no attribute 'effect_rainbow'",
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_rainbow'",
             "param(s)": ""
         },
         "effect_shader": {
-            "doc": "module 'LM_neoeffects' has no attribute 'effect_shader'",
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_shader'",
             "param(s)": ""
         },
         "fire": {
@@ -866,7 +866,7 @@
             "param(s)": "speed_ms=0"
         },
         "scale": {
-            "doc": "module 'LM_neomatrix' has no attribute 'scale'",
+            "doc": "module 'modules.LM_neomatrix' has no attribute 'scale'",
             "param(s)": "val"
         },
         "snake": {

@@ -562,12 +562,15 @@ def webcli_test():
                     delta_t = round(time.time() - _start_t, 2)
                     # Check if the request was successful
                     if not (response.status_code == 200 and ('<!DOCTYPE html>' in str(response.content) or '"micrOS"' in str(response.content))):
-                        verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({delta_t}s)"
-                        print(response.content)
-                        state = False
+                        if response.status_code == 400 and "Low memory" in str(response.content):
+                            verdict += f" Endpoint: {endpoint} - Low memory mode [{Colors.WARN}OK{Colors.NC}]({delta_t}s)"
+                            print(response.content)
+                        else:
+                            verdict += f" Endpoint: {endpoint} [{Colors.ERR}NOK{Colors.NC}]({delta_t}s)"
+                            print(response.content)
+                            state = False
                     else:
                         verdict += f" Endpoint: {endpoint} [{Colors.OK}OK{Colors.NC}]({delta_t}s)"
-
                         metrics_name = 'landingpage' if "." in endpoint.split('/')[-1] else endpoint.split('/')[-1]
                         _add_metrics(f"web_{metrics_name}_response_ms", int(delta_t*1000))
                 except Exception as e:

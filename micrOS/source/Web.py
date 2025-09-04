@@ -41,7 +41,7 @@ class WebEngine:
                      "png": "image/png",
                      "gif": "image/gif"}
     METHODS = ("GET", "POST")
-    UI_RAM_REQ = 50            # in kilobytes
+    MEM_LIMITED = (None, 0)
 
     def __init__(self, client, version):
         self.client = client
@@ -62,11 +62,11 @@ class WebEngine:
     @staticmethod
     def is_mem_limited() -> (bool, int):
         """Check if memory is limited for the FE"""
-        collect()
-        mfree = int(mem_free() * 0.001)
-        if mfree < WebEngine.UI_RAM_REQ:
-            return True, mfree
-        return False, mfree
+        if WebEngine.MEM_LIMITED[0] is None:
+            collect()
+            mfree = int(mem_free() * 0.001)
+            WebEngine.MEM_LIMITED = (mfree < 50, mfree)        # 50 kb memory requirement
+        return WebEngine.MEM_LIMITED
 
     async def response(self, request:str) -> bool:
         """HTTP GET/POST REQUEST - WEB INTERFACE"""

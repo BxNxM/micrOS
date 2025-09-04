@@ -213,7 +213,7 @@
             0
         ],
         "modules/LM_esp32.py": [
-            6.52,
+            6.79,
             0
         ],
         "modules/LM_veml7700.py": [
@@ -241,7 +241,7 @@
             0
         ],
         "modules/LM_cluster.py": [
-            8.87,
+            8.82,
             0
         ],
         "modules/LM_oledui.py": [
@@ -327,7 +327,7 @@
             24
         ],
         "load": [
-            9871,
+            9880,
             56
         ],
         "core_dep": [
@@ -339,7 +339,7 @@
             4
         ],
         "core_score": 9.24,
-        "load_score": 8.35,
+        "load_score": 8.36,
         "version": "2.17.0-0"
     }
 }

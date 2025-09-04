@@ -36,7 +36,7 @@ async def _reboot(tag:str):
     (Enable function return before restart...)
     """
     with micro_task(tag) as my_task:
-        await my_task.feed(3000)
+        await my_task.feed(5000)
         soft_reset()
 
 
@@ -93,30 +93,32 @@ async def _align_channel(tag:str, sta:STA_IF, ap:AP_IF):
     with micro_task(tag) as my_task:
         while True:
             my_task.out = "Sync in progress..."
-            _channel = Cluster.CHANNEL
+            ch = Cluster.CHANNEL
             _refresh_ms = Cluster.REFRESH_MS
             for s, b, c, *_ in sta.scan():
                 sta_name = (s.decode() if isinstance(s, bytes) else s)
                 if sta_name.endswith(Cluster.ANCHOR_SSID_POSTFIX):
                     my_task.out = f"Anchor {sta_name} channel: {c} (refresh: {int(_refresh_ms/60_000)}min)"
-                    _channel = c
+                    ch = c
+                    break
 
-            if not _initialized or _channel != Cluster.CHANNEL:
-                Cluster.CHANNEL = _channel
+            if not _initialized or ch != Cluster.CHANNEL:
+                Cluster.CHANNEL = ch
                 if not sta.isconnected():
                     # ENABLE ESPNOW STA MAC ACCESS - AFTER THIS ALL DEVICES CAN REACH EACH OTHER ON STA MAC ADDRESS
-                    try: sta.config(channel=_channel)
+                    try: sta.config(channel=ch)
                     except Exception as e:
-                        my_task.out = f"STA Failed to set {_channel} channel: {e}"
+                        my_task.out = f"STA Failed to set {ch} channel: {e}"
                 # ensure AP advertises/operates on the same channel (important when STA not connected yet)
-                try: ap.config(channel=_channel)
+                try: ap.config(channel=ch)
                 except Exception as e:
-                    my_task.out = f"AP Failed to set {_channel} channel: {e}"
+                    my_task.out = f"AP Failed to set {ch} channel: {e}"
                 _initialized = True
             await my_task.feed(_refresh_ms)
 
 
-def __configure_cluster_network(anchor=False):
+@micro_task("cluster", _wrap=True)
+async def _network(tag:str, anchor=False):
     """
     Support hybrid AP/STA ESPNow communication
     For ESPNow communication all device should use the same Wifi channel!
@@ -140,23 +142,25 @@ def __configure_cluster_network(anchor=False):
         if not sta.active(): sta.active(True)
         return sta
 
-    # CONFIGURE WIFI CHANNEL SYNC ROLES
-    micros_nw = ifconfig()[0]
-    # MICROS in STA MODE
-    if micros_nw == "STA":
-        if anchor:
-            # CREATE CHANNEL ANCHOR - AP channel is inherited from STA
-            Cluster.ANCHOR_ENABLED = _conf_ap_anchor()
-    else:
-        # MICROS in AP MODE: CLUSTER FOLLOWER - WIFI CHANNEL SYNC WITH ANCHOR
-        ap, sta = WLAN(AP_IF), _enable_sta()
-        _align_channel(sta, ap)
-        if anchor:
-            # MICROS in AP MODE - RECONFIGURE AP NAME to match Anchor
-            # EXPERIMENTAL FEATURE: Scans and Advertise the channel as well.
-            Cluster.ANCHOR_ENABLED = _conf_ap_anchor()
-    return status()
-
+    with micro_task(tag) as my_task:
+        # CONFIGURE WIFI CHANNEL SYNC ROLES
+        my_task.out = "Configure cluster network"
+        micros_nw = ifconfig()[0]
+        # MICROS in STA MODE
+        if micros_nw == "STA":
+            if anchor:
+                # CREATE CHANNEL ANCHOR - AP channel is inherited from STA
+                Cluster.ANCHOR_ENABLED = _conf_ap_anchor()
+        else:
+            # MICROS in AP MODE: CLUSTER FOLLOWER - WIFI CHANNEL SYNC WITH ANCHOR
+            ap, sta = WLAN(AP_IF), _enable_sta()
+            # Sync Channel with Cluster Anchor
+            _align_channel(sta, ap)
+            if anchor:
+                # MICROS in AP MODE - RECONFIGURE AP NAME to match Anchor
+                # EXPERIMENTAL FEATURE: Scans and Advertise the channel as well.
+                Cluster.ANCHOR_ENABLED = _conf_ap_anchor()
+        my_task.out = status()
 
 #########################################################
 #                 CLUSTER WIDE FEATURES                 #
@@ -232,8 +236,9 @@ def load(anchor:bool=False, refresh:int=None):
         return "ESPNow is disabled"
     if refresh is not None:
         Cluster.REFRESH_MS = 60_000 if refresh < 1 else refresh * 60_000
-    out = __configure_cluster_network(anchor)
-    return f"Enable cluster module access\n{out}"
+    # Configure cluster network - after micrOS network setup
+    _network(anchor)
+    return f"Enable cluster module access"
 
 
 def help(widgets=True):

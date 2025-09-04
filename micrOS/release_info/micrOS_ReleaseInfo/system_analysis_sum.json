@@ -9,7 +9,7 @@
             10
         ],
         "micrOSloader.py": [
-            7.12,
+            7.06,
             1
         ],
         "Hooks.py": [
@@ -323,7 +323,7 @@
     },
     "summary": {
         "core": [
-            3923,
+            3925,
             24
         ],
         "load": [
@@ -340,6 +340,6 @@
         ],
         "core_score": 9.24,
         "load_score": 8.36,
-        "version": "2.17.0-0"
+        "version": "2.17.1-0"
     }
 }

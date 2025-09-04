@@ -55,6 +55,8 @@ def _is_micrOS():
 
 def __recovery_mode():
     # Recovery/Update mode (webrepl) - dependencies: Network, ConfigHandler
+    from sys import path
+    path.insert(0, "/modules")
     from Network import auto_nw_config
     from Config import cfgget
     pwd = cfgget('appwd')                       # Get pwd from config

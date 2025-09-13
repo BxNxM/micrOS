@@ -266,7 +266,7 @@ class USB(Compile):
             self.console(f"Error creating directories on device: {dir_list_to_create}")
             sys.exit(1)
         # Generate resource list to be put on the device
-        source_to_put_device = list([s.replace(self.precompiled_micrOS_dir_path + "/", '') for s in _source_to_put_device])
+        source_to_put_device = list([s.replace(self.precompiled_micrOS_dir_path + os.sep, '') for s in _source_to_put_device])
         # Set source order - main, boot
         source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index("main.py")))
 
@@ -603,6 +603,9 @@ class USB(Compile):
         return is_valid
 
     def __safe_execute_mpremote_cmd(self, command, source, retry=8):
+        if sys.platform.startswith('win'):
+            # Because windows is a shit... python commands requires unix like separators
+            command = command.replace('\\', '/')
         retry_orig = retry
         status = False
         for retry in range(1, retry_orig):

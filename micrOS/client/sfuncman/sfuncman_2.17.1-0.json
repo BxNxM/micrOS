@@ -1765,7 +1765,7 @@
     },
     "tcs3472": {
         "help": {
-            "doc": "\n    TCS3472 Color sensor\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'led state=:options:', 'options': ['True', 'False']}",
+            "doc": "\n    TCS3472 Color sensor\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure ', 'refresh': 10000}\n\t{'type': 'button', 'lm_call': 'led state=:options:', 'options': ['True', 'False']}\n\t{'type': 'slider', 'lm_call': 'led state=True br=:range:', 'range': [0, 100, 5]}\n\t{'type': 'button', 'lm_call': 'neomatrix_update ', 'options': ['None']}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true",
@@ -1774,8 +1774,8 @@
             "param(s)": "br=5"
         },
         "led": {
-            "doc": "\n    SENSOR LED toggle\n    :param state: None-automatic, True-ON, False-OFF\n    ",
-            "param(s)": "state=None"
+            "doc": "\n    SENSOR LED toggle\n    :param state: None-automatic, True-ON, False-OFF\n    :param br: brightness 0-100\n    ",
+            "param(s)": "state:bool=None br:int=None"
         },
         "load": {
             "doc": "\n    Load the TCS3472 Color sensor instance.\n    ",
@@ -1785,12 +1785,12 @@
             "doc": "\n    MEASURE sensor\n    ",
             "param(s)": ""
         },
-        "pinmap": {
-            "doc": "\n    Show used pin mapping for this module.\n    \npin map: i2c_scl, i2c_sda, led",
+        "neomatrix_update": {
+            "doc": "\n    DEMO - Send color codes for all neomatrix devices over espnow cluster\n    ",
             "param(s)": ""
         },
-        "send_color_update": {
-            "doc": "\n    DEMO - Send color codes for all neomatrix devices over espnow\n    ",
+        "pinmap": {
+            "doc": "\n    Show used pin mapping for this module.\n    \npin map: i2c_scl, i2c_sda, led",
             "param(s)": ""
         }
     },

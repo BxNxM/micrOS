@@ -7,12 +7,12 @@ Licensed under the MIT License
 """
 
 from struct import unpack
-from machine import I2C, Pin
+from machine import I2C, Pin, PWM
 from microIO import bind_pin, pinmap_search
 from Types import resolve
 
-from LM_neopixel import load as neo_load
-from LM_neopixel import color as neo_color
+from LM_neopixel import load as neo_load, color as neo_color
+from LM_cluster import run as cluster_run
 
 
 class TCS3472:
@@ -23,14 +23,36 @@ class TCS3472:
         self._i2c_address = address
         self._bus.writeto(self._i2c_address, b'\x80\x03')
         self._bus.writeto(self._i2c_address, b'\x81\x2b')
-        self.led = Pin(bind_pin('led', led_pin), Pin.OUT)
+        self.led = PWM(Pin(bind_pin('led', led_pin), Pin.OUT), freq=20480)
+        self.led_brightness = 30
         TCS3472.INSTANCE = self
 
+    def precise_scaled(self, sat=0.75):
+        """
+        For colorimetric measurements
+        """
+        # sat in [0..1]: 0 = old clear-based, 1 = full max-based
+        c, r, g, b = self.raw()
+        if (r | g | b) == 0:  # faster zero check
+            return 0, 0, 0
+        # clear-based
+        rc = (r / c, g / c, b / c) if c else (0, 0, 0)
+        # max-based
+        m = max(r, g, b)
+        rm = (r / m, g / m, b / m)
+        # mix
+        return tuple((1 - sat) * a + sat * b for a, b in zip(rc, rm))
+
     def scaled(self):
-        crgb = self.raw()
-        if crgb[0] > 0:
-            return tuple(float(x) / crgb[0] for x in crgb[1:])
-        return 0, 0, 0
+        """
+        Normalize by strongest color
+        """
+        _, r, g, b = self.raw()             # raw returns (clear, r, g, b)
+        maxc = max(r, g, b)
+        if maxc == 0:
+            return 0, 0, 0
+        # Normalize by the max color channel to keep saturation
+        return r/maxc, g/maxc, b/maxc
 
     def rgb(self):
         return tuple(int(x * 255) for x in self.scaled())
@@ -78,17 +100,35 @@ def measure():
     return {"rgb": sensor.rgb(), "light": sensor.light(), "brightness": sensor.brightness()}
 
 
-def led(state=None):
+def led(state:bool=None, br:int=None):
     """
     SENSOR LED toggle
     :param state: None-automatic, True-ON, False-OFF
+    :param br: brightness 0-100
     """
+    def _set_duty(_br):
+        _br = sensor.led_brightness if _br is None else _br
+        sensor.led.duty(int(_br * 10))
+        if _br != 0:
+            sensor.led_brightness = _br
+
     sensor = load()
     if state is None:
-        s = sensor.led.value(not sensor.led.value())
+        # INVERT STATE
+        led_current_state = sensor.led.duty() > 0
+        if led_current_state:
+            _set_duty(br)
+            _set_duty(0)
+        else:
+            _set_duty(br)
     else:
-        s = sensor.led.value(state)
-    return "LED on" if s else "LED off"
+        # SET STATE: ON/OFF
+        if state:
+            _set_duty(br)
+        else:
+            _set_duty(br)
+            _set_duty(0)
+    return f"LED on, {sensor.led_brightness}%" if sensor.led.duty()>0 else f"LED off"
 
 
 def indicator(br=5):
@@ -98,15 +138,19 @@ def indicator(br=5):
     """
     r, g, b = measure()['rgb']
     br = float(br / 100)
-    r, g, b = int(r*br), int(g*br), int(b*br)
-    return neo_color(r, g, b)
+    _r, _g, _b = int(r*br), int(g*br), int(b*br)
+    neo_color(_r, _g, _b)
+    return r, g, b
 
 
-def send_color_update():
+def neomatrix_update():
     """
-    DEMO - Send color codes for all neomatrix devices over espnow
+    DEMO - Send color codes for all neomatrix devices over espnow cluster
     """
-    pass
+    r, g, b = indicator()
+    command = f"neomatrix color_fill {r} {g} {b}"
+    cr = cluster_run(command)
+    return {"cmd": command, "cluster": cr}
 
 
 def help(widgets=False):
@@ -114,7 +158,9 @@ def help(widgets=False):
     TCS3472 Color sensor
     """
     return resolve(('load led_pin=20',
-                    'measure',
+                    'TEXTBOX measure',
                     'BUTTON led state=<True,False>',
+                    'SLIDER led state=True br=<0-100-5>',
                     'indicator br=<0-100>',
+                    'BUTTON neomatrix_update',
                     'pinmap'), widgets=widgets)

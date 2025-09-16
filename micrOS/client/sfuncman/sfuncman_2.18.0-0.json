@@ -444,6 +444,10 @@
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/espnow.png?raw=true",
+        "remove": {
+            "doc": "\n    Remove peer by binary mac address\n    :param peer: binary mac address of espnow device\n    ",
+            "param(s)": "peer:bytes"
+        },
         "send": {
             "doc": "\n    Send message to peer (by mac address)\n    :param peer: mac address of espnow device\n    :param cmd: message string/load module call\n    ",
             "param(s)": "peer:bytes|str cmd:str='modules'"

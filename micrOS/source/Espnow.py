@@ -99,14 +99,14 @@ class ESPNowSS:
             self.devfid = cfgget('devfid')
             self.devices: dict[bytes, str] = {}         # mapping for { "mac address": "devfid" } pairs
             self.server_ready = False
-            self.peer_cache = path_join(OSPath.DATA, "espnow_peers.app_json")
+            self.peer_cache_path = path_join(OSPath.DATA, "espnow_peers.app_json")
             self._load_peers()
 
     def _load_peers(self):
-        if not is_file(self.peer_cache):
+        if not is_file(self.peer_cache_path):
             return
         try:
-            with open(self.peer_cache, 'r') as f:
+            with open(self.peer_cache_path, 'r') as f:
                 devices_map = load(f)
                 self.devices = {bytes(k): v for k, v in devices_map}
             for mac in self.devices:
@@ -262,6 +262,14 @@ class ESPNowSS:
         return _tasks
 
     # ----------- OTHER METHODS --------------
+    def save_peers(self):
+        try:
+            with open(self.peer_cache_path, "w") as f:
+                dump([[list(k), v] for k, v in self.devices.items()], f)
+            return True
+        except Exception as e:
+            syslog(f"[ERR][ESPNOW] Saving peers: {e}")
+        return False
 
     async def _handshake(self, peer:bytes, tag:str):
         """
@@ -285,15 +293,9 @@ class ESPNowSS:
             expected_response =  f"hello {self.devfid}"
             is_ok = False
             if result == expected_response:
-                try:
-                    with open(self.peer_cache, "w") as f:
-                        dump([[list(k), v] for k, v in self.devices.items()], f)
-                    is_ok = True
-                except Exception as e:
-                    syslog(f"[ERR][ESPNOW] Saving peers: {e}")
+                is_ok = self.save_peers()
             my_task.out = f"Handshake: {result} from {self.devices.get(peer)} [{'OK' if is_ok else 'NOK'}]"
             sender_task.cancel()    # Delete sender task (cleanup)
-
 
     def handshake(self, peer:bytes|str):
         task_id = f"con.espnow.handshake"
@@ -322,3 +324,15 @@ class ESPNowSS:
         except Exception as e:
             _peers = str(e)
         return {"stats": _stats, "peers": _peers, "map": self.devices, "ready": self.server_ready}
+
+    def remove_peer(self, peer:bytes) -> bool:
+        """
+        Remove peer from ESPNow devices
+        :param peer: MAC address as bytes to remove
+        """
+        if isinstance(peer, bytes):
+            if self.devices.pop(peer, None) is not None:
+                self.save_peers()
+                self.espnow.del_peer(peer)
+                return True
+        return False

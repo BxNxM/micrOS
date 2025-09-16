@@ -69,7 +69,7 @@
             8
         ],
         "Espnow.py": [
-            9.5,
+            9.52,
             3
         ],
         "Scheduler.py": [
@@ -249,7 +249,7 @@
             0
         ],
         "modules/LM_espnow.py": [
-            6.0,
+            6.67,
             0
         ],
         "modules/LM_telegram.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            3927,
+            3941,
             24
         ],
         "load": [
-            9975,
+            9982,
             56
         ],
         "core_dep": [
@@ -339,7 +339,7 @@
             4
         ],
         "core_score": 9.24,
-        "load_score": 8.37,
+        "load_score": 8.38,
         "version": "2.18.0-0"
     }
 }

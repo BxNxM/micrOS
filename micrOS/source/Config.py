@@ -102,12 +102,12 @@ class Data:
         liveconf = Data.read_cfg_file(nosafe=True)
         # Remove obsolete keys from conf
         try:
-            remove('cleanup.pds')       # Try to remove cleanup.pds (cleanup indicator by micrOSloader)
+            remove('.cleanup')       # Try to remove .cleanup (cleanup indicator by micrOSloader)
             console_write("[CONF] Purge obsolete keys")
             for key in (key for key in liveconf if key not in Data.CONFIG_CACHE):
                 liveconf.pop(key, None)
         except Exception:
-            console_write("[CONF] SKIP obsolete keys check (no cleanup.pds)")
+            console_write("[CONF] SKIP obsolete keys check (no .cleanup)")
         # Merge template to live conf (store active conf in Data.CONFIG_CACHE)
         Data.CONFIG_CACHE.update(liveconf)
         console_write("[CONF] User config injection done")

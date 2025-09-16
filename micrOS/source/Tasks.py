@@ -43,6 +43,20 @@ class TaskBase:
         self.done = asyncio.Event()  # Store task done state
         self.out = ""                # Store task output
 
+    def _create(self, callback:callable) -> bool:
+        """
+        Create async task and register it to TASKS dict by tag
+        :param callback: coroutine function
+        """
+        if TaskBase.is_busy(self.tag):
+            # Skip task if already running
+            return False
+        # Create async task from coroutine function
+        self.task = asyncio.get_event_loop().create_task(callback)
+        # Store Task object by key - for task control
+        TaskBase.TASKS[self.tag] = self
+        return True
+
     @staticmethod
     def is_busy(tag:str) -> bool:
         """
@@ -50,7 +64,7 @@ class TaskBase:
         :param tag: for task selection
         """
         task = TaskBase.TASKS.get(tag, None)
-        # return True: busy OR False: not busy (inactive)
+        # return True: busy OR False: not busy (inactive) OR None: not exists
         return bool(task is not None and not task.done.is_set())
 
     @staticmethod
@@ -138,15 +152,8 @@ class NativeTask(TaskBase):
         """
         # Create task tag
         self.tag = f"aio.{ticks_ms()}" if tag is None else tag
-        if TaskBase.is_busy(self.tag):
-            # Skip task if already running
-            return False
-
-        # Start task with coroutine callback
-        self.task = asyncio.get_event_loop().create_task(callback)
-        # Store Task object by key - for task control
-        TaskBase.TASKS[self.tag] = self
-        return True
+        # Create task with coroutine callback
+        return super()._create(callback)
 
     def __enter__(self):
         """
@@ -189,9 +196,6 @@ class MagicTask(TaskBase):
         """
         # Create task tag
         self.tag = '.'.join(callback[0:2])
-        if TaskBase.is_busy(self.tag):
-            # Skip task if already running
-            return False
 
         # Set parameters for async wrapper
         self.__callback = callback
@@ -199,10 +203,8 @@ class MagicTask(TaskBase):
         # Set sleep value for async loop - optional parameter with min sleep limit check (20ms)
         self.__sleep = self.__sleep if sleep is None else sleep if sleep > 19 else self.__sleep
 
-        self.task = asyncio.get_event_loop().create_task(self.__task_wrapper())
-        # Store Task object by key - for task control
-        TaskBase.TASKS[self.tag] = self
-        return True
+        # Create task with coroutine callback
+        return super()._create(self.__task_wrapper())
 
     async def __task_wrapper(self):
         """
@@ -373,7 +375,7 @@ class Manager:
         return '\n'.join(output)
 
     @staticmethod
-    def kill(tag):
+    def kill(tag:str) -> (bool, str):
         """
         Primary interface
         Kill/terminate async task
@@ -478,7 +480,7 @@ def exec_builtins(func):
                 # task kill <taskID> / task show <taskID>
                 if arg_len > 2:
                     if 'kill' == arg_list[1]:
-                        state, msg = Manager.kill(tag=arg_list[2])
+                        _, msg = Manager.kill(tag=arg_list[2])
                         return True, msg
                     if 'show' == arg_list[1]:
                         return True, Manager.show(tag=arg_list[2])

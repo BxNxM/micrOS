@@ -7,13 +7,15 @@ Licensed under the MIT License
 """
 
 from struct import unpack
+from time import sleep
 from machine import I2C, Pin, PWM
 from microIO import bind_pin, pinmap_search
 from Types import resolve
 
-from LM_neopixel import load as neo_load, color as neo_color
-from LM_cluster import run as cluster_run
+from LM_neopixel import load as neo_load, color as neo_color    # local neopixel light indicator
+from LM_cluster import run as cluster_run                       # DEMO: neomatrix cluster
 
+CURRENT_ANIMATION_INDEX = 0                                     # DEMO: neomatrix cluster animation
 
 class TCS3472:
     INSTANCE = None
@@ -96,8 +98,12 @@ def measure():
     """
     MEASURE sensor
     """
+    led(state=True)
+    sleep(0.8)
     sensor = load()
-    return {"rgb": sensor.rgb(), "light": sensor.light(), "brightness": sensor.brightness()}
+    measurement = {"rgb": sensor.rgb(), "light": sensor.light(), "brightness": sensor.brightness()}
+    led(state=False)
+    return measurement
 
 
 def led(state:bool=None, br:int=None):
@@ -149,8 +155,22 @@ def neomatrix_update():
     """
     r, g, b = indicator()
     command = f"neomatrix color_fill {r} {g} {b}"
-    cr = cluster_run(command)
-    return {"cmd": command, "cluster": cr}
+    cluster_run(command)
+    return {"cmd": command, "cluster": "task show con.espnow.*"}
+
+
+def neomatrix_animation():
+    """
+    DEMO - Set random animation on neomatrix espnow cluster
+    """
+    global CURRENT_ANIMATION_INDEX
+    animations = ('spiral', 'snake', 'noise')
+
+    next_animation = CURRENT_ANIMATION_INDEX + 1
+    CURRENT_ANIMATION_INDEX = 0 if next_animation >= len(animations) else next_animation
+    command = f"neomatrix {animations[CURRENT_ANIMATION_INDEX]}"
+    cluster_run(command)
+    return {"cmd": command, "cluster": "task show con.espnow.*"}
 
 
 def help(widgets=False):
@@ -163,4 +183,5 @@ def help(widgets=False):
                     'SLIDER led state=True br=<0-100-5>',
                     'indicator br=<0-100>',
                     'BUTTON neomatrix_update',
+                    'BUTTON neomatrix_animation',
                     'pinmap'), widgets=widgets)

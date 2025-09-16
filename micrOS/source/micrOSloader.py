@@ -102,7 +102,7 @@ def __auto_restart_event():
         if trigger_is_active and _is_micrOS():
             print("[loader][ota-rebooter][micros][trigger: True] OTA was finished - reboot")
             # Create cleanup indicator file for ConfigHandler
-            with open('cleanup.pds', 'w') as f:
+            with open('.cleanup', 'w') as f:
                 f.write('')
             # Reboot machine
             reset()

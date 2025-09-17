@@ -29,32 +29,31 @@ class TCS3472:
         self.led_brightness = 30
         TCS3472.INSTANCE = self
 
-    def precise_scaled(self, sat=0.75):
+    def scaled(self, saturation=1.5):
         """
-        For colorimetric measurements
+        Normalize by strongest color, then adjust saturation.
+        saturation = 1.0 -> normal
+        saturation > 1.0 -> more vibrant
+        saturation < 1.0 -> more pastel
         """
-        # sat in [0..1]: 0 = old clear-based, 1 = full max-based
-        c, r, g, b = self.raw()
-        if (r | g | b) == 0:  # faster zero check
-            return 0, 0, 0
-        # clear-based
-        rc = (r / c, g / c, b / c) if c else (0, 0, 0)
-        # max-based
+        _, r, g, b = self.raw()
         m = max(r, g, b)
-        rm = (r / m, g / m, b / m)
-        # mix
-        return tuple((1 - sat) * a + sat * b for a, b in zip(rc, rm))
+        if m == 0:
+            return 0.0, 0.0, 0.0
 
-    def scaled(self):
-        """
-        Normalize by strongest color
-        """
-        _, r, g, b = self.raw()             # raw returns (clear, r, g, b)
-        maxc = max(r, g, b)
-        if maxc == 0:
-            return 0, 0, 0
-        # Normalize by the max color channel to keep saturation
-        return r/maxc, g/maxc, b/maxc
+        # Normalize by strongest channel
+        r, g, b = r / m, g / m, b / m
+
+        # Grayscale = average of channels
+        gray = (r + g + b) / 3
+
+        # Interpolate between gray and color
+        r = gray + (r - gray) * saturation
+        g = gray + (g - gray) * saturation
+        b = gray + (b - gray) * saturation
+
+        # Clamp to 0..1
+        return max(0, min(1, r)), max(0, min(1, g)), max(0, min(1, b))
 
     def rgb(self):
         return tuple(int(x * 255) for x in self.scaled())
@@ -98,11 +97,12 @@ def measure():
     """
     MEASURE sensor
     """
-    led(state=True)
-    sleep(0.8)
     sensor = load()
+    sensor.led.duty(int(sensor.led_brightness * 10))
+    sleep(0.4)
     measurement = {"rgb": sensor.rgb(), "light": sensor.light(), "brightness": sensor.brightness()}
-    led(state=False)
+    sleep(0.1)
+    sensor.led.duty(0)
     return measurement
 
 
@@ -145,7 +145,7 @@ def indicator(br=5):
     r, g, b = measure()['rgb']
     br = float(br / 100)
     _r, _g, _b = int(r*br), int(g*br), int(b*br)
-    neo_color(_r, _g, _b)
+    neo_color(_r, _g, _b, smooth=False)
     return r, g, b
 
 

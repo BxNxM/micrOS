@@ -430,7 +430,7 @@ def help(widgets=False):
                              'BUTTON rainbow',
                              'BUTTON spiral speed_ms=40',
                              'BUTTON noise speed_ms=85',
-                             'SLIDER control speed_ms=<1-200-2> bt_draw=None',
+                             'SLIDER control speed_ms=<1-200> bt_draw=None',
                              'draw_colormap bitmap=[(0,0,(10,2,0)),(x,y,color),...]',
                              'get_colormap',
                              'status'

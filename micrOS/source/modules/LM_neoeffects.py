@@ -277,7 +277,7 @@ def help(widgets=False):
                              'BUTTON fire speed_ms=150',
                              'BUTTON stop',
                              'shader offset=0 size=6',
-                             'control speed_ms=None batch=None',
+                             'SLIDER control speed_ms=<1-200> batch=None',
                              'random max_val=255',
                              'pinmap',
                              'COLOR color r=<0-255-10> g b'

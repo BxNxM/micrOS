@@ -183,12 +183,11 @@ class WebCli(Client, WebEngine):
         :param method: HTTP method name
         :param auto_enable: enable webui when register (endpoint)
         """
-        if method not in WebEngine.METHODS:
-            raise ValueError(f"method must be one of {WebEngine.METHODS}")
-
         if cfgget('webui'):
             if not endpoint in WebEngine.ENDPOINTS:
                 WebEngine.ENDPOINTS[endpoint] = {}
+            if method not in WebEngine.METHODS:
+                raise ValueError(f"method must be one of {WebEngine.METHODS}")
             WebEngine.ENDPOINTS[endpoint][method] = callback
             return
         # AUTO ENABLE webui when register (endpoint) called and webui is False

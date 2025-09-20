@@ -12,10 +12,10 @@ from machine import I2C, Pin, PWM
 from microIO import bind_pin, pinmap_search
 from Types import resolve
 
-from LM_neopixel import load as neo_load, color as neo_color    # local neopixel light indicator
-from LM_cluster import run as cluster_run                       # DEMO: neomatrix cluster
+from LM_neopixel import load as neo_load, color as neo_color, toggle as neo_toggle    # local neopixel light indicator
+from LM_cluster import run as cluster_run                                             # DEMO: neomatrix cluster
 
-CURRENT_ANIMATION_INDEX = 0                                     # DEMO: neomatrix cluster animation
+CURRENT_ANIMATION_INDEX = 0                                                           # DEMO: neomatrix cluster animation
 
 class TCS3472:
     INSTANCE = None
@@ -26,7 +26,7 @@ class TCS3472:
         self._bus.writeto(self._i2c_address, b'\x80\x03')
         self._bus.writeto(self._i2c_address, b'\x81\x2b')
         self.led = PWM(Pin(bind_pin('led', led_pin), Pin.OUT), freq=20480)
-        self.led_brightness = 30
+        self.led_brightness = 20
         TCS3472.INSTANCE = self
 
     def scaled(self, saturation=1.5):
@@ -98,11 +98,7 @@ def measure():
     MEASURE sensor
     """
     sensor = load()
-    sensor.led.duty(int(sensor.led_brightness * 10))
-    sleep(0.4)
     measurement = {"rgb": sensor.rgb(), "light": sensor.light(), "brightness": sensor.brightness()}
-    sleep(0.1)
-    sensor.led.duty(0)
     return measurement
 
 
@@ -125,15 +121,19 @@ def led(state:bool=None, br:int=None):
         if led_current_state:
             _set_duty(br)
             _set_duty(0)
+            neo_toggle(False)
         else:
             _set_duty(br)
+            neo_toggle(True)
     else:
         # SET STATE: ON/OFF
         if state:
             _set_duty(br)
+            neo_toggle(True)
         else:
             _set_duty(br)
             _set_duty(0)
+            neo_toggle(False)
     return f"LED on, {sensor.led_brightness}%" if sensor.led.duty()>0 else f"LED off"
 
 

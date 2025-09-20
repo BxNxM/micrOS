@@ -141,7 +141,7 @@
             0
         ],
         "modules/LM_tcs3472.py": [
-            9.59,
+            9.48,
             0
         ],
         "modules/LM_oled.py": [
@@ -327,7 +327,7 @@
             24
         ],
         "load": [
-            9982,
+            9980,
             56
         ],
         "core_dep": [
@@ -340,6 +340,6 @@
         ],
         "core_score": 9.24,
         "load_score": 8.38,
-        "version": "2.18.0-0"
+        "version": "2.18.1-0"
     }
 }

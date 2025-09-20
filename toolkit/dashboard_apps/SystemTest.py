@@ -464,13 +464,18 @@ def check_intercon(host=None):
         # DO Negative testing as well
         host = "notavailable.local"
         _, output_neg = run_intercon_hello(tout=20)
+        if output_neg[0] and output_neg[1] == '':
+            # NO HOST TIMEOUT ...
+            output_neg = f'Device was not found (dhcp timeout): {host}:{output_neg}: {output_neg[1]}'
+            return True & state[0], f"{state[1]}\n\t\tNegative test: {output_neg}"
+        # Valid return on negative testing
         output_neg = _convert_return_to_dict(output_neg)
         state_neg = False, output_neg
         if len(output_neg[1]) > 1 and "hello" in output_neg[1]['verdict']:
             response_state, response = _get_intercon_output(output_neg[1]['tag'])
             output_neg = f'Device was not found: {host}":{output_neg}: {response}'
             state_neg = True & response_state, output_neg
-        return state[0] & state_neg[0], "{}\n\t\tNegative test: {}".format(state[1], state_neg[1])
+        return state[0] & state_neg[0], f"{state[1]}\n\t\tNegative test: {state_neg[1]}"
     return state
 
 

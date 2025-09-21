@@ -12,6 +12,7 @@ def _timestamp():
 
 
 class Telegram(Notify):
+    INSTANCE = None
     # Telegram bot token and chat ID
     # https://core.telegram.org/bots/api
     _TOKEN = None  # Telegram token
@@ -23,6 +24,7 @@ class Telegram(Notify):
     def __init__(self):
         # Subscribe to the notification system - provide send_msg method (over self)
         super().add_subscriber(self)
+        Telegram.INSTANCE = self
 
     @staticmethod
     def __id_cache(mode):
@@ -236,7 +238,7 @@ class Telegram(Notify):
         return verdict
 
     @staticmethod
-    async def bot_repl(tag, period=3):
+    async def server_bot(tag, period=3):
         """
         BOT - ReceiveEvalPrintLoop
         :param tag: task tag (access)
@@ -290,17 +292,16 @@ class Telegram(Notify):
 #########################################
 #          micrOS Notifications         #
 #########################################
-TELEGRAM_OBJ = None
 
 def __init():
-    global TELEGRAM_OBJ
-    if TELEGRAM_OBJ is None:
+    if Telegram.INSTANCE is None:
         # ENABLE TELEGRAM IF NW IS STA - CONNECTED TO THE WEB
         _sta_available = True if ifconfig()[0] == "STA" else False
         if _sta_available:
-            TELEGRAM_OBJ = Telegram()
+            Telegram()
         else:
             syslog("No STA: cannot init telegram")
+    return Telegram.INSTANCE
 
 # Auto INIT Telegram at load time (legacy)
 __init()
@@ -311,10 +312,9 @@ def load():
     - /ping
     - /cmd module function (params)
     """
-    __init()
-    if TELEGRAM_OBJ is None:
+    if __init() is None:
         return "Network unavailable."
-    verdict = TELEGRAM_OBJ.set_commands()
+    verdict = Telegram.set_commands()
     return "Missing telegram bot token" if verdict is None else verdict
 
 
@@ -324,9 +324,9 @@ def send(text):
     :param text: text to send
     return verdict
     """
-    if TELEGRAM_OBJ is None:
+    if Telegram.INSTANCE is None:
         return "Network unavailable."
-    verdict = TELEGRAM_OBJ.send_msg(text)
+    verdict = Telegram.send_msg(text)
     return "Missing telegram bot token" if verdict is None else verdict
 
 def notify(text):
@@ -336,9 +336,9 @@ def notify(text):
         telegram notification enable=True
         telegram notification enable=False
     """
-    if TELEGRAM_OBJ is None:
+    if Telegram.INSTANCE is None:
         return "Network unavailable."
-    return TELEGRAM_OBJ.notify(text)
+    return Telegram.INSTANCE.notify(text)
 
 
 def receive():
@@ -347,9 +347,9 @@ def receive():
     - if all value None, then no incoming messages
     One successful msg receive is necessary to get chat_id for msg send as well!
     """
-    if TELEGRAM_OBJ is None:
+    if Telegram.INSTANCE is None:
         return "Network unavailable."
-    verdict = TELEGRAM_OBJ.get_msg()
+    verdict = Telegram.get_msg()
     return "Missing telegram bot token" if verdict is None else verdict
 
 
@@ -359,11 +359,11 @@ def receiver_loop(period=3):
     - Only executes module (function) if the module is already loaded
     :param period: polling period in sec, default: 3
     """
-    if TELEGRAM_OBJ is None:
+    if Telegram.INSTANCE is None:
         return "Network unavailable."
-    tag = 'telegram.bot_repl'
-    state = micro_task(tag=tag, task=TELEGRAM_OBJ.bot_repl(tag=tag, period=period))
-    return "Starting" if state else "Already running"
+    tag = 'telegram.server_bot'
+    state = micro_task(tag=tag, task=Telegram.server_bot(tag=tag, period=period))
+    return {tag: "Starting"} if state else {tag: "Already running"}
 
 
 def help(widgets=False):

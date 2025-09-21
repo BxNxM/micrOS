@@ -412,6 +412,10 @@ def check_intercon(host=None):
         except Exception as e:
             print(f"WARNING: cannot parse output as dir: {e}")
             data_dict = {'tag': None, 'verdict': f'{data}: {str(e)}'}
+        # Handle new syntax: {"taskID": "verdict"}
+        if data[0] and data_dict.get("tag") is None:
+            _ttag = list(data_dict.keys())[0]
+            data_dict = {'tag': _ttag, 'verdict': f'{list(data_dict.values())[0]}: task show {_ttag}'}
         return data[0], data_dict
 
     def _get_intercon_output(tag):
@@ -426,55 +430,50 @@ def check_intercon(host=None):
                 break
         return _state, _output
 
-    def run_intercon_hello(tout):
+    def run_intercon_hello(tout=8):
         nonlocal host
         cmd_list = [f'hello >>{host}']
-        _output = CLIENT.execute(cmd_list, tout=8)
-        _new_intercon = True
-        if "hello:" in _output[1]:  # TODO: remove...
-            # LEGACY WAY: FALLBACK
-            cmd_list = ['intercon sendcmd "{}" "hello" >json'.format(host)]
-            _output = CLIENT.execute(cmd_list, tout=tout)
-            _new_intercon = False
-        return _new_intercon, _output
+        _output = CLIENT.execute(cmd_list, tout=tout)
+        return _output
 
     info_msg = '[ST] Check device-device connectivity'
     print(info_msg)
     host = 'test.local' if host is None else host
-    new_intercon, output = run_intercon_hello(tout=8)
+    output = run_intercon_hello(tout=8)
     output = _convert_return_to_dict(output)
+
     device_was_found = False
     if output[0] is False or output[1] is None:
         output = 'Device was not found: {}:{}'.format(host, output)
         return False, output
-    elif output[1] == '[]':
+    if output[1] == '[]':
         # Valid input, device was not found
         output = 'Device was not found: {}:{}'.format(host, output)
         state = True, f'{info_msg}:\n\t\t{output}'
     elif len(output[1]) > 1 and "hello" in output[1]['verdict']:
         response_state, response = _get_intercon_output(output[1]['tag'])
         # Valid input on online device
-        output = "Device was found: {}:{} version: {}".format(host, f"{output}: {response}", "NEW" if new_intercon else "LEGACY")
-        state = True & response_state, f'{info_msg}:\n\t\t{output}'
+        output = "Device was found: {}:{}".format(host, f"{output}: {response}")
+        state = response_state, f'{info_msg}:\n\t\t{output}'
         device_was_found = True
     else:
-        state = False, output
+        state = False, f" InterCon Failed: {output}"
 
     if device_was_found:
         # DO Negative testing as well
         host = "notavailable.local"
-        _, output_neg = run_intercon_hello(tout=20)
+        output_neg = run_intercon_hello(tout=20)
         if output_neg[0] and output_neg[1] == '':
             # NO HOST TIMEOUT ...
             output_neg = f'Device was not found (dhcp timeout): {host}:{output_neg}: {output_neg[1]}'
             return True & state[0], f"{state[1]}\n\t\tNegative test: {output_neg}"
         # Valid return on negative testing
         output_neg = _convert_return_to_dict(output_neg)
-        state_neg = False, output_neg
+        state_neg = False, f"Negative test failed: {output_neg}"
         if len(output_neg[1]) > 1 and "hello" in output_neg[1]['verdict']:
             response_state, response = _get_intercon_output(output_neg[1]['tag'])
             output_neg = f'Device was not found: {host}":{output_neg}: {response}'
-            state_neg = True & response_state, output_neg
+            state_neg = response_state, output_neg
         return state[0] & state_neg[0], f"{state[1]}\n\t\tNegative test: {state_neg[1]}"
     return state
 

@@ -205,39 +205,43 @@ async def _socket_send_cmd(host:str, cmd:list, com_obj:InterCon) -> None:
     com_obj.task.out = '' if out is None else out
 
 
-async def _send_cmd(host:str, cmd:list|str, com_obj:InterCon) -> dict:
+async def _send_cmd(host:str, cmd:list|str, com_obj:InterCon):
     """
     Top level InterConnect callback function
         [1] node01.domain -> ESPNow, Socket
                 (domain: .local, .net, etc.)
-        [2] node01 -> ESPNow, ToDo: Socket fallback in case found in InterConnect cache
+        [2] node01 -> ESPNow, Socket fallback in case found in InterConnect cache
         [3] IP address -> Socket
     """
     with com_obj.task:
         if ESPNowSS:
+            # [1] ESPNow Active
             name = str(host).split(".")[0]   # host.local -> host
             if name not in InterCon.NO_ESPNOW and name in list(ESPNowSS().devices.values()):
+                com_obj.task.out = "Redirected to ESPNow"
                 if isinstance(cmd, list):
                     cmd = ' '.join(cmd)
-                sender =  ESPNowSS().send(peer=name, msg=cmd)
-                task_key = list(sender.keys())[0]
-                sender_task = NativeTask.TASKS.get(task_key, None)
+                # Send command and retrieve result
+                sender = ESPNowSS().send(peer=name, msg=cmd)
+                sender_task = NativeTask.TASKS.get(list(sender.keys())[0])
                 result = await sender_task.await_result(timeout=10)
                 if result != "Timeout has beed exceeded":
-                    com_obj.task.out = "Redirected to ESPNow"
-                    return sender
+                    # Successful command execution
+                    com_obj.task.out = result                       # Output mirroring: Child -> Parent
+                    sender_task.out = "Redirected to ParentTask"    # Remove redundant data in embedded mode
+                    return
 
         # Handle legacy string input
         if isinstance(cmd, str):
             cmd = cmd.split()
-        out = await _socket_send_cmd(host, cmd, com_obj)
+        # [1][2] Socket send (default and fallback)
+        await _socket_send_cmd(host, cmd, com_obj)
 
         if ESPNowSS and name not in InterCon.NO_ESPNOW:
+            # [3] Automatic ESPNow handshake
             verdict = await com_obj.auto_espnow_handshake(host)
             if list(verdict.keys())[0] is None:
                 syslog(f"[ERR] ESPNow auto handshake: {list(verdict.values())[0]}")
-
-        return out
 
 
 def send_cmd(host:str, cmd:list|str) -> dict:

@@ -476,7 +476,7 @@ def exec_builtins(func):
                 if arg_len > 1 and 'list' == arg_list[1]:
                     on, off = Manager.list_tasks(json=json_flag)
                     # RETURN:    JSON mode                                                   Human readable mode with cpu & queue info
-                    return (True, {'active': on[3:], 'inactive': off}) if json_flag else (True, '\n'.join(on) + '\n' + '\n'.join(off) + '\n')
+                    return (True, dumps({'active': on[3:], 'inactive': off})) if json_flag else (True, '\n'.join(on) + '\n' + '\n'.join(off) + '\n')
                 # task kill <taskID> / task show <taskID>
                 if arg_len > 2:
                     if 'kill' == arg_list[1]:

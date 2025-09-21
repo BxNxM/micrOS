@@ -323,7 +323,10 @@ class ESPNowSS:
             _peers = self.espnow.peers_table
         except Exception as e:
             _peers = str(e)
-        return {"stats": _stats, "peers": _peers, "map": self.devices, "ready": self.server_ready}
+        return {"stats": _stats, "peers": _peers, "ready": self.server_ready}
+    
+    def members(self):
+        return self.devices
 
     def remove_peer(self, peer:bytes) -> bool:
         """

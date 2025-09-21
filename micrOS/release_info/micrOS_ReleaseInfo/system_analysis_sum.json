@@ -69,7 +69,7 @@
             8
         ],
         "Espnow.py": [
-            9.52,
+            9.48,
             4
         ],
         "Scheduler.py": [
@@ -117,7 +117,7 @@
             0
         ],
         "modules/LM_oled_ui.py": [
-            8.78,
+            9.2,
             0
         ],
         "modules/LM_system.py": [
@@ -245,11 +245,11 @@
             0
         ],
         "modules/LM_oledui.py": [
-            8.7,
+            8.94,
             0
         ],
         "modules/LM_espnow.py": [
-            6.67,
+            7.14,
             0
         ],
         "modules/LM_telegram.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            3969,
+            4004,
             24
         ],
         "load": [
-            9980,
+            9988,
             56
         ],
         "core_dep": [
@@ -339,7 +339,7 @@
             4
         ],
         "core_score": 9.25,
-        "load_score": 8.38,
-        "version": "2.18.1-0"
+        "load_score": 8.4,
+        "version": "2.18.2-0"
     }
 }

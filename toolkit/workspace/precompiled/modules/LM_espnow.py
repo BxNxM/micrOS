@@ -17,6 +17,13 @@ def stats():
     return ESPNOW.stats()
 
 
+def members():
+    """
+    Get ESPNow devices
+    """
+    return ESPNOW.members()
+
+
 def handshake(peer:bytes|str):
     """
     Handshake with ESPNow Peer
@@ -42,4 +49,5 @@ def help():
     return ('handshake peer=<mac-address>',
             'send peer=<peer-name> cmd="hello"',
             'remove peer=<binary-mac-address>',
-            'stats')
+            'stats',
+            'members')

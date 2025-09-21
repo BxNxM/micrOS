@@ -782,9 +782,10 @@ class PageUI:
                 # Send CMD to other device & show result
                 state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True)
                 if state:
-                    self._cmd_task_tag = data_meta['tag']
-                    if "Task is Busy" in data_meta['verdict'] and not run:
-                        self.app_frame.press_output = data_meta['verdict']     # Otherwise the task start output not relevant on UI
+                    self._cmd_task_tag = list(data_meta.keys())[0]
+                    verdict = list(data_meta.values())[0]
+                    if "Already running" in verdict and not run:
+                        self.app_frame.press_output = verdict     # Otherwise the task start output not relevant on UI
                 else:
                     self.app_frame.press_output = f"Error: {data_meta}"
             except Exception as e:

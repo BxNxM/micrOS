@@ -57,7 +57,7 @@
             35
         ],
         "InterConnect.py": [
-            9.41,
+            9.62,
             2
         ],
         "Debug.py": [
@@ -70,7 +70,7 @@
         ],
         "Espnow.py": [
             9.52,
-            3
+            4
         ],
         "Scheduler.py": [
             9.62,
@@ -323,7 +323,7 @@
     },
     "summary": {
         "core": [
-            3941,
+            3969,
             24
         ],
         "load": [
@@ -338,7 +338,7 @@
             true,
             4
         ],
-        "core_score": 9.24,
+        "core_score": 9.25,
         "load_score": 8.38,
         "version": "2.18.1-0"
     }

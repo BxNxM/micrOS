@@ -179,6 +179,7 @@ class ESPNowSS:
             self.server_ready = True
             my_task.out = "ESPNow receiver running"
             async for mac, msg in self.espnow:
+                reply, response = False, ""
                 try:
                     reply, response = self._request_handler(msg, my_task, mac)
                     if reply:
@@ -188,7 +189,6 @@ class ESPNowSS:
                     if len(err.args) > 1 and err.args[1] == 'ESP_ERR_ESPNOW_NOT_FOUND':
                         # AUTOMATIC PEER REGISTRATION
                         self.espnow.add_peer(mac)
-                        reply, response = self._request_handler(msg, my_task, mac)
                         if reply:
                             await self.__asend_raw(mac, response)
                     else:

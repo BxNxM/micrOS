@@ -1,14 +1,31 @@
+"""
+Module is responsible for device-device communication
+dedicated to micrOS framework.
+Built-in-function:
+- Socket InterConnect interface
+- ESPNow redirection
+
+Designed by 
+    Marcell Ban aka BxNxM
+    Kristof Kasza aka KKristof452
+"""
+
 from socket import getaddrinfo, SOCK_STREAM
-from re import compile
+from re import compile as re_compile
 from uasyncio import open_connection
 from Debug import syslog
 from Config import cfgget
 from Server import Server
 from Tasks import NativeTask
 
+if cfgget('espnow'):
+    from Espnow import ESPNowSS
+else:
+    ESPNowSS = None
+
 
 class InterCon:
-    CONN_MAP = {}
+    CONN_MAP: dict[str, str] = {}
     PORT = cfgget('socport')
 
     def __init__(self):
@@ -19,7 +36,7 @@ class InterCon:
 
     @staticmethod
     def validate_ipv4(str_in):
-        pattern = compile(r'^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$')
+        pattern = re_compile(r'^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$')
         return bool(pattern.match(str_in))
 
     async def send_cmd(self, host:str, cmd:list):
@@ -68,8 +85,7 @@ class InterCon:
                 InterCon.CONN_MAP[hostname] = None if output is None else host
             # None: ServerBusy(or \0) or Prompt mismatch (auto delete cached IP), STR: valid comm. output
             return output
-        else:
-            syslog(f"[ERR][intercon] Invalid host: {host}")
+        syslog(f"[ERR][intercon] Invalid host: {host}")
         return ''
 
     async def __run_command(self, cmd:list, hostname:str):
@@ -140,7 +156,7 @@ class InterCon:
         return data, prompt
 
 
-async def _send_cmd(host:str, cmd:list, com_obj):
+async def _socket_send_cmd(host:str, cmd:list, com_obj:InterCon) -> None:
     """
     Async send command wrapper for further async task integration and sync send_cmd usage (main)
     :param host: hostname / IP address
@@ -148,21 +164,46 @@ async def _send_cmd(host:str, cmd:list, com_obj):
     :param com_obj: InterCon object to utilize send_cmd method and task status updates
     """
     # Send command
+    for _ in range(0, 2):                           # Retry mechanism
+        out = await com_obj.send_cmd(host, cmd)     # Send CMD
+        if out is not None:                         # Retry mechanism
+            break
+        await com_obj.task.feed(sleep_ms=100)       # Retry mechanism
+    com_obj.task.out = '' if out is None else out
+
+
+async def _send_cmd(host:str, cmd:list|str, com_obj:InterCon) -> dict:
+    """
+    Top level InterConnect callback function
+        [1] node01.domain -> ESPNow, Socket
+                (domain: .local, .net, etc.)
+        [2] node01 -> ESPNow, ToDo: Socket fallback in case found in InterConnect cache
+        [3] IP address -> Socket
+    """
     with com_obj.task:
-        for _ in range(0, 4):                           # Retry mechanism
-            out = await com_obj.send_cmd(host, cmd)     # Send CMD
-            if out is not None:                         # Retry mechanism
-                break
-            await com_obj.task.feed(sleep_ms=100)       # Retry mechanism
-        com_obj.task.out = '' if out is None else out
-    return com_obj.task.out
+        if ESPNowSS:
+            name = str(host).split(".")[0]   # host.local -> host
+            if name in list(ESPNowSS().devices.values()):
+                if isinstance(cmd, list):
+                    cmd = ' '.join(cmd)
+                sender =  ESPNowSS().send(peer=name, msg=cmd)
+                task_key = list(sender.keys())[0]
+                sender_task = NativeTask.TASKS.get(task_key, None)
+                result = await sender_task.await_result(timeout=10)
+                if result != "Timeout has beed exceeded":
+                    com_obj.task.out = "Redirected to ESPNow"
+                    return sender
+
+        # Handle legacy string input
+        if isinstance(cmd, str):
+            cmd = cmd.split()
+        await _socket_send_cmd(host, cmd, com_obj)
 
 
 def send_cmd(host:str, cmd:list|str) -> dict:
     """
-    Sync wrapper of async _send_cmd (InterCon.send_cmd consumer with retry)
-    :param host: hostname / IP address
-    :param cmd: command string to server socket shell
+    Top level InterConnect send task creation
+        Handles ESPNow and socket communication
     """
     def _tagify():
         nonlocal host, cmd
@@ -171,18 +212,10 @@ def send_cmd(host:str, cmd:list|str) -> dict:
             return f"{'.'.join(host.split('.')[-2:])}.{_mod}"
         return f"{host.replace('.local', '')}.{_mod}"
 
-    # Handle legacy string input
-    if isinstance(cmd, str):
-        cmd = cmd.split()
-
     com_obj = InterCon()
-    tag = f"con.{_tagify()}"
-    started = com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=tag)
-    if started:
-        result = {"verdict": f"Task started: task show {tag}", "tag": tag}
-    else:
-        result = {"verdict": "Task is Busy", "tag": tag}
-    return result
+    task_id = f"con.{_tagify()}"            # CHECK TASK ID CONFLICT
+    state = com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=task_id)
+    return {task_id: "Starting"} if state else {task_id: "Already running"}
 
 
 def host_cache() -> dict:
@@ -190,4 +223,3 @@ def host_cache() -> dict:
     Dump InterCon connection cache
     """
     return InterCon.CONN_MAP
-

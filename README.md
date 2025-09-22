@@ -458,11 +458,11 @@ Version **3.0.0-0** `micrOS-Autonomous`
     - (1) Async SSL/TLS integration (micropython 1.22+ required)                [DONE]
         - urequest module async redesign for rest clients                       [OK]
             - LM_telegram (Notify) + server (listener - chatbot)                [OK]
-    - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [PoC:OK][TODO]
+    - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [DONE]
     - (3) New intercon syntax - command level integration:                      [DONE]
     	- rgb toggle >>RingLight.local
     	- similar as (obsolete): intercon sendcmd host="RingLight.local" cmd="rgb toggle"
-    - (4) Create multi level project structure (curret is flat fs)              [WIP] FS
+    - (4) Create multi level project structure (curret is flat fs)              [DONE]
 		- New micrOS FS structure:
 			- Automatic dir creation at bootup: '/logs', '/web', '/data', '/config', '/modules'
 			- Automatic sub-dir handling /source and /precompiled

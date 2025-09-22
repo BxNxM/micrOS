@@ -6,17 +6,12 @@ import os
 import threading
 import subprocess
 import time
-from PyQt5.QtWidgets import QPushButton
-import PyQt5.QtCore as QtCore
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QIcon
-from PyQt5.QtGui import QTextCursor
-from PyQt5.QtWidgets import QApplication, QPlainTextEdit
-from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtGui import QFont
-from PyQt5 import QtGui
-from PyQt5.QtGui import QPixmap
+
+from PyQt5.QtWidgets import (QApplication, QPlainTextEdit, QPushButton, QProgressBar, QComboBox, QLabel, QCheckBox,
+                             QLineEdit, QMessageBox, QWidget, QToolTip)
+from PyQt5.QtCore import pyqtSlot, QThread, QSize, pyqtSignal
+from PyQt5.QtGui import QIcon, QTextCursor, QFont, QPixmap
+
 import concurrent.futures
 
 MYPATH = os.path.dirname(__file__)
@@ -454,7 +449,7 @@ class HeaderInfo:
         logo_path = os.path.join(MYPATH, '../media/logo_mini.png')
         button = QPushButton('', self.parent_obj)
         button.setIcon(QIcon(logo_path))
-        button.setIconSize(QtCore.QSize(50, 50))
+        button.setIconSize(QSize(50, 50))
         button.setGeometry(20, 5, 50, 50)
         button.setToolTip(f"Open micrOS repo documentation\n{self.url}")
         button.setStyleSheet('border: 0px solid black;')
@@ -1219,7 +1214,7 @@ class micrOSGUI(QWidget):
 
 def main():
     app = QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon(os.path.join(MYPATH, '../media/logo.png')))
+    app.setWindowIcon(QIcon(os.path.join(MYPATH, '../media/logo.png')))
     ex = micrOSGUI()
     ex.draw()
     sys.exit(app.exec_())

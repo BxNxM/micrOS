@@ -170,13 +170,13 @@ class InterCon:
         """
         response = await self.send_cmd(host, ["task", "list", ">json"])
         if not response:
-            return {None: f"espnow auto handshake failed: task list, {response}"}
+            return {None: f"[ERR] ESPNow auto handshake: task list, {response}"}
 
         active_tasks = loads(response).get("active")
         if "espnow.server" in active_tasks:
             response = await self.send_cmd(host, ["system", "info", ">json"])
             if not response:
-                return {None: "espnow auto handshake failed: system info"}
+                return {None: "[ERR] ESPNow auto handshake: system info"}
             try:
                 host_mac = loads(response).get("mac")
             except Exception as ex:
@@ -186,7 +186,7 @@ class InterCon:
 
         if not InterCon.validate_ipv4(host):
             InterCon.NO_ESPNOW.append(str(host).split(".")[0])   # host.local -> host
-        return {None: "espnow auto handshake: espnow disabled on host"}
+        return {None: f"ESPNow auto handshake: espnow disabled on host {host}"}
 
 
 async def _socket_send_cmd(host:str, cmd:list, com_obj:InterCon) -> None:
@@ -241,7 +241,7 @@ async def _send_cmd(host:str, cmd:list|str, com_obj:InterCon):
             # [3] Automatic ESPNow handshake
             verdict = await com_obj.auto_espnow_handshake(host)
             if list(verdict.keys())[0] is None:
-                syslog(f"[ERR] ESPNow auto handshake: {list(verdict.values())[0]}")
+                syslog(str(list(verdict.values())[0]))
 
 
 def send_cmd(host:str, cmd:list|str) -> dict:

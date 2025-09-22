@@ -211,7 +211,7 @@ class ListDevices(Resource):
 
     def sort_devices(self):
         device_struct = socketClient.ConnectionData.list_devices()
-        online_devices = socketClient.ConnectionData.nodes_status()
+        online_devices = socketClient.ConnectionData.nodes_status(feature_stat=False)
         filtered_devices = {"online": {}, "offline": {}}
         for uid, data in device_struct.items():
             if data[0] in online_devices:

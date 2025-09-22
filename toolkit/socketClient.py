@@ -185,8 +185,8 @@ class ConnectionData:
             return None, None, None, None
 
     @staticmethod
-    def nodes_status():
-        spr_offset1 = 30
+    def nodes_status(feature_stat=True):
+        spr_offset1 = 25
         spr_offset2 = 57
 
         def _dev_status(ip, port, fuid, uid):
@@ -199,6 +199,10 @@ class ConnectionData:
                     Colors.WARN, Colors.NC)
                 version_data = '<n/a>'
                 elapsed_time = 'n/a'
+                webui_state = 'n/a'
+                espnow_state  = 'n/a'
+                cron_state = 'n/a'
+                timirq_state = 'n/a'
                 online_ip = None
 
                 # is online
@@ -206,9 +210,17 @@ class ConnectionData:
                     # get version data
                     online_ip = ip
                     try:
+                        connection = SocketDictClient(host=ip, port=port, silent_mode=True, tout=3)
+                        # Get version and elapsed time data
                         start_comm = time.time()
-                        version_data = SocketDictClient(host=ip, port=port, silent_mode=True, tout=3).non_interactive(['version'])
+                        version_data = connection.non_interactive(['version'])
                         elapsed_time = "{:.3f}".format(time.time() - start_comm)
+                        if feature_stat:
+                            # Get active features info
+                            webui_state = connection.non_interactive(['conf', 'webui'])
+                            espnow_state = connection.non_interactive(['conf', 'espnow'])
+                            cron_state = connection.non_interactive(['conf', 'cron'])
+                            timirq_state = connection.non_interactive(['conf', 'timirq'])
                     except Exception as e:
                         print(f"Getting device version {fuid}:{uid} error: {e}")
 
@@ -216,14 +228,22 @@ class ConnectionData:
                 base_info = "{uid}{spr1}{fuid}".format(uid=uid, spr1=spacer1, fuid=fuid)
                 spacer1 = " " * (spr_offset2 - len(base_info))
                 spacer2 = "\t" if len(version_data) > 7 else "\t\t"
-                data_line_str = f"{base_info}{spacer1}{ip}\t{is_online}\t\t{version_data}{spacer2}{elapsed_time}"
+                feature_info = ""
+                if feature_stat:
+                    _on_str = f"{Colors.OKGREEN}{Colors.BOLD}ON {Colors.NC}"
+                    _off_str = f"{Colors.BOLD}OFF{Colors.NC}"
+                    _fspacer = " "*6
+                    bool2str = lambda x: _on_str if x.strip() == "True" else _off_str if x != "n/a" else x
+                    feature_info = f"\t\t{bool2str(webui_state)}{_fspacer}{bool2str(espnow_state)}{_fspacer}{bool2str(cron_state)}{_fspacer}{bool2str(timirq_state)}"
+                data_line_str = f"{base_info}{spacer1}{ip}\t{is_online}\t\t{version_data}{spacer2}{elapsed_time}{feature_info}"
                 return data_line_str, online_ip
             return None
 
         nodes_dict = ConnectionData.read_micrOS_device_cache()
-        spacer1 = " " * (spr_offset1 - 14)
-        print("{cols}       [ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]\t[COMM SEC]{cole}"
-              .format(spr1=spacer1, cols=Colors.OKBLUE + Colors.BOLD, cole=Colors.NC))
+        spacer1 = " " * (spr_offset1 - 8)
+        feature_header_str = "\t[WEBUI | ESPNOW | CRON | TIMIRQ]" if feature_stat else ""
+        print("{cols}[ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]\t[COMM SEC]{features}{cole}"
+              .format(spr1=spacer1, cols=Colors.OKBLUE + Colors.BOLD, features=feature_header_str, cole=Colors.NC))
 
         # Start parallel status queries
         query_list = []

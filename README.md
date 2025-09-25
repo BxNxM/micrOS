@@ -459,9 +459,11 @@ Version **3.0.0-0** `micrOS-Autonomous`
         - urequest module async redesign for rest clients                       [OK]
             - LM_telegram (Notify) + server (listener - chatbot)                [OK]
     - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [DONE]
+       - Multi command same device improvement (session ID handling)             [TODO]
     - (3) New intercon syntax - command level integration:                      [DONE]
     	- rgb toggle >>RingLight.local
     	- similar as (obsolete): intercon sendcmd host="RingLight.local" cmd="rgb toggle"
+    	- espnow integration into `rgb toggle >>RingLight.local` syntax (when available on target)
     - (4) Create multi level project structure (curret is flat fs)              [DONE]
 		- New micrOS FS structure:
 			- Automatic dir creation at bootup: '/logs', '/web', '/data', '/config', '/modules'
@@ -498,29 +500,62 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- IO_* (approx.: 5)
 
 
-		- (5) [TODO] Proper mip installer support (/modules or /lib or /web)
-			- Note: Autonomous package management over wifi (github) 
+		- (5) [TODO] Universal task creation response: `{taskID: verdict}`
+
+		- (6) [TODO] Proper mip installer support (/modules or /lib or /web)
+			- Note: Autonomous package management over wifi (github)
 				- pacman download            [POC][DONE][TODO]
 				- pacman ls                  [DONE]
 				- pacman dirtree             [DONE]
 				- pacman ...
+
+		- (7) /config/requirements.txt handling
+			-  pacman requirements install/remove/list
 ```
 
-Version **3.1.0-0** `micrOS-SecurePower`
+Version **3.1.0-0** `micrOS-Waterbear`
+
+```
+    Core:
+    - Low power mode (wake on event, hibernate command)?
+    	- Remote controller / Sensor UseCase
+```
+
+
+Version **3.X.0-0** `micrOS-SecurePower`
 
 ```
     Core:
     - Async socket servers with SSL/TLS integration (with auth.)
-        - WebCli (https?), ShellCli (ssocket/sterminal) and InterCon
-    - Low power mode with ESPNOW + (AP mode?)
-    	- Remote controller / Sensor UseCase
-    	- --- client mode (fyi: normally micrOS operates in server mode) 
+        - ShellCli (with TLS) and InterCon adaptation (default port: 9008, new secure port 9009)
+        - WebCli (https) and webUI adaptation
     - Intercon-Wire (?)
     	- Idea of wired message communication protocol same as Intercon-Shell/Intercon-ESPNow
     	- Possible HW protocols: i2c / onewire / uart BUT it should support bidirectional message transfers
-    	- Goal: CoProcessor easy integration feature - Arduino env support 
-```
+    	- Goal: CoProcessor easy integration feature - Arduino env support
+    - Application deployment automation: /config/compose.json
+    	- enables application deployment: configuration (node_config.json), requirements handling
+    	- Automatic behaviour in core system if file exists in STA mode
 
+    Application registry???
+    	- Applications repository as module registry, structure:
+    		- micrOSApps repository:
+    			- engineer:
+    				- apps.txt (name and short description pairs)
+    				- app1
+    					- descriptor.json (targets: /modules, /lib, /web)
+    					- app.py
+    					- foo.py
+    					- bar.html
+    				- app2
+    					- descriptor.json
+    					- app.py
+    		    - engineer2:
+    		    	- apps.txt (name and short description pairs) 
+    		    	- app1
+    		    		- descriptor.json (targets: /modules, /lib, /web)
+    					- app.py
+```
 
 <a id="release-note"></a>
 ## Release notes

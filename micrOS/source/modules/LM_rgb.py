@@ -246,8 +246,7 @@ def transition(r=None, g=None, b=None, sec=1.0, wake=False):
     # Create transition generator and calculate step_ms
     rgb_gen, step_ms = transition_gen(r_from, r, g_from, g, b_from, b, interval_sec=sec)
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag=Data.RGB_TASK_TAG, task=_task(ms_period=step_ms, iterable=rgb_gen))
-    return "Starting transition" if state else "Transition already running"
+    return micro_task(tag=Data.RGB_TASK_TAG, task=_task(ms_period=step_ms, iterable=rgb_gen))
 
 
 def random(smooth=True, max_val=1000):

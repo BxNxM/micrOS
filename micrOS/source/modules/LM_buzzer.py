@@ -270,10 +270,7 @@ def play(rtttlstr='Indiana'):
     global CHECK_NOTIFY
     if CHECK_NOTIFY and not notify():
         return "NoBipp - notify off"
-    state = micro_task(tag=__TASK_TAG, task=_play(rtttlstr))
-    if state:
-        return 'Play song'
-    return 'Song already playing'
+    return micro_task(tag=__TASK_TAG, task=_play(rtttlstr))
 
 
 def list_tones():

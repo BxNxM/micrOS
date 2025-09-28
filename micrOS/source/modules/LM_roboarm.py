@@ -204,11 +204,10 @@ def play(*args, s=None, delay=None, deinit=True):
 
     # Start play - servo XY in async task
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag=RoboArm.PLAY_TAG, task=_play(args, deinit, delay))
-    if state:
-        return 'Play: {} steps'.format(int(len(args)/2))
-    return 'Play - already running'
 
+    state:dict = micro_task(tag=RoboArm.PLAY_TAG, task=_play(args, deinit, delay))
+    state.update({"Play steps": int(len(args)/2)})
+    return state
 
 def record(clean=False, rec_limit=8):
     """

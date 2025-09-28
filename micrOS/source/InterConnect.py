@@ -258,8 +258,7 @@ def send_cmd(host:str, cmd:list|str) -> dict:
 
     com_obj = InterCon()
     task_id = f"con.{_tagify()}"            # CHECK TASK ID CONFLICT
-    state = com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=task_id)
-    return {task_id: "Starting"} if state else {task_id: "Already running"}
+    return com_obj.task.create(callback=_send_cmd(host, cmd, com_obj), tag=task_id)
 
 
 def host_cache() -> dict:

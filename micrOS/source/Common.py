@@ -15,7 +15,7 @@ from Notify import Notify
 #####################################################################################
 #                                     SYSTEM                                        #
 #####################################################################################
-def micro_task(tag: str, task=None, _wrap=False):
+def micro_task(tag:str, task=None, _wrap=False):
     """
     [LM] Async task manager.
     Modes:
@@ -37,21 +37,14 @@ def micro_task(tag: str, task=None, _wrap=False):
     """
     # --- CREATE (original) ---
     if task is not None:
-        if TaskBase.is_busy(tag):
-            return None     # task already running
         return Manager().create_task(callback=task, tag=tag)
 
     # --- CREATE WITH DECORATOR FACTORY (simplified) ---
     if _wrap:
         def _decorator(async_fn):
             task_tag = f"{tag}._{async_fn.__name__}"
-            _launcher = (
-                lambda *args, **kwargs:
-                None if TaskBase.is_busy(task_tag)
-                else Manager().create_task(
-                    callback=async_fn(task_tag, *args, **kwargs),
-                    tag=task_tag)
-            )
+            _launcher = (lambda *args, **kwargs: Manager().create_task(callback=async_fn(task_tag, *args, **kwargs),
+                                                              tag=task_tag))
             return _launcher
         return _decorator
 
@@ -404,9 +397,8 @@ class AnimationPlayer:
         # Ensure async loop set up correctly. (After stop operation, it is needed)
         self.__running = True
         # [!] ASYNC TASK CREATION
-        raw_state:bool = micro_task(tag=self._task_tag, task=self._player())
-        state = "starting" if raw_state else "running"
-        settings["state"] = state
+        state:dict = micro_task(tag=self._task_tag, task=self._player())
+        settings["state"] = list(state.values())[0]
         return settings
 
     def stop(self):

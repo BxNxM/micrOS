@@ -216,8 +216,7 @@ def display(period=1000, tts=30):
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     period_ms = 500 if period < 500 else period
     tts_ms = 5000 if tts < 5 else tts*1000
-    state = micro_task(tag="keychain.display", task=_ui_task(period_ms, tts_ms))
-    return "Starting" if state else "Already running"
+    return micro_task(tag="keychain.display", task=_ui_task(period_ms, tts_ms))
 
 
 def temperature():

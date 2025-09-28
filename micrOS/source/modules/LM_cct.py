@@ -238,8 +238,7 @@ def transition(cw=None, ww=None, sec=1.0, wake=False):
     # Create transition generator and calculate step_ms
     cct_gen, step_ms = transition_gen(cw_from, cw_to, ww_from, ww_to, interval_sec=sec)
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag=Data.CCT_TASK_TAG, task=_task(ms_period=step_ms, iterable=cct_gen))
-    return "Starting transition" if state else "Transition already running"
+    return micro_task(tag=Data.CCT_TASK_TAG, task=_task(ms_period=step_ms, iterable=cct_gen))
 
 
 def hue_transition(percent, sec=1.0, wake=False):
@@ -288,8 +287,7 @@ def hue_transition(percent, sec=1.0, wake=False):
         #print("Actual percent: {}, target percent: {}".format(actual_percent, warm_percent))
         hue_gen, step_ms = transition_gen(hue_curr_percent, percent*10, interval_sec=sec)
         # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-        state = micro_task(tag=Data.HUE_TASK_TAG, task=_task(ms_period=step_ms, iterable=hue_gen))
-        return "Starting transition" if state else "Transition already running"
+        return micro_task(tag=Data.HUE_TASK_TAG, task=_task(ms_period=step_ms, iterable=hue_gen))
     else:
         return "Invalid range, percent=<0-100>"
 

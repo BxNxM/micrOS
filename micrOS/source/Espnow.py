@@ -201,8 +201,7 @@ class ESPNowSS:
         """
         # Create an asynchronous task with tag 'espnow.server'
         tag = 'espnow.server'
-        state = NativeTask().create(callback=self._server(tag), tag=tag)
-        return {tag: "Starting"} if state else {tag: "Already running"}
+        return NativeTask().create(callback=self._server(tag), tag=tag)
 
     #----------- SEND METHODS --------------
     async def __asend_raw(self, mac:bytes, msg:str):
@@ -249,8 +248,7 @@ class ESPNowSS:
         peer_name = hexlify(peer, ':').decode() if peer_name is None else peer_name
         task_id = f"con.espnow.{peer_name}"
         # Create an asynchronous sending task.
-        state = NativeTask().create(callback=self._asend_task(peer, task_id, msg), tag=task_id)
-        return {task_id: "Starting"} if state else {task_id: "Already running"}
+        return NativeTask().create(callback=self._asend_task(peer, task_id, msg), tag=task_id)
 
     def cluster_send(self, msg):
         """
@@ -304,8 +302,7 @@ class ESPNowSS:
             # Convert 50:02:91:86:34:28 format to b'P\x02\x91\x864(' bytes
             peer = bytes(int(x, 16) for x in peer.split(":"))
         if isinstance(peer, bytes):
-            state = NativeTask().create(callback=self._handshake(peer, task_id), tag=task_id)
-            return {task_id: "Starting"} if state else {task_id: "Already running"}
+            return NativeTask().create(callback=self._handshake(peer, task_id), tag=task_id)
         else:
             return {None: "Invalid MAC address format. Use 50:02:91:86:34:28 or b'P\\x02\\x91\\x864('"}
 

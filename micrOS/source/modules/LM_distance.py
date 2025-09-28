@@ -70,9 +70,7 @@ def start_dimmer_indicator(idle_distance=180):
     """Distance visualization on LED brightness (LM_dimmer)"""
     from LM_dimmer import set_value
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag="distance.visual", task=__task(period_ms=200, dimmer=set_value, idle_cm=idle_distance))
-    return "Starting" if state else "Already running"
-
+    return micro_task(tag="distance.visual", task=__task(period_ms=200, dimmer=set_value, idle_cm=idle_distance))
 
 
 #########################

@@ -213,8 +213,7 @@ def motion_trig(sample_ms=15, buff_size=10):
 
     # [3] Start mic sampling in async task
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag=Data.TASK_TAG, task=__task(ms_period=sample_ms, buff_size=buff_size))
-    return "Starting" if state else "Already running"
+    return micro_task(tag=Data.TASK_TAG, task=__task(ms_period=sample_ms, buff_size=buff_size))
 
 
 def subscribe_intercon(on, off):

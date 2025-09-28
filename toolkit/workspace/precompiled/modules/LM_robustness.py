@@ -83,8 +83,7 @@ def create_task():
     """
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
     task_tag = "microtask.run"
-    state = micro_task(tag=task_tag, task=__task(tag=task_tag, period_ms=5))
-    return "Starting" if state else "Already running"
+    return micro_task(tag=task_tag, task=__task(tag=task_tag, period_ms=5))
 
 
 @micro_task("microtask", _wrap=True)

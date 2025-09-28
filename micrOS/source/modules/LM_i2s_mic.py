@@ -94,8 +94,7 @@ def background_capture():
     if not Data.MIC_ENABLED:
         return "Microphone is disabled"
 
-    state = micro_task(tag=Data.TASK_TAG, task=__task(ms_period=1))
-    return "Starting" if state else "Already running"
+    return micro_task(tag=Data.TASK_TAG, task=__task(ms_period=1))
 
 
 def get_from_buffer(capture_duration=Data.CAPTURE_DURATION,

@@ -18,10 +18,10 @@ from Config import cfgget
 from Network import sta_high_avail
 
 try:
-    from gc import collect
+    from gc import collect as gcollect
 except ImportError:
     console_write("[SIMULATOR MODE GC IMPORT]")
-    from simgc import collect
+    from simgc import collect as gcollect
 
 #################################################################
 #                Implement custom task class                    #
@@ -43,20 +43,31 @@ class TaskBase:
         self.done = asyncio.Event()  # Store task done state
         self.out = ""                # Store task output
 
-    def _create(self, callback:callable) -> bool:
+    ######  BASE METHODS FOR CHILD CLASSES  ####
+    def _create(self, callback:callable) -> dict:
         """
         Create async task and register it to TASKS dict by tag
         :param callback: coroutine function
         """
-        if TaskBase.is_busy(self.tag):
-            # Skip task if already running
-            return False
         # Create async task from coroutine function
         self.task = asyncio.get_event_loop().create_task(callback)
         # Store Task object by key - for task control
         TaskBase.TASKS[self.tag] = self
-        return True
+        return {self.tag: "Starting"}
 
+    @staticmethod
+    def _task_gc():
+        """
+        Automatic passive task deletion over QUEUE_SIZE
+        """
+        keep  = TaskBase.QUEUE_SIZE
+        passive = tuple((task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)))
+        if len(passive) >= keep:
+            for i in range(0, len(passive)-keep+1):
+                del TaskBase.TASKS[passive[i]]
+            gcollect()
+
+    ######  PUBLIC TASK METHODS  #####
     @staticmethod
     def is_busy(tag:str) -> bool:
         """
@@ -66,29 +77,6 @@ class TaskBase:
         task = TaskBase.TASKS.get(tag, None)
         # return True: busy OR False: not busy (inactive) OR None: not exists
         return bool(task is not None and not task.done.is_set())
-
-    @staticmethod
-    def task_gc():
-        """
-        Automatic passive task deletion over QUEUE_SIZE
-        """
-        keep  = TaskBase.QUEUE_SIZE
-        passive = tuple((task_tag for task_tag in list(TaskBase.TASKS) if not TaskBase.is_busy(task_tag)))
-        if len(passive) >= keep:
-            for i in range(0, len(passive)-keep+1):
-                del TaskBase.TASKS[passive[i]]
-            collect()  # GC collect
-
-    @staticmethod
-    async def feed(sleep_ms=1):
-        """
-        Feed event loop
-        :param sleep_ms: in millisecond
-        """
-        # TODO: feed WDT - preemptive cooperative multitasking aka reboot if no feed until X time period
-        if sleep_ms <= 0:
-            return await asyncio.sleep(0.000_000_1)     # 0 means: 100ns (Absolute minimum)
-        return await asyncio.sleep_ms(sleep_ms)
 
     def cancel(self) -> bool:
         """
@@ -109,15 +97,16 @@ class TaskBase:
             return False
         return True
 
-    def __task_del(self, keep_cache=False):
+    @staticmethod
+    async def feed(sleep_ms=1):
         """
-        Delete task from TASKS
+        Feed event loop
+        :param sleep_ms: in millisecond
         """
-        self.done.set()
-        if self.tag in TaskBase.TASKS:
-            if not keep_cache:              # True - In case of destructor
-                del TaskBase.TASKS[self.tag]
-        collect()                           # GC collect
+        # TODO?: feed WDT - auto restart when system is frozen
+        if sleep_ms <= 0:
+            return await asyncio.sleep(0.000_000_1)     # 0 means: 100ns (Absolute minimum)
+        return await asyncio.sleep_ms(sleep_ms)
 
     async def await_result(self, timeout:int=5):
         """
@@ -129,6 +118,17 @@ class TaskBase:
         except asyncio.TimeoutError:
             return "Timeout has beed exceeded"
         return self.out
+
+    ######  PRIVATE LCM METHODS  #####
+    def __task_del(self, keep_cache=False):
+        """
+        Delete task from TASKS
+        """
+        self.done.set()
+        if self.tag in TaskBase.TASKS:
+            if not keep_cache:              # True - In case of destructor
+                del TaskBase.TASKS[self.tag]
+        gcollect()
 
     def __del__(self):
         try:
@@ -143,7 +143,7 @@ class NativeTask(TaskBase):
     - could be built in function or custom code from load modules
     """
 
-    def create(self, callback:callable=None, tag:str=None) -> bool:
+    def create(self, callback:callable=None, tag:str=None) -> dict:
         """
         Create async task with coroutine callback (no queue limit check!)
         + async socket server task
@@ -152,6 +152,9 @@ class NativeTask(TaskBase):
         """
         # Create task tag
         self.tag = f"aio.{ticks_ms()}" if tag is None else tag
+        if self.is_busy(self.tag):
+            # Skip task if already running
+            return {self.tag: "Already running"}
         # Create task with coroutine callback
         return super()._create(callback)
 
@@ -170,7 +173,7 @@ class NativeTask(TaskBase):
         Helper function for Task creation in Load Modules
         [HINT] Use python with feature to utilize this feature
         """
-        self.task_gc()    # Task pool cleanup
+        self._task_gc()    # Task pool cleanup
         self.done.set()
 
 
@@ -186,7 +189,7 @@ class MagicTask(TaskBase):
         self.__inloop = False        # [LM] Task while loop for LM callback
         self.__sleep = 20            # [LM] Task while loop - async wait (proc feed) [ms]
 
-    def create(self, callback:list=None, loop:bool=None, sleep:int=None) -> bool:
+    def create(self, callback:list=None, loop:bool=None, sleep:int=None) -> dict:
         """
         Create async task with function callback (with queue limit check)
         - wrap (sync) function into async task (task_wrapper)
@@ -196,13 +199,14 @@ class MagicTask(TaskBase):
         """
         # Create task tag
         self.tag = '.'.join(callback[0:2])
-
+        if self.is_busy(self.tag):
+            # Skip task if already running
+            return {self.tag: "Already running"}
         # Set parameters for async wrapper
         self.__callback = callback
         self.__inloop = self.__inloop if loop is None else loop
         # Set sleep value for async loop - optional parameter with min sleep limit check (20ms)
         self.__sleep = self.__sleep if sleep is None else sleep if sleep > 19 else self.__sleep
-
         # Create task with coroutine callback
         return super()._create(self.__task_wrapper())
 
@@ -219,7 +223,7 @@ class MagicTask(TaskBase):
             state, self.out = _exec_lm_core(self.__callback)
             if not state or not self.__inloop:
                 break
-        self.task_gc()    # Task pool cleanup
+        self._task_gc()    # Task pool cleanup
         self.done.set()
 
     def cancel(self):
@@ -310,12 +314,16 @@ class Manager:
         my_task.done.set()
 
     @staticmethod
-    def create_task(callback, tag:str=None, loop:bool=False, delay:int=None):
+    def create_task(callback, tag:str=None, loop:bool=False, delay:int=None) -> dict:
         """
-        Primary interface
-        Generic task creator method
-            Create async Task with coroutine/list(lm call) callback
-        :param callback: list|callable
+        Primary interface of micrOS Generic task creator method
+        :param tag: task unique identifier
+        NativeTask:
+            :param callback: callable, coroutine to start a task
+        MagicTask with queue limiter:
+            :param callback: list of staring (command)
+            :param loop: MagicTask looping parameter
+            :param delay: MagicTask delay parameter
         """
         if isinstance(callback, list):
             # Check queue if task is Load Module
@@ -513,15 +521,9 @@ def lm_exec(arg_list:list, jsonify:bool=None):
         delay = int(delay) if delay.isdigit() else None
         # Create and start async lm task
         try:
-            state = Manager.create_task(arg_list, loop=loop, delay=delay)
+            return True, Manager.create_task(arg_list, loop=loop, delay=delay)
         except Exception as e:
-            # Valid & handled task command
-            return True, str(e)
-        tag = '.'.join(arg_list[0:2])
-        # Valid & handled task command
-        if state:
-            return True, f"Start {tag}"
-        return True, f"{tag} is Busy"
+            return False, {".".join(arg_list[0:2]): str(e)}
 
     # [2] Sync "realtime" task execution
     state, out = _exec_lm_core(arg_list, jsonify)
@@ -590,7 +592,7 @@ def _exec_lm_core(cmd_list, jsonify):
                 # UNLOAD MODULE IF MEMORY ERROR HAPPENED + gc.collect
                 if lm_mod in modules:
                     del modules[lm_mod]
-                collect()
+                gcollect()
             # LM EXECUTION ERROR
             return False, f"Core error: {lm_mod}->{lm_func}: {e}"
     return False, "Shell: for hints type help.\nShell: for LM exec: [1](LM)module [2]function [3...]optional params"

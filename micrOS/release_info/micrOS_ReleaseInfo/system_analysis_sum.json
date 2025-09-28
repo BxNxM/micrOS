@@ -25,7 +25,7 @@
             1
         ],
         "Tasks.py": [
-            9.46,
+            9.48,
             12
         ],
         "Config.py": [
@@ -54,7 +54,7 @@
         ],
         "Common.py": [
             9.85,
-            35
+            34
         ],
         "InterConnect.py": [
             9.62,
@@ -69,7 +69,7 @@
             8
         ],
         "Espnow.py": [
-            9.48,
+            9.47,
             4
         ],
         "Scheduler.py": [
@@ -97,7 +97,7 @@
             5
         ],
         "modules/LM_roboarm.py": [
-            7.78,
+            7.83,
             0
         ],
         "modules/LM_stepper.py": [
@@ -125,7 +125,7 @@
             0
         ],
         "modules/LM_robustness.py": [
-            8.36,
+            8.33,
             0
         ],
         "modules/LM_qmi8658.py": [
@@ -137,7 +137,7 @@
             0
         ],
         "modules/LM_rest.py": [
-            8.18,
+            8.6,
             0
         ],
         "modules/LM_tcs3472.py": [
@@ -161,7 +161,7 @@
             0
         ],
         "modules/LM_buzzer.py": [
-            9.11,
+            9.09,
             0
         ],
         "modules/LM_switch.py": [
@@ -189,11 +189,11 @@
             0
         ],
         "modules/LM_neopixel.py": [
-            7.78,
+            7.77,
             0
         ],
         "modules/LM_cct.py": [
-            9.04,
+            9.03,
             0
         ],
         "modules/LM_L9110_DCmotor.py": [
@@ -218,10 +218,6 @@
         ],
         "modules/LM_veml7700.py": [
             7.62,
-            0
-        ],
-        "modules/LM_pet_feeder.py": [
-            7.94,
             0
         ],
         "modules/LM_rencoder.py": [
@@ -253,7 +249,7 @@
             0
         ],
         "modules/LM_telegram.py": [
-            9.63,
+            9.62,
             0
         ],
         "modules/LM_OV2640.py": [
@@ -265,7 +261,7 @@
             0
         ],
         "modules/LM_distance.py": [
-            8.87,
+            8.86,
             0
         ],
         "modules/LM_VL53L0X.py": [
@@ -273,7 +269,7 @@
             0
         ],
         "modules/LM_light_sensor.py": [
-            9.17,
+            9.12,
             0
         ],
         "modules/LM_rp2w.py": [
@@ -281,7 +277,7 @@
             0
         ],
         "modules/LM_presence.py": [
-            8.9,
+            8.89,
             0
         ],
         "modules/LM_trackball.py": [
@@ -289,7 +285,7 @@
             0
         ],
         "modules/LM_mqtt_client.py": [
-            8.45,
+            8.68,
             0
         ],
         "modules/LM_dashboard_be.py": [
@@ -297,7 +293,7 @@
             0
         ],
         "modules/LM_dimmer.py": [
-            8.33,
+            8.32,
             0
         ],
         "modules/LM_gameOfLife.py": [
@@ -309,7 +305,7 @@
             0
         ],
         "modules/LM_i2s_mic.py": [
-            8.43,
+            8.42,
             0
         ],
         "modules/LM_sdcard.py": [
@@ -323,12 +319,12 @@
     },
     "summary": {
         "core": [
-            4004,
+            3994,
             24
         ],
         "load": [
-            9988,
-            56
+            9912,
+            55
         ],
         "core_dep": [
             true,
@@ -339,7 +335,7 @@
             4
         ],
         "core_score": 9.25,
-        "load_score": 8.4,
-        "version": "2.19.0-0"
+        "load_score": 8.42,
+        "version": "2.20.0-0"
     }
 }

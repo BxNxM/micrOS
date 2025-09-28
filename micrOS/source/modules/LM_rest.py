@@ -66,8 +66,7 @@ def aurl(subdomain):
     tag = "rest." + subdomain.replace("http://", '').replace("https://", '')
     if len(tag) > 50:
         tag = tag[0:50]
-    state = micro_task(tag=tag, task=__task(subdomain, tag))
-    return f"Starting" if state else f"Already running"
+    return micro_task(tag=tag, task=__task(subdomain, tag))
 
 
 def help(widgets=False):

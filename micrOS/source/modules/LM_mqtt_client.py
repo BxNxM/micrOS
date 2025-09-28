@@ -123,8 +123,8 @@ def publish(topic: str, message: str, retain: bool = False):
     :return: Status message string.
     """
     unique_tag = f'mqtt.publish.{topic}.{time.ticks_ms()}'
-    state = micro_task(tag=unique_tag, task=_publish(unique_tag, message, topic, retain))
-    return f"Message was sent {state}"
+    state:dict = micro_task(tag=unique_tag, task=_publish(unique_tag, message, topic, retain))
+    return f"Message was sent ({list(state.values())[0]})"
 
 
 ####################
@@ -142,8 +142,8 @@ async def _up():
             my_task.out = "Wait"
             await MQTT.CLIENT.up.wait()
             MQTT.CLIENT.up.clear()
-            state = micro_task(tag=MQTT.SUB_TASK, task=_subscribe(MQTT.DEFAULT_TOPIC))
-            my_task.out = f"Re-Subscription {state}"
+            state:dict = micro_task(tag=MQTT.SUB_TASK, task=_subscribe(MQTT.DEFAULT_TOPIC))
+            my_task.out = f"Re-Subscription ({list(state.values())[0]})"
             my_task.feed()
 
 
@@ -165,10 +165,14 @@ async def _init_client():
         MQTT.CLIENT.up.clear()
         
         # Initialize mqtt topics
-        if not micro_task(tag=MQTT.SUB_TASK, task=_subscribe(MQTT.DEFAULT_TOPIC)):
-            syslog(f"Failed start mqtt subscribe")
-        if not micro_task(tag=MQTT.UP_TASK, task=_up()):
-            syslog(f"Failed start mqtt up")
+        try:
+            micro_task(tag=MQTT.SUB_TASK, task=_subscribe(MQTT.DEFAULT_TOPIC))
+        except Exception as err:
+            syslog(f"Failed start mqtt subscribe: {err}")
+        try:
+            micro_task(tag=MQTT.UP_TASK, task=_up())
+        except Exception as err:
+            syslog(f"Failed start mqtt up: {err}")
         # Async listener loop
         await _receiver()
         my_task.out = "Receiver closed"
@@ -230,8 +234,7 @@ def load(username: str, password: str, server_ip: str, server_port: str='1883', 
     MQTT.CLIENT = MQTTClient(_configure(username, password, server_ip, server_port))
     MQTT.QOS = qos
 
-    state = micro_task(tag=MQTT.CLIENT_TASK, task=_init_client())
-    return {MQTT.CLIENT_TASK: "Starting"} if state else {MQTT.CLIENT_TASK: "Already running"}
+    return micro_task(tag=MQTT.CLIENT_TASK, task=_init_client())
 
 
 def help(widgets=False):

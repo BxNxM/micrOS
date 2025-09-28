@@ -184,8 +184,7 @@ def transition(value, sec=1.0, wake=False):
     # Create transition generator and calculate step_ms
     fade_gen, fade_step_ms = transition_gen(from_dim, value, interval_sec=sec)
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag=Data.DIMM_TASK_TAG, task=_task(ms_period=fade_step_ms, iterable=fade_gen))
-    return "Starting transition" if state else "Transition already running"
+    return micro_task(tag=Data.DIMM_TASK_TAG, task=_task(ms_period=fade_step_ms, iterable=fade_gen))
 
 
 def subscribe_presence():

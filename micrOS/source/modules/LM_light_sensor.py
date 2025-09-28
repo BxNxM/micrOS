@@ -96,11 +96,8 @@ def subscribe_intercon(on, off, threshold=4, tolerance=2, sample_sec=60):
     """
     # Start play - servo XY in async task
     # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
-    state = micro_task(tag="light_sensor.intercon", task=_task(on, off, threshold, tolerance=tolerance,
+    return micro_task(tag="light_sensor.intercon", task=_task(on, off, threshold, tolerance=tolerance,
                                                                check_ms=sample_sec*1000))
-    if state:
-        return 'Light sensor remote trigger starts'
-    return 'Light sensor remote trigger - already running'
 
 
 #######################

@@ -500,7 +500,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- IO_* (approx.: 5)
 
 
-		- (5) [TODO] Universal task creation response: `{taskID: verdict}`
+		- (5) [DONE] Universal task creation response: `{taskID: verdict}`
 
 		- (6) [TODO] Proper mip installer support (/modules or /lib or /web)
 			- Note: Autonomous package management over wifi (github)
@@ -509,7 +509,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- pacman dirtree             [DONE]
 				- pacman ...
 
-		- (7) /config/requirements.txt handling
+		- (7) [TODO] /config/requirements.txt handling
 			-  pacman requirements install/remove/list
 ```
 
@@ -867,212 +867,113 @@ Bye!
 
 ## Project structure
 
-### micrOS resources library
-
-#### micrOS Core
-
 ```
-Core micrOS resources
-1	154	Time.py                  (mlint: True)	(pylint: 9.17)	(ref.: 6)
-2	104	micrOSloader.py          (mlint: True)	(pylint: 7.59)	(ref.: 1)
-3	50	Hooks.py                 (mlint: True)	(pylint: 9.68)	(ref.: 1)
-4	418	Server.py                (mlint: True)	(pylint: 9.29)	(ref.: 4)
-5	454	Tasks.py                 (mlint: True)	(pylint: 9.71)	(ref.: 13)
-6	185	Config.py                (mlint: True)	(pylint: 9.44)	(ref.: 13)
-7	9	reset.py                 (mlint: True)	(pylint: 8.75)	(ref.: 0)
-8	225	Shell.py                 (mlint: True)	(pylint: 9.61)	(ref.: 1)
-9	179	Notify.py                (mlint: True)	(pylint: 9.55)	(ref.: 2)
-10	77	Types.py                 (mlint: True)	(pylint: 9.69)	(ref.: 11)
-11	157	Common.py                (mlint: True)	(pylint: 9.1)	(ref.: 24)
-12	153	InterConnect.py          (mlint: True)	(pylint: 9.4)	(ref.: 1)
-13	177	Debug.py                 (mlint: True)	(pylint: 8.72)	(ref.: 22)
-14	164	Network.py               (mlint: True)	(pylint: 9.71)	(ref.: 10)
-15	183	Scheduler.py             (mlint: True)	(pylint: 9.61)	(ref.: 1)
-16	113	microIO.py               (mlint: True)	(pylint: 9.08)	(ref.: 38)
-17	49	micrOS.py                (mlint: True)	(pylint: 9.3)	(ref.: 1)
-18	113	Interrupts.py            (mlint: True)	(pylint: 9.05)	(ref.: 2)
-19	15	main.py                  (mlint: True)	(pylint: 8.89)	(ref.: 0)
-20	117	urequests.py             (mlint: True)	(pylint: 8.9)	(ref.: 4)
+./micrOS/source
+├── Common.py
+├── Config.py
+├── Debug.py
+├── Espnow.py
+├── Files.py
+├── Hooks.py
+├── InterConnect.py
+├── Interrupts.py
+├── Logger.py
+├── Network.py
+├── Notify.py
+├── Scheduler.py
+├── Server.py
+├── Shell.py
+├── Tasks.py
+├── Time.py
+├── Types.py
+├── Web.py
+├── main.py
+├── micrOS.py
+├── micrOSloader.py
+├── reset.py
+├── urequests.py
+├── microIO.py
+├── config
+│   └── _git.keep
+├── modules
+│   ├── IO_esp32.py
+│   ├── IO_esp32c3.py
+│   ├── IO_esp32c6.py
+│   ├── IO_esp32s2.py
+│   ├── IO_esp32s3.py
+│   ├── IO_m5stamp.py
+│   ├── IO_qtpy.py
+│   ├── IO_rp2.py
+│   ├── IO_s3matrix.py
+│   ├── IO_tinypico.py
+│   ├── LM_L298N.py
+│   ├── LM_L9110_DCmotor.py
+│   ├── LM_OV2640.py
+│   ├── LM_VL53L0X.py
+│   ├── LM_aht10.py
+│   ├── LM_bme280.py
+│   ├── LM_buzzer.py
+│   ├── LM_cct.py
+│   ├── LM_cluster.py
+│   ├── LM_co2.py
+│   ├── LM_dashboard_be.py
+│   ├── LM_dht11.py
+│   ├── LM_dht22.py
+│   ├── LM_dimmer.py
+│   ├── LM_distance.py
+│   ├── LM_ds18.py
+│   ├── LM_esp32.py
+│   ├── LM_espnow.py
+│   ├── LM_gameOfLife.py
+│   ├── LM_genIO.py
+│   ├── LM_haptic.py
+│   ├── LM_i2c.py
+│   ├── LM_i2s_mic.py
+│   ├── LM_keychain.py
+│   ├── LM_ld2410.py
+│   ├── LM_light_sensor.py
+│   ├── LM_mqtt_client.py
+│   ├── LM_neoeffects.py
+│   ├── LM_neomatrix.py
+│   ├── LM_neopixel.py
+│   ├── LM_oled.py
+│   ├── LM_oled_sh1106.py
+│   ├── LM_oled_ui.py
+│   ├── LM_oledui.py
+│   ├── LM_pacman.py
+│   ├── LM_presence.py
+│   ├── LM_qmi8658.py
+│   ├── LM_rencoder.py
+│   ├── LM_rest.py
+│   ├── LM_rgb.py
+│   ├── LM_rgbcct.py
+│   ├── LM_roboarm.py
+│   ├── LM_robustness.py
+│   ├── LM_rp2w.py
+│   ├── LM_sdcard.py
+│   ├── LM_servo.py
+│   ├── LM_sound_event.py
+│   ├── LM_stepper.py
+│   ├── LM_switch.py
+│   ├── LM_system.py
+│   ├── LM_tcs3472.py
+│   ├── LM_telegram.py
+│   ├── LM_tinyrgb.py
+│   ├── LM_trackball.py
+│   └── LM_veml7700.py
+└── web
+    ├── dashboard.html
+    ├── index.html
+    ├── matrix_draw.html
+    ├── uapi.js
+    ├── udashboard.js
+    ├── ustyle.css
+    ├── uwidgets.js
+    └── uwidgets_pro.js
 
-SUM CODE LINES (WITH COMMENTS, WITHOUT EMPTY LINES): 3096
-```
-
-#### micrOS Load Modules
-
-```
-micrOS Load Module resources
-1	231	LM_roboarm.py            (mlint: True)	(pylint: 9.11)	(ref.: 0)
-2	122	LM_stepper.py            (mlint: True)	(pylint: 8.9)	(ref.: 1)
-3	118	LM_genIO.py              (mlint: True)	(pylint: 7.26)	(ref.: 1)
-4	498	LM_oled_ui.py            (mlint: False)	(pylint: 8.83)	(ref.: 0)
-5	190	LM_system.py             (mlint: True)	(pylint: 7.57)	(ref.: 3)
-6	63	LM_robustness.py         (mlint: True)	(pylint: 7.5)	(ref.: 0)
-7	115	LM_co2.py                (mlint: True)	(pylint: 8.42)	(ref.: 3)
-8	34	LM_rest.py               (mlint: False)	(pylint: 7.0)	(ref.: 0)
-9	266	LM_oled.py               (mlint: True)	(pylint: 9.23)	(ref.: 3)
-10	72	LM_tinyrgb.py            (mlint: True)	(pylint: 7.95)	(ref.: 0)
-11	96	LM_aht10.py              (mlint: True)	(pylint: 8.73)	(ref.: 0)
-12	293	LM_bme280.py             (mlint: True)	(pylint: 8.03)	(ref.: 0)
-13	37	LM_ph_sensor.py          (mlint: True)	(pylint: 5.79)	(ref.: 0)
-14	241	LM_buzzer.py             (mlint: True)	(pylint: 8.83)	(ref.: 0)
-15	199	LM_switch.py             (mlint: True)	(pylint: 8.56)	(ref.: 2)
-16	113	LM_servo.py              (mlint: True)	(pylint: 7.73)	(ref.: 4)
-17	53	LM_rgbcct.py             (mlint: True)	(pylint: 8.62)	(ref.: 0)
-18	284	LM_oled_sh1106.py        (mlint: True)	(pylint: 8.79)	(ref.: 1)
-19	150	LM_ld2410.py             (mlint: True)	(pylint: 9.07)	(ref.: 0)
-20	273	LM_neopixel.py           (mlint: True)	(pylint: 7.59)	(ref.: 2)
-21	274	LM_cct.py                (mlint: True)	(pylint: 8.83)	(ref.: 1)
-22	38	LM_L9110_DCmotor.py      (mlint: True)	(pylint: 7.69)	(ref.: 0)
-23	256	LM_neoeffects.py         (mlint: True)	(pylint: 6.91)	(ref.: 0)
-24	30	LM_i2c.py                (mlint: True)	(pylint: 5.71)	(ref.: 0)
-25	69	LM_dht22.py              (mlint: True)	(pylint: 8.0)	(ref.: 0)
-26	59	LM_L298N_DCmotor.py      (mlint: True)	(pylint: 8.78)	(ref.: 0)
-27	37	LM_esp32.py              (mlint: True)	(pylint: 4.38)	(ref.: 0)
-28	56	LM_pet_feeder.py         (mlint: True)	(pylint: 7.88)	(ref.: 0)
-29	82	LM_rencoder.py           (mlint: True)	(pylint: 8.92)	(ref.: 0)
-30	247	LM_keychain.py           (mlint: False)	(pylint: 9.14)	(ref.: 0)
-31	69	LM_dht11.py              (mlint: True)	(pylint: 8.0)	(ref.: 0)
-32	74	LM_telegram.py           (mlint: False)	(pylint: 8.94)	(ref.: 0)
-33	177	LM_OV2640.py             (mlint: False)	(pylint: 9.06)	(ref.: 0)
-34	249	LM_rgb.py                (mlint: True)	(pylint: 8.66)	(ref.: 1)
-35	62	LM_distance.py           (mlint: True)	(pylint: 8.14)	(ref.: 0)
-36	313	LM_VL53L0X.py            (mlint: True)	(pylint: 9.07)	(ref.: 0)
-37	107	LM_light_sensor.py       (mlint: True)	(pylint: 8.94)	(ref.: 0)
-38	12	LM_rp2w.py               (mlint: True)	(pylint: 4.44)	(ref.: 0)
-39	190	LM_presence.py           (mlint: True)	(pylint: 8.75)	(ref.: 4)
-40	29	LM_dashboard_be.py       (mlint: True)	(pylint: 6.5)	(ref.: 0)
-41	170	LM_dimmer.py             (mlint: True)	(pylint: 8.22)	(ref.: 0)
-42	66	LM_demo.py               (mlint: False)	(pylint: 8.21)	(ref.: 0)
-43	105	LM_lmpacman.py           (mlint: True)	(pylint: 8.38)	(ref.: 0)
-44	176	LM_gameOfLife.py         (mlint: True)	(pylint: 9.29)	(ref.: 2)
-45	58	LM_catgame.py            (mlint: True)	(pylint: 8.46)	(ref.: 0)
-46	43	LM_ds18.py               (mlint: True)	(pylint: 5.0)	(ref.: 2)
-47	250	LM_i2s_mic.py            (mlint: False)	(pylint: 8.71)	(ref.: 1)
-48	34	LM_sdcard.py             (mlint: True)	(pylint: 7.88)	(ref.: 0)
-
-SUM CODE LINES (WITH COMMENTS, WITHOUT EMPTY LINES): 6822
-```
-
-> LM (Load Modules) - Application logic - accessable over socket server as a command
-
-### micrOS devToolkit resources
-
-#### DevToolKit Dashboard apps
-
-> You can easly copy the `Template_app.py`, and create a new socket based app.
-[Template_app.py](https://github.com/BxNxM/micrOS/blob/master/toolkit/dashboard_apps/Template_app.py)
-
-```
-micrOS/toolkit/dashboard_apps
-│   ├── AirQualityBME280_app.py
-│   ├── AirQualityDHT22_CO2_app.py
-│   ├── AnalogCCT_app.py
-│   ├── AnalogRGB_app.py
-│   ├── CatGame_app.py
-│   ├── Dimmer_app.py
-│   ├── GetVersion_app.py
-│   ├── GetVersion_app.pyc
-│   ├── NeopixelTest_app.py
-│   ├── RoboArm_app.py
-│   ├── SysCheck_app.py
-│   ├── Template_app.py
+4 directories, 98 files
 ```
 
-#### Stored connection data and default node configs
-
-```
-micrOS/toolkit/user_data
-│   ├── device_conn_cache.json        <- connection cache
-│   └── node_config_archive
-│       ├── BigRGB-node_config.json
-│       ├── Chillight-node_config.json
-│       ├── Kapcsolo230-node_config.json
-│       ├── LampController-node_config.json
-│       ├── MeasureNode-node_config.json
-│       ├── MrGreen-node_config.json
-│       ├── RingLamp-node_config.json
-│       └── test-node_config.json
-```
-
-#### Virtaulenv for development and stored USB-Serial drivers
-
-```
-micrOS/env/
-├── __init__.py
-├── driver_cp210x
-│   ├── CP210x_Universal_Windows_Driver
-│   └── macOS_VCP_Driver
-├── requirements.txt
-└── venv
-    ├── bin
-    ├── include
-    ├── lib
-    └── pyvenv.cfg
-```
-
-#### Precompiled resources for easy install
-
-```
-micrOS/toolkit/workspace/precompiled
-    │   ├── BgJob.mpy
-    │   ├── Common.mpy
-    │   ├── ConfigHandler.mpy
-    │   ├── Debug.mpy
-    │   ├── Hooks.mpy
-    │   ├── InterConnect.mpy
-    │   ├── InterpreterCore.mpy
-    │   ├── InterpreterShell.mpy
-    │   ├── InterruptHandler.mpy
-    │   ├── LM_L298N_DCmotor.mpy
-    │   ├── LM_L9110_DCmotor.py
-    │   ├── LM_VL53L0X.py
-    │   ├── LM_bme280.mpy
-    │   ├── LM_buzzer.mpy
-    │   ├── LM_catgame.py
-    │   ├── LM_cct.mpy
-    │   ├── LM_co2.mpy
-    │   ├── LM_dht11.mpy
-    │   ├── LM_dht22.mpy
-    │   ├── LM_dimmer.mpy
-    │   ├── LM_distance_HCSR04.py
-    │   ├── LM_ds18.mpy
-    │   ├── LM_esp32.py
-    │   ├── LM_genIO.mpy
-    │   ├── LM_i2c.py
-    │   ├── LM_light_sensor.mpy
-    │   ├── LM_neoeffects.mpy
-    │   ├── LM_neopixel.mpy
-    │   ├── LM_oled.mpy
-    │   ├── LM_oled_ui.mpy
-    │   ├── LM_pet_feeder.py
-    │   ├── LM_ph_sensor.py
-    │   ├── LM_rgb.mpy
-    │   ├── LM_roboarm.mpy
-    │   ├── LM_robustness.py
-    │   ├── LM_servo.mpy
-    │   ├── LM_stepper.mpy
-    │   ├── LM_switch.mpy
-    │   ├── LM_system.mpy
-    │   ├── LM_tinyrgb.mpy
-    │   ├── IO_esp32.mpy
-    │   ├── IO_tinypico.mpy
-    │   ├── LogicalPins.mpy
-    │   ├── Network.mpy
-    │   ├── Scheduler.mpy
-    │   ├── SocketServer.mpy
-    │   ├── Time.mpy
-    │   ├── TinyPLed.mpy
-    │   ├── boot.py
-    │   ├── micrOS.mpy
-    │   ├── micrOSloader.mpy
-    │   └── reset.mpy
-```
-
-> Note: From the `micrOS/source/` by default the LMs are not compiling, to extend complied LM list add LM explicitly to the following file:
-
-```
-micrOs/toolkit/LM_to_compile.dat
-```
 
 ----------------------------------------
 

@@ -362,8 +362,7 @@ def receiver_loop(period=3):
     if Telegram.INSTANCE is None:
         return "Network unavailable."
     tag = 'telegram.server_bot'
-    state = micro_task(tag=tag, task=Telegram.server_bot(tag=tag, period=period))
-    return {tag: "Starting"} if state else {tag: "Already running"}
+    return micro_task(tag=tag, task=Telegram.server_bot(tag=tag, period=period))
 
 
 def help(widgets=False):

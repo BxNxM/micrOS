@@ -121,8 +121,7 @@ class Frame(BaseFrame):
         """
         # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
         self._taskid = f"oledui.{tid}"
-        state = micro_task(tag=self._taskid, task=self._task(period_ms=period_ms))
-        return "Starting" if state else "Already running"
+        return micro_task(tag=self._taskid, task=self._task(period_ms=period_ms))
 
     def hover(self):
         """
@@ -486,8 +485,7 @@ class ScreenSaver(BaseFrame):
     def run(self, fps=10):
         # [!] ASYNC TASK CREATION [1*] with async task callback + taskID (TAG) handling
         period_ms = int(1000/fps)
-        state = micro_task(tag="oledui.anim", task=self._task(period_ms))
-        return "Starting" if state else "Already running"
+        return micro_task(tag="oledui.anim", task=self._task(period_ms))
 
     def cancel(self):
         if self.running:

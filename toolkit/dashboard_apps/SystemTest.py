@@ -168,38 +168,38 @@ def micrOS_config_set():
 
 
 def micrOS_bgjob_one_shot_check():
-    info = "[ST] Run micrOS BgJob check [system clock &]"
+    info = "[ST] Run async microTask check [system clock &]"
     print(info)
-
     # Initial task cleanup...
     CLIENT.execute(['task kill system.clock'])
-
-    for _ in range(0, 2):
-        cmd_list = ['system clock &']
-        output = CLIENT.execute(cmd_list)
-        time.sleep(1)
-        if output[0]:
-            if 'Start system.clock' not in output[1].strip():
-                return False, f'{info} + not expected return: {output[1]}'
-    return True, info
+    time.sleep(1)
+    cmd_list = ['system clock &']
+    output = CLIENT.execute(cmd_list)
+    if output[0]:
+        # Legacy return OR New dict return
+        if 'Start system.clock' in output[1].strip() or "{'system.clock': 'Starting'}" in output[1].strip():
+            return True, info
+    return False, f'{info} + not expected return: {output[1]}'
 
 
 def micrOS_bgjob_loop_check():
-    info = "[ST] Run micrOS Async Task check [system clock &&] + task kill"
+    info = "[ST] Run async microTask check [system clock &&] + task kill"
     print(info)
 
     # Start background task loop
     cmd_list = ['system clock &&']
     output = CLIENT.execute(cmd_list)
     if output[0]:
-        if 'Start system.clock' not in output[1].strip():
+        # Legacy return OR New dict return
+        if not ('Start system.clock' in output[1].strip() or "{'system.clock': 'Starting'}" in output[1]):
             return False, f'[Start Task error] {info} + not expected return: {output[1]}'
 
     # Attempt to overload background thread
     cmd_list = ['system clock &&']
     output = CLIENT.execute(cmd_list)
     if output[0]:
-        if 'system.clock is Busy' not in output[1].strip():
+        # Legacy return OR New dict return
+        if not ('system.clock is Busy' in output[1].strip() or "{'system.clock': 'Already running'}" in output[1]):
             return False, f'[Overload task - run same] {info} + not expected return: {output[1]}'
 
     # Show task output by task tag
@@ -219,6 +219,7 @@ def micrOS_bgjob_loop_check():
 
     # Failed verdict
     return False, f'[Thread not stopped]{info} + not expected return: {output[1]}'
+
 
 def micrOS_task_list_check():
     info = "[ST] Run micrOS Task list feature check [task list][task list >json]"
@@ -242,6 +243,7 @@ def micrOS_task_list_check():
     else:
         print(f"{info} - task list >json error: {output[1]}")
     return True, info
+
 
 def micrOS_get_version():
     info = "[ST] Run micrOS get version [version]"
@@ -669,6 +671,7 @@ def app(devfid=None, pwd=None):
                'micros_tasks': task_list(),
                'clean-reboot': after_st_reboot()
                }
+
 
     # Test Evaluation
     final_state = True

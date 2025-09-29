@@ -833,8 +833,14 @@ def _intercon_nodes_page(display, w, h, x, y):
     cache = hosts()["intercon"]
     if sum([1 for _ in cache]) > 0:
         for key, val in cache.items():
-            key = key.split('.')[0]
-            val = '.'.join(val.split('.')[-2:])
+            if '.' in key:
+                # IP splitting
+                key = key.split('.')[0]
+                val = '.'.join(val.split('.')[-2:])
+            else:
+                # MAC splitting
+                key = key.split(':')[0]
+                val = ':'.join(val.split(':')[-2:])
             display.text(f" {val} {key}", x, line_start + (line_cnt * 10))
             line_cnt += 1
             if line_cnt > line_limit:

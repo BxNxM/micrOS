@@ -282,7 +282,7 @@ async def apost(url, data=None, json=None, headers:dict=None, sock_size=256, jso
     return await arequest('POST', url, data=data, json=json, headers=headers, sock_size=sock_size, jsonify=jsonify)
 
 
-def host_cache():
+def host_cache() -> dict:
     """
     Return address cache
     """

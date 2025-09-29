@@ -13,6 +13,7 @@ Designed by
 from socket import getaddrinfo, SOCK_STREAM
 from re import compile as re_compile
 from json import loads
+from binascii import hexlify
 from uasyncio import open_connection
 
 from Debug import syslog
@@ -254,7 +255,8 @@ def send_cmd(host:str, cmd:list|str) -> dict:
         _mod = cmd[0]
         if InterCon.validate_ipv4(host):
             return f"{'.'.join(host.split('.')[-2:])}.{_mod}"
-        return f"{host.replace('.local', '')}.{_mod}"
+        target = ".".join(host.split(".")[0:-1]) if "." in host else host
+        return f"{target}.{_mod}"
 
     com_obj = InterCon()
     task_id = f"con.{_tagify()}"            # CHECK TASK ID CONFLICT
@@ -265,4 +267,8 @@ def host_cache() -> dict:
     """
     Dump InterCon connection cache
     """
-    return InterCon.CONN_MAP
+    if ESPNowSS is None:
+        return InterCon.CONN_MAP
+    all_devs = dict({name:hexlify(mac, ':').decode() for mac, name in ESPNowSS().devices.items()})
+    all_devs.update(InterCon.CONN_MAP)
+    return all_devs

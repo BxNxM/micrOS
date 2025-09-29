@@ -57,7 +57,7 @@
             34
         ],
         "InterConnect.py": [
-            9.62,
+            9.63,
             2
         ],
         "Debug.py": [
@@ -117,7 +117,7 @@
             0
         ],
         "modules/LM_oled_ui.py": [
-            9.2,
+            9.21,
             0
         ],
         "modules/LM_system.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            3994,
+            4000,
             24
         ],
         "load": [
-            9912,
+            9920,
             55
         ],
         "core_dep": [
@@ -336,6 +336,6 @@
         ],
         "core_score": 9.25,
         "load_score": 8.42,
-        "version": "2.20.0-0"
+        "version": "2.20.1-0"
     }
 }

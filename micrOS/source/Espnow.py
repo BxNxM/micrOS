@@ -26,7 +26,7 @@ from Files import OSPath, path_join, is_file
 
 # ----------- PARSE AND RENDER MSG PROTOCOL  --------------
 
-def render_response(tid:str, oper:str, data:str, prompt:str) -> str:
+def render_packet(tid: str, oper: str, data: str, prompt: str) -> str:
     """
     Render ESPNow custom message (protocol)
     """
@@ -37,7 +37,7 @@ def render_response(tid:str, oper:str, data:str, prompt:str) -> str:
            .replace("{data}", str(data)).replace("{prompt}", prompt))
     return tmp
 
-def parse_request(msg:bytes) -> (bool, dict|str):
+def parse_packet(msg: bytes) -> tuple[bool, dict | str]:
     """
     Parse ESPNow custom message protocol
     """
@@ -53,6 +53,19 @@ def parse_request(msg:bytes) -> (bool, dict|str):
                       "data": parts[2],
                       "prompt": parts[3]}
     return False, f"Missing 4 args: {msg}"
+
+
+def get_command_module(request):
+    if isinstance(request, dict):
+        command = request["data"].split()
+        module = command[0]
+    elif isinstance(request, str):
+        command = request.split()
+        module = command[0]
+    else:
+        command = []
+        module = ""
+    return command, module
 
 
 def generate_tid() -> str:
@@ -78,7 +91,7 @@ class ResponseRouter:
         self._event = asyncio.Event()
         ResponseRouter._routes[(mac, tid)] = self
 
-    async def get_response(self, timeout:int=10) -> str|dict:
+    async def get_response(self, timeout: int=10) -> str|dict:
         """Wait for one response, then clear the event for reuse."""
         try:
             await asyncio.wait_for(self._event.wait(), timeout)
@@ -140,7 +153,7 @@ class ESPNowSS:
             syslog(f"[ERR][ESPNOW] Loading peers: {e}")
 
     # ----------- SERVER METHODS --------------
-    def _request_handler(self, msg:bytes, my_task:NativeTask, mac:bytes):
+    def _request_handler(self, msg: bytes, my_task: NativeTask, mac: bytes):
         """
         Handle server input message (request), with REQ/RSP types (oper)
             oper==REQ   - command execution
@@ -150,7 +163,7 @@ class ESPNowSS:
         :param mac: sender binary mac address
         """
 
-        state, request = parse_request(msg)
+        state, request = parse_packet(msg)
         if not state:
             my_task.out = f"[_ESPNOW] {request}"
             return state, request
@@ -163,18 +176,17 @@ class ESPNowSS:
 
         # Check if the module/command is allowed., check oper==REQ/RSP
         if operation == "REQ":
-            command = request["data"].split()
-            module = command[0]
+            command, module = get_command_module(request)
             # Handle default hello - handshake message
             if len(command) == 1 and module == "hello":
-                rendered_out = render_response(tid=tid, oper="RSP", data=f"hello {prompt}", prompt=self.devfid)
+                rendered_out = render_packet(tid=tid, oper="RSP", data=f"hello {prompt}", prompt=self.devfid)
                 return True, rendered_out
             # COMMAND EXECUTION
             if lm_is_loaded(module):
                 try:
                     state, out = lm_exec(command)
                     # rendered_output: "{tid}|{oper}|{data}|{prompt}$"
-                    rendered_out = render_response(tid=tid, oper="RSP", data=out, prompt=self.devfid)
+                    rendered_out = render_packet(tid=tid, oper="RSP", data=out, prompt=self.devfid)
                     return state, rendered_out
                 except Exception as e:
                     # Optionally log the exception here.
@@ -183,7 +195,7 @@ class ESPNowSS:
             else:
                 warning_msg = f"[WARN][_ESPNOW] NotAllowed {module}"
                 syslog(warning_msg)
-                rendered_out = render_response(tid=tid, oper="RSP", data=warning_msg,
+                rendered_out = render_packet(tid=tid, oper="RSP", data=warning_msg,
                                                prompt=self.devfid)
                 state, out = True, rendered_out
             return state, out
@@ -193,7 +205,7 @@ class ESPNowSS:
         #syslog(f"[_ESPNOW] No action, {request}")
         return False, ""
 
-    async def _server(self, tag:str):
+    async def _server(self, tag: str):
         """
         ESPnow async listener task
         :param tag: micro_task tag for task access
@@ -228,20 +240,20 @@ class ESPNowSS:
         return NativeTask().create(callback=self._server(tag), tag=tag)
 
     #----------- SEND METHODS --------------
-    async def __asend_raw(self, mac:bytes, msg:str):
+    async def __asend_raw(self, mac: bytes, msg: str):
         """
         ESPnow send message to mac address
         """
         return await self.espnow.asend(mac, msg.encode("utf-8"))
 
-    async def _asend_task(self, tid:str, peer:bytes, tag:str, msg:str):
+    async def _asend_task(self, tid: str, peer: bytes, tag: str, msg: str):
         """
         ESPNow client task: send a command to a peer and update task status.
         """
         with NativeTask.TASKS.get(tag, None) as my_task:
             router = ResponseRouter(peer, tid)
             # rendered_output: "{tid}|{oper}|{data}|{prompt}$"
-            rendered_out = render_response(tid=tid, oper="REQ", data=msg, prompt=self.devfid)
+            rendered_out = render_packet(tid=tid, oper="REQ", data=msg, prompt=self.devfid)
             if await self.__asend_raw(peer, rendered_out):
                 my_task.out = f"[ESPNOW SEND] {rendered_out}"
                 my_task.out = await router.get_response()
@@ -249,12 +261,12 @@ class ESPNowSS:
                 my_task.out = "[ESPNOW SEND] Peer not responding"
             router.close()
 
-    def mac_by_peer_name(self, peer_name:str) -> bytes|None:
+    def mac_by_peer_name(self, peer_name: str) -> bytes | None:
         matches = [k for k, v in self.devices.items() if v == peer_name]
         peer = matches[0] if matches else None
         return peer
 
-    def send(self, peer:bytes|str, msg:str) -> dict:
+    def send(self, peer: bytes | str, msg: str) -> dict:
         """
         Send a command over ESPNow.
         :param peer: Binary MAC address of another device.
@@ -270,7 +282,8 @@ class ESPNowSS:
             peer = _peer
 
         peer_name = hexlify(peer, ':').decode() if peer_name is None else peer_name
-        task_id = f"con.espnow.{peer_name}"
+        _, module_name = get_command_module(msg)
+        task_id = f"con.espnow.{peer_name}.{module_name}"
         tid = generate_tid()
         # Create an asynchronous sending task.
         return NativeTask().create(callback=self._asend_task(tid, peer, task_id, msg), tag=task_id)
@@ -294,7 +307,7 @@ class ESPNowSS:
             syslog(f"[ERR][ESPNOW] Saving peers: {e}")
         return False
 
-    async def _handshake(self, peer:bytes, tag:str):
+    async def _handshake(self, peer: bytes, tag: str):
         """
         Handshake with peer
         - with device caching
@@ -332,7 +345,7 @@ class ESPNowSS:
         except Exception:
             return None
 
-    def handshake(self, peer:bytes|str):
+    def handshake(self, peer: bytes | str):
         """
         Initiate a handshake with a peer device over ESPNow.
 
@@ -371,7 +384,7 @@ class ESPNowSS:
         """
         return self.devices
 
-    def remove_peer(self, peer:bytes) -> bool:
+    def remove_peer(self, peer: bytes) -> bool:
         """
         Remove peer from ESPNow devices
         :param peer: MAC address as bytes to remove

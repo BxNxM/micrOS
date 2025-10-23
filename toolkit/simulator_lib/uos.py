@@ -94,6 +94,7 @@ def stat(path):
 
 
 def rmdir(path):
+    path = __mock_sim_dir(path)
     print(f"[uos.SIM] rmdir: {path}")
     if "simulator" in path and path.replace('/', '').endswith('simulator'):
         print(f"\t[uos.SIM] rmdir: Invalid path! {path}")

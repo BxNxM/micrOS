@@ -42,7 +42,7 @@ class OTA(Compile):
         # Skip the following modules in OTA update (safe mode) to have recovery mode
         self.safe_mode_file_exception_list = ['main.py', 'micrOSloader.mpy',
                                               'Network.mpy', 'Config.mpy',
-                                              'Debug.mpy']
+                                              'Debug.mpy', 'Files.py']
 
     def safe_core_list(self):
         return self.safe_mode_file_exception_list
@@ -421,7 +421,7 @@ class OTA(Compile):
             source_name_target = os.path.join('web', source_name)
         elif check_python_extensions(source_name):
             source_name_target = os.path.join('modules', source_name)
-        elif source_name.endswith("node_config.json"):
+        elif source_name.endswith("node_config.json") or source_name.endswith("requirements.txt"):
             source_name_target = os.path.join('config', source_name)
         else:
             # Copy file to micrOS data folder (not web, not module, not config)

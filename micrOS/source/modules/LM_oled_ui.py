@@ -1,3 +1,9 @@
+"""
+micrOS simple OLED UI (irq or single task based refresh)
+    - with page generation
+Designed by Marcell Ban aka BxNxM
+"""
+
 from Config import cfgget
 from utime import localtime
 from network import WLAN, STA_IF
@@ -236,8 +242,8 @@ class PageUI:
                     else:
                         self.page_callback_list[self.active_page]()             # <== Execute page functions
                 except Exception as e:
-                    PageUI.PAGE_UI_OBJ.show_msg = f"Err: {e}"                   # Show page error in msgbox
                     syslog(f"oled_ui render error: {e}")
+                    PageUI.PAGE_UI_OBJ.show_msg = f"Err: {e}"                   # Show page error in msgbox
             PageUI.DISPLAY.show()
             self.__power_save()
         else:
@@ -332,16 +338,17 @@ class PageUI:
     #####################################
     #           PAGE GENERATORS         #
     #####################################
-    def intercon_page(self, host:str, cmd:list, run=False):
+    def intercon_page(self, cmd:str, run=False):
         """Generic interconnect page core - create multiple page with it"""
         posx, posy = 5, 12
 
         def _button():
+            nonlocal host, _cmd
             # BUTTON CALLBACK - INTERCONNECT execution
             self.open_intercons.append(host)
             try:
                 # Send CMD to other device & show result
-                state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True)
+                state, data_meta = exec_cmd(_cmd, jsonify=True)
                 if state:
                     self.cmd_task_tag = list(data_meta.keys())[0]
                     verdict = list(data_meta.values())[0]
@@ -354,21 +361,24 @@ class PageUI:
             self.open_intercons.remove(host)
 
         # Check open host connection
-        if host in self.open_intercons:
-            return
+        _cmd = cmd.strip().split()
+        host = _cmd[-1].replace(">", "").replace("&", "")
         # Draw host + cmd details
-        PageUI.DISPLAY.text(host, 0, posy)
-        PageUI.DISPLAY.text(' '.join(cmd), posx, posy+10)
+        PageUI.DISPLAY.text(' '.join(_cmd[0:-1]), 0, posy)
+        PageUI.DISPLAY.text(_cmd[-1], posx, posy+10)
+        self._cmd_text(posx, posy + 10)
+
         # Update display output with retrieved task result (by TaskID)
         if self.cmd_task_tag is not None:
             task_buffer = manage_task(self.cmd_task_tag, 'show').replace(' ', '')
             if task_buffer is not None and len(task_buffer) > 0:
                 # Set display out to task buffered data
                 self.cmd_out = task_buffer
-                # Kill task - clean
-                manage_task(self.cmd_task_tag, 'kill')
-                # data gathered - remove tag - skip re-read
-                self.cmd_task_tag = None
+                if not manage_task(self.cmd_task_tag, 'isbusy'):
+                    # Kill task - clean
+                    manage_task(self.cmd_task_tag, 'kill')
+                    # data gathered - remove tag - skip re-read
+                    self.cmd_task_tag = None
         # Show self.cmd_out value on display
         self._cmd_text(posx, posy+10)
         # Run button event at page init
@@ -378,7 +388,7 @@ class PageUI:
             # Set button press callback (+draw button)
             self.set_press_callback(_button)
 
-    def cmd_call_page(self, cmd, run=False):
+    def cmd_call_page(self, cmd:str, run=False):
         """Generic LoadModule execution page core - create multiple page with it"""
         posx, posy = 5, 12
 
@@ -520,8 +530,7 @@ def msgbox(msg='micrOS msg'):
     PageUI.PAGE_UI_OBJ.render_page()
     return 'Show msg'
 
-
-def intercon_genpage(cmd:str=None, run=False):
+def genpage(cmd:str=None, run=False):
     """
     Create intercon pages dynamically :)
     - based on cmd value.
@@ -529,31 +538,15 @@ def intercon_genpage(cmd:str=None, run=False):
     :param run: run button event at page init: True/False
     :return: page creation verdict
     """
-    raw = cmd.split()
-    host = raw[0]
-    cmd = raw[1:]
     try:
-        # Create page for intercon command
-        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(host, cmd, run=run))
+        if ">>" in cmd or "&" in cmd:
+            # Create page for intercon/task background command
+            PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.intercon_page(cmd, run=run))
+        else:
+            # Create page for realtime command
+            PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd, run=run))
     except Exception as e:
-        syslog(f'[ERR] intercon_genpage: {e}')
-        return str(e)
-    return True
-
-
-def cmd_genpage(cmd:str=None, run=False):
-    """
-    Create load module execution pages dynamically :)
-    - based on cmd value: load_module function (args)
-    :param cmd: 'load_module function (args)' string
-    :param run: run button event at page init: True/False
-    :return: page creation verdict
-    """
-    try:
-        # Create page for intercon command
-        PageUI.PAGE_UI_OBJ.add_page(lambda: PageUI.PAGE_UI_OBJ.cmd_call_page(cmd, run=run))
-    except Exception as e:
-        syslog(f'[ERR] cmd_genpage: {e}')
+        syslog(f'[ERR] genpage: {e}')
         return str(e)
     return True
 
@@ -604,6 +597,5 @@ def help(widgets=False):
                              'draw',
                              'BUTTON control cmd=<prev,press,next,on,off>',
                              'msgbox "msg"',
-                             'intercon_genpage "host cmd" run=False',
-                             'cmd_genpage "cmd" run=False',
+                             'genpage "cmd" run=False',
                              'pinmap'), widgets=widgets)

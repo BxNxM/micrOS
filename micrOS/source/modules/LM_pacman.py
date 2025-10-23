@@ -1,6 +1,6 @@
 from sys import modules
 from Common import socket_stream
-from Files import is_protected, list_fs, ilist_fs, remove_fs, OSPath, path_join
+from Files import is_protected, list_fs, ilist_fs, remove_file, remove_dir, OSPath, path_join
 
 
 #############################################
@@ -31,13 +31,22 @@ def ls(path="/", content='*', raw=False, select='*', core=False):
     return lines
 
 
-def rm(path, allow_dir=False):
+def rm(path, force=False):
     """
     Linux like rm command - delete app resources and folders
     :param path: app resource name/path, ex.: LM_robustness.py
-    :param allow_dir: enable directory deletion, default: False
+    :param force: bypasses protection check - sudo mode
     """
-    return remove_fs(path, allow_dir)
+    return remove_file(path, force)
+
+
+def rmdir(path, force=False):
+    """
+    Linux like rmdir command for directory deletion
+    :param path: app resource folder path, ex.: /lib/myapp
+    :param force: bypasses protection check - sudo mode
+    """
+    return remove_dir(path, force)
 
 
 def dirtree(path="/", raw=False, core=False):
@@ -64,44 +73,26 @@ def cat(path):
     return content
 
 
-def download(url=None, package=None):
+def download(ref=None):
     """
-    [BETA] Load Module downloader with mip
-    :param url: github url path, ex. BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py
-    :param package: mip package name or raw url (hack)
+    Unified mip-based downloader for micrOS.
+    Automatically detects:
+      1. Official MicroPython packages (from https://micropython.org/pi/v2)
+            Example: pacman download "umqtt.simple"
+      2. Single-file load modules (LM_/IO_ names or URLs)
+            Example: pacman download "https://github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
+                     pacman download "github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
+      3. GitHub packages (folders via tree/blob URLs or github: form)
+            Example: pacman download "github:peterhinch/micropython-mqtt"
+                     pacman download "https://github.com/peterhinch/micropython-mqtt/tree/master"
+                     pacman download "https://github.com/peterhinch/micropython-mqtt/blob/master/package.json"
+                     pacman download "https://github.com/peterhinch/micropython-mqtt"
+                     [NOK] pacman download "https://github.com/basanovase/sim7600/tree/main/sim7600" -> Package not found: github:basanovase/sim7600/package.json
+      4. Install from local /config/requirements.txt file
+            Example: pacman download "requirements.txt"
     """
-    def _install(target=None):
-        nonlocal url, verdict
-        try:
-            verdict += f"Install {url}\n"
-            if target is None:
-                install(url)                    # Default download: /lib
-            else:
-                install(url, target=target)     # Custom target
-            verdict += "\n|- Done"
-        except Exception as e:
-            verdict += f"|- Cannot install: {url}\n{e}"
-        return verdict
-
-    from mip import install
-    verdict = ""
-    if url is None and package is None:
-        return "Nothing to download, url=None package=None"
-    if package is None:
-        verdict += "Install from GitHub URL"
-        base_url = "https://raw.githubusercontent.com/"
-        file_name = url.split("/")[-1]
-        if not(file_name.endswith("py") and file_name.startswith("LM_")):
-            return "Invalid file name in url ending, hint: /LM_*.mpy or /LM_*.py"
-        # Convert GitHub URL to raw content URL
-        if "github.com" in url and "blob" in url:
-            url = url.replace("https://github.com/", base_url).replace("/blob", "")
-        else:
-            url = f"{base_url}{url}"
-        return _install(target=OSPath.MODULES)          # Install module from Github URL
-    url = package
-    return _install()                                   # Install official package
-
+    from Pacman import download as pm_download
+    return pm_download(ref)
 
 def del_duplicates(migrate=True):
     """
@@ -119,7 +110,7 @@ def del_duplicates(migrate=True):
         if m in py and m != 'main':
             to_delete = f'{m}.py'
             try:
-                verdict = remove_fs(path_join(modules_path, to_delete))
+                verdict = remove_file(path_join(modules_path, to_delete))
             except:
                 verdict = "n/a"
                 state = False
@@ -130,7 +121,7 @@ def del_duplicates(migrate=True):
     def _migrate_from_root(_rf):
         nonlocal _deleted, files
         if _rf in files:
-            remove_fs(path_join(OSPath._ROOT, _rf))
+            remove_file(path_join(OSPath._ROOT, _rf))
             if _rf in ("LM_pacman.mpy", "LM_system.mpy"):
                 # Delete protected LMs from root
                 remove(path_join(OSPath._ROOT, _rf))
@@ -188,7 +179,7 @@ def cachedump(delete=None, msgobj=None):
     # Remove given cache file
     try:
         delete_cache = path_join(data_dir, f"{delete}.cache")
-        verdict = remove_fs(delete_cache)
+        verdict = remove_file(delete_cache)
         return f'{delete_cache} delete done.: {verdict}'
     except:
         return f'{delete}.cache not exists'
@@ -252,7 +243,7 @@ def delmod(mod):
     else:
         return f'Invalid {mod}, must ends with .py or .mpy'
     try:
-        return remove_fs(path_join(OSPath.MODULES, to_remove))
+        return remove_file(path_join(OSPath.MODULES, to_remove))
     except Exception as e:
         return f'Cannot delete: {mod}: {e}'
 
@@ -286,5 +277,6 @@ def help(widgets=False):
             'micros_checksum',
             'ls path="/" content="*/f/d" select="*/LM/IO"',
             'rm <path>',
+            'rmdir <path>',
             'dirtree path="/"',
             'makedir <path>')

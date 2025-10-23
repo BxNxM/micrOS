@@ -386,7 +386,7 @@ class USB(Compile):
             # List USB devices on Windows
             import serial.tools.list_ports as serial_port_list      # Import here (only windows...), package not exists on some platforms
             ports = list(serial_port_list.comports())
-            win_known_devices = ("CP210", "CH340", "CH343")
+            win_known_devices = ("CP210", "CH340", "CH343", "CH9102")
             for item in ports:
                 self.console(f'[Win] Com device: {item.description}')
                 if any(device in str(item.description) for device in win_known_devices):

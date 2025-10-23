@@ -84,8 +84,11 @@ class Data:
         Data.__inject_default_conf()
         # [!!!] Init selected pinmap - default pinmap calculated by platform
         if callable(set_pinmap):
-            pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
-            console_write(f"[PIN MAP] {pinmap}")
+            try:
+                pinmap = set_pinmap(Data.CONFIG_CACHE['cstmpmap'])
+                console_write(f"[PIN MAP] {pinmap}")
+            except Exception as e:
+                console_write(f"\n[PIN MAP] !!! SETUP ERROR !!!: {e}\n")
         # SET dbg based on config settings (inject user conf)
         DebugCfg.DEBUG = Data.CONFIG_CACHE['dbg']
         if DebugCfg.DEBUG:

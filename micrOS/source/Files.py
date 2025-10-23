@@ -3,41 +3,49 @@ Module is responsible high level micropython file system opeartions
 [IMPORTANT] This module must never use any micrOS specific functions or classes.
 """
 
-from uos import ilistdir, remove, stat, getcwd, mkdir
+from uos import ilistdir, remove, stat, getcwd, mkdir, rmdir
 from sys import path as upath
 
 ################################   Helper functions   #####################################
 
 def _filter(path:str='/', ext:tuple=None, prefix:tuple=None, hide_core:bool=True) -> bool:
     """
-    Filter files
-    :param path: file to check
+    Filter files in the micrOS filesystem.
+
+    :param path: file path to check
     :param ext: tuple of extensions to filter by, default: None (all)
-    :param hide_core: hide core files (mpy, py), default: True
+    :param prefix: tuple of prefixes to match (e.g. ('LM', 'IO')), default: None
+    :param hide_core: if True, hides core .py/.mpy files in the root (current) directory
+    :return: bool, whether the file passes the filter
     """
+    parent = "/".join(path.split("/")[:-1]) or "/"
     fname = path.split("/")[-1]
     _ext = fname.split(".")[-1]
-    if hide_core and _ext in ("mpy", "py") and not (fname.startswith("LM_") or fname.startswith("IO_")):
+
+    # --- Hide core logic ---
+    # Core = any .py/.mpy in the current (root) working directory
+    if hide_core and _ext in ("mpy", "py") and parent in ('/', ""):
         return False
+
+    # --- General matching rules ---
     if ext is None and prefix is None:
         return True
     if isinstance(prefix, tuple) and fname.split("_")[0] in prefix:
         return True
-    if isinstance(ext, tuple) and fname.split(".")[-1] in ext:
+    if isinstance(ext, tuple) and _ext in ext:
         return True
     return False
 
 def is_protected(path:str='/') -> bool:
     """
-    Check is file protected
-        - deny deletion
+    Check is file/dir protected
+        - every file and folder is protected in root dir: /
+        - with protected file list
     """
-    protected_entities = ("", "node_config.json", "modules", "config", "logs", "web", "data",
-                          "LM_pacman.mpy", "LM_system.mpy")
-    entity = path.split("/")[-1].replace("/", "")
-    if entity in protected_entities:
-        return True
-    return False
+    protected_files = ("node_config.json", "LM_system.mpy", "LM_pacman.mpy")
+    parent = "/".join(path.split("/")[:-1]) or "/"
+    fname = path.split("/")[-1]
+    return parent in ("/", "") or fname in protected_files
 
 def _type_mask_to_str(item_type:int=None) -> str:
     # Map the raw bit-mask to a single character
@@ -83,7 +91,7 @@ def ilist_fs(path:str="/", type_filter:str='*', select:str='*', core:bool=False)
         if type_filter in ("*", item_type):
             # Mods only
             _select = None if select == "*" else (select,)
-            if item_type == 'f' and not _filter(item, prefix=_select, hide_core=not core):
+            if item_type == 'f' and not _filter(path_join(path, item), prefix=_select, hide_core=not core):
                 continue
             if select != '*' and item_type == 'd':
                 continue
@@ -102,20 +110,38 @@ def list_fs(path:str="/", type_filter:str='*', select:str='*', core:bool=False) 
     return list(ilist_fs(path, type_filter, select, core))
 
 
-def remove_fs(path, allow_dir=False):
+def remove_file(path, force=False):
     """
     Linux like rm command - delete app resources and folders
-    :param path: app resource path
-    :param allow_dir: enable directory deletion, default: False
+    :param path: file to delete
+    :param force: pypass file protection check - sudo mode
     """
     # protect some resources
-    if is_protected(path):
-        return f'{path} is protected, skip deletion'
-    _is_file = is_file(path)
-    if _is_file or allow_dir:
+    if not force and is_protected(path):
+        return f'Protected resource, skip deletion: {path}'
+    if is_file(path):
         remove(path)
         return f"{path} deleted"
-    return f"Cannot delete {'file' if _is_file else 'dir'}: {path}"
+    return f"Cannot delete dir type: {path}"
+
+
+def remove_dir(path, force=False):
+    """
+    Recursively delete a folder and all its contents.
+    :param path: folder to delete
+    :param force: pypass dir protection check - sudo mode
+    """
+    # protect some resources
+    if not force and is_protected(path):
+        return f'Protected resource, skip deletion: {path}'
+    for entry in ilistdir(path):
+        content_path = path_join(path, entry[0])
+        if is_dir(content_path):            # directory flag
+            remove_dir(content_path)
+        else:
+            remove(content_path)
+    rmdir(path)
+    return f"{path} deleted"
 
 
 def path_join(*parts):
@@ -133,6 +159,7 @@ class OSPath:
     WEB = path_join(_ROOT,'/web')           # Web resources (.html, .css, .js, .json, etc.)
     MODULES = path_join(_ROOT, '/modules')  # Application modules (.mpy, .py)
     CONFIG = path_join(_ROOT, '/config')    # System configuration files (node_config.json, etc.)
+    LIB = path_join(_ROOT, '/lib')          # Official and Custom package installation target path
 
 
 def init_micros_dirs():

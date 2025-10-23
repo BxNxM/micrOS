@@ -1,3 +1,8 @@
+"""
+micrOS multitask OLED UI
+    - with page generation
+Designed by Marcell Ban aka BxNxM
+"""
 from utime import localtime, ticks_ms, ticks_diff, sleep_ms
 from Common import syslog, micro_task, manage_task, exec_cmd
 from Types import resolve
@@ -738,78 +743,58 @@ class PageUI:
         :param y: frame y
         """
         x, y = x+2, y+4
-        def _execute(display, w, h, x, y):
-            nonlocal cmd
-            try:
-                cmd_list = cmd.strip().split()
-                # Send CMD to other device & show result
-                state, out = exec_cmd(cmd_list)
-                cmd_out = out.strip()
-            except Exception as e:
-                cmd_out = str(e)
-            self.app_frame.press_output = cmd_out
-            PageUI.write_lines(cmd_out, display, x, y + 15)
 
-        display.text(cmd, x, y)
-        if run:
-            _execute(display, w, h, x, y)
-        else:
-            self._press_indicator(display, w, h, x, y)
-            PageUI.write_lines(self.app_frame.press_output, display, x, y + 15)
-            # Return "press" callback, mandatory input parameters: display, w, h, x, y
-            return {"press": _execute}
-        return
-
-
-    def intercon_exec_page(self, host, cmd, run, display, w, h, x, y):
-        """
-        :param host: hostname or IP address of a device
-        :param cmd: load module string command
-        :param run: auto-run command (every page refresh)
-        :param display: display instance
-        :param h: frame h
-        :param w: frame w
-        :param x: frame x
-        :param y: frame y
-        """
-        x, y = x+2, y+4
-        def _execute(display, w, h, x, y):
-            nonlocal host, cmd, run
-            # Check open host connection
-            try:
-                # Send CMD to other device & show result
-                state, data_meta = exec_cmd(cmd + [f">>{host}"], jsonify=True)
-                if state:
-                    self._cmd_task_tag = list(data_meta.keys())[0]
-                    verdict = list(data_meta.values())[0]
-                    if "Already running" in verdict and not run:
-                        self.app_frame.press_output = verdict     # Otherwise the task start output not relevant on UI
-                else:
-                    self.app_frame.press_output = f"Error: {data_meta}"
-            except Exception as e:
-                self.app_frame.press_output = str(e)
-
-        def _read_buffer():
-            # Read command output from async buffer
-            if self._cmd_task_tag is not None:
-                task_buffer = manage_task(self._cmd_task_tag, 'show').replace(' ', '')
-                if task_buffer is not None and len(task_buffer) > 0:
-                    # Set display out to task buffered data
-                    self.app_frame.press_output = task_buffer
+        def _display_output():
+            nonlocal x, y, display
+            if self._cmd_task_tag is None:
+                # Display cached data
+                PageUI.write_lines(self.app_frame.press_output, display, x, y + 20)
+                return
+            task_buffer = manage_task(self._cmd_task_tag, 'show').replace(' ', '')
+            if task_buffer is not None and len(task_buffer) > 0:
+                # Update display out to task buffered data
+                self.app_frame.press_output = task_buffer
+                if not manage_task(self._cmd_task_tag, 'isbusy'):
                     # data gathered - remove tag - skip re-read
                     self._cmd_task_tag = None
-            PageUI.write_lines(self.app_frame.press_output, display, x, y + 20, line_limit=2)
+            # Display task cached data
+            PageUI.write_lines(self.app_frame.press_output, display, x, y + 20)
 
-        PageUI.write_lines(f"{host.split(".")[0]}:{' '.join(cmd)}", display, x, y, line_limit=2)
+        def _execute(display, w, h, x, y):
+            nonlocal cmd, run
+            try:
+                cmd_list = cmd.strip().split()
+                # TASK mode: background execution, intercon: >> OR task: &
+                if '>>' in cmd_list[-1] or '&' in cmd_list[-1]:
+                    # BACKGROUND: EXECUTE COMMAND
+                    state, out = exec_cmd(cmd_list, jsonify=True) if self._cmd_task_tag is None else (False, "skip...")
+                    if state:
+                        self._cmd_task_tag = list(out.keys())[0]
+                        buffer = manage_task(self._cmd_task_tag, 'show').replace(' ', '')
+                        if buffer is not None and len(buffer) > 0:
+                            self.app_frame.press_output = buffer
+                else:
+                    # REALTIME mode: get command execution result
+                    state, out = exec_cmd(cmd_list, jsonify=True)
+                    self.app_frame.press_output = str(out)
+            except Exception as e:
+                self.app_frame.press_output = str(e)
+            # Print and cache output to display
+            PageUI.write_lines(self.app_frame.press_output, display, x, y+20)
+
+        # Write command header line and buffered output
+        PageUI.write_lines(cmd, display, x, y, line_limit=2)
+        _display_output()
+        # RUN command
         if run:
-            if self._cmd_task_tag is None:
-                _execute(display, w, h, x, y)
-            _read_buffer()
-            return
-        _read_buffer()
+            # Automatic Execution Mode (in page refresh time)
+            _execute(display, w, h, x, y)
+            return None
+        # Button Press Execution Mode (callback)
         self._press_indicator(display, w, h, x, y)
         # Return "press" callback, mandatory input parameters: display, w, h, x, y
         return {"press": _execute}
+
 
 #################################################################################
 #                                     Page function                             #
@@ -906,7 +891,7 @@ def cursor(x, y):
     return "Set cursor position"
 
 
-def cmd_genpage(cmd=None, run=False):
+def genpage(cmd=None, run=False):
     """
     Create load module execution pages dynamically :)
     - based on cmd value: load_module function (args)
@@ -921,29 +906,10 @@ def cmd_genpage(cmd=None, run=False):
         # Create page for intercon command
         PageUI.INSTANCE.add_page(lambda display, w, h, x, y: PageUI.INSTANCE.lm_exec_page(cmd, run, display, w, h, x, y))
     except Exception as e:
-        syslog(f'[ERR] cmd_genpage: {e}')
+        syslog(f'[ERR] genpage: {e}')
         return str(e)
     return True
 
-
-def intercon_genpage(cmd=None, run=False):
-    """
-    Create intercon pages dynamically :)
-    - based on cmd value.
-    :param cmd: 'host hello' or 'host system clock'
-    :param run: run button event at page init: True/False
-    :return: page creation verdict
-    """
-    raw = cmd.split()
-    host = raw[0]
-    cmd = raw[1:]
-    try:
-        # Create page for intercon command
-        PageUI.INSTANCE.add_page(lambda display, w, h, x, y: PageUI.INSTANCE.intercon_exec_page(host, cmd, run, display, w, h, x, y))
-    except Exception as e:
-        syslog(f'[ERR] intercon_genpage: {e}')
-        return str(e)
-    return True
 
 def add_page(page_callback):
     """
@@ -969,6 +935,5 @@ def help(widgets=False):
                   "BUTTON control cmd=<prev,press,next,on,off>",
                   "BUTTON debug", "cursor x y",
                   "popup msg='text'", "cancel_popup",
-                  "cmd_genpage cmd='system clock'",
-                  "intercon_genpage 'host cmd' run=False"),
+                  "genpage cmd='system clock'"),
         widgets=widgets)

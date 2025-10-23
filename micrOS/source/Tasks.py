@@ -10,6 +10,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from sys import modules
 from json import dumps
+from re import match
 import uasyncio as asyncio
 from micropython import schedule
 from utime import ticks_ms, ticks_diff
@@ -458,8 +459,10 @@ def exec_builtins(func):
             # ... >json               - command output format option
             # ... >>node01.local      - intercon: command execution on remote device by hostname/IP address
             arg_list, json_flag = (arg_list[:-1], True) if arg_list[-1] == '>json' else (arg_list, False)
-            arg_list, intercon_target = (arg_list[:-1], arg_list[-1].replace(">>", "")) if arg_list[-1].startswith('>>') else (arg_list, None)
             json_flag = jsonify if isinstance(jsonify, bool) else json_flag
+            arg_list, intercon_target = ((arg_list[:-1], arg_list[-1].replace(">>", ""))
+                                          if match(r'^>>[A-Za-z0-9._-]+$', arg_list[-1])
+                                          else (arg_list, None))
 
             # INTERCONNECT
             if intercon_target:

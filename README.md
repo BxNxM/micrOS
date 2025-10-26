@@ -459,7 +459,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
         - urequest module async redesign for rest clients                       [OK]
             - LM_telegram (Notify) + server (listener - chatbot)                [OK]
     - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [DONE]
-       - Multi command same device improvement (session ID handling)             [TODO]
+       - Multi command same device improvement (session ID handling)            [DONE]
     - (3) New intercon syntax - command level integration:                      [DONE]
     	- rgb toggle >>RingLight.local
     	- similar as (obsolete): intercon sendcmd host="RingLight.local" cmd="rgb toggle"
@@ -502,15 +502,18 @@ Version **3.0.0-0** `micrOS-Autonomous`
 
 		- (5) [DONE] Universal task creation response: `{taskID: verdict}`
 
-		- (6) [TODO] Proper mip installer support (/modules or /lib or /web)
+		- (6) [DONE] Proper mip installer support (/modules or /lib or /web)
 			- Note: Autonomous package management over wifi (github)
-				- pacman download            [POC][DONE][TODO]
+				- pacman download            [DONE]
 				- pacman ls                  [DONE]
 				- pacman dirtree             [DONE]
 				- pacman ...
 
-		- (7) [TODO] /config/requirements.txt handling
-			-  pacman requirements install/remove/list
+		- (7) [DONE] /config/requirements.txt handling (native micropython requirements syntax)
+			-  pacman download "requirements.txt"
+
+		- [TODO] General system review and optimization (with Codex AI)
+			- memory usage and performance 
 ```
 
 Version **3.1.0-0** `micrOS-Waterbear`

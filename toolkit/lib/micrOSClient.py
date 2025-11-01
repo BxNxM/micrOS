@@ -322,27 +322,27 @@ class micrOSClient:
             if "busy" in str(e) or "timed out" in str(e) or "No route to host" in str(e) or "Host is down" in str(e):
                 return
 
-        history = load_command_history(lambda: self.telnet_prompt)      # History: Beta feature
+        history = load_command_history(self.telnet_prompt)              # History: Beta feature
+        if history is not None:
+            history.prompt = self.telnet_prompt
         print(self.telnet_prompt, end="")
         is_empty = False                                                # Empty input support
         while True:
             try:
                 # INPUT HANDLING
-                if history is None:
-                    cmd = input(self.telnet_prompt if is_empty else '')     # CANNOT contain prompt - it is coming back from response data
-                else:
-                    if is_empty:
-                        history.show_prompt()
-                    cmd = input('')
+                if history is not None:
+                    history.prompt = self.telnet_prompt
+                cmd = input(self.telnet_prompt if is_empty else '')     # CANNOT contain prompt - it is coming back from response data
                 if len(cmd.strip()) == 0:
                     is_empty = True
                     if history is not None:
-                        history.show_prompt()
-                        is_empty = False
+                        history.prompt = self.telnet_prompt
                     continue
                 is_empty = False
                 # SEND COMMAND
                 output = self.send_cmd(cmd, timeout=timeout, stream=True)
+                if history is not None:
+                    history.prompt = self.telnet_prompt
                 if not (history is None or output is None) and "Shell: for hints type help." not in output:   # History: Beta feature
                     history.add_history(cmd)
                 # OUTPUT HANDLING

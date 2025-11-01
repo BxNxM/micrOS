@@ -123,7 +123,14 @@ class CommandInterface:
         self.refresh_prompt()
         buffer = readline.get_line_buffer()
         cursor = getattr(readline, "get_point", lambda: len(buffer))()
+        self._render_prompt(buffer, cursor)
 
+    def show_prompt(self, buffer=""):
+        """Force repaint of the prompt outside the readline hook."""
+        self.refresh_prompt()
+        self._render_prompt(buffer)
+
+    def _render_prompt(self, buffer, cursor=None):
         sys.stdout.write("\r")
         # Clear the existing line entirely to avoid leaving stale characters
         # when the buffer shrinks (for example after backspacing the first
@@ -146,7 +153,7 @@ class CommandInterface:
 
         # Restore the cursor to its correct position when editing in the
         # middle of the buffer instead of leaving it at the end.
-        if cursor < len(buffer):
+        if cursor is not None and cursor < len(buffer):
             move_left = len(buffer) - cursor
             sys.stdout.write(f"\x1b[{move_left}D")
 

@@ -47,8 +47,13 @@ class CommandInterface:
 
     def refresh_prompt(self):
         """Refresh the cached prompt from the current prompt source."""
-        prompt_value = self._prompt_source() if callable(self._prompt_source) else self._prompt_source
-        self._raw_prompt = prompt_value or ""
+        prompt_value = (
+            self._prompt_source() if callable(self._prompt_source) else self._prompt_source
+        )
+
+        if prompt_value:
+            self._raw_prompt = prompt_value
+
         self._visible_prompt = self._raw_prompt
         self._plain_prompt = self._strip_ansi(self._visible_prompt)
         return self._visible_prompt

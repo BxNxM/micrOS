@@ -322,7 +322,7 @@ class micrOSClient:
             if "busy" in str(e) or "timed out" in str(e) or "No route to host" in str(e) or "Host is down" in str(e):
                 return
 
-        history = load_command_history(self.telnet_prompt)              # History: Beta feature
+        history = load_command_history(lambda: self.telnet_prompt)      # History: Beta feature
         print(self.telnet_prompt, end="")
         is_empty = False                                                # Empty input support
         while True:

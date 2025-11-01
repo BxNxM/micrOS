@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 
 try:
     import readline  # Linux/macOS
@@ -12,9 +13,17 @@ except:
     from TerminalColors import Colors as color
 
 
+ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+
+
 class CommandInterface:
     def __init__(self, prompt):
-        self.prompt = prompt
+        self._prompt_source = None
+        self._raw_prompt = ""
+        self._visible_prompt = ""
+        self._plain_prompt = ""
+        self._last_rendered_length = 0
+        self.set_prompt(prompt)
         self.command_history = ["help"]
         self.history_file = os.path.expanduser("~/.micrOS_cmd_history")  # History file (Linux/macOS)
 
@@ -29,6 +38,34 @@ class CommandInterface:
             readline.parse_and_bind("tab: complete")  # Linux/GNU readline
         readline.set_pre_input_hook(self.pre_input_hook)
         readline.set_completion_display_matches_hook(self.completion_display)
+
+    def set_prompt(self, prompt):
+        """Update prompt keeping track of ANSI aware variants."""
+        self._prompt_source = prompt
+        self.refresh_prompt()
+        self._last_rendered_length = 0
+
+    def refresh_prompt(self):
+        """Refresh the cached prompt from the current prompt source."""
+        prompt_value = self._prompt_source() if callable(self._prompt_source) else self._prompt_source
+        self._raw_prompt = prompt_value or ""
+        self._visible_prompt = self._raw_prompt
+        self._plain_prompt = self._strip_ansi(self._visible_prompt)
+        return self._visible_prompt
+
+    @staticmethod
+    def _strip_ansi(value):
+        if not value:
+            return ""
+        return ANSI_ESCAPE_RE.sub("", value)
+
+    @property
+    def prompt(self):
+        return self.refresh_prompt()
+
+    @prompt.setter
+    def prompt(self, value):
+        self.set_prompt(value)
 
     def __auto_clear_history(self):
         cmd_history = []
@@ -78,7 +115,16 @@ class CommandInterface:
 
     def pre_input_hook(self):
         """Ensures prompt visibility when scrolling through history."""
-        sys.stdout.write(f"\r{self.prompt}{readline.get_line_buffer()}")
+        self.refresh_prompt()
+        buffer = readline.get_line_buffer()
+        sys.stdout.write("\r")
+        sys.stdout.write(f"{self._visible_prompt}{buffer}")
+        current_length = len(self._plain_prompt) + len(buffer)
+        if current_length < self._last_rendered_length:
+            sys.stdout.write(" " * (self._last_rendered_length - current_length))
+            sys.stdout.write("\r")
+            sys.stdout.write(f"{self._visible_prompt}{buffer}")
+        self._last_rendered_length = len(self._plain_prompt) + len(buffer)
         sys.stdout.flush()
         readline.redisplay()  # Ensures history navigation does not erase prompt
 

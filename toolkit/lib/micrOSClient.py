@@ -198,8 +198,6 @@ class micrOSClient:
                     self.preprompt = ""
 
                 lines[-1] = last_line[prompt_index:]
-            elif self.preprompt:
-                self.preprompt = ""
 
         rebuilt = '\n'.join(lines)
         if has_trailing_newline:

@@ -7,6 +7,9 @@ try:
 except:
     from TerminalColors import Colors as color
 
+
+ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+
 def load_command_history(prompt_getter):
     """Optional command history feature"""
     try:
@@ -173,22 +176,35 @@ class micrOSClient:
 
     def __filter_preprompt(self, _data):
         if len(_data) == 0:
-            return
-        last_line = _data.strip().split('\n')[-1]
-        # get pre-prompt: >[configure]< prompt $
+            return _data
+
+        has_trailing_newline = _data.endswith('\n')
+        working = _data.rstrip('\n')
+        lines = working.split('\n') if working else ['']
+        last_line = lines[-1]
+
         if self.prompt is not None:
-            # Check prompt is in last line
-            if self.prompt in last_line:
-                # Check pre-prompt - remove prompt
-                x = last_line.replace(self.prompt, '')
-                # SET preprompt if preprompt exists
-                self.preprompt = x if len(x) > 0 else self.preprompt
-            # Pre-prompt remove and cancel preprompt modes
-            if self.preprompt in last_line:
-                _data = _data.replace(self.preprompt, "")
-            else:
+            prompt_index = last_line.find(self.prompt)
+            if prompt_index != -1:
+                raw_prefix = last_line[:prompt_index]
+                plain_prefix = ANSI_ESCAPE_RE.sub('', raw_prefix)
+
+                plain_prefix = plain_prefix.rstrip()
+                if plain_prefix:
+                    if not plain_prefix.endswith(' '):
+                        plain_prefix += ' '
+                    self.preprompt = plain_prefix
+                else:
+                    self.preprompt = ""
+
+                lines[-1] = last_line[prompt_index:]
+            elif self.preprompt:
                 self.preprompt = ""
-        return _data
+
+        rebuilt = '\n'.join(lines)
+        if has_trailing_newline:
+            rebuilt += '\n'
+        return rebuilt
 
     def __receive_data(self, read_timeout=20, stream=False):
         """

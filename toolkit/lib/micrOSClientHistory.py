@@ -118,13 +118,19 @@ class CommandInterface:
         self.refresh_prompt()
         buffer = readline.get_line_buffer()
         sys.stdout.write("\r")
+        # Clear the existing line entirely to avoid leaving stale characters
+        # when the buffer shrinks (for example after backspacing the first
+        # character of an input).
+        sys.stdout.write("\x1b[2K")
         sys.stdout.write(f"{self._visible_prompt}{buffer}")
         current_length = len(self._plain_prompt) + len(buffer)
         if current_length < self._last_rendered_length:
+            # Some Windows terminals might not honour CSI 2K, so ensure we
+            # overwrite any potential remnants with spaces as a fallback.
             sys.stdout.write(" " * (self._last_rendered_length - current_length))
             sys.stdout.write("\r")
             sys.stdout.write(f"{self._visible_prompt}{buffer}")
-        self._last_rendered_length = len(self._plain_prompt) + len(buffer)
+        self._last_rendered_length = current_length
         sys.stdout.flush()
         readline.redisplay()  # Ensures history navigation does not erase prompt
 

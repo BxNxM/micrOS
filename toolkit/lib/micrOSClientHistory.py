@@ -117,22 +117,35 @@ class CommandInterface:
         """Ensures prompt visibility when scrolling through history."""
         self.refresh_prompt()
         buffer = readline.get_line_buffer()
+        cursor = getattr(readline, "get_point", lambda: len(buffer))()
+
         sys.stdout.write("\r")
         # Clear the existing line entirely to avoid leaving stale characters
         # when the buffer shrinks (for example after backspacing the first
         # character of an input).
         sys.stdout.write("\x1b[2K")
-        sys.stdout.write(f"{self._visible_prompt}{buffer}")
+
+        rendered = f"{self._visible_prompt}{buffer}"
+        sys.stdout.write(rendered)
+
         current_length = len(self._plain_prompt) + len(buffer)
         if current_length < self._last_rendered_length:
             # Some Windows terminals might not honour CSI 2K, so ensure we
             # overwrite any potential remnants with spaces as a fallback.
-            sys.stdout.write(" " * (self._last_rendered_length - current_length))
+            padding = " " * (self._last_rendered_length - current_length)
+            sys.stdout.write(padding)
             sys.stdout.write("\r")
-            sys.stdout.write(f"{self._visible_prompt}{buffer}")
+            sys.stdout.write(rendered)
+
         self._last_rendered_length = current_length
+
+        # Restore the cursor to its correct position when editing in the
+        # middle of the buffer instead of leaving it at the end.
+        if cursor < len(buffer):
+            move_left = len(buffer) - cursor
+            sys.stdout.write(f"\x1b[{move_left}D")
+
         sys.stdout.flush()
-        readline.redisplay()  # Ensures history navigation does not erase prompt
 
     def completion_display(self, substitutions, matches, longest_match_length):
         print("\nSuggestions:", ", ".join(matches))

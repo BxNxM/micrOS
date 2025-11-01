@@ -328,9 +328,17 @@ class micrOSClient:
         while True:
             try:
                 # INPUT HANDLING
-                cmd = input(self.telnet_prompt if is_empty else '')     # CANNOT contain prompt - it is coming back from response data
+                if history is None:
+                    cmd = input(self.telnet_prompt if is_empty else '')     # CANNOT contain prompt - it is coming back from response data
+                else:
+                    if is_empty:
+                        history.show_prompt()
+                    cmd = input('')
                 if len(cmd.strip()) == 0:
                     is_empty = True
+                    if history is not None:
+                        history.show_prompt()
+                        is_empty = False
                     continue
                 is_empty = False
                 # SEND COMMAND

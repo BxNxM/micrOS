@@ -18,12 +18,10 @@ ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 class CommandInterface:
     def __init__(self, prompt):
-        self._prompt_source = None
-        self._raw_prompt = ""
-        self._visible_prompt = ""
-        self._plain_prompt = ""
+        self._prompt = ""
+        self._prompt_plain = ""
         self._last_rendered_length = 0
-        self.set_prompt(prompt)
+        self.prompt = prompt
         self.command_history = ["help"]
         self.history_file = os.path.expanduser("~/.micrOS_cmd_history")  # History file (Linux/macOS)
 
@@ -38,39 +36,6 @@ class CommandInterface:
             readline.parse_and_bind("tab: complete")  # Linux/GNU readline
         readline.set_pre_input_hook(self.pre_input_hook)
         readline.set_completion_display_matches_hook(self.completion_display)
-
-    def set_prompt(self, prompt):
-        """Update prompt keeping track of ANSI aware variants."""
-        self._prompt_source = prompt
-        self.refresh_prompt()
-        self._last_rendered_length = 0
-
-    def refresh_prompt(self):
-        """Refresh the cached prompt from the current prompt source."""
-        prompt_value = (
-            self._prompt_source() if callable(self._prompt_source) else self._prompt_source
-        )
-
-        if prompt_value:
-            self._raw_prompt = prompt_value
-
-        self._visible_prompt = self._raw_prompt
-        self._plain_prompt = self._strip_ansi(self._visible_prompt)
-        return self._visible_prompt
-
-    @staticmethod
-    def _strip_ansi(value):
-        if not value:
-            return ""
-        return ANSI_ESCAPE_RE.sub("", value)
-
-    @property
-    def prompt(self):
-        return self.refresh_prompt()
-
-    @prompt.setter
-    def prompt(self, value):
-        self.set_prompt(value)
 
     def __auto_clear_history(self):
         cmd_history = []
@@ -118,46 +83,38 @@ class CommandInterface:
         matches = list(dict.fromkeys(cmd for cmd in self.command_history if cmd.startswith(text)))
         return matches[state] if state < len(matches) else None
 
+    @staticmethod
+    def _strip_ansi(value):
+        if not value:
+            return ""
+        return ANSI_ESCAPE_RE.sub("", value)
+
+    @property
+    def prompt(self):
+        return self._prompt
+
+    @prompt.setter
+    def prompt(self, value):
+        self._prompt = value
+        self._prompt_plain = self._strip_ansi(value)
+
     def pre_input_hook(self):
         """Ensures prompt visibility when scrolling through history."""
-        self.refresh_prompt()
         buffer = readline.get_line_buffer()
-        cursor = getattr(readline, "get_point", lambda: len(buffer))()
-        self._render_prompt(buffer, cursor)
-
-    def show_prompt(self, buffer=""):
-        """Force repaint of the prompt outside the readline hook."""
-        self.refresh_prompt()
-        self._render_prompt(buffer)
-
-    def _render_prompt(self, buffer, cursor=None):
         sys.stdout.write("\r")
-        # Clear the existing line entirely to avoid leaving stale characters
-        # when the buffer shrinks (for example after backspacing the first
-        # character of an input).
-        sys.stdout.write("\x1b[2K")
-
-        rendered = f"{self._visible_prompt}{buffer}"
+        rendered = f"{self.prompt}{buffer}"
         sys.stdout.write(rendered)
 
-        current_length = len(self._plain_prompt) + len(buffer)
-        if current_length < self._last_rendered_length:
-            # Some Windows terminals might not honour CSI 2K, so ensure we
-            # overwrite any potential remnants with spaces as a fallback.
-            padding = " " * (self._last_rendered_length - current_length)
+        visible_length = len(self._prompt_plain) + len(buffer)
+        if visible_length < self._last_rendered_length:
+            padding = " " * (self._last_rendered_length - visible_length)
             sys.stdout.write(padding)
             sys.stdout.write("\r")
             sys.stdout.write(rendered)
 
-        self._last_rendered_length = current_length
-
-        # Restore the cursor to its correct position when editing in the
-        # middle of the buffer instead of leaving it at the end.
-        if cursor is not None and cursor < len(buffer):
-            move_left = len(buffer) - cursor
-            sys.stdout.write(f"\x1b[{move_left}D")
-
         sys.stdout.flush()
+        self._last_rendered_length = visible_length
+        readline.redisplay()  # Ensures history navigation does not erase prompt
 
     def completion_display(self, substitutions, matches, longest_match_length):
         print("\nSuggestions:", ", ".join(matches))

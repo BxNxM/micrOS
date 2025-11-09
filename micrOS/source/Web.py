@@ -12,6 +12,7 @@ Built-in-function:
 Designed by Marcell Ban aka BxNxM and szeka9 (GitHub)
 """
 
+from os import stat
 from json import dumps, loads
 import uasyncio as asyncio
 from Tasks import lm_exec, NativeTask, lm_is_loaded
@@ -24,14 +25,21 @@ except:
     from simgc import mem_free, collect  # simulator mode
 
 
+class ServerBusyException(Exception):
+    pass
+
+
 class WebEngine:
     __slots__ = ["client"]
     ENDPOINTS = {}
     AUTH = cfgget('auth')
     VERSION = "n/a"
     REQ200 = "HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len}\r\n\r\n{data}"
+    REQ200_CHUNKED = "HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nTransfer-Encoding: chunked\r\n\r\n"
     REQ400 = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
     REQ404 = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
+    REQ500 = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
+    REQ503 = "HTTP/1.1 503 Service Unavailable\r\nContent-Type: text/plain\r\nContent-Length: {len}\r\n\r\n{data}"
     CONTENT_TYPES = {"html": "text/html",
                      "css": "text/css",
                      "js": "application/javascript",
@@ -42,6 +50,8 @@ class WebEngine:
                      "gif": "image/gif"}
     METHODS = ("GET", "POST")
     MEM_LIMITED = (None, 0)
+    CHUNKING_THRESHOLD_KB = 2     # file size at which the response is sent in chunks
+    CHUNK_SIZE_BYTES = 1024       # size of chunks
 
     def __init__(self, client, version):
         self.client = client
@@ -65,7 +75,7 @@ class WebEngine:
         if WebEngine.MEM_LIMITED[0] is None:
             collect()
             mfree = int(mem_free() * 0.001)
-            WebEngine.MEM_LIMITED = (mfree < 50, mfree)        # 50 kb memory requirement
+            WebEngine.MEM_LIMITED = (mfree < 20, mfree)        # 20 kb memory requirement
         return WebEngine.MEM_LIMITED
 
     async def response(self, request:str) -> bool:
@@ -110,23 +120,39 @@ class WebEngine:
             return True
         # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
         if url.startswith('/') and _method == "GET":
-            resource = 'index.html' if url == '/' else url.replace('/', '')
+            resource = 'index.html' if url == '/' else url.lstrip('/')
             web_resource = path_join(OSPath.WEB, resource)                  # Redirect path to web folder
             self.client.console(f"[WebCli] --- {url} ACCEPT -> {web_resource}")
             if resource.split('.')[-1] not in tuple(self.CONTENT_TYPES.keys()):
-                await self.client.a_send(self.REQ404.format(len=27, data='404 Not supported file type'))
+                await self.client.a_send(self.REQ404.format(len=27, data='404 Not Supported File Type'))
                 return True
             try:
                 # SEND RESOURCE CONTENT: HTML, JS, CSS (WebEngine.CONTENT_TYPES)
-                with open(web_resource, 'r') as file:
-                    data = file.read()
-                response = self.REQ200.format(dtype=WebEngine.file_type(resource), len=len(data), data=data)
-                # Send entire response data (implement chunking if necessary)
-                await self.client.a_send(response)
-            except Exception as e:
-                if 'memory allocation failed' in str(e):
-                    syslog(f"[ERR] WebCli {resource}: {e}")
+                with open(web_resource, "rb") as file:
+                    if stat(web_resource)[6] > self.CHUNKING_THRESHOLD_KB * 1024:
+                        response = self.REQ200_CHUNKED.format(dtype=WebEngine.file_type(resource))
+                        await self.client.a_send(response)
+                        data = file.read(self.CHUNK_SIZE_BYTES)
+                        while data:
+                            await self.client.a_send(f"{len(data):X}\r\n".encode(), None)
+                            await self.client.a_send(data, None)
+                            await self.client.a_send(b'\r\n', None)
+                            data = file.read(self.CHUNK_SIZE_BYTES)
+                        await self.client.a_send(b'0\r\n\r\n', None)
+                    else:
+                        data = file.read()
+                        response = self.REQ200.format(
+                            dtype=WebEngine.file_type(resource), len=len(data), data="")
+                        await self.client.a_send(response)
+                        await self.client.a_send(data, None)
+            except OSError:
                 await self.client.a_send(self.REQ404.format(len=13, data='404 Not Found'))
+            except MemoryError as e:
+                syslog(f"[ERR] WebCli {resource}: {e}")
+                await self.client.a_send(self.REQ500.format(len=17, data='500 Out of Memory'))
+            except Exception as e:
+                syslog(f"[ERR] WebCli {resource}: {e}")
+                await self.client.a_send(self.REQ500.format(len=16, data='500 Server Error'))
             return True
         # INVALID/BAD REQUEST
         await self.client.a_send(self.REQ400.format(len=15, data='400 Bad Request'))
@@ -192,8 +218,10 @@ class WebEngine:
                     task.create(callback=self.stream(data['callback'], task, data['content-type']), tag=tag)
                 else:  # dtype: text/html or text/plain
                     await self.client.a_send(WebEngine.REQ200.format(dtype=dtype, len=len(data), data=data))
+            except ServerBusyException as e:
+                await self.client.a_send(self.REQ503.format(len=len(str(e)), data=e))
             except Exception as e:
-                await self.client.a_send(self.REQ404.format(len=len(str(e)), data=e))
+                await self.client.a_send(self.REQ400.format(len=len(str(e)), data=e))
                 syslog(f"[ERR] WebCli endpoints {url}: {e}")
             return True  # Registered endpoint was found and executed
         return False  # Not registered endpoint

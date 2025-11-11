@@ -12,8 +12,8 @@ Built-in-function:
 Designed by Marcell Ban aka BxNxM and szeka9 (GitHub)
 """
 
-from os import stat
 from json import dumps, loads
+from os import stat
 import uasyncio as asyncio
 from Tasks import lm_exec, NativeTask, lm_is_loaded
 from Debug import syslog, console_write
@@ -49,9 +49,9 @@ class WebEngine:
                      "png": "image/png",
                      "gif": "image/gif"}
     METHODS = ("GET", "POST")
-    MEM_LIMITED = (None, 0)
-    CHUNKING_THRESHOLD_KB = 2     # file size at which the response is sent in chunks
-    CHUNK_SIZE_BYTES = 1024       # size of chunks
+    # MEMORY DIMENSIONING FOR THE BEST PERFORMANCE
+    #         (is_limited, free_mem, min_mem_req_kb, chunk_threshold_kb, chunk_size_bytes)
+    MEM_DIM = (None, -1, 20, 2, 1024)
 
     def __init__(self, client, version):
         self.client = client
@@ -70,13 +70,25 @@ class WebEngine:
         return WebEngine.CONTENT_TYPES.get(ext, default_type)
 
     @staticmethod
-    def is_mem_limited() -> (bool, int):
-        """Check if memory is limited for the FE"""
-        if WebEngine.MEM_LIMITED[0] is None:
+    def dimensioning():
+        #         (is_limited, free_mem, min_mem_req_kb, chunk_threshold_kb, chunk_size_bytes)
+        if WebEngine.MEM_DIM[0] is None:
             collect()
-            mfree = int(mem_free() * 0.001)
-            WebEngine.MEM_LIMITED = (mfree < 20, mfree)        # 20 kb memory requirement
-        return WebEngine.MEM_LIMITED
+            mfree = mem_free() // 1024   # <- bytes->kb
+            if mfree < WebEngine.MEM_DIM[2]:
+                # Too low memory - No Web UI - under 20kb
+                WebEngine.MEM_DIM = (True, mfree) + WebEngine.MEM_DIM[2:]
+                return WebEngine.MEM_DIM
+            if mfree < WebEngine.MEM_DIM[2] * 5:
+                # Normal: default memory setup - Web UI - under 100kb
+                WebEngine.MEM_DIM = (False, mfree) + WebEngine.MEM_DIM[2:]
+                return WebEngine.MEM_DIM
+            # Large memory - Web UI - over 100kb
+            upscale = max(1, min(25, int((mfree // WebEngine.MEM_DIM[2]) // 2)))  # ~50% free mem budget
+            WebEngine.MEM_DIM = (False, mfree, WebEngine.MEM_DIM[2],
+                                 WebEngine.MEM_DIM[3]*upscale, WebEngine.MEM_DIM[4]*upscale)
+            syslog(f"[INFO] WebEngine ChunkUpscale ({upscale}x): {WebEngine.MEM_DIM}")
+        return WebEngine.MEM_DIM
 
     async def response(self, request:str) -> bool:
         """HTTP GET/POST REQUEST - WEB INTERFACE"""
@@ -113,7 +125,7 @@ class WebEngine:
         payload = lines if _method == "POST" else []
         if await self.endpoints(url, _method, payload):
             return True
-        mem_limited, free = self.is_mem_limited()
+        mem_limited, free, *_ = self.dimensioning()
         if mem_limited:
             _err = f"Low memory ({free} kb): serving API only."
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
@@ -128,23 +140,7 @@ class WebEngine:
                 return True
             try:
                 # SEND RESOURCE CONTENT: HTML, JS, CSS (WebEngine.CONTENT_TYPES)
-                with open(web_resource, "rb") as file:
-                    if stat(web_resource)[6] > self.CHUNKING_THRESHOLD_KB * 1024:
-                        response = self.REQ200_CHUNKED.format(dtype=WebEngine.file_type(resource))
-                        await self.client.a_send(response)
-                        data = file.read(self.CHUNK_SIZE_BYTES)
-                        while data:
-                            await self.client.a_send(f"{len(data):X}\r\n".encode(), None)
-                            await self.client.a_send(data, None)
-                            await self.client.a_send(b'\r\n', None)
-                            data = file.read(self.CHUNK_SIZE_BYTES)
-                        await self.client.a_send(b'0\r\n\r\n', None)
-                    else:
-                        data = file.read()
-                        response = self.REQ200.format(
-                            dtype=WebEngine.file_type(resource), len=len(data), data="")
-                        await self.client.a_send(response)
-                        await self.client.a_send(data, None)
+                await self.file_transfer(web_resource)
             except OSError:
                 await self.client.a_send(self.REQ404.format(len=13, data='404 Not Found'))
             except MemoryError as e:
@@ -225,6 +221,32 @@ class WebEngine:
                 syslog(f"[ERR] WebCli endpoints {url}: {e}")
             return True  # Registered endpoint was found and executed
         return False  # Not registered endpoint
+
+    async def file_transfer(self, web_resource:str):
+        """
+        Send a file to the client using either normal or chunked HTTP transfer.
+        :param web_resource: Path to the file to be served.
+        """
+        with open(web_resource, "rb") as file:
+            chunking_threshold_kb = WebEngine.MEM_DIM[3]
+            chunk_size_bytes = WebEngine.MEM_DIM[4]
+            if stat(web_resource)[6] > chunking_threshold_kb * 1024:
+                # Chunked HTTP transfer
+                response = self.REQ200_CHUNKED.format(dtype=WebEngine.file_type(web_resource))
+                await self.client.a_send(response)
+                data = file.read(chunk_size_bytes)
+                while data:
+                    await self.client.a_send(f"{len(data):X}\r\n".encode(), None)
+                    await self.client.a_send(data, None)
+                    await self.client.a_send(b'\r\n', None)
+                    data = file.read(chunk_size_bytes)
+                await self.client.a_send(b'0\r\n\r\n', None)
+                return
+            # Normal HTTP transfer
+            data = file.read()
+            response = self.REQ200.format(dtype=WebEngine.file_type(web_resource), len=len(data), data="")
+            await self.client.a_send(response)
+            await self.client.a_send(data, None)
 
     async def stream(self, callback, task, content_type):
         """

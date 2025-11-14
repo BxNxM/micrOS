@@ -75,7 +75,7 @@ def _install_any(ref, target=None):
         verdict = f"[mip] Installing: {ref} {kwargs}\n"
         # MIP Install
         install(ref, **kwargs)
-        verdict += f"  ✓ Installed successfully under {kwargs["target"]}"
+        verdict += f"  ✓ Installed successfully under {kwargs['target']}"
     except Exception as e:
         err = f"  ✗ Failed to install '{ref}': {e}"
         syslog(f"[ERR][pacman] {err}")

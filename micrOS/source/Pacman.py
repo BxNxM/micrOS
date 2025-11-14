@@ -1,5 +1,6 @@
 from mip import install
-from Files import OSPath, path_join, is_file
+from uos import rename
+from Files import OSPath, path_join, is_file, ilist_fs
 from Debug import syslog
 
 
@@ -107,6 +108,19 @@ def install_requirements(source="requirements.txt"):
     return verdict
 
 
+def unpack(path:str):
+    """
+    Unpack Load Modules from downloaded package (move under /modules)
+    """
+    verdict = ""
+    for mod in ilist_fs(path, type_filter='f', select="LM"):
+        try:
+            rename(path_join(path, mod), path_join(OSPath.MODULES, mod))
+            verdict += f"\n  ✓ Unpack {mod}\n"
+        except Exception as e:
+            verdict += f"\n  ✗ Unpack error {mod: {e}}\n"
+    return verdict
+
 # ---------------------------------------------------------------------
 # Unified entry point
 # ---------------------------------------------------------------------
@@ -126,7 +140,9 @@ def download(ref):
 
     # 1. requirements.txt
     if ref == "requirements.txt":
-        return install_requirements(ref)
+        verdict = install_requirements(ref)
+        verdict += unpack(OSPath.LIB)
+        return verdict
 
     if "github" in ref:
         # 2. LM_/IO_ load modules → /modules
@@ -135,7 +151,9 @@ def download(ref):
 
         # 3. GitHub or raw URLs → /lib
         if ref.startswith("http") or ref.startswith("github"):
-            return _install_any(ref, target=OSPath.LIB)
+            verdict = _install_any(ref, target=OSPath.LIB)
+            verdict += unpack(OSPath.LIB)
+            return verdict
 
     # 4. Fallback: official micropython package → /lib
     return _install_any(ref, target=OSPath.LIB)

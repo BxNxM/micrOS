@@ -1717,8 +1717,8 @@
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    Get Logical pin by key runtime\n    :param keys str: logical pin name or names to resolve\n    :return dict: key map\n    \npin map: map, booked, custom, search",
-            "param(s)": "keys='builtin irq1 irq2 irq3 irq4'"
+            "doc": "\n    Get Logical pin by key runtime\n    :param keys: logical pin name or names to resolve\n        example: 'builtin irq1 irq2 irq3 irq4'\n    :return dict: key map\n    \npin map: map, booked, custom, known_maps",
+            "param(s)": "keys:str=None"
         },
         "rssi": {
             "doc": "\n    Show Wifi RSSI - wifi strength\n    ",

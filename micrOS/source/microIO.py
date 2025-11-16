@@ -133,12 +133,16 @@ def bind_pin(tag, number=None) -> int:
     raise Exception("microIO.allocate_pin number parameter must be integer!")
 
 
-
-def pinmap_info():
+def pinmap_info(show_all=False) -> dict:
     """
     Debug info function to get active pinmap and booked IO-s
     """
-    return {'map': PinMap.MAPPING_LUT, 'booked': PinMap.IO_USE_DICT, 'custom': PinMap.MAPPING}
+    inf = {'map': PinMap.MAPPING_LUT, 'booked': PinMap.IO_USE_DICT, 'custom': PinMap.MAPPING}
+    if show_all:
+        iomaps = list([iomap.replace("IO_", "").split(".")[0]
+                       for iomap in ilist_fs(OSPath.MODULES, type_filter='f', select="IO")])
+        inf.update({"known_maps": iomaps})
+    return inf
 
 
 def pinmap_search(keys):

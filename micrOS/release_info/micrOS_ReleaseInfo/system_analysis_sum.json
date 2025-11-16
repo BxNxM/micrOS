@@ -77,7 +77,7 @@
             1
         ],
         "microIO.py": [
-            9.44,
+            9.35,
             44
         ],
         "micrOS.py": [
@@ -125,7 +125,7 @@
             0
         ],
         "modules/LM_system.py": [
-            8.45,
+            8.46,
             0
         ],
         "modules/LM_robustness.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            4313,
+            4318,
             25
         ],
         "load": [
-            9869,
+            9871,
             55
         ],
         "core_dep": [

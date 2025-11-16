@@ -178,17 +178,19 @@ def list_stations():
     return [("NoAP", '')]
 
 
-def pinmap(keys='builtin irq1 irq2 irq3 irq4'):
+def pinmap(keys:str=None) -> dict:
     """
     Get Logical pin by key runtime
-    :param keys str: logical pin name or names to resolve
+    :param keys: logical pin name or names to resolve
+        example: 'builtin irq1 irq2 irq3 irq4'
     :return dict: key map
     """
     from microIO import pinmap_search, pinmap_info
-    map = pinmap_info()
-    keys = keys.split()
-    map["search"] = pinmap_search(keys)
-    return map
+    if keys is None:
+        map = pinmap_info(show_all=True)                 # map, booked, custom, known_maps
+        return map
+    keys = keys.replace(',', '').split()
+    return pinmap_search(keys)
 
 
 @socket_stream
@@ -244,7 +246,7 @@ def help(widgets=False):
     """
     return resolve(('info', 'TEXTBOX top', 'gclean', 'heartbeat', 'clock',
                     'setclock year month mday hour minute sec',
-                    'ntp', 'rssi', 'list_stations', 'pinmap key="dhtpin"/None', 'alarms clean=False',
+                    'ntp', 'rssi', 'list_stations', 'pinmap key="builtin"', 'alarms clean=False',
                     'notifications enable=<None,True,False>',
                     'sun refresh=False', 'ifconfig', 'memory_usage',
                     'disk_usage', 'hosts'), widgets=widgets)

@@ -122,6 +122,11 @@ def publish(topic: str, message: str, retain: bool = False):
     :return: Status message string.
     """
     unique_tag = f'mqtt.publish.{topic}.{time.ticks_ms()}'
+
+    if len(topic.split('/')) == 3:
+        console("Error: Topic cannot consist of exactly three parts, as such topics are interpreted as executable commands.")
+        return "Error: Topic cannot consist of exactly three parts, as such topics are interpreted as executable commands."
+
     state = micro_task(tag=unique_tag, task=_publish(message, topic, retain))
     return f"Message was sent {state}"
 
@@ -230,8 +235,7 @@ def load(username: str, password: str, server_ip: str, server_port: str='1883', 
     MQTT.CLIENT = MQTTClient(_configure(username, password, server_ip, server_port))
     MQTT.QOS = qos
 
-    state = micro_task(tag=MQTT.CLIENT_TASK, task=_init_client())
-    return {MQTT.CLIENT_TASK: "Starting"} if state else {MQTT.CLIENT_TASK: "Already running"}
+    return micro_task(tag=MQTT.CLIENT_TASK, task=_init_client())
 
 
 def help(widgets=False):

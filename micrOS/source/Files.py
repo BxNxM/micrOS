@@ -169,6 +169,9 @@ def init_micros_dirs():
     # ENABLE MODULES ACCESS
     if OSPath.MODULES not in upath:
         upath.insert(0, OSPath.MODULES)
+    # ENABLE LIB ACCESS
+    if OSPath.LIB not in upath:
+        upath.insert(0, OSPath.LIB)
 
     root_dirs = [
         getattr(OSPath, key)

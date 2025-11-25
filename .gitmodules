@@ -1,0 +1,3 @@
+[submodule "micrOS/packages"]
+	path = micrOS/packages
+	url = https://github.com/BxNxM/micrOSPackages.git

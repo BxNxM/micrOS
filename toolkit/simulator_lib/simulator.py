@@ -10,7 +10,6 @@ MYPATH = os.path.dirname(__file__)
 SIM_PATH = os.path.join(MYPATH, '../workspace/simulator')
 PACKAGES_PATH = os.path.join(MYPATH, '../../micrOS/packages/')
 sys.path.insert(0, SIM_PATH)                         # Add Sim to path
-sys.path.insert(0, os.path.join(SIM_PATH, 'lib'))    # Add Sim/lib to path
 sys.path.append(os.path.join(MYPATH, '../lib'))             # Add devtoolkit/lib to path
 from sim_console import console
 import micrOSloader

@@ -4,23 +4,46 @@ import multiprocessing
 import time
 import copy
 import json
+from pathlib import Path
 
 MYPATH = os.path.dirname(__file__)
 SIM_PATH = os.path.join(MYPATH, '../workspace/simulator')
-sys.path.insert(0, SIM_PATH)
-sys.path.insert(0, os.path.join(MYPATH, '../lib'))
+PACKAGES_PATH = os.path.join(MYPATH, '../../micrOS/packages/')
+sys.path.insert(0, SIM_PATH)                         # Add Sim to path
+sys.path.insert(0, os.path.join(SIM_PATH, 'lib'))    # Add Sim/lib to path
+sys.path.append(os.path.join(MYPATH, '../lib'))             # Add devtoolkit/lib to path
 from sim_console import console
 import micrOSloader
 import LocalMachine
+if os.path.exists(PACKAGES_PATH):
+    sys.path.append(PACKAGES_PATH)
+    try:
+        import _tools.unpack as package_unpack
+    except ImportError:
+        print(f"[WARNING] Import error Packages._tools: {PACKAGES_PATH}")
+        package_unpack = None
+else:
+    print(f"[WARNING] No Packages._tools available: {PACKAGES_PATH}")
 
 ENABLE_SIM_CONFIG = True
+ENABLE_SIM_PACKAGES = True
 
 
-def apply_sim_node_config():
+def apply_sim_patch():
+    """
+    Apply Config and more
+    """
+
+    # APPLY SIM CONFIG - for testing: enable webui, etc...
     if ENABLE_SIM_CONFIG:
         print("Copy SIM config - for testing: enable webui, etc.")
         sim_config = os.path.join(MYPATH, 'node_config.json')
         LocalMachine.FileHandler().copy(sim_config, os.path.join(SIM_PATH))
+
+    if ENABLE_SIM_PACKAGES and package_unpack is not None:
+        package_unpack.unpack_all(Path(SIM_PATH))
+    else:
+        print("[UNPACK] Package unpacking disabled or package_unpack module not available.")
 
 
 class micrOSIM():
@@ -71,7 +94,7 @@ class micrOSIM():
             # Trace handling - DEBUG
             sys.settrace(trace_func)
 
-        apply_sim_node_config()
+        apply_sim_patch()
         micrOSloader.main()
 
         console("[micrOSIM] Stop micrOS ({})".format(SIM_PATH))

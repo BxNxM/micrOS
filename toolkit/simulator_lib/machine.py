@@ -172,6 +172,9 @@ class SoftI2C(I2C):
     def __init__(self, scl, sda, freq=None):
         super().__init__(scl, sda, freq)
 
+    def writevto(self, *args, **kwargs):
+       pass
+
 
 class SoftSPI:
     def __init__(self, sck, mosi, miso):

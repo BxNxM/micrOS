@@ -40,9 +40,11 @@ def apply_sim_patch():
         LocalMachine.FileHandler().copy(sim_config, os.path.join(SIM_PATH))
 
     if ENABLE_SIM_PACKAGES and package_unpack is not None:
-        package_unpack.unpack_all(Path(SIM_PATH))
+        overwritten_files = package_unpack.unpack_all(Path(SIM_PATH))
+        for mod in overwritten_files:
+            print(f"\t⚠️ [SIM][UNPACK] Overwritten file from packages submodule: {mod}")
     else:
-        print("[UNPACK] Package unpacking disabled or package_unpack module not available.")
+        print("⚠️ [SIM][UNPACK] Package unpacking disabled or package_unpack module not available.")
 
 
 class micrOSIM():

@@ -25,8 +25,8 @@ def mem_info(*args, **kwargs):
     return total_heap, used_heap, free_heap
 
 
-def const(*args):
-    return args
+def const(arg):
+    return arg
 
 
 def schedule(callback, arg):

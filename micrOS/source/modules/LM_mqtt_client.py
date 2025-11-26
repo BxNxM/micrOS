@@ -123,6 +123,11 @@ def publish(topic: str, message: str, retain: bool = False):
     :return: Status message string.
     """
     unique_tag = f'mqtt.publish.{topic}.{time.ticks_ms()}'
+
+    if len(topic.split('/')) == 3:
+        console("Error: Topic cannot consist of exactly three parts, as such topics are interpreted as executable commands.")
+        return "Error: Topic cannot consist of exactly three parts, as such topics are interpreted as executable commands."
+
     state:dict = micro_task(tag=unique_tag, task=_publish(unique_tag, message, topic, retain))
     return f"Message was sent ({list(state.values())[0]})"
 

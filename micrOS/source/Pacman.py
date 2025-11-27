@@ -1,3 +1,20 @@
+"""
+Module is responsible for Package management and installation
+Install from
+    Package URL (package.json):
+        https://github.com/BxNxM/micrOSPackages/tree/main/blinky_example
+        github:BxNxM/micrOSPackages/blinky_example
+    File URL:
+        https://github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy
+        github:BxNxM/micrOS/toolkit/workspace/precompiled/modules/LM_rgb.mpy
+    Default packages:
+        by name (micropython doc.)
+
+Load Modules in /lib/LM_* will be automatically moved to /modules/LM_* as post install step.
+
+Designed by Marcell Ban aka BxNxM
+"""
+
 from mip import install
 from uos import rename
 from Files import OSPath, path_join, is_file, ilist_fs
@@ -90,19 +107,20 @@ def _install_any(ref, target=None):
 
 def install_requirements(source="requirements.txt"):
     """Install from a requirements.txt file under /config."""
-    verdict = f"[mip] Installing from requirements file: {source}\n"
-    try:
-        source_path = path_join(OSPath.CONFIG, source)
-        verdict = f"[mip] Installing from requirements file: {source_path}\n"
-        if is_file(source_path):
-            install(source_path)
+    source_path = path_join(OSPath.CONFIG, source)
+    verdict = f"[mip] Installing from requirements file: {source_path}\n"
+    if is_file(source_path):
+        with open(source_path, "r") as f:
+            for req in f:
+                try:
+                    verdict += _install_any(req, target=OSPath.LIB) + "\n"
+                except Exception as e:
+                    err = f"  ✗ Failed to process {source}: {e}"
+                    syslog(f"[ERR][pacman] {err}")
+                    verdict += err
             verdict += "  ✓ All listed packages processed"
-        else:
-            err = f"  ✗ {source_path} not exists"
-            syslog(f"[ERR][pacman] {err}")
-            verdict += err
-    except Exception as e:
-        err = f"  ✗ Failed to process {source}: {e}"
+    else:
+        err = f"  ✗ {source_path} not exists"
         syslog(f"[ERR][pacman] {err}")
         verdict += err
     return verdict
@@ -133,7 +151,7 @@ def download(ref):
     """
     Unified mip-based downloader for micrOS.
     Automatically detects:
-      - requirements.txt files (local or remote)
+      - requirements.txt files (local)
       - Single-file load modules (LM_/IO_ names or URLs)
       - GitHub or raw URLs (tree/blob/github:)
       - Official MicroPython packages

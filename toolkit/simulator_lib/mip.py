@@ -84,23 +84,12 @@ def _github_to_url(ref, branch="master"):
 
 def _mip_emu(ref, target:Path=Path("lib"), version:str="master"):
     """
-    [BETA]
     Tiny simulation of MicroPython's mip.install for normal Python.
-
-    - ref:
-        * URL (http/https): downloads file to `target`
-        * local path (file or directory): copies to `target`
-    - target:
-        * destination directory (defaults to ./lib)
-    - verbose:
-        * if True, prints actions
-
-    Returns: list of installed/downloaded Path objects.
     """
     installed = []
 
-    # --- Case 1: URL ---------------------------------------------------------
     if isinstance(ref, str) and (ref.startswith("http") or ref.startswith("github")):
+
         if ref.startswith("github"):
             url = _github_to_url(ref, branch=version)
             if url is None:
@@ -111,10 +100,12 @@ def _mip_emu(ref, target:Path=Path("lib"), version:str="master"):
         dest = target / Path(urlparse(url).path).name
 
         if not _guess_url_is_file(url):
+            # Folder mode, redirect to package.json
             url = f"{url.rstrip('/')}/package.json"
             dest = target / Path(urlparse(url).path).name
             console(f"Patch url (dir) to point to package.json: {url}")
         try:
+            # File mode
             print(f"🔻 Downloading {url} to {dest}", end="")
             data = _url_file_content(url)
             print(f" ({len(data)} bytes)")
@@ -123,6 +114,7 @@ def _mip_emu(ref, target:Path=Path("lib"), version:str="master"):
             return []
 
         if url.endswith("package.json"):
+            # Install based on package.json content
             package_json_data = json.loads(data)
             package_urls = package_json_data.get("urls", [])
             for file_url in package_urls:
@@ -140,6 +132,7 @@ def _mip_emu(ref, target:Path=Path("lib"), version:str="master"):
                         installed.append(pack_dest_dir.name)
         else:
             if data:
+                # Install based on file content - save url body to file
                 if _save_file(dest, data):
                     installed.append(dest.name)
     return installed

@@ -9,7 +9,7 @@
             1
         ],
         "Files.py": [
-            9.68,
+            9.69,
             11
         ],
         "micrOSloader.py": [
@@ -289,7 +289,7 @@
             0
         ],
         "modules/LM_mqtt_client.py": [
-            8.68,
+            8.72,
             0
         ],
         "modules/LM_dashboard_be.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            4318,
+            4323,
             25
         ],
         "load": [
-            9871,
+            9874,
             55
         ],
         "core_dep": [
@@ -340,6 +340,6 @@
         ],
         "core_score": 9.29,
         "load_score": 8.41,
-        "version": "2.21.2-0"
+        "version": "2.21.3-0"
     }
 }

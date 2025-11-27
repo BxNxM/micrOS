@@ -114,11 +114,15 @@ def unpack(path:str):
     """
     verdict = ""
     for mod in ilist_fs(path, type_filter='f', select="LM"):
+        mod_name = mod.split(".")[0]
+        if mod_name in ("system", "pacman"):
+            verdict += f"\n  ✗ Unpack skipped: {mod} (protected)\n"
+            continue
         try:
             rename(path_join(path, mod), path_join(OSPath.MODULES, mod))
             verdict += f"\n  ✓ Unpack {mod}\n"
         except Exception as e:
-            verdict += f"\n  ✗ Unpack error {mod: {e}}\n"
+            verdict += f"\n  ✗ Unpack error {mod}: {e}\n"
     return verdict
 
 # ---------------------------------------------------------------------
@@ -144,16 +148,15 @@ def download(ref):
         verdict += unpack(OSPath.LIB)
         return verdict
 
-    if "github" in ref:
+    if ref.startswith("github") or ref.startswith("http"):
         # 2. LM_/IO_ load modules → /modules
         if ref.endswith("py") and ("LM_" in ref or "IO_" in ref):
             return _install_any(ref, target=OSPath.MODULES)
 
         # 3. GitHub or raw URLs → /lib
-        if ref.startswith("http") or ref.startswith("github"):
-            verdict = _install_any(ref, target=OSPath.LIB)
-            verdict += unpack(OSPath.LIB)
-            return verdict
+        verdict = _install_any(ref, target=OSPath.LIB)
+        verdict += unpack(OSPath.LIB)
+        return verdict
 
     # 4. Fallback: official micropython package → /lib
     return _install_any(ref, target=OSPath.LIB)

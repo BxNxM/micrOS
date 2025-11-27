@@ -23,7 +23,9 @@ if os.path.exists(PACKAGES_PATH):
         package_unpack = None
 else:
     print(f"[WARNING] No Packages._tools available: {PACKAGES_PATH}")
+    package_unpack = None
 
+# Enable/Disable Simulator Config and Packages import
 ENABLE_SIM_CONFIG = True
 ENABLE_SIM_PACKAGES = True
 

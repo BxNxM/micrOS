@@ -1712,6 +1712,10 @@
             "doc": "\n    Global notifications control for micrOS\n    :param enable: True: Enable notifications / False: Disable notifications\n    return: state verdict\n    ",
             "param(s)": "enable=None"
         },
+        "notify": {
+            "doc": "\n    Send notification over registered notification handlers\n    ",
+            "param(s)": "msg reply_to=None chat_id=None"
+        },
         "ntp": {
             "doc": "\n    Trigger NTP time sync\n    ",
             "param(s)": ""

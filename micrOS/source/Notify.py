@@ -6,6 +6,7 @@ Common:
     - lm_execute
 Supported notification subscribers (add_subscriber)
     - LM_telegram
+    - LM_mqtt_client
 Designed by Marcell Ban aka BxNxM
 """
 
@@ -34,6 +35,9 @@ class Notify:
 
     @staticmethod
     def send_msg(text, reply_to=None, chat_id=None):
+        """
+        This method has to be implemented by the child class
+        """
         raise NotImplementedError("Child class must implement send_msg method")
 
     @staticmethod
@@ -70,12 +74,13 @@ class Notify:
         return "Notifications disabled"
 
     @staticmethod
-    def lm_execute(cmd_args):
+    def lm_execute(cmd_args, jsonify=False, secure=True):
         """Load Module Executor with basic access handling"""
-        if lm_is_loaded(cmd_args[0]):
-            try:
-                _, out = lm_exec(cmd_args)
-            except Exception as e:
-                out = str(e)
-            return True, out
-        return False, cmd_args[0]
+        state = False
+        if secure and not lm_is_loaded(cmd_args[0]):
+            return state, f"NotAllowed {cmd_args[0]}"
+        try:
+            state, out = lm_exec(cmd_args, jsonify)
+        except Exception as e:
+            out = str(e)
+        return state, out

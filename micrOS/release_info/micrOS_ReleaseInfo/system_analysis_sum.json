@@ -41,8 +41,8 @@
             2
         ],
         "Notify.py": [
-            9.74,
-            3
+            9.75,
+            4
         ],
         "Types.py": [
             8.91,
@@ -253,7 +253,7 @@
             0
         ],
         "modules/LM_telegram.py": [
-            9.62,
+            9.63,
             0
         ],
         "modules/LM_OV2640.py": [
@@ -289,7 +289,7 @@
             0
         ],
         "modules/LM_mqtt_client.py": [
-            8.72,
+            9.25,
             0
         ],
         "modules/LM_dashboard_be.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            4338,
+            4343,
             25
         ],
         "load": [
-            9874,
+            9917,
             55
         ],
         "core_dep": [
@@ -339,7 +339,7 @@
             4
         ],
         "core_score": 9.29,
-        "load_score": 8.41,
+        "load_score": 8.42,
         "version": "2.22.0-0"
     }
 }

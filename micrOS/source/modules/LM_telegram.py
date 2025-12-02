@@ -193,12 +193,14 @@ class Telegram(Notify):
 
         def _lm_execute(cmd_args):
             nonlocal verdict, m_id
-            access, output = Telegram.lm_execute(cmd_args)
+            status, output = Telegram.lm_execute(cmd_args)
+            access = "NotAllowed" not in str(output)
+            status = "OK" if status else "NOK"
             if access:
-                verdict = f'{_timestamp()} [UP] Exec: {" ".join(cmd_args[0])}'
+                verdict = f'{_timestamp()} [UP][{status}] Exec: {" ".join(cmd_args[0])}'
                 Telegram.send_msg(output, reply_to=m_id)
             else:
-                verdict = f'{_timestamp()} [UP] NoAccess: {cmd_args[0]}'
+                verdict = f'{_timestamp()} [UP][{status}] NoAccess: {cmd_args[0]}'
                 Telegram._IN_MSG_ID = m_id
 
         # -------------------------- FUNCTION MAIN -------------------------- #

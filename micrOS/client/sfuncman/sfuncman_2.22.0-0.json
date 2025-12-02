@@ -745,11 +745,11 @@
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mqtt_client.png?raw=true",
         "load": {
             "doc": "\n    Configure, initialize, and start the MQTT client.\n    Requires that the micropython-mqtt package is installed. You can install it with:\n    mpremote mip install github:peterhinch/micropython-mqtt\n    :param username: Broker username.\n    :param password: Broker password.\n    :param server_ip: Broker IP or hostname.\n    :param server_port: MQTT port (default 1883).\n    :param qos: MQTT Quality of Service level (0, 1, or 2). Controls delivery guarantee.\n    :return: Status dict showing whether the client is starting or already running.\n    ",
-            "param(s)": "username: str password: str server_ip: str server_port: str='1883' qos: str=1"
+            "param(s)": "username:str password:str server_ip:str server_port:str='1883' qos:int=1"
         },
         "publish": {
-            "doc": "\n    Wrapper to publish a message to the specified topic.\n    Creates a micro_task for asynchronous publishing.\n    :param topic: MQTT topic string.\n    :param message: Message string.\n    :param retain: Whether to retain the message on the broker (default False).\n    :return: Status message string.\n    ",
-            "param(s)": "topic: str message: str retain: bool = False"
+            "doc": "\n    Publish a message to the specified topic.\n    :param topic: MQTT topic string.\n    :param message: Message string.\n    :param retain: Whether to retain the message on the broker (default False).\n    :return: Status message string.\n    ",
+            "param(s)": "topic:str message:str retain=False"
         }
     },
     "neoeffects": {

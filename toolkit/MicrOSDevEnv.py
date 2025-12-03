@@ -292,13 +292,16 @@ Logical pin names aka pin map
     <b> Multi-platform pinmap IO handling feature - resolve pin number by name (tag)<br>
     <b>[i] Use 'module_name pinmap()' function to get pins on a runtime system (micrOS shell) and start DIY</b>
 <ul>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_esp32.py" target="_blank">esp32</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_esp32s3.py" target="_blank">esp32s3</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_m5stamp.py" target="_blank">m5stamp</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_tinypico.py" target="_blank">tinypico</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_esp32c3.py" target="_blank">esp32c3</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_esp32s2.py" target="_blank">esp32s2</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/IO_rp2.py" target="_blank">rp2 (experimental)</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_m5stamp.py" target="_blank">m5stamp</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_tinypico.py" target="_blank">tinypico</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_s3matrix.py" target="_blank">s3matrix</a></li>
+
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32.py" target="_blank">esp32</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32s3.py" target="_blank">esp32s3</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32c3.py" target="_blank">esp32c3</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32c6.py" target="_blank">esp32c6</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32s2.py" target="_blank">esp32s2</a></li>
+  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_rp2.py" target="_blank">rp2 (experimental)</a></li>
 </ul>
 
 <h2>

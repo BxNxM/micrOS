@@ -92,17 +92,16 @@ class MQTT(Notify):
         self.client.close()
 
     @staticmethod
-    def send_msg(text, reply_to=None, chat_id=None):
+    def send_msg(text, *args, **kwargs):
         """
         Notify callback method interface
-        :param chat_id: used as topic (hack)
-        :param reply_to: used as topic too (hack)
+        :param text: text message to send
+        :param topic: topic to use (default: None -> use default topic)
         """
-        if chat_id is None:
-            chat_id = reply_to
-        if chat_id is None:
-            chat_id = MQTT.DEFAULT_TOPIC
-        return MQTT().publish(topic=chat_id, message=text, retain=False)
+        dev_id = MQTT.INSTANCE._DEVFID
+        topic = kwargs.get("topic", args[0] if len(args) > 0 else None)
+        topic = dev_id if topic is None else f"{dev_id}/{topic}"
+        return MQTT().publish(topic=topic, message=text, retain=False)
 
     #############################
     # SUBSCRIPTION \ PUBLISHING #

@@ -1713,8 +1713,8 @@
             "param(s)": "enable=None"
         },
         "notify": {
-            "doc": "\n    Send notification over registered notification handlers\n    ",
-            "param(s)": "msg reply_to=None chat_id=None"
+            "doc": "\n    Send notification over registered notification handlers\n    :param msg: notification message\n    :param *: optional interface dependent options (topic, chat_id, etc...)\n    ",
+            "param(s)": "msg *args **kwargs"
         },
         "ntp": {
             "doc": "\n    Trigger NTP time sync\n    ",

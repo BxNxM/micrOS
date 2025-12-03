@@ -253,7 +253,7 @@
             0
         ],
         "modules/LM_telegram.py": [
-            9.63,
+            9.68,
             0
         ],
         "modules/LM_OV2640.py": [
@@ -289,7 +289,7 @@
             0
         ],
         "modules/LM_mqtt_client.py": [
-            9.25,
+            9.17,
             0
         ],
         "modules/LM_dashboard_be.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            4343,
+            4355,
             25
         ],
         "load": [
-            9923,
+            9925,
             55
         ],
         "core_dep": [
@@ -339,7 +339,7 @@
             4
         ],
         "core_score": 9.29,
-        "load_score": 8.43,
+        "load_score": 8.42,
         "version": "2.22.0-0"
     }
 }

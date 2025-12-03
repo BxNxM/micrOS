@@ -59,7 +59,7 @@ class Telegram(Notify):
         return Telegram._TOKEN
 
     @staticmethod
-    def send_msg(text, reply_to=None, chat_id=None):
+    def send_msg(text, *args, **kwargs):
         """
         Send a message to the Telegram chat by chat_id
         :param text: text to send
@@ -67,6 +67,8 @@ class Telegram(Notify):
         :param chat_id: chat_id to reply on, if None, reply to all known
         RETURN None when telegram bot token is missing
         """
+        reply_to = kwargs.get("reply_to", args[0] if len(args) > 0 else None)
+        chat_id = kwargs.get("chat_id", args[1] if len(args) > 1 else None)
 
         def _send(chid):
             """Send message to chat_id (chid)"""
@@ -298,8 +300,7 @@ class Telegram(Notify):
 def __init():
     if Telegram.INSTANCE is None:
         # ENABLE TELEGRAM IF NW IS STA - CONNECTED TO THE WEB
-        _sta_available = True if ifconfig()[0] == "STA" else False
-        if _sta_available:
+        if ifconfig()[0] == "STA":
             Telegram()
         else:
             syslog("No STA: cannot init telegram")

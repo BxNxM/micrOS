@@ -34,22 +34,27 @@ class Notify:
         raise Exception("Subscribe error, Notify parent missing")
 
     @staticmethod
-    def send_msg(text, reply_to=None, chat_id=None):
+    def send_msg(text, *args, **kwargs):
         """
         This method has to be implemented by the child class
         """
         raise NotImplementedError("Child class must implement send_msg method")
 
     @staticmethod
-    def message(text, reply_to=None, chat_id=None):
+    def message(text, *args, **kwargs):
         """
-        Send message to all subscribers - Notify agents
+        Send message to all subscribers - Notify send_msg(text, ...) agents
+        :param text: text message to send
+        Telegram params:
+            reply_to: message id to reply to (optional) - default: None
+             chat_id: chat identifier - default: None -> auto resolve in child class
+        MQTTClient params:
+            topic: mqtt topic to send the message - default: None -> auto resolve in child class
         """
         exit_code = 0
         for s in Notify._SUBSCRIBERS:
             try:
-                # !!! SUBSCRIBER HAS TO DEFINE send_msg(text, reply_to, chat_id) method !!!
-                s.send_msg(text, reply_to, chat_id)
+                s.send_msg(text, *args, **kwargs)
             except Exception as e:
                 syslog(f"[ERR] Notify: {e}")
                 exit_code+=1
@@ -58,19 +63,19 @@ class Notify:
     @staticmethod
     def notifications(state=None):
         """
-        Setter for disable/enable notification messages
+        Setter for disable/enable notification messages (over LM_system)
         """
         if isinstance(state, bool):
             Notify.GLOBAL_NOTIFY = state
         return f"Notifications: {'enabled' if Notify.GLOBAL_NOTIFY else 'disabled'}"
 
     @staticmethod
-    def notify(text, reply_to=None, chat_id=None):
+    def notify(text, *args, **kwargs):
         """
-        Notification sender
+        Notification sender for Load Modules
         """
         if Notify.GLOBAL_NOTIFY:
-            return Notify.message(text, reply_to, chat_id)
+            return Notify.message(text, *args, **kwargs)
         return "Notifications disabled"
 
     @staticmethod

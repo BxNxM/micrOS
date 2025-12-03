@@ -233,11 +233,13 @@ def notifications(enable=None):
     """
     return Notify.notifications(state=enable)
 
-def notify(msg, reply_to=None, chat_id=None):
+def notify(msg, *args, **kwargs):
     """
     Send notification over registered notification handlers
+    :param msg: notification message
+    :param *: optional interface dependent options (topic, chat_id, etc...)
     """
-    return Notify.notify(msg, reply_to=reply_to, chat_id=chat_id)
+    return Notify.notify(msg, *args, **kwargs)
 
 #######################
 # LM helper functions #
@@ -254,6 +256,6 @@ def help(widgets=False):
                     'setclock year month mday hour minute sec',
                     'ntp', 'rssi', 'list_stations', 'pinmap key="builtin"', 'alarms clean=False',
                     'notifications enable=<None,True,False>',
-                    'notify "msg" reply_to=None chat_id=None',
+                    'notify "msg" *',
                     'sun refresh=False', 'ifconfig', 'memory_usage',
                     'disk_usage', 'hosts'), widgets=widgets)

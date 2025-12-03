@@ -80,18 +80,24 @@ def exec_cmd(cmd:list, jsonify:bool=None, secure=False):
     return lm_exec(cmd, jsonify=jsonify)
 
 
-def notify(text=None) -> bool:
+def notify(*args, **kwargs) -> bool:
     """
     [LM] micrOS common notification handler (Telegram)
-    :param text: notification text / None (return notification state)
+    text (0): notification text / None (return notification state)
+    Examples (optional parameters):
+        Telegram params:
+            reply_to: message id to reply to (optional) - default: None
+             chat_id: chat identifier - default: None -> auto resolve in child class
+        MQTTClient params:
+            topic: mqtt topic to send the message - default: None -> auto resolve in child class
     return: verdict: True/False
     """
-    # (1) Return notification state
-    if text is None:
+    # (1) Return notification state (if no text input given)
+    if kwargs.get("text", args[0] if args else None) is None:
         return Notify.GLOBAL_NOTIFY
     # (2) Send notification
     try:
-        out = Notify.notify(text)
+        out = Notify.notify(*args, **kwargs)
     except Exception as e:
         debug_syslog(f"[ERR] Notify: {e}")
         out = str(e)

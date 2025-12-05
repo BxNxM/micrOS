@@ -866,19 +866,38 @@ Usage(s): [LM_system](micrOS/source/modules/LM_system.py)
 micrOS common notification handler (Telegram).
 
 **Prerequisite**
-> Set Telegram API KEY in node config: telegram key
+
+1. Create telegram BOT-TOKEN
+2. Activate a chat with the created bot (send something to the chat)
+3. Connect to micrOS device and execute te commands:
 
 ```
-conf
- telegram <API KEY>
-noconf
-my_notification "hello"
- notify, msg was sent.
+telegram load token=<your-bot-token>
+telegram send "hello"
 ```
+
+4. Telegram is registered as notification service
+
+#### Use **Common.notify** in Load Modules:
 
 Parameters:
 
-* text: Notification text
+```python
+def notify(*args, **kwargs) -> bool:
+    """
+    [LM] micrOS common notification handler (Telegram, etc.)
+    text (0): notification text / None (return notification state)
+    :param channels (optional): select communication interface(s) by class name or an iterable of these.
+                                If omitted or empty, sends over all available channels.
+    Examples (optional parameters):
+        Telegram params:
+            reply_to: message id to reply to (optional) - default: None
+             chat_id: chat identifier - default: None -> auto resolve in child class
+        MQTTClient params:
+            topic: mqtt topic to send the message - default: None -> auto resolve in child class
+    return: verdict: True/False
+    """
+```
 
 Returns:
 
@@ -889,13 +908,13 @@ Returns:
 ```python
 from Common import notify
 
-def send_notification(msg="Hello from micrOS board"):
-	if not notify(msg):
+def send_notification(msg="Hello from micrOS board", **kwargs):
+	if not notify(msg, **kwargs):
 		return "notify, error... check system alarms"
 	return "notify, msg was sent."
 ```
 
-Usage(s): [LM_presence](micrOS/source/modules/LM_presence.py)
+Usage(s): [LM_presence](micrOS/source/modules/LM_presence.py) [LM_bme280](micrOS/source/modules/LM_bme280.py) [LM_buzzer](micrOS/source/modules/LM_buzzer.py)
 
 
 ------------------------------------

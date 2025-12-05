@@ -41,7 +41,7 @@
             2
         ],
         "Notify.py": [
-            9.75,
+            9.78,
             4
         ],
         "Types.py": [
@@ -253,7 +253,7 @@
             0
         ],
         "modules/LM_telegram.py": [
-            9.68,
+            9.67,
             0
         ],
         "modules/LM_OV2640.py": [
@@ -323,7 +323,7 @@
     },
     "summary": {
         "core": [
-            4355,
+            4368,
             25
         ],
         "load": [
@@ -340,6 +340,6 @@
         ],
         "core_score": 9.29,
         "load_score": 8.42,
-        "version": "2.22.0-0"
+        "version": "2.22.1-0"
     }
 }

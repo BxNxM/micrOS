@@ -82,8 +82,10 @@ def exec_cmd(cmd:list, jsonify:bool=None, secure=False):
 
 def notify(*args, **kwargs) -> bool:
     """
-    [LM] micrOS common notification handler (Telegram)
+    [LM] micrOS common notification handler (Telegram, etc.)
     text (0): notification text / None (return notification state)
+    :param channels (optional): select communication interface(s) by class name or an iterable of these.
+                                If omitted or empty, sends over all available channels.
     Examples (optional parameters):
         Telegram params:
             reply_to: message id to reply to (optional) - default: None

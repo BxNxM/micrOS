@@ -229,7 +229,7 @@ def notifications(enable=None):
     """
     Global notifications control for micrOS
     :param enable: True: Enable notifications / False: Disable notifications
-    return: state verdict
+    return: show state verdict and available notification handlers
     """
     return Notify.notifications(state=enable)
 
@@ -237,7 +237,13 @@ def notify(msg, *args, **kwargs):
     """
     Send notification over registered notification handlers
     :param msg: notification message
+    :param channels (optional): select communication interface(s) by class name
+       e.g. "Telegram", "MQTT" or an iterable of these.
+       If omitted or empty, sends over all available channels.
     :param *: optional interface dependent options (topic, chat_id, etc...)
+    Control with:
+        system notifications enable=True
+        system notifications enable=False
     """
     return Notify.notify(msg, *args, **kwargs)
 

@@ -21,13 +21,17 @@ class Telegram(Notify):
     _IN_MSG_ID = None
     _FILE_CACHE = data_dir('telegram.cache')
 
-    def __init__(self):
+    def __init__(self, token:str):
+        """
+        :param token: bot token
+        """
         # Subscribe to the notification system - provide send_msg method (over self)
         super().add_subscriber(self)
+        Telegram._TOKEN = token
         Telegram.INSTANCE = self
 
     @staticmethod
-    def __id_cache(mode):
+    def __id_cache(mode:str):
         """
         File cache
         modes:
@@ -59,7 +63,7 @@ class Telegram(Notify):
         return Telegram._TOKEN
 
     @staticmethod
-    def send_msg(text, *args, **kwargs):
+    def send_msg(text:str, *args, **kwargs):
         """
         Send a message to the Telegram chat by chat_id
         :param text: text to send
@@ -111,7 +115,7 @@ class Telegram(Notify):
         return verdict
 
     @staticmethod
-    def __update_chat_ids(resp_json):
+    def __update_chat_ids(resp_json:dict):
         """
         Update known chat_id-s and cache them
         - return active chat_id frm resp_json
@@ -242,7 +246,7 @@ class Telegram(Notify):
         return verdict
 
     @staticmethod
-    async def server_bot(tag, period=3):
+    async def server_bot(tag:str, period:int=3):
         """
         BOT - ReceiveEvalPrintLoop
         :param tag: task tag (access)
@@ -297,31 +301,30 @@ class Telegram(Notify):
 #          micrOS Notifications         #
 #########################################
 
-def __init():
+def __init(token:str=None):
     if Telegram.INSTANCE is None:
         # ENABLE TELEGRAM IF NW IS STA - CONNECTED TO THE WEB
         if ifconfig()[0] == "STA":
-            Telegram()
+            Telegram(token)
         else:
             syslog("No STA: cannot init telegram")
     return Telegram.INSTANCE
 
-# Auto INIT Telegram at load time (legacy)
-__init()
 
-def load():
+def load(token:str=None):
     """
     Set custom chat commands for Telegram
     - /ping
     - /cmd module function (params)
+    :param token: telegram bot token
     """
-    if __init() is None:
+    if __init(token) is None:
         return "Network unavailable."
     verdict = Telegram.set_commands()
     return "Missing telegram bot token" if verdict is None else verdict
 
 
-def send(text):
+def send(text:str):
     """
     Send Telegram message - micrOS notification
     :param text: text to send
@@ -331,17 +334,6 @@ def send(text):
         return "Network unavailable."
     verdict = Telegram.send_msg(text)
     return "Missing telegram bot token" if verdict is None else verdict
-
-def notify(text):
-    """
-    Notify function with system global enable/disable function
-    Control with:
-        telegram notification enable=True
-        telegram notification enable=False
-    """
-    if Telegram.INSTANCE is None:
-        return "Network unavailable."
-    return Telegram.INSTANCE.notify(text)
 
 
 def receive():
@@ -378,5 +370,5 @@ def help(widgets=False):
     return ('send "text"',
             'receive',
             'receiver_loop period=3',
-            'notify "message"',
-            'load', 'INFO: Send & Receive messages with Telegram bot')
+            'load token=<your-bot-token>',
+            'INFO: Send & Receive messages with Telegram bot')

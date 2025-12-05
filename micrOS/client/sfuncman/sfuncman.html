@@ -1165,9 +1165,15 @@ pin&nbsp;map:&nbsp;map,&nbsp;booked,&nbsp;custom,&nbsp;known_maps</td></tr></tab
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;urequests&nbsp;(only&nbsp;memory&nbsp;cache)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;intercon&nbsp;connection&nbsp;cache</td></tr></table></td></tr><tr><th>notifications</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>enable=None</td></tr><tr><th>doc</th><td>Global&nbsp;notifications&nbsp;control&nbsp;for&nbsp;micrOS<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;enable:&nbsp;True:&nbsp;Enable&nbsp;notifications&nbsp;/&nbsp;False:&nbsp;Disable&nbsp;notifications<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return:&nbsp;state&nbsp;verdict</td></tr></table></td></tr><tr><th>notify</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>msg *args **kwargs</td></tr><tr><th>doc</th><td>Send&nbsp;notification&nbsp;over&nbsp;registered&nbsp;notification&nbsp;handlers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return:&nbsp;show&nbsp;state&nbsp;verdict&nbsp;and&nbsp;available&nbsp;notification&nbsp;handlers</td></tr></table></td></tr><tr><th>notify</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>msg *args **kwargs</td></tr><tr><th>doc</th><td>Send&nbsp;notification&nbsp;over&nbsp;registered&nbsp;notification&nbsp;handlers<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;msg:&nbsp;notification&nbsp;message<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;*:&nbsp;optional&nbsp;interface&nbsp;dependent&nbsp;options&nbsp;(topic,&nbsp;chat_id,&nbsp;etc...)</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;channels&nbsp;(optional):&nbsp;select&nbsp;communication&nbsp;interface(s)&nbsp;by&nbsp;class&nbsp;name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.g.&nbsp;"Telegram",&nbsp;"MQTT"&nbsp;or&nbsp;an&nbsp;iterable&nbsp;of&nbsp;these.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;omitted&nbsp;or&nbsp;empty,&nbsp;sends&nbsp;over&nbsp;all&nbsp;available&nbsp;channels.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;*:&nbsp;optional&nbsp;interface&nbsp;dependent&nbsp;options&nbsp;(topic,&nbsp;chat_id,&nbsp;etc...)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Control&nbsp;with:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system&nbsp;notifications&nbsp;enable=True<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system&nbsp;notifications&nbsp;enable=False</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
@@ -1194,14 +1200,12 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;led</td></tr></table></td></tr><t
 	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'neomatrix_animation&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true" alt="tcs3472" height=150></td></tr></table>
 <br><br>
 <h2 id="telegram"><a href="#telegram">telegram</a></h2>
-<table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Set&nbsp;custom&nbsp;chat&nbsp;commands&nbsp;for&nbsp;Telegram<br>
+<table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>token:str=None</td></tr><tr><th>doc</th><td>Set&nbsp;custom&nbsp;chat&nbsp;commands&nbsp;for&nbsp;Telegram<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;/ping<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;/cmd&nbsp;module&nbsp;function&nbsp;(params)</td></tr></table></td></tr><tr><th>send</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>text</td></tr><tr><th>doc</th><td>Send&nbsp;Telegram&nbsp;message&nbsp;-&nbsp;micrOS&nbsp;notification<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;/cmd&nbsp;module&nbsp;function&nbsp;(params)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;token:&nbsp;telegram&nbsp;bot&nbsp;token</td></tr></table></td></tr><tr><th>send</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>text:str</td></tr><tr><th>doc</th><td>Send&nbsp;Telegram&nbsp;message&nbsp;-&nbsp;micrOS&nbsp;notification<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;text:&nbsp;text&nbsp;to&nbsp;send<br>
-&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;verdict</td></tr></table></td></tr><tr><th>notify</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>text</td></tr><tr><th>doc</th><td>Notify&nbsp;function&nbsp;with&nbsp;system&nbsp;global&nbsp;enable/disable&nbsp;function<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Control&nbsp;with:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;telegram&nbsp;notification&nbsp;enable=True<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;telegram&nbsp;notification&nbsp;enable=False</td></tr></table></td></tr><tr><th>receive</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Receive&nbsp;Telegram&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;verdict</td></tr></table></td></tr><tr><th>receive</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Receive&nbsp;Telegram&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;if&nbsp;all&nbsp;value&nbsp;None,&nbsp;then&nbsp;no&nbsp;incoming&nbsp;messages<br>
 &nbsp;&nbsp;&nbsp;&nbsp;One&nbsp;successful&nbsp;msg&nbsp;receive&nbsp;is&nbsp;necessary&nbsp;to&nbsp;get&nbsp;chat_id&nbsp;for&nbsp;msg&nbsp;send&nbsp;as&nbsp;well!</td></tr></table></td></tr><tr><th>receiver_loop</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>period=3</td></tr><tr><th>doc</th><td>Telegram&nbsp;BOT&nbsp;(repl)&nbsp;-&nbsp;ReadEvalPrintLoop&nbsp;for&nbsp;Load&nbsp;Modules<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Only&nbsp;executes&nbsp;module&nbsp;(function)&nbsp;if&nbsp;the&nbsp;module&nbsp;is&nbsp;already&nbsp;loaded<br>

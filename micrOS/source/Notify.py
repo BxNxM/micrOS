@@ -45,29 +45,40 @@ class Notify:
         """
         Send message to all subscribers - Notify send_msg(text, ...) agents
         :param text: text message to send
-        Telegram params:
+        :param channels (optional): select communication interface(s) by class name
+               e.g. "Telegram", "MQTT" or an iterable of these.
+               If omitted or empty, sends over all available channels.
+        Telegram params (optional):
             reply_to: message id to reply to (optional) - default: None
              chat_id: chat identifier - default: None -> auto resolve in child class
-        MQTTClient params:
+        MQTT client params (optional):
             topic: mqtt topic to send the message - default: None -> auto resolve in child class
+        return: verdict and metrics
         """
-        exit_code = 0
+        errors, channels, interfaces = 0, kwargs.get("channels", ()), set()
+        channels = (channels,) if isinstance(channels, str) else tuple(channels)
         for s in Notify._SUBSCRIBERS:
+            name = s.__class__.__name__
             try:
-                s.send_msg(text, *args, **kwargs)
+                if len(channels) == 0 or name in channels:
+                    s.send_msg(text, *args, **kwargs)
+                    interfaces.add(name)
             except Exception as e:
-                syslog(f"[ERR] Notify: {e}")
-                exit_code+=1
-        return f"Sent for {len(Notify._SUBSCRIBERS)} client(s), errors: ({exit_code})"
+                syslog(f"[ERR] Notify.{name}: {e}")
+                errors+=1
+        return (f"Sent over {', '.join(interfaces)} ({len(interfaces)}/{len(Notify._SUBSCRIBERS)}) client(s)"
+                f" - errors: ({errors})")
 
     @staticmethod
     def notifications(state=None):
         """
         Setter for disable/enable notification messages (over LM_system)
+        :param state: True/False/ None(default) - show current state
         """
         if isinstance(state, bool):
             Notify.GLOBAL_NOTIFY = state
-        return f"Notifications: {'enabled' if Notify.GLOBAL_NOTIFY else 'disabled'}"
+        targets = ", ".join(s.__class__.__name__ for s in Notify._SUBSCRIBERS)
+        return f"Notifications[{targets}]: {'enabled' if Notify.GLOBAL_NOTIFY else 'disabled'}"
 
     @staticmethod
     def notify(text, *args, **kwargs):

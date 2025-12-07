@@ -186,11 +186,20 @@ class UART:
     def __init__(self, pin, baudrate, tx, rx, timeout=1):
         pass
 
+    def init(self, *args, **kwargs):
+        pass
+
+    def deinit(self):
+        pass
+
     def write(self, frame):
         pass
 
     def read(self, *args, **kwargs):
         pass
+
+    def any(self):
+        return False
 
 def freq(*args, **kwargs):
     return 1

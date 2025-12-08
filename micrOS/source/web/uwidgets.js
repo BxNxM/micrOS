@@ -99,13 +99,17 @@ function textBoxWidget(container, command, params={}) {
     const { title_len = 1, refresh = 5000 } = params;
     const paragraph = document.createElement('p');
     const countdown = document.createElement('span');
+    const contentBox = document.createElement('div');
     const uniqueId = `textbox-${command}-${Date.now()}`;
     const element = document.createElement('div');
 
     paragraph.style.textIndent = widget_indent;
     paragraph.textContent = createTitle(command, title_len);
-    countdown.style.marginLeft = '8px';
-    paragraph.appendChild(countdown);
+    countdown.style.fontSize = '10px';
+    countdown.style.position = 'absolute';
+    countdown.style.right = '6px';
+    countdown.style.bottom = '6px';
+    countdown.style.color = '#888';
 
     element.id = uniqueId;
     Object.assign(element.style, {
@@ -114,25 +118,27 @@ function textBoxWidget(container, command, params={}) {
         padding: '10px',
         boxSizing: 'border-box',
         border: '2px solid #e7e7e7',
-        borderRadius: '4px'
+        borderRadius: '4px',
+        position: 'relative'
     });
+    contentBox.style.minHeight = '20px';
 
     const updateTextbox = () => {
         const call_cmd = command.replace(':range:', 'None');
         restAPI(call_cmd).then(resp => {
             console.log(`[API] textBox[${uniqueId}] call: ${call_cmd}`);
             const content = JSON.stringify(resp.result, null, 4).replace(/,\s*"/g, ',<br>"');
-            document.getElementById(uniqueId).innerHTML = content;
+            contentBox.innerHTML = content;
         }).catch(error => {
             console.error('[API] Textbox error:', error);
-            document.getElementById(uniqueId).textContent = 'Error loading data';
+            contentBox.textContent = 'Error loading data';
         });
     };
 
     updateTextbox();
     if (refresh > 0) {
         let secondsRemaining = Math.ceil(refresh / 1000);
-        const updateCountdown = () => countdown.textContent = `(refresh in ${secondsRemaining}s)`;
+        const updateCountdown = () => countdown.textContent = `${secondsRemaining} sec`;
 
         const intervalId = setInterval(() => {
             secondsRemaining -= 1;
@@ -147,6 +153,8 @@ function textBoxWidget(container, command, params={}) {
         container.addEventListener('DOMNodeRemovedFromDocument', () => clearInterval(intervalId));
     }
 
+    element.appendChild(contentBox);
+    element.appendChild(countdown);
     containerAppendChild([paragraph, element], container);
 }
 

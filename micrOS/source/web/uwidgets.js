@@ -34,13 +34,28 @@ function sliderWidget(container, command, params={}) {
     element.style.width = `${Math.min(windowWidth * 0.6, 300)}px`;
     valueDisplay.textContent = element.value;
 
-    element.addEventListener('input', () => valueDisplay.textContent = element.value);
-    element.addEventListener('change', () => {
-        const call_cmd = command.includes(':range:') ? command.replace(':range:', element.value) :
-                         command.endsWith('=') ? `${command}${element.value}` :
-                         `${command}/${element.value}`;
+    const sendSlider = (value) => {
+        const call_cmd = command.includes(':range:') ? command.replace(':range:', value) :
+                         command.endsWith('=') ? `${command}${value}` :
+                         `${command}/${value}`;
         console.log(`[API] Slider exec: ${call_cmd}`);
         restAPI(call_cmd);
+    };
+
+    // Throttle backend calls while dragging but send immediately on release.
+    let debounceId = null;
+    const debounceSend = (value) => {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(() => sendSlider(value), 150);
+    };
+
+    element.addEventListener('input', () => {
+        valueDisplay.textContent = element.value;
+        debounceSend(element.value);
+    });
+    element.addEventListener('change', () => {
+        valueDisplay.textContent = element.value;
+        sendSlider(element.value);
     });
 
     containerAppendChild([paragraph, element, valueDisplay], container);
@@ -83,11 +98,14 @@ function buttonWidget(container, command, params={}) {
 function textBoxWidget(container, command, params={}) {
     const { title_len = 1, refresh = 5000 } = params;
     const paragraph = document.createElement('p');
+    const countdown = document.createElement('span');
     const uniqueId = `textbox-${command}-${Date.now()}`;
     const element = document.createElement('div');
 
     paragraph.style.textIndent = widget_indent;
     paragraph.textContent = createTitle(command, title_len);
+    countdown.style.marginLeft = '8px';
+    paragraph.appendChild(countdown);
 
     element.id = uniqueId;
     Object.assign(element.style, {
@@ -113,7 +131,19 @@ function textBoxWidget(container, command, params={}) {
 
     updateTextbox();
     if (refresh > 0) {
-        const intervalId = setInterval(updateTextbox, refresh);
+        let secondsRemaining = Math.ceil(refresh / 1000);
+        const updateCountdown = () => countdown.textContent = `(refresh in ${secondsRemaining}s)`;
+
+        const intervalId = setInterval(() => {
+            secondsRemaining -= 1;
+            if (secondsRemaining <= 0) {
+                updateTextbox();
+                secondsRemaining = Math.ceil(refresh / 1000);
+            }
+            updateCountdown();
+        }, 1000);
+
+        updateCountdown();
         container.addEventListener('DOMNodeRemovedFromDocument', () => clearInterval(intervalId));
     }
 
@@ -157,14 +187,24 @@ function colorPaletteWidget(container, command, params = {}) {
         marginLeft: '40px'
     });
 
-    colorPicker.addEventListener('change', () => {
-        const { r, g, b } = hexToRgb(colorPicker.value, max_val);
+    const sendColor = (value) => {
+        const { r, g, b } = hexToRgb(value, max_val);
         const call_cmd = command.replace('r=:range:', `r=${r}`)
                                 .replace('g=:range:', `g=${g}`)
                                 .replace('b=:range:', `b=${b}`);
         console.log(`[API] colorPalette exec: ${call_cmd}`);
         restAPI(call_cmd);
-    });
+    };
+
+    // Throttle the frequency of backend calls while users drag the picker.
+    let debounceId = null;
+    const debounceSend = (value) => {
+        clearTimeout(debounceId);
+        debounceId = setTimeout(() => sendColor(value), 150);
+    };
+
+    colorPicker.addEventListener('input', () => debounceSend(colorPicker.value));
+    colorPicker.addEventListener('change', () => sendColor(colorPicker.value));
 
     containerAppendChild([paragraph, colorPicker, selectedColor], container);
 }

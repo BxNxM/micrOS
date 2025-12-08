@@ -174,7 +174,7 @@ class InterCon:
             return {None: f"[ERR] ESPNow auto handshake: task list >>{host}: {response}"}
 
         active_tasks = loads(response).get("active")
-        if "espnow.server" in active_tasks:
+        if active_tasks and "espnow.server" in active_tasks:
             response = await self.send_cmd(host, ["system", "info", ">json"])
             if not response:
                 return {None: "[ERR] ESPNow auto handshake: system info"}

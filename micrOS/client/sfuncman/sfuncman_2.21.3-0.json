@@ -745,11 +745,11 @@
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mqtt_client.png?raw=true",
         "load": {
             "doc": "\n    Configure, initialize, and start the MQTT client.\n    Requires that the micropython-mqtt package is installed. You can install it with:\n    mpremote mip install github:peterhinch/micropython-mqtt\n    :param username: Broker username.\n    :param password: Broker password.\n    :param server_ip: Broker IP or hostname.\n    :param server_port: MQTT port (default 1883).\n    :param qos: MQTT Quality of Service level (0, 1, or 2). Controls delivery guarantee.\n    :return: Status dict showing whether the client is starting or already running.\n    ",
-            "param(s)": "username: str password: str server_ip: str server_port: str='1883' qos: str=1"
+            "param(s)": "username:str password:str server_ip:str server_port:str='1883' qos:int=1"
         },
         "publish": {
-            "doc": "\n    Wrapper to publish a message to the specified topic.\n    Creates a micro_task for asynchronous publishing.\n    :param topic: MQTT topic string.\n    :param message: Message string.\n    :param retain: Whether to retain the message on the broker (default False).\n    :return: Status message string.\n    ",
-            "param(s)": "topic: str message: str retain: bool = False"
+            "doc": "\n    Publish a message to the specified topic.\n    :param topic: MQTT topic string.\n    :param message: Message string.\n    :param retain: Whether to retain the message on the broker (default False).\n    :return: Status message string.\n    ",
+            "param(s)": "topic:str message:str retain=False"
         }
     },
     "neoeffects": {
@@ -1709,8 +1709,12 @@
             "param(s)": ""
         },
         "notifications": {
-            "doc": "\n    Global notifications control for micrOS\n    :param enable: True: Enable notifications / False: Disable notifications\n    return: state verdict\n    ",
+            "doc": "\n    Global notifications control for micrOS\n    :param enable: True: Enable notifications / False: Disable notifications\n    return: show state verdict and available notification handlers\n    ",
             "param(s)": "enable=None"
+        },
+        "notify": {
+            "doc": "\n    Send notification over registered notification handlers\n    :param msg: notification message\n    :param channels (optional): select communication interface(s) by class name\n       e.g. \"Telegram\", \"MQTT\" or an iterable of these.\n       If omitted or empty, sends over all available channels.\n    :param *: optional interface dependent options (topic, chat_id, etc...)\n    Control with:\n        system notifications enable=True\n        system notifications enable=False\n    ",
+            "param(s)": "msg *args **kwargs"
         },
         "ntp": {
             "doc": "\n    Trigger NTP time sync\n    ",
@@ -1790,12 +1794,8 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/telegram.png?raw=true",
         "load": {
-            "doc": "\n    Set custom chat commands for Telegram\n    - /ping\n    - /cmd module function (params)\n    ",
-            "param(s)": ""
-        },
-        "notify": {
-            "doc": "\n    Notify function with system global enable/disable function\n    Control with:\n        telegram notification enable=True\n        telegram notification enable=False\n    ",
-            "param(s)": "text"
+            "doc": "\n    Set custom chat commands for Telegram\n    - /ping\n    - /cmd module function (params)\n    :param token: telegram bot token\n    ",
+            "param(s)": "token:str=None"
         },
         "receive": {
             "doc": "\n    Receive Telegram message\n    - if all value None, then no incoming messages\n    One successful msg receive is necessary to get chat_id for msg send as well!\n    ",
@@ -1807,7 +1807,7 @@
         },
         "send": {
             "doc": "\n    Send Telegram message - micrOS notification\n    :param text: text to send\n    return verdict\n    ",
-            "param(s)": "text"
+            "param(s)": "text:str"
         }
     },
     "tinyrgb": {

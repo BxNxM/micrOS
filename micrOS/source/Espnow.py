@@ -32,10 +32,8 @@ def render_packet(tid: str, oper: str, data: str, prompt: str) -> str:
     """
     if oper not in ("REQ", "RSP"):
         syslog(f"[ERR] espnow render_response, unknown oper: {oper}")
-    tmp = "{tid}|{oper}|{data}|{prompt}$"
-    tmp = (tmp.replace("{tid}", tid).replace("{oper}", oper)
-           .replace("{data}", str(data)).replace("{prompt}", prompt))
-    return tmp
+    return f"{tid}|{oper}|{str(data)}|{prompt}$"
+
 
 def parse_packet(msg: bytes) -> tuple[bool, dict | str]:
     """
@@ -251,15 +249,19 @@ class ESPNowSS:
         ESPNow client task: send a command to a peer and update task status.
         """
         with NativeTask.TASKS.get(tag, None) as my_task:
-            router = ResponseRouter(peer, tid)
-            # rendered_output: "{tid}|{oper}|{data}|{prompt}$"
-            rendered_out = render_packet(tid=tid, oper="REQ", data=msg, prompt=self.devfid)
-            if await self.__asend_raw(peer, rendered_out):
-                my_task.out = f"[ESPNOW SEND] {rendered_out}"
-                my_task.out = await router.get_response()
-            else:
-                my_task.out = "[ESPNOW SEND] Peer not responding"
-            router.close()
+            try:
+                router = ResponseRouter(peer, tid)
+                # rendered_output: "{tid}|{oper}|{data}|{prompt}$"
+                rendered_out = render_packet(tid=tid, oper="REQ", data=msg, prompt=self.devfid)
+                if await self.__asend_raw(peer, rendered_out):
+                    my_task.out = f"[ESPNOW SEND] {rendered_out}"
+                    my_task.out = await router.get_response()
+                else:
+                    my_task.out = "[ESPNOW SEND] Peer not responding"
+            except Exception as e:
+                my_task.out = f"[ERR][ESPNOW SEND] {e}"
+            finally:
+                router.close()
 
     def mac_by_peer_name(self, peer_name: str) -> bytes | None:
         matches = [k for k, v in self.devices.items() if v == peer_name]
@@ -325,6 +327,9 @@ class ESPNowSS:
             sender = self.send(peer, "hello")
             task_key = list(sender.keys())[0]
             sender_task = NativeTask.TASKS.get(task_key, None)
+            if sender_task is None:
+                my_task.out = "Handshake Error: No sender task"
+                return
             result = await sender_task.await_result(timeout=10)
             expected_response =  f"hello {self.devfid}"
             is_ok = False

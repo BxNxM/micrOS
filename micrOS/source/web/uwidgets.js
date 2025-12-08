@@ -187,7 +187,10 @@ function colorPaletteWidget(container, command, params = {}) {
         marginLeft: '40px'
     });
 
+    let lastSentColor = null;
     const sendColor = (value) => {
+        if (value === lastSentColor) { return; }
+        lastSentColor = value;
         const { r, g, b } = hexToRgb(value, max_val);
         const call_cmd = command.replace('r=:range:', `r=${r}`)
                                 .replace('g=:range:', `g=${g}`)
@@ -196,15 +199,19 @@ function colorPaletteWidget(container, command, params = {}) {
         restAPI(call_cmd);
     };
 
-    // Throttle the frequency of backend calls while users drag the picker.
+    // Throttle the frequency of backend calls while users drag the picker and skip redundant sends.
     let debounceId = null;
     const debounceSend = (value) => {
+        if (value === lastSentColor) { return; }
         clearTimeout(debounceId);
         debounceId = setTimeout(() => sendColor(value), 150);
     };
 
     colorPicker.addEventListener('input', () => debounceSend(colorPicker.value));
-    colorPicker.addEventListener('change', () => sendColor(colorPicker.value));
+    colorPicker.addEventListener('change', () => {
+        clearTimeout(debounceId);
+        sendColor(colorPicker.value);
+    });
 
     containerAppendChild([paragraph, colorPicker, selectedColor], container);
 }

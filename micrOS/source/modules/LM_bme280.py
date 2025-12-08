@@ -349,5 +349,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('TEXTBOX measure ntfy=False',
+    return resolve(('TEXTBOX{"refresh": 2000} measure ntfy=False',
                              'load', 'pinmap'), widgets=widgets)

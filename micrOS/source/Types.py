@@ -11,7 +11,7 @@ USAGE:
     SLIDER brightness br=<0-100>
     SLIDER brightness br=<0-100-5>
 """
-from json import dumps
+from json import dumps, loads
 from Debug import syslog
 
 ########################################################
@@ -80,19 +80,63 @@ def _generate(type_dict, help_msg):
     return dumps(type_dict | overwrite)
 
 
+def _extract_tag_and_overrides(msg):
+    """
+    Example:
+      "TEXTBOX{'refresh': 5000} measure ntfy=False"
+    OR with default refresh value:
+      "TEXTBOX measure ntfy=False"
+    return:
+      tag                   -> "TEXTBOX"
+      overrides(optional)   -> {'refresh': 5000}
+      cmd                   -> "measure ntfy=False"
+    """
+    msg = msg.strip()
+    if not msg:
+        return "", {}, ""
+    tag_end = len(msg)
+    for i, c in enumerate(msg):
+        if c in " {":
+            tag_end = i
+            break
+    tag = msg[:tag_end]
+    cmd = msg[tag_end:].lstrip()
+    overrides = {}
+    if tag.isupper() and cmd.startswith('{'):
+        i = cmd.find('}')
+        if i >= 0:
+            try:
+                overrides = loads('{' + cmd[1:i].replace("'", '"') + '}')
+            except Exception as e:
+                syslog(f"[ERR] Types tag overrides: {e}")
+            cmd = cmd[i + 1:].lstrip()
+    return tag, overrides, cmd
+
+
 def resolve(help_data, widgets=False):
     help_msg = []
     for msg in help_data:
-        tag = msg.split()[0].strip()
-        if tag.isupper():
-            resolved_tag = globals().get(tag, tag)()
-            if widgets and isinstance(resolved_tag, dict):
+        tag, overrides, cmd = _extract_tag_and_overrides(msg)
+        if tag and tag.isupper():
+            # TAG exists in help message
+            if widgets:
+                # Format output as widget - machine-readable
+                factory = globals().get(tag, None)
+                resolved_tag = factory() if callable(factory) else factory
+                if isinstance(resolved_tag, dict) and overrides:
+                    # Apply inline widget-only overrides, e.g. TEXTBOX{'refresh': 5000}
+                    resolved_tag.update(overrides)
                 try:
-                    help_msg.append(_generate(resolved_tag, msg))
+                    # Build a clean message for _generate, without inline {...}
+                    cleaned_msg = (tag + ' ' + cmd).strip()
+                    # Generate JSON output with TAG
+                    help_msg.append(_generate(resolved_tag, cleaned_msg))
                 except Exception as e:
                     syslog(f"[ERR] resolve {tag} help msg: {e}")
                 continue
-            help_msg.append(msg.replace(tag, '').strip())
+            # Widgets OFF - TAG exists - remove TAG from output
+            help_msg.append(cmd.strip())
         elif not widgets:
+            # No TAG - Widgets OFF output
             help_msg.append(msg)
     return tuple(help_msg)

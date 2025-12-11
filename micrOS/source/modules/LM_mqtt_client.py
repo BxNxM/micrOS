@@ -1,5 +1,5 @@
 import json
-import time
+from utime import ticks_ms
 from mqtt_as import MQTTClient, config
 from Config import cfgget
 from Common import micro_task, console, syslog
@@ -167,7 +167,7 @@ class MQTT(Notify):
         :param retain: Whether to retain the message on the broker (default False).
         :return: Status message string.
         """
-        unique_tag = f'mqtt.publish.{topic}.{time.ticks_ms()}'
+        unique_tag = f'mqtt.publish.{topic}.{ticks_ms()}'
 
         if len(topic.split('/')) == 3:
             console(

@@ -45,6 +45,11 @@ def apply_sim_patch():
         overwritten_files = package_unpack.unpack_all(Path(SIM_PATH))
         for mod in overwritten_files:
             print(f"\t⚠️ [SIM][UNPACK] Overwritten file from packages submodule: {mod}")
+        # Time module patch - extend with basic micropython utime features for micrOS Simulator
+        import utime
+        time.ticks_ms = utime.ticks_ms
+        time.ticks_diff = utime.ticks_diff
+        #sys.modules['time'] = time
     else:
         print("⚠️ [SIM][UNPACK] Package unpacking disabled or package_unpack module not available.")
 
@@ -148,6 +153,7 @@ class micrOSIM():
         - html hack structure
         - json raw structure
         """
+        apply_sim_patch()
         structure_to_html = copy.deepcopy(structure)
 
         # Step into workspace path

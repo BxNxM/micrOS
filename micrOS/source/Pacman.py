@@ -103,6 +103,10 @@ def _unpack_from_pacman_json(path:str, packages:tuple) -> tuple[bool, str]:
                 layout = {}
             # Unpack files based on layout metadata
             for target, source_list in layout.items():
+                # Restrict write access for /config/*
+                if target.lstrip("/").startswith("config"):
+                    verdict += f"\n  ✗ Protected target dir: {target}"
+                    continue
                 target_dir = path_join(OSPath._ROOT, target)
                 for source in source_list:
                     source_path = path_join(path, source)
@@ -254,6 +258,10 @@ def uninstall(package_name):
             layout = {}
 
         for target, source_list in layout.items():
+            # Restrict write access for /config/*
+            if target.lstrip("/").startswith("config"):
+                verdict += f"  ✗ Protected target dir: {target}\n"
+                continue
             target_dir = path_join(OSPath._ROOT, target)
             for source in source_list:
                 source_name = source.split('/')[-1] if '/' in source else source

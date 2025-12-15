@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 
-from sim_console import console
+try:
+    from sim_console import console
+except:
+    console = print
 from pathlib import Path
 from urllib.parse import urlparse
 from urllib.request import urlopen, Request

@@ -15,9 +15,10 @@ Load Modules in /lib/LM_* will be automatically moved to /modules/LM_* as post i
 Designed by Marcell Ban aka BxNxM
 """
 
-from mip import install
-from uos import rename
-from Files import OSPath, path_join, is_file, ilist_fs
+from json import load as jload
+from mip import install as mipstall
+from uos import rename, mkdir
+from Files import OSPath, path_join, is_file, ilist_fs, is_dir, remove_file, remove_dir
 from Debug import syslog
 
 
@@ -77,6 +78,56 @@ def _normalize_source(ref):
         return str(ref), None
 
 
+def _protected_resource(source_name):
+    return source_name.split(".")[0] in ("LM_system", "LM_pacman", "LM_cluster")
+
+
+def _unpack_from_pacman_json(path:str, packages:tuple) -> tuple[bool, str]:
+    """
+    Unpack Load Modules and other resources based on pacman.json
+    :param path: packages library path (default: /lib)
+    :param packages: list of package names, but least one to unpack
+    """
+    verdict = ""
+    # Check all input packages
+    for pack in packages:
+        pack_meta_path = path_join(path, pack, 'pacman.json')
+        if is_file(pack_meta_path):
+            verdict += f"\n    UNPACKING {pack_meta_path}"
+            # Load package layout metadata
+            try:
+                with open(pack_meta_path, 'r') as p:
+                    layout = jload(p).get('layout', {})
+            except Exception as e:
+                syslog(f"[ERR] Package unpack {pack_meta_path}: {e}")
+                layout = {}
+            # Unpack files based on layout metadata
+            for target, source_list in layout.items():
+                target_dir = path_join(OSPath._ROOT, target)
+                for source in source_list:
+                    source_path = path_join(path, source)
+                    source_name = source.split('/')[-1] if '/' in source else source
+                    if _protected_resource(source_name):
+                        verdict += f"\n  ! Unpack skip - protected target: {source_name}"
+                        continue
+                    if is_file(source_path):
+                        try:
+                            if not is_dir(target_dir):
+                                # Support single-level child dir
+                                mkdir(target_dir)
+                        except Exception as e:
+                            verdict += f"\n  ✗ Unpack subdir error {target_dir}: {e}"
+                        try:
+                            rename(source_path, path_join(target_dir, source_name))
+                            verdict += f"\n  ✓ Unpacked {source} -> {target_dir}"
+                        except Exception as e:
+                            verdict += f"\n  ✗ Unpack error {source}: {e}"
+                    elif not is_file(path_join(target_dir, source)):
+                        # Check already unpacked target resource
+                        verdict += f"\n  ✗ Unpack error: {source} not exists"
+    return "\nNothing to unpack" if verdict == "" else verdict
+
+
 # ---------------------------------------------------------------------
 # Core installer
 # ---------------------------------------------------------------------
@@ -92,8 +143,8 @@ def _install_any(ref, target=None):
         kwargs["target"] = target or OSPath.LIB
         verdict = f"[mip] Installing: {ref} {kwargs}\n"
         # MIP Install
-        install(ref, **kwargs)
-        verdict += f"  ✓ Installed successfully under {kwargs['target']}"
+        mipstall(ref, **kwargs)
+        verdict += f"  ✓ Installed under {kwargs['target']}"
     except Exception as e:
         err = f"  ✗ Failed to install '{ref}': {e}"
         syslog(f"[ERR][pacman] {err}")
@@ -126,30 +177,31 @@ def install_requirements(source="requirements.txt"):
     return verdict
 
 
-def unpack(path:str):
+def unpack(ref:str=None):
     """
-    Unpack Load Modules from downloaded package (move under /modules)
+    Unpack downloaded package from /lib
+    - use pacman.json metadata layout to unpack files to multiple targets
+    :param ref: install reference (extract package name from this)
     """
-    verdict = ""
-    for mod in ilist_fs(path, type_filter='f', select="LM"):
-        mod_name = mod.split(".")[0]
-        if mod_name in ("system", "pacman"):
-            verdict += f"\n  ✗ Unpack skipped: {mod} (protected)\n"
-            continue
-        try:
-            rename(path_join(path, mod), path_join(OSPath.MODULES, mod))
-            verdict += f"\n  ✓ Unpack {mod}\n"
-        except Exception as e:
-            verdict += f"\n  ✗ Unpack error {mod}: {e}\n"
-    return verdict
+
+    if ref is None:
+        # Collect all package names under /lib and unpack all
+        packages = tuple(ilist_fs(OSPath.LIB, type_filter='d'))
+    else:
+        # Handle single explicit ref for unpacking
+        ref_parts = ref.split("/")
+        pack_name = ref_parts[-2] if '.' in ref_parts[-1] else ref_parts[-1]
+        packages = (pack_name, )
+
+    return _unpack_from_pacman_json(OSPath.LIB, packages)
 
 # ---------------------------------------------------------------------
 # Unified entry point
 # ---------------------------------------------------------------------
 
-def download(ref):
+def install(ref):
     """
-    Unified mip-based downloader for micrOS.
+    Unified mip-based installer for micrOS.
     Automatically detects:
       - requirements.txt files (local)
       - Single-file load modules (LM_/IO_ names or URLs)
@@ -158,23 +210,61 @@ def download(ref):
     """
 
     if not ref:
-        return "[mip] Nothing to download (empty input)"
+        return "[mip] Nothing to install (empty input)"
 
-    # 1. requirements.txt
+    # 1. Install from requirements.txt
     if ref == "requirements.txt":
         verdict = install_requirements(ref)
-        verdict += unpack(OSPath.LIB)
+        verdict += unpack()
         return verdict
 
+    # 2. Install from URL or Shorthand file / package reference
     if ref.startswith("github") or ref.startswith("http"):
-        # 2. LM_/IO_ load modules → /modules
+        # 2.1. Exact file ref: LM_/IO_ load modules → /modules
         if ref.endswith("py") and ("LM_" in ref or "IO_" in ref):
             return _install_any(ref, target=OSPath.MODULES)
 
-        # 3. GitHub or raw URLs → /lib
+        # 2.2. Package ref: GitHub or raw URLs → /lib
         verdict = _install_any(ref, target=OSPath.LIB)
-        verdict += unpack(OSPath.LIB)
+        verdict += unpack(ref)
         return verdict
 
-    # 4. Fallback: official micropython package → /lib
+    # 3. Fallback/Official micropython package → /lib
     return _install_any(ref, target=OSPath.LIB)
+
+
+def uninstall(package_name):
+    """
+    Uninstalls package from /lib with its dependencies
+    """
+    pack_path = path_join(OSPath.LIB, package_name)
+    pack_meta = path_join(pack_path, "pacman.json")
+
+    if not is_dir(pack_path):
+        return f"No packaged found: {pack_path}"
+
+    verdict = f"Uninstall {package_name}\n"
+    if is_file(pack_meta):
+        # Load package layout metadata
+        try:
+            with open(pack_meta, 'r') as p:
+                layout = jload(p).get('layout', {})
+        except Exception as e:
+            syslog(f"[ERR] Package uninstall {pack_meta}: {e}")
+            layout = {}
+
+        for target, source_list in layout.items():
+            target_dir = path_join(OSPath._ROOT, target)
+            for source in source_list:
+                source_name = source.split('/')[-1] if '/' in source else source
+                if _protected_resource(source_name):
+                    verdict += f"  ✗ Remove skip - protected target: {source_name}\n"
+                    continue
+                unpacked_path = path_join(target_dir, source_name)
+                if is_file(unpacked_path):
+                    remove_file(unpacked_path)
+                    verdict += f"  ✓ Removed: {unpacked_path}\n"
+
+    # Delete package
+    verdict += "  " + remove_dir(pack_path)
+    return verdict

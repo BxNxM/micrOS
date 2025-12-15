@@ -5,8 +5,8 @@
             6
         ],
         "Pacman.py": [
-            9.8,
-            1
+            9.48,
+            2
         ],
         "Files.py": [
             9.69,
@@ -113,7 +113,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.61,
+            7.66,
             0
         ],
         "modules/LM_genIO.py": [
@@ -327,11 +327,11 @@
     },
     "summary": {
         "core": [
-            4407,
+            4475,
             25
         ],
         "load": [
-            10080,
+            10096,
             56
         ],
         "core_dep": [
@@ -342,8 +342,8 @@
             true,
             4
         ],
-        "core_score": 9.3,
+        "core_score": 9.29,
         "load_score": 8.46,
-        "version": "2.21.3-0"
+        "version": "2.21.4-0"
     }
 }

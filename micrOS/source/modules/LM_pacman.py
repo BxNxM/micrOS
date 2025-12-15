@@ -75,24 +75,44 @@ def cat(path):
 
 def download(ref=None):
     """
-    Unified mip-based downloader for micrOS.
+    OBSOLETED interface
+    """
+    return install(ref)
+
+
+def install(ref=None):
+    """
+    Unified mip-based installer for micrOS.
     Automatically detects:
       1. Official MicroPython packages (from https://micropython.org/pi/v2)
-            Example: pacman download "umqtt.simple"
+            Example: pacman install "umqtt.simple"
       2. Single-file load modules (LM_/IO_ names or URLs)
-            Example: pacman download "https://github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
-                     pacman download "github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
+            Example: pacman install "https://github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
+                     pacman install "github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
       3. GitHub packages (folders via tree/blob URLs or github: form)
-            Example: pacman download "github:peterhinch/micropython-mqtt"
-                     pacman download "https://github.com/peterhinch/micropython-mqtt/tree/master"
-                     pacman download "https://github.com/peterhinch/micropython-mqtt/blob/master/package.json"
-                     pacman download "https://github.com/peterhinch/micropython-mqtt"
-                     [NOK] pacman download "https://github.com/basanovase/sim7600/tree/main/sim7600" -> Package not found: github:basanovase/sim7600/package.json
+            Example: pacman install "github:peterhinch/micropython-mqtt"
+                     pacman install "https://github.com/peterhinch/micropython-mqtt/tree/master"
+                     pacman install "https://github.com/peterhinch/micropython-mqtt/blob/master/package.json"
+                     pacman install "https://github.com/peterhinch/micropython-mqtt"
+                     [NOK] pacman install "https://github.com/basanovase/sim7600/tree/main/sim7600" -> Package not found: github:basanovase/sim7600/package.json
       4. Install from local /config/requirements.txt file
-            Example: pacman download "requirements.txt"
+            Example: pacman install "requirements.txt"
     """
-    from Pacman import download as pm_download
-    return pm_download(ref)
+    from Pacman import install as pm_install
+    return pm_install(ref)
+
+
+def uninstall(name=None):
+    """
+    Delete package by name from /lib
+    :param name: None (default) show installed package name
+                 OR package name to delete (str)
+    """
+    if name is None:
+        return list_fs(path=OSPath.LIB, type_filter='d')
+    from Pacman import uninstall as pm_uninstall
+    return pm_uninstall(name)
+
 
 def del_duplicates(migrate=True):
     """
@@ -273,7 +293,8 @@ def help(widgets=False):
             'moduls unload="LM_rgb/None"',
             'cachedump delete=None',
             'datdump',
-            'download url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
+            'install url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
+            'uninstall name=None',
             'micros_checksum',
             'ls path="/" content="*/f/d" select="*/LM/IO"',
             'rm <path>',

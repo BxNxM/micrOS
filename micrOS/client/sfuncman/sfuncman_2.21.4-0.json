@@ -1,0 +1,1929 @@
+{
+    "L298N": {
+        "brake": {
+            "doc": "\n    Brake the motor\n    :param motor: Motor number (1 or 2)\n    :return: Current motor state\n    ",
+            "param(s)": "motor"
+        },
+        "coast": {
+            "doc": "\n    Coast the motor\n    :param motor: Motor number (1 or 2)\n    ",
+            "param(s)": "motor"
+        },
+        "direction": {
+            "doc": "\n    Set the direction of a motor\n    :param motor: Motor number (1 or 2)\n    :param forward: True if motor should move forward, False if backward\n    :return: Current motor state\n    ",
+            "param(s)": "motor forward: bool=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L298N.png?raw=true",
+        "load": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Load the L298N motor driver module\n    ",
+            "param(s)": "pwm_freq:int=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l298n_ENA, l298n_INA, l298n_INB, l298n_ENB, l298n_INC, l298n_IND",
+            "param(s)": ""
+        },
+        "speed": {
+            "doc": "\n    Set the speed of a motor\n    :param motor: Motor number (1 or 2)\n    :param speed: Speed value (0-1023)\n    :return: Current motor state\n    ",
+            "param(s)": "motor speed:int=1023"
+        },
+        "state": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Get the current state of a motor or all motors\n    :param motor: Motor number (1 or 2) or None for all motors\n    ",
+            "param(s)": "motor=0"
+        }
+    },
+    "L9110_DCmotor": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L9110_DCmotor.png?raw=true",
+        "motor_control": {
+            "doc": null,
+            "param(s)": "direc=None speed=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l9110dir_1, l9110dir_2",
+            "param(s)": ""
+        }
+    },
+    "OV2640": {
+        "capture": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "flashlight": {
+            "doc": "\n    Camera flashlight\n    :param state: True/False/None(automatic)\n    ",
+            "param(s)": "state=None"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'slider', 'lm_call': 'settings saturation=:range:', 'range': [0, 100, 2]}\n\t{'type': 'slider', 'lm_call': 'settings brightness=:range:', 'range': [0, 100, 2]}\n\t{'type': 'slider', 'lm_call': 'settings contrast=:range:', 'range': [0, 100, 2]}\n\t{'type': 'button', 'lm_call': 'settings effect=:options:', 'options': ['NONE', 'NEG', 'BW', 'RED', 'GREEN', 'BLUE', 'RETRO']}\n\t{'type': 'button', 'lm_call': 'flashlight state=None', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true",
+        "load": {
+            "doc": "\n    Load Camera module OV2640\n    :param quality: high (HD), medium (SVGA), low (240x240)\n    :param freq: default (not set: 10kHz) or high: 20kHz\n    :param effect: NONE (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    ",
+            "param(s)": "quality='medium' freq='ault' effect=\"NONE\""
+        },
+        "photo": {
+            "doc": null,
+            "param(s)": "name='photo.jpg'"
+        },
+        "set_photo_endpoint": {
+            "doc": "\n    Set photo endpoint (rest endpoint)\n    ",
+            "param(s)": ""
+        },
+        "settings": {
+            "doc": "\n    Camera settings\n    :param flip: flip image True/False\n    :param mirror: mirror image True/False\n    :param effect: None (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    :param saturation:  0-100 %\n    :param brightness:  0-100 %\n    :param contrast:    0-100 %\n    :param whitebalace: NONE (default) SUNNY, CLOUDY, OFFICE, HOME\n    :param q:           10-63 lower number means higher quality\n    ",
+            "param(s)": "quality=None flip=None mirror=None effect=None saturation=None brightness=None contrast=None whitebalace=None q=None"
+        }
+    },
+    "VL53L0X": {
+        "help": {
+            "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true",
+        "measure": {
+            "doc": "\n    Experimental - Time of Flight Distance Sensor\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        }
+    },
+    "aht10": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/aht10.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize AHT10 module\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": "\n    Measure with aht10\n    :return dict: temp, hum\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        },
+        "reset": {
+            "doc": "\n    Reset the sensor\n    ",
+            "param(s)": ""
+        }
+    },
+    "bme280": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure ntfy=False', 'refresh': 2000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize BME280 module\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": "\n    Measure with bme280\n    :return dict: temp, hum, pressure\n    ",
+            "param(s)": "ntfy=False"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        }
+    },
+    "buzzer": {
+        "bipp": {
+            "doc": "\n    Buzzer bipp sound generator\n    :param repeat int: bipp count\n    :param freq int: 0-1000 default: 600\n    :return str: Verdict string\n    ",
+            "param(s)": "repeat=1 freq=None"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'bipp repeat=3 freq=600', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'play rtttlstr=:options:', 'options': ['Indiana', 'TakeOnMe', 'StarWars', 'MissionImp']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true",
+        "list_tones": {
+            "doc": "\n    List built-in tones\n    ",
+            "param(s)": ""
+        },
+        "load": {
+            "doc": "\n    Initialize buzzer module\n    :param check_notify: check notify enabled/disabled - make noise if enabled only\n    :param pin: optional number to overwrite default pin\n    :param cache: default True, store stages on disk (.cache)\n    :return str: Verdict\n    ",
+            "param(s)": "check_notify=False pin=None cache=True"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: buzzer",
+            "param(s)": ""
+        },
+        "play": {
+            "doc": "\n    RTTTL Piezzo Player\n    :param rtttlstr str: rttl string, default: 'd=4,o=5,b=250:e,8p,8f,8g,8p,1c6,8p.,d,8p,8e,1f,p.'\n    :return str: verdict\n    ",
+            "param(s)": "rtttlstr='Indiana'"
+        }
+    },
+    "cct": {
+        "brightness": {
+            "doc": "\n    Set CCT brightness\n    :param percent: int - brightness percentage: 0-100\n    :param smooth: bool - enable smooth color transition: True(default)/False\n    :param wake: bool - wake up output / if off turn on with new brightness\n    :return dict: cct status - states: CW, WW, S\n    ",
+            "param(s)": "percent=None smooth=True wake=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'white', 'lm_call': 'white cw=:range: ww=:range: smooth=True force=True', 'range': [0, 1000, 5]}\n\t{'type': 'button', 'lm_call': 'toggle state=:options: smooth=True', 'options': ['True', 'False']}\n\t{'type': 'slider', 'lm_call': 'brightness percent=:range: smooth=True wake=True', 'range': [0, 100, 2]}\n\t{'type': 'button', 'lm_call': 'random smooth=True max_val=1000', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "hue_transition": {
+            "doc": "\n    [TASK] Set HUE transition independently from brightness\n    - Running warm and cold white ratio change\n    - USE cct brightness function to set brightness besides this transition (running)\n    :param percent: warm channel ratio in percent 0-100\n    :param sec: transition length\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
+            "param(s)": "percent sec=1.0 wake=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize Cold white / Warm white LED module\n    :param pin_warm: optional number to overwrite default pin\n    :param pin_cold: optional number to overwrite default pin\n    :param cache: save/load state machine to disk (.cache)\n    :return str: Cache state\n    ",
+            "param(s)": "pin_warm=None pin_cold=None cache=True"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: cwhite, wwhite",
+            "param(s)": ""
+        },
+        "random": {
+            "doc": "\n    Demo function: implements random hue change\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :param max_val: set channel maximum generated value: 0-1000\n    :return dict: cct status - states: CW, WW, S\n    ",
+            "param(s)": "smooth=True max_val=1000"
+        },
+        "status": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: CW, WW, S\n    ",
+            "param(s)": "lmf=None"
+        },
+        "subscribe_presence": {
+            "doc": "\n    Initialize LM presence module with ON/OFF callback functions\n    :return: None\n    ",
+            "param(s)": ""
+        },
+        "toggle": {
+            "doc": "\n    Toggle led state based on the stored state\n    :param state bool: True(1)/False(0)/None(default - automatic toggle)\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :return dict: cct status - states: CW, WW, S\n    ",
+            "param(s)": "state=None smooth=True"
+        },
+        "transition": {
+            "doc": "\n    [TASK] Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param cw: cold white 0-1000\n    :param ww: warm white 0-1000\n    :param sec: transition length in sec\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
+            "param(s)": "cw=None ww=None sec=1.0 wake=False"
+        },
+        "white": {
+            "doc": "\n    Set CCT values with PWM signal\n    :param cw: cold white value   0-1000\n    :param ww: warm white value 0-1000\n    :param smooth: (bool) runs white channels change with smooth effect\n    :param force: (bool) clean fade generators and set color\n    :return dict: cct status - states: CW, WW, S\n    ",
+            "param(s)": "cw=None ww=None smooth=True"
+        }
+    },
+    "cluster": {
+        "health": {
+            "doc": "\n    Simple connection check\n    - with default espnow-micros hello message\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [BETA]\n    Show help for cluster commands\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=True"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/cluster.png?raw=true",
+        "load": {
+            "doc": "\n    Enable ESPNow protocol 'cluster' module access\n    :param anchor: create AP as Channel Anchor (Channel Leader Role)\n    :param refresh: refresh channel sync period in minute (AP)\n    ",
+            "param(s)": "anchor:bool=False refresh:int=None"
+        },
+        "members": {
+            "doc": "\n    List all members in the cluster\n    ",
+            "param(s)": ""
+        },
+        "run": {
+            "doc": "\n    Run a command on the cluster\n    :param cmd: str - command to run on the cluster\n        Example: cmd='system heartbeat'\n    ",
+            "param(s)": "cmd:str"
+        },
+        "status": {
+            "doc": "\n    Cluster setup status\n    ",
+            "param(s)": ""
+        },
+        "sync_wifi": {
+            "doc": "\n    ESPNow Cluster Wifi Settings Sync for Station (STA) Connection Mode\n    - Join devices to the same wifi network...\n    ",
+            "param(s)": ""
+        }
+    },
+    "co2": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure_mq135 temp=None hum=None', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize mq135 CO2 (ppm) sensor module\n    ",
+            "param(s)": ""
+        },
+        "measure_mq135": {
+            "doc": "\n    CO2 Gas Concentration - Parts-per-million - PPM\n    -> 1ppm = 0.0001% gas.\n    Concentration evaluation:\n        250-400ppm      Normal background concentration in outdoor ambient air\n        400-1,000ppm    Concentrations typical of occupied indoor spaces with good air exchange\n        1,000-2,000ppm  Complaints of drowsiness and poor air.\n        2,000-5,000 ppm Headaches, sleepiness and stagnant, stale, stuffy air. Poor concentration, loss of attention, increased heart rate and slight nausea may also be present.\n        5,000ppm        Workplace exposure limit (as 8-hour TWA) in most jurisdictions.\n        >40,000 ppm     Exposure may lead to serious oxygen deprivation resulting in permanent brain damage, coma, even death.\n    :param temperature int: temp compensation - celsius\n    :param humidity int: hum compensation\n    :return str: verdict\n    ",
+            "param(s)": "temperature=None humidity=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: co2",
+            "param(s)": ""
+        },
+        "raw_measure_mq135": {
+            "doc": "\n    Measure raw mq135 CO2 value\n    :return str: raw value / adc_property\n    ",
+            "param(s)": ""
+        }
+    },
+    "dashboard_be": {
+        "create_dashboard": {
+            "doc": "\n    Create dashboard endpoint\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dashboard_be.png?raw=true",
+        "load": {
+            "doc": null,
+            "param(s)": ""
+        }
+    },
+    "dht11": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure log=False', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize DHT11 hum/temp sensor module\n    ",
+            "param(s)": ""
+        },
+        "logger": {
+            "doc": "\n    Return temp, hum logged data\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": "\n    Measure with dht11\n    :return dict: temp, hum\n    ",
+            "param(s)": "log=False"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: dhtpin",
+            "param(s)": ""
+        }
+    },
+    "dht22": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure log=False', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize DHT22 hum/temp sensor module\n    ",
+            "param(s)": ""
+        },
+        "logger": {
+            "doc": "\n    Return temp, hum logged data\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": "\n    Measure with dht22\n    :return dict: temp, hum\n    ",
+            "param(s)": "log=False"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: dhtpin",
+            "param(s)": ""
+        }
+    },
+    "dimmer": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'slider', 'lm_call': 'set_value value=:range: smooth=True force=True', 'range': [0, 1000, 2]}\n\t{'type': 'button', 'lm_call': 'toggle state=:options: smooth=True', 'options': ['True', 'False']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize dimmer module\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .cache (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
+            "param(s)": "cache=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: dim_1",
+            "param(s)": ""
+        },
+        "set_value": {
+            "doc": "\n    Set dimmer values with PWM signal\n    :param value: (int) value 0-1000 default: None (set cached value)\n    :param smooth: (bool) run channel change with smooth effect\n    :param force: (bool) clean fade generators and set value\n    :return dict: X, S\n    ",
+            "param(s)": "value=None smooth=True"
+        },
+        "status": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: X, S\n    ",
+            "param(s)": "lmf=None"
+        },
+        "subscribe_presence": {
+            "doc": "\n    Initialize LM presence module with ON/OFF callback functions\n    :return: None\n    ",
+            "param(s)": ""
+        },
+        "toggle": {
+            "doc": "\n    Toggle dimmer state based on the stored state\n    :param state bool: True(1)/False(0)/None(default - automatic toggle)\n    :param smooth bool: run channel change with smooth effect\n    :return dict: X, S\n    ",
+            "param(s)": "state=None smooth=True"
+        },
+        "transition": {
+            "doc": "\n    [TASK] Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param value: value 0-1000\n    :param sec: transition length in sec\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
+            "param(s)": "value sec=1.0 wake=False"
+        }
+    },
+    "distance": {
+        "deinit": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure_cm ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize HCSR04 ultrasonic distance sensor module\n    ",
+            "param(s)": ""
+        },
+        "measure_cm": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "measure_mm": {
+            "doc": "\n    To calculate the distance we get the pulse_time and divide it by 2\n    (the pulse walk the distance twice) and by 29.1 becasue\n    the sound speed on air (343.2 m/s), that It's equivalent to\n    0.34320 mm/us that is 1mm each 2.91us\n    pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: hcsrtrig, hcsrecho, dimmer",
+            "param(s)": ""
+        },
+        "start_dimmer_indicator": {
+            "doc": "Distance visualization on LED brightness (LM_dimmer)",
+            "param(s)": "idle_distance=180"
+        }
+    },
+    "ds18": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ds18.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize DS18 temp sensor module\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": "\n    Measure with digital onewire temperature sensor\n    - ds18\n    :return str: temp string\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: ds18",
+            "param(s)": ""
+        }
+    },
+    "esp32": {
+        "battery": {
+            "doc": "\n    TinyPico battery manager interface\n    :return dict: volt, state (is charging)\n    ",
+            "param(s)": ""
+        },
+        "hall": {
+            "doc": "\n    Measure with esp32 built-in hall sensor\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/esp32.png?raw=true",
+        "temp": {
+            "doc": "\n    Measure CPU temperature\n    ",
+            "param(s)": ""
+        },
+        "touch": {
+            "doc": "\n    Test function:\n    :param triglvl: trigger level, value < triglvl decide touched\n    :return dict: verdict isTouched and value\n    ",
+            "param(s)": "triglvl=300"
+        }
+    },
+    "espnow": {
+        "handshake": {
+            "doc": "No module named 'urandom'",
+            "param(s)": "peer:bytes|str"
+        },
+        "help": {
+            "doc": "No module named 'urandom'",
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/espnow.png?raw=true",
+        "members": {
+            "doc": "No module named 'urandom'",
+            "param(s)": ""
+        },
+        "remove": {
+            "doc": "No module named 'urandom'",
+            "param(s)": "peer:bytes"
+        },
+        "send": {
+            "doc": "No module named 'urandom'",
+            "param(s)": "peer:bytes|str cmd:str='modules'"
+        },
+        "stats": {
+            "doc": "No module named 'urandom'",
+            "param(s)": ""
+        }
+    },
+    "gameOfLife": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/gameOfLife.png?raw=true",
+        "load": {
+            "doc": "\n    Init Conway's Game of Life\n    :param w: width of display (pixel)\n    :param h: height of display (pixel)\n    :param custom: custom initial set, example: ((10,10),(1,0,0),(0,1,1),(0,0,1))\n    Init and store GoL instance, inject default cells\n    ",
+            "param(s)": "w=32 h=16 custom=None"
+        },
+        "my_config": {
+            "doc": "module 'modules.LM_gameOfLife' has no attribute 'my_config'",
+            "param(s)": "add_cells"
+        },
+        "next_gen": {
+            "doc": "\n    Main Game of Life function\n        Get Next Generation of cells (with auto load and GoL reinit)\n    :param raw: Output type (raw:True -> matrix), (raw:False formatted output)\n    :param w: width of display (pixel) - auto init\n    :param h: height of display (pixel) - auto init\n    return change of life matrix or None if there is no change (on None, restart feature: call reset())\n    ",
+            "param(s)": "raw=False w=32 h=16"
+        },
+        "reset": {
+            "doc": "\n    Reset life table - set default\n    ",
+            "param(s)": ""
+        }
+    },
+    "genIO": {
+        "get_adc": {
+            "doc": "\n    Get Analog Digital conersion input\n    :param pin: pin number or logical pin name\n    :param key: select adc parameter by key\n    :return dict: adc volt, percent, raw\n    ",
+            "param(s)": "pin key=None"
+        },
+        "get_in": {
+            "doc": "\n    Get digital input (high(1)/ low (0))\n    :param pin: pin number or logical pin\n    :return dict: pin, state\n    ",
+            "param(s)": "pin"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/genIO.png?raw=true",
+        "load": {
+            "doc": "\n    Optional load function to set\n    tag input besides pin numbers.\n    [WARNING] allow_tag=True can be dangerous\n    - it can overwrite existing I/O based on\n    the provided tag\n    :param allow_tag: default False\n    ",
+            "param(s)": "allow_tags=False"
+        },
+        "set_out": {
+            "doc": "\n    Set simple digital (high/low) output\n    :param pin: pun number or logical name\n    :param state: state: 1/0 = True/False\n    :return dict: pin, state\n    ",
+            "param(s)": "pin state=None"
+        },
+        "set_pwm": {
+            "doc": "\n    Set PWM signal output\n    :param pin: pin number or logical name\n    :param duty: pwm duty\n    :param freq: pwm frequency (board dependent)\n    :return dict: pin, freq, duty\n    ",
+            "param(s)": "pin duty=500 freq=20480"
+        },
+        "set_random_pwm": {
+            "doc": "\n    Set random PWM duty in min-max range\n    :param pin: pin number or logical name\n    :param min_duty: set min duty value (0-1000)\n    :param max_duty: set max duty value (0-1000)\n    :param freq: pwm frequency (board dependent)\n    ",
+            "param(s)": "pin min_duty max_duty freq=20480"
+        }
+    },
+    "haptic": {
+        "deinit": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "effect1": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "effect2": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "gen": {
+            "doc": "\n    Generate effect\n    :param intensity: 600-1000\n    :param wait: wait after intensity was set [ms]\n    :param stop_wait: wait for top the motor [ms]\n    :param repeat: repeat cycle\n    ",
+            "param(s)": "intensity=Haptic.LOW wait=200 stop_wait=100 repeat=2"
+        },
+        "help": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/haptic.png?raw=true",
+        "load": {
+            "doc": "\n    Init haptic engine\n    :param intensity: low / high / None haptic feedback intensity\n    ",
+            "param(s)": "intensity=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: haptic",
+            "param(s)": ""
+        },
+        "tap": {
+            "doc": "\n    Tap - buzz effect\n    ",
+            "param(s)": ""
+        }
+    },
+    "i2c": {
+        "discover": {
+            "doc": "\n    Discover devices\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/i2c.png?raw=true",
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        },
+        "scan": {
+            "doc": "\n    I2C scan function - experimental\n    :return list: list of devices\n    ",
+            "param(s)": ""
+        }
+    },
+    "i2s_mic": {
+        "background_capture": {
+            "doc": "\n    Start recording samples into a buffer by micro task\n    ",
+            "param(s)": ""
+        },
+        "bytes_per_second": {
+            "doc": "\n    Get configured number of bytes per second\n    :t: seconds (number)\n    ",
+            "param(s)": "t=1"
+        },
+        "decode": {
+            "doc": "\n    Decode raw bytes to floats between -1 and 1\n    :samples: samples to select channels from (bytes, bytearray)\n    ",
+            "param(s)": "samples=b''"
+        },
+        "get_from_buffer": {
+            "doc": "\n    Return samples stored in the buffer, captured by micro task\n    :capture_duration: maximum duration (seconds) of samples to retrieve (number)\n    :channel: which channel to get samples from ('left', 'right' or 'all')\n    :downsampling: return every nth sample (int)\n    ",
+            "param(s)": "capture_duration=Data.CAPTURE_DURATION"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/i2s_mic.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize I2S microphone module\n    :buf_length: I2S internal buffer length (int)\n    :sampling_rate: I2S sampling rate (int)\n    :capture_duration: override default duration of samples to retrieve\n    :shift_size: override default shift size\n    :sample_size: override default sample size (16 or 32)\n    :i2s_channel: override default I2S channel\n    :default_channel: override default channel ('left', 'right' or 'all')\n    :sound_format: override default format (I2S.MONO, I2S.STEREO)\n    :downsampling: override default downsampling\n    :control_button: name of button pin, control task is enbaled when provided\n    :enable_endpoint: enable/disable endpoint creation at /mic/stream (True/False)\n    ",
+            "param(s)": "buf_length=Data.BUF_LENGTH sampling_rate=Data.SAMPLING_RATE"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2s_sck, i2s_ws, i2s_sd",
+            "param(s)": ""
+        },
+        "select_channel": {
+            "doc": "\n    Separate channels from stereo data and/or apply downsampling\n    Can be used as a workaround for https://github.com/espressif/esp-idf/issues/6625\n    :samples: samples to select channels from (bytes, bytearray)\n    :channel: which channel to get samples from ('left', 'right' or 'all')\n    :downsampling: return every nth sample (int)\n    ",
+            "param(s)": "samples=b'' channel = Data.DEFAULT_CHANNEL downsampling = 1"
+        },
+        "set_volume": {
+            "doc": "\n    Change default volume by positive/negative bitwise shift\n    :param mic: shift_size, positive shift increases volume (int)\n    ",
+            "param(s)": "shift_size=0"
+        }
+    },
+    "keychain": {
+        "button": {
+            "doc": "\n    IRQ1 keychain module control function\n    - neopixel ON/OFF\n    - display wake-up (ON)\n    ",
+            "param(s)": ""
+        },
+        "color_wheel": {
+            "doc": "\n    Neopixel color wheel\n    :param br: brightness value 0-100 percent\n    ",
+            "param(s)": "br=None"
+        },
+        "display": {
+            "doc": "\n    Create keychain.display task - refresh loop\n    :param period: display refresh period in ms (min. 500ms)\n    :param tts: time to sleep (in seconds)\n    ",
+            "param(s)": "period=1000 tts=30"
+        },
+        "display_toggle": {
+            "doc": "\n    Display mode toggle (main/screensaver)\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/keychain.png?raw=true",
+        "load": {
+            "doc": "\n    Init OLED display 64x32 (default)\n    Init Neopixel LED (1 segment)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    :param bootmsg: First text on page at bootup, default: \"micrOS\"\n    ",
+            "param(s)": "width=64 height=32 bootmsg=\"micrOS\""
+        },
+        "msgbox": {
+            "doc": null,
+            "param(s)": "msg width=64"
+        },
+        "neopixel_toggle": {
+            "doc": "\n    Disable/Enable neopixel LED (brightness 0/default)\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    PIN MAP dump\n    \npin map: i2c_scl, i2c_sda, ds18, neop",
+            "param(s)": ""
+        },
+        "temperature": {
+            "doc": "\n    Measure ds18B20 temperature sensor\n    ",
+            "param(s)": ""
+        }
+    },
+    "ld2410": {
+        "bytes_to_str": {
+            "doc": null,
+            "param(s)": "data"
+        },
+        "enable_config": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "enable_engineering": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "end_config": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "end_engineering": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "firmware_version": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ld2410.png?raw=true",
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: tx, rx",
+            "param(s)": ""
+        },
+        "print_bytes": {
+            "doc": null,
+            "param(s)": "data"
+        },
+        "read": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "read_serial_buffer": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "send_command": {
+            "doc": null,
+            "param(s)": "cmd data=NULLDATA response_expected=True"
+        },
+        "serial_flush": {
+            "doc": null,
+            "param(s)": ""
+        }
+    },
+    "light_sensor": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'intensity ', 'refresh': 10000}\n\t{'type': 'textbox', 'lm_call': 'illuminance ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "illuminance": {
+            "doc": "\n    Measure light illuminance in flux\n    - result is 20 result average (noise reduction)\n    ",
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true",
+        "intensity": {
+            "doc": "\n    Measure light intensity in %\n    - result is 20 result average (noise reduction)\n    ",
+            "param(s)": ""
+        },
+        "load": {
+            "doc": "\n    Initialize TEMPT6000 light sensor module\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: temp6000",
+            "param(s)": ""
+        },
+        "subscribe_intercon": {
+            "doc": "\n    [TASK] ON/OFF command sender over intercon on given threshold\n    :param on: on callback to send: \"host cmd\"\n    :param off: off callback to send: \"host cmd\"\n    :param threshold: percentage value for on(under) /off(above)\n    :param tolerance: off tolerance value -> off event: threshold+tolerance\n    :param sample_sec: light measure task period in sec (also means event frequency)\n    ",
+            "param(s)": "on off threshold=4 tolerance=2 sample_sec=60"
+        }
+    },
+    "mh_z19c": {
+        "calibrate": {
+            "doc": "\n    Calibrate MH-Z19 sensor\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'start interval=5000', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'stop ', 'options': ['None']}\n\t{'type': 'textbox', 'lm_call': 'measure ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mh_z19c.png?raw=true",
+        "load": {
+            "doc": "\n    Create MH-Z19 CO2 sensor (over UART)\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": "\n    Measure with MH-Z19 CO2 sensor\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: mh_z19c_tx, mh_z19c_rx, mh_z19c_hd",
+            "param(s)": ""
+        },
+        "start": {
+            "doc": "\n    Start sensor measurement loop and publish results over micros notify feature\n    :param interval: update interval in milliseconds\n    :param topic: for MQTT channel, default: MH_Z19C\n    :param channels: selected notification channels, ex.: [\"MQTT\"], default: None (all)\n    ",
+            "param(s)": "interval:int=5000 topic:str=\"MH_Z19C\" channels:list=None"
+        },
+        "stop": {
+            "doc": "\n    Stop sensor measurement loop and publish, delete MHZ19.INSTANCE\n    ",
+            "param(s)": ""
+        }
+    },
+    "mqtt_client": {
+        "get_config": {
+            "doc": "\n    Get configuration for MQTT client.\n    :return: MQTT configuration dict.\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    Show public functions. Return a tuple of public function usage strings for the MQTT module.\n    :param widgets: Unused, reserved for extra help formatting.\n    :return: Tuple of help strings.\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mqtt_client.png?raw=true",
+        "load": {
+            "doc": "\n    Configure, initialize, and start the MQTT client.\n    Requires that the micropython-mqtt package is installed. You can install it with:\n    mpremote mip install github:peterhinch/micropython-mqtt\n    :param username: Broker username.\n    :param password: Broker password.\n    :param server_ip: Broker IP or hostname.\n    :param server_port: MQTT port (default 1883).\n    :param qos: MQTT Quality of Service level (0, 1, or 2). Controls delivery guarantee.\n    :return: Status dict showing whether the client is starting or already running.\n    ",
+            "param(s)": "username:str password:str server_ip:str server_port:str='1883' qos:int=1"
+        },
+        "publish": {
+            "doc": "\n    Publish a message to the specified topic.\n    :param topic: MQTT topic string.\n    :param message: Message string.\n    :param retain: Whether to retain the message on the broker (default False).\n    :return: Status message string.\n    ",
+            "param(s)": "topic:str message:str retain=False"
+        }
+    },
+    "neoeffects": {
+        "color": {
+            "doc": "\n    Set color buffer - for runtime effect color change\n    :param r: red channel 0-255 (default: None - cached value)\n    :param g: green channel 0-255 (default: None - cached value)\n    :param b: blue channel 0-255 (default: None - cached value)\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "r:int=None g:int=None b:int=None"
+        },
+        "control": {
+            "doc": "\n    Change the speed of frame generation for animations.\n    ",
+            "param(s)": "speed_ms=None batch:bool=None"
+        },
+        "cycle": {
+            "doc": "\n    Cycle effect\n    :param speed_ms: animation speed in milliseconds\n    :param shift: automatic effect rotation\n    :param batch: enable/disable batch update mode\n    ",
+            "param(s)": "speed_ms:int=60 shift:bool=True batch:bool=True"
+        },
+        "effect_cycle": {
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_cycle'",
+            "param(s)": ""
+        },
+        "effect_fire": {
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_fire'",
+            "param(s)": ""
+        },
+        "effect_meteor": {
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_meteor'",
+            "param(s)": ""
+        },
+        "effect_rainbow": {
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_rainbow'",
+            "param(s)": ""
+        },
+        "effect_shader": {
+            "doc": "module 'modules.LM_neoeffects' has no attribute 'effect_shader'",
+            "param(s)": ""
+        },
+        "fire": {
+            "doc": "\n    Fire effect\n    :param speed_ms: animation speed in milliseconds\n    :param br: max brightness 0-100%\n    :param batch: batch update\n    ",
+            "param(s)": "speed_ms:int=150 br:int=30 batch:bool=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'meteor speed_ms=60', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'cycle speed_ms=60', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'rainbow ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'fire speed_ms=150', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'stop ', 'options': ['None']}\n\t{'type': 'slider', 'lm_call': 'control speed_ms=:range: batch=None', 'range': [1, 200, 2]}\n\t{'type': 'color', 'lm_call': 'color r=:range: g=:range: b=:range:', 'range': [0, 255, 10]}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true",
+        "load": {
+            "doc": "\n    Load LM_neopixel and DrawEffectV2\n    ",
+            "param(s)": "pixel_cnt=24"
+        },
+        "meteor": {
+            "doc": "\n    Meteor effect\n    :param speed_ms: animation speed in milliseconds\n    :param shift: automatic effect rotation\n    :param batch: batch mode\n    :return str: verdict\n    ",
+            "param(s)": "speed_ms:int=60 shift:bool=True batch:bool=True"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: neop",
+            "param(s)": ""
+        },
+        "rainbow": {
+            "doc": "\n    Rainbow effect animation\n    :param speed_ms: animation speed in milliseconds\n    :param br: Brightness of the pixels (0-100)\n    :param batch: Batch drawing of pixels (True/False)\n    ",
+            "param(s)": "speed_ms=50 br=15 batch=True"
+        },
+        "random": {
+            "doc": "\n    Demo function: implements random color change\n    :param max_val: set channel maximum generated value: 0-255\n    :return str: rgb status - states: R, G, B\n    ",
+            "param(s)": "max_val=255"
+        },
+        "shader": {
+            "doc": "\n    Shader effect on neopixel ring.\n    :param offset: start pixel index\n    :param size: shader size (number of pixels)\n    ",
+            "param(s)": "offset=0 size=6"
+        },
+        "stop": {
+            "doc": "\n    Stop all running (neo)effects tasks\n    ",
+            "param(s)": ""
+        }
+    },
+    "neomatrix": {
+        "brightness": {
+            "doc": "\n    Change the brightness of the display. (0-100)\n    ",
+            "param(s)": "br: int"
+        },
+        "clear": {
+            "doc": "\n    Clear the screen.\n    ",
+            "param(s)": ""
+        },
+        "color_fill": {
+            "doc": "\n    Fill the screen with a solid color.\n    OR\n    Change animation color (when possible)\n    ",
+            "param(s)": "r: int g: int b: int"
+        },
+        "control": {
+            "doc": "\n    Change the speed of frame generation for animations.\n    ",
+            "param(s)": "speed_ms=None bt_draw:bool=None"
+        },
+        "draw": {
+            "doc": "\n    Draw the current frame manually on the screen.\n    ",
+            "param(s)": ""
+        },
+        "draw_colormap": {
+            "doc": "\n    Draw colors as a color map\n    [(x, y, (r, g,b)), ...]\n    ",
+            "param(s)": "bitmap"
+        },
+        "get_colormap": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
+        "load": {
+            "doc": "\n    Load NeoPixelMatrix instance. If not already loaded\n    ",
+            "param(s)": "width=8 height=8"
+        },
+        "noise": {
+            "doc": null,
+            "param(s)": "speed_ms:int=85"
+        },
+        "pixel": {
+            "doc": "\n    Set pixel at (x,y) to RGB color.\n    ",
+            "param(s)": "x y color=None show=True"
+        },
+        "rainbow": {
+            "doc": null,
+            "param(s)": "speed_ms=0"
+        },
+        "scale": {
+            "doc": "module 'modules.LM_neomatrix' has no attribute 'scale'",
+            "param(s)": "val"
+        },
+        "snake": {
+            "doc": null,
+            "param(s)": "speed_ms:int=30 length:int=6"
+        },
+        "spiral": {
+            "doc": null,
+            "param(s)": "speed_ms=40"
+        },
+        "status": {
+            "doc": "\n    Get the current status of the matrix\n    ",
+            "param(s)": ""
+        },
+        "stop": {
+            "doc": "\n    Stop the current animation\n    ",
+            "param(s)": ""
+        }
+    },
+    "neopixel": {
+        "brightness": {
+            "doc": "\n    Set neopixel brightness\n    :param percent: (int) brightness percentage: 0-100\n    :param smooth: (bool) enable smooth color transition: True(default)/False\n    :param wake: bool - wake up output / if off turn on with new brightness\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "percent=None smooth=True wake=True"
+        },
+        "color": {
+            "doc": "\n    Set NEOPIXEL RGB values\n    :param r: red value   0-255\n    :param g: green value 0-255\n    :param b: blue value  0-255\n    :param smooth: runs colors change with smooth effect\n    :param force: clean fade generators and set color\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "r=None g=None b=None smooth=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'color', 'lm_call': 'color r=:range: g=:range: b=:range: smooth=True force=True', 'range': [0, 255, 5]}\n\t{'type': 'button', 'lm_call': 'toggle state=:options: smooth=True', 'options': ['True', 'False']}\n\t{'type': 'slider', 'lm_call': 'brightness percent=:range: smooth=True wake=True', 'range': [0, 100, 2]}\n\t{'type': 'button', 'lm_call': 'random smooth=True max_val=254', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true",
+        "load": {
+            "doc": "\n    Initiate NeoPixel RGB module\n    :param ledcnt: number of led segments\n    :param pin: optional number to overwrite default pin\n    :param cache: default True, store stages on disk +  Load (.cache)\n    :return str: Cache state\n    ",
+            "param(s)": "ledcnt=24 pin=None cache=True"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: neop",
+            "param(s)": ""
+        },
+        "random": {
+            "doc": "\n    Demo function: implements random color change\n    :param smooth: (bool) enable smooth color transition: True(default)/False\n    :param max_val: set channel maximum generated value: 0-1000\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "smooth=True max_val=255"
+        },
+        "segment": {
+            "doc": "\n    Set single segment by index on neopixel\n    :param r: red value 0-255\n    :param g: green value 0-255\n    :param b: blue value 0-255\n    :param s: segment - index 0-ledcnt\n    :param cache: cache color (update .cache file)\n    :param write: send color buffer to neopixel (update LEDs)\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "r=None g=None b=None s=0 cache=False write=True"
+        },
+        "status": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: R, G, B, S\n    ",
+            "param(s)": "lmf=None"
+        },
+        "subscribe_presence": {
+            "doc": "\n    Initialize LM presence module with ON/OFF callback functions\n    :return: None\n    ",
+            "param(s)": ""
+        },
+        "toggle": {
+            "doc": "\n    Toggle led state based on the stored state\n    :param state: True(1)/False(0)\n    :param smooth: runs colors change with smooth effect\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "state=None smooth=True"
+        },
+        "transition": {
+            "doc": "\n    [TASK] Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param r: red channel 0-255\n    :param g: green channel 0-255\n    :param b: blue channel 0-255\n    :param sec: transition length in sec\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
+            "param(s)": "r=None g=None b=None sec=1.0 wake=False"
+        }
+    },
+    "oled": {
+        "bitmap": {
+            "doc": "\n    Draw simple bitmap\n    :param bmp: lines of image string ('001','011','111')\n    :param x: x offset\n    :param y: y offset\n    ",
+            "param(s)": "bmp=None x=0 y=0"
+        },
+        "clean": {
+            "doc": "\n    Clean display\n    :param state: 0/1\n    ",
+            "param(s)": "state=0"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'invert ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'poweron ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'poweroff ', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "image": {
+            "doc": "\n    [BETA]\n    https://blog.martinfitzpatrick.com/displaying-images-oled-displays/\n    Load Portable Bitmap Format (PBM) image\n    :param pbm_img: .pbm image path\n    :param x: x offset\n    :param y: y offset\n    ",
+            "param(s)": "pbm_img x=0 y=0"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true",
+        "invert": {
+            "doc": "\n    Invert OLED display\n    ",
+            "param(s)": ""
+        },
+        "line": {
+            "doc": "\n    Draw line on OLED\n    :param sx: start x\n    :param sy: start y\n    :param ex: end x\n    :param ey: end y\n    :param state: state 0/1\n    ",
+            "param(s)": "sx sy ex ey state=1"
+        },
+        "load": {
+            "doc": "\n    :param width: pixel\n    :param height: pixel\n    :param brightness: percentage\n    ",
+            "param(s)": "width=128 height=64 brightness=50"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        },
+        "pixel": {
+            "doc": "\n    https://blog.martinfitzpatrick.com/oled-displays-i2c-micropython/\n    Set pixel\n    .pixel(x, y, c)\n    ",
+            "param(s)": "x y color=1"
+        },
+        "poweroff": {
+            "doc": "\n    Power OFF OLED\n    ",
+            "param(s)": ""
+        },
+        "poweron": {
+            "doc": "\n    Power ON OLED\n    ",
+            "param(s)": ""
+        },
+        "rect": {
+            "doc": "\n    Draw rectangle on OLED\n    :param x: start x\n    :param y: start y\n    :param w: width\n    :param h: height\n    :param state: state\n    :param fill: fill rectangle (True/False)\n    ",
+            "param(s)": "x y w h state=1 fill=False"
+        },
+        "show": {
+            "doc": "\n    Show OLED buffer data\n    - update display\n    ",
+            "param(s)": ""
+        },
+        "text": {
+            "doc": "\n    Create text on OLED\n    :param string: text to draw\n    :param x: 0-127\n    :param y: 0-63\n    ",
+            "param(s)": "string=\"text\" x=0 y=0"
+        }
+    },
+    "oled_sh1106": {
+        "bitmap": {
+            "doc": "\n    Draw simple bitmap\n    :param bmp: lines of image string ('001','011','111')\n    :param x: x offset\n    :param y: y offset\n    ",
+            "param(s)": "bmp=None x=0 y=0"
+        },
+        "clean": {
+            "doc": "\n    Clean display\n    :param state: 0/1\n    ",
+            "param(s)": "state=0"
+        },
+        "flip": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'invert ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'poweron ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'poweroff ', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_sh1106.png?raw=true",
+        "invert": {
+            "doc": "\n    Invert OLED display\n    ",
+            "param(s)": ""
+        },
+        "line": {
+            "doc": "\n    Draw line on OLED\n    :param sx: start x\n    :param sy: start y\n    :param ex: end x\n    :param ey: end y\n    :param state: state 0/1\n    ",
+            "param(s)": "sx sy ex ey state=1"
+        },
+        "load": {
+            "doc": null,
+            "param(s)": "width=128 height=64 brightness=50 rotate=180"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        },
+        "pixel": {
+            "doc": null,
+            "param(s)": "x y state=1"
+        },
+        "poweroff": {
+            "doc": "\n    Power OFF OLED\n    ",
+            "param(s)": ""
+        },
+        "poweron": {
+            "doc": "\n    Power ON OLED\n    ",
+            "param(s)": ""
+        },
+        "rect": {
+            "doc": "\n    Draw rectangle on OLED\n    :param x: start x\n    :param y: start y\n    :param w: width\n    :param h: height\n    :param state: state\n    :param fill: fill rectangle (True/False)\n    ",
+            "param(s)": "x y w h state=1 fill=False"
+        },
+        "show": {
+            "doc": "\n    Show OLED buffer data\n    - update display\n    ",
+            "param(s)": ""
+        },
+        "text": {
+            "doc": "\n    Create text on OLED\n    :param string: text to draw\n    :param x: 0-127\n    :param y: 0-63\n    ",
+            "param(s)": "string=\"text\" x=0 y=0"
+        }
+    },
+    "oled_ui": {
+        "[1]": {
+            "doc": "invalid syntax (<string>, line 1)",
+            "param(s)": "ine function like: mypage display"
+        },
+        "control": {
+            "doc": "\n    OLED UI control\n    :param cmd str: next, prev, press, on, off\n    :return str: verdict\n    ",
+            "param(s)": "cmd='next'"
+        },
+        "draw": {
+            "doc": "\n    Refresh page on PageUI\n    ",
+            "param(s)": ""
+        },
+        "function_genpage": {
+            "doc": "\n    Coding interface to register custom pages in oled_ui (ui application manager)\n    [1] define function like: def mypage(display):\n    [2] use display.text, display.pixel, etc. display function in mypage\n    [3] oled_ui.function_genpage(mypage)\n    :param func: python function reference with display parameter\n    ",
+            "param(s)": "func"
+        },
+        "genpage": {
+            "doc": "\n    Create intercon pages dynamically :)\n    - based on cmd value.\n    :param cmd: 'host hello' or 'host system clock'\n    :param run: run button event at page init: True/False\n    :return: page creation verdict\n    ",
+            "param(s)": "cmd:str=None run=False"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'control cmd=:options:', 'options': ['prev', 'press', 'next', 'on', 'off']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true",
+        "load": {
+            "doc": "\n    Init PageUI\n    :param pwr_sec: power down oled after given sec -> screensaver\n    :param oled_type: oled type selection: ssd1306 or sh1106\n    :param page: start page index, default: 0\n    :param width: width in pixels\n    :param height: height in pixels\n    :param joystick: init joystick irq pin-s (default: True)\n    ",
+            "param(s)": "pwr_sec=None oled_type='ssd1306' page=0 width=128 height=64 joystick=True"
+        },
+        "msgbox": {
+            "doc": "\n    POP-UP message function\n    :param msg: message string\n    ",
+            "param(s)": "msg='micrOS msg'"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    ",
+            "param(s)": ""
+        }
+    },
+    "oledui": {
+        "add_page": {
+            "doc": "\n    [LM] Create page from load module with callback function\n    :param page_callback: callback func(display, w, h, x, y)\n    ",
+            "param(s)": "page_callback"
+        },
+        "cancel_popup": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "control": {
+            "doc": null,
+            "param(s)": "cmd=\"next\""
+        },
+        "cursor": {
+            "doc": "\n    Virtual cursor\n    :param x: x coordinate\n    :param y: y coordinate\n    ",
+            "param(s)": "x y"
+        },
+        "debug": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "genpage": {
+            "doc": "\n    Create load module execution pages dynamically :)\n    - based on cmd value: load_module function (args)\n    :param cmd: 'load_module function (args)' string\n    :param run: run button event at page init: True/False\n    :return: page creation verdict\n    ",
+            "param(s)": "cmd=None run=False"
+        },
+        "help": {
+            "doc": "\n    New generation of oled_ui\n    - with async frames\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'control cmd=:options:', 'options': ['prev', 'press', 'next', 'on', 'off']}\n\t{'type': 'button', 'lm_call': 'debug state=:options:', 'options': ['True', 'False']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true",
+        "load": {
+            "doc": "\n    Create async oled UI\n    :param width: screen width in pixels\n    :param height: screen height in pixels\n    :param oled_type: sh1106 / ssd1306\n    :param control: trackball / None\n    :param poweroff: power off after given seconds\n    :param haptic: enable (True) / disable (False) haptic feedbacks (vibration)\n    ",
+            "param(s)": "width=128 height=64 oled_type=\"sh1106\" control='trackball' poweroff=None haptic=False"
+        },
+        "popup": {
+            "doc": "\n    POP-UP message function\n    :param msg: message string\n    ",
+            "param(s)": "msg='micrOS msg'"
+        }
+    },
+    "pacman": {
+        "cachedump": {
+            "doc": null,
+            "param(s)": "delete=None"
+        },
+        "cat": {
+            "doc": "\n    Dump any file content\n    ",
+            "param(s)": "path"
+        },
+        "datdump": {
+            "doc": "\n    Generic .dat file dump\n    - logged data from LMs, sensor data, etc...\n    ",
+            "param(s)": ""
+        },
+        "del_duplicates": {
+            "doc": "\n    Load module package manager (Not just load modules)\n    - delete duplicated .mpy and .py resources, keep .mpy resource!\n    ",
+            "param(s)": "migrate=True"
+        },
+        "delmod": {
+            "doc": "\n    Module package manager\n    :param mod:\n        Delete Load Module with full name: module.py or module.mpy\n        OR delete any web resource: *.js, *.css, *.html\n    ",
+            "param(s)": "mod"
+        },
+        "dirtree": {
+            "doc": "Return only directories from a given path.",
+            "param(s)": "path=\"/\" raw=False core=False"
+        },
+        "download": {
+            "doc": "\n    OBSOLETED interface\n    ",
+            "param(s)": "ref=None"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/pacman.png?raw=true",
+        "install": {
+            "doc": "\n    Unified mip-based installer for micrOS.\n    Automatically detects:\n      1. Official MicroPython packages (from https://micropython.org/pi/v2)\n            Example: pacman install \"umqtt.simple\"\n      2. Single-file load modules (LM_/IO_ names or URLs)\n            Example: pacman install \"https://github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy\"\n                     pacman install \"github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy\"\n      3. GitHub packages (folders via tree/blob URLs or github: form)\n            Example: pacman install \"github:peterhinch/micropython-mqtt\"\n                     pacman install \"https://github.com/peterhinch/micropython-mqtt/tree/master\"\n                     pacman install \"https://github.com/peterhinch/micropython-mqtt/blob/master/package.json\"\n                     pacman install \"https://github.com/peterhinch/micropython-mqtt\"\n                     [NOK] pacman install \"https://github.com/basanovase/sim7600/tree/main/sim7600\" -> Package not found: github:basanovase/sim7600/package.json\n      4. Install from local /config/requirements.txt file\n            Example: pacman install \"requirements.txt\"\n    ",
+            "param(s)": "ref=None"
+        },
+        "listmods": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "ls": {
+            "doc": "\n    Linux like ls command - list app resources and app folders\n    :param path: path to list, default: /\n    :param content: content type, default all, f-file, d-dir can be selected\n    :param raw: keep raw output [(is_app, type), ...]\n    :param select: select specific app resource: LM or IO, default: all\n    :param core: include core system files\n    ",
+            "param(s)": "path=\"/\" content='*' raw=False select='*' core=False"
+        },
+        "makedir": {
+            "doc": "\n    Create directory command\n    ",
+            "param(s)": "path"
+        },
+        "micros_checksum": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "moduls": {
+            "doc": "\n    List / unload loaded upython Load Modules\n    :param unload: module name to unload\n    :param unload: None - list active modules\n    :return str: verdict\n    ",
+            "param(s)": "unload=None"
+        },
+        "rm": {
+            "doc": "\n    Linux like rm command - delete app resources and folders\n    :param path: app resource name/path, ex.: LM_robustness.py\n    :param force: bypasses protection check - sudo mode\n    ",
+            "param(s)": "path force=False"
+        },
+        "rmdir": {
+            "doc": "\n    Linux like rmdir command for directory deletion\n    :param path: app resource folder path, ex.: /lib/myapp\n    :param force: bypasses protection check - sudo mode\n    ",
+            "param(s)": "path force=False"
+        },
+        "uninstall": {
+            "doc": "\n    Delete package by name from /lib\n    :param name: None (default) show installed package name\n                 OR package name to delete (str)\n    ",
+            "param(s)": "name=None"
+        }
+    },
+    "presence": {
+        "get_samples": {
+            "doc": "\n    [DEBUG] Return measured data set\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/presence.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize presence module\n    :param threshold: trigger on relative noice change in percent\n    :param timer: off timer in sec\n    :param mic: enable / disable mic sampling (bool)\n    :param enable_notify: enable (True) / disable (False) telegram notifications\n    ",
+            "param(s)": "threshold=Data.TRIG_THRESHOLD timer=Data.TIMER_VALUE mic=Data.MIC_TYPE enable_notify=False"
+        },
+        "motion_trig": {
+            "doc": "\n    Set motion trigger by IRQx - PIR sensor\n    - Reset OFF_EV_TIMER to TIMER_VALUE\n    - Start async mic sample task\n    ",
+            "param(s)": "sample_ms=15 buff_size=10"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: mic, irq1",
+            "param(s)": ""
+        },
+        "subscribe_intercon": {
+            "doc": "\n    Subscribe function for remote function execution\n    - intercon ON/OFF string callbacks\n        ON: host cmd\n        OFF: host cmd\n    ",
+            "param(s)": "on off"
+        }
+    },
+    "qmi8658": {
+        "acceleration": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "gyro": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/qmi8658.png?raw=true",
+        "load": {
+            "doc": "\n    Load the QMI8658 sensor instance.\n    The QMI8658 is a motion sensor that measures acceleration, angular velocity (gyroscope), and temperature\n    ",
+            "param(s)": ""
+        },
+        "measure": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        },
+        "temperature": {
+            "doc": null,
+            "param(s)": ""
+        }
+    },
+    "rencoder": {
+        "color_indicator": {
+            "doc": "Encoder visualization on LED colors (LM_neopixel)",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rencoder.png?raw=true",
+        "load": {
+            "doc": "\n    Create rotary encoder\n    ",
+            "param(s)": "min_val=0 max_val=20"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Load Module built-in help message\n    :return tuple: list of functions implemented by this application (widgets=False)\n    :return tuple: list of widget json for UI generation (widgets=True)\n    \npin map: rot_clk, rot_dt",
+            "param(s)": ""
+        },
+        "read_state": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "reset_state": {
+            "doc": "\n    Reset rotary encoder state to 0\n    ",
+            "param(s)": ""
+        }
+    },
+    "rest": {
+        "aurl": {
+            "doc": "\n    Execute async rest call with given subdomain / url\n    :param subdomain: url parameter,  http(s) full url or gateway subdomain like: /webhooks/template\n    ",
+            "param(s)": "subdomain"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rest.png?raw=true",
+        "load": {
+            "doc": "\n    Set gateway url aka main domain\n    :param gateway_url: base url of gateway, like: http://gateway.local:5005\n    ",
+            "param(s)": "gateway_url=None"
+        },
+        "url": {
+            "doc": "\n    Execute rest call with given subdomain / url\n    :param subdomain: url parameter,  http(s) full url or gateway subdomain like: /webhooks/template\n    ",
+            "param(s)": "subdomain"
+        }
+    },
+    "rgb": {
+        "brightness": {
+            "doc": "\n    Set RGB brightness\n    :param percent: int - brightness percentage: 0-100\n    :param smooth: bool - enable smooth color transition: True(default)/False\n    :param wake: bool - wake up output / if off turn on with new brightness\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "percent=None smooth=True wake=True"
+        },
+        "color": {
+            "doc": "\n    Set RGB values with PWM signal\n    :param r int: red value   0-1000\n    :param g int: green value 0-1000\n    :param b int: blue value  0-1000\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :param force bool: clean fade generators and set color (default: True)\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "r=None g=None b=None smooth=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'color', 'lm_call': 'color r=:range: g=:range: b=:range: smooth=True force=True', 'range': [0, 1000, 10]}\n\t{'type': 'button', 'lm_call': 'toggle state=:options: smooth=True', 'options': ['True', 'False']}\n\t{'type': 'slider', 'lm_call': 'brightness percent=:range: smooth=True wake=True', 'range': [0, 100, 2]}\n\t{'type': 'button', 'lm_call': 'random smooth=True max_val=1000', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true",
+        "load": {
+            "doc": "\n    Initiate RGB module\n    :param red_pin: optional red color pin to overwrite built-in\n    :param green_pin: optional green color pin to overwrite built-in\n    :param blue_pin: optional blue color pin to overwrite built-in\n    :param cache: file state machine cache: True/False (.cache), default=True\n    :return str: Cache state\n    ",
+            "param(s)": "red_pin=None green_pin=None blue_pin=None cache=True"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: redgb, rgreenb, rgbue",
+            "param(s)": ""
+        },
+        "random": {
+            "doc": "\n    Demo function: implements random color change\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :param max_val: set channel maximum generated value: 0-1000\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "smooth=True max_val=1000"
+        },
+        "status": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: R, G, B, S\n    ",
+            "param(s)": "lmf=None"
+        },
+        "subscribe_presence": {
+            "doc": "\n    Initialize LM presence module with ON/OFF callback functions\n    :return: None\n    ",
+            "param(s)": ""
+        },
+        "toggle": {
+            "doc": "\n    Toggle led state based on the stored state\n    :param state bool: True(1)/False(0)/None(default - automatic toggle)\n    :param smooth bool: enable smooth color transition: True(default)/False\n    :return dict: rgb status - states: R, G, B, S\n    ",
+            "param(s)": "state=None smooth=True"
+        },
+        "transition": {
+            "doc": "\n    [TASK] Set transition color change for long dimming periods < 30sec\n    - creates the dimming generators\n    :param r: value 0-1000\n    :param g: value 0-1000\n    :param b: value 0-1000\n    :param sec: transition length in sec\n    :param wake: bool, wake on setup (auto run on periphery)\n    :return: info msg string\n    ",
+            "param(s)": "r=None g=None b=None sec=1.0 wake=False"
+        }
+    },
+    "rgbcct": {
+        "brightness": {
+            "doc": "\n    Unified brightness function for rgb and cct control\n    ",
+            "param(s)": "percent=None smooth=True wake=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'toggle state=:options: smooth=True', 'options': ['True', 'False']}\n\t{'type': 'slider', 'lm_call': 'brightness percent=:range: smooth=True wake=True', 'range': [0, 100, 2]}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rgbcct.png?raw=true",
+        "load": {
+            "doc": "\n    Unified rgb and cct module usage as one module\n    ",
+            "param(s)": "cache=None"
+        },
+        "pinmap": {
+            "doc": "\n    Unified pinmap function for rgb and cct modules\n    \npin map: redgb, rgreenb, rgbue, cwhite, wwhite",
+            "param(s)": ""
+        },
+        "status": {
+            "doc": "\n    Unified status function for rgb and cct modules\n    ",
+            "param(s)": "lmf=None"
+        },
+        "toggle": {
+            "doc": "\n    Unified toggle function for rgb and cct control\n    ",
+            "param(s)": "state=None smooth=True"
+        }
+    },
+    "roboarm": {
+        "boot_move": {
+            "doc": "\n    Full range demo move\n    :param speed_ms: speed - step wait in ms\n    :return: verdict\n    ",
+            "param(s)": "speed_ms=None"
+        },
+        "control": {
+            "doc": "\n    Control robot arm function\n    :param x: new x position (40-115)\n    :param y: new y position (40-115)\n    :param speed_ms: speed - step wait in ms\n    :param smooth: smooth transition, default True\n    :return str: move verdict\n    ",
+            "param(s)": "x y speed_ms=None smooth=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'joystick', 'lm_call': 'control x=:range: y=:range: speed_ms=5 smooth=True', 'range': [40, 115, 2]}\n\t{'type': 'button', 'lm_call': 'boot_move speed_ms=10', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'standby y_pos=45', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'jiggle delta=3', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'play deinit=True', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true",
+        "jiggle": {
+            "doc": "\n    Joggle roboarm in small range\n    :param delta: jiggle delta from current position (full range: 40-115)\n    ",
+            "param(s)": "delta=2"
+        },
+        "load": {
+            "doc": "\n    Initiate roboarm module\n    - move servo motors to middle position\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2, switch_1, switch_2, switch_3, switch_4",
+            "param(s)": ""
+        },
+        "play": {
+            "doc": "\n    [TASK] Runs move instructions from input or RoboArm.MOVE_RECORD\n    :param args: X Y X2 Y2 ...\n    :param s: SPEED_MS (delay)\n    :param delay: delay in ms between steps\n    :param deinit: deinit servo after execution\n    :return: verdict\n    ",
+            "param(s)": "*args s=None delay=None deinit=True"
+        },
+        "random": {
+            "doc": "\n    Move to random position\n    :param x_range: +/- x(35) from center\n    :param y_range: +/- y(35) from center\n    :return str: move verdict\n    ",
+            "param(s)": "x_range=20 y_range=20 speed_ms=5"
+        },
+        "record": {
+            "doc": "\n    Record function for move automation :D\n    - Store actual X, Y\n    :param clean: clean move cache (True), default: False\n    :param rec_limit: record x,y data set limit (default: 10)\n    :return: verdict\n    ",
+            "param(s)": "clean=False rec_limit=8"
+        },
+        "standby": {
+            "doc": "\n    Standby roboarm - OFF laser switch\n    ",
+            "param(s)": "y_pos=45"
+        },
+        "status": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - micrOS client state synchronization\n    :return dict: X, Y\n    ",
+            "param(s)": "lmf=None"
+        }
+    },
+    "robustness": {
+        "create_task": {
+            "doc": "\n    Legacy way of task creation (with exact task tagging)\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/robustness.png?raw=true",
+        "memory_leak": {
+            "doc": null,
+            "param(s)": "cnt=160"
+        },
+        "mytask": {
+            "doc": null,
+            "param(s)": "tag period_ms=30"
+        },
+        "raise_error": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "recursion_limit": {
+            "doc": null,
+            "param(s)": "limit=14"
+        }
+    },
+    "rp2w": {
+        "help": {
+            "doc": "\n    [BETA]\n    \n[i] micrOS Widget Types:",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rp2w.png?raw=true",
+        "temp": {
+            "doc": "\n    Measure CPU temperature - raspberry pi pico w (rp2)\n    ",
+            "param(s)": ""
+        }
+    },
+    "sdcard": {
+        "help": {
+            "doc": "\n    [BETA]\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sdcard.png?raw=true",
+        "list_storage": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "mount_storage": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "read_file": {
+            "doc": null,
+            "param(s)": "name"
+        },
+        "unmount_storage": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "write_file": {
+            "doc": null,
+            "param(s)": "name content"
+        }
+    },
+    "servo": {
+        "deinit": {
+            "doc": "\n    Deinit servo motors\n    - stop pwm channels (sduty/s2duty)\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/servo.png?raw=true",
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: servo_1, servo_2",
+            "param(s)": ""
+        },
+        "s2duty": {
+            "doc": "\n    Set servo (2) position\n    :param duty: servo duty position 40-115, default: 75\n    :return: verdict\n    ",
+            "param(s)": "duty=75"
+        },
+        "sdemo": {
+            "doc": "\n    Demo move function for sduty (1)\n    ",
+            "param(s)": ""
+        },
+        "sduty": {
+            "doc": "\n    Set servo (1) position\n    :param duty: servo duty position 40-115, default: 75\n    :return: verdict\n    ",
+            "param(s)": "duty=75"
+        },
+        "status": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - lmf: sduty, s2duty\n    - micrOS client state synchronization\n    :return dict: S1(X), S2(X)\n    ",
+            "param(s)": "lmf=None"
+        }
+    },
+    "sound_event": {
+        "autolearn": {
+            "doc": "\n    enable/disable automated learning, use it when there are already labeled\n    instances in the dataset\n    :param enabled: bool\n    ",
+            "param(s)": "enabled = True"
+        },
+        "classify_last_event": {
+            "doc": "\n    assign a class to the last recorded event\n    ",
+            "param(s)": ""
+        },
+        "get_classes": {
+            "doc": "\n    get all unique classes (labels) stored in the dataset\n    ",
+            "param(s)": ""
+        },
+        "get_events": {
+            "doc": "\n    return all recorded events\n    ",
+            "param(s)": ""
+        },
+        "get_performance": {
+            "doc": "\n    return the in-sample classification performance\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'classify_last_event ', 'refresh': 10000}\n\t{'type': 'textbox', 'lm_call': 'get_performance ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sound_event.png?raw=true",
+        "load": {
+            "doc": "\n    start micro task for event detection, and mount SD storage if enabled\n    :param capture_duration_ms: int - duration of samples to capture at once\n    :param max_event_duration_ms: int - maximum duration of an event\n    :param frame_size_ms: int - duration of the audio frames used for features\n    :param event_buffer_length: int - number of events to store at once\n    :param sd_storage: bool - use SD card storage for the dataset\n    ",
+            "param(s)": "dataset = 'sound_events.pds'"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2s_sck, i2s_ws, i2s_sd",
+            "param(s)": ""
+        },
+        "read_instances": {
+            "doc": "\n    read stored instances into a dict\n    ",
+            "param(s)": ""
+        },
+        "record_last_event": {
+            "doc": "\n    save the last recorded event in the dataset\n    :param label: str - name of the class\n    ",
+            "param(s)": "label"
+        },
+        "relabel_class": {
+            "doc": "\n    rename class used for labeling instances in the dataset\n    :param class_name: str - name of the class\n    ",
+            "param(s)": "old_label new_label"
+        },
+        "remove_class": {
+            "doc": "\n    remove all instances with the specified label\n    :param class_name: str - name of the class\n    ",
+            "param(s)": "class_name"
+        },
+        "remove_classes": {
+            "doc": "\n    remove all instances from the dataset\n    ",
+            "param(s)": ""
+        },
+        "remove_instance_by_idx": {
+            "doc": "\n    remove an instance with an index from the dataset\n    :param idx: int - index of the instance to be deleted from the dataset\n    ",
+            "param(s)": "idx"
+        },
+        "remove_last_instance": {
+            "doc": "\n    remove the last recorded instance from the dataset\n    ",
+            "param(s)": ""
+        },
+        "subscribe": {
+            "doc": "\n    subscribe to notifications of events\n    :callback: func - callback function\n    :param event: str - event to get notification for (use 'all' to be notified for all events)\n    ",
+            "param(s)": "callback event"
+        }
+    },
+    "stepper": {
+        "angle": {
+            "doc": "\n    Control stepper motor by angle\n    :param dg: +/- 0-360 degree\n    :param speed: wait ms\n    :return: verdict\n    ",
+            "param(s)": "dg speed=None"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/stepper.png?raw=true",
+        "load": {
+            "doc": "\n    Init stepper motor module\n    :param mode: step mode: HALF/FULL\n    ",
+            "param(s)": "mode=\"HALF\""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: stppr_1, stppr_2, stppr_3, stppr_4",
+            "param(s)": ""
+        },
+        "standby": {
+            "doc": "\n    Deinit stepper motor\n    - power down\n    ",
+            "param(s)": ""
+        },
+        "step": {
+            "doc": "\n    Control stepper motor by step\n    :param st: step\n    :param speed: set step speed, wait ms\n    ",
+            "param(s)": "st speed=None"
+        }
+    },
+    "switch": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'toggle ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'toggle2 ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'toggle3 ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'toggle4 ', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true",
+        "load": {
+            "doc": "\n    Initiate switch module (4 switch pack)\n    :param cache bool: file state machine cache: True/False/None(default: automatic True)\n    - Load .cache (state machine cache) for this load module\n    - Apply loaded states to gpio pins (boot function)\n    :return str: Cache state\n    ",
+            "param(s)": "cache=None ch_init=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: switch_1, switch_2, switch_3, switch_4",
+            "param(s)": ""
+        },
+        "set_state": {
+            "doc": "\n    Set switch (1) state\n    :param state bool: True/False/None(default: use cached value)\n    :return: verdict\n    ",
+            "param(s)": "state=None"
+        },
+        "set_state2": {
+            "doc": "\n    Set switch (2) state\n    :param state bool: True/False/None(default: use cached value)\n    :return: verdict\n    ",
+            "param(s)": "state=None"
+        },
+        "set_state3": {
+            "doc": "\n    Set switch (3) state\n    :param state bool: True/False/None(default: use cached value)\n    :return: verdict\n    ",
+            "param(s)": "state=None"
+        },
+        "set_state4": {
+            "doc": "\n    Set switch (4) state\n    :param state bool: True/False/None(default: use cached value)\n    :return: verdict\n    ",
+            "param(s)": "state=None"
+        },
+        "status": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Show Load Module state machine\n    :param lmf str: selected load module function aka (function to show state of): None (show all states)\n    - lmf: set_stateX, toggleX - X: 1,2,3,4\n    - micrOS client state synchronization\n    :return dict: SW1, SW2, SW3, SW4 -> S\n    ",
+            "param(s)": "lmf=None"
+        },
+        "toggle": {
+            "doc": "\n    Toggle switch (1) state based on current state\n    :return: set_state verdict\n    ",
+            "param(s)": ""
+        },
+        "toggle2": {
+            "doc": "\n    Toggle switch (2) state based on current state\n    :return: set_state verdict\n    ",
+            "param(s)": ""
+        },
+        "toggle3": {
+            "doc": "\n    Toggle switch (3) state based on current state\n    :return: set_state verdict\n    ",
+            "param(s)": ""
+        },
+        "toggle4": {
+            "doc": "\n    Toggle switch (4) state based on current state\n    :return: set_state verdict\n    ",
+            "param(s)": ""
+        }
+    },
+    "system": {
+        "alarms": {
+            "doc": null,
+            "param(s)": "clean=False"
+        },
+        "clock": {
+            "doc": "\n    Get formatted localtime value\n    Format:\n        YYYY.MM.DD  hh:mm:ss\n        WD: 0-6 YD: 0-364\n    ",
+            "param(s)": ""
+        },
+        "disk_usage": {
+            "doc": "\n    Calculate used disk space\n    return: memory usage %, disk usage in bytes\n    ",
+            "param(s)": ""
+        },
+        "gclean": {
+            "doc": "\n    Run micropython garbage collection\n    ",
+            "param(s)": ""
+        },
+        "heartbeat": {
+            "doc": "\n    Test function for built-in led blinking and test reply message\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'top ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "hosts": {
+            "doc": "\n    Dump cached hosts\n    - urequests (only memory cache)\n    - intercon connection cache\n    ",
+            "param(s)": ""
+        },
+        "ifconfig": {
+            "doc": "\n    Show network ifconfig\n    ",
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true",
+        "info": {
+            "doc": "\n    Show system info message\n    - cpu clock, ram, free fs, upython, board, mac addr, uptime\n    ",
+            "param(s)": ""
+        },
+        "list_stations": {
+            "doc": "\n    AccessPoint mode \"router\"\n    - list connected devices\n    ",
+            "param(s)": ""
+        },
+        "memory_usage": {
+            "doc": "\n    Calculate used micropython memory (ram)\n    return: memory usage %, memory usage in bytes\n    ",
+            "param(s)": ""
+        },
+        "notifications": {
+            "doc": "\n    Global notifications control for micrOS\n    :param enable: True: Enable notifications / False: Disable notifications\n    return: show state verdict and available notification handlers\n    ",
+            "param(s)": "enable=None"
+        },
+        "notify": {
+            "doc": "\n    Send notification over registered notification handlers\n    :param msg: notification message\n    :param channels (optional): select communication interface(s) by class name\n       e.g. \"Telegram\", \"MQTT\" or an iterable of these.\n       If omitted or empty, sends over all available channels.\n    :param *: optional interface dependent options (topic, chat_id, etc...)\n    Control with:\n        system notifications enable=True\n        system notifications enable=False\n    ",
+            "param(s)": "msg *args **kwargs"
+        },
+        "ntp": {
+            "doc": "\n    Trigger NTP time sync\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    Get Logical pin by key runtime\n    :param keys: logical pin name or names to resolve\n        example: 'builtin irq1 irq2 irq3 irq4'\n    :return dict: key map\n    \npin map: map, booked, custom, known_maps",
+            "param(s)": "keys:str=None"
+        },
+        "rssi": {
+            "doc": "\n    Show Wifi RSSI - wifi strength\n    ",
+            "param(s)": ""
+        },
+        "setclock": {
+            "doc": "\n    Set Localtime + RTC Clock manually\n    :param year\n    :param month\n    :param mday\n    :param hour\n    :param minute\n    :param sec\n    :return: localtime\n    ",
+            "param(s)": "year month mday hour minute sec"
+        },
+        "sun": {
+            "doc": "\n    Get sunset/sunrise time stumps\n    Parameters:\n        (bool) refresh: trigger sync with sun rest-api\n    Return:\n        (dict) sun time\n    ",
+            "param(s)": "refresh=False"
+        },
+        "top": {
+            "doc": "\n    Mini system monitor (top)\n    ",
+            "param(s)": ""
+        }
+    },
+    "task": {
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tasks.png?raw=true",
+        "kill": {
+            "doc": "kill / stop micrOS task",
+            "param(s)": "taskID"
+        },
+        "list": {
+            "doc": "list micrOS tasks by taskID",
+            "param(s)": ""
+        }
+    },
+    "tcs3472": {
+        "help": {
+            "doc": "\n    TCS3472 Color sensor\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure ', 'refresh': 10000}\n\t{'type': 'button', 'lm_call': 'led state=:options:', 'options': ['True', 'False']}\n\t{'type': 'slider', 'lm_call': 'led state=True br=:range:', 'range': [0, 100, 5]}\n\t{'type': 'button', 'lm_call': 'neomatrix_update ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'neomatrix_animation ', 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true",
+        "indicator": {
+            "doc": "\n    Color indicator Neopixel LED update\n    :param br: brightness 0-100\n    ",
+            "param(s)": "br=5"
+        },
+        "led": {
+            "doc": "\n    SENSOR LED toggle\n    :param state: None-automatic, True-ON, False-OFF\n    :param br: brightness 0-100\n    ",
+            "param(s)": "state:bool=None br:int=None"
+        },
+        "load": {
+            "doc": "\n    Load the TCS3472 Color sensor instance.\n    ",
+            "param(s)": "led_pin=20"
+        },
+        "measure": {
+            "doc": "\n    MEASURE sensor\n    ",
+            "param(s)": ""
+        },
+        "neomatrix_animation": {
+            "doc": "\n    DEMO - Set random animation on neomatrix espnow cluster\n    ",
+            "param(s)": ""
+        },
+        "neomatrix_update": {
+            "doc": "\n    DEMO - Send color codes for all neomatrix devices over espnow cluster\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    Show used pin mapping for this module.\n    \npin map: i2c_scl, i2c_sda, led",
+            "param(s)": ""
+        }
+    },
+    "telegram": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/telegram.png?raw=true",
+        "load": {
+            "doc": "\n    Set custom chat commands for Telegram\n    - /ping\n    - /cmd module function (params)\n    :param token: telegram bot token\n    ",
+            "param(s)": "token:str=None"
+        },
+        "receive": {
+            "doc": "\n    Receive Telegram message\n    - if all value None, then no incoming messages\n    One successful msg receive is necessary to get chat_id for msg send as well!\n    ",
+            "param(s)": ""
+        },
+        "receiver_loop": {
+            "doc": "\n    Telegram BOT (repl) - ReadEvalPrintLoop for Load Modules\n    - Only executes module (function) if the module is already loaded\n    :param period: polling period in sec, default: 3\n    ",
+            "param(s)": "period=3"
+        },
+        "send": {
+            "doc": "\n    Send Telegram message - micrOS notification\n    :param text: text to send\n    return verdict\n    ",
+            "param(s)": "text:str"
+        }
+    },
+    "tinyrgb": {
+        "getstate": {
+            "doc": "\n    Get state of TinyPico built-in LED\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tinyrgb.png?raw=true",
+        "setrgb": {
+            "doc": "\n    TinyPico built-in apa102 LED control\n    :param r: red value 0-254\n    :param g: green value 0-254\n    :param b: blue value 0-254\n    :param br: brightness of LED 0-100\n    ",
+            "param(s)": "r=None g=None b=None br=None"
+        },
+        "toggle": {
+            "doc": "\n    Toggle TinyPico built-in LED\n    :param state bool: True/False/None(default: based on current toggle)\n    :return str: verdict\n    ",
+            "param(s)": "state=None"
+        },
+        "wheel": {
+            "doc": "\n    TinyPico ColorWheel generator - step color on LED\n    :param br: brightness 0-100\n    :return str: verdict\n    ",
+            "param(s)": "br=None"
+        }
+    },
+    "trackball": {
+        "get": {
+            "doc": "\n    Get up-to-date (by irq) data\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/trackball.png?raw=true",
+        "load": {
+            "doc": "\n    Load Pimoroni trackball\n    :param width: canvas pixel width\n    :param height: canvas pixel height\n    :param irq_sampling: trackball irq_sampling in ms\n    :param sensitivity: xy window for irq trigger sampling in pixel\n    :param reload: recreate trackball instance\n    ",
+            "param(s)": "width=100 height=100 irq_sampling=50 sensitivity=5 reload=False"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda, trackball_int",
+            "param(s)": ""
+        },
+        "read": {
+            "doc": "\n    Read trackball data over i2c\n    ",
+            "param(s)": ""
+        },
+        "ready_color": {
+            "doc": null,
+            "param(s)": ""
+        },
+        "settings": {
+            "doc": "\n    Get simple trackball settings\n    :param irq_sampling: optional param, change irq_sampling ms\n    ",
+            "param(s)": "irq_sampling=None sensitivity=None"
+        },
+        "subscribe_event": {
+            "doc": "\n    [LM] Add callback function to trackball events\n    ",
+            "param(s)": "func"
+        }
+    },
+    "veml7700": {
+        "help": {
+            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/veml7700.png?raw=true",
+        "load": {
+            "doc": "\n    VEML7700 Digital light intensity sensor\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: i2c_scl, i2c_sda",
+            "param(s)": ""
+        },
+        "read_lux": {
+            "doc": "Read LUX value",
+            "param(s)": ""
+        }
+    }
+}

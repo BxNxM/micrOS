@@ -6,6 +6,10 @@ except Exception as e:
 
 MEM_BASELOAD = None
 
+class MockMemory:
+    USED = 200_000      # 200 kb default memory usage
+    FREE = 1000_000     # 1 Mb default free memory
+
 def _get_memory_usage():
     global  MEM_BASELOAD
     if psutil:
@@ -16,7 +20,7 @@ def _get_memory_usage():
         if MEM_BASELOAD is None:
             MEM_BASELOAD = 0
         return memory_usage_bytes - MEM_BASELOAD
-    return -1000
+    return MockMemory.USED
 
 
 MEM_BASELOAD = _get_memory_usage()      # HACK: GET MEM BASELOAD - CLOSEST TO REALITY - GET REAL MICROS MEM USAGE
@@ -28,7 +32,7 @@ def _get_free_memory():
         # Free memory in bytes
         free_memory_bytes = virtual_memory.available
         return free_memory_bytes
-    return -1000
+    return MockMemory.FREE
 
 
 def mem_free(*args, **kwargs):

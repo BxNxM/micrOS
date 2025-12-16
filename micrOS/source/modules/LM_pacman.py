@@ -1,6 +1,6 @@
 from sys import modules
 from Common import socket_stream
-from Files import is_protected, list_fs, ilist_fs, remove_file, remove_dir, OSPath, path_join
+from Files import list_fs, ilist_fs, remove_file, remove_dir, OSPath, path_join
 
 
 #############################################

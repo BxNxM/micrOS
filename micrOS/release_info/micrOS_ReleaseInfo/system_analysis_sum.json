@@ -113,7 +113,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.66,
+            7.72,
             0
         ],
         "modules/LM_genIO.py": [
@@ -327,7 +327,7 @@
     },
     "summary": {
         "core": [
-            4481,
+            4480,
             25
         ],
         "load": [

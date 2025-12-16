@@ -19,7 +19,7 @@ from json import load as jload
 from mip import install as mipstall
 from uos import rename, mkdir
 from Files import OSPath, path_join, is_file, ilist_fs, is_dir, remove_file, remove_dir
-from Debug import syslog
+from Debug import syslog, console_write
 
 
 # ---------------------------------------------------------------------
@@ -45,7 +45,7 @@ def _normalize_source(ref):
         if ref.startswith("github.com"):
             # Folder (tree) case → github:user/repo/path
             if "/tree/" in ref:
-                print("[mip-normalize] detected GitHub tree folder link")
+                console_write("[mip-normalize] detected GitHub tree folder link")
                 parts = ref.split("/")
                 user, repo = parts[1], parts[2]
                 branch = parts[4]
@@ -55,26 +55,25 @@ def _normalize_source(ref):
 
             # File (blob) case → raw.githubusercontent.com
             if "/blob/" in ref:
-                print("[mip-normalize] detected GitHub blob file link")
+                console_write("[mip-normalize] detected GitHub blob file link")
                 url_base = "https://raw.githubusercontent.com/"
                 ref = ref.replace("github.com/", url_base).replace("/blob", "")
                 return ref, None
 
             # Direct GitHub file (no blob/tree) → github:user/repo/path
             if ref.count("/") >= 2:
-                print("[mip-normalize] direct GitHub path (no blob/tree)")
+                console_write("[mip-normalize] direct GitHub path (no blob/tree)")
                 parts = ref.split("/")
                 user, repo = parts[1], parts[2]
                 path = "/".join(parts[3:])
                 github_ref = f"github:{user}/{repo}/{path}".rstrip("/")
                 return github_ref, None
 
-        print("[mip-normalize] unchanged")
+        console_write("[mip-normalize] unchanged")
         return ref, None
 
     except Exception as e:
         syslog(f"[ERR][pacman] normalize failed: {ref}: {e}")
-        print(f"[normalize][ERROR] {e}")
         return str(ref), None
 
 
@@ -193,7 +192,7 @@ def unpack(ref:str=None):
         packages = tuple(ilist_fs(OSPath.LIB, type_filter='d'))
     else:
         # Handle single explicit ref for unpacking
-        ref_parts = ref.split("/")
+        ref_parts = [p for p in ref.split("/") if p]
         pack_name = ref_parts[-2] if '.' in ref_parts[-1] else ref_parts[-1]
         packages = (pack_name, )
 

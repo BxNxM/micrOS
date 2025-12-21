@@ -436,28 +436,28 @@
     },
     "espnow": {
         "handshake": {
-            "doc": "No module named 'urandom'",
+            "doc": "\n    Handshake with ESPNow Peer\n    :param peer: mac address of espnow device\n    - device name detection\n    - address:name caching\n    ",
             "param(s)": "peer:bytes|str"
         },
         "help": {
-            "doc": "No module named 'urandom'",
+            "doc": "\n    ESPNOW sender/receiver with LM execution\n    \n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/espnow.png?raw=true",
         "members": {
-            "doc": "No module named 'urandom'",
+            "doc": "\n    Get ESPNow devices\n    ",
             "param(s)": ""
         },
         "remove": {
-            "doc": "No module named 'urandom'",
+            "doc": "\n    Remove peer by binary mac address\n    :param peer: binary mac address of espnow device\n    ",
             "param(s)": "peer:bytes"
         },
         "send": {
-            "doc": "No module named 'urandom'",
+            "doc": "\n    Send message to peer (by mac address)\n    :param peer: mac address of espnow device\n    :param cmd: message string/load module call\n    ",
             "param(s)": "peer:bytes|str cmd:str='modules'"
         },
         "stats": {
-            "doc": "No module named 'urandom'",
+            "doc": "\n    Get ESPNOW stats\n    ",
             "param(s)": ""
         }
     },

@@ -14,7 +14,7 @@ Designed for MicroPython environments with async support.
 from binascii import hexlify
 from json import load, dump
 import uasyncio as asyncio
-import urandom
+from urandom import getrandbits
 
 from aioespnow import AIOESPNow
 
@@ -71,7 +71,7 @@ def generate_tid() -> str:
     Generate a secure, random transaction ID (tid).
     Returns an 8-byte hex string.
     """
-    return hexlify(bytes([urandom.getrandbits(8) for _ in range(8)])).decode()
+    return hexlify(bytes([getrandbits(8) for _ in range(8)])).decode()
 
 
 # ----------- ESPNOW SESSION SERVER - LISTENER AND SENDER  --------------

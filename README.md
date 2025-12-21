@@ -511,7 +511,8 @@ Version **3.0.0-0** `micrOS-Autonomous`
 
 		- (6) [DONE] Proper mip installer support (/modules or /lib or /web)
 			- Note: Autonomous package management over wifi (github)
-				- pacman download            [DONE]
+				- pacman install             [DONE]
+				- pacman uninstall           [DONE]
 				- pacman ls                  [DONE]
 				- pacman dirtree             [DONE]
 				- pacman ...
@@ -519,8 +520,20 @@ Version **3.0.0-0** `micrOS-Autonomous`
 		- (7) [DONE] /config/requirements.txt handling (native micropython requirements syntax)
 			-  pacman download "requirements.txt"
 
-		- [TODO] General system review and optimization (with Codex AI)
-			- memory usage and performance 
+		- (8) [DONE] micrOS/packages - submodule to create individual installable applications for micrOS
+
+		- (9) [TODO] micropython uplift to `1.27`
+			- fix micrOS USB update config restore issue 	
+
+		- [DONE] General system review and optimization (with Codex AI)
+			- memory usage and performance
+
+			
+	RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`
+		- Create release notes (legacy: `release_3.0.0-0_note_esp32.md`)
+		- Introduce automatic release metrics generation...
+			- `system_analysis_sum.json` and `devices_system_metrics.json` 
+
 ```
 
 Version **3.1.0-0** `micrOS-Waterbear`

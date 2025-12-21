@@ -901,7 +901,7 @@
             "param(s)": "x y color=None show=True"
         },
         "rainbow": {
-            "doc": null,
+            "doc": "\n    Play rainbow effect\n    ",
             "param(s)": "speed_ms=0"
         },
         "scale": {

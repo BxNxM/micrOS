@@ -2,7 +2,33 @@
 
 > **"The mini yet powerful operating system for DIY projects."**
 
-![telnet](https://img.shields.io/badge/wifi-telnet-blue) ![esp32S2](https://img.shields.io/badge/esp32-S2-olive) ![tinypico](https://img.shields.io/badge/esp32-tinypico-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3-olive) ![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-olive) ![PYQT](https://img.shields.io/badge/esp32-PYQT-olive) ![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical) ![espCAM-esp-s](https://img.shields.io/badge/esp32-CAM_OV2640-olive) ![esp32-c3](https://img.shields.io/badge/esp32-C3_RISCV-olive) ![OTA](https://img.shields.io/badge/ota-update-blue) ![GPIO](https://img.shields.io/badge/gpio-i2c-success) ![clock](https://img.shields.io/badge/rtc-ntp-success) ![async](https://img.shields.io/badge/async-task_manager-success) ![irq](https://img.shields.io/badge/hardware-IRQs-success) ![socket](https://img.shields.io/badge/socket-STA_or_AP-blue) ![cron](https://img.shields.io/badge/scheduling-cron-success) ![stable](https://img.shields.io/badge/stabile-master_HEAD-success) ![stable](https://img.shields.io/badge/micropython-OS-gold)<br/>
+![stable](https://img.shields.io/badge/master-HEAD-success)
+![stable](https://img.shields.io/badge/micropython-OS-gold)
+![async](https://img.shields.io/badge/async-task_manager-olive)
+![config](https://img.shields.io/badge/config-manager-olive)
+![cron](https://img.shields.io/badge/IRQs-Cron-olive)
+![events](https://img.shields.io/badge/IRQs-Events-olive)
+![web](https://img.shields.io/badge/Web-Rest-olive)
+![web](https://img.shields.io/badge/Web-UI-olive)
+![socket](https://img.shields.io/badge/Socket-Shell-olive)
+![GPIO](https://img.shields.io/badge/GPIO-I2C-olive)
+![clock](https://img.shields.io/badge/RTC-NTP-olive)
+![wifi](https://img.shields.io/badge/Wifi-STA_or_AP-blue)
+![OTA](https://img.shields.io/badge/OTA-Update-blue)
+![ic1](https://img.shields.io/badge/InterCon-socket-blue)
+![ic2](https://img.shields.io/badge/InterCon-espnow-blue)
+<br/>
+![tinypico](https://img.shields.io/badge/esp32-tinypico-purple)
+![esp32S3](https://img.shields.io/badge/esp32-S3-purple)
+![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-purple)
+![espCAM-esp-s](https://img.shields.io/badge/esp32-CAM_OV2640-purple)
+![esp32-c6](https://img.shields.io/badge/esp32-C6_RISCV-purple)
+![esp32-c3](https://img.shields.io/badge/esp32-C3_RISCV-purple)
+![esp32S2](https://img.shields.io/badge/esp32-S2-purple)
+![PYQT](https://img.shields.io/badge/esp32-PYQT-purple)
+![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical)
+![esp32-etc](https://img.shields.io/badge/esp32-etc.-purple)
+<br/>
 
 
 Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), follow us on:
@@ -29,8 +55,8 @@ Access rest api over browser: `http://<nodename>.local`
 ----------------------------------------
 ----------------------------------------
 
-📲 💻 ShellCli: Generic session-based communication API <br/>
-📲 WebCli: Apple shortcuts compatible **REST API** and **http homepage** <br/>
+📲 💻 ShellCli: Generic session-based communication API (OAM Interface) <br/>
+📲 WebCli: Apple shortcuts compatible **REST API** and **HTTP Homepage** <br/>
 &nbsp;&nbsp; ✉️ Expose upython module functions - telnet **TCP/IP** and **REST API** <br/>
 ⚙️ 📝 Device initialization from user config <br/>
 🧩  Codeless end user experience via phone client <br/>
@@ -209,26 +235,31 @@ It will install your board via USB with default settings. **Continue with micrOS
 ![MICROSARCHITECTURE](./media/micrOSArchitecture.png?raw=true)
 
 - 🕯**micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
-	- **OTA update** - push update over wifi (webrepl automation) / monitor update and auto restart node
+	- **OTA update** - push update over wifi (webrepl automation: monitor update and auto restart node)
 - 📄**Config handling** - user config - **node_config.json**
-    - ⏳**Boot phase** - preload Load Module(s)
-        - For pinout and last state initialization - based on node_config `boothook`
+    - ⏳**Boot phase** - preload Load Module(s) - based on node_config
+        - Parameter: `boothook` Device initialization (optional), load applications (pinout and last state initialization)
+        	- It runs **as soon as possible** in the boot sequence (before network setup) 
         - Example values: `rgb load; neopixel load`
         - Comments `#` can be used: `#rgb load; neopixel load`, excellect for experimentation.
     - 📡**Network handling** - based on node_config 
-        - STA / AP network modes, `nwmd`
-        - NTP + UTC aka clock setup
+        - Parameter: `nwmd` network modes: `STA` Station OR `AP` AccessPoint
+        - In STA mode: NTP + UTC aka clock setup
           - API: [ip-api.com](http://ip-api.com/json/?fields=lat,lon,timezone,offset)
         - Static IP configuration, `devip`
         - dhcp hostname setup, `devfid`.local
         - system `uptime` measurement
     - ⚙️**Scheduling / External events** - Interrupt callback - based on node_config 
         - Time based
-            - ⌛️simple LM task pool execution `timirq` & `timirqcbf`
-                - `Timer(0)`
+            - ⌛️simple LM task pool execution on `Timer(0)`
+                - To enable the feature set `timirq` to `True`
+                - Set period in milliseconds with `timirqseq` like: `5000`
+                - Configure callbalcks with `timirqcbf`
+                		- Example: `bme280 measure`, so this will measure with the sensor every 5 seconds.
                 - Comments `#` can be used in `timirqcbf`
-            - 🗓cron [time stump!LM task] pool execution `cron` & `crontasks`
-                - `Timer(1)` 
+            - 🗓cron [time stump!LM task] pool execution `Timer(1)`
+                - To enable this feature set `cron` to `True`
+                - Configure callbalcks with `crontasks `
                 - timestamp: `WD:H:M:S!LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
                     - example: `*:8:0:0!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at 8am every day.
                     - `WD: 0...6` 0=Monday, 6=Sunday
@@ -264,11 +295,13 @@ It will install your board via USB with default settings. **Continue with micrOS
 		- exit configuration mode:`noconf`
 	- **LM** - Load Module function execution (application modules)
 		- Example: `system info`
+		- That points to `/modules/LM_system.py` file `info()` function and calls it.
 - 🖇**microIO** pinout handling - lookuptables for each board
-	- Predefined pinout modules for esp32, tinyPico
+	- Predefined pinout modules for esp32, tinyPico, etc. (files under: `modules/IO_*.py`)
 	- Create your pinout based on `IO_esp32.py`, naming convencion: `IO_<name>.py`
 	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
 	- HINT: to get pin number you can get it by pin label, like: `system pinamp`
+	- HINT: with `cstmpmap` you can overwrite pin mapping as well, like: `neop:25` set neop virtual pin to pin 25 real pinout. 
 
 - 🔄 **Task manager** aka **Async LM jobs**
 	- Capable of execute [L]oad [M]odules in the background 
@@ -280,11 +313,29 @@ It will install your board via USB with default settings. **Continue with micrOS
 			- Delayed execution (ms): `system heartbeat &1000`, waits 1 sec before execution.
 	- Stop task: `task kill system.heartbeat`
 	- Show task live ouput: `task show system.heartbeat`
+	- List tasks with `task list`:
+	
+```
+TinyDevBoard $ task list
+---- micrOS  top ----
+#queue: 18 #load: 3%
+
+#Active   #taskID
+Yes       server
+Yes       idle
+Yes       telegram.server_bot
+Yes       espnow.server
+```
 
 
 ⌘ DevToolKit CLI feature:
 
 - Socket client python plugin - interactive - non interactive mode
+
+```bash
+./devToolKit.py --search --connect
+```
+
 
 ----------------------
 

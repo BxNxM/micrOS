@@ -529,7 +529,7 @@ def disk_usage():
     # {"percent": 15.4, "fs_used": 323_584}
     _add_metrics('fs_percent', json_out.get('percent'))
     _add_metrics('fs_used_byte', json_out.get('fs_used'))
-    if json_out.get('fs_used') > 700_000:        # MEM USAGE WARNING INDICATOR: 700_000 bytes (700kb)
+    if json_out.get('fs_used') > 800_000:        # MEM USAGE WARNING INDICATOR: (800kb)
         return state, '[ST] {}WARNING{}: disk usage {}% ({} bytes)'.format(Colors.WARN, Colors.NC,
                                                                              json_out.get('percent'),
                                                                              json_out.get('fs_used'))

@@ -71,8 +71,9 @@ def enableInterrupt():
 
 def enableCron():
     """
-    Set time stump based scheduler aka cron in timer1
+    Set time stump based scheduler aka cron on Timer1
     Input: cron(bool), crontasks(str)
+    This is for low frequency sampling, like 12 or 6 / minute (due to low power mode compatibility)
     """
     timer_period = 5000         # Timer period ms: 12 check/min
     console_write(f"[IRQ] CRON IRQ SETUP: {cfgget('cron')} SEQ: {timer_period}")
@@ -80,11 +81,10 @@ def enableCron():
     if cfgget("cron") and cfgget('crontasks').lower() != 'n/a':
         from machine import Timer
         # INIT TIMER 1 IRQ with callback function wrapper
-        lm_byte = bytearray(cfgget('crontasks'), 'utf-8')           # store as bytearray (cache optimization)
-        sample = int(timer_period/1000)
+        sampling = int(timer_period/1000)
         timer = Timer(1)
         timer.init(period=timer_period, mode=Timer.PERIODIC,
-                   callback=lambda timer: scheduler(lm_byte, sample))
+                   callback=lambda timer: scheduler(sampling))
 
 
 #################################################################

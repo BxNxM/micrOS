@@ -3,6 +3,7 @@ from re import compile
 from Tasks import exec_lm_pipe_schedule
 from Debug import console_write, syslog
 from Time import Sun, suntime, ntp_time
+from Config import cfgget
 
 """
 # SYSTEM TIME FORMAT:    Y, M, D, H, M, S, WD, YD
@@ -202,10 +203,10 @@ def __scheduler_trigger(cron_time_now, crontask, deltasec=2):
     return False
 
 
-def deserialize_raw_input(cron_data):
+def deserialize_raw_tasks():
     """
     Scheduler/Cron input string format
-    :param cron_data: raw cron tasks, time based task execution input (bytearray)
+    cron_data: raw cron tasks, time based task execution input (str)
         example: WD:H:M:S!LM func;WD:H:M:S!LM func; ...
         multi command example: WD:H:M:S!LM func;LM func2;; WD:H:M:S!LM func;; ...
 
@@ -218,26 +219,19 @@ def deserialize_raw_input(cron_data):
         task: LoadModule function args
     Returns tuple: (("WD:H:M:S", 'LM FUNC'), ("WD:H:M:S", 'LM FUNC'), ...)
     """
+    cron_data:str = cfgget('crontasks')
     try:
         # Parse and create return
-        cd = str(cron_data, 'utf-8')            # convert cron_data (bytearray) to string
-        sep = ';;' if ';;' in cd else ';'       # support multi command with ;;
-        return (tuple(cron.split('!')) for cron in cd.split(sep))
+        sep = ';;' if ';;' in cron_data else ';'       # support multi command with ;;
+        return (tuple(cron.split('!')) for cron in cron_data.split(sep))
     except Exception as e:
         syslog(f"[ERR] cron deserialize - syntax error: {e}")
     return ()
 
 
-def scheduler(cron_data, irqperiod):
+def scheduler(irqperiod:int):
     """
-    :param cron_data: bytearray data (check syntax down below)
-    :param irqperiod: - in sec
-    RAW INPUT SYNTAX:
-        'WD:H:M:S!CMD;WD:H:M:S!CMD2;...'
-    RAW INPUT SYNTAX TAG SUPPORT:
-        'sunrise!CMD;sunset!CMD'
-    ! - execute
-    ; - cron task separator
+    :param irqperiod: sampling period in seconds
     """
     builtin_tasks = (("*:3:0:0", suntime), ("*:3:5:0", ntp_time))
     state = False
@@ -252,7 +246,7 @@ def scheduler(cron_data, irqperiod):
         for cron in builtin_tasks:
             state |= __scheduler_trigger(cron_time_now, cron, deltasec=irqperiod)
         # Check user tasks (str)
-        for cron in deserialize_raw_input(cron_data):
+        for cron in deserialize_raw_tasks():
             state |= __scheduler_trigger(cron_time_now, cron, deltasec=irqperiod)
         return state
     except Exception as e:

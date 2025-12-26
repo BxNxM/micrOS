@@ -77,6 +77,8 @@ def arg_parse():
     dev_group.add_argument("-lint", "--linter", action="store_true", help="Run micrOS system linter (pylint+)")
     dev_group.add_argument("-webrepl", "--open_webrepl", action="store_true", help="(beta) Open webrepl in default browser, micropython repl + file transfers (built-in)")
     dev_group.add_argument("--light", action="store_true", help="Skip optional dependency deployments (low level param: add this as first argument always)")
+    dev_group.add_argument("-ut", "--unittest", action="store_true", help="Run micrOS unit tests - for development")
+
 
     toolkit_group = parser.add_argument_group("Toolkit development")
     toolkit_group.add_argument("--dummy", action="store_true", help="Skip subshell executions - for API logic test.")
@@ -216,6 +218,13 @@ def update_pip_package():
     return True if out == 0 else False
 
 
+def run_unit_tests():
+    """Run micrOS Unit tests under micrOS/utests/*"""
+    import unittest
+    suite = unittest.defaultTestLoader.discover("micrOS/utests")
+    unittest.TextTestRunner(verbosity=2).run(suite)
+
+
 if __name__ == "__main__":
     # Arg parse
     cmd_args = arg_parse()
@@ -309,5 +318,8 @@ if __name__ == "__main__":
         else:
             executor = macroScript.Executor()
             executor.run_micro_script(cmd_args.macro)
+
+    if cmd_args.unittest:
+        run_unit_tests()
 
     sys.exit(0)

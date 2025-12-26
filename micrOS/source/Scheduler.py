@@ -17,39 +17,6 @@ S:  0-59
 
 LAST_CRON_TASKS = []
 
-'''
-#############################
-#     SYSTEM TEST MODULES   #
-#############################
-
-def system_time_generator(max=100000000):
-
-    def systime(sec):
-        h = int(sec / 60 / 60) % 24
-        m = int(sec / 60 % 60)
-        s = sec % 60
-        wd = int(sec / 60 / 60 / 24) % 7
-        day = int(sec / 60 / 60 / 24) % 30
-        return 2020, 9, day, h, m, s, wd, 0
-    
-    generator = (systime(sec) for sec in range(0, max, 3))
-    return generator
-
-def dummy_irq(cron_data, irqperiod):
-    from time import sleep
-    while True:
-        scheduler(cron_data, irqperiod)
-        sleep(0.00001)
-
-##### TEST CODE INIT #####
-# Create time gen (use instead localtime)
-GEN = system_time_generator()
-from ConfigHandler import cfgget
-# Emulate scheduler execution ... LOOP
-dummy_irq(cfgget('crontasks'), int(cfgget('timirqseq')/1000))
-'''
-
-
 #############################
 #    SCHEDULER FUNCTIONS    #
 #############################
@@ -236,7 +203,6 @@ def scheduler(irqperiod:int):
     builtin_tasks = (("*:3:0:0", suntime), ("*:3:5:0", ntp_time))
     state = False
     time_now = localtime()[3:7]
-    # time_now = next(GEN)         # USE FOR TESTING (time machine)
 
     # Actual time - WD, H, M, S
     cron_time_now = (time_now[3], time_now[0], time_now[1], time_now[2])

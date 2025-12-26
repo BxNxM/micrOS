@@ -366,7 +366,7 @@ def pinmap_search(keys):
 ██ ██   ████    ██    ███████ ██   ██ ██      ██ ███████ ██████  ██ ██   ██    ██    ███████
 ```
 
-# Inermediate level
+# Intermediate level
 
 ## ![dashboard](./media/web_dashboard.png?raw=true) micrOS Types.py module
 

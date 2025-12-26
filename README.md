@@ -462,7 +462,7 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 | **`nwmd`**          |     `n/a`  `<str>`          |      Yes        | Prefered network mode - `AP` or `STA`, default is `STA`.
 | **`soctout`**       |   `30`      `<int>`         |      Yes        | Socket server connection timeout. If user is passive for `soctout` sec, and new connection incoming, then close passive connection. So it is time limit per connection in the `aioqueue`.
 | **`socport`**       |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility).
-| **`auth`**          |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. **WARNING** OTA upade not supported in this mode (yet).
+| **`auth`**          |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. Plus access for loaded modules. Auth protects the configuration and new module loads.
 | | |
 | **`dbg`**	         |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc. + progress LED.
 | **`hwuid`**         |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
@@ -572,6 +572,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 			-  pacman download "requirements.txt"
 
 		- (8) [DONE] micrOS/packages - submodule to create individual installable applications for micrOS
+			- Application registry (package.json and pacman.json): https://github.com/BxNxM/micrOSPackages 
 
 		- (9) [TODO] micropython uplift to `1.27`
 			- fix micrOS USB update config restore issue 	
@@ -608,27 +609,10 @@ Version **3.X.0-0** `micrOS-SecurePower`
     	- Possible HW protocols: i2c / onewire / uart BUT it should support bidirectional message transfers
     	- Goal: CoProcessor easy integration feature - Arduino env support
     - Application deployment automation: /config/compose.json
-    	- enables application deployment: configuration (node_config.json), requirements handling
+    	- enables application deployment:
+    		- configuration (node_config.json) handling - safe parameter injection (boothook and irqs)
+    		- [done] requirements.txt handling
     	- Automatic behaviour in core system if file exists in STA mode
-
-    Application registry???
-    	- Applications repository as module registry, structure:
-    		- micrOSApps repository:
-    			- engineer:
-    				- apps.txt (name and short description pairs)
-    				- app1
-    					- descriptor.json (targets: /modules, /lib, /web)
-    					- app.py
-    					- foo.py
-    					- bar.html
-    				- app2
-    					- descriptor.json
-    					- app.py
-    		    - engineer2:
-    		    	- apps.txt (name and short description pairs) 
-    		    	- app1
-    		    		- descriptor.json (targets: /modules, /lib, /web)
-    					- app.py
 ```
 
 <a id="release-note"></a>

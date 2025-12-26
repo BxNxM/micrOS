@@ -143,7 +143,7 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
     [LM] micrOS Common Data logger solution
     - if data None => read mode
     - if data value => write mode
-    :param f_name: log name (without extension, automatic: .dat)
+    :param f_name: log name (without extension, automatic: .dat, default folder: /data)
     :param data: data to append
     :param limit: line limit (max.: 12 with short lines: limited disk speed!)
     :param msgobj: socket stream object (set automatically!)
@@ -167,6 +167,9 @@ def console(msg):
     """ Wrapper of console_write """
     return console_write(msg)
 
+#####################################################################################
+#                              SYSTEM DIRECTORY ACCESS                              #
+#####################################################################################
 
 def data_dir(f_name=None):
     """
@@ -186,6 +189,17 @@ def web_dir(f_name=None):
     root_path = OSPath.WEB
     if f_name is None:
         return root_path
+    return path_join(root_path, f_name)
+
+def conf_dir(f_name=None):
+    """
+    Create application configs under config directory
+    - node_config.json and config dir read restriction/protection (basic)
+    :param f_name: creates custom config path with f_name
+    """
+    root_path = OSPath.CONFIG
+    if f_name is None or f_name.strip().lstrip("/") == "node_config.json":
+        raise Exception("Protected resource: config!")
     return path_join(root_path, f_name)
 
 #####################################################################################

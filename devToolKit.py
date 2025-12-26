@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import re
 
 
 if len(sys.argv) > 1 and sys.argv[1] in ['light', '--light']:
@@ -115,7 +116,13 @@ def install(api_obj):
 
 def connect(args=None):
     if args is not None and len(args) != 0:
-        arg_list = args.split()
+        # REPARSE IINPUT DUE TO EMBEDDED INPUT PARSER... HACK
+        # extract quoted content (without quotes)
+        extracted = re.findall(r'(["\'])(.*?)\1', args)
+        extracted = [text for _, text in extracted]
+        # remove quoted parts from original string
+        cleaned = re.sub(r'(["\']).*?\1', '', args)
+        arg_list = cleaned.split() + extracted
         socketClient.run(arg_list=arg_list)
     else:
         socketClient.run(arg_list=[])

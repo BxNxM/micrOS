@@ -406,7 +406,6 @@ def socket_commandline_args(arg_list):
             arg = 'status'
         keywords = list(return_action_dict.keys())
         if arg in keywords:
-            print(arg)
             if return_action_dict[arg] is None:
                 return_action_dict[arg] = arg_list[i+1]
                 _skip = True
@@ -436,18 +435,20 @@ def socket_commandline_args(arg_list):
         print("--list / list\t\t- list mocrOS devices")
         print("HINT:\t\t\t- In non interactive mode just list command(s) as last parameters.\n\t\t\t"
               "Also you can pipe commands with <a> separator.")
-        print("HINT:\t\t\t\t- Example: --dev node01 system clock")
-        print("HINT:\t\t\t\t- Example: --dev node01 --pwd ADmin123 system clock")
+        print("HINT:\t\t\t\t- Example: --dev node01 'system clock'")
+        print("HINT:\t\t\t\t- Example: --dev node01 --pwd ADmin123 'system clock'")
         sys.exit(0)
-    if '<a>' in command_buffer:
-        return ' '.join(command_buffer), return_action_dict
-    return ' <a> '.join(command_buffer), return_action_dict
+    result =  command_buffer, return_action_dict
+    print(f"SocketClient: {result}")
+    return result
 
 
-def run(arg_list=[], timeout=10, verbose=False):
+def run(arg_list=None, timeout=10, verbose=False):
     """ Run from code
         - Handles extra command line arguments
     """
+    if arg_list is None:
+        arg_list = []
     #print("Socket run (raw): {}".format(arg_list))
     args, action = socket_commandline_args(arg_list)
     host, port, fid, uid = ConnectionData.auto_execute(search=action['search'], status=action['status'], dev=action['device_tag'])
@@ -470,5 +471,5 @@ def connection_metrics(host):
 
 if __name__ == "__main__":
     """Runs in individual - direct execution mode"""
-    arg_list = sys.argv[1:]
-    run(arg_list=arg_list)
+    arglist = sys.argv[1:]
+    run(arg_list=arglist)

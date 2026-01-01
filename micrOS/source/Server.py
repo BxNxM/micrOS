@@ -63,19 +63,25 @@ class Client:
         console_write("|" + "-" * Client.INDENT + msg)
         Client.INDENT += 1 if Client.INDENT < 50 else 0       # Auto indent
 
-    async def read(self):
+    async def read(self, decoding='utf8', timeout_seconds=0):
         """
         [Base] Implements client read function, reader size: 2048
-        - set timeout counter
-        - read input from client (run: return False)
-        - connection error handling (stop: return True)
-        - exit command handling (stop: return True)
+        :return tuple: read_error, data
+        - read_error is set to true upon timeout or other exception
+        - data holds bytes or decoded string read from the socket
         """
         Client.console(f"[Client] read {self.client_id}")
         self.last_msg_t = ticks_ms()
         try:
-            request = await self.reader.read(self.read_bytes)
-            request = request.decode('utf8').strip()
+            if timeout_seconds:
+                request = await asyncio.wait_for(self.reader.read(self.read_bytes), timeout_seconds)
+            else:
+                request = await self.reader.read(self.read_bytes)
+            if decoding:
+                request = request.decode(decoding)
+        except asyncio.TimeoutError as e:
+            Client.console(f"[Client] Stream read timeout ({self.client_id}), timeout={timeout_seconds}s")
+            return True, ''
         except Exception as e:
             Client.console(f"[Client] Stream read error ({self.client_id}): {e}")
             collect()           # gc collection: "fix" for memory allocation failed, allocating 2049 bytes
@@ -83,8 +89,6 @@ class Client:
 
         # Input handling
         Client.console(f"[Client] raw request ({self.client_id}): |{request}|")
-        if request in ('exit', ''):
-            return True, request
         return False, request
 
     async def a_send(self, response, encode='utf8'):
@@ -164,8 +168,8 @@ class WebCli(Client, WebEngine):
         while self.connected:
             try:
                 # Read request msg from client
-                state, request = await self.read()
-                if state:
+                state, request = await self.read(decoding=None)
+                if state or not request:
                     break
                 if not await self.response(request):
                     break
@@ -267,7 +271,7 @@ class ShellCli(Client, Shell):
             try:
                 # Read request msg from client
                 state, request = await self.read()
-                if state:
+                if state or request in ('exit', ''):
                     break
                 # Run micrOS shell with request string
                 Client.console("[ShellCli] --- #Run shell")

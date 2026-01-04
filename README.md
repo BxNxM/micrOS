@@ -418,7 +418,7 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 
 |      Config keys    |   Default value and type    | Reboot required |              Description                     |
 | :-----------------: | :-------------------------: | :-------------: | ----------------------------------------- |
-|   **`devfid`**      |    `node01`  `<str>`        |       Yes       | Device friendly "unique" ID - (1) defines AccessPoint (AP) network name and (2) in Station (STA) network mode the DHCP device name for IP address resolve also (3) this is the ShellCli prompt.
+|   **`devfid`**      |    `node01`  `<str>`        |       No       | Device friendly "unique" ID - (1) defines AccessPoint (AP) network name and (2) in Station (STA) network mode the DHCP device name for IP address resolve also (3) this is the ShellCli prompt.
 |   **`staessid`**    |   `your_wifi_name` `<str>`  |       Yes       | Wifi router name to connect (for STA default connection mode). You can list multiple wifi names separated with `;`
 |   **`stapwd`**      | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for STA default connection mode). You can list multiple wifi passwords separated with `;` connected in order to `staessid` wifi names.
 |   **`appwd`**       |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password + micrOS auth
@@ -446,8 +446,6 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 | **`timirq`**        |     `False`  `<bool>`       |       Yes       | Timer(0) interrupt enabler - background "subprocess" like execution, timer based infinite loop for the LoadModule execution.
 | **`timirqcbf`**     |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
 | **`timirqseq`**     |    `1000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
-| | |
-| **`telegram`**      |      `n/a`  `str`           |      No          | `TELEGRAM_BOT_TOKEN` to enable micrOS Notifications. **Hint**, to create bot with botfather: [click](https://blog.devgenius.io/how-to-set-up-your-telegram-bot-using-botfather-fd1896d68c02). After enabling this, send `/ping` to telegram chat for chat ID sync.
 
 ### Advanced parameter options:
 

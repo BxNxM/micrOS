@@ -949,7 +949,7 @@ class micrOSGUI(QWidget):
         self.devenv_usb_deployment_is_active = True
         # Create a Thread with a function without any arguments
         self.console.append_output('[usb_deploy] |- start usb_deploy job')
-        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore': False, 'purge_conf': True},
+        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore_config': False, "cleanup_workdir": True},
                               daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['usb_deploy'] = th

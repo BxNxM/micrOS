@@ -191,14 +191,14 @@ def web_dir(f_name=None):
         return root_path
     return path_join(root_path, f_name)
 
-def conf_dir(f_name=None):
+def conf_dir(f_name):
     """
     Create application configs under config directory
     - node_config.json and config dir read restriction/protection (basic)
     :param f_name: creates custom config path with f_name
     """
     root_path = OSPath.CONFIG
-    if f_name is None or f_name.strip().lstrip("/") == "node_config.json":
+    if f_name.strip().lstrip("/") == "node_config.json":
         raise Exception("Protected resource: config!")
     return path_join(root_path, f_name)
 

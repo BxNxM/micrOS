@@ -35,13 +35,13 @@ class MicrOSDevTool(OTA, USB):
     #####################################################
     #                    DevEnv METHODS                 #
     #####################################################
-    def precompile_micros(self):
-        micros_dev_env = Compile.is_mpycross_available()
+    def precompile_micros(self, cleanup=True):
+        micros_dev_env = Compile().is_mpycross_available()
         if not micros_dev_env:
             self.console("SKIP PRECOMPILE - DEV ENV INACTIVE\n\t-> mpy-cross not available", state='warn')
             return True
         self.console("PRECOMPILE - DEV ENV ACTIVE: mpy-cross available", state='ok')
-        state = super(MicrOSDevTool, self).precompile_micros()
+        state = super(MicrOSDevTool, self).precompile_micros(cleanup)
         # Drops Segmentation fault: 11 error: simulator doc gen... TODO
         self.LM_functions_static_dump_gen()
         return state

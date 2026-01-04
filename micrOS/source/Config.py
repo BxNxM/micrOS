@@ -71,7 +71,6 @@ class Data:
                     "boostmd": True,
                     "guimeta": "...",       # special "offloaded" key indicator
                     "cstmpmap": "n/a",
-                    "telegram": "n/a",      # telegram bot token
                     "espnow": False}
 
     @staticmethod

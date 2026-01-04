@@ -62,10 +62,14 @@ class Compile:
                 # Store mpy_cross executable path
                 self.mpy_cross_compiler_path = mpy_cross.mpy_cross
 
-
-    @staticmethod
-    def is_mpycross_available():
-        return False if mpy_cross is None else True
+    def is_mpycross_available(self):
+        if mpy_cross is None:
+            return False
+        if self.mpy_cross_compiler_path is None or not os.path.exists(self.mpy_cross_compiler_path):
+            self.console("PRECOMPILE MICROS - FUNCTION NOT AVAILABLE - MPY-CROSS MISSING!", state='err')
+            self.console("Use stored precompiled resources", state='ok')
+            return False
+        return True
 
     @property
     def precompiled_mpy_cross_version(self):
@@ -131,14 +135,26 @@ class Compile:
         elif state.upper() == 'IMP':
             print(prompt.format(COL=Colors.BOLD, msg=msg, END=Colors.NC))
 
-    def __cleanup_precompiled_dir(self):
-        self.console("Delete precompiled components: {}".format(self.precompiled_micrOS_dir_path))
-        for source in LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path):
-            to_remove_path = os.path.join(self.precompiled_micrOS_dir_path, source)
-            self.console("\t|-remove: {}".format(to_remove_path), state='imp')
-            if not self.dry_run:
-                if not LocalMachine.FileHandler.remove(to_remove_path):
-                    self.console(f"\t\t|-ERROR: Failed to remove {to_remove_path}", state="err")
+    def _cleanup_precompiled_dir(self):
+        if self.is_mpycross_available():
+            # DELETE ENTIRE PRECOMPILED DIR
+            self.console("Delete precompiled components: {}".format(self.precompiled_micrOS_dir_path))
+            for source in LocalMachine.FileHandler.list_dir(self.precompiled_micrOS_dir_path):
+                to_remove_path = os.path.join(self.precompiled_micrOS_dir_path, source)
+                self.console("\t|-remove: {}".format(to_remove_path), state='imp')
+                if not self.dry_run:
+                    if not LocalMachine.FileHandler.remove(to_remove_path):
+                        self.console(f"\t\t|-ERROR: Failed to remove {to_remove_path}", state="err")
+        else:
+            # DELETE ONLY CONFIG FOLDER CONTENT
+            conf_path = os.path.join(self.precompiled_micrOS_dir_path, "config")
+            self.console("Delete (precompiled) config: {}".format(conf_path))
+            for source in LocalMachine.FileHandler.list_dir(conf_path):
+                to_remove_path = os.path.join(self.precompiled_micrOS_dir_path, source)
+                self.console("\t|-remove: {}".format(to_remove_path), state='imp')
+                if not self.dry_run:
+                    if not LocalMachine.FileHandler.remove(to_remove_path):
+                        self.console(f"\t\t|-ERROR: Failed to remove {to_remove_path}", state="err")
 
     def get_micros_version_from_repo(self):
         # Get repo version
@@ -148,23 +164,23 @@ class Compile:
         repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
         return repo_version
 
-    def precompile_micros(self):
-        def ensure_target_dir():
-            modules_dir = os.path.join(self.precompiled_micrOS_dir_path, "modules")
-            if not LocalMachine.FileHandler.path_is_exists(modules_dir)[0]:
-                LocalMachine.FileHandler.create_dir(modules_dir)
+    def ensure_precompiled_target_dir(self, dir_name):
+        _dir = os.path.join(self.precompiled_micrOS_dir_path, dir_name)
+        if not LocalMachine.FileHandler.path_is_exists(_dir)[0]:
+            LocalMachine.FileHandler.create_dir(_dir)
+
+    def precompile_micros(self, cleanup=True):
         self.console("------------------------------------------")
         self.console("-             PRECOMPILE MICROS          -", state='imp')
         self.console("------------------------------------------")
 
         # Skip precompile if mpy-cross not available
-        if self.mpy_cross_compiler_path is None or not os.path.exists(self.mpy_cross_compiler_path):
-            self.console("PRECOMPILE MICROS - FUNCTION NOT AVAILABLE - MPY-CROSS MISSING!", state='err')
-            self.console("Use stored precompiled resources", state='ok')
+        if not self.is_mpycross_available():
             return False
 
-        self.__cleanup_precompiled_dir()
-        ensure_target_dir()
+        if cleanup:
+            self._cleanup_precompiled_dir()
+        self.ensure_precompiled_target_dir("modules")
 
         file_prefix_blacklist = ['modules/LM_', 'main.py', 'boot.py']
         tmp_precompile_set = set()

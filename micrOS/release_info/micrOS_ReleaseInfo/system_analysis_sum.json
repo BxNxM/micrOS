@@ -34,7 +34,7 @@
         ],
         "Config.py": [
             9.44,
-            20
+            19
         ],
         "Shell.py": [
             9.37,
@@ -257,7 +257,7 @@
             0
         ],
         "modules/LM_telegram.py": [
-            9.67,
+            9.55,
             0
         ],
         "modules/LM_OV2640.py": [
@@ -327,11 +327,11 @@
     },
     "summary": {
         "core": [
-            4464,
+            4463,
             25
         ],
         "load": [
-            10096,
+            10106,
             56
         ],
         "core_dep": [
@@ -344,6 +344,6 @@
         ],
         "core_score": 9.29,
         "load_score": 8.46,
-        "version": "2.22.0-0"
+        "version": "2.23.0-0"
     }
 }

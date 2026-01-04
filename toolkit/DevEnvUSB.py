@@ -35,7 +35,7 @@ class USB(Compile):
         self.micrOS_node_config_archive = os.path.join(MYPATH, "user_data/node_config_archive")
         self.node_config_profiles_path = os.path.join(MYPATH, "../micrOS/release_info/node_config_profiles/")
         self.esptool_interface = self.get_valid_esptool_cmd()
-        self.micrOS_node_config_path = "/config/node_config.json"
+        self.micrOS_node_config_path = "config/node_config.json"
         self.dev_types_and_cmds = \
             {'esp32':
                  {'erase': '{esptool_interface} --port {dev} erase_flash',
@@ -298,17 +298,17 @@ class USB(Compile):
     def update_micros_via_usb(self, force=False):
         self.select_board_n_micropython()
         exitcode, stdout, stderr = self.__get_node_config()
-        print(self.__get_node_config())
         if exitcode == 0:
             self.console("Get Node config (node_config.json):")
             pprint.PrettyPrinter(indent=4).pprint(json.loads(stdout))
             repo_version, node_version = self.get_micrOS_version(stdout)
             self.console("Repo version: {} Node_version: {}".format(repo_version, node_version))
             if repo_version != node_version or force:
+                self._cleanup_precompiled_dir()
                 self.console("Update necesarry {} -> {}".format(node_version, repo_version), state='ok')
                 state = self.__override_local_config_from_node(node_config=stdout)
                 if state:
-                    self.deploy_micros(restore=False)
+                    self.deploy_micros(restore_config=False, cleanup_workdir=False)
                 else:
                     self.console("Saving node config failed - SKIP update/redeploy", state='err')
             else:
@@ -322,17 +322,17 @@ class USB(Compile):
         self.execution_verdict.append("[OK] usb_update was finished")
         return True
 
-    def deploy_micros(self, restore=True, purge_conf=False):
+    def deploy_micros(self, restore_config=True, cleanup_workdir=True):
         """
         Clean board deployment with micropython + micrOS
-        :param restore: restore and create node config
-        :param purge_conf: purge node config - deletion
+        :param restore_config: restore and create node config
+        :param cleanup_workdir: clean up workdir as part of precompile
         :return: None
         """
         self.select_board_n_micropython()
-        if purge_conf:
-            self._purge_node_config_from_workdir()
-        if restore:
+        self.precompile_micros(cleanup=cleanup_workdir)
+
+        if restore_config:
             self._restore_and_create_node_config()
 
         is_erased = False
@@ -344,9 +344,7 @@ class USB(Compile):
                 break
         if is_erased:
             if self.deploy_micropython_dev():
-                time.sleep(2)
-                self.precompile_micros()
-                time.sleep(2)
+                time.sleep(3)
                 self.put_micros_to_dev()
                 self._archive_node_config()
             else:
@@ -416,7 +414,7 @@ class USB(Compile):
     #############################
 
     def _purge_node_config_from_workdir(self):
-        path = os.path.join(self.precompiled_micrOS_dir_path, 'node_config.json')
+        path = os.path.join(self.precompiled_micrOS_dir_path, self.micrOS_node_config_path)
         LocalMachine.FileHandler().remove(path, ignore=False)
 
     def _restore_and_create_node_config(self):
@@ -432,26 +430,20 @@ class USB(Compile):
             self.console("  [{}{}{}] {}".format(Colors.BOLD, index, Colors.NC, conf))
         self.console("  [{}{}{}] {}".format(Colors.BOLD, index + 1, Colors.NC, 'NEW'))
         self.console("  [{}{}{}] {}".format(Colors.BOLD, index + 2, Colors.NC, 'SKIP'))
-        conf_list.append(os.path.join('node_config.json'))
+        conf_list.append(self.micrOS_node_config_path)
         conf_list.append(os.path.join('SKIP'))
         selected_index = int(input("Select index: "))
         # Use (already existing) selected config to restore
         selected_config = conf_list[selected_index]
+        target_path = os.path.join(self.precompiled_micrOS_dir_path, self.micrOS_node_config_path)
         if selected_config.endswith(".json"):
             # Restore saved config
-            selected_config_target = selected_config
-            if '-' in selected_config:
-                # Remove prefix (device name / profile name)
-                selected_config_target = selected_config.split('-')[-1]
             source_path = os.path.join(self.micrOS_node_config_archive, selected_config)
-            target_path = os.path.join(self.precompiled_micrOS_dir_path, selected_config_target)
         elif selected_index == len(conf_list) - 1:
             # SKIP restore config - use the local version in mpy-micrOS folder
-            target_path = os.path.join(self.precompiled_micrOS_dir_path, 'node_config.json')
             source_path = None
         else:
             # Create new config - from micrOS folder path -> mpy-micrOS folder
-            target_path = os.path.join(self.precompiled_micrOS_dir_path, selected_config)
             source_path = os.path.join(self.micrOS_dir_path, selected_config)
         self.console(f"Restore config: {source_path} -> {target_path}")
         if source_path is not None:
@@ -490,7 +482,7 @@ class USB(Compile):
         else:
             self.console("Profile was selected: {}{}{}".format(Colors.OK, profile_list[int(profile)], Colors.NC))
         # Read default conf
-        default_conf_path = os.path.join(self.micrOS_dir_path, 'node_config.json')
+        default_conf_path = os.path.join(self.micrOS_dir_path, self.micrOS_node_config_path)
         if not os.path.isfile(default_conf_path):
             if not self.__generate_default_config():
                 self.console(f"Missing default config: {default_conf_path}", state="warn")
@@ -559,10 +551,9 @@ class USB(Compile):
         create_default_config_command = "{} Config.py".format(self.python_interpreter)
         if not self.dry_run:
             # Remove actual defualt config
-            LocalMachine.FileHandler.remove(os.path.join(self.micrOS_dir_path, 'node_config.json'))
+            LocalMachine.FileHandler.remove(os.path.join(self.micrOS_dir_path, self.micrOS_node_config_path))
             # Create default config
-            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(create_default_config_command,
-                                                                               shell=True)
+            exitcode, stdout, stderr = LocalMachine.CommandHandler.run_command(create_default_config_command, shell=True)
         else:
             exitcode = 0
         # Restore workdir
@@ -591,7 +582,7 @@ class USB(Compile):
 
     def __validate_json(self):
         is_valid = True
-        local_config_path = os.path.join(self.precompiled_micrOS_dir_path, 'node_config.json')
+        local_config_path = os.path.join(self.precompiled_micrOS_dir_path, self.micrOS_node_config_path)
         try:
             if os.path.isfile(local_config_path):
                 with open(local_config_path, 'r') as f:
@@ -679,12 +670,15 @@ class USB(Compile):
         else:
             exitcode, stdout, stderr = _get_config("node_config.json")                  # Legacy
             if exitcode != 0:
-                exitcode, stdout, stderr = _get_config(self.micrOS_node_config_path)    # New
+                exitcode, stdout, stderr = _get_config("/" + self.micrOS_node_config_path)    # New
             self._archive_node_config()
 
         if '\n' in stdout:
             stdout = stdout.strip().splitlines()
-            stdout = str([line for line in stdout if '{' in line and '}' in line][0])
+            try:
+                stdout = str([line for line in stdout if '{' in line and '}' in line][0])
+            except Exception as ejson:
+                raise Exception(f"Invalid json format from device: {ejson}")
         return exitcode, stdout, stderr
 
     def backup_node_config(self):
@@ -699,12 +693,12 @@ class USB(Compile):
                 if state:
                     self._archive_node_config()
                     return True
-        self.console("exitcode: {}\n{}\n{}".format(exitcode, stdout, stderr))
+            self.console("exitcode: {}\n{}\n{}".format(exitcode, stdout, stderr))
         return False
 
     def _archive_node_config(self):
         self.console("ARCHIVE NODE_CONFIG.JSON")
-        local_node_config = self.precompiled_micrOS_dir_path + self.micrOS_node_config_path
+        local_node_config = os.path.join(self.precompiled_micrOS_dir_path, self.micrOS_node_config_path)
         if os.path.isfile(local_node_config):
             with open(local_node_config, 'r') as f:
                 node_devfid = json.load(f)['devfid']
@@ -716,7 +710,8 @@ class USB(Compile):
                 LocalMachine.FileHandler.copy(local_node_config, archive_node_config)
 
     def __override_local_config_from_node(self, node_config=None):
-        node_config_path = self.precompiled_micrOS_dir_path + self.micrOS_node_config_path
+        self.ensure_precompiled_target_dir("config")
+        node_config_path = os.path.join(self.precompiled_micrOS_dir_path, self.micrOS_node_config_path)
         self.console(f"Overwrite node_config.json with connected node config: {node_config_path}", state='ok')
         if not self.dry_run and node_config is not None:
             with open(node_config_path, 'w') as f:

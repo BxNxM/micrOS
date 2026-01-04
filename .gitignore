@@ -11,7 +11,7 @@ toolkit/user_data/driver_conf.json
 toolkit/user_data/.opt_dep_install
 
 # Workspace ignore
-toolkit/workspace/precompiled/node_config.json
+toolkit/workspace/precompiled/config/node_config.json
 toolkit/workspace/simulator
 
 # Cloned resource

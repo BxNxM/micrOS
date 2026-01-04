@@ -1,10 +1,10 @@
 from sys import modules
 import urequests
 from Notify import Notify
-from Config import cfgget
-from Common import micro_task, syslog, console_write, data_dir
+from Common import micro_task, syslog, console_write, data_dir, conf_dir
 from LM_system import ifconfig
 from utime import localtime
+
 
 def _timestamp():
     _time = [str(k) for k in localtime()[3:6]]
@@ -56,10 +56,7 @@ class Telegram(Notify):
     def __bot_token():
         """Get bot token"""
         if Telegram._TOKEN is None:
-            token = cfgget('telegram')
-            if token is None or token == 'n/a':
-                return None
-            Telegram._TOKEN = token
+            return None
         return Telegram._TOKEN
 
     @staticmethod
@@ -302,10 +299,27 @@ class Telegram(Notify):
 #########################################
 
 def __init(token:str=None):
+    token_cache = conf_dir("telegram.token")
+    token_refresh = True
     if Telegram.INSTANCE is None:
         # ENABLE TELEGRAM IF NW IS STA - CONNECTED TO THE WEB
         if ifconfig()[0] == "STA":
+            if token is None:
+                token_refresh = False
+                # Attempt to load token from config folder
+                try:
+                    with open(token_cache, "r") as f:
+                        token = f.read()
+                except Exception as e:
+                    err = f"Telegram: cannot load {token_cache}: {e}"
+                    syslog(err)
+                    raise Exception(err)
+            # Initialize telegram with token
             Telegram(token)
+            if token_refresh:
+                # Save token
+                with open(token_cache, "w") as f:
+                    f.write(token)
         else:
             syslog("No STA: cannot init telegram")
     return Telegram.INSTANCE
@@ -355,7 +369,7 @@ def receiver_loop(period=3):
     :param period: polling period in sec, default: 3
     """
     if Telegram.INSTANCE is None:
-        return "Network unavailable."
+        return "Network unavailable or Telegram uninitialized"
     tag = 'telegram.server_bot'
     return micro_task(tag=tag, task=Telegram.server_bot(tag=tag, period=period))
 

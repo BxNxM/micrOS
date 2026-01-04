@@ -573,10 +573,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 			- Application registry (package.json and pacman.json): https://github.com/BxNxM/micrOSPackages 
 
 		- (9) [TODO] micropython uplift to `1.27`
-			- fix micrOS USB update config restore issue 	
-
-		- [DONE] General system review and optimization (with Codex AI)
-			- memory usage and performance
+			- [DONE] fix micrOS USB update config restore issue 
 
 			
 	RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`

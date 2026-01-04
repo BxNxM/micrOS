@@ -576,7 +576,7 @@ class ClusterStatus:
                     except:
                         hwuid = hello
             status = '🟢' if status else '🔴'
-            msg = f"{status}{hwuid}|{devip}🏷{fuid} v:️{version}"
+            msg = f"{status}{hwuid} | {devip}🏷{fuid} v:{version}"
             return msg
 
         with concurrent.futures.ThreadPoolExecutor() as executor:

@@ -15,7 +15,6 @@ from binascii import hexlify
 from json import load, dump
 import uasyncio as asyncio
 from urandom import getrandbits
-
 from aioespnow import AIOESPNow
 
 from Tasks import NativeTask, lm_exec, lm_is_loaded
@@ -132,6 +131,7 @@ class ESPNowSS:
             self.espnow = AIOESPNow()                   # Instance with async support
             self.espnow.active(True)
             self.devfid = cfgget('devfid')
+            self.__auth = cfgget('auth')
             self.devices: dict[bytes, str] = {}         # mapping for { "mac address": "devfid" } pairs
             self.server_ready = False
             self.peer_cache_path = path_join(OSPath.DATA, "espnow_peers.app_json")
@@ -180,7 +180,9 @@ class ESPNowSS:
                 rendered_out = render_packet(tid=tid, oper="RSP", data=f"hello {prompt}", prompt=self.devfid)
                 return True, rendered_out
             # COMMAND EXECUTION
-            if lm_is_loaded(module):
+            # Allow ALL module access same as Shell due to homogeneous intercon behaviour
+            #   When Auth enabled allow only loaded modules to access (same as WebUI adn Shell(without pwd))
+            if not self.__auth or (self.__auth and lm_is_loaded(module)):
                 try:
                     state, out = lm_exec(command)
                     # rendered_output: "{tid}|{oper}|{data}|{prompt}$"

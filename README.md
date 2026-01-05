@@ -572,11 +572,11 @@ Version **3.0.0-0** `micrOS-Autonomous`
 		- (8) [DONE] micrOS/packages - submodule to create individual installable applications for micrOS
 			- Application registry (package.json and pacman.json): https://github.com/BxNxM/micrOSPackages 
 
-		- (9) [TODO] micropython uplift to `1.27`
+		- (9) [DONE] micropython uplift to `1.27`
 			- [DONE] fix micrOS USB update config restore issue 
 
 			
-	RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`
+	[TODO] TESTING + RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`
 		- Create release notes (legacy: `release_3.0.0-0_note_esp32.md`)
 		- Introduce automatic release metrics generation...
 			- `system_analysis_sum.json` and `devices_system_metrics.json` 

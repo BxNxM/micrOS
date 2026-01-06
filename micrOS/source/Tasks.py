@@ -542,7 +542,7 @@ def _exec_lm_core(cmd_list, jsonify):
         [2] function
         [3...] parameters (separator: space)
     :param jsonify: request json output
-    Return Bool(OK/NOK), STR(Command output)
+    Return Bool(OK/NOK), Str(Command output)
     """
 
     def _func_params(param):
@@ -625,12 +625,12 @@ def exec_lm_pipe(taskstr):
         if taskstr.startswith('n/a'):
             return True
         # Execute individual commands - msgobj->"/dev/null"
-        for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
-            if len(cmd) > 0 and cmd[0].startswith("#"):
+        for cmd in (cmd.strip().strip() for cmd in taskstr.split(';') if len(cmd) > 0):
+            if cmd[0].startswith("#"):
                 console_write(f"[SKIP] exec_lm_pipe: {' '.join(cmd)}")
                 continue
             if not lm_exec(cmd)[0]:
-                syslog(f"[WARN] exec_lm_pipe: {cmd}")
+                syslog(f"[WARN] exec_lm_pipe: {' '.join(cmd)}")
     except Exception as e:
         syslog(f"[ERR] exec_lm_pipe {taskstr}: {e}")
         return False

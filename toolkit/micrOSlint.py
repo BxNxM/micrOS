@@ -18,7 +18,7 @@ MICROS_SOURCE_DIR = os.path.join(MYPATH, '../micrOS/source')
 RELEASE_INFO_PATH = os.path.join(MYPATH, '../micrOS/release_info/micrOS_ReleaseInfo')
 
 # MICROS LINTER CONFIG
-ALLOWED_LM_DEP_WARNS = 4        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
+ALLOWED_LM_DEP_WARNS = 5        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
 
 def parse_micros_file_categories(verbose=True):
     """

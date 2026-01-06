@@ -14,7 +14,7 @@ Designed by Marcell Ban aka BxNxM and szeka9 (GitHub)
 
 from re import compile
 from json import dumps, loads
-from os import stat
+from uos import stat
 import uasyncio as asyncio
 from Tasks import lm_exec, NativeTask, lm_is_loaded
 from Debug import syslog, console_write
@@ -143,7 +143,7 @@ class WebEngine:
             else:
                 headers = self.parse_headers(payload)
                 body = b''
-        except HeaderDecodingError as e:
+        except HeaderDecodingError:
             await self.client.a_send(self.REQ400.format(len=18, data='400 Invalid Header'))
             return True
         # [1] REST API GET ENDPOINT [/rest]
@@ -167,7 +167,7 @@ class WebEngine:
             resource = 'index.html' if url == '/' else url.lstrip('/')
             web_resource = path_join(OSPath.WEB, resource)                  # Redirect path to web folder
             self.client.console(f"[WebCli] --- {url} ACCEPT -> {web_resource}")
-            if resource.split('.')[-1] not in tuple(self.CONTENT_TYPES.keys()):
+            if resource.split('.')[-1] not in self.CONTENT_TYPES:
                 await self.client.a_send(self.REQ404.format(len=27, data='404 Not Supported File Type'))
                 return True
             try:
@@ -334,6 +334,7 @@ class WebEngine:
         :param callback: synchronous callback function clb(part_headers, part_body), parsed headers and raw body
         :param boundary: boundary parameter
         :param part_buffer: contains initial request body, remaining parts are read if the body contains no closing delimiter
+        :param content_length: content length number
         """
         dtype = 'text/plain'
         data = 'failed to parse'
@@ -369,7 +370,7 @@ class WebEngine:
             while b'\r\n' not in part_buffer:
                 more = await read_more()
                 if actual_length + len(more) > content_length:
-                    raise ValueError(f'Invalid content-length')
+                    raise ValueError('Invalid content-length')
                 part_buffer += more
                 actual_length += len(more)
             if at_start:
@@ -382,7 +383,7 @@ class WebEngine:
             if idx == -1:
                 more = await read_more()
                 if actual_length + len(more) > content_length:
-                    raise ValueError(f'Invalid content-length')
+                    raise ValueError('Invalid content-length')
                 part_buffer += more
                 actual_length += len(more)
                 continue
@@ -407,6 +408,6 @@ class WebEngine:
         if actual_length < content_length:
             more = await read_more()
             if actual_length + len(more) != content_length:
-                raise ValueError(f'Invalid content-length')
+                raise ValueError('Invalid content-length')
             # Ignore remaining content
         return dtype, data

@@ -79,7 +79,7 @@ class Client:
                 request = await self.reader.read(self.read_bytes)
             if decoding:
                 request = request.decode(decoding)
-        except asyncio.TimeoutError as e:
+        except asyncio.TimeoutError:
             Client.console(f"[Client] Stream read timeout ({self.client_id}), timeout={timeout_seconds}s")
             return True, ''
         except Exception as e:

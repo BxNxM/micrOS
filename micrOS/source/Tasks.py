@@ -305,9 +305,9 @@ class Manager:
                 delta_rate = int(((ticks_diff(ticks_ms(), t) / 300) - 1) * 100)
                 Manager.LOAD = int((Manager.LOAD + delta_rate) / 2)  # Average - smooth
                 # [2] NETWORK AUTO REPAIR
-                if self.idle_counter > 200:  # ~120 sec
+                if self.idle_counter > 300:  # ~ 3 min
                     self.idle_counter = 0    # Reset counter
-                    # Check and fix STA network (example: after power outage - micrOS boards boots faster then router)
+                    # Check and fix STA network (reboot if target ssid is available not yet connected)
                     sta_high_avail()
                 self.idle_counter += 1  # Increase counter
         except Exception as e:

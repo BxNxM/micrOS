@@ -1,7 +1,6 @@
-import sys
-import json
-import os
+from json import dumps
 from re import compile
+from uos import listdir, stat, remove, rename, mkdir
 
 from Common import web_endpoint, web_dir
 from Files import path_join, is_dir, remove_dir
@@ -26,7 +25,7 @@ def validate_filename(filename: str):
 def _list_file_paths_clb():
     user_data = []
 
-    for name in os.listdir(Data.ROOT_DIR):
+    for name in listdir(Data.ROOT_DIR):
         file_path = path_join(Data.ROOT_DIR, name)
         if file_path != Data.TMP_DIR:
             user_data.append(file_path)
@@ -34,21 +33,21 @@ def _list_file_paths_clb():
     response = [
         {
             'path': file_path.replace(web_dir(),""),
-            'size': os.stat(file_path)[6],
-            'created': os.stat(file_path)[9]
+            'size': stat(file_path)[6],
+            'created': stat(file_path)[9]
         }
         for file_path in user_data
     ]
-    return 'application/json', json.dumps(response)
+    return 'application/json', dumps(response)
 
 
 def _delete_file_clb(file_to_delete: bytes):
     file_to_delete = file_to_delete.decode('ascii')
     validate_filename(file_to_delete)
 
-    if file_to_delete not in os.listdir(Data.ROOT_DIR):
+    if file_to_delete not in listdir(Data.ROOT_DIR):
         raise ValueError(f'File does not exist: {file_to_delete}')
-    os.remove(path_join(Data.ROOT_DIR, file_to_delete))
+    remove(path_join(Data.ROOT_DIR, file_to_delete))
     return 'text/plain', 'ok'
 
 
@@ -88,7 +87,7 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
         with open(file_path, 'ab') as f:
             f.write(part_body)
         if last:
-            os.rename(file_path, path_join(Data.ROOT_DIR, filename))
+            rename(file_path, path_join(Data.ROOT_DIR, filename))
 
     return 'text/plain', 'ok'
 
@@ -104,13 +103,13 @@ def load(relative_path='user_data'):
         for subdir in Data.ROOT_DIR.split('/'):
             current_dir = path_join(base_dir,subdir)
             if not is_dir(current_dir):
-                os.mkdir(current_dir)
+                mkdir(current_dir)
             base_dir = current_dir
 
     Data.TMP_DIR = path_join(Data.ROOT_DIR, 'tmp')
     if is_dir(Data.TMP_DIR):
         remove_dir(Data.TMP_DIR, force=True) # Clean existing partial uploads
-    os.mkdir(Data.TMP_DIR)
+    mkdir(Data.TMP_DIR)
 
     web_endpoint('files', _list_file_paths_clb)
     web_endpoint('files', _delete_file_clb, 'DELETE')

@@ -1,4 +1,4 @@
-from sim_console import console
+from sim_common import console
 
 
 class DHT22:

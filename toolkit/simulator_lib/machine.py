@@ -1,7 +1,7 @@
 from threading import Thread
 import time
 import micropython
-from sim_console import console
+from sim_common import console
 
 
 def machine(*args, **kwargs):

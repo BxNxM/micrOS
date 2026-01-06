@@ -625,7 +625,7 @@ def exec_lm_pipe(taskstr):
         if taskstr.startswith('n/a'):
             return True
         # Execute individual commands - msgobj->"/dev/null"
-        for cmd in (cmd.strip().strip() for cmd in taskstr.split(';') if len(cmd) > 0):
+        for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
             if cmd[0].startswith("#"):
                 console_write(f"[SKIP] exec_lm_pipe: {' '.join(cmd)}")
                 continue

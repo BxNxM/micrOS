@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 try:
-    from sim_console import console
+    from sim_common import console
 except:
     console = print
 from pathlib import Path

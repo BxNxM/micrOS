@@ -1,4 +1,4 @@
-from sim_console import console
+from sim_common import console
 import socket
 
 AP_IF = "DUMMY_AP_IF"
@@ -45,6 +45,7 @@ class WLAN:
             self.__config_dict[key] = value
         for key in args:
             return self.__config_dict.get(key, None)
+        return None
 
     def ifconfig(self, addr_tuple=None):
         console("Local server IP: {}".format(self.__get_machine_ip()))

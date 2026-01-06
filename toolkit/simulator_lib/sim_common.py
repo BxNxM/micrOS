@@ -1,8 +1,6 @@
 import sys
 import os
-#MYPATH = os.path.dirname(os.path.abspath(__file__))
-#DEV_ENV_DIR = os.path.dirname(MYPATH)
-#sys.path.append(DEV_ENV_DIR)
+import time
 
 print("Module [sim_console] path: {} __package__: {} __name__: {}".format(sys.path[0], __package__, __name__))
 
@@ -15,6 +13,7 @@ try:
 except Exception as e:
     print("TerminalColors import error: {}".format(e))
     Colors = None
+
 
 def console(msg, end='\n', skip_tmp_msgs=True):
     if end == '\r' and skip_tmp_msgs:

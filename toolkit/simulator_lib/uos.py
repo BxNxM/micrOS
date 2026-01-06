@@ -74,14 +74,17 @@ def _stat_eval(stat_result):
     micropython converter
     """
     micropython_file_identifier = {'dir': 0x4000, 'file': 0x8000}
+    file_type_0 = 0x0                       # file type
+    file_size_6 = py_fs_stat.ST_SIZE        # bytes
+    file_time_8 = py_fs_stat.ST_MTIME       # file creation time - only on some micropython ports
     # Check if it's a file
     if py_fs_stat.S_ISREG(stat_result.st_mode):
         # FILE
-        return (micropython_file_identifier['file'],)
+        file_type_0 = micropython_file_identifier['file']
     if py_fs_stat.S_ISDIR(stat_result.st_mode):
         # DIRECTORY
-        return (micropython_file_identifier['dir'],)
-    return (0x0,)
+        file_type_0 = micropython_file_identifier['dir']
+    return file_type_0, 0, 0, 0, 0, 0, file_size_6, 0, file_time_8
 
 
 def stat(path):

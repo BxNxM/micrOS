@@ -463,12 +463,12 @@
     },
     "fileserver": {
         "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "doc": "\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/fileserver.png?raw=true",
         "load": {
-            "doc": "\n    Initialize fileserver.\n    :param relative_path str: relative path for the root directory of user data\n    ",
+            "doc": "\n    Initialize fileserver.\n    :param relative_path: relative path for the root directory of user data\n    ",
             "param(s)": "relative_path='user_data'"
         },
         "validate_filename": {
@@ -548,7 +548,7 @@
             "param(s)": "intensity=Haptic.LOW wait=200 stop_wait=100 repeat=2"
         },
         "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "doc": "\n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'tap ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'effect1 ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'effect2 ', 'options': ['None']}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/haptic.png?raw=true",
@@ -899,7 +899,7 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "doc": "\n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'clear ', 'options': ['None']}\n\t{'type': 'color', 'lm_call': 'color_fill r=:range: g=:range: b=:range:', 'range': [0, 255, 5]}\n\t{'type': 'slider', 'lm_call': 'brightness br=:range:', 'range': [0, 60, 2]}\n\t{'type': 'button', 'lm_call': 'stop ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'snake speed_ms=50 length=5', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'rainbow ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'spiral speed_ms=40', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'noise speed_ms=85', 'options': ['None']}\n\t{'type': 'slider', 'lm_call': 'control speed_ms=:range: bt_draw=None', 'range': [1, 200, 2]}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
@@ -1318,7 +1318,7 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "doc": "\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'read_state ', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rencoder.png?raw=true",
@@ -1893,7 +1893,7 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "doc": "\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": ""
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/trackball.png?raw=true",
@@ -1924,7 +1924,7 @@
     },
     "veml7700": {
         "help": {
-            "doc": "unsupported operand type(s) for +=: 'NoneType' and 'str'",
+            "doc": "\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'read_lux ', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/veml7700.png?raw=true",

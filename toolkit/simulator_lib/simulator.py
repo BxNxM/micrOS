@@ -189,6 +189,7 @@ class micrOSIM():
                         except:
                             mod_pinmap = ''
                         # Add pinmap to doc string of pinmap() function
+                        doc_str = "" if doc_str is None else doc_str
                         doc_str += mod_pinmap
                     if func == 'help':
                         console(f"[micrOSIM][Render widgets from help] LM_{mod}.help(True)")
@@ -202,6 +203,7 @@ class micrOSIM():
                         except:
                             mod_help += '\n\tN/A'
                         # Add help renderes widgets to doc string
+                        doc_str = "" if doc_str is None else doc_str
                         doc_str += mod_help
                 except Exception as e:
                     doc_str = str(e)

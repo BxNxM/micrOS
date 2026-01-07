@@ -95,25 +95,28 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
 def load(relative_path='user_data'):
     """
     Initialize fileserver.
-    :param relative_path str: relative path for the root directory of user data
+    :param relative_path: relative path for the root directory of user data
     """
     Data.ROOT_DIR = web_dir(relative_path)
     if not is_dir(Data.ROOT_DIR):
-        base_dir = '/'
-        for subdir in Data.ROOT_DIR.split('/'):
+        base_dir = web_dir()
+        for subdir in Data.ROOT_DIR.replace(base_dir, "").split('/'):
             current_dir = path_join(base_dir,subdir)
+            print(f"PATH: {current_dir} ISDIR: {is_dir(current_dir)}")
             if not is_dir(current_dir):
                 mkdir(current_dir)
             base_dir = current_dir
 
     Data.TMP_DIR = path_join(Data.ROOT_DIR, 'tmp')
     if is_dir(Data.TMP_DIR):
-        remove_dir(Data.TMP_DIR, force=True) # Clean existing partial uploads
+        remove_dir(Data.TMP_DIR, force=True) # Clean existing partial uploads, is force needed?
     mkdir(Data.TMP_DIR)
 
     web_endpoint('files', _list_file_paths_clb)
     web_endpoint('files', _delete_file_clb, 'DELETE')
     web_endpoint('files', _upload_file_clb, 'POST')
+
+    return "Fileserver was initialized"
 
 
 #######################
@@ -121,4 +124,5 @@ def load(relative_path='user_data'):
 #######################
 
 def help(widgets=False):
-    return f'load relative_path=<path relative to {web_dir()} for the root directory of user data>',
+    return (f'load relative_path=<path relative to {web_dir()} for the root directory of user data>',
+            'validate_filename "<str>"')

@@ -76,7 +76,8 @@ def _stat_eval(stat_result):
     micropython_file_identifier = {'dir': 0x4000, 'file': 0x8000}
     file_type_0 = 0x0                       # file type
     file_size_6 = py_fs_stat.ST_SIZE        # bytes
-    file_time_8 = py_fs_stat.ST_MTIME       # file creation time - only on some micropython ports
+    file_time_8 = py_fs_stat.ST_MTIME       # file modified time - only on some micropython ports
+    file_time_9 = py_fs_stat.ST_CTIME       # creation time - only on some micropython ports
     # Check if it's a file
     if py_fs_stat.S_ISREG(stat_result.st_mode):
         # FILE
@@ -84,7 +85,9 @@ def _stat_eval(stat_result):
     if py_fs_stat.S_ISDIR(stat_result.st_mode):
         # DIRECTORY
         file_type_0 = micropython_file_identifier['dir']
-    return file_type_0, 0, 0, 0, 0, 0, file_size_6, 0, file_time_8
+    # https://github.com/micropython/micropython-lib/blob/master/python-stdlib/stat/stat.py
+    #           0       1  2  3  4  5       6       7      8            9
+    return file_type_0, 0, 0, 0, 0, 0, file_size_6, 0, file_time_8, file_time_9
 
 
 def stat(path):

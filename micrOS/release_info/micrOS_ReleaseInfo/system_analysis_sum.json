@@ -54,7 +54,7 @@
         ],
         "Common.py": [
             9.85,
-            37
+            36
         ],
         "InterConnect.py": [
             9.63,
@@ -78,7 +78,7 @@
         ],
         "microIO.py": [
             9.35,
-            45
+            44
         ],
         "micrOS.py": [
             9.3,
@@ -232,10 +232,6 @@
             8.65,
             0
         ],
-        "modules/LM_keychain.py": [
-            9.17,
-            0
-        ],
         "modules/LM_dht11.py": [
             7.94,
             0
@@ -321,7 +317,7 @@
             0
         ],
         "modules/LM_fileserver.py": [
-            8.92,
+            9.08,
             0
         ],
         "modules/LM_neomatrix.py": [
@@ -335,8 +331,8 @@
             25
         ],
         "load": [
-            10200,
-            57
+            9953,
+            56
         ],
         "core_dep": [
             true,
@@ -347,7 +343,7 @@
             5
         ],
         "core_score": 9.27,
-        "load_score": 8.46,
+        "load_score": 8.45,
         "version": "2.24.0-0"
     }
 }

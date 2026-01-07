@@ -623,49 +623,6 @@
             "param(s)": "shift_size=0"
         }
     },
-    "keychain": {
-        "button": {
-            "doc": "\n    IRQ1 keychain module control function\n    - neopixel ON/OFF\n    - display wake-up (ON)\n    ",
-            "param(s)": ""
-        },
-        "color_wheel": {
-            "doc": "\n    Neopixel color wheel\n    :param br: brightness value 0-100 percent\n    ",
-            "param(s)": "br=None"
-        },
-        "display": {
-            "doc": "\n    Create keychain.display task - refresh loop\n    :param period: display refresh period in ms (min. 500ms)\n    :param tts: time to sleep (in seconds)\n    ",
-            "param(s)": "period=1000 tts=30"
-        },
-        "display_toggle": {
-            "doc": "\n    Display mode toggle (main/screensaver)\n    ",
-            "param(s)": ""
-        },
-        "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/keychain.png?raw=true",
-        "load": {
-            "doc": "\n    Init OLED display 64x32 (default)\n    Init Neopixel LED (1 segment)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    :param bootmsg: First text on page at bootup, default: \"micrOS\"\n    ",
-            "param(s)": "width=64 height=32 bootmsg=\"micrOS\""
-        },
-        "msgbox": {
-            "doc": null,
-            "param(s)": "msg width=64"
-        },
-        "neopixel_toggle": {
-            "doc": "\n    Disable/Enable neopixel LED (brightness 0/default)\n    ",
-            "param(s)": ""
-        },
-        "pinmap": {
-            "doc": "\n    PIN MAP dump\n    \npin map: i2c_scl, i2c_sda, ds18, neop",
-            "param(s)": ""
-        },
-        "temperature": {
-            "doc": "\n    Measure ds18B20 temperature sensor\n    ",
-            "param(s)": ""
-        }
-    },
     "ld2410": {
         "bytes_to_str": {
             "doc": null,

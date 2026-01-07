@@ -11,7 +11,6 @@ LM_bme280.py
 LM_co2.py
 LM_dht11.py
 LM_light_sensor.py
-LM_intercon.py
 LM_tinyrgb.py
 LM_repair.py
 LM_buzzer.py
@@ -28,7 +27,6 @@ LM_pacman.py
 LM_aht10.py
 LM_rgbcct.py
 LM_OV2640.py
-LM_keychain.py
 LM_i2s_mic.py
 LM_rest.py
 LM_gameOfLife.py
@@ -41,6 +39,5 @@ LM_distance.py
 LM_veml7700.py
 LM_neomatrix.py
 LM_L298N.py
-LM_mqtt_client.py
 LM_cluster.py
 LM_fileserver.py

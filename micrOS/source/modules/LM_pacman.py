@@ -1,6 +1,6 @@
 from sys import modules
 from Common import socket_stream
-from Files import list_fs, ilist_fs, remove_file, remove_dir, OSPath, path_join
+from Files import list_fs, ilist_fs, remove_file, remove_dir, OSPath, path_join, is_protected
 
 
 #############################################
@@ -68,6 +68,8 @@ def cat(path):
     """
     Dump any file content
     """
+    if is_protected(path):
+        return f'Read not allowed'
     with open(path, 'r') as f:
         content = f.read()
     return content
@@ -179,10 +181,11 @@ def moduls(unload=None):
 
 
 @socket_stream
-def cachedump(delete=None, msgobj=None):
+def cachedump(delete=None, ext="cache", msgobj=None):
     """
     Cache system persistent data storage files (.cache)
     :param delete: cache name to delete
+    :param ext: cache file extension (default: cache)
     """
     data_dir = OSPath.DATA
     if delete is None:
@@ -202,7 +205,7 @@ def cachedump(delete=None, msgobj=None):
         verdict = remove_file(delete_cache)
         return f'{delete_cache} delete done.: {verdict}'
     except:
-        return f'{delete}.cache not exists'
+        return f'{delete}.{ext} not exists'
 
 
 def datdump():

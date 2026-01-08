@@ -15,7 +15,7 @@ Load Modules in /lib/LM_* will be automatically moved to /modules/LM_* as post i
 Designed by Marcell Ban aka BxNxM
 """
 
-from json import load as jload
+from json import load
 from mip import install as mipstall
 from uos import rename, mkdir
 from Files import OSPath, path_join, is_file, ilist_fs, is_dir, remove_file, remove_dir
@@ -96,7 +96,7 @@ def _unpack_from_pacman_json(path:str, packages:tuple) -> tuple[bool, str]:
             # Load package layout metadata
             try:
                 with open(pack_meta_path, 'r') as p:
-                    layout = jload(p).get('layout', {})
+                    layout = load(p).get('layout', {})
             except Exception as e:
                 syslog(f"[ERR] Package unpack {pack_meta_path}: {e}")
                 layout = {}
@@ -251,7 +251,7 @@ def uninstall(package_name):
         # Load package layout metadata
         try:
             with open(pack_meta, 'r') as p:
-                layout = jload(p).get('layout', {})
+                layout = load(p).get('layout', {})
         except Exception as e:
             syslog(f"[ERR] Package uninstall {pack_meta}: {e}")
             layout = {}

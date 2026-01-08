@@ -1,9 +1,9 @@
 from json import dumps
 from re import compile
-from uos import listdir, stat, remove, rename, mkdir
+from uos import listdir, stat, rename, mkdir
 
 from Common import web_endpoint, web_dir
-from Files import path_join, is_dir, remove_dir
+from Files import path_join, is_dir, remove_dir, remove_file
 
 
 class Data:
@@ -47,7 +47,7 @@ def _delete_file_clb(file_to_delete: bytes):
 
     if file_to_delete not in listdir(Data.ROOT_DIR):
         raise ValueError(f'File does not exist: {file_to_delete}')
-    remove(path_join(Data.ROOT_DIR, file_to_delete))
+    remove_file(path_join(Data.ROOT_DIR, file_to_delete))
     return 'text/plain', 'ok'
 
 
@@ -91,6 +91,16 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
 
     return 'text/plain', 'ok'
 
+
+def _files_webui_clb():
+    try:
+        with open(web_dir('filesui.html'), 'r') as html:
+            html_content = html.read()
+        return 'text/html', html_content
+    except Exception:
+        html_content = None
+    return 'text/plain', f'html_content error: {html_content}'
+
     
 def load(relative_path='user_data'):
     """
@@ -115,6 +125,7 @@ def load(relative_path='user_data'):
     web_endpoint('files', _list_file_paths_clb)
     web_endpoint('files', _delete_file_clb, 'DELETE')
     web_endpoint('files', _upload_file_clb, 'POST')
+    web_endpoint('filesUI', _files_webui_clb)
 
     return "Fileserver was initialized"
 

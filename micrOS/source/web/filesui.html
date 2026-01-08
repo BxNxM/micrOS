@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Files</title>
+
+  <!-- Base micrOS style -->
+  <link rel="stylesheet" href="ustyle.css">
+
+  <!-- File UI minimal extras -->
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    width: 100%;
+    padding-left: 3%;
+    padding-right: 3%;
+    box-sizing: border-box;
+  }
+  #ui {
+    display: flex;
+    gap: 40px;
+    min-height: 100%;
+  }
+  #folders {
+    min-width: 140px;
+  }
+  #files {
+    flex: 1;
+  }
+  #top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  #list div {
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #list div:hover {
+    background: rgba(255,255,255,.1);
+  }
+  .sel {
+    background: rgba(255,255,255,.25);
+  }
+</style>
+
+</head>
+
+<body>
+  <h1> micrOS Files (beta) </h1>
+
+  <div id="ui">
+    <aside id="folders">
+      <div>Folders</div>
+      <div>/user_data</div>
+    </aside>
+
+    <main id="files">
+      <div id="top">
+        <input type="file" id="file">
+        <button onclick="upload()">Upload</button>
+        <button onclick="view()">View</button>
+        <button onclick="del()">Delete</button>
+      </div>
+
+      <div id="list"></div>
+    </main>
+  </div>
+
+  <script src="filesui.js"></script>
+</body>
+</html>

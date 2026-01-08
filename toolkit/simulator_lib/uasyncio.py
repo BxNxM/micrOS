@@ -21,6 +21,10 @@ class Event(asyncio.Event):
     pass
 
 
+async def wait_for(fut, timeout):
+    return asyncio.wait_for(fut, timeout)
+
+
 async def sleep(sec):
     await asyncio.sleep(sec)
 

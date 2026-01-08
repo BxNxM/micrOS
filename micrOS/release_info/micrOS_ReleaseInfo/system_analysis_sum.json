@@ -113,7 +113,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.72,
+            7.69,
             0
         ],
         "modules/LM_genIO.py": [
@@ -317,7 +317,7 @@
             0
         ],
         "modules/LM_fileserver.py": [
-            9.08,
+            9.06,
             0
         ],
         "modules/LM_neomatrix.py": [
@@ -331,7 +331,7 @@
             25
         ],
         "load": [
-            9953,
+            9965,
             56
         ],
         "core_dep": [
@@ -344,6 +344,6 @@
         ],
         "core_score": 9.27,
         "load_score": 8.45,
-        "version": "2.24.0-0"
+        "version": "2.24.1-0"
     }
 }

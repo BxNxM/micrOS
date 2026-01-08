@@ -36,16 +36,21 @@ def _filter(path:str='/', ext:tuple=None, prefix:tuple=None, hide_core:bool=True
         return True
     return False
 
+
 def is_protected(path:str='/') -> bool:
     """
     Check is file/dir protected
-        - every file and folder is protected in root dir: /
-        - with protected file list
+        - protected root folders and files: /*
+        - protected system files by name
     """
-    protected_files = ("node_config.json", "LM_system.mpy", "LM_pacman.mpy")
+    protected_files = ("node_config.json", "LM_system.mpy", "LM_pacman.mpy", "LM_cluster.mpy")
+    # Detect parent directory
     parent = "/".join(path.split("/")[:-1]) or "/"
+    # Get file/folder name
     fname = path.split("/")[-1]
+    # Disallow: root folders and protected files
     return parent in ("/", "") or fname in protected_files
+
 
 def _type_mask_to_str(item_type:int=None) -> str:
     # Map the raw bit-mask to a single character
@@ -122,7 +127,7 @@ def remove_file(path, force=False):
     if is_file(path):
         remove(path)
         return f"{path} deleted"
-    return f"Cannot delete dir type: {path}"
+    return f"Cannot delete (not a file): {path}"
 
 
 def remove_dir(path, force=False):

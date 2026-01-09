@@ -5,7 +5,7 @@ from utime import sleep_ms
 
 from microIO import bind_pin
 from Types import resolve
-from Common import manage_task, AnimationPlayer, web_dir, syslog, web_endpoint
+from Common import manage_task, AnimationPlayer, web_endpoint
 
 
 class NeoPixelMatrix(AnimationPlayer):
@@ -144,19 +144,8 @@ def load(width=8, height=8):
     """
     if NeoPixelMatrix.INSTANCE is None:
         NeoPixelMatrix(width=width, height=height, pin=bind_pin('neop'))
-        web_endpoint('matrixDraw', _web_endpoint_clb, auto_enable=False)
+        web_endpoint('matrixDraw', 'matrix_draw.html', auto_enable=False)
     return NeoPixelMatrix.INSTANCE
-
-
-def _web_endpoint_clb():
-    try:
-        with open(web_dir('matrix_draw.html'), 'r') as html:
-            html_content = html.read()
-        return 'text/html', html_content
-    except Exception as e:
-        syslog(f"[ERR] neomatrix web: {e}")
-        html_content = None
-    return 'text/plain', f'html_content error: {html_content}'
 
 
 def pixel(x, y, color=None, show=True):

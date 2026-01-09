@@ -1,29 +1,18 @@
-from Common import web_dir, web_endpoint, syslog
+"""
+Enable web endpoint dashboard.html -> dashboard
+"""
 
-ENDPOINT_INITED = False
+from Common import web_endpoint
 
 def load():
     return create_dashboard()
-
-
-def _dashboard_clb():
-    try:
-        with open(web_dir('dashboard.html'), 'r') as html:
-            html_content = html.read()
-        return 'text/html', html_content
-    except Exception as e:
-        syslog(f"[ERR] dashboard_be: {e}")
-        html_content = None
-    return 'text/plain', f'html_content error: {html_content}'
 
 
 def create_dashboard():
     """
     Create dashboard endpoint
     """
-    global ENDPOINT_INITED
-    ENDPOINT_INITED = True
-    web_endpoint('dashboard', _dashboard_clb)
+    web_endpoint('dashboard', 'dashboard.html')
     return 'Endpoint created: /dashboard'
 
 

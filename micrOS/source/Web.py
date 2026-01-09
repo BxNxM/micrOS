@@ -228,7 +228,14 @@ class WebEngine:
                     dtype, data = response
                 else:
                     # TODO: contract needed for passing headers
-                    dtype, data = WebEngine.ENDPOINTS[url][method]()
+                    callback =  WebEngine.ENDPOINTS[url][method]
+                    if callable(callback):
+                        dtype, data = WebEngine.ENDPOINTS[url][method]()
+                    else:
+                        # Endpoint is a file reference under /web
+                        web_resource = path_join(OSPath.WEB, callback)
+                        await self.file_transfer(web_resource)
+                        return True
 
                 if dtype == 'image/jpeg':
                     resp = f"HTTP/1.1 200 OK\r\nContent-Type: {dtype}\r\nContent-Length:{len(data)}\r\n\r\n".encode('ascii') + data

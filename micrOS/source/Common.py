@@ -119,6 +119,8 @@ def web_endpoint(endpoint, function, method='GET', auto_enable=True) -> bool:
         [2] Stream function return tuple (multipart_type, data):
             multipart/x-mixed-replace | multipart/form-data, <data>
                 <data>: {'callback':<func>, 'content-type': image/jpeg | audio/l16;*}
+        [3] String as file reference from /web
+            Example: 'filesui.html'
     :param method: HTTP method name
     :param auto_enable: if True will enable webui (if disabled) when register endpoint
     """

@@ -91,16 +91,6 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
 
     return 'text/plain', 'ok'
 
-
-def _files_webui_clb():
-    try:
-        with open(web_dir('filesui.html'), 'r') as html:
-            html_content = html.read()
-        return 'text/html', html_content
-    except Exception:
-        html_content = None
-    return 'text/plain', f'html_content error: {html_content}'
-
     
 def load(web_data_dir:str=None):
     """
@@ -126,9 +116,9 @@ def load(web_data_dir:str=None):
     web_endpoint('files', _list_file_paths_clb)
     web_endpoint('files', _delete_file_clb, 'DELETE')
     web_endpoint('files', _upload_file_clb, 'POST')
-    web_endpoint('filesUI', _files_webui_clb)
+    web_endpoint('files/ui', 'filesui.html')
 
-    return "Fileserver was initialized"
+    return "Fileserver was initialized, endpoints: /files and /files/ui"
 
 
 #######################

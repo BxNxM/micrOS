@@ -7,9 +7,9 @@ from Files import path_join, is_dir, remove_dir, remove_file
 
 
 class Data:
-    ROOT_DIR = ''
-    TMP_DIR = ''        # Temporary directory for partial uploads
-    UPLOAD_COUNTER = 0  # Counter for handling partial uploads
+    ROOT_DIR = web_dir("user_data")         # Default Public WEB dir
+    TMP_DIR = path_join(ROOT_DIR, "tmp")    # Temporary directory for partial uploads
+    UPLOAD_COUNTER = 0                      # Counter for handling partial uploads
 
 
 def validate_filename(filename: str):
@@ -102,26 +102,27 @@ def _files_webui_clb():
     return 'text/plain', f'html_content error: {html_content}'
 
     
-def load(relative_path='user_data'):
+def load(web_data_dir:str=None):
     """
     Initialize fileserver.
-    :param relative_path: relative path for the root directory of user data
+    :param web_data_dir: web data public directory (default: web_data)
     """
-    Data.ROOT_DIR = web_dir(relative_path)
+    if isinstance(web_data_dir, str):
+        # Customize public web dir name
+        Data.ROOT_DIR = web_dir(web_data_dir)
+        Data.TMP_DIR = path_join(Data.ROOT_DIR, 'tmp')
+    if is_dir(Data.TMP_DIR):
+        remove_dir(Data.TMP_DIR, force=True) # Clean existing partial uploads, is force needed?
     if not is_dir(Data.ROOT_DIR):
-        base_dir = web_dir()
-        for subdir in Data.ROOT_DIR.replace(base_dir, "").split('/'):
-            current_dir = path_join(base_dir,subdir)
-            print(f"PATH: {current_dir} ISDIR: {is_dir(current_dir)}")
+        root_dir = web_dir()
+        base_dir = root_dir
+        for subdir in Data.TMP_DIR.replace(root_dir, "").split('/'):
+            current_dir = path_join(base_dir, subdir)
             if not is_dir(current_dir):
                 mkdir(current_dir)
             base_dir = current_dir
 
-    Data.TMP_DIR = path_join(Data.ROOT_DIR, 'tmp')
-    if is_dir(Data.TMP_DIR):
-        remove_dir(Data.TMP_DIR, force=True) # Clean existing partial uploads, is force needed?
-    mkdir(Data.TMP_DIR)
-
+    # Register endpoints
     web_endpoint('files', _list_file_paths_clb)
     web_endpoint('files', _delete_file_clb, 'DELETE')
     web_endpoint('files', _upload_file_clb, 'POST')

@@ -8,45 +8,48 @@
   <link rel="stylesheet" href="ustyle.css">
 
   <!-- File UI minimal extras -->
-<style>
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
-  body {
-    width: 100%;
-    padding-left: 3%;
-    padding-right: 3%;
-    box-sizing: border-box;
-  }
-  #ui {
-    display: flex;
-    gap: 40px;
-    min-height: 100%;
-  }
-  #folders {
-    min-width: 140px;
-  }
-  #files {
-    flex: 1;
-  }
-  #top {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  #list div {
-    padding: 6px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  #list div:hover {
-    background: rgba(255,255,255,.1);
-  }
-  .sel {
-    background: rgba(255,255,255,.25);
-  }
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      width: 100%;
+      padding-left: 3%;
+      padding-right: 3%;
+      box-sizing: border-box;
+    }
+    #ui {
+      display: flex;
+      gap: 40px;
+      min-height: 100%;
+    }
+    #folders {
+      min-width: 140px;
+    }
+    #files {
+      flex: 1;
+    }
+    #top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    #list div {
+      padding: 6px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #list div:hover {
+      background: rgba(255,255,255,.1);
+    }
+    .sel {
+      background: rgba(255,255,255,.25);
+    }
+    .folders {
+      margin-bottom: 8px;
+    }
 </style>
 
 </head>
@@ -56,16 +59,16 @@
 
   <div id="ui">
     <aside id="folders">
-      <div>Folders</div>
-      <div>/user_data</div>
+        <div class="folders">📂 Folders</div>
+        <div id="folder-path">/user_data</div>
     </aside>
 
     <main id="files">
       <div id="top">
         <input type="file" id="file">
-        <button onclick="upload()">Upload</button>
-        <button onclick="view()">View</button>
-        <button onclick="del()">Delete</button>
+        <button onclick="upload()">📄 Upload</button>
+        <button onclick="view()">📥 View</button>
+        <button onclick="del()"> 🗑️ Delete</button>
       </div>
 
       <div id="list"></div>

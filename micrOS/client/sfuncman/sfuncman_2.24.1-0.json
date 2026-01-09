@@ -468,8 +468,8 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/fileserver.png?raw=true",
         "load": {
-            "doc": "\n    Initialize fileserver.\n    :param relative_path: relative path for the root directory of user data\n    ",
-            "param(s)": "relative_path='user_data'"
+            "doc": "\n    Initialize fileserver.\n    :param web_data_dir: web data public directory (default: web_data)\n    ",
+            "param(s)": "web_data_dir:str=None"
         },
         "validate_filename": {
             "doc": "\n    Check if the provided filename contains only\n    alphanumeric characters (including safe symbols).\n    ",

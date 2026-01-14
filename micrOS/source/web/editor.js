@@ -4,29 +4,67 @@
  *
  * Public API:
  *   createEditor(container)
- *   openEditor(url)
+ *   openEditor(url, { anchor, list })
+ *   destroyEditor()
  * ============================================================ */
 
 let _editor = null;
 
+// 🔹 track original DOM position of editor container
+let _host = {
+    container: null,
+    parent: null,
+    next: null
+};
+
 /* ---------- Public API ---------- */
 
 window.createEditor = function (container) {
+    console.info("editor.js: createEditor");
     injectCSS();
-    if (!_editor) _editor = new EmbeddedEditor(container);
+
+    if (!_editor) {
+        _host.container = container;
+        _host.parent = container.parentNode;
+        _host.next = container.nextSibling;
+
+        _editor = new EmbeddedEditor(container);
+    }
     return _editor;
 };
 
-window.openEditor = function (url) {
-    if (_editor) _editor.open(url);
-    else console.warn("Editor not active");
+window.openEditor = function (url, opts = {}) {
+    if (!_editor) {
+        console.warn("Editor not active");
+        return;
+    }
+    console.info("editor.js: openEditor");
+    const { anchor, list } = opts;
+    const c = _host.container;
+    // 🔹 editor owns placement logic
+    if (anchor) {
+        anchor.insertAdjacentElement("afterend", c);
+        console.info("editor.js: openEditor.placed after selected element");
+    } else if (list) {
+        list.insertAdjacentElement("beforebegin", c);
+        console.info("editor.js: openEditor.placed before selected element");
+    }
+
+    _editor.open(url);
 };
 
 window.destroyEditor = function () {
     if (_editor) {
         _editor.close();
+        if (_host.container) {
+            _host.container.remove();
+            console.info("editor.js: destroyEditor - container removed");
+        }
         _editor = null;
-        console.info("editor.js: editor destroyed");
+        _host.container = null;
+        _host.parent = null;
+        _host.next = null;
+        console.info("editor.js: destroyEditor - editor destroyed");
     }
 };
 
@@ -118,6 +156,7 @@ class EmbeddedEditor {
     }
 
     buildUI() {
+        console.info("editor.js: EmbeddedEditor.buildUI");
         this.container.innerHTML = `
 <div class="mp-editor">
     <div class="toolbar">
@@ -144,11 +183,9 @@ class EmbeddedEditor {
             this.updateLines();
             this.setStatus("edited");
         });
-
         this.codeEl.addEventListener("scroll", () =>
             this.linesEl.scrollTop = this.codeEl.scrollTop
         );
-
         this.codeEl.addEventListener("keydown", e => {
             if (e.key === "Tab") {
                 e.preventDefault();
@@ -162,19 +199,17 @@ class EmbeddedEditor {
                 this.updateLines();
             }
         });
-
         this.container.querySelector(".load")
-            .addEventListener("click", () => this.loadByName());
+            .addEventListener("click", () => this.loadFile());
         this.container.querySelector(".save")
             .addEventListener("click", () => this.save());
         this.container.querySelector(".syntax")
             .addEventListener("click", () => this.syntaxCheck());
         this.container.querySelector(".close")
-            .addEventListener("click", () => this.close());
+            .addEventListener("click", () => window.destroyEditor());
     }
 
     /* ---------- UI helpers ---------- */
-
     setStatus(text, type = "info") {
         this.statusEl.textContent = text;
         this.statusEl.className = "status " + type;
@@ -187,7 +222,6 @@ class EmbeddedEditor {
     }
 
     /* ---------- File ops ---------- */
-
     open(url) {
         if (!url) return this.loadExample();
 
@@ -196,29 +230,50 @@ class EmbeddedEditor {
             .then(r => r.ok ? r.text() : Promise.reject())
             .then(t => {
                 this.codeEl.value = t;
-                this.fileEl.value = url.split("/").pop();
+                this.fileEl.value = url;
                 this.updateLines();
                 this.setStatus("loaded", "ok");
             })
             .catch(() => this.setStatus("load failed", "err"));
     }
 
-    loadByName() {
+    loadFile() {
         if (!this.fileEl.value)
             return this.setStatus("no filename", "err");
+        console.info("editor.js: EmbeddedEditor.loadFile: ", this.fileEl.value);
         this.open(this.fileEl.value);
     }
 
     save() {
-        console.log("[SAVE placeholder]", {
-            name: this.fileEl.value,
-            content: this.codeEl.value
-        });
-        this.setStatus("saved (dummy)", "ok");
+        const name = this.fileEl.value;
+        if (!name) {
+            this.setStatus("no filename", "err");
+            return;
+        }
+
+        console.info("editor.js: EmbeddedEditor.save (upload): ", name);
+        const blob = new Blob([this.codeEl.value], { type: "text/plain" });
+        const file = new File([blob], name);
+        const fd = new FormData();
+        fd.append("file", file);
+
+        fetch("/files", { method: "POST", body: fd })
+            .then(r => {
+                if (!r.ok) {
+                    return r.text().then(t => {
+                        console.error("editor.js: upload failed:", r.status, r.statusText, t);
+                        throw new Error("upload failed");
+                    });
+                }
+                this.setStatus("saved", "ok");
+            })
+            .catch(err => {
+                console.error("editor.js: upload error:", err);
+                this.setStatus("save failed", "err");
+            });
     }
 
     /* ---------- Syntax ---------- */
-
     syntaxCheck() {
         const r = checkPythonSyntax(this.codeEl.value);
         this.setStatus(
@@ -228,20 +283,39 @@ class EmbeddedEditor {
     }
 
     /* ---------- Example ---------- */
-
     loadExample() {
+        console.info("editor.js: EmbeddedEditor.loadExample");
         this.codeEl.value =
 `# blinky.py – MicroPython example
+# Guide: https://github.com/BxNxM/micrOS/blob/master/APPLICATION_GUIDE.md
 import machine
-import time
+from microIO import bind_pin, pinmap_search
+from Common import micro_task
 
-led = machine.Pin(2, machine.Pin.OUT)
+global LED = None
 
-while True:
-    led.value(1)
-    time.sleep(0.5)
-    led.value(0)
-    time.sleep(0.5)
+def load(pin=2):
+    global LED
+    if LED is None:
+        LED = machine.Pin(bind_pin("led", pin), machine.Pin.OUT)
+    return LED
+
+@micro_task("blinky", _wrap=True)
+def blink(tag):
+    with micro_task(tag=tag) as my_task:
+        if LED is None:
+            my_task.out = "LED uninitialized"
+            return
+        my_task.out = "BlinkyBlink task"
+        while True:
+           LED.value(not LED.value())
+           await my_task.feed(sleep_ms=500)
+
+def pinmap():
+    return pinmap_search(['led'])
+
+def help(widgets=False):
+    return "load pin=2", "blink", "pinmap"
 `;
         this.fileEl.value = "blinky.py";
         this.updateLines();
@@ -249,16 +323,15 @@ while True:
     }
 
     /* ---------- Close ---------- */
-
     close() {
         this.container.innerHTML = "";
-        _editor = null;
     }
 }
 
 /* ---------- Pure syntax checker ---------- */
 
 function checkPythonSyntax(text) {
+    console.info("editor.js: checkPythonSyntax");
     const lines = text.replace(/\t/g, "    ").split("\n");
     const stack = [0];
     const errors = [];
@@ -267,11 +340,9 @@ function checkPythonSyntax(text) {
         const ind = l.match(/^ */)[0].length;
         const t = l.trim();
         const n = i + 1;
-
         if (!t || t.startsWith("#")) return;
 
         const cur = stack[stack.length - 1];
-
         if (ind > cur) {
             const p = lines[i - 1]?.trim() || "";
             if (!p.endsWith(":")) errors.push({ line: n });

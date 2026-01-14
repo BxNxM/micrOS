@@ -4,75 +4,148 @@
   <meta charset="utf-8">
   <title>Files</title>
 
+  <!-- Mobile viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+
   <!-- Base micrOS style -->
   <link rel="stylesheet" href="../ustyle.css">
 
-  <!-- File UI minimal extras -->
+  <!-- Files UI layout-only CSS -->
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    body {
-      width: 100%;
-      padding-left: 3%;
-      padding-right: 3%;
-      box-sizing: border-box;
-    }
+    /* Main layout */
     #ui {
       display: flex;
       gap: 40px;
-      min-height: 100%;
+      height: 100%;
+      max-width: 95%;
     }
+
     #folders {
-      min-width: 140px;
+      width: clamp(120px, 20vw, 200px);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* Disk bar on top of sidebar */
+    #diskbar {
+      position: sticky;
+      top: 0;
+      margin-bottom: 12px;
+      padding: 6px 10px;
+      font-size: 12px;
+      background: rgba(255,255,255,.1);
+      border-radius: 6px;
+      backdrop-filter: blur(2px);
+      z-index: 5;
+    }
+
+    #diskmeter {
+      height: 6px;
+      background: rgba(255,255,255,.2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    #diskused {
+      height: 100%;
+      width: 0%;
+      background: #4caf50;
+    }
+
+    /* Files column */
     #files {
       flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* Always-visible header in Files */
+    #files-header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding-bottom: 8px;
+      background: rgba(255,255,255,.1);
+      border-radius: 6px;
+      backdrop-filter: blur(2px);
+    }
+
+    /* Toolbar */
     #top {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
     }
+
+    #top input[type="file"] {
+      max-width: 100%;
+    }
+
+    /* Scrollable file list ONLY */
+    #list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
     #list div {
       padding: 6px 8px;
       border-radius: 4px;
       cursor: pointer;
+      word-break: break-word;
     }
+
     #list div:hover {
       background: rgba(255,255,255,.1);
     }
+
     .sel {
-      background: rgba(255,255,255,.25);
+      background: color-mix(in srgb, white 40%, transparent);
+      outline: 2px solid color-mix(in srgb, white 60%, transparent);
     }
+
     .folders {
       margin-bottom: 8px;
     }
-</style>
-
+  </style>
 </head>
 
 <body>
   <h1> micrOS Files (beta) </h1>
 
   <div id="ui">
+    <!-- Left sidebar (fixed, no scroll) -->
     <aside id="folders">
-        <div class="folders">📂 Folders</div>
-        <div id="folder-path">/user_data</div>
+      <header id="diskbar">
+        <div id="disktext">Disk: — MB used / — MB free</div>
+        <div id="diskmeter">
+          <div id="diskused"></div>
+        </div>
+      </header>
+
+      <div class="folders">📂 Folders</div>
+      <div id="folder-path">/user_data</div>
     </aside>
 
+    <!-- Files column -->
     <main id="files">
-      <div id="top">
-        <input type="file" id="file">
-        <button onclick="upload()">🔼 Upload</button>
-        <button onclick="view()">📖 View</button>
-        <button onclick="download()">🔽 Download</button>
-        <button onclick="del()"> 🗑️ Delete</button>
-        <button onclick="editor()">📄 Edit</button>
+      <!-- Sticky files header -->
+      <div id="files-header">
+        <div id="top">
+          <input type="file" id="file">
+          <button onclick="upload()">🔼 Upload</button>
+          <button onclick="view()">📖 View</button>
+          <button onclick="download()">🔽 Download</button>
+          <button onclick="del()"> 🗑️ Delete</button>
+          <button onclick="editor()">📄 Edit</button>
+        </div>
       </div>
 
+      <!-- Only this scrolls -->
       <div id="list"></div>
     </main>
   </div>

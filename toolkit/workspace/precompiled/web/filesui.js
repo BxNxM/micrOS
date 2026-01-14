@@ -10,14 +10,6 @@ function load() {
     .then(files => {
       const list = document.getElementById('list');
 
-      // 🔹 IMPORTANT: if editor is currently under the list, move it out
-      // so list.innerHTML='' won't destroy the editor DOM while editor.js caches it.
-      const editorDiv = document.getElementById('editor');
-      if (editorDiv && list.contains(editorDiv)) {
-        list.insertAdjacentElement('beforebegin', editorDiv);
-        console.info("editor: moved to default position (list refresh)");
-      }
-
       list.innerHTML = '';
       selected = null;
       selectedEl = null;
@@ -73,7 +65,20 @@ function upload() {
   fd.append('file', f);
 
   console.info("upload:", f.name);
-  fetch('/files', { method: 'POST', body: fd }).then(load);
+  //fetch('/files', { method: 'POST', body: fd }).then(load);
+
+  fetch('/files', { method: 'POST', body: fd })
+  .then(r => {
+    if (!r.ok) {
+      return r.text().then(t => {
+        console.error("upload failed:", r.status, r.statusText, t);
+        throw new Error("upload failed");
+      });
+    }
+    return r;
+  })
+  .then(load)
+  .catch(err => console.error("upload error:", err));
 }
 
 function view() {
@@ -126,7 +131,6 @@ function loadEditorScript() {
     s.src = '../editor.js';
     s.onload = () => {
       _editorScriptLoaded = true;
-      console.info("editor.js loaded");
       resolve();
     };
     s.onerror = reject;
@@ -147,16 +151,14 @@ async function editor() {
     container.id = 'editor';
   }
 
-  // selected file → under it, no selection → above the list
-  const list = document.getElementById('list');
-  if (selectedEl) {
-    selectedEl.insertAdjacentElement('afterend', container);
-  } else if (list) {
-    list.insertAdjacentElement('beforebegin', container);
-  }
-
   window.createEditor(container);
-  window.openEditor(resource);
+
+  // 🔹 placement delegated to editor.js
+  window.openEditor(resource, {
+    anchor: selectedEl,
+    list: document.getElementById('list')
+  });
+
   editorFile = filename; // 🔹 track currently opened file
 }
 

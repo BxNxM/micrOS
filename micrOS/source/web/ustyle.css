@@ -4,10 +4,13 @@
     100% {background-position: 0% 50%;}
 }
 body {
-    height: calc(100vh - 6%); /* Set the height to 100% of the viewport height */
-    width: calc(100vw - 6%); /* Set the width to 200% of the viewport height */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    min-height: 100vh;
+    min-width: 100vw;
     margin: 3%;
+    padding: env(safe-area-inset-top)
+             env(safe-area-inset-right)
+             env(safe-area-inset-bottom)
+             env(safe-area-inset-left);
     background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
     background-size: 200% 200%;
     animation: backgroundAnimation 15s infinite;

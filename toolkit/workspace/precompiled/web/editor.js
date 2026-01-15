@@ -257,7 +257,7 @@ class EmbeddedEditor {
         const fd = new FormData();
         fd.append("file", file);
 
-        fetch("/files", { method: "POST", body: fd })
+        fetch("/fs/files", { method: "POST", body: fd })
             .then(r => {
                 if (!r.ok) {
                     return r.text().then(t => {

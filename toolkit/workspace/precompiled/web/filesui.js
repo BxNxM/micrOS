@@ -1,28 +1,27 @@
 let selected = null;
 let selectedEl = null;              // DOM element of selected file row
-let web_data_dir = 'user_data';     // fallback
+let selectedDir = 'user_data';     // fallback
 let _editorScriptLoaded = false;
 let editorFile = null;             // 🔹 track what's currently opened in editor
 
+// 🔹 centralized selection clear
+function clearSelection() {
+  document
+    .querySelectorAll('#list .file-item')
+    .forEach(x => x.className = 'file-item');
+
+  selected = null;
+  selectedEl = null;
+}
+
 function load() {
-  fetch('/files')
+  fetch('/fs/files')
     .then(r => r.json())
     .then(files => {
       const list = document.getElementById('list');
 
       list.innerHTML = '';
-      selected = null;
-      selectedEl = null;
-
-      // update web_data_dir from first file
-      if (Array.isArray(files) && files[0]?.path) {
-        web_data_dir = files[0].path
-          .split('/')
-          .slice(0, -1)
-          .join('/')
-          .replace(/^\/+/, '');
-        document.getElementById('folder-path').textContent = '/' + web_data_dir;
-      }
+      clearSelection();
 
       files.forEach(f => {
         const name = f.path.split('/').pop();
@@ -30,19 +29,16 @@ function load() {
         d.className = 'file-item';                 // ✅ mark as selectable row
         d.textContent = `${name} ${f.size}B`;
 
-        d.onclick = () => {
+        d.onclick = (e) => {
+          e.stopPropagation(); // 🔹 prevent outside-click handler
+
           // clicking same item toggles selection OFF
           if (selectedEl === d) {
-            d.className = 'file-item';
-            selected = null;
-            selectedEl = null;
+            clearSelection();
             return;
           }
 
-          // only clear selection on file rows (NOT editor internal divs)
-          document
-            .querySelectorAll('#list .file-item')
-            .forEach(x => x.className = 'file-item');
+          clearSelection();
 
           d.className = 'file-item sel';
           selected = name;
@@ -55,6 +51,49 @@ function load() {
       console.info("Files loaded");
     })
     .catch(err => console.error("load failed:", err));
+
+  loadDirs();
+  updateDiskUsage();
+}
+
+function loadDirs() {
+  fetch('/fs/dirs')
+    .then(r => r.json())
+    .then(dirs => {
+      const container = document.getElementById('folder-path');
+      container.innerHTML = '';
+
+      if (!Array.isArray(dirs) || !dirs.length) return;
+
+      let first = true;
+
+      dirs.forEach(dir => {
+        const d = document.createElement('div');
+        d.className = 'dir-item';
+        d.textContent = dir;
+
+        d.onclick = () => {
+          document
+            .querySelectorAll('#folder-path .dir-item')
+            .forEach(x => x.className = 'dir-item');
+
+          d.className = 'dir-item sel';
+          selectedDir = dir.replace(/^\/+/, '');
+        };
+
+        container.appendChild(d);
+
+        // auto-select first dir
+        if (first) {
+          first = false;
+          d.className = 'dir-item sel';
+          selectedDir = dir.replace(/^\/+/, '');
+        }
+
+        console.info("Folders loaded");
+      });
+    })
+    .catch(err => console.error("dirs load failed:", err));
 }
 
 function upload() {
@@ -65,25 +104,22 @@ function upload() {
   fd.append('file', f);
 
   console.info("upload:", f.name);
-  //fetch('/files', { method: 'POST', body: fd }).then(load);
-
-  fetch('/files', { method: 'POST', body: fd })
-  .then(r => {
-    if (!r.ok) {
-      return r.text().then(t => {
-        console.error("upload failed:", r.status, r.statusText, t);
-        throw new Error("upload failed");
-      });
-    }
-    return r;
-  })
-  .then(load)
-  .catch(err => console.error("upload error:", err));
+  fetch('/fs/files', { method: 'POST', body: fd })
+    .then(r => {
+      if (!r.ok) {
+        return r.text().then(t => {
+          console.error("upload failed:", r.status, r.statusText, t);
+          throw new Error("upload failed");
+        });
+      }
+    })
+    .then(load)
+    .catch(err => console.error("upload error:", err));
 }
 
 function view() {
   if (!selected) return;
-  const resource = `/${web_data_dir}/${selected}`;
+  const resource = `/${selectedDir}/${selected}`;
   console.info('view:', resource);
   window.open(resource);
 }
@@ -91,15 +127,13 @@ function view() {
 function download() {
   if (!selected) return;
 
-  const resource = `/${web_data_dir}/${selected}`;
+  const resource = `/${selectedDir}/${selected}`;
   console.info('download:', resource);
 
   const a = document.createElement('a');
   a.href = resource;
   a.download = selected;
-  document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
 }
 
 function del() {
@@ -108,13 +142,11 @@ function del() {
   const toDelete = selected;
   console.info("delete:", toDelete);
 
-  fetch('/files', { method: 'DELETE', body: toDelete })
+  fetch('/fs/files', { method: 'DELETE', body: toDelete })
     .then(() => {
       // 🔹 If the deleted file is open in editor → DESTROY editor
       if (_editorScriptLoaded && editorFile === toDelete) {
-        if (window.destroyEditor) {
-          window.destroyEditor();
-        }
+        window.destroyEditor?.();
         editorFile = null;
         console.info("editor: destroyed (file deleted)");
       }
@@ -140,7 +172,7 @@ function loadEditorScript() {
 
 async function editor() {
   const filename = selected ?? "blinky.py";
-  const resource = `/${web_data_dir}/${filename}`;
+  const resource = `/${selectedDir}/${filename}`;
   console.info('editor:', resource);
 
   await loadEditorScript();
@@ -161,5 +193,45 @@ async function editor() {
 
   editorFile = filename; // 🔹 track currently opened file
 }
+
+function updateDiskUsage() {
+  fetch('/fs/usage')
+    .then(r => r.json())
+    .then(data => {
+      const usedMB = (data.used / (1024 * 1024)).toFixed(1);
+      const freeMB = (data.free / (1024 * 1024)).toFixed(1);
+      const total = data.used + data.free;
+      const percent = total ? (data.used / total) * 100 : 0;
+
+      document.getElementById('disktext').textContent =
+        `Disk: ${usedMB} MB used / ${freeMB} MB free`;
+
+      document.getElementById('diskused').style.width =
+        `${percent.toFixed(1)}%`;
+
+      console.info("DiskUsage: update");
+    })
+    .catch(err => console.error("disk usage failed:", err));
+}
+
+// 🔹 Global outside-click handler
+document.addEventListener('click', (e) => {
+  // Ignore toolbar / editor buttons
+  if (e.target.closest('button')) return;
+
+  // If editor is open, keep selection locked
+  if (_editorScriptLoaded && editorFile) return;
+
+  const list = document.getElementById('list');
+  const editor = document.getElementById('editor');
+
+  if (
+    list &&
+    !list.contains(e.target) &&
+    (!editor || !editor.contains(e.target))
+  ) {
+    clearSelection();
+  }
+});
 
 load();

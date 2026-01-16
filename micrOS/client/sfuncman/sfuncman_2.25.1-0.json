@@ -68,12 +68,8 @@
             "param(s)": "quality='medium' freq='ault' effect=\"NONE\""
         },
         "photo": {
-            "doc": null,
-            "param(s)": "name='photo.jpg'"
-        },
-        "set_photo_endpoint": {
-            "doc": "\n    Set photo endpoint (rest endpoint)\n    ",
-            "param(s)": ""
+            "doc": "\n    Create photo and save it under /web/<user_data>\n    ",
+            "param(s)": "name='photo.jpeg'"
         },
         "settings": {
             "doc": "\n    Camera settings\n    :param flip: flip image True/False\n    :param mirror: mirror image True/False\n    :param effect: None (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    :param saturation:  0-100 %\n    :param brightness:  0-100 %\n    :param contrast:    0-100 %\n    :param whitebalace: NONE (default) SUNNY, CLOUDY, OFFICE, HOME\n    :param q:           10-63 lower number means higher quality\n    ",
@@ -462,6 +458,10 @@
         }
     },
     "fileserver": {
+        "get_user_dir": {
+            "doc": "\n    Getter for shared usr dir path\n    ",
+            "param(s)": ""
+        },
         "help": {
             "doc": "\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"

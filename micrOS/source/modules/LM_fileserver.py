@@ -33,6 +33,13 @@ def validate_filename(filename: str):
         raise ValueError(f"Filename contains invalid characters: {filename} ({dirname})")
 
 
+def get_user_dir():
+    """
+    Getter for shared usr dir path
+    """
+    return Shared.ROOT_DIR
+
+
 def _list_file_paths_clb():
     """
     List files shared path

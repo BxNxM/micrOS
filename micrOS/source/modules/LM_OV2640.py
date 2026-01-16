@@ -3,7 +3,7 @@ try:
 except Exception as e:
     camera = None
 import time
-from Common import web_endpoint, syslog
+from Common import web_endpoint, syslog, exec_cmd
 from Types import resolve
 
 IN_CAPTURE = False      # Make sure single capture in progress in the same time
@@ -57,6 +57,8 @@ def _set_web_endpoints():
     # Register rest endpoint
     web_endpoint('cam/snapshot', _snapshot_clb)
     web_endpoint('cam/stream', _image_stream_clb)
+    web_endpoint('cam/photo', lambda: ('text/plain', photo()))
+    return "Endpoint created: /cam/snapshot, /cam/stream, /cam/photo"
 
 
 def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None, brightness=None, contrast=None, whitebalace=None, q=None):
@@ -159,13 +161,22 @@ def capture():
     return buf
 
 
-def photo(name='photo.jpg'):
+def photo(name='photo.jpeg'):
+    """
+    Create photo and save it under /web/<user_data>
+    """
+    status, path = exec_cmd(cmd=['fileserver', 'get_user_dir'], jsonify=False, secure=True)
+    if not status:
+        return "No shared path available: fileserver get_user_dir"
+    photo_path = f"{path}/{name}"
+    # Take a Photo
     buf = capture()
-    with open(name, 'w') as f:
+    # Save the Photo
+    with open(photo_path, 'wb') as f:
         if buf:
             f.write(buf)
-            return "Image saved as photo.jpg"
-    return "Cannot save... photo.jpg"
+            return f"Image saved as {photo_path}"
+    return f"Cannot save... {photo_path}"
 
 
 def _snapshot_clb():
@@ -179,21 +190,7 @@ def _image_stream_clb():
     return 'multipart/x-mixed-replace', {'callback': capture, 'content-type': 'image/jpeg'}
 
 
-def _img_clb(name="photo.jpg"):
-    with open(name, 'rb') as f:
-        image = f.read()
-    return 'image/jpeg', image
-
-
-def set_photo_endpoint():
-    """
-    Set photo endpoint (rest endpoint)
-    """
-    web_endpoint('photo', _img_clb)
-    return "Endpoint created: /photo"
-
-
-def __light_init():
+def _light_init():
     global FLASH_LIGHT
     if FLASH_LIGHT is None:
         from machine import Pin
@@ -205,7 +202,7 @@ def flashlight(state=None):
     Camera flashlight
     :param state: True/False/None(automatic)
     """
-    fl = __light_init()
+    fl = _light_init()
     if state is None:
         state = fl.value(not fl.value())
     else:
@@ -228,7 +225,6 @@ def help(widgets=False):
         'BUTTON settings effect=<NONE,NEG,BW,RED,GREEN,BLUE,RETRO>',
         'capture',
         'photo',
-        'set_photo_endpoint',
         'BUTTON flashlight state=None',
         '[Hint] after load you can access the /cam/snapshot and /cam/stream endpoints',
         'Thanks to :) https://github.com/lemariva/micropython-camera-driver'), widgets=widgets)

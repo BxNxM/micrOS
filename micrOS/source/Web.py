@@ -167,7 +167,8 @@ class WebEngine:
             resource = 'index.html' if url == '/' else url.lstrip('/')
             web_resource = path_join(OSPath.WEB, resource)                  # Redirect path to web folder
             self.client.console(f"[WebCli] --- {url} ACCEPT -> {web_resource}")
-            if resource.split('.')[-1] not in self.CONTENT_TYPES:
+            if "/" not in resource and resource.split('.')[-1] not in self.CONTENT_TYPES:
+                # Validate /web root types only - otherwise default fallback type for unknowns: "text/plain"
                 await self.client.a_send(self.REQ404.format(len=27, data='404 Not Supported File Type'))
                 return True
             try:

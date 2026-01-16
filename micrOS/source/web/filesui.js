@@ -96,31 +96,31 @@ function loadDirs() {
     .catch(err => console.error("dirs load failed:", err));
 }
 
-function upload() {
+function uploadFile() {
   const f = file.files[0];
   if (!f) return;
 
   const fd = new FormData();
   fd.append('file', f);
 
-  console.info("upload:", f.name);
+  console.info("uploadFile:", f.name);
   fetch('/fs/files', { method: 'POST', body: fd })
     .then(r => {
       if (!r.ok) {
         return r.text().then(t => {
-          console.error("upload failed:", r.status, r.statusText, t);
-          throw new Error("upload failed");
+          console.error("uploadFile failed:", r.status, r.statusText, t);
+          throw new Error("uploadFile failed");
         });
       }
     })
     .then(load)
-    .catch(err => console.error("upload error:", err));
+    .catch(err => console.error("uploadFile error:", err));
 }
 
-function view() {
+function openFile() {
   if (!selected) return;
   const resource = `/${selectedDir}/${selected}`;
-  console.info('view:', resource);
+  console.info('openFile:', resource);
   window.open(resource);
 }
 
@@ -136,11 +136,11 @@ function download() {
   a.click();
 }
 
-function del() {
+function deleteFile() {
   if (!selected) return;
 
   const toDelete = selected;
-  console.info("delete:", toDelete);
+  console.info("deleteFile:", toDelete);
 
   fetch('/fs/files', { method: 'DELETE', body: toDelete })
     .then(() => {
@@ -148,11 +148,11 @@ function del() {
       if (_editorScriptLoaded && editorFile === toDelete) {
         window.destroyEditor?.();
         editorFile = null;
-        console.info("editor: destroyed (file deleted)");
+        console.info("deleteFile: editor destroyed");
       }
     })
     .then(load)
-    .catch(err => console.error("delete failed:", err));
+    .catch(err => console.error("deleteFile failed:", err));
 }
 
 function loadEditorScript() {

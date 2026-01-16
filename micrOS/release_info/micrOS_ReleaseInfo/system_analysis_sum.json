@@ -116,6 +116,10 @@
             7.69,
             0
         ],
+        "modules/LM_web.py": [
+            6.67,
+            0
+        ],
         "modules/LM_genIO.py": [
             9.12,
             0
@@ -293,7 +297,7 @@
             0
         ],
         "modules/LM_dashboard_be.py": [
-            6.25,
+            5.71,
             0
         ],
         "modules/LM_dimmer.py": [
@@ -331,8 +335,8 @@
             25
         ],
         "load": [
-            9972,
-            56
+            10002,
+            57
         ],
         "core_dep": [
             true,
@@ -343,7 +347,7 @@
             5
         ],
         "core_score": 9.27,
-        "load_score": 8.45,
-        "version": "2.25.1-0"
+        "load_score": 8.41,
+        "version": "2.25.2-0"
     }
 }

@@ -1,26 +1,26 @@
 """
-Enable web endpoint dashboard.html -> dashboard
+OBSOLETED Web backend loader
 """
 
-from Common import web_endpoint
-
-def load():
-    return create_dashboard()
+from LM_web import load as web_load
 
 
-def create_dashboard():
+def load(*args, **kwargs):
     """
-    Create dashboard endpoint
+    OBSOLETED: use web load instead
     """
-    web_endpoint('dashboard', 'dashboard.html')
-    return 'Endpoint created: /dashboard'
+    return create_dashboard(*args, **kwargs)
+
+
+def create_dashboard(*args, **kwargs):
+    """
+    OBSOLETED: use web load instead
+    """
+    return web_load(*args, **kwargs)
 
 
 def help(widgets=False):
     """
-    [i] micrOS LM naming convention - built-in help message
-    :return tuple:
-        (widgets=False) list of functions implemented by this application
-        (widgets=True) list of widget json for UI generation
+    OBSOLETED: use web load instead
     """
     return 'load', 'create_dashboard', 'help'

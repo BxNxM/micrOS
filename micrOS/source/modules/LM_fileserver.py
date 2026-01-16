@@ -138,7 +138,7 @@ def _disk_usage_clb():
 def load(web_data_dir:str=None):
     """
     Initialize fileserver.
-    :param web_data_dir: web data public directory (default: web_data)
+    :param web_data_dir: web data public directory (default: /web/<user_data>)
     """
     if isinstance(web_data_dir, str):
         # Customize public web dir name
@@ -163,7 +163,7 @@ def load(web_data_dir:str=None):
     web_endpoint('fs/usage', _disk_usage_clb)
     web_endpoint('fs', 'filesui.html')
 
-    return "Fileserver was initialized, endpoints: /files and /files/ui"
+    return "Fileserver was initialized, endpoints: /fs, /fs/files, /fs/dirs, /fs/usage"
 
 
 #######################
@@ -171,5 +171,5 @@ def load(web_data_dir:str=None):
 #######################
 
 def help(widgets=False):
-    return (f'load relative_path=<path relative to {web_dir()} for the root directory of user data>',
+    return (f'load web_data_dir=<shared directory under {web_dir()}>',
             'validate_filename "<str>"')

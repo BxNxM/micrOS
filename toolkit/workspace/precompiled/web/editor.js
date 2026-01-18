@@ -117,8 +117,7 @@ function injectCSS() {
 .mp-editor .editor {
     display: flex;
     height: 400px;
-    overflow-y: auto;
-    overflow: auto;
+    overflow: hidden;
 }
 .mp-editor .lines {
     background: #252526;
@@ -128,6 +127,7 @@ function injectCSS() {
     user-select: none;
     line-height: 1.4em;
     flex-shrink: 0;
+    overflow: hidden;
 }
 .mp-editor textarea {
     flex: 1;
@@ -139,10 +139,25 @@ function injectCSS() {
     outline: none;
     font-family: monospace;
     line-height: 1.4em;
-    overflow: visible;
+    overflow: auto;
 }
 `;
     document.head.appendChild(css);
+}
+
+/* ---------- Syntax registry ---------- */
+
+// 🔹 NEW
+const SYNTAX_CHECKERS = {
+    ".py": checkPythonSyntax,
+    // ".js": checkJSSyntax,
+    // ".html": checkHTMLSyntax,
+};
+
+// 🔹 NEW
+function getCheckerFor(name) {
+    const ext = "." + name.split(".").pop().toLowerCase();
+    return SYNTAX_CHECKERS[ext] || null;
 }
 
 /* ---------- Editor Implementation ---------- */
@@ -172,10 +187,11 @@ class EmbeddedEditor {
         <textarea class="code"></textarea>
     </div>
 </div>`;
-        this.codeEl   = this.container.querySelector(".code");
-        this.linesEl  = this.container.querySelector(".lines");
-        this.fileEl   = this.container.querySelector(".filename");
+        this.codeEl = this.container.querySelector(".code");
+        this.linesEl = this.container.querySelector(".lines");
+        this.fileEl = this.container.querySelector(".filename");
         this.statusEl = this.container.querySelector(".status");
+        this.syntaxBtn = this.container.querySelector(".syntax"); // 🔹 NEW
     }
 
     bindEvents() {
@@ -199,6 +215,9 @@ class EmbeddedEditor {
                 this.updateLines();
             }
         });
+        this.fileEl.addEventListener("input", () => // 🔹 NEW
+            this.updateSyntaxAvailability()
+        );
         this.container.querySelector(".load")
             .addEventListener("click", () => this.loadFile());
         this.container.querySelector(".save")
@@ -210,18 +229,29 @@ class EmbeddedEditor {
     }
 
     /* ---------- UI helpers ---------- */
+
     setStatus(text, type = "info") {
         this.statusEl.textContent = text;
         this.statusEl.className = "status " + type;
     }
 
+    updateSyntaxAvailability() { // 🔹 NEW
+        this.syntaxBtn.style.display =
+            getCheckerFor(this.fileEl.value) ? "" : "none";
+    }
+
     updateLines() {
+        const scroll = this.codeEl.scrollTop;
+
         const count = this.codeEl.value.split("\n").length + 1;
         this.linesEl.innerHTML =
             Array.from({ length: count }, (_, i) => i + 1).join("<br>");
+
+        this.linesEl.scrollTop = scroll;
     }
 
     /* ---------- File ops ---------- */
+
     open(url) {
         if (!url) return this.loadExample();
 
@@ -232,6 +262,7 @@ class EmbeddedEditor {
                 this.codeEl.value = t;
                 this.fileEl.value = url;
                 this.updateLines();
+                this.updateSyntaxAvailability(); // 🔹 NEW
                 this.setStatus("loaded", "ok");
             })
             .catch(() => this.setStatus("load failed", "err"));
@@ -274,8 +305,12 @@ class EmbeddedEditor {
     }
 
     /* ---------- Syntax ---------- */
-    syntaxCheck() {
-        const r = checkPythonSyntax(this.codeEl.value);
+
+    syntaxCheck() { // 🔹 MODIFIED
+        const checker = getCheckerFor(this.fileEl.value);
+        if (!checker) return;
+
+        const r = checker(this.codeEl.value);
         this.setStatus(
             r.ok ? "syntax OK" : `error @ line ${r.errors[0].line}`,
             r.ok ? "ok" : "err"
@@ -283,6 +318,7 @@ class EmbeddedEditor {
     }
 
     /* ---------- Example ---------- */
+
     loadExample() {
         console.info("editor.js: EmbeddedEditor.loadExample");
         this.codeEl.value =
@@ -319,10 +355,12 @@ def help(widgets=False):
 `;
         this.fileEl.value = "blinky.py";
         this.updateLines();
+        this.updateSyntaxAvailability(); // 🔹 NEW
         this.setStatus("example loaded", "info");
     }
 
     /* ---------- Close ---------- */
+
     close() {
         this.container.innerHTML = "";
     }

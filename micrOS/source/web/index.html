@@ -7,10 +7,15 @@
     <title>microWeb</title>
     <link rel="stylesheet" href="ustyle.css">
     <style>
+      hr {
+          border: none;
+          height: 2px;
+          background: rgba(255, 255, 255, 0.25);
+          margin: 16px 0;
+      }
       #restInfoHeader {
           margin-bottom: 12px;
       }
-
       /* Container */
       .endpoint-groups {
           display: flex;
@@ -45,8 +50,10 @@
     <h1> microWeb server </h1>
     <div id="restInfo">
         <div id="restInfoHeader"></div>
+        <div id="endpointHint">🔗 Endpoints:</div>
         <div id="endpointGroups" class="endpoint-groups"></div>
     </div>
+    <hr>
     <h2>🚀 REST API</h2>
     <p>Shortcuts:</p>
     <button onclick="restAPI('system/info')">SysInfo</button>

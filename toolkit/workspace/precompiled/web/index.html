@@ -6,14 +6,49 @@
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="black" />
     <title>microWeb</title>
     <link rel="stylesheet" href="ustyle.css">
+    <style>
+      #restInfoHeader {
+          margin-bottom: 12px;
+      }
+
+      /* Container */
+      .endpoint-groups {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-bottom: 12px;
+          width: 100%;
+      }
+
+      /* Group cards */
+      .endpoint-group {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 6px;
+          padding: 8px;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(2px);
+          max-width: 100%;
+      }
+
+      /* Prevent buttons from getting tiny */
+      .endpoint-group button {
+          white-space: nowrap;
+      }
+    </style>
     <script src="uapi.js" defer></script>
 </head>
 <body>
     <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
     <h1> microWeb server </h1>
-    <p id="restInfo"></p>
+    <div id="restInfo">
+        <div id="restInfoHeader"></div>
+        <div id="endpointGroups" class="endpoint-groups"></div>
+    </div>
     <h2>🚀 REST API</h2>
-    <p>Clickable examples 🕹</p>
+    <p>Shortcuts:</p>
     <button onclick="restAPI('system/info')">SysInfo</button>
     <button onclick="restAPI('system/alarms')">Alarms</button>
     <button onclick="restAPI('system/clock')">Clock</button>

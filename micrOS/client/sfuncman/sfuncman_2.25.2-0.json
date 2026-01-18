@@ -261,21 +261,6 @@
             "param(s)": ""
         }
     },
-    "dashboard_be": {
-        "create_dashboard": {
-            "doc": "\n    OBSOLETED: use web load instead\n    ",
-            "param(s)": "*args **kwargs"
-        },
-        "help": {
-            "doc": "\n    OBSOLETED: use web load instead\n    \n[i] micrOS Widget Types:\n\tN/A",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/dashboard_be.png?raw=true",
-        "load": {
-            "doc": "\n    OBSOLETED: use web load instead\n    ",
-            "param(s)": "*args **kwargs"
-        }
-    },
     "dht11": {
         "help": {
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure log=False', 'refresh': 10000}",

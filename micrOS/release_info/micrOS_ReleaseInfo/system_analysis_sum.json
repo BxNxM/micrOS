@@ -296,10 +296,6 @@
             9.55,
             0
         ],
-        "modules/LM_dashboard_be.py": [
-            5.71,
-            0
-        ],
         "modules/LM_dimmer.py": [
             8.32,
             0
@@ -335,8 +331,8 @@
             25
         ],
         "load": [
-            10002,
-            57
+            9983,
+            56
         ],
         "core_dep": [
             true,
@@ -347,7 +343,7 @@
             5
         ],
         "core_score": 9.27,
-        "load_score": 8.41,
+        "load_score": 8.46,
         "version": "2.25.2-0"
     }
 }

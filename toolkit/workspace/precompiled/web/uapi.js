@@ -41,6 +41,46 @@ function restConsole(apiUrl, data, delta) {
     document.getElementById('restConsoleTime').innerHTML = `⏱ Response time: ${delta} ms`;
 }
 
+function renderEndpointGroups(endpoints) {
+    const container = document.getElementById('endpointGroups');
+    if (!container) {return;}
+    container.innerHTML = '';
+    if (!Array.isArray(endpoints) || endpoints.length === 0) {return;}
+    const groups = endpoints.reduce((acc, endpoint) => {
+        const trimmed = endpoint.replace(/^\/+/, '');
+        if (!trimmed) {return acc;}
+        const root = trimmed.split('/')[0];
+        acc[root] = acc[root] || [];
+        acc[root].push(trimmed);
+        return acc;
+    }, {});
+    Object.keys(groups).sort().forEach(group => {
+        const entries = groups[group].sort();
+        const isSingle = entries.length === 1 && entries[0] === group;
+        if (isSingle) {
+            const button = document.createElement('button');
+            button.textContent = group;
+            button.onclick = () => window.open(`/${group}`, '_blank');
+            container.appendChild(button);
+            return;
+        }
+        const groupEl = document.createElement('div');
+        groupEl.className = 'endpoint-group';
+        const title = document.createElement('span');
+        title.className = 'endpoint-group-title';
+        title.textContent = group;
+        groupEl.appendChild(title);
+        entries.forEach(entry => {
+            const label = entry === group ? group : entry.replace(`${group}/`, '');
+            const button = document.createElement('button');
+            button.textContent = label;
+            button.onclick = () => window.open(`/${entry}`, '_blank');
+            groupEl.appendChild(button);
+        });
+        container.appendChild(groupEl);
+    });
+}
+
 function restInfo(showPages=true) {
     // UPDATES: 'restInfo' and restConsole(...)
     restAPICore(cmd = '').then(({ response, delta, query }) => {
@@ -50,13 +90,11 @@ function restInfo(showPages=true) {
         const result = response['result'];
         const auth = result.auth ? "🔑" : "";
         let infoHeader = `micrOS: ${result.micrOS} ❖ node: ${result.node}${auth}`;
-        let infoSubpages = "";
-        if (showPages && result['usr_endpoints']) {
-            infoSubpages = "<br><br>📎 " + Object.entries(result['usr_endpoints'])
-                .map(([key, value]) => `<a href="${value}" target="_blank" style="color: white;">${value} </a>`)
-                .join(' | ');
+        if (showPages) {
+            const endpoints = result['usr_endpoints'] ? Array.from(result['usr_endpoints']) : [];
+            renderEndpointGroups(endpoints);
         }
-        document.getElementById('restInfo').innerHTML = infoHeader + infoSubpages;
+        document.getElementById('restInfoHeader').innerHTML = infoHeader;
     }).catch(error => {
         console.error('Error in restAPI:', error);
     });

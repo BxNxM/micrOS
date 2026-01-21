@@ -560,17 +560,17 @@ Version **3.0.0-0** `micrOS-Autonomous`
 
 		- (6) [DONE] Proper mip installer support (/modules or /lib or /web)
 			- Note: Autonomous package management over wifi (github)
-				- pacman install             [DONE]
-				- pacman uninstall           [DONE]
-				- pacman ls                  [DONE]
-				- pacman dirtree             [DONE]
-				- pacman ...
-
+				- pacman install <package-url>
+				- pacman uninstall <package-name>
+				- pacman upgrade <package-name>.      [TODO]
+				- pacman ls
+				- pacman dirtree
 		- (7) [DONE] /config/requirements.txt handling (native micropython requirements syntax)
-			-  pacman download "requirements.txt"
-
+			-  pacman install "requirements.txt"
 		- (8) [DONE] micrOS/packages - submodule to create individual installable applications for micrOS
 			- Application registry (package.json and pacman.json): https://github.com/BxNxM/micrOSPackages 
+			- [TODO] micrOS devToolKit micrOS/packages Load Module feature rendering (same as for built-in LMs)
+				- sfuncman.json and sfuncman.html in separate external packages section... 
 
 		- (9) [DONE] micropython uplift to `1.27`
 			- [DONE] fix micrOS USB update config restore issue 
@@ -589,6 +589,11 @@ Version **3.1.0-0** `micrOS-Waterbear`
     Core:
     - Low power mode (wake on event, hibernate command)?
     	- Remote controller / Sensor UseCase
+    - WebEngine additional path shering:
+    	- web shared root (already done): /web
+    	- optional additional pathes:
+    		- @modules -> /modules
+    		- @data    -> /data
 ```
 
 
@@ -625,6 +630,7 @@ Version **3.X.0-0** `micrOS-SecurePower`
 |  **v 1.21.0-4** | [release_Info-1.21.0-4](./micrOS/release_info/micrOS_ReleaseInfo/release_1.21.0-4_note_esp32.md) |  **57.3%** 63 728 byte | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.21.0-4.json) | Full async core system with advanced task management and device to device communication, task scheduling and much more ... with more then 30 application/pheriphery support.
 |  **v 2.0.0-0** | [release_Info-2.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.0.0-0_note_esp32.md) |  **45.4%** 68.7 kb | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.0.0-0.json) | Optimizations, WebCli with web frontends, Camera support. Micropython 1.21 async maxed out :D
 |  **v 2.6.0-0** | [release_Info-2.6.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.6.0-0_note_esp32.md) |  **48.3%** 72.6 kb  | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.6.0-0.json) | WebCli http server enhancements. New webapps: dashboard. Core system official interface finalization towards Load Modules: Common.py, Types.py (frontend generation), microIO.py (pinout handling).
+|  **v 3.0.0-0** | [release_Info-3.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_3.0.0-0_note_esp32.md) |  **??%** ?? kb  | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_3.0.0-0.json) | ... Coming soon ...
 
 ----------------------------------------
 ----------------------------------------

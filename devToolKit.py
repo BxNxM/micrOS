@@ -9,11 +9,14 @@ if len(sys.argv) > 1 and sys.argv[1] in ['light', '--light']:
     print('LIGHT DEPLOYMENT: skip optional dependencies')
     sys.argv.remove(sys.argv[1])
 else:
-    # INSTALL OPTIONAL DEPENDENCIES - PIP HACK
-    from toolkit.lib import pip_package_installer as pip_install
-    pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.24.1.post2', 'matplotlib'])
-    if sys.platform.startswith("win"):
-        pip_install.install_optional_dependencies(['pyreadline3'])
+    if os.environ.get("VIRTUAL_ENV", None) is not None:
+        print("[PIP] Active virtualenv detected - skip optional dependency install (dev mode).")
+    else:
+        # INSTALL OPTIONAL DEPENDENCIES - PIP HACK
+        from toolkit.lib import pip_package_installer as pip_install
+        pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.24.1.post2', 'matplotlib'])
+        if sys.platform.startswith("win"):
+            pip_install.install_optional_dependencies(['pyreadline3'])
 
 # NORMAL CODE ...
 MYPATH = os.path.dirname(__file__)

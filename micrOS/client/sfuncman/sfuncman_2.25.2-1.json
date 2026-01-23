@@ -841,7 +841,7 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'clear ', 'options': ['None']}\n\t{'type': 'color', 'lm_call': 'color_fill r=:range: g=:range: b=:range:', 'range': [0, 255, 5]}\n\t{'type': 'slider', 'lm_call': 'brightness br=:range:', 'range': [0, 60, 2]}\n\t{'type': 'button', 'lm_call': 'stop ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'snake speed_ms=50 length=5', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'rainbow ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'spiral speed_ms=40', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'noise speed_ms=85', 'options': ['None']}\n\t{'type': 'slider', 'lm_call': 'control speed_ms=:range: bt_draw=None', 'range': [1, 200, 2]}",
+            "doc": "\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'clear ', 'options': ['None']}\n\t{'type': 'color', 'lm_call': 'color_fill r=:range: g=:range: b=:range:', 'range': [0, 255, 5]}\n\t{'type': 'slider', 'lm_call': 'brightness br=:range:', 'range': [0, 60, 2]}\n\t{'type': 'button', 'lm_call': 'stop ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'snake speed_ms=50 length=5', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'rainbow ', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'spiral speed_ms=40', 'options': ['None']}\n\t{'type': 'button', 'lm_call': 'noise speed_ms=85', 'options': ['None']}\n\t{'type': 'slider', 'lm_call': 'control speed_ms=:range: bt_draw=None', 'range': [1, 200, 2]}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
@@ -1112,7 +1112,7 @@
             "param(s)": "cmd=None run=False"
         },
         "help": {
-            "doc": "\n    New generation of oled_ui\n    - with async frames\n    \n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'control cmd=:options:', 'options': ['prev', 'press', 'next', 'on', 'off']}\n\t{'type': 'button', 'lm_call': 'debug state=:options:', 'options': ['True', 'False']}",
+            "doc": "\n    New generation of oled_ui\n    - with async frames\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'button', 'lm_call': 'control cmd=:options:', 'options': ['prev', 'press', 'next', 'on', 'off']}\n\t{'type': 'button', 'lm_call': 'debug state=:options:', 'options': ['True', 'False']}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true",

@@ -47,7 +47,7 @@ def apply_sim_patch():
         overwritten_files, ext_load_module = package_unpack.unpack_all(Path(SIM_PATH))
         for mod in overwritten_files:
             print(f"\t⚠️ [SIM][UNPACK] Overwritten file from packages submodule: {mod}")
-        EXTERNAL_LOAD_MODULES_FROM_PACKAGES = [elm.split("_")[-1].split(".")[0] for elm in ext_load_module if elm.startswith("LM_")]
+        EXTERNAL_LOAD_MODULES_FROM_PACKAGES = [elm.lstrip("LM_").split(".")[0] for elm in ext_load_module if elm.startswith("LM_")]
         # Time module patch - extend with basic micropython utime features for micrOS Simulator
         import utime
         time.ticks_ms = utime.ticks_ms

@@ -727,7 +727,7 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    Show public functions. Return a tuple of public function usage strings for the MQTT module.\n    :param widgets: Unused, reserved for extra help formatting.\n    :return: Tuple of help strings.\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "doc": "\n    Show public functions. Return a tuple of public function usage strings for the MQTT module.\n    :param widgets: Unused, reserved for extra help formatting.\n    :return: Tuple of help strings.\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mqtt_client.png?raw=true",

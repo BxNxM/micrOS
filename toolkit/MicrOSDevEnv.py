@@ -136,11 +136,7 @@ class MicrOSDevTool(OTA, USB):
             self.console("[ERROR] micrOS SIM\n{}".format(e))
         workdir_handler.popd()
 
-    def LM_functions_static_dump_gen(self):
-        """
-        Generate static module-function provider json description: sfuncman.json
-        [!] name dependency with micrOS internal manual provider
-        """
+    def _build_doc_load_module_structure(self):
 
         def _is_private_func(_line):
             nonlocal decorator, line
@@ -156,18 +152,15 @@ class MicrOSDevTool(OTA, USB):
             # Ignore non functions, and hidden functions (starts with _)
             return True
 
-        if not os.path.isdir(self.sfuncman_output_path):
-            self.console('DOC GEN DISABLED', state="WARN")
-            return
-
-        repo_version = self.get_micros_version_from_repo()
-        static_help_json_path = os.path.join(self.sfuncman_output_path, 'sfuncman_{}.json'.format(repo_version))
-        static_help_html_path = os.path.join(self.sfuncman_output_path, 'sfuncman.html')
-
         # [PARSING] Collect Load Module function structure buffer
-        modules_path = os.path.join(self.micrOS_dir_path, "modules")
-        modules_to_doc = (i.split('.')[0] for i in LocalMachine.FileHandler.list_dir(modules_path) if
-                          i.startswith('LM_') and (i.endswith('.py')))
+        modules_sim_path = os.path.join(self.micros_sim_workspace, "modules")
+        if LocalMachine.FileHandler.path_is_exists(modules_sim_path):
+            modules_path = modules_sim_path
+        else:
+            modules_path = os.path.join(self.micrOS_dir_path, "modules")
+        self.console(f"[DOC-GEN] INPUT MODULES PATH: {modules_path}")
+        modules_to_doc = [i.split('.')[0] for i in LocalMachine.FileHandler.list_dir(modules_path) if
+                          i.startswith('LM_') and (i.endswith('.py'))]
         module_function_dict = {}
         for LM in modules_to_doc:
             LMpath = '{}/{}.py'.format(modules_path, LM)
@@ -201,9 +194,26 @@ class MicrOSDevTool(OTA, USB):
                         module_function_dict[module_name][func]['param(s)'] = param if len(param) > 0 else ""
 
                 # Create / update module data fields
-                module_function_dict[module_name]['img'] = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
+                module_function_dict[module_name][
+                    'img'] = f"https://github.com/BxNxM/micrOS/blob/master/media/lms/{module_name}.png?raw=true"
             except Exception as e:
                 self.console("STATIC micrOS HELP GEN: LM [{}] PARSER ERROR: {}".format(LM, e))
+        self.console(f"[DOC-GEN] Detected modules: {module_function_dict.keys()}")
+        return module_function_dict
+
+    def LM_functions_static_dump_gen(self):
+        """
+        Generate static module-function provider json description: sfuncman.json
+        [!] name dependency with micrOS internal manual provider
+        """
+
+        if not os.path.isdir(self.sfuncman_output_path):
+            self.console('DOC GEN DISABLED', state="WARN")
+            return
+
+        repo_version = self.get_micros_version_from_repo()
+        static_help_json_path = os.path.join(self.sfuncman_output_path, 'sfuncman_{}.json'.format(repo_version))
+        static_help_html_path = os.path.join(self.sfuncman_output_path, 'sfuncman.html')
 
         # Prepare (update simulator workspace)
         self.simulator(prepare_only=True)
@@ -212,6 +222,7 @@ class MicrOSDevTool(OTA, USB):
         import simulator
         sim_proc = simulator.micrOSIM(doc_resolve=True)
         # Generate function doc-strings and pinmap info
+        module_function_dict = self._build_doc_load_module_structure()
         _out = sim_proc.gen_lm_doc_json_html(module_function_dict)
         if _out is None:
             self.console("#########################", state='ERR')

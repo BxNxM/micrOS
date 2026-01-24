@@ -114,6 +114,33 @@
             "param(s)": ""
         }
     },
+    "blinky": {
+        "blink": {
+            "doc": "\n    Blink the LED a given number of times with blocking delay.\n\n    :param count: how many times to toggle ON/OFF (default: 10)\n    :param delay_ms: delay between toggles in milliseconds (default: 200)\n    :return: status string when finished\n    ",
+            "param(s)": "count=10 delay_ms=200"
+        },
+        "help": {
+            "doc": "\n    micrOS LM naming convention - built-in help message.\n\n    :param widgets: kept for compatibility, not used here\n    :return: tuple of exported function names\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/blinky.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize and cache the LED pin.\n\n    :param pin_number: physical GPIO number (default: 26)\n    :return: Pin instance\n    ",
+            "param(s)": "pin_number=26"
+        },
+        "off": {
+            "doc": "\n    Turn the LED OFF.\n    :return: status string\n    ",
+            "param(s)": ""
+        },
+        "on": {
+            "doc": "\n    Turn the LED ON.\n    :return: status string\n    ",
+            "param(s)": ""
+        },
+        "toggle": {
+            "doc": "\n    Toggle LED state.\n    :return: status string with new state\n    ",
+            "param(s)": ""
+        }
+    },
     "bme280": {
         "help": {
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'lm_call': 'measure ntfy=False', 'refresh': 2000}",
@@ -606,6 +633,49 @@
         "set_volume": {
             "doc": "\n    Change default volume by positive/negative bitwise shift\n    :param mic: shift_size, positive shift increases volume (int)\n    ",
             "param(s)": "shift_size=0"
+        }
+    },
+    "keychain": {
+        "button": {
+            "doc": "\n    IRQ1 keychain module control function\n    - neopixel ON/OFF\n    - display wake-up (ON)\n    ",
+            "param(s)": ""
+        },
+        "color_wheel": {
+            "doc": "\n    Neopixel color wheel\n    :param br: brightness value 0-100 percent\n    ",
+            "param(s)": "br=None"
+        },
+        "display": {
+            "doc": "\n    Create keychain.display task - refresh loop\n    :param period: display refresh period in ms (min. 500ms)\n    :param tts: time to sleep (in seconds)\n    ",
+            "param(s)": "period=1000 tts=30"
+        },
+        "display_toggle": {
+            "doc": "\n    Display mode toggle (main/screensaver)\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/keychain.png?raw=true",
+        "load": {
+            "doc": "\n    Init OLED display 64x32 (default)\n    Init Neopixel LED (1 segment)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    :param bootmsg: First text on page at bootup, default: \"micrOS\"\n    ",
+            "param(s)": "width=64 height=32 bootmsg=\"micrOS\""
+        },
+        "msgbox": {
+            "doc": null,
+            "param(s)": "msg width=64"
+        },
+        "neopixel_toggle": {
+            "doc": "\n    Disable/Enable neopixel LED (brightness 0/default)\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    PIN MAP dump\n    \npin map: i2c_scl, i2c_sda, ds18, neop",
+            "param(s)": ""
+        },
+        "temperature": {
+            "doc": "\n    Measure ds18B20 temperature sensor\n    ",
+            "param(s)": ""
         }
     },
     "ld2410": {
@@ -1105,7 +1175,7 @@
         },
         "debug": {
             "doc": null,
-            "param(s)": ""
+            "param(s)": "state=None"
         },
         "genpage": {
             "doc": "\n    Create load module execution pages dynamically :)\n    - based on cmd value: load_module function (args)\n    :param cmd: 'load_module function (args)' string\n    :param run: run button event at page init: True/False\n    :return: page creation verdict\n    ",

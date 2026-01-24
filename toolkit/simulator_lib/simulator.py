@@ -77,6 +77,7 @@ class micrOSIM():
         """
         Init micrOS in simulator - folder structure creation
         """
+        apply_sim_patch()
         sim_path = LocalMachine.SimplePopPushd()
         sim_path.pushd(SIM_PATH)
         import micrOS               # Init micrOS - DO NOT REMOVE
@@ -217,7 +218,6 @@ class micrOSIM():
         - html hack structure
         - json raw structure
         """
-        apply_sim_patch()
         structure_to_html = copy.deepcopy(structure)
 
         # Step into workspace path

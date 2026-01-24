@@ -2,7 +2,8 @@ try:
     import camera
 except Exception as e:
     camera = None
-import time
+from time import localtime, sleep
+from json import loads
 from Common import web_endpoint, syslog, exec_cmd
 from Types import resolve
 
@@ -44,7 +45,7 @@ def load(quality='medium', freq='default', effect="NONE"):
         except Exception as e:
             syslog(f"[ERR] OV2640: {e}")
         camera.deinit()
-        time.sleep(1)
+        sleep(1)
     if not CAM_INIT:
         return "Cannot init OV2640 cam"
 
@@ -154,7 +155,7 @@ def capture():
             if buf:
                 break
             n_try += 1
-            time.sleep(0.1)
+            sleep(0.1)
     except Exception as e:
         syslog(f"[OV2640] Failed to capture: {e}")
     IN_CAPTURE = False
@@ -163,12 +164,31 @@ def capture():
 
 def photo(name='photo.jpeg'):
     """
+    Beta feature - with storage limit
     Create photo and save it under /web/<user_data>
     """
+    def _storage_check(storage_limit=60):
+        _status, _usage = exec_cmd(cmd=['fileserver', '_disk_usage_clb'], jsonify=False, secure=True)
+        if not _status:
+            return False, f"Cannot get storage info: {_usage}"
+        # Eval hack to be able to reuse web endpoint callback for disk usage
+        usage = loads(str(eval(_usage)[-1]))
+        usage_percent = int((usage.get("used", 0) / (usage.get("free", 0) + usage.get("used", 0))) * 100)
+        print(usage_percent)
+        if usage_percent > storage_limit:
+            return False, f"Storage is full < {storage_limit}%"
+        return True, ""
+
     status, path = exec_cmd(cmd=['fileserver', 'get_user_dir'], jsonify=False, secure=True)
     if not status:
         return "No shared path available: fileserver get_user_dir"
-    photo_path = f"{path}/{name}"
+    s, v = _storage_check()
+    if not s:
+        return v
+    t = localtime()
+    ts = "{:02d}{:02d}{:02d}-{:02d}{:02d}{:02d}".format(t[0] % 100, t[1], t[2], t[3], t[4], t[5])
+    # Create file name with time stamp
+    photo_path = f"{path}/{ts}-{name}"
     # Take a Photo
     buf = capture()
     # Save the Photo

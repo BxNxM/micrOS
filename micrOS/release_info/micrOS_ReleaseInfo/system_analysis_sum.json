@@ -257,7 +257,7 @@
             0
         ],
         "modules/LM_OV2640.py": [
-            9.35,
+            9.28,
             0
         ],
         "modules/LM_rgb.py": [
@@ -323,7 +323,7 @@
             25
         ],
         "load": [
-            9004,
+            9021,
             54
         ],
         "core_dep": [
@@ -335,7 +335,7 @@
             3
         ],
         "core_score": 9.27,
-        "load_score": 8.43,
+        "load_score": 8.42,
         "version": "2.25.2-1"
     }
 }

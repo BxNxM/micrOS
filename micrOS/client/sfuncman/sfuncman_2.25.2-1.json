@@ -68,7 +68,7 @@
             "param(s)": "quality='medium' freq='ault' effect=\"NONE\""
         },
         "photo": {
-            "doc": "\n    Create photo and save it under /web/<user_data>\n    ",
+            "doc": "\n    Beta feature - with storage limit\n    Create photo and save it under /web/<user_data>\n    ",
             "param(s)": "name='photo.jpeg'"
         },
         "settings": {

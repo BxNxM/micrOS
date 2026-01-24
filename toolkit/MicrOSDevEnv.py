@@ -207,6 +207,25 @@ class MicrOSDevTool(OTA, USB):
         [!] name dependency with micrOS internal manual provider
         """
 
+        def _my_json_to_html(mod_func_dict):
+            import json2html
+            table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
+
+            sorted_modules_w_data = dict(sorted(mod_func_dict.items(), key=lambda item: item[0].lower()))
+            module_shortcuts = ' | '.join(
+                f'<a href="#{mod_name.replace(" ", "_")}">{mod_name}</a>'
+                for mod_name in sorted_modules_w_data)
+            html_tables = module_shortcuts + "<br><hr><br>"
+            for key, value in sorted_modules_w_data.items():
+                anchor = key.replace(" ", "_")  # Replace spaces with underscores for a valid anchor
+                html_tables += f'\n<br><br>\n<h2 id="{anchor}"><a href="#{anchor}">{key}</a></h2>\n'
+                html_tables += json2html.json2html.convert(json=value,
+                                                           table_attributes=table_attributes,
+                                                           clubbing=True,
+                                                           escape=False,
+                                                           encode=False)
+            return html_tables
+
         if not os.path.isdir(self.sfuncman_output_path):
             self.console('DOC GEN DISABLED', state="WARN")
             return
@@ -230,10 +249,15 @@ class MicrOSDevTool(OTA, USB):
             self.console("# -[micrOSIM][DOC ERR]- #", state='ERR')
             self.console("#########################", state='ERR')
             module_function_dict_html = module_function_dict
+            module_function_dict_ext = {}
+            module_function_dict_html_ext = {}
         else:
             # Unpack output
-            module_function_dict, module_function_dict_html = _out
+            (module_function_dict, module_function_dict_html,
+             module_function_dict_ext, module_function_dict_html_ext) = _out
 
+        # Merge built-in and external packages at json dco level (unified document) - external modules has annotation by default
+        module_function_dict.update(module_function_dict_ext)
         hardcoded_manual = {"task": {"list": {"doc": "list micrOS tasks by taskID", "param(s)": ""},
                                      "kill": {"doc": "kill / stop micrOS task", "param(s)": "taskID"},
                                      "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tasks.png?raw=true"}
@@ -249,22 +273,10 @@ class MicrOSDevTool(OTA, USB):
         _url = hardcoded_manual["task"]["img"]
         hardcoded_manual['task']['img'] = f'<img src="{_url}" alt="tasks" height=150>'
         module_function_dict_html.update(hardcoded_manual)
-        import json2html
-        table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
-
-        sorted_modules_w_data = dict(sorted(module_function_dict_html.items(), key=lambda item: item[0].lower()))
-        module_shortcuts = ' | '.join(
-            f'<a href="#{mod_name.replace(" ", "_")}">{mod_name}</a>'
-            for mod_name in sorted_modules_w_data)
-        html_tables = module_shortcuts + "<br><hr><br>"
-        for key, value in sorted_modules_w_data.items():
-            anchor = key.replace(" ", "_")  # Replace spaces with underscores for a valid anchor
-            html_tables += f'\n<br><br>\n<h2 id="{anchor}"><a href="#{anchor}">{key}</a></h2>\n'
-            html_tables += json2html.json2html.convert(json=value,
-                                             table_attributes=table_attributes,
-                                             clubbing=True,
-                                             escape=False,
-                                             encode=False)
+        html_tables = _my_json_to_html(module_function_dict_html)
+        html_tables_ext = _my_json_to_html(module_function_dict_html_ext)
+        if len(html_tables_ext) > 0:
+            html_tables_ext = '<br><h2 id="external-modules"> External modules (packages).:</h2>' + html_tables_ext
 
         # http://corelangs.com/css/table/tablecolor.html
         # http://corelangs.com/css/table/tablecolor.html
@@ -298,7 +310,7 @@ micrOS Load Modules
 </p>
 
 <h2>
-Logical pin names aka pin map
+microIO Pin-Mapping (names to integers)
 </h2>
     <b> Multi-platform pinmap IO handling feature - resolve pin number by name (tag)<br>
     <b>[i] Use 'module_name pinmap()' function to get pins on a runtime system (micrOS shell) and start DIY</b>
@@ -315,15 +327,21 @@ Logical pin names aka pin map
   <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_rp2.py" target="_blank">rp2 (experimental)</a></li>
 </ul>
 
-<h2>
-Built-in control modules for various peripheries.:
-</h2>
+<h2>External package support</h2>
+<a href="#external-modules">Go to external packages</a>
+&nbsp;|&nbsp;
+<a href="https://github.com/BxNxM/micrOSPackages" target="_blank">
+  View Packages on GitHub
+</a>
+<br>
+
+<h2> Built-in control modules for various peripheries.: </h2>
 
 """
         html_body_end = """</body>
 </html>"""
 
-        html_page = html_body_start + html_tables + html_body_end
+        html_page = html_body_start + html_tables + html_tables_ext + html_body_end
         # Write html to file
         with open(static_help_html_path, 'w') as f:
             f.write(html_page)

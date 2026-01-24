@@ -214,25 +214,42 @@ class micrOSIM():
     def _lm_doc_strings(self, structure):
         """
         Collect function doc strings and module logical pins (pin map)
-        Create 2 dict structures adding docstring
-        - html hack structure
-        - json raw structure
+        Create 4 dict structures adding docstring
+        - html json + raw json for built-in modules
+        - html json + raw json for external (installable packages) modules
         """
         structure_to_html = copy.deepcopy(structure)
+        structure_ext_to_html = copy.deepcopy(structure)
+        structure_external = copy.deepcopy(structure)
 
         # Step into workspace path
         popd = LocalMachine.SimplePopPushd()
         popd.pushd(SIM_PATH)
 
-        # TODO: Separate built-in modules and external (installable) modules in the html
         # Based on created module-function structure collect doc strings
         for mod, func_dict in structure.items():
             # Embed img url to table - module level
-            self._lm_doc_builder(mod, func_dict, structure, structure_to_html)
+            if mod in EXTERNAL_LOAD_MODULES_FROM_PACKAGES:
+                # EXTERNAL MODULE STRUCTURE
+                self._lm_doc_builder(mod, func_dict, structure_external, structure_ext_to_html)
+            else:
+                # BUILT-IN MODULE STRUCTURE
+                self._lm_doc_builder(mod, func_dict, structure, structure_to_html)
+        # CLEANUP DUPLICATES:
+        for mod, func_dict in structure_external.items():
+            if mod in EXTERNAL_LOAD_MODULES_FROM_PACKAGES:
+                # Remove mod from built-ins
+                del structure[mod]
+                del structure_to_html[mod]
+        for mod, func_dict in structure.items():
+            if mod not in EXTERNAL_LOAD_MODULES_FROM_PACKAGES:
+                # Remove mod from external packages
+                del structure_external[mod]
+                del structure_ext_to_html[mod]
 
         # restore path
         popd.popd()
-        self.doc_output = (structure, structure_to_html)
+        self.doc_output = (structure, structure_to_html, structure_external, structure_ext_to_html)
 
     def gen_lm_doc_json_html(self, structure):
         try:

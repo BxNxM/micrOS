@@ -2,7 +2,7 @@
     "files": {
         "Time.py": [
             9.34,
-            6
+            5
         ],
         "Pacman.py": [
             9.5,
@@ -34,7 +34,7 @@
         ],
         "Config.py": [
             9.44,
-            19
+            17
         ],
         "Shell.py": [
             9.37,
@@ -42,11 +42,11 @@
         ],
         "Notify.py": [
             9.78,
-            4
+            3
         ],
         "Types.py": [
             9.21,
-            30
+            29
         ],
         "Logger.py": [
             8.84,
@@ -54,7 +54,7 @@
         ],
         "Common.py": [
             9.85,
-            36
+            34
         ],
         "InterConnect.py": [
             9.63,
@@ -248,10 +248,6 @@
             8.82,
             0
         ],
-        "modules/LM_oledui.py": [
-            9.05,
-            0
-        ],
         "modules/LM_espnow.py": [
             7.14,
             0
@@ -292,10 +288,6 @@
             8.6,
             0
         ],
-        "modules/LM_mqtt_client.py": [
-            9.55,
-            0
-        ],
         "modules/LM_dimmer.py": [
             8.32,
             0
@@ -331,8 +323,8 @@
             25
         ],
         "load": [
-            9983,
-            56
+            9004,
+            54
         ],
         "core_dep": [
             true,
@@ -340,10 +332,10 @@
         ],
         "load_dep": [
             true,
-            5
+            3
         ],
         "core_score": 9.27,
-        "load_score": 8.46,
+        "load_score": 8.43,
         "version": "2.25.2-1"
     }
 }

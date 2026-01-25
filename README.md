@@ -562,7 +562,7 @@ Version **3.0.0-0** `micrOS-Autonomous`
 			- Note: Autonomous package management over wifi (github)
 				- pacman install <package-url>
 				- pacman uninstall <package-name>
-				- pacman upgrade <package-name>.      [TODO]
+				- pacman upgrade <package-name>
 				- pacman ls
 				- pacman dirtree
 		- (7) [DONE] /config/requirements.txt handling (native micropython requirements syntax)

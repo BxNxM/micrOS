@@ -5,8 +5,8 @@
             5
         ],
         "Pacman.py": [
-            9.5,
-            2
+            9.48,
+            3
         ],
         "Files.py": [
             9.69,
@@ -94,7 +94,7 @@
         ],
         "urequests.py": [
             9.65,
-            5
+            6
         ],
         "helpers.py": [
             9.88,
@@ -113,7 +113,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.69,
+            7.7,
             0
         ],
         "modules/LM_web.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            4595,
+            4636,
             25
         ],
         "load": [
-            9021,
+            9033,
             54
         ],
         "core_dep": [
@@ -335,7 +335,7 @@
             3
         ],
         "core_score": 9.27,
-        "load_score": 8.42,
-        "version": "2.25.2-1"
+        "load_score": 8.43,
+        "version": "2.25.3-0"
     }
 }

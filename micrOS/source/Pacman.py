@@ -20,6 +20,7 @@ from mip import install as mipstall
 from uos import rename, mkdir
 from Files import OSPath, path_join, is_file, ilist_fs, is_dir, remove_file, remove_dir
 from Debug import syslog, console_write
+from urequests import get as uget
 
 
 # ---------------------------------------------------------------------
@@ -239,12 +240,13 @@ def install(ref):
 def uninstall(package_name):
     """
     Uninstalls package from /lib with its dependencies
+    :param package_name: package name under /lib
     """
     pack_path = path_join(OSPath.LIB, package_name)
     pack_meta = path_join(pack_path, "pacman.json")
 
     if not is_dir(pack_path):
-        return f"No packaged found: {pack_path}"
+        return f"✗ No packaged found: {pack_path}"
 
     verdict = f"Uninstall {package_name}\n"
     if is_file(pack_meta):
@@ -274,4 +276,51 @@ def uninstall(package_name):
 
     # Delete package
     verdict += "  " + remove_dir(pack_path)
+    return verdict
+
+def upgrade(package_name, force=False):
+    """
+    Update package based on package name and paccman.json[versions][package]
+    - embeds unified mip-based installer for micrOS.: install paccman.json[url]
+    :param package_name: package name under /lib
+    :param force: skip version check
+    """
+    pack_path = path_join(OSPath.LIB, package_name)
+    pack_meta = path_join(pack_path, "pacman.json")
+
+    if not is_dir(pack_path) or not is_file(pack_meta):
+        return f"✗ No packaged (metadata) found: {pack_path}"
+
+    verdict = f"Upgrade: collecting package info {package_name}\n"
+    # 1. Get local package info
+    with open(pack_meta, 'r') as f:
+        pm_json = load(f)
+    current_version = pm_json.get("versions", {"package": "0.0.0"}).get("package")
+    package_url = pm_json.get("url", "")
+    # 2. Get latest package version
+    latest_version = current_version
+    if package_url:
+        _part1 = '/'.join(package_url.split(':', 1)[1].split('/', 2)[:2])
+        _part2 = package_url.split(':', 1)[1].split('/', 2)[2]
+        package_json_url = f"https://raw.githubusercontent.com/{_part1}/refs/heads/main/{_part2}/package.json"
+        try:
+            code, body = uget(url=package_json_url, sock_size=256, jsonify=True)
+            if code == 200:
+                # Set remote/latest version for real
+                latest_version = body.get("version", current_version)
+            else:
+                verdict += f"  ✗ Failed to retrieve remote version, code: {code}"
+            del body    # Cleanup
+        except Exception as e:
+            verdict += f"  ✗ Failed to retrieve remote version: {e}"
+
+    # Evaluate package upgrade request
+    if force or current_version != latest_version:
+        if package_url:
+            verdict += f"  ✓ Upgrade package ({current_version}->{latest_version}): {package_url}\n"
+            verdict += install(package_url)
+        else:
+            verdict += f"  ✗ Skip upgrade, package URL unavailable: {package_url}\n"
+    else:
+        verdict += f"  ✓ Skip upgrade, up-to-date: {current_version} == {latest_version}\n"
     return verdict

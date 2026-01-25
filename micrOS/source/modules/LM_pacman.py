@@ -116,6 +116,19 @@ def uninstall(name=None):
     return pm_uninstall(name)
 
 
+def upgrade(name=None, force=False):
+    """
+    Upgrade package by name from /lib
+    :param name: None (default) show installed package name
+                 OR package name to upgrade (str)
+    :param force: skip version check
+    """
+    if name is None:
+        return list_fs(path=OSPath.LIB, type_filter='d')
+    from Pacman import upgrade as pm_upgrade
+    return pm_upgrade(name, force)
+
+
 def del_duplicates(migrate=True):
     """
     Load module package manager (Not just load modules)
@@ -296,8 +309,11 @@ def help(widgets=False):
             'moduls unload="LM_rgb/None"',
             'cachedump delete=None',
             'datdump',
+            # Package commands
             'install url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
             'uninstall name=None',
+            'upgrade name=None',
+            # File system commands
             'micros_checksum',
             'ls path="/" content="*/f/d" select="*/LM/IO"',
             'rm <path>',

@@ -156,6 +156,20 @@ def path_join(*parts):
     return path
 
 
+def abs_path(path):
+    parts = path.split("/")
+    stack = []
+    for p in parts:
+        if not p or p == ".":
+            continue
+        if p == "..":
+            if stack:
+                stack.pop()   # prevent escaping root
+        else:
+            stack.append(p)
+    return "/" + "/".join(stack)
+
+
 # micrOS system file structure
 class OSPath:
     _ROOT = getcwd()

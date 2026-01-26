@@ -9,7 +9,7 @@
             3
         ],
         "Files.py": [
-            9.69,
+            9.72,
             12
         ],
         "micrOSloader.py": [
@@ -25,8 +25,8 @@
             3
         ],
         "Web.py": [
-            9.36,
-            1
+            9.38,
+            2
         ],
         "Tasks.py": [
             9.48,
@@ -309,7 +309,7 @@
             0
         ],
         "modules/LM_fileserver.py": [
-            9.08,
+            9.38,
             0
         ],
         "modules/LM_neomatrix.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            4636,
+            4699,
             25
         ],
         "load": [
-            9033,
+            9059,
             54
         ],
         "core_dep": [
@@ -336,6 +336,6 @@
         ],
         "core_score": 9.27,
         "load_score": 8.43,
-        "version": "2.25.3-0"
+        "version": "2.26.0-0"
     }
 }

@@ -15,7 +15,22 @@ function clearSelection() {
 }
 
 function load() {
-  fetch('/fs/files')
+  console.info('load.loadDirs');
+  loadDirs();
+  console.info('load.loadFiles: ', selectedDir);
+  loadFiles();
+  console.info('load.loadDiskUsage');
+  updateDiskUsage();
+}
+
+function loadFiles() {
+  fetch('/fs/list', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain'
+    },
+    body: selectedDir || '/'
+  })
     .then(r => r.json())
     .then(files => {
       const list = document.getElementById('list');
@@ -26,20 +41,18 @@ function load() {
       files.forEach(f => {
         const name = f.path.split('/').pop();
         const d = document.createElement('div');
-        d.className = 'file-item';                 // ✅ mark as selectable row
+        d.className = 'file-item';
         d.textContent = `${name} ${f.size}B`;
 
         d.onclick = (e) => {
-          e.stopPropagation(); // 🔹 prevent outside-click handler
+          e.stopPropagation();
 
-          // clicking same item toggles selection OFF
           if (selectedEl === d) {
             clearSelection();
             return;
           }
 
           clearSelection();
-
           d.className = 'file-item sel';
           selected = name;
           selectedEl = d;
@@ -51,9 +64,6 @@ function load() {
       console.info("Files loaded");
     })
     .catch(err => console.error("load failed:", err));
-
-  loadDirs();
-  updateDiskUsage();
 }
 
 function loadDirs() {
@@ -79,6 +89,8 @@ function loadDirs() {
 
           d.className = 'dir-item sel';
           selectedDir = dir.replace(/^\/+/, '');
+          console.info('dirChange.loadFiles: ', selectedDir);
+          loadFiles();
         };
 
         container.appendChild(d);

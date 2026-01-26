@@ -1,9 +1,14 @@
+"""
+micrOS Fileserver addon for WebEngine
+"""
+
 from json import dumps
-from re import compile
+from re import compile as recompile
 from uos import listdir, stat, rename, mkdir, statvfs
 
-from Common import web_endpoint, web_dir
+from Common import web_endpoint, web_mounts, web_dir
 from Files import path_join, is_dir, remove_dir, remove_file, OSPath
+from Web import WebEngine
 
 
 class Shared:
@@ -21,33 +26,32 @@ class Shared:
         return filename, user_dir_name
 
 
-def validate_filename(filename: str):
-    """
-    Check if the provided filename contains only
-    alphanumeric characters (including safe symbols).
-    """
-    filename, dirname = Shared.normalize_input_path(filename)
-    # Real check
-    filename_pattern = compile(r"^[a-zA-Z0-9._-]+$")
-    if not filename_pattern.match(filename):
-        raise ValueError(f"Filename contains invalid characters: {filename} ({dirname})")
+#############################################
+#           Web Endpoint Callbacks          #
+#############################################
 
-
-def get_user_dir():
-    """
-    Getter for shared usr dir path
-    """
-    return Shared.ROOT_DIR
-
-
-def _list_file_paths_clb():
+def _list_file_paths_clb(root_dir=None):
     """
     List files shared path
     """
-    user_data = []
+    if isinstance(root_dir, bytes)and len(root_dir.strip()) > 0:
+        # Decode input path from request body
+        root_dir = root_dir.decode("ascii")
+    else:
+        root_dir = Shared.ROOT_DIR
 
-    for name in listdir(Shared.ROOT_DIR):
-        file_path = path_join(Shared.ROOT_DIR, name)
+    user_data = []
+    # Resolve mount aliases
+    err, root_dir = WebEngine.url_path_resolve(root_dir.replace(web_dir(), ""))
+    if err:
+        return "text/plain", root_dir
+
+    # Show file content on selected root_dir
+    for name in listdir(root_dir):
+        if name.endswith(".mpy"):
+            # Skip .mpy files, not editable
+            continue
+        file_path = path_join(root_dir, name)
         if file_path != Shared.TMP_DIR:
             user_data.append(file_path)
 
@@ -62,17 +66,14 @@ def _list_file_paths_clb():
     return 'application/json', dumps(response)
 
 
-def _list_shared_dirs_clb():
-    """
-    List Web Shared Directories or Aliases
-    """
-    response = [Shared.ROOT_DIR.replace(web_dir(), "")]
-    return 'application/json', dumps(response)
-
-
 def _delete_file_clb(file_to_delete: bytes):
     file_to_delete = file_to_delete.decode('ascii')
     validate_filename(file_to_delete)
+
+    # Resolve mount aliases
+    err, root_dir = WebEngine.url_path_resolve(file_to_delete.replace(web_dir(), ""))
+    if err:
+        return "text/plain", root_dir
 
     if file_to_delete not in listdir(Shared.ROOT_DIR):
         raise ValueError(f'File does not exist: {file_to_delete}')
@@ -87,7 +88,7 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
     """
     cd = part_headers.get('content-disposition', '')
     filename = None
-    cd_pattern = compile(r'filename\*?=(?:"([^"]+)"|([^;]+))')
+    cd_pattern = recompile(r'filename\*?=(?:"([^"]+)"|([^;]+))')
 
     if match := cd_pattern.search(cd):
         filename = match.group(1) or match.group(2)
@@ -134,7 +135,11 @@ def _disk_usage_clb():
     used = fs_size - fs_free
     return 'application/json', dumps({'used': used, 'free': fs_free})
 
-    
+
+#############################################
+#              Public functions             #
+#############################################
+
 def load(web_data_dir:str=None):
     """
     Initialize fileserver.
@@ -156,15 +161,48 @@ def load(web_data_dir:str=None):
             base_dir = current_dir
 
     # Register endpoints
-    web_endpoint('fs/files', _list_file_paths_clb)
+    web_endpoint('fs/files', _list_file_paths_clb)          # OBSOLETE: GET body send browser restriction rule
+    web_endpoint('fs/list', _list_file_paths_clb, 'POST')
+    web_endpoint('fs/list', lambda: ('text/plain', 'USE THIS AS POST Endpoint, to list selected dir files over http body'))
     web_endpoint('fs/files', _delete_file_clb, 'DELETE')
     web_endpoint('fs/files', _upload_file_clb, 'POST')
-    web_endpoint('fs/dirs', _list_shared_dirs_clb)
+    web_endpoint('fs/dirs', lambda: ('application/json', dumps(get_shared_dirs())))
     web_endpoint('fs/usage', _disk_usage_clb)
     web_endpoint('fs', 'filesui.html')
 
     return "Fileserver was initialized, endpoints: /fs, /fs/files, /fs/dirs, /fs/usage"
 
+
+def validate_filename(filename: str):
+    """
+    Check if the provided filename contains only
+    alphanumeric characters (including safe symbols).
+    """
+    filename, dirname = Shared.normalize_input_path(filename)
+    # Real check
+    filename_pattern = recompile(r"^[a-zA-Z0-9._-]+$")
+    if not filename_pattern.match(filename):
+        raise ValueError(f"Filename contains invalid characters: {filename} ({dirname})")
+
+
+def get_shared_dirs() -> list:
+    """
+    Getter for web shared dirs
+    - default: /web/Shared.ROOT_DIR
+    - extended: web_mounts()
+    """
+    web_dirs = list([a for a, p in web_mounts().items() if p is not None])
+    web_dirs.insert(0, Shared.ROOT_DIR.replace(web_dir(), ""))
+    return web_dirs
+
+
+def extend_mounts(modules:bool=None, data:bool=None):
+    """
+    Extend web engine shared root path list
+    :param modules: add /modules to web shared path
+    :param data: add /data to web shared path
+    """
+    return web_mounts(modules, data)
 
 #######################
 # Helper LM functions #
@@ -172,4 +210,6 @@ def load(web_data_dir:str=None):
 
 def help(widgets=False):
     return (f'load web_data_dir=<shared directory under {web_dir()}>',
-            'validate_filename "<str>"')
+            'validate_filename "<str>"',
+            'get_shared_dirs',
+            'extend_mounts modules:bool=None data:bool=None')

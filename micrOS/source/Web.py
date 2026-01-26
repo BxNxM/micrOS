@@ -19,7 +19,7 @@ import uasyncio as asyncio
 from Tasks import lm_exec, NativeTask, lm_is_loaded
 from Debug import syslog, console_write
 from Config import cfgget
-from Files import OSPath, path_join
+from Files import OSPath, path_join, abs_path
 try:
     from gc import mem_free, collect
 except:
@@ -55,6 +55,7 @@ class WebEngine:
                      "png": "image/png",
                      "gif": "image/gif"}
     METHODS = ("GET", "POST", "DELETE")
+    WEB_MOUNTS = {}
     # MEMORY DIMENSIONING FOR THE BEST PERFORMANCE
     #         (is_limited, free_mem, min_mem_req_kb, chunk_threshold_kb, chunk_size_bytes)
     MEM_DIM = (None, -1, 20, 2, 1024)
@@ -112,6 +113,30 @@ class WebEngine:
             syslog(f"[INFO] WebEngine ChunkUpscale ({upscale}x): {WebEngine.MEM_DIM}")
         return WebEngine.MEM_DIM
 
+    @staticmethod
+    def web_mounts(modules:bool=None, data:bool=None):
+        """
+        WebEngine access path handler
+        - default path: /web
+        - extended path access: with $modules and $data dirs
+        """
+        def _remove(alias):
+            if WebEngine.WEB_MOUNTS.get(alias, False):
+                del WebEngine.WEB_MOUNTS[alias]
+        if modules is not None:
+            # Set modules dir access
+            if modules:
+                WebEngine.WEB_MOUNTS["$modules"] = OSPath.MODULES
+            else:
+                _remove("$modules")
+        if data is not None:
+            # Set data dir access
+            if data:
+                WebEngine.WEB_MOUNTS["$data"] = OSPath.DATA
+            else:
+                _remove("$data")
+        return {"$modules": WebEngine.WEB_MOUNTS.get("$modules", None), "$data": WebEngine.WEB_MOUNTS.get("$data", None)}
+
     async def response(self, request:bytes) -> bool:
         """HTTP GET/POST REQUEST - WEB INTERFACE"""
         # [0] PROTOCOL VALIDATION AND PARSING
@@ -130,6 +155,7 @@ class WebEngine:
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
             return True
         _method, url, _version = status_parts
+        url = abs_path(url)
         if _method not in self.METHODS or not _version.startswith('HTTP/'):
             _err = f"Unsupported method: {_method} {_version}"
             await self.a_send(self.REQ400.format(len=len(_err), data=_err))
@@ -157,6 +183,7 @@ class WebEngine:
         # [2] DYNAMIC/USER ENDPOINTS (from Load Modules)
         if await self.endpoints(url, _method, headers, body):
             return True
+        # MEMORY DIMENSIONING
         mem_limited, free, *_ = self.dimensioning()
         if mem_limited:
             _err = f"Low memory ({free} kb): serving API only."
@@ -165,15 +192,14 @@ class WebEngine:
         # [3] HOME/PAGE ENDPOINT(s) [default: / -> /index.html]
         if url.startswith('/') and _method == "GET":
             resource = 'index.html' if url == '/' else url.lstrip('/')
-            web_resource = path_join(OSPath.WEB, resource)                  # Redirect path to web folder
-            self.client.console(f"[WebCli] --- {url} ACCEPT -> {web_resource}")
+            self.client.console(f"[WebCli] --- {url} ACCEPT -> {resource}")
             if "/" not in resource and resource.split('.')[-1] not in self.CONTENT_TYPES:
                 # Validate /web root types only - otherwise default fallback type for unknowns: "text/plain"
                 await self.client.a_send(self.REQ404.format(len=27, data='404 Not Supported File Type'))
                 return True
             try:
                 # SEND RESOURCE CONTENT: HTML, JS, CSS (WebEngine.CONTENT_TYPES)
-                await self.file_transfer(web_resource)
+                await self.file_transfer(resource)
             except OSError:
                 await self.client.a_send(self.REQ404.format(len=13, data='404 Not Found'))
             except MemoryError as e:
@@ -214,6 +240,23 @@ class WebEngine:
         response = dumps(resp_schema)
         return WebEngine.REQ200.format(dtype='text/html', len=len(response), data=response)
 
+    @staticmethod
+    def url_path_resolve(path:str) -> tuple[bool, str]:
+        """
+        :param path: input path
+        Return: isError, absolutePath
+        """
+        # $Extended mount check: WEB_MOUNTS (/modules and /web)
+        if path.startswith("$"):
+            mount_alias = path.split("/")[0]
+            mount_path = WebEngine.WEB_MOUNTS.get(mount_alias, None)
+            if mount_path is None:
+                return True, f"Invalid mount point: {mount_alias}"
+            mount_path = path.replace(mount_alias, mount_path)
+            return False, mount_path
+        # Default web path: /web
+        return False, path_join(OSPath.WEB, path)
+
     async def endpoints(self, url:str, method:str, headers:dict, body:bytes):
         url = url[1:]  # Cut first / char
         if url in WebEngine.ENDPOINTS and method in WebEngine.ENDPOINTS[url]: # TODO: support for query parameters
@@ -233,9 +276,8 @@ class WebEngine:
                     if callable(callback):
                         dtype, data = WebEngine.ENDPOINTS[url][method]()
                     else:
-                        # Endpoint is a file reference under /web
-                        web_resource = path_join(OSPath.WEB, callback)
-                        await self.file_transfer(web_resource)
+                        # Endpoint callback is a file reference
+                        await self.file_transfer(callback)
                         return True
 
                 if dtype == 'image/jpeg':
@@ -266,6 +308,11 @@ class WebEngine:
         Send a file to the client using either normal or chunked HTTP transfer.
         :param web_resource: Path to the file to be served.
         """
+        # Resolve
+        err, web_resource = self.url_path_resolve(web_resource)
+        if err:
+            await self.client.a_send(self.REQ404.format(len=19, data='404 Mount Not Found'))
+            return False
         with open(web_resource, "rb") as file:
             chunking_threshold_kb = WebEngine.MEM_DIM[3]
             chunk_size_bytes = WebEngine.MEM_DIM[4]
@@ -286,6 +333,7 @@ class WebEngine:
             response = self.REQ200.format(dtype=WebEngine.file_type(web_resource), len=len(data), data="")
             await self.client.a_send(response)
             await self.client.a_send(data, None)
+        return True
 
     async def stream(self, callback, task, content_type):
         """

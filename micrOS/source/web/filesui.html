@@ -99,6 +99,22 @@
       background: color-mix(in srgb, white 15%, transparent);
       box-shadow: none;
     }
+    /* Folder list spacing */
+    #folder-path {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    /* Folder item padding + touch-friendly */
+    #folder-path .dir-item {
+      padding: 5px 6px; /*makes them easier to tap*/
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    /* Hover effect for folders */
+    #folder-path .dir-item:hover {
+      background: rgba(255,255,255,.08);
+    }
     .folders {
       margin-bottom: 8px;
     }

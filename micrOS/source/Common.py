@@ -128,6 +128,19 @@ def web_endpoint(endpoint, function, method='GET', auto_enable=True) -> bool:
     return True
 
 
+def web_mounts(modules:bool=None, data:bool=None):
+    """
+    Extend web engine shared root path list
+    :param modules: add /modules to web shared path
+    :param data: add /data to web shared path
+    """
+    try:
+        return WebCli.web_mounts(modules, data)
+    except Exception as e:
+        syslog(f"[ERR] web_mounts error: {e}")
+        return {}
+
+
 def socket_stream(func):
     """
     [LM] Decorator for Socket message stream - adds msgobj to the decorated function arg list.

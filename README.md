@@ -573,8 +573,32 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- sfuncman.json and sfuncman.html - external packages highlight
 
 		- (9) [DONE] micropython uplift to `1.27`
-			- [DONE] fix micrOS USB update config restore issue 
+			- [DONE] fix micrOS USB update config restore issue
 
+		- (10) [TODO] WebEngine: Web mounts/aliases for /data and /modules
+			- Default web mount: /web
+			- Extended web mounts: 
+				WEB_MOUNTS = {
+					#             EN      PATH
+    				"$modules": (True, "/modules"),
+    				"$data": (True, "/data")
+				}
+		   - Absolute usr input path check (Files.py)
+			- Fileserver integration
+				- custom listing for /modules (only .py files)
+
+		- (11) [TODO][CONCEPT] @Common.RequireSudo decorator
+			- When node_config["auth"] == True 
+			- Require pwd="<password>" parameter
+			- Two modes:
+				- Always require
+				- Require when force=True (_when_force=True)
+			- Apply this to:
+				- pacman rm
+				- pacman rmdir
+				- pacman uninstall
+				- pacman upgrade ... force=True
+				- ...
 
 	[TODO] TESTING + RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`
 		- Create release notes (legacy: `release_3.0.0-0_note_esp32.md`)

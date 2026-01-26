@@ -33,4 +33,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'load dashboard=True fileserver=False fsdir=None', 'help'
+    return ('load dashboard=True fileserver=False fsdir=None',
+            'help')

@@ -128,14 +128,14 @@ def web_endpoint(endpoint, function, method='GET', auto_enable=True) -> bool:
     return True
 
 
-def web_mounts(modules:bool=None, data:bool=None):
+def web_mounts(*args, **kwargs):
     """
     Extend web engine shared root path list
     :param modules: add /modules to web shared path
     :param data: add /data to web shared path
     """
     try:
-        return WebCli.web_mounts(modules, data)
+        return WebCli.web_mounts(*args, **kwargs)
     except Exception as e:
         syslog(f"[ERR] web_mounts error: {e}")
         return {}

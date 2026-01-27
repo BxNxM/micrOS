@@ -4,17 +4,18 @@ Web backend loader
     - Fileserver
 """
 
-from Common import web_endpoint
+from Common import web_endpoint, web_mounts
 
 
-def load(dashboard=True, fileserver=False, fsdir=None):
+def load(dashboard=True, fileserver=False, fsdir=None, fs_explore=False):
     """
     Centralized Web Backend Services Loader
     - Dynamic application dashboard
     - Fileserver
-    :param dashboard: bool - enable*/disable application dashboard
+    :param dashboard:  bool - enable*/disable application dashboard
     :param fileserver: bool - enable/disable* fileserver
-    :param fsdir: str - set custom fileserver shared folder name
+    :param fsdir:      str  - set custom fileserver shared folder name
+    :param fs_explore: bool - enable all shared web mounts: modules, data
     """
     endpoints = []
     if dashboard:
@@ -23,6 +24,8 @@ def load(dashboard=True, fileserver=False, fsdir=None):
     if fileserver:
         import LM_fileserver
         endpoints.append(LM_fileserver.load(web_data_dir=fsdir))
+        if fs_explore:
+            web_mounts(True, True)
     return endpoints
 
 
@@ -33,5 +36,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return ('load dashboard=True fileserver=False fsdir=None',
+    return ('load dashboard=True fileserver=False fsdir=None fs_explore=False',
             'help')

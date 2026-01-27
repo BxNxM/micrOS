@@ -471,8 +471,8 @@
     },
     "fileserver": {
         "extend_mounts": {
-            "doc": "\n    Extend web engine shared root path list\n    :param modules: add /modules to web shared path\n    :param data: add /data to web shared path\n    ",
-            "param(s)": "modules:bool=None data:bool=None"
+            "doc": "\n    Extend web engine shared root path list\n    :param modules: add/remove /modules to web shared path\n    :param data: add/remove /data to web shared path\n    :param logs: add/remove /logs web shared path\n    ",
+            "param(s)": "modules:bool=None data:bool=None logs:bool=None"
         },
         "get_shared_dirs": {
             "doc": "\n    Getter for web shared dirs\n    - default: /web/Shared.ROOT_DIR\n    - extended: web_mounts()\n    ",
@@ -1968,8 +1968,8 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/web.png?raw=true",
         "load": {
-            "doc": "\n    Centralized Web Backend Services Loader\n    - Dynamic application dashboard\n    - Fileserver\n    :param dashboard: bool - enable*/disable application dashboard\n    :param fileserver: bool - enable/disable* fileserver\n    :param fsdir: str - set custom fileserver shared folder name\n    ",
-            "param(s)": "dashboard=True fileserver=False fsdir=None"
+            "doc": "\n    Centralized Web Backend Services Loader\n    - Dynamic application dashboard\n    - Fileserver\n    :param dashboard:  bool - enable*/disable application dashboard\n    :param fileserver: bool - enable/disable* fileserver\n    :param fsdir:      str  - set custom fileserver shared folder name\n    :param fs_explore: bool - enable all shared web mounts: modules, data\n    ",
+            "param(s)": "dashboard=True fileserver=False fsdir=None fs_explore=False"
         }
     }
 }

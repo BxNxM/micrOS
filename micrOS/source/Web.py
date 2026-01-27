@@ -55,7 +55,7 @@ class WebEngine:
                      "png": "image/png",
                      "gif": "image/gif"}
     METHODS = ("GET", "POST", "DELETE")
-    WEB_MOUNTS = {}
+    WEB_MOUNTS = {"$logs": OSPath.LOGS}
     # MEMORY DIMENSIONING FOR THE BEST PERFORMANCE
     #         (is_limited, free_mem, min_mem_req_kb, chunk_threshold_kb, chunk_size_bytes)
     MEM_DIM = (None, -1, 20, 2, 1024)
@@ -114,28 +114,27 @@ class WebEngine:
         return WebEngine.MEM_DIM
 
     @staticmethod
-    def web_mounts(modules:bool=None, data:bool=None):
+    def web_mounts(modules:bool=None, data:bool=None, logs:bool=None):
         """
         WebEngine access path handler
         - default path: /web
         - extended path access: with $modules and $data dirs
         """
-        def _remove(alias):
-            if WebEngine.WEB_MOUNTS.get(alias, False):
+        def _update(state, alias, path):
+            if state:
+                WebEngine.WEB_MOUNTS[alias] = path
+            elif WebEngine.WEB_MOUNTS.get(alias, False):
                 del WebEngine.WEB_MOUNTS[alias]
         if modules is not None:
             # Set modules dir access
-            if modules:
-                WebEngine.WEB_MOUNTS["$modules"] = OSPath.MODULES
-            else:
-                _remove("$modules")
+            _update(modules, "$modules", OSPath.MODULES)
         if data is not None:
             # Set data dir access
-            if data:
-                WebEngine.WEB_MOUNTS["$data"] = OSPath.DATA
-            else:
-                _remove("$data")
-        return {"$modules": WebEngine.WEB_MOUNTS.get("$modules", None), "$data": WebEngine.WEB_MOUNTS.get("$data", None)}
+            _update(data, "$data", OSPath.DATA)
+        if logs is not None:
+            # Set logs dir access
+            _update(logs, "$logs", OSPath.LOGS)
+        return WebEngine.WEB_MOUNTS
 
     async def response(self, request:bytes) -> bool:
         """HTTP GET/POST REQUEST - WEB INTERFACE"""

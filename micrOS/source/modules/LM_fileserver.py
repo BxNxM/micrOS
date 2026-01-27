@@ -196,13 +196,14 @@ def get_shared_dirs() -> list:
     return web_dirs
 
 
-def extend_mounts(modules:bool=None, data:bool=None):
+def extend_mounts(modules:bool=None, data:bool=None, logs:bool=None):
     """
     Extend web engine shared root path list
-    :param modules: add /modules to web shared path
-    :param data: add /data to web shared path
+    :param modules: add/remove /modules to web shared path
+    :param data: add/remove /data to web shared path
+    :param logs: add/remove /logs web shared path
     """
-    return web_mounts(modules, data)
+    return web_mounts(modules, data, logs)
 
 #######################
 # Helper LM functions #
@@ -212,4 +213,4 @@ def help(widgets=False):
     return (f'load web_data_dir=<shared directory under {web_dir()}>',
             'validate_filename "<str>"',
             'get_shared_dirs',
-            'extend_mounts modules:bool=None data:bool=None')
+            'extend_mounts modules:bool=None data:bool=None logs:bool=None')

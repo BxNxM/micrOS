@@ -314,7 +314,8 @@ class WebEngine:
             except Exception as e:
                 if self.client.connected:
                     await self.client.a_send(self.REQ400.format(len=len(str(e)), data=e))
-                syslog(f"[ERR] WebCli endpoints {url}: {e}")
+                err = f"WebCli endpoints {url}: {e}" if "ReadOnly" in str(e) else f"[ERR] WebCli endpoints {url}: {e}"
+                syslog(err)
             return True  # Registered endpoint was found and executed
         return False  # Not registered endpoint
 

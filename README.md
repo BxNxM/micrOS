@@ -575,17 +575,20 @@ Version **3.0.0-0** `micrOS-Autonomous`
 		- (9) [DONE] micropython uplift to `1.27`
 			- [DONE] fix micrOS USB update config restore issue
 
-		- (10) [TODO] WebEngine: Web mounts/aliases for /data and /modules
+		- (10) [DONE] WebEngine: Web mounts/aliases for /data and /modules
 			- Default web mount: /web
-			- Extended web mounts: 
+			- Extended web mounts (if in this dict logic): 
 				WEB_MOUNTS = {
-					#             EN      PATH
-    				"$modules": (True, "/modules"),
-    				"$data": (True, "/data")
+					#             PATH
+    				"$modules": "/modules",
+    				"$data": "/data",
+    				...
 				}
 		   - Absolute usr input path check (Files.py)
 			- Fileserver integration
-				- custom listing for /modules (only .py files)
+				- custom listing for /modules (without .mpy files)
+				- mount pathes write access handlig
+				- mount pathes read (+visibility) access handlig
 
 		- (11) [TODO][CONCEPT] @Common.RequireSudo decorator
 			- When node_config["auth"] == True 

@@ -309,7 +309,7 @@
             0
         ],
         "modules/LM_fileserver.py": [
-            9.36,
+            9.41,
             0
         ],
         "modules/LM_neomatrix.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            4699,
+            4700,
             25
         ],
         "load": [
-            9057,
+            9093,
             54
         ],
         "core_dep": [
@@ -335,7 +335,7 @@
             3
         ],
         "core_score": 9.27,
-        "load_score": 8.43,
+        "load_score": 8.44,
         "version": "2.26.0-0"
     }
 }

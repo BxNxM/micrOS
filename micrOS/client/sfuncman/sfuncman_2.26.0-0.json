@@ -478,6 +478,10 @@
             "doc": "\n    Getter for web shared dirs\n    - default: /web/Shared.ROOT_DIR\n    - extended: web_mounts()\n    ",
             "param(s)": ""
         },
+        "get_user_dir": {
+            "doc": "\n    Getter for user configured shared dir\n    - used by other load modules\n    ",
+            "param(s)": ""
+        },
         "help": {
             "doc": "\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
@@ -486,6 +490,10 @@
         "load": {
             "doc": "\n    Initialize fileserver.\n    :param web_data_dir: web data public directory (default: /web/<user_data>)\n    ",
             "param(s)": "web_data_dir:str=None"
+        },
+        "mounts_write_access": {
+            "doc": null,
+            "param(s)": "modules:bool=None data:bool=None logs:bool=None"
         },
         "resolve_path": {
             "doc": "\n    Resolve and Validate input path\n    :param path: URL resource path or mount path string\n    ",

@@ -116,7 +116,7 @@ function injectCSS() {
 .mp-editor .status.info { color: #cccccc; }
 .mp-editor .editor {
     display: flex;
-    height: 400px;
+    height: 500px;
     overflow: hidden;
 }
 .mp-editor .lines {
@@ -125,9 +125,10 @@ function injectCSS() {
     padding: 8px;
     text-align: right;
     user-select: none;
-    line-height: 1.4em;
+    line-height: 20px;
     flex-shrink: 0;
     overflow: hidden;
+    white-space: pre;
 }
 .mp-editor textarea {
     flex: 1;
@@ -138,8 +139,13 @@ function injectCSS() {
     resize: none;
     outline: none;
     font-family: monospace;
-    line-height: 1.4em;
+    line-height: 20px;
     overflow: auto;
+}
+.mp-editor .lines,
+.mp-editor input,
+.mp-editor textarea {
+    font-size: 14px;
 }
 `;
     document.head.appendChild(css);
@@ -167,7 +173,6 @@ class EmbeddedEditor {
         this.container = container;
         this.buildUI();
         this.bindEvents();
-        this.loadExample();
     }
 
     buildUI() {
@@ -175,7 +180,7 @@ class EmbeddedEditor {
         this.container.innerHTML = `
 <div class="mp-editor">
     <div class="toolbar">
-        <input class="filename" value="blinky.py">
+        <input class="filename" value="">
         <button class="load">Load</button>
         <button class="save">Save</button>
         <button class="syntax">Syntax</button>
@@ -184,7 +189,7 @@ class EmbeddedEditor {
     </div>
     <div class="editor">
         <div class="lines"></div>
-        <textarea class="code"></textarea>
+        <textarea class="code" wrap="off"></textarea>
     </div>
 </div>`;
         this.codeEl = this.container.querySelector(".code");
@@ -242,30 +247,40 @@ class EmbeddedEditor {
 
     updateLines() {
         const scroll = this.codeEl.scrollTop;
-
-        const count = this.codeEl.value.split("\n").length + 1;
-        this.linesEl.innerHTML =
-            Array.from({ length: count }, (_, i) => i + 1).join("<br>");
-
+        const count = this.codeEl.value.split("\n").length;
+        this.linesEl.textContent =
+            Array.from({ length: count }, (_, i) => i + 1).join("\n");
         this.linesEl.scrollTop = scroll;
     }
 
     /* ---------- File ops ---------- */
-
     open(url) {
-        if (!url) return this.loadExample();
-
+        const name = url?.split("/").pop();
         this.setStatus("loading...");
         fetch(url)
             .then(r => r.ok ? r.text() : Promise.reject())
             .then(t => {
+                // 🔹 Success → show file content + path
                 this.codeEl.value = t;
                 this.fileEl.value = url;
                 this.updateLines();
-                this.updateSyntaxAvailability(); // 🔹 NEW
+                this.updateSyntaxAvailability();
                 this.setStatus("loaded", "ok");
             })
-            .catch(() => this.setStatus("load failed", "err"));
+            .catch(() => {
+                // 🔹 Failure → special case for LM_blinky.py
+                if (name === "LM_blinky.py") {
+                    this.fileEl.value = url || ""; // 🔹 show path in input
+                    this.loadExample();
+                } else {
+                    // 🔹 Empty editor, but still show file path
+                    this.codeEl.value = "";
+                    this.fileEl.value = url || "";
+                    this.updateLines();
+                    this.updateSyntaxAvailability();
+                    this.setStatus("file not found or unreadable", "err");
+                }
+            });
     }
 
     loadFile() {
@@ -289,40 +304,43 @@ class EmbeddedEditor {
         fd.append("file", file);
 
         fetch("/fs/files", { method: "POST", body: fd })
-            .then(r => {
-                if (!r.ok) {
-                    return r.text().then(t => {
-                        console.error("editor.js: upload failed:", r.status, r.statusText, t);
-                        throw new Error("upload failed");
-                    });
-                }
-                this.setStatus("saved", "ok");
-            })
-            .catch(err => {
-                console.error("editor.js: upload error:", err);
-                this.setStatus("save failed", "err");
-            });
+          .then(async r => {
+            if (!r.ok) {
+              const t = (await r.text()) || r.statusText;
+              console.error("editor.js: upload failed:", r.status, r.statusText, t);
+              throw new Error(`${r.status} - ${t}`);
+            }
+            this.setStatus("saved", "ok");
+          })
+          .catch(err => {
+              console.error("editor.js: upload error:", err);
+              this.setStatus("Save failed: " + err.message, "err");
+          });
     }
 
     /* ---------- Syntax ---------- */
-
     syntaxCheck() { // 🔹 MODIFIED
         const checker = getCheckerFor(this.fileEl.value);
         if (!checker) return;
 
         const r = checker(this.codeEl.value);
         this.setStatus(
-            r.ok ? "syntax OK" : `error @ line ${r.errors[0].line}`,
+            r.ok ? "syntax OK" : Object.entries(r.errors[0]).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(" "),
             r.ok ? "ok" : "err"
         );
+    }
+
+    /* ---------- Close ---------- */
+    close() {
+        this.container.innerHTML = "";
     }
 
     /* ---------- Example ---------- */
 
     loadExample() {
-        console.info("editor.js: EmbeddedEditor.loadExample");
-        this.codeEl.value =
-`# blinky.py – MicroPython example
+      console.info("editor.js: EmbeddedEditor.loadExample");
+      this.codeEl.value =
+`# LM_blinky.py – MicroPython example
 # Guide: https://github.com/BxNxM/micrOS/blob/master/APPLICATION_GUIDE.md
 import machine
 from microIO import bind_pin, pinmap_search
@@ -353,47 +371,70 @@ def pinmap():
 def help(widgets=False):
     return "load pin=2", "blink", "pinmap"
 `;
-        this.fileEl.value = "blinky.py";
-        this.updateLines();
-        this.updateSyntaxAvailability(); // 🔹 NEW
-        this.setStatus("example loaded", "info");
+      this.updateLines();
+      this.updateSyntaxAvailability();
+      this.setStatus("example loaded", "info");
     }
 
-    /* ---------- Close ---------- */
-
-    close() {
-        this.container.innerHTML = "";
-    }
 }
 
-/* ---------- Pure syntax checker ---------- */
+/* ----------  Syntax checker(s) ---------- */
 
 function checkPythonSyntax(text) {
-    console.info("editor.js: checkPythonSyntax");
-    const lines = text.replace(/\t/g, "    ").split("\n");
+    const lines = text
+        .replace(/\t/g, "    ")
+        .replace(/\s+$/, "")
+        .split("\n");
     const stack = [0];
     const errors = [];
-
-    lines.forEach((l, i) => {
-        const ind = l.match(/^ */)[0].length;
-        const t = l.trim();
-        const n = i + 1;
-        if (!t || t.startsWith("#")) return;
-
-        const cur = stack[stack.length - 1];
-        if (ind > cur) {
-            const p = lines[i - 1]?.trim() || "";
-            if (!p.endsWith(":")) errors.push({ line: n });
-            stack.push(ind);
-            return;
+    const colonRE = /^(async\s+)?(def|with|class)\s+/;
+    let depth = 0;
+    function lastCodeLine(i) {
+        while (i >= 0) {
+            const t = lines[i].trim();
+            if (t && !t.startsWith("#")) return t;
+            i--;
         }
-
-        while (ind < stack[stack.length - 1]) stack.pop();
-        if (ind !== stack[stack.length - 1]) errors.push({ line: n });
-
-        if (/^(if|for|while|def|class|try|except|else|elif|finally)\b/.test(t)
-            && !t.endsWith(":")) errors.push({ line: n });
+        return "";
+    }
+    function updateDepth(d, line) {
+        for (const c of line.replace(/#.*$/, "")) {
+            if ("([{".includes(c)) d++;
+            else if (")]}".includes(c)) d = Math.max(0, d - 1);
+        }
+        return d;
+    }
+    lines.forEach((line, i) => {
+        const n = i + 1;
+        const t = line.trim();
+        const depthBefore = depth;
+        depth = updateDepth(depth, line);
+        const topLevel = depthBefore === 0 && depth === 0;
+        if (!t || t.startsWith("#")) return;
+        const ind = line.match(/^ */)[0].length;
+        const cur = stack[stack.length - 1];
+        // Indentation check (only at top level)
+        if (topLevel) {
+            if (ind > cur) {
+                const prev = lastCodeLine(i - 1);
+                if (!prev.endsWith(":")) {
+                    errors.push({ line: n, error: "indent", prev, got: ind, expected: cur });
+                    return;
+                }
+                stack.push(ind);
+            }
+            while (stack.length > 1 && ind < stack[stack.length - 1]) {
+                stack.pop();
+            }
+            if (ind !== stack[stack.length - 1]) {
+                errors.push({ line: n, error: "dedent", got: ind, expected: stack[stack.length - 1] });
+                return;
+            }
+        }
+        // Colon check
+        if (colonRE.test(t) && !t.endsWith(":")) {
+            errors.push({ line: n, error: "colon", lineText: t });
+        }
     });
-
     return { ok: errors.length === 0, errors };
 }

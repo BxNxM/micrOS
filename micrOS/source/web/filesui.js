@@ -4,6 +4,42 @@ let selectedDir = 'user_data';     // fallback
 let _editorScriptLoaded = false;
 let editorFile = null;             // 🔹 track what's currently opened in editor
 
+// 🔹 Simple root message output
+let _msgTimer, _fadeTimer;
+function popUpMsg(msg) {
+  let el = document.getElementById('root-message');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'root-message';
+    Object.assign(el.style, {
+      position: 'fixed',
+      top: '8px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      background: 'rgba(220, 60, 60, 0.9)',     // warm UI red
+      color: '#fff',
+      padding: '6px 12px',
+      borderRadius: '4px',
+      fontSize: '12px',
+      zIndex: '99999',
+      transition: 'opacity 0.4s ease',
+      opacity: '0'
+    });
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  requestAnimationFrame(() => el.style.opacity = '1');
+  // Clean timers
+  clearTimeout(_msgTimer);
+  clearTimeout(_fadeTimer);
+  // Start timer
+  _msgTimer = setTimeout(() => {
+    el.style.opacity = '0';
+    _fadeTimer = setTimeout(() => el.style.display = 'none', 400);
+  }, 5000);
+}
+
 // 🔹 centralized selection clear
 function clearSelection() {
   document
@@ -16,14 +52,21 @@ function clearSelection() {
 
 function load() {
   console.info('load.loadDirs');
-  loadDirs();
-  console.info('load.loadFiles: ', selectedDir);
-  loadFiles();
+
+  loadDirs().then(() => {
+    console.info('load.loadFiles:', selectedDir);
+    loadFiles();
+  });
   console.info('load.loadDiskUsage');
   updateDiskUsage();
 }
 
 function loadFiles() {
+  const contentList = document.getElementById('list');
+
+  // 🔹 Enter loading state
+  contentList.classList.add('loading');
+
   fetch('/fs/list', {
     method: 'POST',
     headers: {
@@ -33,8 +76,6 @@ function loadFiles() {
   })
     .then(r => r.json())
     .then(files => {
-      const list = document.getElementById('list');
-
       list.innerHTML = '';
       clearSelection();
 
@@ -63,11 +104,18 @@ function loadFiles() {
 
       console.info("Files loaded");
     })
-    .catch(err => console.error("load failed:", err));
+    .catch(err => {
+      console.error("load failed:", err);
+      popUpMsg("Failed to load files: " + err.message);
+    })
+    .finally(() => {
+      // 🔹 Exit loading state (success or error)
+      contentList.classList.remove('loading');
+    });
 }
 
 function loadDirs() {
-  fetch('/fs/dirs')
+  return fetch('/fs/dirs')
     .then(r => r.json())
     .then(dirs => {
       const container = document.getElementById('folder-path');
@@ -75,12 +123,11 @@ function loadDirs() {
 
       if (!Array.isArray(dirs) || !dirs.length) return;
 
-      let first = true;
-
       dirs.forEach(dir => {
+        const normalized = dir.replace(/^\/+/, '');
         const d = document.createElement('div');
         d.className = 'dir-item';
-        d.textContent = dir;
+        d.textContent = normalized;
 
         d.onclick = () => {
           document
@@ -88,24 +135,37 @@ function loadDirs() {
             .forEach(x => x.className = 'dir-item');
 
           d.className = 'dir-item sel';
-          selectedDir = dir.replace(/^\/+/, '');
-          console.info('dirChange.loadFiles: ', selectedDir);
+          selectedDir = normalized;
+          console.info('dirChange.loadFiles:', selectedDir);
           loadFiles();
         };
 
-        container.appendChild(d);
-
-        // auto-select first dir
-        if (first) {
-          first = false;
+        // 🔹 Selection logic
+        if (!selectedDir) {
+          selectedDir = normalized;
           d.className = 'dir-item sel';
-          selectedDir = dir.replace(/^\/+/, '');
+        }
+        else if (normalized === selectedDir) {
+          d.className = 'dir-item sel';
         }
 
+        container.appendChild(d);
         console.info("Folders loaded");
       });
+
+      // 🔹 Fallback if folder vanished
+      if (
+        !container.querySelector('.dir-item.sel') &&
+        container.firstChild
+      ) {
+        selectedDir = container.firstChild.textContent;
+        container.firstChild.classList.add('sel');
+      }
     })
-    .catch(err => console.error("dirs load failed:", err));
+    .catch(err => {
+      console.error("dirs load failed:", err);
+      popUpMsg("Failed to load folders: " + err.message);
+    })
 }
 
 function uploadFile() {
@@ -119,16 +179,18 @@ function uploadFile() {
 
   console.info("uploadFile:", targetPath);
   fetch('/fs/files', { method: 'POST', body: fd })
-    .then(r => {
+    .then(async r => {
       if (!r.ok) {
-        return r.text().then(t => {
-          console.error("uploadFile failed:", r.status, r.statusText, t);
-          throw new Error("uploadFile failed");
-        });
+        const resp = (await r.text()) || r.statusText;
+        throw new Error(`${r.status} - ${resp}`);
       }
+      return r;
     })
     .then(load)
-    .catch(err => console.error("uploadFile error:", err));
+    .catch(err => {
+      console.error("uploadFile error:", err);
+      popUpMsg("Upload failed: " + err.message);
+    });
 }
 
 function openFile() {
@@ -153,10 +215,17 @@ function download() {
 function deleteFile() {
   if (!selected) return;
 
-  const toDelete = `${selectedDir}/${selected}`;
+  const toDelete = `/${selectedDir}/${selected}`;
   console.info("deleteFile:", toDelete);
 
   fetch('/fs/files', { method: 'DELETE', body: toDelete })
+    .then(async r => {
+      if (!r.ok) {
+        const resp = (await r.text()) || r.statusText;
+        throw new Error(`${r.status} - ${resp}`);
+      }
+      return r;
+    })
     .then(() => {
       // 🔹 If the deleted file is open in editor → DESTROY editor
       if (_editorScriptLoaded && editorFile === toDelete) {
@@ -166,7 +235,10 @@ function deleteFile() {
       }
     })
     .then(load)
-    .catch(err => console.error("deleteFile failed:", err));
+    .catch(err => {
+      console.error("deleteFile failed:", err);
+      popUpMsg("Delete failed: " + err.message);
+    });
 }
 
 function loadEditorScript() {
@@ -185,7 +257,7 @@ function loadEditorScript() {
 }
 
 async function editor() {
-  const filename = selected ?? "blinky.py";
+  const filename = selected ?? `LM_blinky.py`;
   const resource = `/${selectedDir}/${filename}`;
   console.info('editor:', resource);
 
@@ -205,7 +277,7 @@ async function editor() {
     list: document.getElementById('list')
   });
 
-  editorFile = filename; // 🔹 track currently opened file
+  editorFile = resource; // 🔹 track currently opened file
 }
 
 function updateDiskUsage() {
@@ -225,7 +297,10 @@ function updateDiskUsage() {
 
       console.info("DiskUsage: update");
     })
-    .catch(err => console.error("disk usage failed:", err));
+    .catch(err => {
+      console.error("disk usage failed:", err);
+      popUpMsg("Disk usage unavailable: " +  err.message);
+    })
 }
 
 // 🔹 Global outside-click handler

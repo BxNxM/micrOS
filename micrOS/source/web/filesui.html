@@ -124,6 +124,13 @@
       top: 60px; /* sits just below diskbar */
       z-index: 4;
     }
+    /* directory file listing effect */
+    #list.loading {
+      filter: blur(3px);
+      opacity: 0.5;
+      pointer-events: none; /* prevents clicking while loading */
+      transition: filter 0.15s ease, opacity 0.15s ease;
+     }
   </style>
 </head>
 

@@ -15,6 +15,26 @@ class Shared:
     ROOT_DIR = web_dir("user_data")         # Default Public WEB dir
     TMP_DIR = path_join(ROOT_DIR, "tmp")    # Temporary directory for partial uploads
     UPLOAD_COUNTER = 0                      # Counter for handling partial uploads
+    MOUNTS_WRITE_ACCESS = {"$modules": False, "$data": False, "$logs": False}
+    # mpy: code bytestream
+    HIDE_FEXT = ("mpy",)                    # Hide / Protect (delete/upload) files with the listed extensions
+
+    @staticmethod
+    def check_write_access(path):
+        """
+        Raw input path mount write access checker
+        """
+        if "$" in path:
+            # Mount alias in path
+            for access in Shared.MOUNTS_WRITE_ACCESS:
+                if access in path:
+                    if Shared.MOUNTS_WRITE_ACCESS[access]:
+                        return      # Writeable
+                    raise ValueError(f'ReadOnly path: {path}')
+        else:
+            # No mount alias in path
+            return      # Writeable
+        raise ValueError(f'ReadOnly path: {path}')
 
 
 #############################################
@@ -40,7 +60,7 @@ def _list_file_paths_clb(root_dir=None):
     user_data = []
     # Show file content on selected root_dir
     # Hide: .mpy files (non-readable/non-editable)
-    for name in (f for f in ilist_fs(path=root_dir, type_filter='f') if not f.endswith(".mpy")):
+    for name in (f for f in ilist_fs(path=root_dir, type_filter='f') if f.split(".")[-1] not in Shared.HIDE_FEXT):
         file_path = path_join(root_dir, name)
         user_data.append(file_path)
 
@@ -57,9 +77,13 @@ def _list_file_paths_clb(root_dir=None):
 
 def _delete_file_clb(file_to_delete: bytes):
     file_to_delete = file_to_delete.decode('ascii')
+    Shared.check_write_access(file_to_delete)
     filepath = resolve_path(file_to_delete)
     if is_dir(filepath):
         raise ValueError(f'File does not exist: {filepath}')
+    # File name extension based delete protection
+    if filepath.split(".")[-1] in Shared.HIDE_FEXT:
+        raise ValueError(f'Delete access denied: {filepath}')
     verdict = remove_file(filepath)
     return 'text/plain', verdict
 
@@ -80,11 +104,13 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
         # Reject UTF-8 and percent-encoded UTF-8 filenames (RFC 8187)
         if filepath.lower().startswith("utf-8'"):
             raise ValueError("Percent encoded filenames are not supported")
+        Shared.check_write_access(filepath)
         target_filepath = resolve_path(filepath)
         filename = target_filepath.split("/")[-1]
 
-    if not filename:
-        raise ValueError("No valid filename found in part headers")
+    # File name extension based upload protection
+    if not filename or filename.split(".")[-1] in Shared.HIDE_FEXT:
+        raise ValueError(f"Invalid filename in part headers: {filename}")
     target_parts = target_filepath.strip("/").split("/")
     if len(target_parts) == 2 and target_parts[-2] == "web":
         # Write protected /web root -> redirect to user shared dir
@@ -148,12 +174,12 @@ def load(web_data_dir:str=None):
             base_dir = current_dir
 
     # Register endpoints
-    web_endpoint('fs/files', _list_file_paths_clb)          # OBSOLETE: GET body send browser restriction rule
+    web_endpoint('fs/dirs', lambda: ('application/json', dumps(get_shared_dirs())))
+    web_endpoint('fs/list', lambda: ('text/plain', 'USE THIS AS POST Endpoint, select dir in http body'))
     web_endpoint('fs/list', _list_file_paths_clb, 'POST')
-    web_endpoint('fs/list', lambda: ('text/plain', 'USE THIS AS POST Endpoint, to list selected dir files over http body'))
+    web_endpoint('fs/files', lambda: ('text/plain', "USE THIS AS POST / DELETE Endpoint, select file in http body"))
     web_endpoint('fs/files', _delete_file_clb, 'DELETE')
     web_endpoint('fs/files', _upload_file_clb, 'POST')
-    web_endpoint('fs/dirs', lambda: ('application/json', dumps(get_shared_dirs())))
     web_endpoint('fs/usage', _disk_usage_clb)
     web_endpoint('fs', 'filesui.html')
 
@@ -189,6 +215,14 @@ def get_shared_dirs() -> list:
     return web_dirs
 
 
+def get_user_dir():
+    """
+    Getter for user configured shared dir
+    - used by other load modules
+    """
+    return Shared.ROOT_DIR.replace(web_dir(), "")
+
+
 def extend_mounts(modules:bool=None, data:bool=None, logs:bool=None):
     """
     Extend web engine shared root path list
@@ -198,6 +232,16 @@ def extend_mounts(modules:bool=None, data:bool=None, logs:bool=None):
     """
     return web_mounts(modules, data, logs)
 
+
+def mounts_write_access(modules:bool=None, data:bool=None, logs:bool=None):
+    if modules is not None:
+        Shared.MOUNTS_WRITE_ACCESS["$modules"] = modules
+    if data is not None:
+        Shared.MOUNTS_WRITE_ACCESS["$data"] = data
+    if logs is not None:
+        Shared.MOUNTS_WRITE_ACCESS["$logs"] = logs
+    return Shared.MOUNTS_WRITE_ACCESS
+
 #######################
 # Helper LM functions #
 #######################
@@ -206,4 +250,6 @@ def help(widgets=False):
     return (f'load web_data_dir=<shared directory under {web_dir()}>',
             'resolve_path "<str>"',
             'get_shared_dirs',
-            'extend_mounts modules:bool=None data:bool=None logs:bool=None')
+            'get_user_dir',
+            'extend_mounts modules:bool=None data:bool=None logs:bool=None',
+            'mounts_write_access modules:bool=None data:bool=None logs:bool=None')

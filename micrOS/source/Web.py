@@ -35,6 +35,24 @@ class ConnectionError(Exception):
 class HeaderDecodingError(Exception):
     pass
 
+def url_path_resolve(path:str) -> tuple[bool, str]:
+    """
+    :param path: input path
+    Return: isError, absolutePath
+    """
+    # $Extended mount check: WEB_MOUNTS (/modules and /web)
+    path = path.lstrip("/")
+    if path.startswith("$"):
+        mount_alias = path.split("/")[0]
+        mount_path = WebEngine.WEB_MOUNTS.get(mount_alias, None)
+        if mount_path is None:
+            return True, f"Invalid mount point: {mount_alias}"
+        mount_path = path.replace(mount_alias, mount_path)
+        return False, mount_path
+    # Default web path: /web
+    return False, path_join(OSPath.WEB, path)
+
+
 class WebEngine:
     __slots__ = ["client"]
     ENDPOINTS = {}
@@ -55,7 +73,7 @@ class WebEngine:
                      "png": "image/png",
                      "gif": "image/gif"}
     METHODS = ("GET", "POST", "DELETE")
-    WEB_MOUNTS = {"$logs": OSPath.LOGS}
+    WEB_MOUNTS = {}
     # MEMORY DIMENSIONING FOR THE BEST PERFORMANCE
     #         (is_limited, free_mem, min_mem_req_kb, chunk_threshold_kb, chunk_size_bytes)
     MEM_DIM = (None, -1, 20, 2, 1024)
@@ -114,9 +132,24 @@ class WebEngine:
         return WebEngine.MEM_DIM
 
     @staticmethod
-    def web_mounts(modules:bool=None, data:bool=None, logs:bool=None):
+    def register(endpoint:str, callback:object|str, method:str='GET') -> None:
         """
-        WebEngine access path handler
+        PUBLIC METHOD FOR LMs: Webengine endpoint registration handler
+        :param endpoint: name of the endpoint
+        :param callback: callback function (WebEngine compatible: return:  html_type, content)
+        :param method: HTTP method name
+        """
+        if not endpoint in WebEngine.ENDPOINTS:
+            WebEngine.ENDPOINTS[endpoint] = {}
+        if method not in WebEngine.METHODS:
+            raise ValueError(f"method must be one of {WebEngine.METHODS}")
+        WebEngine.ENDPOINTS[endpoint][method] = callback
+        return
+
+    @staticmethod
+    def web_mounts(modules:bool=None, data:bool=None, logs:bool=None) -> dict:
+        """
+        PUBLIC METHOD FOR LMs: WebEngine access path handler
         - default path: /web
         - extended path access: with $modules and $data dirs
         """
@@ -239,23 +272,6 @@ class WebEngine:
         response = dumps(resp_schema)
         return WebEngine.REQ200.format(dtype='text/html', len=len(response), data=response)
 
-    @staticmethod
-    def url_path_resolve(path:str) -> tuple[bool, str]:
-        """
-        :param path: input path
-        Return: isError, absolutePath
-        """
-        # $Extended mount check: WEB_MOUNTS (/modules and /web)
-        if path.startswith("$"):
-            mount_alias = path.split("/")[0]
-            mount_path = WebEngine.WEB_MOUNTS.get(mount_alias, None)
-            if mount_path is None:
-                return True, f"Invalid mount point: {mount_alias}"
-            mount_path = path.replace(mount_alias, mount_path)
-            return False, mount_path
-        # Default web path: /web
-        return False, path_join(OSPath.WEB, path)
-
     async def endpoints(self, url:str, method:str, headers:dict, body:bytes):
         url = url[1:]  # Cut first / char
         if url in WebEngine.ENDPOINTS and method in WebEngine.ENDPOINTS[url]: # TODO: support for query parameters
@@ -308,7 +324,7 @@ class WebEngine:
         :param web_resource: Path to the file to be served.
         """
         # Resolve
-        err, web_resource = self.url_path_resolve(web_resource)
+        err, web_resource = url_path_resolve(web_resource)
         if err:
             await self.client.a_send(self.REQ404.format(len=19, data='404 Mount Not Found'))
             return False

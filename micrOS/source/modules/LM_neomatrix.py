@@ -144,7 +144,7 @@ def load(width=8, height=8):
     """
     if NeoPixelMatrix.INSTANCE is None:
         NeoPixelMatrix(width=width, height=height, pin=bind_pin('neop'))
-        web_endpoint('matrixDraw', 'matrix_draw.html', auto_enable=False)
+        web_endpoint('matrixDraw', 'matrix_draw.html')
     return NeoPixelMatrix.INSTANCE
 
 

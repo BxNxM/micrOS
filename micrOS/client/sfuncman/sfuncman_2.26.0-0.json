@@ -487,9 +487,9 @@
             "doc": "\n    Initialize fileserver.\n    :param web_data_dir: web data public directory (default: /web/<user_data>)\n    ",
             "param(s)": "web_data_dir:str=None"
         },
-        "validate_filename": {
-            "doc": "\n    Check if the provided filename contains only\n    alphanumeric characters (including safe symbols).\n    ",
-            "param(s)": "filename: str"
+        "resolve_path": {
+            "doc": "\n    Resolve and Validate input path\n    :param path: URL resource path or mount path string\n    ",
+            "param(s)": "path"
         }
     },
     "gameOfLife": {
@@ -1968,8 +1968,8 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/web.png?raw=true",
         "load": {
-            "doc": "\n    Centralized Web Backend Services Loader\n    - Dynamic application dashboard\n    - Fileserver\n    :param dashboard:  bool - enable*/disable application dashboard\n    :param fileserver: bool - enable/disable* fileserver\n    :param fsdir:      str  - set custom fileserver shared folder name\n    :param fs_explore: bool - enable all shared web mounts: modules, data\n    ",
-            "param(s)": "dashboard=True fileserver=False fsdir=None fs_explore=False"
+            "doc": "\n    Centralized Web Backend Services Loader\n    - Dynamic application dashboard\n    - Fileserver\n    :param dashboard:  bool - enable*/disable application dashboard\n    :param fileserver: bool - enable/disable* fileserver\n    :param fs_explore: bool - enable all shared web mounts: modules, data\n    ",
+            "param(s)": "dashboard=True fileserver:bool=False fs_explore:bool=False"
         }
     }
 }

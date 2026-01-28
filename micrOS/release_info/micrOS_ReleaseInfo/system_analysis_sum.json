@@ -21,11 +21,11 @@
             1
         ],
         "Server.py": [
-            9.53,
+            9.56,
             3
         ],
         "Web.py": [
-            9.38,
+            9.37,
             2
         ],
         "Tasks.py": [
@@ -34,7 +34,7 @@
         ],
         "Config.py": [
             9.44,
-            17
+            16
         ],
         "Shell.py": [
             9.37,
@@ -117,7 +117,7 @@
             0
         ],
         "modules/LM_web.py": [
-            7.14,
+            6.92,
             0
         ],
         "modules/LM_genIO.py": [
@@ -309,7 +309,7 @@
             0
         ],
         "modules/LM_fileserver.py": [
-            9.38,
+            9.36,
             0
         ],
         "modules/LM_neomatrix.py": [
@@ -319,11 +319,11 @@
     },
     "summary": {
         "core": [
-            4697,
+            4699,
             25
         ],
         "load": [
-            9063,
+            9057,
             54
         ],
         "core_dep": [
@@ -335,7 +335,7 @@
             3
         ],
         "core_score": 9.27,
-        "load_score": 8.44,
+        "load_score": 8.43,
         "version": "2.26.0-0"
     }
 }

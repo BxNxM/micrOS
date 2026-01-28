@@ -7,14 +7,13 @@ Web backend loader
 from Common import web_endpoint, web_mounts
 
 
-def load(dashboard=True, fileserver=False, fsdir=None, fs_explore=False):
+def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False):
     """
     Centralized Web Backend Services Loader
     - Dynamic application dashboard
     - Fileserver
     :param dashboard:  bool - enable*/disable application dashboard
     :param fileserver: bool - enable/disable* fileserver
-    :param fsdir:      str  - set custom fileserver shared folder name
     :param fs_explore: bool - enable all shared web mounts: modules, data
     """
     endpoints = []
@@ -23,9 +22,8 @@ def load(dashboard=True, fileserver=False, fsdir=None, fs_explore=False):
         endpoints.append("Dashboard initialized, endpoint: /dashboard")
     if fileserver:
         import LM_fileserver
-        endpoints.append(LM_fileserver.load(web_data_dir=fsdir))
-        if fs_explore:
-            web_mounts(True, True)
+        endpoints.append(LM_fileserver.load())
+        endpoints.append(web_mounts(fs_explore, fs_explore, fs_explore))
     return endpoints
 
 

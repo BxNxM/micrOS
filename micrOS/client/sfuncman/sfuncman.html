@@ -328,8 +328,8 @@ pin&nbsp;map:&nbsp;ds18</td></tr></table></td></tr><tr><th>help</th><td><table b
 <br><br>
 <h2 id="fileserver"><a href="#fileserver">fileserver</a></h2>
 <table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>web_data_dir:str=None</td></tr><tr><th>doc</th><td>Initialize&nbsp;fileserver.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;web_data_dir:&nbsp;web&nbsp;data&nbsp;public&nbsp;directory&nbsp;(default:&nbsp;/web/<user_data>)</td></tr></table></td></tr><tr><th>validate_filename</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>filename: str</td></tr><tr><th>doc</th><td>Check&nbsp;if&nbsp;the&nbsp;provided&nbsp;filename&nbsp;contains&nbsp;only<br>
-&nbsp;&nbsp;&nbsp;&nbsp;alphanumeric&nbsp;characters&nbsp;(including&nbsp;safe&nbsp;symbols).</td></tr></table></td></tr><tr><th>get_shared_dirs</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Getter&nbsp;for&nbsp;web&nbsp;shared&nbsp;dirs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;web_data_dir:&nbsp;web&nbsp;data&nbsp;public&nbsp;directory&nbsp;(default:&nbsp;/web/<user_data>)</td></tr></table></td></tr><tr><th>resolve_path</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>path</td></tr><tr><th>doc</th><td>Resolve&nbsp;and&nbsp;Validate&nbsp;input&nbsp;path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;path:&nbsp;URL&nbsp;resource&nbsp;path&nbsp;or&nbsp;mount&nbsp;path&nbsp;string</td></tr></table></td></tr><tr><th>get_shared_dirs</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>doc</th><td>Getter&nbsp;for&nbsp;web&nbsp;shared&nbsp;dirs<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;default:&nbsp;/web/Shared.ROOT_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;extended:&nbsp;web_mounts()</td></tr></table></td></tr><tr><th>extend_mounts</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>modules:bool=None data:bool=None logs:bool=None</td></tr><tr><th>doc</th><td>Extend&nbsp;web&nbsp;engine&nbsp;shared&nbsp;root&nbsp;path&nbsp;list<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;modules:&nbsp;add/remove&nbsp;/modules&nbsp;to&nbsp;web&nbsp;shared&nbsp;path<br>
@@ -1253,12 +1253,11 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true" alt="VL53L0X" height=150></td></tr></table>
 <br><br>
 <h2 id="web"><a href="#web">web</a></h2>
-<table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>dashboard=True fileserver=False fsdir=None fs_explore=False</td></tr><tr><th>doc</th><td>Centralized&nbsp;Web&nbsp;Backend&nbsp;Services&nbsp;Loader<br>
+<table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>load</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>dashboard=True fileserver:bool=False fs_explore:bool=False</td></tr><tr><th>doc</th><td>Centralized&nbsp;Web&nbsp;Backend&nbsp;Services&nbsp;Loader<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Dynamic&nbsp;application&nbsp;dashboard<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Fileserver<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;dashboard:&nbsp;&nbsp;bool&nbsp;-&nbsp;enable*/disable&nbsp;application&nbsp;dashboard<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fileserver:&nbsp;bool&nbsp;-&nbsp;enable/disable*&nbsp;fileserver<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fsdir:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str&nbsp;&nbsp;-&nbsp;set&nbsp;custom&nbsp;fileserver&nbsp;shared&nbsp;folder&nbsp;name<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fs_explore:&nbsp;bool&nbsp;-&nbsp;enable&nbsp;all&nbsp;shared&nbsp;web&nbsp;mounts:&nbsp;modules,&nbsp;data</td></tr></table></td></tr><tr><th>help</th><td><table border="1" cellspacing="1" cellpadding="5" width="80%"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>

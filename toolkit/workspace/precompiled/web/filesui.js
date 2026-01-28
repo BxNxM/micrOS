@@ -113,9 +113,11 @@ function uploadFile() {
   if (!f) return;
 
   const fd = new FormData();
-  fd.append('file', f);
+  const targetPath = `${selectedDir}/${f.name}`;
+  // This sets filename="selectedDir/file.txt" in multipart
+  fd.append('file', f, targetPath);
 
-  console.info("uploadFile:", f.name);
+  console.info("uploadFile:", targetPath);
   fetch('/fs/files', { method: 'POST', body: fd })
     .then(r => {
       if (!r.ok) {
@@ -151,7 +153,7 @@ function download() {
 function deleteFile() {
   if (!selected) return;
 
-  const toDelete = selected;
+  const toDelete = `${selectedDir}/${selected}`;
   console.info("deleteFile:", toDelete);
 
   fetch('/fs/files', { method: 'DELETE', body: toDelete })

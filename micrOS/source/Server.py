@@ -32,6 +32,15 @@ else:
         __slots__ = []
         def __init__(self, *args, **kwargs):
             pass
+        @staticmethod
+        def register(*args, **kwargs) -> None:
+            """Child class can implement"""
+            syslog(f"[WARN] webui disabled, skip register: {kwargs.get('endpoint')}")
+        @staticmethod
+        def web_mounts(*args, **kwargs) -> dict:
+            """Child class can implement"""
+            syslog(f"[WARN] webui disabled, skip web_mounts: {kwargs.get('endpoint')}")
+            return {}
 
 #########################################################
 #         SOCKET SERVER-CLIENT HANDLER CLASSES          #
@@ -178,28 +187,6 @@ class WebCli(Client, WebEngine):
                 break
         # Close connection
         await self.close()
-
-    @staticmethod
-    def register(endpoint:str, callback:callable, method:str='GET', auto_enable:bool=True):
-        """
-        :param endpoint: name of the endpoint
-        :param callback: callback function (WebEngine compatible: return:  html_type, content)
-        :param method: HTTP method name
-        :param auto_enable: enable webui when register (endpoint)
-        """
-        if cfgget('webui'):
-            if not endpoint in WebEngine.ENDPOINTS:
-                WebEngine.ENDPOINTS[endpoint] = {}
-            if method not in WebEngine.METHODS:
-                raise ValueError(f"method must be one of {WebEngine.METHODS}")
-            WebEngine.ENDPOINTS[endpoint][method] = callback
-            return
-        # AUTO ENABLE webui when register (endpoint) called and webui is False
-        if auto_enable:
-            from Config import cfgput
-            if cfgput('webui', True):  # SET webui to True
-                from machine import reset
-                reset()  # HARD RESET (REBOOT)
 
 
 class ShellCli(Client, Shell):

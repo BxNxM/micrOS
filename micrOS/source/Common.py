@@ -108,7 +108,7 @@ def notify(*args, **kwargs) -> bool:
     return False
 
 
-def web_endpoint(endpoint, function, method='GET', auto_enable=True) -> bool:
+def web_endpoint(endpoint, function, method='GET') -> bool:
     """
     [LM] Add test endpoint <localhost.local>/endpoint from Load Modules
     :param endpoint: simple string, name of the endpoint
@@ -122,9 +122,8 @@ def web_endpoint(endpoint, function, method='GET', auto_enable=True) -> bool:
         [3] String as file reference from /web
             Example: 'filesui.html'
     :param method: HTTP method name
-    :param auto_enable: if True will enable webui (if disabled) when register endpoint
     """
-    WebCli.register(endpoint=endpoint, callback=function, method=method, auto_enable=auto_enable)
+    WebCli.register(endpoint=endpoint, callback=function, method=method)
     return True
 
 

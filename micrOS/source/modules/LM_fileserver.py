@@ -4,26 +4,17 @@ micrOS Fileserver addon for WebEngine
 
 from json import dumps
 from re import compile as recompile
-from uos import listdir, stat, rename, mkdir, statvfs
+from uos import stat, rename, mkdir, statvfs
 
-from Common import web_endpoint, web_mounts, web_dir
-from Files import path_join, is_dir, remove_dir, remove_file, OSPath
-from Web import WebEngine
+from Common import web_endpoint, web_mounts, web_dir, syslog
+from Files import path_join, is_dir, remove_dir, remove_file, OSPath, abs_path, ilist_fs
+from Web import url_path_resolve
 
 
 class Shared:
     ROOT_DIR = web_dir("user_data")         # Default Public WEB dir
     TMP_DIR = path_join(ROOT_DIR, "tmp")    # Temporary directory for partial uploads
     UPLOAD_COUNTER = 0                      # Counter for handling partial uploads
-
-    @staticmethod
-    def normalize_input_path(filename):
-        # Hack the file name to accept folder prefix if allowed dir... (user_data)
-        user_dir_name = Shared.ROOT_DIR.split("/")[-1]
-        filename = filename.lstrip("/")  # normalize
-        if filename.startswith(user_dir_name):
-            filename = filename.replace(f"{user_dir_name}/", "")
-        return filename, user_dir_name
 
 
 #############################################
@@ -40,20 +31,18 @@ def _list_file_paths_clb(root_dir=None):
     else:
         root_dir = Shared.ROOT_DIR
 
-    user_data = []
-    # Resolve mount aliases
-    err, root_dir = WebEngine.url_path_resolve(root_dir.replace(web_dir(), ""))
-    if err:
-        return "text/plain", root_dir
+    # Resolve and Validate path (mount aliases)
+    try:
+        root_dir = resolve_path(root_dir.replace(web_dir(), ""))
+    except Exception as e:
+        return "text/plain", str(e)
 
+    user_data = []
     # Show file content on selected root_dir
-    for name in listdir(root_dir):
-        if name.endswith(".mpy"):
-            # Skip .mpy files, not editable
-            continue
+    # Hide: .mpy files (non-readable/non-editable)
+    for name in (f for f in ilist_fs(path=root_dir, type_filter='f') if not f.endswith(".mpy")):
         file_path = path_join(root_dir, name)
-        if file_path != Shared.TMP_DIR:
-            user_data.append(file_path)
+        user_data.append(file_path)
 
     response = [
         {
@@ -68,17 +57,11 @@ def _list_file_paths_clb(root_dir=None):
 
 def _delete_file_clb(file_to_delete: bytes):
     file_to_delete = file_to_delete.decode('ascii')
-    validate_filename(file_to_delete)
-
-    # Resolve mount aliases
-    err, root_dir = WebEngine.url_path_resolve(file_to_delete.replace(web_dir(), ""))
-    if err:
-        return "text/plain", root_dir
-
-    if file_to_delete not in listdir(Shared.ROOT_DIR):
-        raise ValueError(f'File does not exist: {file_to_delete}')
-    remove_file(path_join(Shared.ROOT_DIR, file_to_delete))
-    return 'text/plain', 'ok'
+    filepath = resolve_path(file_to_delete)
+    if is_dir(filepath):
+        raise ValueError(f'File does not exist: {filepath}')
+    verdict = remove_file(filepath)
+    return 'text/plain', verdict
 
 
 def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=False):
@@ -87,38 +70,42 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
     This callback is invoked on every part.
     """
     cd = part_headers.get('content-disposition', '')
-    filename = None
+    target_filepath = None
+    filename = ""
     cd_pattern = recompile(r'filename\*?=(?:"([^"]+)"|([^;]+))')
 
     if match := cd_pattern.search(cd):
-        filename = match.group(1) or match.group(2)
-        filename = filename.strip()
+        filepath = match.group(1) or match.group(2)
+        filepath = filepath.strip()
         # Reject UTF-8 and percent-encoded UTF-8 filenames (RFC 8187)
-        if filename.lower().startswith("utf-8'"):
+        if filepath.lower().startswith("utf-8'"):
             raise ValueError("Percent encoded filenames are not supported")
-        filename, _ = Shared.normalize_input_path(filename)
-        validate_filename(filename)
+        target_filepath = resolve_path(filepath)
+        filename = target_filepath.split("/")[-1]
 
     if not filename:
         raise ValueError("No valid filename found in part headers")
+    target_parts = target_filepath.strip("/").split("/")
+    if len(target_parts) == 2 and target_parts[-2] == "web":
+        # Write protected /web root -> redirect to user shared dir
+        target_filepath = path_join(Shared.ROOT_DIR, filename)
 
     if first:
         Shared.UPLOAD_COUNTER += 1
 
     if first and last:
-        file_path = path_join(Shared.ROOT_DIR, filename)
-        with open(file_path, 'wb') as f:
+        with open(target_filepath, 'wb') as f:
             f.write(part_body)
     elif first and not last:
-        file_path = path_join(Shared.TMP_DIR, f"{filename}.{Shared.UPLOAD_COUNTER}")
-        with open(file_path, 'wb') as f:
+        tmp_file_path = path_join(Shared.TMP_DIR, f"{filename}.{Shared.UPLOAD_COUNTER}")
+        with open(tmp_file_path, 'wb') as f:
             f.write(part_body)
     else:
-        file_path = path_join(Shared.TMP_DIR, f"{filename}.{Shared.UPLOAD_COUNTER}")
-        with open(file_path, 'ab') as f:
+        tmp_file_path = path_join(Shared.TMP_DIR, f"{filename}.{Shared.UPLOAD_COUNTER}")
+        with open(tmp_file_path, 'ab') as f:
             f.write(part_body)
         if last:
-            rename(file_path, path_join(Shared.ROOT_DIR, filename))
+            rename(tmp_file_path, target_filepath)
 
     return 'text/plain', 'ok'
 
@@ -173,16 +160,22 @@ def load(web_data_dir:str=None):
     return "Fileserver was initialized, endpoints: /fs, /fs/files, /fs/dirs, /fs/usage"
 
 
-def validate_filename(filename: str):
+def resolve_path(path):
     """
-    Check if the provided filename contains only
-    alphanumeric characters (including safe symbols).
+    Resolve and Validate input path
+    :param path: URL resource path or mount path string
     """
-    filename, dirname = Shared.normalize_input_path(filename)
-    # Real check
+    # Path resolve and validation
+    path = abs_path(path)
+    err, path = url_path_resolve(path)
+    if err:
+        raise ValueError(f"Invalid path: {path}")
+    filename = path.split("/")[-1]
+    # Filename validation
     filename_pattern = recompile(r"^[a-zA-Z0-9._-]+$")
     if not filename_pattern.match(filename):
-        raise ValueError(f"Filename contains invalid characters: {filename} ({dirname})")
+        raise ValueError(f"Filename contains invalid characters: {path}")
+    return path
 
 
 def get_shared_dirs() -> list:
@@ -211,6 +204,6 @@ def extend_mounts(modules:bool=None, data:bool=None, logs:bool=None):
 
 def help(widgets=False):
     return (f'load web_data_dir=<shared directory under {web_dir()}>',
-            'validate_filename "<str>"',
+            'resolve_path "<str>"',
             'get_shared_dirs',
             'extend_mounts modules:bool=None data:bool=None logs:bool=None')

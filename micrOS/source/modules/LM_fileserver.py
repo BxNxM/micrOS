@@ -220,7 +220,7 @@ def get_user_dir():
     Getter for user configured shared dir
     - used by other load modules
     """
-    return Shared.ROOT_DIR.replace(web_dir(), "")
+    return Shared.ROOT_DIR
 
 
 def extend_mounts(modules:bool=None, data:bool=None, logs:bool=None):

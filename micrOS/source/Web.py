@@ -250,7 +250,7 @@ class WebEngine:
         resp_schema = {'result': {}, 'state': False}
         cmd = url.replace('/rest', '')
         if len(cmd) > 1:
-            # REST sub-parameter handling (rest commands)
+            # REST sub-parameter handling (rest commands) TODO: create url_decode helper for: " ' >
             cmd = (cmd.replace('/', ' ').replace('-', ' ').replace("%3E", ">")
                    .replace('%22', '"').replace('%E2%80%9C', '"').replace('%E2%80%9D', '"')
                    .strip().split())

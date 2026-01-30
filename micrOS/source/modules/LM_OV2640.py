@@ -190,7 +190,8 @@ def photo(name='photo.jpeg'):
     # Create file name with time stamp
     photo_path = f"{path}/{ts}-{name}"
     # Take a Photo
-    buf = capture()
+    _ = capture()       # Dump current cached image
+    buf = capture()     # Create new image
     # Save the Photo
     with open(photo_path, 'wb') as f:
         if buf:
@@ -200,7 +201,8 @@ def photo(name='photo.jpeg'):
 
 
 def _snapshot_clb():
-    image = capture()
+    _ = capture()       # Dump current cached image
+    image = capture()   # Take new image
     if image is not None:
         return 'image/jpeg', image
     return 'text/plain', f'capture error: {image}'

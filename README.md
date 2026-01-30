@@ -590,12 +590,11 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- mount pathes write access handlig
 				- mount pathes read (+visibility) access handlig
 
-		- (11) [TODO][CONCEPT] @Common.RequireSudo decorator
-			- When node_config["auth"] == True 
+		- (11) [DONE] @Auth.sudo decorator
 			- Require pwd="<password>" parameter
 			- Two modes:
 				- Always require
-				- Require when force=True (_when_force=True)
+				- Require when force=True (_force_only=(True, 0))
 			- Apply this to:
 				- pacman rm
 				- pacman rmdir

@@ -21,6 +21,7 @@ from Config import cfgget, cfgput
 from microIO import detect_platform
 from Debug import console_write, syslog
 from Tasks import exec_lm_pipe
+from Auth import resolve_secret
 from micropython import mem_info
 from machine import freq
 try:
@@ -46,7 +47,7 @@ def bootup():
     bootasks = cfgget('boothook')
     if bootasks is not None and bootasks.lower() != 'n/a':
         console_write(f"|-[BOOT] TASKS: {bootasks}")
-        if exec_lm_pipe(bootasks):
+        if exec_lm_pipe(resolve_secret(bootasks)):
             console_write("|-[BOOT] DONE")
         else:
             console_write("|-[BOOT] ERROR")

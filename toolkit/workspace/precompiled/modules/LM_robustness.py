@@ -1,5 +1,6 @@
 from LM_system import memory_usage
 from Common import socket_stream, syslog, micro_task
+from Auth import sudo
 
 
 @socket_stream
@@ -105,6 +106,22 @@ async def mytask(tag, period_ms=30):
             await my_task.feed(sleep_ms=period_ms)
             # [i] feed same as "await asyncio.sleep_ms(period_ms)" with micrOS features (WDT)
 
+
+@sudo
+def func_sudo():
+    """
+    Function execution requires pwd=<...>
+    """
+    return "Access granted"
+
+
+@sudo(_force_only=(True, 0))
+def func_sudo_force(force=False):
+    """
+    Function requires pwd=<...> when force=True
+    """
+    return f"Access granted, force flag: {force}"
+
 ##############################################################################
 
 def help(widgets=False):
@@ -116,5 +133,5 @@ def help(widgets=False):
     """
     return 'NOTE: This is a test module to validate system robustness', \
            'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14', \
-           'create_task', 'mytask'
+           'create_task', 'mytask', "func_sudo", "func_sudo_force"
 

@@ -25,7 +25,7 @@ from Debug import syslog
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.26.0-0'
+    MICROS_VERSION = '2.26.1-0'
 
     def __init__(self):
         """
@@ -72,8 +72,7 @@ class Shell:
         # Set user auth state
         if self.__auth_mode and not self.__auth_ok:
             # check password
-            usrpwd = cfgget('appwd')
-            if usrpwd == msg_list[0].strip():
+            if cfgget('appwd') == msg_list[0].strip():
                 self.__auth_ok = True
                 await self.a_send("AuthOk")
                 return True, []

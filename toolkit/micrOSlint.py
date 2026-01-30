@@ -18,7 +18,7 @@ MICROS_SOURCE_DIR = os.path.join(MYPATH, '../micrOS/source')
 RELEASE_INFO_PATH = os.path.join(MYPATH, '../micrOS/release_info/micrOS_ReleaseInfo')
 
 # MICROS LINTER CONFIG
-ALLOWED_LM_DEP_WARNS = 5        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
+ALLOWED_LM_DEP_WARNS = 3        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is better)
 
 def parse_micros_file_categories(verbose=True):
     """
@@ -178,7 +178,7 @@ def core_dep_checker(categories, verbose=True):
 def load_module_checker(categories, verbose=True):
 
     def _is_allowed(_relation):
-        _allowed_whitelist = ['Common', 'microIO', 'Types', 'urequests']
+        _allowed_whitelist = ['Common', 'microIO', 'Types', 'urequests', 'Auth']
         _allowed = []
         for _allow in _relation:
             if _allow in _allowed_whitelist:

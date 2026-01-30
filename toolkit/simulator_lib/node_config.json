@@ -2,5 +2,5 @@
   "devfid": "simulator",
   "appwd": "ADmin123",
   "webui": true,
-  "boothook": "web load dashboard=True fileserver=True fs_explore=True; fileserver mounts_write_access modules=True logs=True; neopixel load; #telegram load '6185435843:AAH71wEyoOil8bRKecQHp4zazTQ_MmE7bvE' &; #telegram receiver_loop &2000",
+  "boothook": "web load dashboard=True fileserver=True fs_explore=True; fileserver mounts_write_access modules=True logs=True pwd=$pwd; neopixel load; #telegram load '6185435843:AAH71wEyoOil8bRKecQHp4zazTQ_MmE7bvE' &; #telegram receiver_loop &2000",
   "aioqueue": 4}

@@ -9,6 +9,7 @@ from uos import stat, rename, mkdir, statvfs
 from Common import web_endpoint, web_mounts, web_dir, syslog
 from Files import path_join, is_dir, remove_dir, remove_file, OSPath, abs_path, ilist_fs
 from Web import url_path_resolve
+from Auth import sudo
 
 
 class Shared:
@@ -233,6 +234,7 @@ def extend_mounts(modules:bool=None, data:bool=None, logs:bool=None):
     return web_mounts(modules, data, logs)
 
 
+@sudo
 def mounts_write_access(modules:bool=None, data:bool=None, logs:bool=None):
     if modules is not None:
         Shared.MOUNTS_WRITE_ACCESS["$modules"] = modules

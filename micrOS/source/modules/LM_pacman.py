@@ -1,6 +1,7 @@
 from sys import modules
 from Common import socket_stream
 from Files import list_fs, ilist_fs, remove_file, remove_dir, OSPath, path_join, is_protected
+from Auth import sudo
 
 
 #############################################
@@ -31,6 +32,7 @@ def ls(path="/", content='*', raw=False, select='*', core=False):
     return lines
 
 
+@sudo(_force_only=(True, 1))
 def rm(path, force=False):
     """
     Linux like rm command - delete app resources and folders
@@ -40,6 +42,7 @@ def rm(path, force=False):
     return remove_file(path, force)
 
 
+@sudo(_force_only=(True, 1))
 def rmdir(path, force=False):
     """
     Linux like rmdir command for directory deletion
@@ -75,13 +78,6 @@ def cat(path):
     return content
 
 
-def download(ref=None):
-    """
-    OBSOLETED interface
-    """
-    return install(ref)
-
-
 def install(ref=None):
     """
     Unified mip-based installer for micrOS.
@@ -104,6 +100,7 @@ def install(ref=None):
     return pm_install(ref)
 
 
+@sudo
 def uninstall(name=None):
     """
     Delete package by name from /lib
@@ -267,6 +264,7 @@ def listmods(msgobj=None):
     return msg_buf if len(msg_buf) > 0 else ''
 
 
+@sudo
 def delmod(mod):
     """
     Module package manager

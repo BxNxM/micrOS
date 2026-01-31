@@ -50,7 +50,7 @@
         ],
         "Types.py": [
             9.21,
-            29
+            28
         ],
         "Logger.py": [
             8.84,
@@ -58,7 +58,7 @@
         ],
         "Common.py": [
             9.85,
-            34
+            33
         ],
         "InterConnect.py": [
             9.63,
@@ -82,7 +82,7 @@
         ],
         "microIO.py": [
             9.35,
-            44
+            43
         ],
         "micrOS.py": [
             9.3,
@@ -315,10 +315,6 @@
         "modules/LM_fileserver.py": [
             9.41,
             0
-        ],
-        "modules/LM_neomatrix.py": [
-            8.75,
-            0
         ]
     },
     "summary": {
@@ -327,8 +323,8 @@
             26
         ],
         "load": [
-            9110,
-            54
+            8777,
+            53
         ],
         "core_dep": [
             true,
@@ -339,7 +335,7 @@
             3
         ],
         "core_score": 9.28,
-        "load_score": 8.44,
+        "load_score": 8.43,
         "version": "2.26.1-0"
     }
 }

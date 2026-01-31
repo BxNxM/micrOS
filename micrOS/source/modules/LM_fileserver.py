@@ -175,13 +175,21 @@ def load(web_data_dir:str=None):
             base_dir = current_dir
 
     # Register endpoints
+    #   [GET] List shared directories
     web_endpoint('fs/dirs', lambda: ('application/json', dumps(get_shared_dirs())))
+    #   [GET] List help message
     web_endpoint('fs/list', lambda: ('text/plain', 'USE THIS AS POST Endpoint, select dir in http body'))
+    #   [POST] List selected directory content
     web_endpoint('fs/list', _list_file_paths_clb, 'POST')
-    web_endpoint('fs/files', lambda: ('text/plain', "USE THIS AS POST / DELETE Endpoint, select file in http body"))
+    #   [GET] Files - list user files
+    web_endpoint('fs/files', _list_file_paths_clb)
+    #   [DELETE] Files - delete selected file
     web_endpoint('fs/files', _delete_file_clb, 'DELETE')
+    #   [POST] Upload file to the selected path (in filename)
     web_endpoint('fs/files', _upload_file_clb, 'POST')
+    #   [GET] Show internal flash storage usage
     web_endpoint('fs/usage', _disk_usage_clb)
+    #   [GET] Fileserver homepage UI
     web_endpoint('fs', 'filesui.html')
 
     return "Fileserver was initialized, endpoints: /fs, /fs/files, /fs/dirs, /fs/usage"

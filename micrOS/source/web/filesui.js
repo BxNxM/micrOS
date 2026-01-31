@@ -76,34 +76,46 @@ function loadFiles() {
   })
     .then(r => r.json())
     .then(files => {
-      list.innerHTML = '';
-      clearSelection();
+       list.innerHTML = '';
+       clearSelection();
+       // 🔹 Empty folder placeholder
+       if (!Array.isArray(files) || files.length === 0) {
+         const d = document.createElement('div');
+         d.className = 'file-item placeholder';
+         d.textContent = '.empty';
+         d.style.opacity = '0.5';
+         d.style.pointerEvents = 'none'; // 🔹 non-clickable
+         list.appendChild(d);
 
-      files.forEach(f => {
-        const name = f.path.split('/').pop();
-        const d = document.createElement('div');
-        d.className = 'file-item';
-        d.textContent = `${name} ${f.size}B`;
+         console.info("Files loaded (empty folder)");
+         return;
+       }
+       // 🔹 Files listing
+       files.forEach(f => {
+         const name = f.path.split('/').pop();
+         const d = document.createElement('div');
+         d.className = 'file-item';
+         d.textContent = `${name} ${f.size}B`;
 
-        d.onclick = (e) => {
-          e.stopPropagation();
+         d.onclick = (e) => {
+           e.stopPropagation();
 
-          if (selectedEl === d) {
-            clearSelection();
-            return;
-          }
+           if (selectedEl === d) {
+             clearSelection();
+             return;
+           }
 
-          clearSelection();
-          d.className = 'file-item sel';
-          selected = name;
-          selectedEl = d;
-        };
+           clearSelection();
+           d.className = 'file-item sel';
+           selected = name;
+           selectedEl = d;
+         };
 
-        list.appendChild(d);
-      });
+         list.appendChild(d);
+       });
 
-      console.info("Files loaded");
-    })
+       console.info("Files loaded");
+      })
     .catch(err => {
       console.error("load failed:", err);
       popUpMsg("Failed to load files: " + err.message);

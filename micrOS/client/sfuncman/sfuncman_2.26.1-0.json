@@ -928,8 +928,8 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
         "load": {
-            "doc": "\n    Load NeoPixelMatrix instance. If not already loaded\n    ",
-            "param(s)": "width=8 height=8"
+            "doc": "\n    Load NeoPixelMatrix instance.\n    :param width: neopixel matrix width (default: 8)\n    :param height: neopixel matrix height (default: 8)\n    :param neop: neopixel pin number (default: 14)\n    :param i2c_sda: i2c bus data pin number (default: 11) for QMI8658C GYRO\n    :param i2c_scl: i2c bus clock pin number (default: 12) for QMI8658C GYRO\n\n    ESP32-S3 Matrix 8x8 RGB-LED WiFi Bluetooth With QST Attitude Gyro Sensor QMI8658C\n      https://spotpear.com/shop/ESP32-S3FH4R2-Matrix-8x8-RGB-LED-WiFi-Bluetooth-QST-Attitude-Gyro-Sensor-QMI8658C-Arduino-Python-ESP-IDF.html\n    ",
+            "param(s)": "width=8 height=8 neop=14 i2c_sda=11 i2c_scl=12"
         },
         "noise": {
             "doc": null,

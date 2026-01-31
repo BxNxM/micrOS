@@ -32,7 +32,7 @@ def ls(path="/", content='*', raw=False, select='*', core=False):
     return lines
 
 
-@sudo(_force_only=(True, 1))
+@sudo(_when_true=("force", 1))
 def rm(path, force=False):
     """
     Linux like rm command - delete app resources and folders
@@ -42,7 +42,7 @@ def rm(path, force=False):
     return remove_file(path, force)
 
 
-@sudo(_force_only=(True, 1))
+@sudo(_when_true=("force", 1))
 def rmdir(path, force=False):
     """
     Linux like rmdir command for directory deletion

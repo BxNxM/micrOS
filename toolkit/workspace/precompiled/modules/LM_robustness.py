@@ -115,12 +115,12 @@ def func_sudo():
     return "Access granted"
 
 
-@sudo(_force_only=(True, 0))
-def func_sudo_force(force=False):
+@sudo(_when_true=("opt", 0))
+def func_sudo_opt(opt=False):
     """
     Function requires pwd=<...> when force=True
     """
-    return f"Access granted, force flag: {force}"
+    return f"Access granted, opt flag: {opt}"
 
 ##############################################################################
 
@@ -133,5 +133,5 @@ def help(widgets=False):
     """
     return 'NOTE: This is a test module to validate system robustness', \
            'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14', \
-           'create_task', 'mytask', "func_sudo", "func_sudo_force"
+           'create_task', 'mytask', "func_sudo", "func_sudo_opt opt=False"
 

@@ -45,7 +45,7 @@ def sudo(_f=None, *, _when_true=None):
 
             # Password check
             if require and k.get(PWD_KEY) != __cfgget("appwd"):
-                raise Exception("Access denied, wrong password ({})".format(PWD_KEY))
+                raise Exception(f"Access denied, wrong password ({PWD_KEY})")
             # Remove password before calling function
             k.pop(PWD_KEY, None)
             return f(*a, **k)

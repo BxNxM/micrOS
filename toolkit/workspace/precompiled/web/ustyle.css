@@ -1,55 +1,186 @@
+/* ======================================================
+   micrOS microWeb UI Style
+   Modern lightweight embedded-friendly styling
+   ====================================================== */
+
+/* ---------- Background animation ---------- */
+
 @keyframes backgroundAnimation {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
+
+/* ---------- Base layout ---------- */
+
 body {
     min-height: 100vh;
-    min-width: 100vw;
+
+    /* FIX: removed min-width:100vw (caused horizontal overflow) */
+
     margin: 3%;
-    padding: env(safe-area-inset-top)
-             env(safe-area-inset-right)
-             env(safe-area-inset-bottom)
-             env(safe-area-inset-left);
+
+    padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
+
     background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
     background-size: 200% 200%;
     animation: backgroundAnimation 15s infinite;
+
     color: #d9d9d9;
-    font-family: 'Verdana', Sans-serif;
+    font-family: Verdana, sans-serif;
+    line-height: 1.4;
+
+    overflow-x: hidden; /* safety against right-side overhang */
 }
+
+/* Prevent elements from exceeding container width */
+img,
+pre,
+input,
+button {
+    max-width: 100%;
+}
+
+/* ---------- Typography ---------- */
+
+h1 {
+    margin-top: 6px;
+    margin-bottom: 14px;
+}
+
+h2 {
+    margin-top: 24px;
+}
+
 p {
     word-wrap: break-word;
 }
+
 pre {
     word-wrap: break-word;
     white-space: pre-wrap;
+
+    background: rgba(0,0,0,0.25);
+    padding: 10px;
+    border-radius: 6px;
+    overflow-x: auto;
 }
+
+/* ---------- Modern form controls ---------- */
+
+/* Buttons keep sizing */
 button {
-    background-color: #e7e7e7; /* Gray */
+    font-size: 14px;
+    min-height: 36px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* Only text-like inputs get controlled height */
+input[type="text"] {
+    font-size: 14px;
+    min-height: 36px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 350px;
+}
+
+/* Buttons */
+
+button {
+    background-color: rgba(255,255,255,0.9);
     border: none;
     color: black;
-    font-size: 14px;
-    border-radius: 4px;
-    transition-duration: 0.4s;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
 }
+
 button:hover {
-    background-color: #555555; /* Black */
+    background-color: #555555;
     color: white;
 }
+
+/* ---------- Form layout ---------- */
+
+form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+form input {
+    flex: 1;
+    min-width: 200px;
+}
+
+form button {
+    flex-shrink: 0;
+}
+
+/* ---------- Endpoint groups ---------- */
+
+.endpoint-groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.endpoint-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+
+    padding: 8px;
+    border-radius: 6px;
+
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(2px);
+
+    max-width: 100%;
+}
+
+/* Prevent tiny buttons */
+.endpoint-group button {
+    white-space: nowrap;
+}
+
+/* ---------- Widgets section ---------- */
+
 ol.widget {
     list-style-type: none;
     padding: 0px;
     margin-right: 40px;
 }
+
 #widgets-section {
-  display: flex; /* Display list items horizontally */
-  flex-wrap: wrap; /* Wrap items to multiple lines if needed */
+    display: flex;
+    flex-wrap: wrap;
 }
-@media (max-width: 768px) { /* Adjust the breakpoint as needed */
-  #widgets-section {
-    flex-direction: column; /* Display list items vertically */
-  }
-  ol.widget {
-    margin-right: 0px;
-  }
+
+/* ---------- Responsive tweaks ---------- */
+
+@media (max-width: 768px) {
+
+    #widgets-section {
+        flex-direction: column;
+    }
+
+    ol.widget {
+        margin-right: 0px;
+    }
+
+    body {
+        margin: 16px;
+    }
 }

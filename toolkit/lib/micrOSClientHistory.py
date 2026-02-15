@@ -14,6 +14,7 @@ except:
 
 
 ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+PWD_ARG_RE = re.compile(r"\bpwd\s*=\s*(?:\"[^\"]*\"|'[^']*')")
 
 
 class CommandInterface:
@@ -43,9 +44,10 @@ class CommandInterface:
         if os.path.exists(self.history_file):
             with open(self.history_file, "r") as f:
                 for line in reversed(f.readlines()):
-                    if line in cmd_history:
+                    clean_line = self._sanitize_command(line.strip())
+                    if not clean_line or clean_line in cmd_history:
                         continue
-                    cmd_history.append(line)
+                    cmd_history.append(clean_line)
             # Save cleaned history to file
             with open(self.history_file, "w") as f:
                 f.writelines(f"{item}\n" for item in reversed(cmd_history))
@@ -60,7 +62,7 @@ class CommandInterface:
         if os.path.exists(self.history_file):
             with open(self.history_file, "r") as f:
                 for line in f:
-                    clean_line = line.strip()
+                    clean_line = self._sanitize_command(line.strip())
                     if clean_line:  # Avoid empty lines
                         self.command_history.append(clean_line)
                         readline.add_history(clean_line)
@@ -69,11 +71,11 @@ class CommandInterface:
         """Saves command history to a file."""
         with open(self.history_file, "w") as f:
             for cmd in self.command_history:
-                f.write(cmd + "\n")
+                f.write(self._sanitize_command(cmd) + "\n")
 
     def add_history(self, cmd):
         """Updates readline history and command_history."""
-        cmd = cmd.strip()
+        cmd = self._sanitize_command(cmd.strip())
         if cmd and cmd != self.command_history[-1]:  # Avoid duplicate last command
             self.command_history.append(cmd)
             readline.add_history(cmd)
@@ -88,6 +90,11 @@ class CommandInterface:
         if not value:
             return ""
         return ANSI_ESCAPE_RE.sub("", value)
+
+    @staticmethod
+    def _sanitize_command(cmd):
+        """Mask password argument values before storing command history."""
+        return PWD_ARG_RE.sub('pwd="***"', cmd)
 
     @property
     def prompt(self):

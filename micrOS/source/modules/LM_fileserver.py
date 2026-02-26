@@ -6,7 +6,7 @@ from json import dumps
 from re import compile as recompile
 from uos import stat, rename, mkdir, statvfs
 
-from Common import web_endpoint, web_mounts, web_dir, syslog
+from Common import web_endpoint, web_mounts, web_dir
 from Files import path_join, is_dir, remove_dir, remove_file, OSPath, abs_path, ilist_fs
 from Web import url_path_resolve
 from Auth import sudo

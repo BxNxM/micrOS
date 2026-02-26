@@ -10,18 +10,20 @@ Designed by Marcell Ban aka BxNxM GitHub
 #                         IMPORTS                       #
 #########################################################
 
+import sys
 import uasyncio as asyncio
 from utime import ticks_ms, ticks_diff
+from Buffer import SlidingBuffer, BufferOverflowError, MemoryPool
 from Config import cfgget
 from Debug import console_write, syslog
 from Network import ifconfig
 from Tasks import Manager
 from Shell import Shell
 try:
-    from gc import collect
+    from gc import collect, mem_free
 except:
     console_write("[SIMULATOR MODE GC IMPORT]")
-    from simgc import collect
+    from simgc import collect, mem_free
 
 # Module load optimization, needed only for webui
 if cfgget('webui'):
@@ -74,7 +76,7 @@ class Client:
 
     async def read(self, decoding='utf8', timeout_seconds=0):
         """
-        [Base] Implements client read function, reader size: 2048
+        [Base] Implements client read function
         :return tuple: read_error, data
         - read_error is set to true upon timeout or other exception
         - data holds bytes or decoded string read from the socket
@@ -90,7 +92,7 @@ class Client:
                 request = request.decode(decoding)
         except asyncio.TimeoutError:
             Client.console(f"[Client] Stream read timeout ({self.client_id}), timeout={timeout_seconds}s")
-            return True, ''
+            return False, ''
         except Exception as e:
             Client.console(f"[Client] Stream read error ({self.client_id}): {e}")
             collect()           # gc collection: "fix" for memory allocation failed, allocating 2049 bytes
@@ -163,34 +165,167 @@ class Client:
         Client.console(f"[Client] del: {self.client_id}")
 
 
-class WebCli(Client, WebEngine):
+class WebCli(Client):
+    # Constants for memory footprint
+    MEM_CAP  = 0.1              # Default memory cap (percentage / 100) of free heap
+    SEND_BUF_MIN_BYTES = 1024   # Minimum buffer size for responses -> for basic API usage
+    SEND_BUF_MAX_BYTES = 8192   # Max buffer size for responses     -> response size for multimedia content
+    RECV_BUF_MIN_BYTES = 2048   # Minimum buffer size for requests  -> for basic API usage
+    RECV_BUF_MAX_BYTES = 8192   # Max buffer size for requests      -> larger multipart request chunks
+    CONN_OVERHEAD = 1024        # Overhead per connection
+    MTU_SIZE = 1460             # TCP maximum transmission unit
+
+    # Timing settings
+    STATE_MACHINE_SLEEP_MS = 2
+    RESP_HANDLER_SLEEP_MS = 2
+    RECV_TIMEOUT_SECONDS = 10
+
+    # Static buffer pools - initialized by init_pools()
+    RECV_POOL = None
+    SEND_POOL = None
+
+    @staticmethod
+    def init_pools():
+        """
+        Initialize pool of buffers for sending/receiving based on different profiles
+        """
+        mem_available = mem_free()
+        usable = int(WebCli.MEM_CAP * mem_available)
+        is_low_memory = (usable / cfgget("webui_max_con")) < \
+            (WebCli.RECV_BUF_MAX_BYTES + WebCli.SEND_BUF_MAX_BYTES + WebCli.CONN_OVERHEAD)
+        if is_low_memory:
+            syslog((
+                f"[INFO] Webcli.init_pools: low-memory mode with reduced buffer size, "
+                "decrease webui_max_con to use larger buffers"
+            ))
+        recv_size = WebCli.RECV_BUF_MIN_BYTES if is_low_memory else WebCli.RECV_BUF_MAX_BYTES
+        send_size = WebCli.SEND_BUF_MIN_BYTES if is_low_memory else WebCli.SEND_BUF_MAX_BYTES
+        per_conn = recv_size + send_size + WebCli.CONN_OVERHEAD
+        if usable < per_conn:
+            raise MemoryError((
+                f"Insufficient memory for webserver: {mem_available // 1024} KB, "
+                f"at least {per_conn // 1024} KB required"
+            ))
+        con_limit = min(
+            usable // per_conn,
+            max(0, cfgget("webui_max_con"))
+        )
+        WebCli.RECV_POOL = MemoryPool(recv_size, con_limit, wrapper=SlidingBuffer)
+        WebCli.SEND_POOL = MemoryPool(send_size, con_limit, wrapper=SlidingBuffer)
+
+    __slots__ = (
+        "_engine",
+        "_prev_state",
+        "_recv_buf",
+        "_send_buf"
+    )
 
     def __init__(self, reader, writer):
-        Client.__init__(self, reader, writer, r_size=512)
-        WebEngine.__init__(self, client=self, version=Shell.MICROS_VERSION)
+        super().__init__(reader, writer, r_size=WebCli.MTU_SIZE)
+        self._engine = WebEngine(version=Shell.MICROS_VERSION)
+        self._prev_state = None
+        self._recv_buf = None
+        self._send_buf = None
+
+    async def _flush_response(self):
+        data = self._send_buf.peek()
+        for i in range(0,len(data),WebCli.MTU_SIZE):
+            self.writer.write(data[i:i+WebCli.MTU_SIZE])
+            await self.writer.drain()
+        self._send_buf.consume()
 
     async def run_web(self):
-        # Update server task output
         Manager().task_msg('server', ','.join(list(Client.ACTIVE_CLIS)))
+        await self._reserve_buffers()
+        self._prev_state = None
+        try:
+            while self._engine.state is not None:
+                await self._run_state_machine()
+                await asyncio.sleep_ms(WebCli.STATE_MACHINE_SLEEP_MS)
+        except Exception as e:
+            sys.print_exception(e)
+        finally:
+            if self._send_buf:
+                self._send_buf.consume()
+                WebCli.SEND_POOL.release(self._send_buf)
+            if self._recv_buf:
+                self._recv_buf.consume()
+                WebCli.RECV_POOL.release(self._recv_buf)
+            await self.close()
 
-        # Run async connection handling
-        while self.connected:
-            try:
-                # Read request msg from client
-                state, request = await self.read(decoding=None)
-                if state or not request:
+    async def _reserve_buffers(self):
+        if WebCli.SEND_POOL is None or WebCli.RECV_POOL is None:
+            raise RuntimeError("Buffer pools are uninitialized")
+
+        while not self._recv_buf or not self._send_buf:
+            if not self._recv_buf:
+                self._recv_buf = WebCli.RECV_POOL.reserve()
+            if not self._send_buf:
+                self._send_buf = WebCli.SEND_POOL.reserve()
+            await asyncio.sleep_ms(WebCli.STATE_MACHINE_SLEEP_MS)
+
+    async def _run_state_machine(self):
+        if self._prev_state == self._engine.state or self._prev_state is None:
+            num_read = await self._read_to_buf()
+            if not num_read:
+                return
+        try:
+            resp_handler = None
+            while self._engine.state is not None:
+                self._prev_state = self._engine.state
+                resp_handler = self._engine.state(self._recv_buf, self._send_buf)
+                if not self._send_buf.size():
                     break
-                if not await self.response(request):
+                await self._flush_response()
+                await asyncio.sleep_ms(WebCli.STATE_MACHINE_SLEEP_MS)
+        except BufferOverflowError:
+            self._engine.on_buffer_overflow(self._send_buf)
+            await self._flush_response()
+            return
+        except Exception as e:
+            sys.print_exception(e)
+            self._engine.on_failure(self._send_buf, str(e).encode("ascii"))
+            await self._flush_response()
+            return
+        if self._engine.state is None and resp_handler is not None:
+            await self._response_handler(resp_handler)
+
+    async def _read_to_buf(self):
+        error, request = await self.read(decoding=None, timeout_seconds=WebCli.RECV_TIMEOUT_SECONDS)
+        if error:
+            self._engine.on_failure(self._send_buf, b"Read error")
+            await self._flush_response()
+            return 0
+        if not request:
+            self._engine.on_timeout(self._send_buf)
+            await self._flush_response()
+            return 0
+        self._recv_buf.write(request)
+        return len(request)
+
+    async def _response_handler(self, resp_handler):
+        if "closure" == type(resp_handler).__name__:
+            for is_finished in resp_handler(self._send_buf):
+                await self._flush_response()
+                if is_finished:
                     break
-            except Exception as e:
-                syslog(f"[ERR] Client.run_web: {e}")
-                break
-        # Close connection
-        await self.close()
+                await asyncio.sleep_ms(WebCli.RESP_HANDLER_SLEEP_MS)
+        elif 'FileIO' == type(resp_handler).__name__:
+            with resp_handler as rh:
+                while True:
+                    view = self._send_buf.writable_view()
+                    num_read = rh.readinto(view)
+                    if not num_read:
+                        break
+                    self._send_buf.commit(num_read)
+                    await self._flush_response()
+                    await asyncio.sleep_ms(WebCli.RESP_HANDLER_SLEEP_MS)
+        else:
+            self._engine.on_failure(self._send_buf, f"Invalid response handler {type(resp_handler).__name__}".encode("ascii"))
+            await self._flush_response()
 
 
 class ShellCli(Client, Shell):
-
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer, r_size=2048)          # r_size: 2048 default on ShellCli!
         Client.console(f"[ShellCli] new conn: {self.client_id}")
@@ -401,9 +536,14 @@ class Server:
         await self.server
         Client.console(f"- TCP server ready, connect: telnet {addr} {self._port}")
         if cfgget('webui'):
-            self.web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._socqueue)
-            await self.web
-            Client.console(f"- HTTP server ready, connect: http://{addr}")
+            try:
+                collect()
+                WebCli.init_pools()
+                self.web = asyncio.start_server(self.web_cli, self._host, 80, backlog=self._socqueue)
+                await self.web
+                Client.console(f"- HTTP server ready, connect: http://{addr}")
+            except MemoryError as e:
+                Client.console(f"- HTTP server memory error: {self.client_id}: {e}")
 
     @staticmethod
     def reply_all(msg):

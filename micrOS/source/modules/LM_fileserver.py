@@ -165,14 +165,13 @@ def load(web_data_dir:str=None):
         Shared.TMP_DIR = path_join(Shared.ROOT_DIR, 'tmp')
     if is_dir(Shared.TMP_DIR):
         remove_dir(Shared.TMP_DIR, force=True) # Clean existing partial uploads, is force needed?
-    if not is_dir(Shared.ROOT_DIR):
-        root_dir = web_dir()
-        base_dir = root_dir
-        for subdir in Shared.TMP_DIR.replace(root_dir, "").split('/'):
-            current_dir = path_join(base_dir, subdir)
-            if not is_dir(current_dir):
-                mkdir(current_dir)
-            base_dir = current_dir
+
+    base_dir = "/"
+    for subdir in Shared.TMP_DIR.split('/'):
+        current_dir = path_join(base_dir, subdir)
+        if not is_dir(current_dir):
+            mkdir(current_dir)
+        base_dir = current_dir
 
     # Register endpoints
     #   [GET] List shared directories

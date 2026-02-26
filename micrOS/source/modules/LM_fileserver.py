@@ -42,11 +42,11 @@ class Shared:
 #           Web Endpoint Callbacks          #
 #############################################
 
-def _list_file_paths_clb(root_dir=None):
+def _list_file_paths_clb(_, root_dir=None):
     """
     List files shared path
     """
-    if isinstance(root_dir, bytes)and len(root_dir.strip()) > 0:
+    if isinstance(root_dir, bytes) and len(root_dir.strip()) > 0:
         # Decode input path from request body
         root_dir = root_dir.decode("ascii")
     else:
@@ -76,7 +76,7 @@ def _list_file_paths_clb(root_dir=None):
     return 'application/json', dumps(response)
 
 
-def _delete_file_clb(file_to_delete: bytes):
+def _delete_file_clb(_, file_to_delete: bytes):
     file_to_delete = file_to_delete.decode('ascii')
     Shared.check_write_access(file_to_delete)
     filepath = resolve_path(file_to_delete)
@@ -137,7 +137,7 @@ def _upload_file_clb(part_headers: dict, part_body: bytes, first=False, last=Fal
     return 'text/plain', 'ok'
 
 
-def _disk_usage_clb():
+def _disk_usage_clb(*_):
     """
     Calculate disk usage
     return {'used': <bytes used>, 'free': <bytes free>}
@@ -176,9 +176,9 @@ def load(web_data_dir:str=None):
 
     # Register endpoints
     #   [GET] List shared directories
-    web_endpoint('fs/dirs', lambda: ('application/json', dumps(get_shared_dirs())))
+    web_endpoint('fs/dirs', lambda *_: ('application/json', dumps(get_shared_dirs())))
     #   [GET] List help message
-    web_endpoint('fs/list', lambda: ('text/plain', 'USE THIS AS POST Endpoint, select dir in http body'))
+    web_endpoint('fs/list', lambda *_: ('text/plain', 'USE THIS AS POST Endpoint, select dir in http body'))
     #   [POST] List selected directory content
     web_endpoint('fs/list', _list_file_paths_clb, 'POST')
     #   [GET] Files - list user files

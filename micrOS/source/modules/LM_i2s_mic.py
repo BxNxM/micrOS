@@ -151,7 +151,7 @@ async def _capture(capture_duration = Data.CAPTURE_DURATION,
     return select_channel(mic_samples[:num_read], Data.DEFAULT_CHANNEL, downsampling)
 
 
-def _record_clb():
+def _record_clb(*_):
     """
     Callback for HTTP API request
     """

@@ -180,29 +180,34 @@ function loadDirs() {
     })
 }
 
-function uploadFile() {
+async function uploadFile() {
   const f = file.files[0];
   if (!f) return;
 
+  const chunkSize = 2 * 1024;
+  const totalChunks = Math.ceil(f.size / chunkSize);
+
   const fd = new FormData();
   const targetPath = `${selectedDir}/${f.name}`;
-  // This sets filename="selectedDir/file.txt" in multipart
-  fd.append('file', f, targetPath);
 
-  console.info("uploadFile:", targetPath);
-  fetch('/fs/files', { method: 'POST', body: fd })
-    .then(async r => {
-      if (!r.ok) {
-        const resp = (await r.text()) || r.statusText;
-        throw new Error(`${r.status} - ${resp}`);
-      }
-      return r;
-    })
-    .then(load)
-    .catch(err => {
-      console.error("uploadFile error:", err);
-      popUpMsg("Upload failed: " + err.message);
-    });
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * chunkSize;
+    const end = Math.min(f.size, start + chunkSize);
+    const chunk = f.slice(start, end);
+    fd.append(`chunk_${i + 1}`, chunk, f.name);
+  }
+  console.info("Uploading (multipart chunked):", targetPath);
+  try {
+    const r = await fetch('/fs/files', {method: 'POST', body: fd});
+    if (!r.ok) {
+      const resp = (await r.text()) || r.statusText;
+      throw new Error(`${r.status} - ${resp}`);
+    }
+    load();
+  } catch (err) {
+    console.error("uploadFile error:", err);
+    popUpMsg("Upload failed: " + err.message);
+  }
 }
 
 function openFile() {

@@ -161,7 +161,7 @@
       <div id="files-header">
         <div id="top">
           <input type="file" id="file">
-          <button onclick="uploadFile()">🔼 Upload</button>
+          <button onclick="uploadFile().then(() => load())">🔼 Upload</button>
           <button onclick="openFile()">📖 Open</button>
           <button onclick="download()">🔽 Download</button>
           <button onclick="deleteFile()"> 🗑️ Delete</button>

@@ -458,7 +458,8 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 | **`utc`**           |     `60`   `<int>`          |       Yes       | NTP-RTC - timezone setup (UTC in minute) - it is automatically calibrated in STA mode based on geolocation.
 | **`cstmpmap`**      |      `n/a`  `<str>`          |      Yes       | Default (`n/a`), select pinmap automatically based on platform (`IO_<platform>`). Manual control / customization of application pins, syntax: `pin_map_name; pin_name:pin_number; ` etc. [1][optional] `pin_map_name` represented as `IO_<pin_map_name>.py/.mpy` file on device. [2+][optinal] `dht:22` overwrite individual existing load module pin(s). Hint: `<module> pinmap()` to get app pins, example: `neopixel pinmap()`
 | **`boostmd`**       |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 16Mhz-24MHz (depends on the board).
-| **`aioqueue`**      |    `3` `<int>`              |       Yes       | System async queue controller (resource limiter).: `#1` Set asyc task queue limit (for soft tasks: `&`). Furthermore `#2` Socker server-s (webCli, ShellCli) client number limiter. 3 means: 3 cooperative connection (queue) shared by webCli and shellCli. It can be increased based on available resources.
+| **`aioqueue`**      |    `5` `<int>`              |       Yes       | System async queue controller (resource limiter).: `#1` Set asyc task queue limit (for soft tasks: `&`). Furthermore `#2` Socker server-s (webCli, ShellCli) client number limiter. 5 means: 5 cooperative connection (queue) shared by webCli and shellCli. It can be increased based on available resources.
+| **`webui_max_con`** |        `3`  `<int>`       |      Yes        | Maximum number of concurrent HTTP requests processed simultaneously. Each active request consumes heap memory. Lower this value to mitigate memory allocation failures caused by heap fragmentation. The effective concurrency limit is reduced if the memory requirement exceeds 10% of the available heap or if the value of webui_max_con exceeds the value of aioqueue.
 | | |
 | **`devip`**         |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you can set specific static IP address here.
 | **`nwmd`**          |     `n/a`  `<str>`          |      Yes        | Prefered network mode - `AP` or `STA`, default is `STA`.
@@ -605,6 +606,12 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- pacman uninstall
 				- pacman upgrade ... force=True
 				- ...
+
+        - (12) [DONE] WebEngine: robust protocol parsing with finite state machine
+            - Restructure WebEngine to decouple transport handling from protocol parsing
+            - Always forward response headers to load module callback functions
+            - Bounded memory allocations and configurable memory profiles
+            - Fixed instabilities in WebUI with improved socket handling
 
 	[TODO] TESTING + RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`
 		- Create release notes (legacy: `release_3.0.0-0_note_esp32.md`)

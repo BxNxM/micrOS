@@ -2,7 +2,8 @@
 micrOS Load Module programming Official API-s
     Designed by Marcell Ban aka BxNxM
 """
-from Server import Server, WebCli
+from Server import Server
+from Web import WebEngine
 from Debug import syslog as debug_syslog, console_write
 from Logger import logger, log_get
 from Files import OSPath, path_join
@@ -123,7 +124,7 @@ def web_endpoint(endpoint, function, method='GET') -> bool:
             Example: 'filesui.html'
     :param method: HTTP method name
     """
-    WebCli.register(endpoint=endpoint, callback=function, method=method)
+    WebEngine.register(endpoint=endpoint, callback=function, method=method)
     return True
 
 
@@ -134,7 +135,7 @@ def web_mounts(*args, **kwargs):
     :param data: add /data to web shared path
     """
     try:
-        return WebCli.web_mounts(*args, **kwargs)
+        return WebEngine.web_mounts(*args, **kwargs)
     except Exception as e:
         syslog(f"[ERR] web_mounts error: {e}")
         return {}

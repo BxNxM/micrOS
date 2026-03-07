@@ -58,7 +58,8 @@ def _set_web_endpoints():
     # Register rest endpoint
     web_endpoint('cam/snapshot', _snapshot_clb)
     web_endpoint('cam/stream', _image_stream_clb)
-    web_endpoint('cam/photo', lambda: ('text/plain', photo()))
+    web_endpoint('cam/photo', lambda _, body: \
+                 ('text/plain', photo() if not body else photo(body.encode('ascii'))))
     return "Endpoint created: /cam/snapshot, /cam/stream, /cam/photo"
 
 
@@ -200,7 +201,7 @@ def photo(name='photo.jpeg'):
     return f"Cannot save... {photo_path}"
 
 
-def _snapshot_clb():
+def _snapshot_clb(*_):
     _ = capture()       # Dump current cached image
     image = capture()   # Take new image
     if image is not None:
@@ -208,7 +209,7 @@ def _snapshot_clb():
     return 'text/plain', f'capture error: {image}'
 
 
-def _image_stream_clb():
+def _image_stream_clb(*_):
     return 'multipart/x-mixed-replace', {'callback': capture, 'content-type': 'image/jpeg'}
 
 

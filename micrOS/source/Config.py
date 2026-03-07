@@ -46,6 +46,7 @@ class Data:
                     "soctout": 30,
                     "socport": 9008,
                     "webui": False,
+                    "webui_max_con": 3,
                     "devip": "n/a",
                     "cron": False,
                     "crontasks": "n/a",

@@ -968,8 +968,20 @@ def load():
 	web_endpoint('my_endpoint', _response)
 	return "Endpoint was created: http://localhost/my_endpoint"
 
-def _response():
+# Ignore headers and body
+def _response_without_params(*_):
 	reply = "hello world"
+	return 'text/plain', reply
+
+# Header and body is passed
+def _response_with_params(headers:dict, body:bytes):
+    if headers["content-type"] == "text/plain":
+        name = body.decode("ascii")
+    elif headers["content-type"] == "application/json":
+        name = json.loads(body)["name"]
+    else:
+        raise ValueError("Invalid content type")
+	reply = f"hello {name}"
 	return 'text/plain', reply
 ```
 

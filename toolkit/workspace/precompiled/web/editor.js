@@ -300,22 +300,13 @@ class EmbeddedEditor {
         console.info("editor.js: EmbeddedEditor.save (upload): ", name);
         const blob = new Blob([this.codeEl.value], { type: "text/plain" });
         const file = new File([blob], name);
-        const fd = new FormData();
-        fd.append("file", file);
-
-        fetch("/fs/files", { method: "POST", body: fd })
-          .then(async r => {
-            if (!r.ok) {
-              const t = (await r.text()) || r.statusText;
-              console.error("editor.js: upload failed:", r.status, r.statusText, t);
-              throw new Error(`${r.status} - ${t}`);
-            }
+        window.uploadFile(file).then( r => {
             this.setStatus("saved", "ok");
-          })
-          .catch(err => {
-              console.error("editor.js: upload error:", err);
-              this.setStatus("Save failed: " + err.message, "err");
-          });
+        })
+        .catch(err => {
+            console.error("editor.js: upload error:", err);
+            this.setStatus("Save failed: " + err.message, "err");
+        });
     }
 
     /* ---------- Syntax ---------- */

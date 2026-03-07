@@ -607,6 +607,12 @@ Version **3.0.0-0** `micrOS-Autonomous`
 				- pacman upgrade ... force=True
 				- ...
 
+        - (12) [DONE] WebEngine: robust protocol parsing with finite state machine
+            - Restructure WebEngine to decouple transport handling from protocol parsing
+            - Always forward response headers to load module callback functions
+            - Bounded memory allocations and configurable memory profiles
+            - Fixed instabilities in WebUI with improved socket handling
+
 	[TODO] TESTING + RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`
 		- Create release notes (legacy: `release_3.0.0-0_note_esp32.md`)
 		- Introduce automatic release metrics generation...

@@ -155,6 +155,7 @@ class Client:
         """
         [Base] Generic client connection remove from task cache
         """
+        Client.console(f"[Client] {client_id} dropped")
         if Client.ACTIVE_CLIS.get(client_id, None) is not None:
             Client.ACTIVE_CLIS.pop(client_id)
         # Update server task output (? test ?)
@@ -445,6 +446,9 @@ class Server:
     __slots__ = ['server', 'web', '_host', '_socqueue', '_port', '_timeout', '_initialized']
     __instance = None
 
+    CON_ACCEPT_TIMEOUT_MS = 5000 # Timeout value for accepting new connection
+    CON_ACCEPT_SLEEP_MS = 100    # Duration of sleep between attempts to accept new connection
+
     def __new__(cls):
         """
         Singleton design pattern
@@ -460,11 +464,10 @@ class Server:
     def __init__(self):
         if not self._initialized:
             # Socket server initial parameters
-            self.server = None                       # ShellCli server instance
-            self.web = None                          # WebCli server instance
-            self._host = '0.0.0.0'                   # listens on all available interfaces
-            _queue = cfgget('aioqueue')              # CONNECTION QUEUE SIZE, common for both interface
-            self._socqueue = 3 if _queue < 3 else _queue
+            self.server = None                                  # ShellCli server instance
+            self.web = None                                     # WebCli server instance
+            self._host = '0.0.0.0'                              # listens on all available interfaces
+            self._socqueue = max(1, int(cfgget("aioqueue")))    # CONNECTION QUEUE SIZE, common for both interface
 
             # ---- Config ---
             self._port = cfgget("socport")
@@ -488,22 +491,26 @@ class Server:
         """
         # Get new client ID
         new_client_id = new_client.client_id
-        # Add new client immediately if queue not full
-        if len(list(Client.ACTIVE_CLIS.keys())) < self._socqueue:
-            # Add new client to active clients dict
-            Client.ACTIVE_CLIS[new_client_id] = new_client
-            return True                     # [!] Enable new connection
 
         # Get active clients timeout counters - handle new client depending on active client timeouts
         Client.console(f"NEW CLIENT CONN: {new_client_id}")
-        for cli_id, cli in Client.ACTIVE_CLIS.items():
-            cli_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
-            Client.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{self._timeout - cli_inactive}s")
-            if not cli.connected or cli_inactive > self._timeout:
-                # OPEN CONNECTION IS INACTIVE > CLOSE
-                Client.console("------- client timeout - accept new connection")
-                await cli.close()
-                return True                 # [!] Enable new connection
+        con_timestamp = ticks_ms()
+        while ticks_ms() - con_timestamp < Server.CON_ACCEPT_TIMEOUT_MS:
+            # Add new client immediately if queue not full
+            if len(list(Client.ACTIVE_CLIS.keys())) < self._socqueue:
+                # Add new client to active clients dict
+                Client.ACTIVE_CLIS[new_client_id] = new_client
+                return True                     # [!] Enable new connection
+            # Attempt to evict inactive clients
+            for cli_id, cli in Client.ACTIVE_CLIS.items():
+                cli_inactive = int(ticks_diff(ticks_ms(), cli.last_msg_t) * 0.001)
+                Client.console(f"[server] accept new {new_client_id} - active {cli_id} tout:{self._timeout - cli_inactive}s")
+                if not cli.connected or cli_inactive > self._timeout:
+                    # OPEN CONNECTION IS INACTIVE > CLOSE
+                    Client.console("------- client timeout - accept new connection")
+                    await cli.close()
+                    return True                 # [!] Enable new connection
+            await asyncio.sleep_ms(Server.CON_ACCEPT_SLEEP_MS)
 
         # DROP NEW CLIENT - QUEUE FULL!
         Client.console("------- connection busy")

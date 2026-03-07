@@ -389,8 +389,12 @@ class WebEngine:
             resource = b'index.html' if not self.url else self.url
             extension = resource.rsplit(b'.', 1)[-1]
             if extension not in self.CONTENT_TYPES:
-                self.on_unsupported_media(tx, b"Not supported: %s" % extension)
-                return
+                if extension in (b"py", b"log", b"dat", b"cache"):
+                    # Fallback to text/plain
+                    self.CONTENT_TYPES[extension] = self.CONTENT_TYPES[b"txt"]
+                else:
+                    self.on_unsupported_media(tx, b"Not supported: %s" % extension)
+                    return
             self.state = lambda _rx, _tx: \
                 self._send_file_st(_rx, _tx, resource.decode("ascii"))
             return

@@ -98,7 +98,7 @@ class BufferTestBase(unittest.TestCase):
     def test_overflow(self):
         self.buf.write(b'a' * 8)
         self.assertEqual(self.buf.size(), 8)
-        with self.assertRaises(self.buffer_module.BufferOverflowError):
+        with self.assertRaises(self.buffer_module.BufferFullError):
             self.buf.write(b'a')
 
 

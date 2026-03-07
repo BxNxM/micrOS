@@ -13,7 +13,7 @@ Designed by Marcell Ban aka BxNxM GitHub
 import sys
 import uasyncio as asyncio
 from utime import ticks_ms, ticks_diff
-from Buffer import SlidingBuffer, BufferOverflowError, MemoryPool
+from Buffer import SlidingBuffer, BufferFullError, MemoryPool
 from Config import cfgget
 from Debug import console_write, syslog
 from Network import ifconfig
@@ -278,8 +278,8 @@ class WebCli(Client):
                     break
                 await self._flush_response()
                 await asyncio.sleep_ms(WebCli.STATE_MACHINE_SLEEP_MS)
-        except BufferOverflowError:
-            self._engine.on_buffer_overflow(self._send_buf)
+        except BufferFullError:
+            self._engine.on_failure(self._send_buf, b'Buffer full')
             await self._flush_response()
             return
         except Exception as e:

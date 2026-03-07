@@ -2,7 +2,7 @@
 Data structures for buffered processing & streaming
 """
 
-class BufferOverflowError(RuntimeError):
+class BufferFullError(RuntimeError):
     """Custom exception for writes exceeding buffer capacity"""
     pass
 
@@ -112,7 +112,7 @@ class SlidingBuffer:
         if needed > self.capacity - self._end:
             self._compact()
             if needed > self.capacity - self._end:
-                raise BufferOverflowError("Buffer full")
+                raise BufferFullError("Buffer full")
         buf = self._buffer
         for i in range(needed):
             buf[self._end + i] = data[i]

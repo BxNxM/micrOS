@@ -166,8 +166,11 @@ def load(web_data_dir:str=None):
     if is_dir(Shared.TMP_DIR):
         remove_dir(Shared.TMP_DIR, force=True) # Clean existing partial uploads, is force needed?
 
-    base_dir = "/"
-    for subdir in Shared.TMP_DIR.split('/'):
+    base_dir = OSPath._ROOT if Shared.TMP_DIR.startswith(OSPath._ROOT) else "/"
+    rel_tmp_dir = Shared.TMP_DIR[len(OSPath._ROOT):] if Shared.TMP_DIR.startswith(OSPath._ROOT) else Shared.TMP_DIR
+    for subdir in rel_tmp_dir.split('/'):
+        if not subdir:
+            continue
         current_dir = path_join(base_dir, subdir)
         if not is_dir(current_dir):
             mkdir(current_dir)

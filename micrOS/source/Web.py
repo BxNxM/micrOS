@@ -15,10 +15,7 @@ Designed by Marcell Ban aka BxNxM and szeka9 (GitHub)
 from re import compile
 from json import dumps, loads
 from io import BytesIO
-try:
-    from uos import stat
-except ImportError:
-    from os import stat
+from uos import stat
 from Tasks import lm_exec, lm_is_loaded
 from Config import cfgget
 from Files import OSPath, path_join
@@ -427,7 +424,10 @@ class WebEngine:
                                      'node': cfgget('devfid'),
                                      'auth': WebEngine.AUTH}
             if len(tuple(WebEngine.ENDPOINTS.keys())) > 0:
-                resp_schema['result']['usr_endpoints'] = tuple(WebEngine.ENDPOINTS)
+                resp_schema['result']['usr_endpoints'] = tuple(
+                    endpoint.decode("ascii") if isinstance(endpoint, (bytes, bytearray)) else endpoint
+                    for endpoint in WebEngine.ENDPOINTS
+                )
             resp_schema['state'] = True
         self.terminate(200, b"text/html")
         return self._generate_response(tx, resp_schema)

@@ -10,7 +10,6 @@ Designed by Marcell Ban aka BxNxM GitHub
 #                         IMPORTS                       #
 #########################################################
 
-import sys
 import uasyncio as asyncio
 from utime import ticks_ms, ticks_diff
 from Buffer import SlidingBuffer, BufferFullError, MemoryPool
@@ -252,7 +251,7 @@ class WebCli(Client):
                 await self._run_state_machine()
                 await asyncio.sleep_ms(WebCli.STATE_MACHINE_SLEEP_MS)
         except Exception as e:
-            sys.print_exception(e)
+            syslog(f"[ERR] run_web: {e}")
         finally:
             if self._send_buf:
                 self._send_buf.consume()
@@ -293,7 +292,7 @@ class WebCli(Client):
             await self._flush_response()
             return
         except Exception as e:
-            sys.print_exception(e)
+            syslog(f"[ERR] run_web: {e}")
             self._engine.on_failure(self._send_buf, str(e).encode("ascii"))
             await self._flush_response()
             return
@@ -327,7 +326,8 @@ class WebCli(Client):
                 if is_finished:
                     break
                 await asyncio.sleep_ms(WebCli.RESP_HANDLER_SLEEP_MS)
-        elif type(resp_handler).__name__ in ("FileIO", "BytesIO"):
+        #elif type(resp_handler).__name__ in ("FileIO", "BytesIO"):     # NOT WORKS ON SIMULATOR
+        elif hasattr(resp_handler, "readinto"):
             with resp_handler as rh:
                 while True:
                     view = self._send_buf.writable_view()

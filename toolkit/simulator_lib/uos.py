@@ -75,9 +75,9 @@ def _stat_eval(stat_result):
     """
     micropython_file_identifier = {'dir': 0x4000, 'file': 0x8000}
     file_type_0 = 0x0                       # file type
-    file_size_6 = py_fs_stat.ST_SIZE        # bytes
-    file_time_8 = py_fs_stat.ST_MTIME       # file modified time - only on some micropython ports
-    file_time_9 = py_fs_stat.ST_CTIME       # creation time - only on some micropython ports
+    file_size_6 = int(stat_result.st_size)  # bytes
+    file_time_8 = int(stat_result.st_mtime) # file modified time - only on some micropython ports
+    file_time_9 = int(getattr(stat_result, "st_ctime", stat_result.st_mtime))
     # Check if it's a file
     if py_fs_stat.S_ISREG(stat_result.st_mode):
         # FILE

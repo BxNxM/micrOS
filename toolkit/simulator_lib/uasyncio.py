@@ -22,7 +22,7 @@ class Event(asyncio.Event):
 
 
 async def wait_for(fut, timeout):
-    return asyncio.wait_for(fut, timeout)
+    return await asyncio.wait_for(fut, timeout)
 
 
 async def sleep(sec):
@@ -64,7 +64,6 @@ class Event:
 
 def start_server(awaitable, host, port, backlog):
     return asyncio.start_server(awaitable, host, port)
-
 
 
 

@@ -12,13 +12,21 @@ Built-in-function:
 Designed by Marcell Ban aka BxNxM and szeka9 (GitHub)
 """
 
-from re import compile
+from re import compile as recompile
 from json import dumps, loads
 from io import BytesIO
 from uos import stat
-from Tasks import lm_exec, lm_is_loaded
+from Tasks import lm_exec, lm_is_loaded, TaskBase
 from Config import cfgget
 from Files import OSPath, path_join
+from Buffer import SlidingBuffer, BufferFullError, MemoryPool
+from Debug import console_write, syslog
+
+try:
+    from gc import mem_free
+except:
+    console_write("[SIMULATOR MODE GC IMPORT]")
+    from simgc import mem_free
 
 
 def url_path_resolve(path:str) -> tuple[bool, str]:
@@ -41,9 +49,187 @@ def url_path_resolve(path:str) -> tuple[bool, str]:
 
 class HeaderParsingError(ValueError):
     """Exception for errors occurring while parsing HTTP/MIME headers"""
-    pass
 
-class WebEngine:
+#################################################################
+#                   Pre-allocated Memory Buffer                 #
+#################################################################
+
+class Buffer:
+    # Constants for memory footprint
+    MEM_CAP  = 0.1              # Default memory cap (percentage / 100) of free heap
+    SEND_BUF_MIN_BYTES = 512    # Minimum buffer size for responses
+    SEND_BUF_MAX_BYTES = 4096   # Max buffer size for responses
+    RECV_BUF_MIN_BYTES = 2048   # Minimum buffer size for requests
+    RECV_BUF_MAX_BYTES = 4096   # Max buffer size for requests
+    CONN_OVERHEAD = 1024        # Overhead per connection
+    MTU_SIZE = 1460             # TCP maximum transmission unit
+    # Timing settings
+    STATE_MACHINE_SLEEP_MS = 2
+    RESP_HANDLER_SLEEP_MS = 2
+    RECV_TIMEOUT_SECONDS = 10
+    # Static buffer pools - initialized by init_pools()
+    RECV_POOL = None
+    SEND_POOL = None
+    __slots__ = (
+        "engine_state",
+        "__writer",
+        "__reader",
+        "_prev_state",
+        "_recv_buf",
+        "_send_buf"
+    )
+
+    def __init__(self, writer, reader):
+        """
+        :param writer: communication writer with: .write(...) and .drain() methods
+        :param reader: communication reader method
+        """
+        self.engine_state = None
+        self._prev_state = None
+        self._recv_buf = None
+        self._send_buf = None
+        self.__writer = writer
+        self.__reader = reader
+
+    def on_failure(self, tx, info):
+        raise NotImplementedError("Child class must implement on_failure method...!")
+
+    def on_buffer_full(self, tx):
+        raise NotImplementedError("Child class must implement on_buffer_full method...!")
+
+    def on_timeout(self, tx):
+        raise NotImplementedError("Child class must implement on_timeout method...!")
+
+    @staticmethod
+    def init_pools():
+        """
+        Initialize pool of buffers for sending/receiving based on different profiles
+        """
+        mem_available = mem_free()
+        con_limit = min(
+                        max(1, int(cfgget("aioqueue"))),
+                        max(1, int(cfgget("webui_max_con")))
+                    )
+        usable = int(Buffer.MEM_CAP * mem_available)
+        is_low_memory = (usable / con_limit) < \
+            (Buffer.RECV_BUF_MAX_BYTES + Buffer.SEND_BUF_MAX_BYTES + Buffer.CONN_OVERHEAD)
+        if is_low_memory:
+            syslog((
+                "[INFO] Webcli.init_pools: low-memory mode with reduced buffer size, "
+                "decrease webui_max_con to use larger buffers"
+            ))
+        recv_size = Buffer.RECV_BUF_MIN_BYTES if is_low_memory else Buffer.RECV_BUF_MAX_BYTES
+        send_size = Buffer.SEND_BUF_MIN_BYTES if is_low_memory else Buffer.SEND_BUF_MAX_BYTES
+        per_conn = recv_size + send_size + Buffer.CONN_OVERHEAD
+        if usable < per_conn:
+            raise MemoryError((
+                f"Insufficient memory for webserver: {mem_available // 1024} KB, "
+                f"at least {per_conn // 1024} KB required"
+            ))
+        con_limit = min(
+            usable // per_conn,
+            con_limit
+        )
+        syslog((
+            f"[INFO] Webcli.init_pools: {con_limit} connection(s) allowed"
+        ))
+        Buffer.RECV_POOL = MemoryPool(recv_size, con_limit, wrapper=SlidingBuffer)
+        Buffer.SEND_POOL = MemoryPool(send_size, con_limit, wrapper=SlidingBuffer)
+
+
+    async def _flush_response(self):
+        data = self._send_buf.peek()
+        for i in range(0, len(data), Buffer.MTU_SIZE):
+            self.__writer.write(data[i:i + Buffer.MTU_SIZE])
+            await self.__writer.drain()
+        self._send_buf.consume()
+
+    async def _reserve_buffers(self):
+        if Buffer.SEND_POOL is None or Buffer.RECV_POOL is None:
+            raise RuntimeError("Buffer pools are uninitialized")
+
+        while not self._recv_buf or not self._send_buf:
+            if not self._recv_buf:
+                self._recv_buf = Buffer.RECV_POOL.reserve()
+            if not self._send_buf:
+                self._send_buf = Buffer.SEND_POOL.reserve()
+            await TaskBase.feed(sleep_ms=Buffer.STATE_MACHINE_SLEEP_MS)
+
+    async def _run_state_machine(self):
+        if self._prev_state == self.engine_state or self._prev_state is None:
+            num_read = await self._read_to_buf()
+            if not num_read:
+                return
+        try:
+            resp_handler = None
+            while self.engine_state is not None:
+                self._prev_state = self.engine_state
+                resp_handler = self.engine_state(self._recv_buf, self._send_buf)
+                if not self._send_buf.size():
+                    break
+                await self._flush_response()
+                await TaskBase.feed(sleep_ms=Buffer.STATE_MACHINE_SLEEP_MS)
+        except BufferFullError:
+            self.on_failure(self._send_buf, b'Buffer full')
+            await self._flush_response()
+            return
+        except Exception as e:
+            syslog(f"[ERR] run_web: {e}")
+            self.on_failure(self._send_buf, str(e).encode("ascii"))
+            await self._flush_response()
+            return
+        if self.engine_state is None and resp_handler is not None:
+            await self._response_handler(resp_handler)
+
+    async def _read_to_buf(self):
+        buf_free = self._recv_buf.capacity - self._recv_buf.size()
+        if not buf_free:
+            self.on_buffer_full(self._send_buf)
+            await self._flush_response()
+            return 0
+        error, request = await self.__reader(decoding=None,
+                                         timeout_seconds=Buffer.RECV_TIMEOUT_SECONDS,
+                                         read_bytes=buf_free)
+        if error:
+            self.on_failure(self._send_buf, b"Read error")
+            await self._flush_response()
+            return 0
+        if not request:
+            self.on_timeout(self._send_buf)
+            await self._flush_response()
+            return 0
+        self._recv_buf.write(request)
+        return len(request)
+
+    async def _response_handler(self, resp_handler):
+        if "closure" == type(resp_handler).__name__:
+            for is_finished in resp_handler(self._send_buf):
+                await self._flush_response()
+                if is_finished:
+                    break
+                await TaskBase.feed(sleep_ms=Buffer.RESP_HANDLER_SLEEP_MS)
+
+        elif hasattr(resp_handler, "readinto"):
+            with resp_handler as rh:
+                while True:
+                    view = self._send_buf.writable_view()
+                    num_read = rh.readinto(view)
+                    if not num_read:
+                        break
+                    self._send_buf.commit(num_read)
+                    await self._flush_response()
+                    await TaskBase.feed(sleep_ms=Buffer.RESP_HANDLER_SLEEP_MS)
+
+        else:
+            self.on_failure(self._send_buf, f"Invalid response handler {type(resp_handler).__name__}".encode("ascii"))
+            await self._flush_response()
+
+
+#################################################################
+#                   WebEngine - HTTP/REST Server                #
+#################################################################
+
+class WebEngine(Buffer):
     """
     HTTP protocol parser state machine
     - provides an adapter/routing layer for micrOS load modules
@@ -51,7 +237,6 @@ class WebEngine:
     - resolves static resources by returning a stream objects (FileIO)
     """
     __slots__ = [
-        "state",
         "status_code",
         "response_headers",
         "version",
@@ -98,18 +283,21 @@ class WebEngine:
     WEB_MOUNTS = {}
 
     def __init__(self, version):
+        # Init Buffer methods and self.engine_state
+        super().__init__(self.writer, self.read)
+        # Init WebEngine ...
         WebEngine.VERSION = version
         # [State machine]
-        self.state = self._parse_request_line_st
+        self.engine_state = self._parse_request_line_st
         self.status_code = None
         self.response_headers = {}
-        # [Recived request]
+        # [Received request]
         self.version = None
         self.headers = {}
         self.method = None
         self.url = None
         self.content_length_cnt = 0
-        # [Recived request] - multipart
+        # [Received request] - multipart
         self.mp_first_part = True
         self.mp_boundary = None
         self.mp_delimiter = None
@@ -198,7 +386,7 @@ class WebEngine:
     def _is_multipart(headers:dict) -> str:
         """Determine from the headers if a request is multipart, and returns the boundary value"""
         if "content-type" in headers:
-            multipart_regex = compile('multipart/form-data\s*;\s*boundary\s*=\s*"?([^";\r\n]+)"?\s*')
+            multipart_regex = recompile('multipart/form-data\s*;\s*boundary\s*=\s*"?([^";\r\n]+)"?\s*')
             if (multipart_match := multipart_regex.match(headers['content-type'])):
                 boundary = multipart_match.group(1).strip()
                 return boundary if boundary else None
@@ -218,16 +406,16 @@ class WebEngine:
         return headers, body
 
     # =========================================
-    # Helpers for state machine termination
+    # Helpers for engine_state machine termination
     # =========================================
 
     def terminate(self, status_code:int, content_type:bytes):
         """
-        Terminate state machine with status code and response content-type
+        Terminate engine_state machine with status code and response content-type
         :param status_code: HTTP status code
         :param content_type: content-type of the response
         """
-        self.state = None
+        self.engine_state = None
         self.status_code = status_code
         self.response_headers[b"content-type"] = content_type
         self.response_headers[b"connection"] = b"close"
@@ -359,7 +547,7 @@ class WebEngine:
             self.on_unsupported_version(tx, self.version)
             return
         rx.consume(status_line_sep + 2)
-        self.state = self._parse_headers_st
+        self.engine_state = self._parse_headers_st
 
     def _parse_headers_st(self, rx, tx):
         """State for parsing headers"""
@@ -371,7 +559,7 @@ class WebEngine:
             self.on_client_error(tx, b"Invalid headers")
             return
         rx.consume(blank_idx + 4)
-        self.state = self._route_request_st
+        self.engine_state = self._route_request_st
 
     def _route_request_st(self, _, tx):
         """
@@ -379,11 +567,11 @@ class WebEngine:
         - supported ways: static resources, /rest, load module callbacks
         """
         if self.url.startswith(b'rest') and self.method == WebEngine.GET:
-            self.state = self._rest_api_st
+            self.engine_state = self._rest_api_st
             return
         if self.url in WebEngine.ENDPOINTS and \
             self.method in WebEngine.ENDPOINTS[self.url]:
-            self.state = self._lm_endpoint_st
+            self.engine_state = self._lm_endpoint_st
             return
         if self.method == WebEngine.GET:
             resource = b'index.html' if not self.url else self.url
@@ -395,7 +583,7 @@ class WebEngine:
                 else:
                     self.on_unsupported_media(tx, b"Not supported: %s" % extension)
                     return
-            self.state = lambda _rx, _tx: \
+            self.engine_state = lambda _rx, _tx: \
                 self._send_file_st(_rx, _tx, resource.decode("ascii"))
             return
         self.on_client_error(tx)
@@ -442,21 +630,20 @@ class WebEngine:
         if "content-length" in self.headers and self.headers["content-length"] > 0:
             if mp_boundary := WebEngine._is_multipart(self.headers):
                 self.mp_boundary = mp_boundary.encode("ascii")
-                self.state = self._start_multipart_parser_st
+                self.engine_state = self._start_multipart_parser_st
                 return
-            else:
-                if self.headers["content-length"] > rx.size():
-                    return
-                if self.headers["content-length"] < rx.size():
-                    self.on_client_error(tx, b"Content-length mismatch")
-                    return
-                self.state = None
-                dtype, data = callback(self.headers, bytes(rx.peek()))
-                dtype = dtype.encode("ascii")
+            if self.headers["content-length"] > rx.size():
+                return
+            if self.headers["content-length"] < rx.size():
+                self.on_client_error(tx, b"Content-length mismatch")
+                return
+            self.engine_state = None
+            dtype, data = callback(self.headers, bytes(rx.peek()))
+            dtype = dtype.encode("ascii")
         else:
             if not callable(callback):
                 # Handle endpoint callback as a static resource
-                self.state = lambda _rx, _tx: self._send_file_st(_rx, _tx, callback)
+                self.engine_state = lambda _rx, _tx: self._send_file_st(_rx, _tx, callback)
                 return
             dtype, data = callback(self.headers, b"")
             dtype = dtype.encode("ascii")
@@ -557,14 +744,14 @@ class WebEngine:
             return
         rx.consume(start_delimiter + 2)
         self.content_length_cnt += start_delimiter + 2
-        self.state = self._parse_boundary_st
+        self.engine_state = self._parse_boundary_st
 
     def _parse_boundary_st(self, rx, _):
         """State for parsing multipart boundary delimiter"""
         if rx.find(b'\r\n' + self.mp_delimiter) == -1 and \
             rx.find(b'\r\n' + self.mp_closing_delimiter) == -1:
             return
-        self.state = self._parse_complete_part_st
+        self.engine_state = self._parse_complete_part_st
 
     def _parse_complete_part_st(self, rx, tx):
         """
@@ -595,7 +782,7 @@ class WebEngine:
             rx.consume(len(self.mp_delimiter))
             self.content_length_cnt += len(self.mp_delimiter)
             self.mp_first_part = False
-            self.state = self._parse_boundary_st
+            self.engine_state = self._parse_boundary_st
             return
         # Process last part
         rx.consume(len(self.mp_closing_delimiter))

@@ -14,6 +14,7 @@ Designed by Marcell Ban aka BxNxM and szeka9 (GitHub)
 
 from re import compile
 from json import dumps, loads
+from io import BytesIO
 try:
     from uos import stat
 except ImportError:
@@ -232,6 +233,7 @@ class WebEngine:
         self.state = None
         self.status_code = status_code
         self.response_headers[b"content-type"] = content_type
+        self.response_headers[b"connection"] = b"close"
 
     def _write_response_head(self, tx, content_length:int = None):
         """
@@ -251,70 +253,90 @@ class WebEngine:
             tx.write(value)
         tx.write(b"\r\n\r\n")
 
-    def _write_response(self, tx, body:bytes|str|dict|tuple|list):
+    def _generate_response(self, tx, body:bytes|str|dict|tuple|list):
         """
-        Write the complete response to the output,
-        including status & headers
+        Write the complete response to the output, including status
+        and headers. Return a BytesIO object if the content length
+        exceeds the remaining buffer capacity, to delegate the writing
+        of the response body to the transport layer.
         """
         if isinstance(body, (bytes, bytearray, memoryview)):
             self._write_response_head(tx, len(body))
-            tx.write(body)
+            body_encoded = body
         elif isinstance(body, str):
             body_encoded = body.encode()
             self._write_response_head(tx, len(body_encoded))
-            tx.write(body_encoded)
         elif isinstance(body, (dict, tuple, list)):
             body_encoded = dumps(body).encode()
             self._write_response_head(tx, len(body_encoded))
-            tx.write(body_encoded)
         else:
             self.on_failure(tx, b"Unhandled body type")
+            return
+        if len(body_encoded) > tx.capacity - tx.size():
+            return BytesIO(body_encoded)
+        tx.write(body_encoded)
 
     def on_client_error(self, tx, info:bytes = b""):
         """Terminate state machine and write 400 response"""
         self.terminate(400, b"text/plain")
-        self._write_response(tx, b"Bad request" + b"\r\n" + info)
+        response = b"Bad request" + b"\r\n" + info
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
     def on_missing_resource(self, tx, info:bytes = b""):
         """Terminate state machine and write 404 response"""
         self.terminate(404, b"text/plain")
-        self._write_response(tx, b"Not found" + b"\r\n" + info)
+        response = b"Not found" + b"\r\n" + info
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
     def on_timeout(self, tx):
         """Terminate state machine and write 408 response"""
         self.terminate(408, b"text/plain")
-        self._write_response(tx, b"Request timeout")
+        response = b"Request timeout"
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
-    def on_buffer_overflow(self, tx):
-        """Terminate state machine and write 400 response"""
+    def on_buffer_full(self, tx):
+        """Terminate state machine and write 413 response"""
         self.terminate(413, b"text/plain")
-        self._write_response(tx, b"Content too large")
+        response = b"Content too large"
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
     def on_unsupported_media(self, tx, info:bytes = b""):
         """Terminate state machine and write 415 response"""
         self.terminate(415, b"text/plain")
-        self._write_response(tx, b"Unsupported media type" + b"\r\n" + info)
+        response = b"Unsupported media type" + b"\r\n" + info
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
     def on_failure(self, tx, info:bytes = b""):
         """Terminate state machine and write 500 response"""
         self.terminate(500, b"text/plain")
-        self._write_response(tx, b"Internal server error" + b"\r\n" + info)
+        response = b"Internal server error" + b"\r\n" + info
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
     def on_busy(self, tx):
         """Terminate state machine and write 503 response"""
         self.terminate(503, b"text/plain")
-        self._write_response(tx, b"Service unavailable")
+        response = b"Service unavailable"
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
     def on_unsupported_version(self, tx, version):
         """Terminate state machine and write 505 response"""
         self.terminate(505, b"text/plain")
-        self._write_response(tx, b"Unsupported version: " + version)
+        response = b"Unsupported version: " + version
+        self._write_response_head(tx, len(response))
+        tx.write(response)
 
     # ================================================================================
     # Parser states
     # - all states must handle rx and tx buffer arguments for reading and writing data
     # - mandatory methods/attributes of rx: find(), peek(), consume(), size()
-    # - mandatory methods/attributes of tx: capacity, consume(), write()
+    # - mandatory methods/attributes of tx: capacity, consume(), write(), size()
     # - rx/tx reference implementation: SlidingBuffer (Buffer.py)
     # ================================================================================
 
@@ -408,7 +430,7 @@ class WebEngine:
                 resp_schema['result']['usr_endpoints'] = tuple(WebEngine.ENDPOINTS)
             resp_schema['state'] = True
         self.terminate(200, b"text/html")
-        self._write_response(tx, resp_schema)
+        return self._generate_response(tx, resp_schema)
 
     def _lm_endpoint_st(self, rx, tx):
         """Process a request by registered load module callbacks"""
@@ -445,7 +467,7 @@ class WebEngine:
         self.response_headers[b"content-type"] = dtype
         if dtype == b'image/jpeg':
             self.terminate(200, dtype)
-            self._write_response(tx, data)
+            return self._generate_response(tx, data)
         elif dtype in (b'multipart/x-mixed-replace', b'multipart/form-data'):
             if type(data['callback']).__name__ not in ("function", "closure"):
                 self.on_failure(tx, b"Invalid response handler")
@@ -461,7 +483,7 @@ class WebEngine:
             )
         else:  # dtype: text/html or text/plain
             self.terminate(200, dtype)
-            self._write_response(tx, data)
+            return self._generate_response(tx, data)
 
     @staticmethod
     def _multipart_wrapper_factory(callback,
@@ -584,4 +606,4 @@ class WebEngine:
             first=self.mp_first_part,
             last=True)
         self.terminate(200, dtype.encode("ascii"))
-        self._write_response(tx, data)
+        return self._generate_response(tx, data)

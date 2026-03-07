@@ -74,7 +74,7 @@ class Client:
         console_write("|" + "-" * Client.INDENT + msg)
         Client.INDENT += 1 if Client.INDENT < 50 else 0       # Auto indent
 
-    async def read(self, decoding='utf8', timeout_seconds=0):
+    async def read(self, decoding='utf8', timeout_seconds=0, read_bytes = None):
         """
         [Base] Implements client read function
         :return tuple: read_error, data
@@ -83,11 +83,12 @@ class Client:
         """
         Client.console(f"[Client] read {self.client_id}")
         self.last_msg_t = ticks_ms()
+        num_bytes = read_bytes or self.read_bytes
         try:
             if timeout_seconds:
-                request = await asyncio.wait_for(self.reader.read(self.read_bytes), timeout_seconds)
+                request = await asyncio.wait_for(self.reader.read(num_bytes), timeout_seconds)
             else:
-                request = await self.reader.read(self.read_bytes)
+                request = await self.reader.read(num_bytes)
             if decoding:
                 request = request.decode(decoding)
         except asyncio.TimeoutError:
@@ -168,10 +169,10 @@ class Client:
 class WebCli(Client):
     # Constants for memory footprint
     MEM_CAP  = 0.1              # Default memory cap (percentage / 100) of free heap
-    SEND_BUF_MIN_BYTES = 1024   # Minimum buffer size for responses -> for basic API usage
-    SEND_BUF_MAX_BYTES = 8192   # Max buffer size for responses     -> response size for multimedia content
-    RECV_BUF_MIN_BYTES = 2048   # Minimum buffer size for requests  -> for basic API usage
-    RECV_BUF_MAX_BYTES = 8192   # Max buffer size for requests      -> larger multipart request chunks
+    SEND_BUF_MIN_BYTES = 512    # Minimum buffer size for responses
+    SEND_BUF_MAX_BYTES = 4096   # Max buffer size for responses
+    RECV_BUF_MIN_BYTES = 2048   # Minimum buffer size for requests
+    RECV_BUF_MAX_BYTES = 4096   # Max buffer size for requests
     CONN_OVERHEAD = 1024        # Overhead per connection
     MTU_SIZE = 1460             # TCP maximum transmission unit
 
@@ -190,12 +191,16 @@ class WebCli(Client):
         Initialize pool of buffers for sending/receiving based on different profiles
         """
         mem_available = mem_free()
+        con_limit = min(
+                        max(1, int(cfgget("aioqueue"))),
+                        max(1, int(cfgget("webui_max_con")))
+                    )
         usable = int(WebCli.MEM_CAP * mem_available)
-        is_low_memory = (usable / cfgget("webui_max_con")) < \
+        is_low_memory = (usable / con_limit) < \
             (WebCli.RECV_BUF_MAX_BYTES + WebCli.SEND_BUF_MAX_BYTES + WebCli.CONN_OVERHEAD)
         if is_low_memory:
             syslog((
-                f"[INFO] Webcli.init_pools: low-memory mode with reduced buffer size, "
+                "[INFO] Webcli.init_pools: low-memory mode with reduced buffer size, "
                 "decrease webui_max_con to use larger buffers"
             ))
         recv_size = WebCli.RECV_BUF_MIN_BYTES if is_low_memory else WebCli.RECV_BUF_MAX_BYTES
@@ -208,8 +213,11 @@ class WebCli(Client):
             ))
         con_limit = min(
             usable // per_conn,
-            max(0, cfgget("webui_max_con"))
+            con_limit
         )
+        syslog((
+            f"[INFO] Webcli.init_pools: {con_limit} connection(s) allowed"
+        ))
         WebCli.RECV_POOL = MemoryPool(recv_size, con_limit, wrapper=SlidingBuffer)
         WebCli.SEND_POOL = MemoryPool(send_size, con_limit, wrapper=SlidingBuffer)
 
@@ -252,6 +260,7 @@ class WebCli(Client):
                 self._recv_buf.consume()
                 WebCli.RECV_POOL.release(self._recv_buf)
             await self.close()
+            collect()
 
     async def _reserve_buffers(self):
         if WebCli.SEND_POOL is None or WebCli.RECV_POOL is None:
@@ -291,7 +300,14 @@ class WebCli(Client):
             await self._response_handler(resp_handler)
 
     async def _read_to_buf(self):
-        error, request = await self.read(decoding=None, timeout_seconds=WebCli.RECV_TIMEOUT_SECONDS)
+        buf_free = self._recv_buf.capacity - self._recv_buf.size()
+        if not buf_free:
+            self._engine.on_buffer_full(self._send_buf)
+            await self._flush_response()
+            return 0
+        error, request = await self.read(decoding=None,
+                                         timeout_seconds=WebCli.RECV_TIMEOUT_SECONDS,
+                                         read_bytes=buf_free)
         if error:
             self._engine.on_failure(self._send_buf, b"Read error")
             await self._flush_response()
@@ -310,7 +326,7 @@ class WebCli(Client):
                 if is_finished:
                     break
                 await asyncio.sleep_ms(WebCli.RESP_HANDLER_SLEEP_MS)
-        elif 'FileIO' == type(resp_handler).__name__:
+        elif type(resp_handler).__name__ in ("FileIO", "BytesIO"):
             with resp_handler as rh:
                 while True:
                     view = self._send_buf.writable_view()

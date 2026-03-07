@@ -50,6 +50,10 @@ def _load_buffer_module():
 
 def _install_import_stubs():
     """Install minimal stub modules so Scheduler.py imports succeed unchanged."""
+    m = types.ModuleType("uos")
+    m.stat = os.stat
+    sys.modules["uos"] = m
+
     m = types.ModuleType("Tasks")
     m.lm_exec = lambda *_a, **_k: True, ""
     m.lm_is_loaded = lambda *_a, **_k: True

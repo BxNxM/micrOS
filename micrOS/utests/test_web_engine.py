@@ -17,6 +17,7 @@ def _load_web_module():
         raise FileNotFoundError(f"Web.py not found at: {web_engine_path}")
 
     _install_import_stubs()
+    _load_buffer_module()
 
     module_name = "micros_web_engine_under_test"
     spec = importlib.util.spec_from_file_location(module_name, str(web_engine_path))
@@ -30,6 +31,9 @@ def _load_web_module():
 
 
 def _load_buffer_module():
+    if "Buffer" in sys.modules:
+        return sys.modules["Buffer"]
+
     here = Path(__file__).resolve()
     buffer_path = (here.parent.parent / "source" / "Buffer.py").resolve()
     if not buffer_path.exists():
@@ -37,7 +41,7 @@ def _load_buffer_module():
 
     _install_import_stubs()
 
-    module_name = "micros_buffer_dependency"
+    module_name = "Buffer"
     spec = importlib.util.spec_from_file_location(module_name, str(buffer_path))
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load spec for {buffer_path}")
@@ -49,7 +53,7 @@ def _load_buffer_module():
 
 
 def _install_import_stubs():
-    """Install minimal stub modules so Scheduler.py imports succeed unchanged."""
+    """Install minimal stub modules required by Web.py/Buffer.py in CPython tests."""
     m = types.ModuleType("uos")
     m.stat = os.stat
     sys.modules["uos"] = m
@@ -57,6 +61,14 @@ def _install_import_stubs():
     m = types.ModuleType("Tasks")
     m.lm_exec = lambda *_a, **_k: True, ""
     m.lm_is_loaded = lambda *_a, **_k: True
+    class TaskBaseStub:
+        @staticmethod
+        async def feed(sleep_ms=1):
+            import asyncio
+            if hasattr(asyncio, "sleep_ms"):
+                return await asyncio.sleep_ms(sleep_ms)
+            return await asyncio.sleep(max(0, sleep_ms) / 1000)
+    m.TaskBase = TaskBaseStub
     sys.modules["Tasks"] = m
 
     m = types.ModuleType("Files")
@@ -70,6 +82,33 @@ def _install_import_stubs():
     m = types.ModuleType("Config")
     m.cfgget = lambda _k: ""
     sys.modules["Config"] = m
+
+    m = types.ModuleType("Debug")
+    m.console_write = lambda *_a, **_k: None
+    m.syslog = lambda *_a, **_k: None
+    sys.modules["Debug"] = m
+
+    m = types.ModuleType("simgc")
+    m.mem_free = lambda: 1_000_000
+    sys.modules["simgc"] = m
+
+
+class _DummyWriter:
+    def write(self, _data):
+        return None
+
+    async def drain(self):
+        return None
+
+
+class _WebEngineTestAdapter:
+    """Mixin to provide minimal Client I/O surface for direct WebEngine instantiation in tests."""
+    @property
+    def writer(self):
+        return _DummyWriter()
+
+    async def read(self, decoding='utf8', timeout_seconds=0, read_bytes=None):
+        return False, b""
 
 
 class MockOpen:
@@ -105,9 +144,15 @@ class TestWebStateMachine(unittest.TestCase):
     def setUpClass(cls):
         cls.web_module = _load_web_module()
         cls.buffer_module = _load_buffer_module()
+        cls.WebEngineForTest = type(
+            "WebEngineForTest",
+            (_WebEngineTestAdapter, cls.web_module.WebEngine),
+            {}
+        )
 
     def setUp(self):
-        self.engine = self.web_module.WebEngine("1.0.0")
+        self.web_module.WebEngine.ENDPOINTS.clear()
+        self.engine = self.WebEngineForTest("1.0.0")
         self.rx = self.buffer_module.SlidingBuffer(bytearray(1024))
         self.tx = self.buffer_module.SlidingBuffer(bytearray(1024))
 
@@ -117,13 +162,13 @@ class TestWebStateMachine(unittest.TestCase):
 
         for i in range(len(request)):
             self.rx.write(request[i:i+1])
-            self.engine.state(self.rx, self.tx)
+            self.engine.engine_state(self.rx, self.tx)
 
         self.assertEqual(self.engine.method, b"GET")
         self.assertEqual(self.engine.url, b"index.html")
         self.assertEqual(self.engine.version, b"HTTP/1.1")
         self.assertEqual(self.rx.peek(), b"Content-Length:10")
-        self.assertEqual(self.engine.state, self.engine._parse_headers_st)
+        self.assertEqual(self.engine.engine_state, self.engine._parse_headers_st)
 
 
     def test_status_parsing_incomplete_line(self):
@@ -131,14 +176,14 @@ class TestWebStateMachine(unittest.TestCase):
 
         for i in range(len(request)):
             self.rx.write(request[i:i+1])
-            self.engine.state(self.rx, self.tx)
-            if self.engine.state is None:
+            self.engine.engine_state(self.rx, self.tx)
+            if self.engine.engine_state is None:
                 break
 
         self.assertEqual(self.engine.method, None)
         self.assertEqual(self.engine.url, None)
         self.assertEqual(self.engine.version, None)
-        self.assertEqual(self.engine.state, self.engine._parse_request_line_st)
+        self.assertEqual(self.engine.engine_state, self.engine._parse_request_line_st)
 
 
     def test_status_parsing_unsupported_method(self):
@@ -146,14 +191,14 @@ class TestWebStateMachine(unittest.TestCase):
 
         for i in range(len(request)):
             self.rx.write(request[i:i+1])
-            self.engine.state(self.rx, self.tx)
-            if self.engine.state is None:
+            self.engine.engine_state(self.rx, self.tx)
+            if self.engine.engine_state is None:
                 break
 
         self.assertEqual(self.engine.method, b"TRACE")
         self.assertEqual(self.engine.url, b"index.html")
         self.assertEqual(self.engine.version, b"HTTP/1.1")
-        self.assertEqual(self.engine.state, None)
+        self.assertEqual(self.engine.engine_state, None)
         self.assertEqual(self.engine.status_code, 400)
 
 
@@ -162,28 +207,28 @@ class TestWebStateMachine(unittest.TestCase):
 
         for i in range(len(request)):
             self.rx.write(request[i:i+1])
-            self.engine.state(self.rx, self.tx)
-            if self.engine.state is None:
+            self.engine.engine_state(self.rx, self.tx)
+            if self.engine.engine_state is None:
                 break
 
         self.assertEqual(self.engine.method, b"GET")
         self.assertEqual(self.engine.url, b"index.html")
         self.assertEqual(self.engine.version, b"HTTP/2")
-        self.assertEqual(self.engine.state, None)
+        self.assertEqual(self.engine.engine_state, None)
         self.assertEqual(self.engine.status_code, 505)
 
 
     def test_header_parsing_valid(self):
-        self.engine.state = self.engine._parse_headers_st
+        self.engine.engine_state = self.engine._parse_headers_st
         request = b"Content-Length:10\r\nContent-Type:application/json\r\n\r\n"
 
         for i in range(len(request)):
             self.rx.write(request[i:i+1])
-            self.engine.state(self.rx, self.tx)
+            self.engine.engine_state(self.rx, self.tx)
 
         self.assertDictEqual({"content-length": 10, "content-type": "application/json"}, self.engine.headers)
         self.assertEqual(self.rx.peek(), b"")
-        self.assertEqual(self.engine.state, self.engine._route_request_st)
+        self.assertEqual(self.engine.engine_state, self.engine._route_request_st)
 
 
     def test_header_parsing_incomplete_header(self):
@@ -191,12 +236,12 @@ class TestWebStateMachine(unittest.TestCase):
 
         for i in range(len(request)):
             self.rx.write(request[i:i+1])
-            self.engine.state(self.rx, self.tx)
-            if self.engine.state is None:
+            self.engine.engine_state(self.rx, self.tx)
+            if self.engine.engine_state is None:
                 break
 
         self.assertEqual(self.engine.status_code, 400)
-        self.assertEqual(self.engine.state, None)
+        self.assertEqual(self.engine.engine_state, None)
 
 
     def test_multipart_parser(self):
@@ -219,38 +264,38 @@ class TestWebStateMachine(unittest.TestCase):
 
 
     def test_multipart_receiver_valid(self):
-        self.engine.state = self.engine._start_multipart_parser_st
+        self.engine.engine_state = self.engine._start_multipart_parser_st
         self.engine.headers["content-length"] = 100
         self.engine.mp_boundary = b"test-boundary"
         body_part = b"--test-boundary\r\nContent-Type:text/plain"
 
         for i in range(len(body_part)):
             self.rx.write(body_part[i:i+1])
-            self.engine.state(self.rx, self.tx)
+            self.engine.engine_state(self.rx, self.tx)
 
-        self.assertEqual(self.engine.state, self.engine._parse_boundary_st)
+        self.assertEqual(self.engine.engine_state, self.engine._parse_boundary_st)
         self.assertEqual(self.rx.peek(), b"Content-Type:text/plain")
 
 
     def test_multipart_receiver_boundary_mismatch(self):
-        self.engine.state = self.engine._start_multipart_parser_st
+        self.engine.engine_state = self.engine._start_multipart_parser_st
         self.engine.headers["content-length"] = 100
         self.engine.mp_boundary = b"test-boundary"
         body_part = b"--test-boundary-delimiter\r\nContent-Type:text/plain"
 
         for i in range(len(body_part)):
             self.rx.write(body_part[i:i+1])
-            self.engine.state(self.rx, self.tx)
-            if self.engine.state is None:
+            self.engine.engine_state(self.rx, self.tx)
+            if self.engine.engine_state is None:
                 break
 
-        self.assertEqual(self.engine.state, None)
+        self.assertEqual(self.engine.engine_state, None)
         self.assertEqual(self.engine.status_code, 400)
         self.assertEqual(self.rx.peek(), b"--test-boundary-delimiter\r\n")
 
 
     def test_multipart_receiver_complete_part(self):
-        self.engine.state = self.engine._parse_boundary_st
+        self.engine.engine_state = self.engine._parse_boundary_st
         self.engine.url = b"/api/test"
         self.engine.method = b"GET"
 
@@ -270,16 +315,16 @@ class TestWebStateMachine(unittest.TestCase):
         )
 
         for i in range(len(body_part)):
-            self.assertEqual(self.engine.state, self.engine._parse_boundary_st)
+            self.assertEqual(self.engine.engine_state, self.engine._parse_boundary_st)
             self.rx.write(body_part[i:i+1])
-            self.engine.state(self.rx, self.tx)
+            self.engine.engine_state(self.rx, self.tx)
 
-        self.assertEqual(self.engine.state, self.engine._parse_complete_part_st)
+        self.assertEqual(self.engine.engine_state, self.engine._parse_complete_part_st)
         self.assertEqual(self.rx.peek(), body_part)
 
-        self.engine.state(self.rx, self.tx)
+        self.engine.engine_state(self.rx, self.tx)
 
-        self.assertEqual(self.engine.state, self.engine._parse_boundary_st)
+        self.assertEqual(self.engine.engine_state, self.engine._parse_boundary_st)
         test_callback.assert_called_once_with(
             {"content-disposition":"form-data;name=\"file-chunk\";filename=\"upload.txt\"Content-Type:text/plain"},
             b"Upload content", first=True, last=False
@@ -287,7 +332,7 @@ class TestWebStateMachine(unittest.TestCase):
 
 
     def test_multipart_receiver_last_part(self):
-        self.engine.state = self.engine._parse_boundary_st
+        self.engine.engine_state = self.engine._parse_boundary_st
         self.engine.url = b"/api/test"
         self.engine.method = b"GET"
         self.engine.headers["content-length"] = 129
@@ -306,16 +351,16 @@ class TestWebStateMachine(unittest.TestCase):
         )
 
         for i in range(len(body_part)):
-            self.assertEqual(self.engine.state, self.engine._parse_boundary_st)
+            self.assertEqual(self.engine.engine_state, self.engine._parse_boundary_st)
             self.rx.write(body_part[i:i+1])
-            self.engine.state(self.rx, self.tx)
+            self.engine.engine_state(self.rx, self.tx)
 
-        self.assertEqual(self.engine.state, self.engine._parse_complete_part_st)
+        self.assertEqual(self.engine.engine_state, self.engine._parse_complete_part_st)
         self.assertEqual(self.rx.peek(), body_part)
 
-        self.engine.state(self.rx, self.tx)
+        self.engine.engine_state(self.rx, self.tx)
 
-        self.assertEqual(self.engine.state, None)
+        self.assertEqual(self.engine.engine_state, None)
         self.assertEqual(self.engine.status_code, 200)
         test_callback.assert_called_once_with(
             {"content-disposition":"form-data;name=\"file-chunk\";filename=\"upload.txt\"Content-Type:text/plain"},

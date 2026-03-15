@@ -1,18 +1,23 @@
 include micrOS/micropython/*.bin
 include micrOS/micropython/*.uf2
+include micrOS/micropython/board_commands.json
 graft micrOS/source
+include micrOS/release_info/micrOS_ReleaseInfo/system_analysis_sum.json
+
+graft env/driver_cp210x/
+
 graft toolkit/simulator_lib
 graft toolkit/workspace/precompiled
 recursive-include toolkit/user_data .include
 recursive-include toolkit/user_data/node_config_archive/.include
+include toolkit/index.html
+include toolkit/img_stream.html
+include toolkit/LM_to_compile.dat
+graft toolkit/user_data/webhooks/
+
 include media/dnd.png
 include media/logo_mini.png
 include media/logo.png
 include media/wifi_icon.png
 include media/usb_port_icon.png
-include toolkit/index.html
-include toolkit/img_stream.html
-include toolkit/LM_to_compile.dat
-include micrOS/release_info/micrOS_ReleaseInfo/system_analysis_sum.json
-graft env/driver_cp210x/
-graft toolkit/user_data/webhooks/
+

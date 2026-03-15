@@ -1,0 +1,57 @@
+{"esp32":
+     {"erase": "{esptool_interface} --port {dev} erase_flash",
+      "deploy": "{esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}",
+      "ampy_cmd": "ampy -p {dev} -b 115200 -d 2 {args}",
+      "mpremote_cmd": null,
+      "cmd_line_info": "[!HINT!] PRESS [EN] BUTTON TO ENABLE DEVICE ERASE...",
+      "url": "https://micropython.org/download/ESP32_GENERIC/"},
+ "esp32cam":
+      {"erase": "{esptool_interface} --port {dev} erase_flash",
+       "deploy": "{esptool_interface} --chip esp32 --port {dev} --baud 460800 write_flash -z 0x1000 {micropython}",
+       "mpremote_cmd": "mpremote",
+       "cmd_line_info": "*** [!DISCLAIMER!] ***\n\tUSB copy not works with some serial interface\n\tCopy manually: toolkit/workspace/precompiled/micrOSloader.mpy\n\tNetwork.mpy Debug.mpy ConfigHandler.mpy main.py\n\tThen push OTA update over AP mode... Then you are done",
+       "url": "https://github.com/lemariva/micropython-camera-driver/tree/master/firmware"},
+ "esp32s2":
+      {"erase": "{esptool_interface} --chip esp32s2 --port {dev} --after no_reset erase_flash",
+       "deploy": "{esptool_interface} --chip esp32s2 --port {dev} --after no_reset --baud 460800 write_flash -z 0x1000 {micropython}",
+       "mpremote_cmd": "mpremote",
+       "cmd_line_info": "[!HINT!] Hold on Button 0 -> Press Button Reset -> Release Button 0 TO ENABLE DEVICE ERASE...",
+       "url": "https://micropython.org/download/ESP32_GENERIC_S2/"},
+ "tinypico":
+      {"erase": "{esptool_interface} --port {dev} erase_flash",
+       "deploy": "{esptool_interface} --chip esp32 --port {dev} --baud 921600 write_flash -z 0x1000 {micropython}",
+       "mpremote_cmd": null,
+       "ampy_cmd": "ampy -p {dev} -b 115200 -d 2 {args}",
+       "cmd_line_info": "",
+       "url": "https://micropython.org/download/UM_TINYPICO/"},
+ "esp32s3_spiram_oct":
+      {"erase": "{esptool_interface} --chip esp32s3 --port {dev} erase_flash",
+       "deploy": "{esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}",
+       "mpremote_cmd": "mpremote",
+       "cmd_line_info": "[!HINNT!] Press boot button under connecting the board over USB: enables flash erase",
+       "url": "https://micropython.org/download/ESP32_GENERIC_S3/"},
+ "esp32s3":
+     {"erase": "{esptool_interface} --chip esp32s3 --port {dev} erase_flash",
+      "deploy": "{esptool_interface} --chip esp32s3 --port {dev} write_flash -z 0 {micropython}",
+      "mpremote_cmd": "mpremote",
+      "cmd_line_info": "[!HINNT!] Press boot button under connecting board over USB: enables flash erase",
+      "url": "https://micropython.org/download/ESP32_GENERIC_S3/"},
+ "esp32c3":
+      {"erase": "{esptool_interface} --chip esp32c3 --port {dev} erase_flash",
+       "deploy": "{esptool_interface} --chip esp32c3 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}",
+       "mpremote_cmd": "mpremote",
+       "cmd_line_info": "[!HINT!] Fully automatic deployment...",
+       "url": "https://micropython.org/download/ESP32_GENERIC_C3/"},
+ "esp32c6":
+      {"erase": "{esptool_interface} --chip esp32c6 --port {dev} erase_flash",
+       "deploy": "{esptool_interface} --chip esp32c6 --port {dev} --baud 460800 write_flash -z 0x0 {micropython}",
+       "mpremote_cmd": "mpremote",
+       "cmd_line_info": "[!HINT!] Fully automatic deployment...",
+       "url": "https://micropython.org/download/ESP32_GENERIC_C6/"},
+  "esp32c5":
+      {"erase": "{esptool_interface} --chip esp32c5 --port {dev} erase_flash",
+       "deploy": "{esptool_interface} --chip esp32c5 --port {dev} --baud 460800 write_flash 0x2000 {micropython}",
+       "mpremote_cmd": "mpremote",
+       "cmd_line_info": "[!HINT!] Fully automatic deployment...",
+       "url": "https://micropython.org/download/ESP32_GENERIC_C5/"}
+}

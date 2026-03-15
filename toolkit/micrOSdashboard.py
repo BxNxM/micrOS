@@ -493,20 +493,19 @@ class HeaderInfo:
         label.setGeometry(self.parent_obj.width - width - 20, 10, width, 40)
         label.setStyleSheet("background-color : gray; color: {}; border: 1px solid black;".format(micrOSGUI.TEXTCOLOR))
 
-    def __detect_virtualenv(self):
-        def get_base_prefix_compat():
-            """Get base/real prefix, or sys.prefix if there is none."""
-            return getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix
-        def in_virtualenv():
-            return get_base_prefix_compat() != sys.prefix
-        return in_virtualenv()
+    @staticmethod
+    def in_virtualenv():
+        return (
+                "VIRTUAL_ENV" in os.environ
+                or sys.prefix != getattr(sys, "base_prefix", sys.prefix)
+        )
 
     def venv_indicator(self):
         x_start = 80
         y_start = 10
         height = 40
         width_offset = -100
-        if self.__detect_virtualenv():
+        if self.in_virtualenv():
             label = QLabel(' [devEnv] virtualenv active', self.parent_obj)
             label.setGeometry(x_start, y_start, self.parent_obj.width + width_offset, height)
             label.setStyleSheet("background-color : green; color: {};".format(micrOSGUI.TEXTCOLOR))

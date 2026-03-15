@@ -175,19 +175,20 @@ def del_duplicates(migrate=True):
     return '\n'.join(msg_buf) if len(msg_buf) > 0 else 'Nothing to delete.'
 
 
-def moduls(unload=None):
+def unload(module=None):
     """
-    List / unload loaded upython Load Modules
-    :param unload: module name to unload
-    :param unload: None - list active modules
+    Unload Micropython Load Module
+    :param module: module name to unload (LM_/IO_* without .py/.mpy)
     :return str: verdict
     """
-    if unload is None:
-        return list(modules.keys())
-    if unload in modules.keys():
-        del modules[unload]
-        return f"Module unload {unload} done."
-    return f"Module unload {unload} failed."
+    if module.startswith("LM_") or module.startswith("IO_"):
+        if module in modules.keys():
+            del modules[module]
+            return f"Module unload {unload} done"
+        else:
+            return f"No such module as {module}"
+    else:
+        return "Skip, module must start with LM_ or IO_"
 
 
 @socket_stream
@@ -304,7 +305,7 @@ def help(widgets=False):
         (widgets=True) list of widget json for UI generation
     """
     return ('listmods', 'delmod mod=<module>.py/.mpy', 'del_duplicates',
-            'moduls unload="LM_rgb/None"',
+            'unload module="LM_rgb"',
             'cachedump delete=None',
             'datdump',
             # Package commands

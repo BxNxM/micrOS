@@ -70,10 +70,6 @@ def gclean():
     """
     Run micropython garbage collection
     """
-    try:
-        from gc import collect, mem_free
-    except:
-        from simgc import collect, mem_free  # simulator mode
     collect()
     return {'GC MemFree[byte]': mem_free()}
 
@@ -85,6 +81,24 @@ def heartbeat():
     console("<3 heartbeat <3")
     return "<3 heartbeat <3"
 
+
+@socket_stream
+def alarms(clean=False, msgobj=None):
+    """
+    Show micrOS alarms - system error list
+    :param clean bool: clean alarms, default: False
+    :return dict: verdict
+    """
+    from Logger import log_clean, syslog
+    if clean:
+        log_clean(msgobj=msgobj)
+    errcnt = -1 if syslog is None else syslog(msgobj=msgobj)
+    return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
+
+
+#############################
+#           TIME            #
+#############################
 
 def clock():
     """
@@ -139,6 +153,10 @@ def setclock(year, month, mday, hour, minute, sec):
     return localtime()
 
 
+#############################
+#           NETWORK         #
+#############################
+
 def rssi():
     """
     Show Wifi RSSI - wifi strength
@@ -178,35 +196,6 @@ def list_stations():
     return [("NoAP", '')]
 
 
-def pinmap(keys:str=None) -> dict:
-    """
-    Get Logical pin by key runtime
-    :param keys: logical pin name or names to resolve
-        example: 'builtin irq1 irq2 irq3 irq4'
-    :return dict: key map
-    """
-    from microIO import pinmap_search, pinmap_info
-    if keys is None:
-        map = pinmap_info(show_all=True)                 # map, booked, custom, known_maps
-        return map
-    keys = keys.replace(',', '').split()
-    return pinmap_search(keys)
-
-
-@socket_stream
-def alarms(clean=False, msgobj=None):
-    """
-    Show micrOS alarms - system error list
-    :param clean bool: clean alarms, default: False
-    :return dict: verdict
-    """
-    from Logger import log_clean, syslog
-    if clean:
-        log_clean(msgobj=msgobj)
-    errcnt = -1 if syslog is None else syslog(msgobj=msgobj)
-    return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
-
-
 def ifconfig():
     """
     Show network ifconfig
@@ -224,6 +213,27 @@ def hosts():
     from InterConnect import host_cache as ihost_cache
     return {"urequests": host_cache(), "intercon":  ihost_cache()}
 
+#############################
+#            GPIO           #
+#############################
+
+def pinmap(keys:str=None) -> dict:
+    """
+    Get Logical pin by key runtime
+    :param keys: logical pin name or names to resolve
+        example: 'builtin irq1 irq2 irq3 irq4'
+    :return dict: key map
+    """
+    from microIO import pinmap_search, pinmap_info
+    if keys is None:
+        map = pinmap_info(show_all=True)                 # map, booked, custom, known_maps
+        return map
+    keys = keys.replace(',', '').split()
+    return pinmap_search(keys)
+
+#############################
+#       NOTIFICATIONS       #
+#############################
 
 def notifications(enable=None):
     """
@@ -248,7 +258,7 @@ def notify(msg, *args, **kwargs):
     return Notify.notify(msg, *args, **kwargs)
 
 #######################
-# LM helper functions #
+#      HELP INFO      #
 #######################
 
 def help(widgets=False):

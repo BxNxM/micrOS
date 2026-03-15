@@ -1257,10 +1257,6 @@
             "doc": null,
             "param(s)": ""
         },
-        "moduls": {
-            "doc": "\n    List / unload loaded upython Load Modules\n    :param unload: module name to unload\n    :param unload: None - list active modules\n    :return str: verdict\n    ",
-            "param(s)": "unload=None"
-        },
         "rm": {
             "doc": null,
             "param(s)": "path force=False"
@@ -1272,6 +1268,10 @@
         "uninstall": {
             "doc": null,
             "param(s)": "name=None"
+        },
+        "unload": {
+            "doc": "\n    Unload Micropython Load Module\n    :param module: module name to unload (LM_/IO_* without .py/.mpy)\n    :return str: verdict\n    ",
+            "param(s)": "module=None"
         },
         "upgrade": {
             "doc": "\n    Upgrade package by name from /lib\n    :param name: None (default) show installed package name\n                 OR package name to upgrade (str)\n    :param force: skip version check\n    ",
@@ -1552,23 +1552,23 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sdcard.png?raw=true",
         "list_storage": {
-            "doc": null,
+            "doc": "\n    List files/dirs under /data/storage\n    ",
             "param(s)": ""
         },
         "mount_storage": {
-            "doc": null,
+            "doc": "\n    Mount SD Card under /data/storage\n    ",
             "param(s)": ""
         },
         "read_file": {
-            "doc": null,
+            "doc": "\n    Read a file\n    :param name: file name with type\n    ",
             "param(s)": "name"
         },
         "unmount_storage": {
-            "doc": null,
+            "doc": "\n    Unmount SD Card under /data/storage\n    ",
             "param(s)": ""
         },
         "write_file": {
-            "doc": null,
+            "doc": "\n    Write a file\n    :param name: file name with type\n    :param content: file text content\n    ",
             "param(s)": "name content"
         }
     },

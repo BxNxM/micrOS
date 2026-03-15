@@ -14,7 +14,7 @@
         ],
         "Files.py": [
             9.72,
-            12
+            13
         ],
         "micrOSloader.py": [
             7.06,
@@ -85,7 +85,7 @@
             1
         ],
         "microIO.py": [
-            9.35,
+            9.37,
             43
         ],
         "micrOS.py": [
@@ -121,7 +121,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.68,
+            7.62,
             0
         ],
         "modules/LM_web.py": [
@@ -137,7 +137,7 @@
             0
         ],
         "modules/LM_system.py": [
-            8.49,
+            8.87,
             0
         ],
         "modules/LM_robustness.py": [
@@ -313,7 +313,7 @@
             0
         ],
         "modules/LM_sdcard.py": [
-            7.88,
+            8.11,
             0
         ],
         "modules/LM_fileserver.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            5180,
+            5182,
             27
         ],
         "load": [
-            8809,
+            8828,
             53
         ],
         "core_dep": [
@@ -336,10 +336,10 @@
         ],
         "load_dep": [
             true,
-            3
+            4
         ],
         "core_score": 9.3,
-        "load_score": 8.43,
+        "load_score": 8.44,
         "version": "2.27.2-0"
     }
 }

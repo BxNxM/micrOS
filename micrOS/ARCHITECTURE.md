@@ -1,5 +1,8 @@
 # micrOS Architecture
 
+**Heigh level architecture**
+![MICROSARCHITECTURE](./../media/micrOSArchitecture.png?raw=true)
+
 ## Purpose
 
 This document summarizes the `micrOS/source` root architecture from three angles:

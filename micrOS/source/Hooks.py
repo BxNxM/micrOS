@@ -18,16 +18,10 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from Config import cfgget, cfgput
-from microIO import detect_platform
 from Debug import console_write, syslog
 from Tasks import exec_lm_pipe
 from Auth import resolve_secret
-from micropython import mem_info
 from machine import freq
-try:
-    from machine import reset_cause, PWRON_RESET, HARD_RESET, WDT_RESET, DEEPSLEEP_RESET, SOFT_RESET
-except ImportError:
-    reset_cause = None
 try:
     from gc import mem_free
 except ImportError:
@@ -80,6 +74,7 @@ def _tune_performance():
         ('esp32c3', 'esp32c6'): (80_000_000, 160_000_000),
         ('esp32',): (160_000_000, 240_000_000),  # default
     }
+    from microIO import detect_platform
     platform = detect_platform()
     cpu_min_max = cpu_clocks[('esp32',)]
     for platforms, clocks in cpu_clocks.items():
@@ -102,6 +97,7 @@ def profiling_info(label=""):
     Runtime memory measurements
     """
     if cfgget('dbg'):
+        from micropython import mem_info
         console_write(f"{'~'*5} [PROFILING INFO] - {label} {'~'*5}")
         mem_info()
         console_write("~"*30)
@@ -109,7 +105,8 @@ def profiling_info(label=""):
 
 def boot_cause():
     reason = 0, "-Unknown"
-    if callable(reset_cause):
+    try:
+        from machine import reset_cause, PWRON_RESET, HARD_RESET, WDT_RESET, DEEPSLEEP_RESET, SOFT_RESET
         reason = 0, "Unknown"
         reset_reason = reset_cause()
         if reset_reason == PWRON_RESET:
@@ -122,6 +119,8 @@ def boot_cause():
             reason = 4, "DSWakeUp"
         elif reset_reason == SOFT_RESET:
             reason = 5, "SoftReset"
+    except ImportError:
+        pass
     syslog(f"[BOOT] info: {reason[1]}")
     return reason
 

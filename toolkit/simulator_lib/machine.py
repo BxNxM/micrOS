@@ -74,6 +74,47 @@ class RTC:
         console("[RTC] datetime")
 
 
+class WDT:
+
+    def __init__(self, timeout):
+        self.timeout = timeout
+        self._metrics = {
+            "last": time.time(),
+            "min": 0,
+            "max": 0,
+            "avg": 0,
+            "count": 0,
+            "dt": 0
+        }
+
+    def feed(self):
+        now = time.time()
+        delta = now - self._metrics["last"]
+        self._metrics["last"] = now
+        self._metrics["dt"] = delta
+        self._metrics["count"] += 1
+
+        if self._metrics["count"] == 1:
+            self._metrics["min"] = delta
+            self._metrics["max"] = delta
+            self._metrics["avg"] = delta
+        else:
+            self._metrics["min"] = min(self._metrics["min"], delta)
+            self._metrics["max"] = max(self._metrics["max"], delta)
+            count = self._metrics["count"]
+            self._metrics["avg"] = (((self._metrics["avg"] * (count - 1)) + delta) / count)
+
+        if self._metrics["count"] == 10 or self._metrics["count"] % 50 == 0:
+            console((
+                f"[WDT.feed] timeout={self.timeout/1000}s "
+                f"count={self._metrics['count']} "
+                f"dt={self._metrics['dt'] * 1000:.1f}ms "
+                f"min={self._metrics['min'] * 1000:.1f}ms "
+                f"max={self._metrics['max'] * 1000:.1f}ms "
+                f"avg={self._metrics['avg'] * 1000:.1f}ms"
+            ))
+
+
 class PWM:
 
     def __init__(self, dimmer_pin=None, freq=480):

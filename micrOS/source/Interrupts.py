@@ -31,8 +31,7 @@ if cfgget('cron'):
 #################################################################
 
 
-def emergency_mbuff():
-    emergency_buff_kb = 1000
+def emergency_mbuff(emergency_buff_kb:int=512):
     extirq_enabled = any(cfgget(f'irq{i}') for i in range(1, 5))
     if cfgget('cron') or extirq_enabled or cfgget("timirq"):
         from micropython import alloc_emergency_exception_buf
@@ -40,6 +39,9 @@ def emergency_mbuff():
         alloc_emergency_exception_buf(emergency_buff_kb)
     else:
         console_write("[IRQ] Interrupts disabled, skip alloc_emergency_exception_buf configuration.")
+
+# Allocate alloc_emergency_exception_buf for IRQs when needed
+emergency_mbuff()
 
 #################################################################
 #                       TIMER INTERRUPT(S)                      #
@@ -172,10 +174,3 @@ def initEventIRQs():
         # Init external IRQx
         if irq_en and irq_cbf != b'n/a':
             __core(_pin=__get_pin(f"irq{i}"), _trig=irq_trig, _lm_cbf=irq_cbf)
-
-#################################################################
-#                         INIT MODULE                           #
-#################################################################
-
-
-emergency_mbuff()

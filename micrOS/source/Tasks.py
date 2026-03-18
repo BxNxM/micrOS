@@ -104,7 +104,12 @@ class TaskBase:
         Feed event loop
         :param sleep_ms: in millisecond
         """
-        # TODO?: feed WDT - auto restart when system is frozen
+        # Feed & Sleep logic
+        if Manager.WDT is not None:
+            try:
+                Manager.WDT.feed()
+            except Exception as e:
+                syslog(f"[WARN] WDT.feed: {e}")
         if sleep_ms <= 0:
             return await asyncio.sleep(0.000_000_1)     # 0 means: 100ns (Absolute minimum)
         return await asyncio.sleep_ms(sleep_ms)
@@ -243,8 +248,9 @@ class Manager:
     """
     __slots__ = ['_initialized', 'idle_counter']
     INSTANCE = None                      # Manager object
-    LOAD = 0                             # CPU overload measure
     INTERCON = None                      # Dynamic ref. for interconnect calls
+    LOAD = 0                             # CPU overload measure
+    WDT = None                           # Global watchdog object
 
     def __new__(cls):
         """
@@ -268,6 +274,16 @@ class Manager:
             self.create_task(callback=self.idle_task(), tag="idle")
             self._initialized = True
             console_write("[TASK MANAGER] <<constructor>>")
+
+    @staticmethod
+    def enable_wdt(timeout):
+        if Manager.WDT is None:
+            try:
+                from machine import WDT
+                Manager.WDT = WDT(timeout=timeout)
+                console_write(f"[TASK MANAGER] watchdog enabled: {timeout} ms")
+            except Exception as e:
+                syslog(f"[ERR] WDT setup: {e}")
 
     @staticmethod
     def _queue_len():

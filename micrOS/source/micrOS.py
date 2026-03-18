@@ -14,7 +14,6 @@ init_micros_dirs()
 #################################################################
 #                           IMPORTS                             #
 #################################################################
-from Time import ntp_time, suntime
 from Tasks import Manager
 from Hooks import bootup, profiling_info, enableESPNow
 from Network import auto_nw_config
@@ -66,6 +65,7 @@ def micrOS():
     nwmd = auto_nw_config()
     if nwmd == 'STA':
         # Set UTC + SUN TIMES FROM API ENDPOINTS
+        from Time import ntp_time, suntime
         suntime()
         # Set NTP - RTC + UTC shift + update uptime (boot time)
         ntp_time()
@@ -86,7 +86,8 @@ def micrOS():
     enableESPNow()
     profiling_info(label='[memUsage] SYSTEM IS UP AND RUNNING')
 
-    # [EVENT LOOP] Start async event loop
+    # [EVENT LOOP] Start async event loop with WDT (with 30 sec timeout)
+    aio.enable_wdt(timeout=30_000)
     aio.run_forever()
 
     # UNEXPECTED RESTART ???

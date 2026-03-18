@@ -145,6 +145,23 @@ sequenceDiagram
 - `Espnow.ESPNowSS` is imported only when `espnow` is enabled
 - `IO_*` board maps are imported only when a pin must be resolved
 
+### Optionally loaded modules
+
+The following modules or module families are not part of the mandatory default boot footprint and load only when their feature path is activated:
+
+| Module | Load condition | Trigger file |
+| --- | --- | --- |
+| `LM_*` | First command / hook / IRQ / REST execution | `Tasks.py` |
+| `Scheduler` | `cron = true` | `Interrupts.py` |
+| `Web.WebEngine` | `webui = true` | `Server.py` |
+| `Espnow.ESPNowSS` | `espnow = true` | `Hooks.py`, `InterConnect.py` |
+| `IO_*` | First physical pin resolution | `microIO.py` |
+| `Time.ntp_time`, `Time.suntime` | STA mode only | `micrOS.py` |
+| `Time.uptime` | AP / non-STA path | `micrOS.py` |
+| `micropython.mem_info` | `dbg = true` and profiling call | `Hooks.py` |
+| `machine.reset_cause` constants | Boot-cause evaluation | `Hooks.py` |
+| `microIO.detect_platform` | CPU tuning path | `Hooks.py` |
+
 ### What remains resident
 
 - core runtime files used to assemble the system

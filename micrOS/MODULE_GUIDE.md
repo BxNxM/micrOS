@@ -1,4 +1,4 @@
-# ![LOGO](./media/logo_mini.png?raw=true)
+# ![LOGO](../media/logo_mini.png?raw=true)
 
 This guide provides a detailed walkthrough for building, testing, and uploading Load Modules for micrOS. It is organized from beginner to advanced with links to examples and utilities
 
@@ -40,7 +40,7 @@ This guide provides a detailed walkthrough for building, testing, and uploading 
 
 ![microIO](https://img.shields.io/badge/microIO.py-blue) ![Types](https://img.shields.io/badge/Types.py-darkgreen) ![Common](https://img.shields.io/badge/Common.py-purple)
 
-![MICROSVISUALIZATION](./media/micrOSToolkit.png?raw=true)
+![MICROSVISUALIZATION](../media/micrOSToolkit.png?raw=true)
 
 # Create your own application module
 
@@ -368,7 +368,7 @@ def pinmap_search(keys):
 
 # Intermediate level
 
-## ![dashboard](./media/web_dashboard.png?raw=true) micrOS Types.py module
+## ![dashboard](../media/web_dashboard.png?raw=true) micrOS Types.py module
 
 > Advanced help messages with widget type assignment
 
@@ -392,7 +392,7 @@ Tags:
 * `SLIDER`, requires[1]: br function parameters (or any other single param)
 * `TEXTBOX`, requires[0]: no param
 * `JOYSTICK`, requires[1]: x and y function parameters
-* Implementation of [TYPES](./micrOS/source/Types.py)
+* Implementation of [TYPES](./source/Types.py)
 
 
 ## micrOS LM\_types\_demo.py
@@ -549,7 +549,7 @@ simulator $ types_demo help True
  {"type": "button", "lm_call": "toggle ", "options": ["None"]},
 ```
 
-Usage(s): [LM_neopixel](micrOS/source/modules/LM_neopixel.py), etc. in most of the modules :)
+Usage(s): [LM_neopixel](./source/modules/LM_neopixel.py), etc. in most of the modules :)
 
 TYPE Example sytax:
 
@@ -578,7 +578,7 @@ TYPE Example sytax:
 
 **Common module with additinal features for LoadModule-s**
 
-Module responsible for collecting additional feature definitions dedicated to the micrOS framework and LoadModules. Code: [micrOS/source/Common.py](./micrOS/source/Common.py)
+Module responsible for collecting additional feature definitions dedicated to the micrOS framework and LoadModules. Code: [micrOS/source/Common.py](./source/Common.py)
 
 ------------------------------------
 
@@ -594,7 +594,7 @@ def write_and_light(msg="Hello world!"):
                        #     When dbg=True in node_config
 ```
 
-Usage(s): [LM_sound_event](micrOS/source/modules/LM_sound_event.py) [LM_demo](./micrOS/source/LM_demo.py) 
+Usage(s): [LM_sound_event](./source/modules/LM_sound_event.py) [LM_demo](./source/LM_demo.py) 
 
 ------------------------------------
 
@@ -613,7 +613,7 @@ Returns:
 
 * A generator that yields the intermediate values between from_val and to_val in steps of step_ms.
 
-Usage(s): [LM_rgb](micrOS/source/modules/LM_rgb.py) [LM_cct](micrOS/source/modules/LM_cct.py) [LM_servo](micrOS/source/modules/LM_servo.py)
+Usage(s): [LM_rgb](./source/modules/LM_rgb.py) [LM_cct](./source/modules/LM_cct.py) [LM_servo](./source/modules/LM_servo.py)
 
 ------------------------------------
 
@@ -630,7 +630,7 @@ Returns:
 
 * If only one transition generator is created, it returns the generator and the step size in milliseconds (gen, step_ms). If multiple transition generators are created, it returns a list of generators and the step size in milliseconds ([gen1, gen2, ...], step_ms).
 
-Usage(s): [LM_rgb](micrOS/source/modules/LM_rgb.py) [LM_cct](micrOS/source/modules/LM_cct.py) [LM_servo](micrOS/source/modules/LM_servo.py)
+Usage(s): [LM_rgb](./source/modules/LM_rgb.py) [LM_cct](./source/modules/LM_cct.py) [LM_servo](./source/modules/LM_servo.py)
 
 ------------------------------------
 
@@ -740,7 +740,7 @@ async def mytask(tag, period_ms=30):
 
 > Than you can call `task_example mytask` function.
 
-Usage(s): [LM_presence](micrOS/source/modules/LM_presence.py) [LM_buzzer](micrOS/source/modules/LM_buzzer.py) [LM_cct](micrOS/source/modules/LM_cct.py) [LM_dimmer](micrOS/source/modules/LM_dimmer.py) [LM_neopixel](micrOS/source/modules/LM_neopixel.py) [LM_neopixel](micrOS/source/modules/LM_neopixel.py) [LM_rgb](micrOS/source/modules/LM_rgb.py) [LM_roboarm](micrOS/source/modules/LM_roboarm.py) [LM_robustness](micrOS/source/modules/LM_robustness.py) etc.
+Usage(s): [LM_presence](./source/modules/LM_presence.py) [LM_buzzer](./source/modules/LM_buzzer.py) [LM_cct](./source/modules/LM_cct.py) [LM_dimmer](./source/modules/LM_dimmer.py) [LM_neopixel](./source/modules/LM_neopixel.py) [LM_neopixel](./source/modules/LM_neopixel.py) [LM_rgb](./source/modules/LM_rgb.py) [LM_roboarm](./source/modules/LM_roboarm.py) [LM_robustness](./source/modules/LM_robustness.py) etc.
 
 ------------------------------------
 
@@ -762,7 +762,7 @@ def manage_task(tag, operation):
     """
 ```
 
-Usage(s): [LM\_oled\_ui](micrOS/source/modules/LM_oled_ui.py) [LM\_i2s\_mic](micrOS/source/modules/LM_i2s_mic.py)
+Usage(s): [LM\_oled\_ui](./source/modules/LM_oled_ui.py) [LM\_i2s\_mic](./source/modules/LM_i2s_mic.py)
 
 ------------------------------------
 
@@ -792,7 +792,7 @@ Where `"system"` is the module name and `"info"` is the function name, and it no
 
 > Note: `cmd` can contain only one command with its optional paramater. So this method not supports multi command execution.
 
-Usage(s): [LM\_oled_ui](micrOS/source/modules/LM_oled_ui.py)
+Usage(s): [LM\_oled_ui](./source/modules/LM_oled_ui.py)
 
 ------------------------------------
 
@@ -838,7 +838,7 @@ def help(widgets=False):
 	return 'log_data data="value"', 'get_data'
 ```
 
-Usage(s): [LM_dht22](micrOS/source/modules/LM_dht22.py)
+Usage(s): [LM_dht22](./source/modules/LM_dht22.py)
 
 ------------------------------------
 
@@ -857,7 +857,7 @@ def function_name(arg1, arg2, ..., msgobj=None):
     msgobj("Reply from Load Module to shellCli :)")
 ```
 
-Usage(s): [LM_system](micrOS/source/modules/LM_system.py) 
+Usage(s): [LM_system](./source/modules/LM_system.py) 
 
 ------------------------------------
 
@@ -914,7 +914,7 @@ def send_notification(msg="Hello from micrOS board", **kwargs):
 	return "notify, msg was sent."
 ```
 
-Usage(s): [LM_presence](micrOS/source/modules/LM_presence.py) [LM_bme280](micrOS/source/modules/LM_bme280.py) [LM_buzzer](micrOS/source/modules/LM_buzzer.py)
+Usage(s): [LM_presence](./source/modules/LM_presence.py) [LM_bme280](./source/modules/LM_bme280.py) [LM_buzzer](./source/modules/LM_buzzer.py)
 
 
 ------------------------------------
@@ -985,7 +985,7 @@ def _response_with_params(headers:dict, body:bytes):
 	return 'text/plain', reply
 ```
 
-Usage(s): [LM_OV2640](micrOS/source/modules/LM_OV2640.py)
+Usage(s): [LM_OV2640](./source/modules/LM_OV2640.py)
 
 --------------------------
 
@@ -1069,7 +1069,7 @@ def generator():
         yield 5, 0, 5
 ```
 
-Usage(s): [LM_neomatrix](micrOS/source/modules/LM_neomatrix.py) [LM_neoeffects.](micrOS/source/modules/LM_neoeffects.py)
+Usage(s): [LM_neomatrix](./source/modules/LM_neomatrix.py) [LM_neoeffects.](./source/modules/LM_neoeffects.py)
 
 --------------------------
 
@@ -1096,4 +1096,3 @@ def web_dir(f_name=None):
     :param f_name: if given, returns full path, otherwise returns web dir root path
     """
 ```
-

@@ -83,12 +83,12 @@ flowchart LR
     A --> F["ESP-NOW"]
     A --> G["Pin map"]
 
-    B --> B1["`boothook` -> LM pipeline"]
-    C --> C1["`nwmd`, `staessid`, `stapwd`, `devip`"]
-    D --> D1["`cron`, `timirq`, `irq1..irq4`"]
-    E --> E1["`webui`, `webui_max_con`"]
-    F --> F1["`espnow`"]
-    G --> G1["`cstmpmap`"]
+    B --> B1["boothook -> LM pipeline"]
+    C --> C1["nwmd, staessid, stapwd, devip"]
+    D --> D1["cron, timirq, irq1..irq4"]
+    E --> E1["webui, webui_max_con"]
+    F --> F1["espnow"]
+    G --> G1["cstmpmap"]
 ```
 
 ### Main feature toggles
@@ -224,7 +224,7 @@ classDiagram
 ```mermaid
 flowchart LR
     A["Shell / Hook / IRQ / Web"] --> B["lm_exec(...)"]
-    B --> C{"postfix `&` or `&&`?"}
+    B --> C{"postfix & or &&?"}
     C -->|no| D["sync execution"]
     C -->|yes| E["Manager.create_task(list)"]
     E --> F["queue limiter"]

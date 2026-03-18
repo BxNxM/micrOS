@@ -2,7 +2,7 @@
 
 This file is for AI / coding agents working on **micrOS – mini asynchronous automation OS for DIY projects**.
 
-Humans: see `README.md`, `APPLICATION_GUIDE.md`, `BUSINESS_VISION.md`, and `CONTRIBUTING.md` first. Agents should read those too, but use THIS file as the primary operational guide.
+Humans: see `README.md`, `micrOS/MODULE_GUIDE.md`, `BUSINESS_VISION.md`, and `CONTRIBUTING.md` first. Agents should read those too, but use THIS file as the primary operational guide.
 
 ---
 

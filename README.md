@@ -79,7 +79,7 @@ Access rest api over browser: `http://<nodename>.local`
 5. 🎮 Built-in app modules: [link](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
 6. ⚙️ micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
-7. 🧑‍💻 micrOS create custom Load Modules: [link](./APPLICATION_GUIDE.md)
+7. 🧑‍💻 micrOS create custom Load Modules: [link](./micrOS/MODULE_GUIDE.md)
 8. 📦 micrOS Package Management: [link](https://github.com/BxNxM/micrOSPackages)
 9. micrOS Gateway server with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
 10. Release notes: [release-note](https://github.com/BxNxM/micrOS/#release-note)
@@ -504,7 +504,7 @@ Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gatew
 
 # micrOS Customization
 
-[![app_templates](./media/app_templates.png?raw=true)](./APPLICATION_GUIDE.md)
+[![app_templates](./media/app_templates.png?raw=true)](./micrOS/MODULE_GUIDE.md)
 
 ----------------------------------------
 ----------------------------------------
@@ -1155,4 +1155,3 @@ gource \
 ```
 
 git push -u origin master
-

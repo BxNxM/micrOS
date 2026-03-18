@@ -332,7 +332,7 @@ class EmbeddedEditor {
       console.info("editor.js: EmbeddedEditor.loadExample");
       this.codeEl.value =
 `# LM_blinky.py – MicroPython example
-# Guide: https://github.com/BxNxM/micrOS/blob/master/APPLICATION_GUIDE.md
+# Guide: https://github.com/BxNxM/micrOS/blob/master/micrOS/MODULE_GUIDE.md
 import machine
 from microIO import bind_pin, pinmap_search
 from Common import micro_task

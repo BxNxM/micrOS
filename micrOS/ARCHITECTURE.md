@@ -1,230 +1,274 @@
-# micrOS System Architecture
+# micrOS Architecture
 
-## Scope
+## Purpose
 
-This document reviews the `micrOS/source` root architecture with emphasis on:
+This document summarizes the `micrOS/source` root architecture from three angles:
 
-- how boot and runtime behavior are driven by configuration parameters
-- how load modules are brought in on demand
-- how the system reduces memory pressure through lazy loading and bounded resource pools
+- boot flow at file level
+- feature activation at runtime
+- lazy loading and memory control driven by configuration
 
-## High-Level Boot Path
+## Architectural View
+
+micrOS is a small resident MicroPython core with:
+
+- a boot selector and recovery path
+- a config-driven runtime initializer
+- an async task and command execution layer
+- optional features enabled by config and loaded only when needed
+
+The design is intentionally biased toward small boot footprint, deferred feature activation, and stateful load modules.
+
+## Boot Flow
+
+### File-level boot sequence
 
 ```mermaid
 flowchart TD
-    A["main.py"] --> B["gc.enable()"]
-    B --> C["micrOSloader.main()"]
-    C --> D{"`.if_mode`"}
-    D -->|micros or missing| E["micrOS.micrOS()"]
-    D -->|webrepl| F["Recovery mode"]
-    D -->|off| G["Exit to MicroPython"]
+    A["main.py"] --> B["Disable ESP UART debug if available"]
+    B --> C["gc.enable()"]
+    C --> D["micrOSloader.main()"]
+    D --> E{"`.if_mode`"}
+    E -->|micros / missing| F["from micrOS import micrOS"]
+    E -->|webrepl| G["Recovery mode"]
+    E -->|off| H["Exit to raw MicroPython"]
 
-    E --> H["Files.init_micros_dirs()"]
-    H --> I["Config.Data.init()"]
-    I --> J["microIO.set_pinmap()"]
-    E --> K["Manager() creates idle task"]
-    E --> L["Hooks.bootup()"]
-    L --> M["boothook LM pipeline"]
-    L --> N["queue autotune + CPU tuning"]
-    E --> O["Network.auto_nw_config()"]
-    O --> P{"STA or AP"}
-    P -->|STA| Q["suntime() + ntp_time()"]
-    P -->|AP| R["uptime(update=True)"]
-    E --> S["Interrupt setup"]
-    E --> T["Server().run_server() task"]
-    E --> U["Hooks.enableESPNow()"]
-    E --> V["uasyncio loop forever"]
+    F --> I["micrOS.py"]
+    I --> J["Files.init_micros_dirs()"]
+    J --> K["Config.Data.init()"]
+    K --> L["Select pin map: microIO.set_pinmap()"]
+    I --> M["Manager()"]
+    I --> N["Hooks.bootup()"]
+    N --> O["boothook LM execution"]
+    N --> P["queue tuning + CPU tuning"]
+    I --> Q["Network.auto_nw_config()"]
+    Q --> R{"STA or AP"}
+    R -->|STA| S["suntime() + ntp_time()"]
+    R -->|AP| T["uptime(update=True)"]
+    I --> U["initEventIRQs()"]
+    I --> V["enableInterrupt() + enableCron()"]
+    I --> W["Server().run_server()"]
+    I --> X["Hooks.enableESPNow()"]
+    I --> Y["uasyncio loop forever"]
 
-    F --> W["Network.auto_nw_config()"]
-    F --> X["webrepl.start()"]
-    F --> Y["poll `.if_mode` for OTA completion"]
+    G --> Z["Network.auto_nw_config()"]
+    Z --> AA["webrepl.start()"]
 ```
 
-## Configuration-Driven Runtime
+### Boot responsibilities by file
 
-The system is config-first. `Config.py` initializes `Data.CONFIG_CACHE`, merges persisted `config/node_config.json`, applies defaults, migrates obsolete keys, and writes the normalized result back. Most subsystems read configuration through `cfgget(...)`, so boot behavior is mostly data-driven rather than hard-coded.
-
-### Important config keys and their effects
-
-| Config key | Effect |
+| File | Responsibility |
 | --- | --- |
-| `nwmd` | Selects preferred network mode. `STA` tries Wi-Fi client first, otherwise AP fallback. |
-| `staessid`, `stapwd` | STA connection candidates, including `;`-separated multi-network fallback. |
-| `devfid`, `appwd`, `auth` | Device identity, shell/web credentials, and shell/web authorization behavior. |
-| `boothook` | Executes a semicolon-separated LM command pipeline during boot via `Hooks.bootup()`. |
-| `aioqueue` | Maximum LM task queue size and one of the inputs for web connection limits. |
-| `boostmd` | Switches CPU frequency between low-power and boosted mode in `Hooks._tune_performance()`. |
-| `webui`, `webui_max_con` | Enables HTTP server and bounds web memory usage / connection count. |
-| `cron`, `crontasks` | Enables scheduler import and timer-driven cron execution. |
-| `timirq`, `timirqcbf`, `timirqseq` | Enables timer IRQ and LM callback execution on period. |
-| `irq1..irq4`, `irq*_cbf`, `irq*_trig`, `irq_prell_ms` | Enables and configures external GPIO interrupts. |
-| `cstmpmap` | Selects a board IO map and optional custom pin overrides. |
-| `espnow` | Enables ESP-NOW server and ESP-NOW-based inter-device transport. |
-| `guimeta` | Marked as offloaded; stored outside the in-memory config cache body. |
+| `main.py` | Minimal board bootstrap, GC enable, handoff to loader |
+| `micrOSloader.py` | Select normal mode vs recovery mode based on `.if_mode` |
+| `micrOS.py` | Assemble the runtime: config, hooks, network, IRQs, server, event loop |
+| `Files.py` | Root directory validation and module/lib path exposure |
+| `Config.py` | Normalize persisted config, inject defaults, initialize pinmap and debug mode |
+| `Hooks.py` | Boot hooks, queue tuning, CPU tuning, boot profiling, optional ESP-NOW startup |
+| `Network.py` | STA/AP bring-up and runtime identity updates |
+| `Interrupts.py` | Timer IRQ, cron IRQ, and external event IRQ provisioning |
+| `Server.py` | Socket shell server and optional HTTP server |
+| `Tasks.py` | LM command execution and async task orchestration |
 
-## Runtime Component Model
+## Feature Activation Model
+
+The runtime is configuration-first. Core code is present at boot, but several features activate only when their configuration path is enabled.
+
+```mermaid
+flowchart LR
+    A["Config cache"] --> B["Boot hooks"]
+    A --> C["Network mode"]
+    A --> D["IRQ features"]
+    A --> E["Web UI"]
+    A --> F["ESP-NOW"]
+    A --> G["Pin map"]
+
+    B --> B1["`boothook` -> LM pipeline"]
+    C --> C1["`nwmd`, `staessid`, `stapwd`, `devip`"]
+    D --> D1["`cron`, `timirq`, `irq1..irq4`"]
+    E --> E1["`webui`, `webui_max_con`"]
+    F --> F1["`espnow`"]
+    G --> G1["`cstmpmap`"]
+```
+
+### Main feature toggles
+
+| Config key(s) | Runtime effect |
+| --- | --- |
+| `boothook` | Executes LM commands during boot |
+| `nwmd`, `staessid`, `stapwd` | Selects and configures network mode |
+| `cron`, `crontasks` | Enables scheduler import and cron timer |
+| `timirq`, `timirqcbf`, `timirqseq` | Enables periodic timer callback execution |
+| `irq1..irq4`, `irq*_cbf`, `irq*_trig` | Enables external event interrupts |
+| `webui`, `webui_max_con` | Enables HTTP server and bounds web memory usage |
+| `espnow` | Enables ESP-NOW server path |
+| `cstmpmap` | Selects board pin map and overrides |
+| `boostmd` | Sets CPU frequency policy |
+| `aioqueue` | Governs LM task queue and affects pool sizing |
+
+## Lazy Loading Strategy
+
+micrOS uses practical lazy loading, not aggressive eviction.
+
+### Core idea
+
+The mandatory runtime stays resident, while optional subsystems and feature modules are loaded only when configuration or command flow requires them.
+
+### Load module path
+
+```mermaid
+sequenceDiagram
+    participant Client as Shell/Web/Hook/IRQ
+    participant Tasks as Tasks.lm_exec
+    participant Core as _exec_lm_core
+    participant LM as LM_<module>
+
+    Client->>Tasks: command / callback
+    Tasks->>Core: normalized LM call
+    Core->>Core: check sys.modules
+    alt module not loaded
+        Core->>LM: import LM_<module>
+    end
+    Core->>LM: execute function
+    LM-->>Core: result
+    Core-->>Tasks: formatted output
+```
+
+### What is lazy-loaded
+
+- `LM_*` modules are imported on first execution from `Tasks._exec_lm_core(...)`
+- `Scheduler` is imported only when `cron` is enabled
+- `Web.WebEngine` is imported only when `webui` is enabled
+- `Espnow.ESPNowSS` is imported only when `espnow` is enabled
+- `IO_*` board maps are imported only when a pin must be resolved
+
+### What remains resident
+
+- core runtime files used to assemble the system
+- loaded stateful `LM_*` modules after successful import
+- task manager, network stack, socket server, and active feature services
+
+This is important: module retention is part of the design, because many LMs own persistent hardware state, registered endpoints, cached device objects, or long-running tasks.
+
+## Resource Load Order
+
+```mermaid
+flowchart TD
+    A["Boot selector"] --> B["Filesystem paths"]
+    B --> C["Config cache"]
+    C --> D["Pin map selection"]
+    D --> E["Task manager"]
+    E --> F["Boot hooks"]
+    F --> G["Network"]
+    G --> H["Time sync / uptime"]
+    H --> I["IRQ provisioning"]
+    I --> J["TCP server"]
+    J --> K["HTTP server if enabled"]
+    K --> L["ESP-NOW if enabled"]
+    L --> M["Event loop steady state"]
+```
+
+## Task Management
+
+Task management is centralized in `Tasks.py` and built around one singleton manager plus two execution modes:
+
+- `NativeTask`: for coroutine-based system services such as the idle task, socket server, and other native async jobs
+- `MagicTask`: for LM command execution wrapped into async background jobs
+- `Manager`: the single orchestration entry point for creation, queue limiting, task listing, output inspection, and cancellation
+
+### Operational model
+
+- `Manager()` starts the permanent `idle` task once
+- native tasks are not queue-limited
+- LM background tasks are queue-limited through `aioqueue`
+- LM task IDs use `module.function`, which keeps task control aligned with command semantics
+- passive task entries are trimmed by `TaskBase._task_gc()` to avoid unbounded task-cache growth
+
+### Task execution UML
 
 ```mermaid
 classDiagram
-    class micrOSloader {
-        +main()
-        -_is_micrOS()
-        -__recovery_mode()
+    class TaskBase {
+        +TASKS
+        +QUEUE_SIZE
+        +is_busy(tag)
+        +await_result(timeout)
+        +cancel()
     }
 
-    class micrOS {
-        +micrOS()
+    class NativeTask {
+        +create(callback, tag)
     }
 
-    class Config {
-        +cfgget(key)
-        +cfgput(key, value)
+    class MagicTask {
+        +create(callback, loop, sleep)
+        -__task_wrapper()
     }
 
     class Manager {
-        +create_task(...)
-        +run_forever()
+        +create_task(callback, tag, loop, delay)
         +list_tasks()
+        +show(tag)
+        +kill(tag)
+        +run_forever()
     }
 
-    class Server {
-        +run_server()
-        +shell_cli()
-        +web_cli()
-    }
-
-    class Shell {
-        +shell(msg)
-    }
-
-    class Tasks {
-        +lm_exec(arg_list)
-        +exec_lm_pipe(taskstr)
-        +lm_is_loaded(name)
-    }
-
-    class WebEngine {
-        +register(endpoint, callback, method)
-        +web_mounts(...)
-    }
-
-    class Hooks {
-        +bootup()
-        +enableESPNow()
-    }
-
-    class Interrupts {
-        +enableInterrupt()
-        +enableCron()
-        +initEventIRQs()
-    }
-
-    micrOSloader --> micrOS
-    micrOS --> Config
-    micrOS --> Manager
-    micrOS --> Hooks
-    micrOS --> Interrupts
-    micrOS --> Server
-    Server --> Shell
-    Shell --> Tasks
-    Tasks --> Config
-    Tasks --> Manager
-    WebEngine --> Tasks
+    TaskBase <|-- NativeTask
+    TaskBase <|-- MagicTask
+    Manager --> NativeTask
+    Manager --> MagicTask
 ```
 
-## How Load Modules Are Loaded
+### LM background execution flow
 
-Load modules are the primary lazy-loading mechanism.
+```mermaid
+flowchart LR
+    A["Shell / Hook / IRQ / Web"] --> B["lm_exec(...)"]
+    B --> C{"postfix `&` or `&&`?"}
+    C -->|no| D["sync execution"]
+    C -->|yes| E["Manager.create_task(list)"]
+    E --> F["queue limiter"]
+    F --> G["MagicTask"]
+    G --> H["task wrapper loop"]
+    H --> I["_exec_lm_core(...)"]
+    I --> J["task output buffer"]
+```
 
-### Execution path
+## Memory Control
 
-1. A shell command, web REST call, boot hook, IRQ callback, or scheduled task eventually reaches `Tasks.lm_exec(...)`.
-2. `_exec_lm_core(...)` converts the requested module name into `LM_<name>`.
-3. The module is imported only if it is not already present in `sys.modules`.
-4. The requested function is executed dynamically.
-5. If a memory allocation failure occurs, the module is removed from `sys.modules` and `gc.collect()` is triggered.
+micrOS uses a few direct resource controls instead of a general-purpose memory manager:
 
-### Consequence
+- deferred `LM_*` imports through `sys.modules`
+- config-gated imports for optional subsystems
+- bounded passive task cache in `TaskBase._task_gc()`
+- memory-sized web receive/send pools in `Web.Buffer.init_pools()`
+- offloaded config values via `Config.disk_keys()`
+- queue and CPU tuning during boot via `Hooks`
 
-This means most application features do not occupy RAM at boot. They become resident only after first use, and many LM files expose a `load()` function to perform one-time hardware or endpoint initialization only when explicitly requested.
+## Architectural Notes
 
-## Memory Optimization Mechanisms
+### Strengths
 
-### 1. Demand-loaded load modules
+- Clear separation between boot selection, runtime assembly, and feature execution
+- Good fit for MicroPython constraints: small core plus deferred feature activation
+- Load-module model keeps feature code out of the mandatory boot path
+- Configuration acts as the primary orchestration surface
 
-`Tasks._exec_lm_core(...)` imports `LM_*` modules only when a command needs them. This is the core lazy-loading strategy.
+### Current realities
 
-### 2. Conditional imports for optional subsystems
+- LM loading is lazy, but LM eviction is intentionally not aggressive
+- Core boot/runtime assembly remains eager for stability
+- Dynamic `exec(...)` and `eval(...)` are still part of the command and pin-resolution model
+- External IRQ emergency buffering now correctly follows `irq1..irq4` enable state
 
-The source tree repeatedly avoids eager imports:
+## Summary
 
-- `Server.py` imports `Web.WebEngine` only when `webui` is enabled; otherwise it uses a tiny compatibility stub.
-- `Interrupts.py` imports `Scheduler.scheduler` only when `cron` is enabled.
-- `Hooks.enableESPNow()` imports `Espnow.ESPNowSS` only when `espnow` is enabled.
-- `InterConnect.py` resolves ESP-NOW support only when enabled.
-- `Network.py` applies ESP-NOW specific Wi-Fi power settings only when needed.
-- `microIO.py` imports the selected `IO_*` board map dynamically when a pin is resolved.
+micrOS is architected as a compact runtime kernel around:
 
-### 3. Bounded async task retention
+- loader
+- config
+- task manager
+- network/server stack
+- optional stateful load modules
 
-`TaskBase._task_gc()` trims inactive tasks once the passive cache exceeds `aioqueue`. This prevents unlimited historical task object accumulation.
-
-### 4. Memory-aware web buffer pools
-
-`Web.Buffer.init_pools()` sizes receive/send pools from current free heap and clamps connection count with:
-
-- `aioqueue`
-- `webui_max_con`
-- measured free memory
-
-This is one of the strongest explicit memory controls in the system.
-
-### 5. Offloaded config values
-
-`Config.disk_keys()` keeps selected large string values outside the normal in-memory cache. The current default example is `guimeta`.
-
-### 6. Runtime tuning from available RAM
-
-`Hooks._tune_queue_size()` estimates a suitable queue size from `gc.mem_free()` and raises `aioqueue` when memory allows it.
-
-## Boot-Time vs On-Demand Loading
-
-| Area | Boot-time behavior | On-demand behavior |
-| --- | --- | --- |
-| Core filesystem | Always initialized | N/A |
-| Config cache | Always loaded | Offloaded keys read lazily |
-| Pin map selection | Selected at config init | Actual `IO_*` map imported when pin is resolved |
-| Async manager | Always created | LM tasks created only when commands require them |
-| Shell TCP server | Always started | Session work happens per client |
-| Web server | Only if `webui=true` | Endpoints and buffers used per connection |
-| Scheduler | Only if `cron=true` | Callback execution happens on timer ticks |
-| ESP-NOW | Only if `espnow=true` | Traffic handling begins after server start |
-| Load modules | Not preloaded by default | Imported at first command / hook / IRQ use |
-
-## Architecture Review Notes
-
-### What is good
-
-- The system keeps the mandatory resident core relatively small.
-- Optional subsystems are commonly protected by config-gated imports.
-- LM execution through `sys.modules` gives a practical lazy-loading model for MicroPython.
-- Web memory usage is explicitly bounded instead of being purely reactive.
-- The boot hook mechanism allows feature activation without changing core boot code.
-
-### Important caveats
-
-- `Tasks._exec_lm_core(...)` imports modules lazily, but it does not actively unload them after successful use. Memory is optimized for startup and first-use deferral, not for aggressive post-use eviction.
-- `micrOS.py` imports several core modules eagerly at module scope. That is fine for stability, but it means the core runtime footprint is fixed once main mode starts.
-- `Interrupts.emergency_mbuff()` checks `cfgget('extirq')`, but the config schema exposes `irq1..irq4` instead of an `extirq` flag. That means emergency buffer allocation may not reflect external IRQ usage correctly.
-- Dynamic execution uses `exec(...)` and `eval(...)` in `Tasks.py` and `microIO.py`. This is flexible and compact, but harder to statically analyze and easier to break with naming inconsistencies.
-
-## Practical Interpretation
-
-micrOS is not using a separate dependency injector or plugin manager. Its effective architecture is:
-
-- a small always-on core
-- config-controlled subsystem activation
-- on-demand LM imports
-- bounded async and web resource pools
-
-That combination is a valid lazy-loading strategy for constrained MicroPython targets, especially because the most feature-heavy logic lives in `LM_*` modules instead of the boot-critical core.
+It is not plugin-managed in the desktop sense. It is a config-driven embedded runtime where features are activated late, stay resident when stateful, and are bounded by simple but effective resource policies.

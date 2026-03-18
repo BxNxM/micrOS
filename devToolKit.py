@@ -11,7 +11,7 @@ if len(sys.argv) > 1 and sys.argv[1] in ['light', '--light']:
 else:
     # INSTALL OPTIONAL DEPENDENCIES - PIP HACK
     from toolkit.lib import pip_package_installer as pip_install
-    pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.24.1.post2', 'matplotlib'])
+    pip_install.install_optional_dependencies(['PyQt5', 'opencv-python', 'PyAudio', 'mpy-cross==1.27.0.post2', 'matplotlib'])
     if sys.platform.startswith("win"):
         pip_install.install_optional_dependencies(['pyreadline3'])
 

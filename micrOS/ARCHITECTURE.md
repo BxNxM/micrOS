@@ -117,6 +117,20 @@ micrOS uses practical lazy loading, not aggressive eviction.
 
 The mandatory runtime stays resident, while optional subsystems and feature modules are loaded only when configuration or command flow requires them.
 
+### User-input and event-triggered loading
+
+Besides config-gated imports, micrOS also defers some resources until a user command or runtime event selects that path.
+
+Examples already present in `/micrOS/source`:
+
+- `Tasks.exec_builtins(...)` imports `InterConnect.send_cmd` only when a command ends with `>>hostname`
+- `Tasks._exec_lm_core(...)` imports `LM_<module>` only on first command, hook, IRQ, or REST execution of that module
+- `microIO.__resolve_pin(...)` imports the selected `IO_*` map only when a logical pin must actually be resolved
+- `Shell.webrepl(...)` imports `webrepl` only when the shell command requests it
+- `micrOSloader.__recovery_mode()` imports `webrepl` only when boot falls into recovery mode
+
+This keeps transport helpers, board maps, and feature modules out of the default steady-state footprint until command flow or boot mode actually needs them.
+
 ### Load module path
 
 ```mermaid
@@ -140,10 +154,12 @@ sequenceDiagram
 ### What is lazy-loaded
 
 - `LM_*` modules are imported on first execution from `Tasks._exec_lm_core(...)`
+- `InterConnect.send_cmd` is imported on first remote execution request (`>>host`) from `Tasks.exec_builtins(...)`
 - `Scheduler` is imported only when `cron` is enabled
 - `Web.WebEngine` is imported only when `webui` is enabled
 - `Espnow.ESPNowSS` is imported only when `espnow` is enabled
 - `IO_*` board maps are imported only when a pin must be resolved
+- `webrepl` is imported only in recovery mode or on explicit shell request
 
 ### Optionally loaded modules
 
@@ -152,12 +168,14 @@ The following modules or module families are not part of the mandatory default b
 | Module | Load condition | Trigger file |
 | --- | --- | --- |
 | `LM_*` | First command / hook / IRQ / REST execution | `Tasks.py` |
+| `InterConnect` | First remote command using `>>host` | `Tasks.py` |
 | `Scheduler` | `cron = true` | `Interrupts.py` |
 | `Web.WebEngine` | `webui = true` | `Server.py` |
 | `Espnow.ESPNowSS` | `espnow = true` | `Hooks.py`, `InterConnect.py` |
 | `IO_*` | First physical pin resolution | `microIO.py` |
 | `Time.ntp_time`, `Time.suntime` | STA mode only | `micrOS.py` |
 | `Time.uptime` | AP / non-STA path | `micrOS.py` |
+| `webrepl` | Recovery boot mode or shell command | `micrOSloader.py`, `Shell.py` |
 | `micropython.mem_info` | `dbg = true` and profiling call | `Hooks.py` |
 | `machine.reset_cause` constants | Boot-cause evaluation | `Hooks.py` |
 | `microIO.detect_platform` | CPU tuning path | `Hooks.py` |
@@ -279,6 +297,7 @@ micrOS uses a few direct resource controls instead of a general-purpose memory m
 - LM loading is lazy, but LM eviction is intentionally not aggressive
 - Core boot/runtime assembly remains eager for stability
 - Dynamic `exec(...)` and `eval(...)` are still part of the command and pin-resolution model
+- Some optional services are activated by user input or boot mode, not only by config presence
 - External IRQ emergency buffering now correctly follows `irq1..irq4` enable state
 
 ## Summary

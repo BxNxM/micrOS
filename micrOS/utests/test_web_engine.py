@@ -199,7 +199,7 @@ class TestWebStateMachine(unittest.TestCase):
         self.assertEqual(self.engine.url, b"index.html")
         self.assertEqual(self.engine.version, b"HTTP/1.1")
         self.assertEqual(self.engine.engine_state, None)
-        self.assertEqual(self.engine.status_code, 400)
+        self.assertEqual(self.engine.status_code, 405)
 
 
     def test_status_parsing_unsupported_version(self):

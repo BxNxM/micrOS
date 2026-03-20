@@ -16,7 +16,8 @@ from micropython import schedule
 from utime import ticks_ms, ticks_diff
 from Debug import console_write, syslog
 from Config import cfgget
-from Network import sta_high_avail
+if cfgget("ha"):
+    from Network import sta_high_avail
 
 try:
     from gc import collect as gcollect
@@ -277,7 +278,7 @@ class Manager:
 
     @staticmethod
     def enable_wdt(timeout):
-        if Manager.WDT is None:
+        if cfgget("ha") and Manager.WDT is None:
             try:
                 from machine import WDT
                 Manager.WDT = WDT(timeout=timeout)
@@ -309,8 +310,9 @@ class Manager:
         """
 
         # FREQUENCY OF IDLE TASK - IMPACTS IRQ TASK SCHEDULING, SMALLER IS BEST
+        ha = cfgget("ha")
         my_task = TaskBase.TASKS.get('idle')
-        my_task.out = "i.d.l.e: 600ms"
+        my_task.out = "idle loop: 600ms - HA.: " + ("ON" if ha else "OFF")
         try:
             while True:
                 # [0] Just chill
@@ -320,12 +322,13 @@ class Manager:
                 await my_task.feed(300)
                 delta_rate = int(((ticks_diff(ticks_ms(), t) / 300) - 1) * 100)
                 Manager.LOAD = int((Manager.LOAD + delta_rate) / 2)  # Average - smooth
-                # [2] NETWORK AUTO REPAIR
-                if self.idle_counter > 300:  # ~ 3 min
-                    self.idle_counter = 0    # Reset counter
-                    # Check and fix STA network (reboot if target ssid is available not yet connected)
-                    sta_high_avail()
-                self.idle_counter += 1  # Increase counter
+                # [2] NETWORK AUTO REPAIR (High Availability)
+                if ha:
+                    if self.idle_counter > 300:  # ~ 3 min
+                        self.idle_counter = 0    # Reset counter
+                        # Check and fix STA network (reboot if target ssid is available not yet connected)
+                        sta_high_avail()
+                    self.idle_counter += 1  # Increase counter
         except Exception as e:
             syslog(f"[ERR] Idle task exists: {e}")
         my_task.done.set()

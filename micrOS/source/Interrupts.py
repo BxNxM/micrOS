@@ -62,10 +62,10 @@ def enableInterrupt():
     if cfgget("timirq"):
         from machine import Timer
         # INIT TIMER IRQ with callback function wrapper
-        lm_byte = bytearray(cfgget('timirqcbf'), 'utf-8')                   # Store as bytearray (optimization?)
+        lm_cbf = cfgget('timirqcbf')
         timer = Timer(0)
         timer.init(period=int(cfgget("timirqseq")), mode=Timer.PERIODIC,
-                   callback=lambda timer: exec_lm_pipe_schedule(str(lm_byte, 'utf-8')))
+                   callback=lambda timer: exec_lm_pipe_schedule(lm_cbf))
 
 
 #############################################
@@ -125,7 +125,7 @@ def initEventIRQs():
             _p_last[_pin] = ticks_ms()
             # [!] Execute User Load module by pin number (with micropython.schedule wrapper)
             # console_write(f"---> action")
-            exec_lm_pipe_schedule(str(_cbf, 'utf-8'))
+            exec_lm_pipe_schedule(_cbf)
 
     def __core(_pin, _trig, _lm_cbf):
         """Run External/Event IRQ setup with __edge_exec callback handler"""
@@ -167,10 +167,10 @@ def initEventIRQs():
     for i in range(1, 5):
         # load IRQx params
         irq_en = cfgget(f"irq{i}")
-        irq_cbf = bytearray(cfgget(f"irq{i}_cbf"), 'utf-8')         # Store as bytearray (optimization?)
+        irq_cbf = cfgget(f"irq{i}_cbf")
         irq_trig = cfgget(f"irq{i}_trig")
         console_write(f"[IRQ] EXTIRQ SETUP - EXT IRQ{i}: {irq_en} TRIG: {irq_trig}")
         console_write(f"|- [IRQ] EXTIRQ CBF: {irq_cbf}")
         # Init external IRQx
-        if irq_en and irq_cbf != b'n/a':
+        if irq_en and irq_cbf != 'n/a':
             __core(_pin=__get_pin(f"irq{i}"), _trig=irq_trig, _lm_cbf=irq_cbf)

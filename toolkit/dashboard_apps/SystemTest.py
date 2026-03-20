@@ -350,9 +350,9 @@ def micros_alarm_check():
 
 
 def oled_msg_end_result(result):
-    cmd_list = ['pacman moduls >json']
+    cmd_list = ['modules >json']
     output = CLIENT.execute(cmd_list)
-    if output[0] and 'LM_oled_ui' in output[1]:
+    if output[0] and 'oled_ui' in output[1]:
         cmd_list = [f'oled_ui msgbox "{result} %"']
         print(CLIENT.execute(cmd_list))
 

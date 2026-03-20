@@ -29,15 +29,15 @@
             3
         ],
         "Web.py": [
-            9.37,
+            9.25,
             2
         ],
         "Tasks.py": [
-            9.48,
+            9.34,
             13
         ],
         "Config.py": [
-            9.44,
+            9.61,
             17
         ],
         "Shell.py": [
@@ -49,7 +49,7 @@
             3
         ],
         "Types.py": [
-            9.21,
+            8.54,
             28
         ],
         "Logger.py": [
@@ -237,7 +237,7 @@
             0
         ],
         "modules/LM_veml7700.py": [
-            7.62,
+            7.3,
             0
         ],
         "modules/LM_rencoder.py": [
@@ -323,7 +323,7 @@
     },
     "summary": {
         "core": [
-            5196,
+            5218,
             27
         ],
         "load": [
@@ -338,8 +338,8 @@
             true,
             4
         ],
-        "core_score": 9.28,
+        "core_score": 9.25,
         "load_score": 8.44,
-        "version": "2.28.0-0"
+        "version": "2.29.0-0"
     }
 }

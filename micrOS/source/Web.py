@@ -106,10 +106,7 @@ class Buffer:
         Initialize pool of buffers for sending/receiving based on different profiles
         """
         mem_available = mem_free()
-        con_limit = min(
-                        max(1, int(cfgget("aioqueue"))),
-                        max(1, int(cfgget("webui_max_con")))
-                    )
+        con_limit = min(max(1, int(cfgget("aioqueue"))),max(1, int(cfgget("webui_max_con"))))
         usable = int(Buffer.MEM_CAP * mem_available)
         is_low_memory = (usable / con_limit) < \
             (Buffer.RECV_BUF_MAX_BYTES + Buffer.SEND_BUF_MAX_BYTES + Buffer.CONN_OVERHEAD)

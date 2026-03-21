@@ -1,8 +1,8 @@
 import os
 import json
 import re
+import math
 from packaging.version import Version
-from pprint import pprint
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -15,6 +15,33 @@ MAX_COMMIT_HISTORY = 60
 #####################################
 #           HELPER FUNCTIONS        #
 #####################################
+def _timeline_figsize(num_points, base_width=15, width_per_point=0.24, min_width=15, max_width=42, height=8):
+    width = min(max(base_width, min_width + max(0, num_points - 12) * width_per_point), max_width)
+    return width, height
+
+
+def _table_figsize(num_rows, base_width=15, width=17, min_height=8, max_height=24, row_height=0.34):
+    height = min(max(min_height, num_rows * row_height), max_height)
+    return width, height
+
+
+def _bar_figsize(num_bars, base_width=15, width_per_bar=0.6, min_width=15, max_width=42, height=8):
+    width = min(max(min_width, base_width + max(0, num_bars - 10) * width_per_bar), max_width)
+    return width, height
+
+
+def _annotate_last_point(ax, x, y, text, color, y_offset=0):
+    ax.annotate(
+        text,
+        xy=(x, y),
+        xytext=(12, y_offset),
+        textcoords='offset points',
+        color=color,
+        fontsize=9,
+        arrowprops=dict(arrowstyle="->", color=color),
+    )
+
+
 def truncate_message(message, wrap_width, max_lines):
     """
     Wrap the message text to a given width and limit it to max_lines.
@@ -87,7 +114,7 @@ def load_meta_files(folder_path):
                     commit_id, commit_message = content.split(": ", 1)
                     version = file_name.replace(".meta", "")
                     meta_data.append({"version": version, "commit_id": commit_id, "message": commit_message})
-    return meta_data
+    return sorted(meta_data, key=lambda item: Version(item["version"]), reverse=True)
 
 def load_release_versions(folder_path):
     release_versions = []
@@ -106,7 +133,7 @@ def load_release_versions(folder_path):
 def page_core_system(pdf, versions, core_files, highlighted_versions, core_lines):
     #########################################################
     # Plot 1: Core System – File Count (left) and Lines of Code (right)
-    fig, ax_left = plt.subplots(figsize=(15, 8))
+    fig, ax_left = plt.subplots(figsize=_timeline_figsize(len(versions)))
     # Left y-axis: File Count (teal)
     ax_left.plot(versions, core_files, label="File Count", color="teal", marker="x")
     ax_left.set_ylabel("File Count", color="teal")
@@ -122,11 +149,7 @@ def page_core_system(pdf, versions, core_files, highlighted_versions, core_lines
             ax_left.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
 
     # Annotate the last file count data point with fixed offset (10 pts to the right)
-    ax_left.annotate(f'{core_files[-1]}',
-                     xy=(len(versions) - 1, core_files[-1]),
-                     xytext=(10, 0), textcoords='offset points',
-                     color="teal", fontsize=9,
-                     arrowprops=dict(arrowstyle="->", color="teal"))
+    _annotate_last_point(ax_left, len(versions) - 1, core_files[-1], f'{core_files[-1]}', "teal", y_offset=8)
 
     # Right y-axis: Lines of Code (purple)
     ax_right = ax_left.twinx()
@@ -135,11 +158,7 @@ def page_core_system(pdf, versions, core_files, highlighted_versions, core_lines
     ax_right.tick_params(axis='y', labelcolor="purple")
 
     # Annotate the last line count data point with fixed offset (10 pts to the right)
-    ax_right.annotate(f'{core_lines[-1]}',
-                      xy=(len(versions) - 1, core_lines[-1]),
-                      xytext=(10, -8), textcoords='offset points',
-                      color="purple", fontsize=9,
-                      arrowprops=dict(arrowstyle="->", color="purple"))
+    _annotate_last_point(ax_right, len(versions) - 1, core_lines[-1], f'{core_lines[-1]}', "purple", y_offset=-12)
 
     ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
     ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
@@ -153,7 +172,7 @@ def page_core_system(pdf, versions, core_files, highlighted_versions, core_lines
 def page_load_modules(pdf, versions, load_files, highlighted_versions, load_lines):
     #########################################################
     # Plot 2: Load Modules – File Count (left) and Lines of Code (right)
-    fig, ax_left = plt.subplots(figsize=(15, 8))
+    fig, ax_left = plt.subplots(figsize=_timeline_figsize(len(versions)))
     # Left y-axis: File Count (teal)
     ax_left.plot(versions, load_files, label="File Count", color="teal", marker="x")
     ax_left.set_ylabel("File Count", color="teal")
@@ -170,11 +189,7 @@ def page_load_modules(pdf, versions, load_files, highlighted_versions, load_line
 
     # Adjust annotation offsets so labels don't overlap:
     # For the file count (left axis), move upward; for lines (right axis), move downward.
-    ax_left.annotate(f'{load_files[-1]}',
-                     xy=(len(versions) - 1, load_files[-1]),
-                     xytext=(10, 10), textcoords='offset points',
-                     color="teal", fontsize=9,
-                     arrowprops=dict(arrowstyle="->", color="teal"))
+    _annotate_last_point(ax_left, len(versions) - 1, load_files[-1], f'{load_files[-1]}', "teal", y_offset=12)
 
     # Right y-axis: Lines of Code (purple)
     ax_right = ax_left.twinx()
@@ -182,11 +197,7 @@ def page_load_modules(pdf, versions, load_files, highlighted_versions, load_line
     ax_right.set_ylabel("Lines of Code", color="purple")
     ax_right.tick_params(axis='y', labelcolor="purple")
 
-    ax_right.annotate(f'{load_lines[-1]}',
-                      xy=(len(versions) - 1, load_lines[-1]),
-                      xytext=(10, -10), textcoords='offset points',
-                      color="purple", fontsize=9,
-                      arrowprops=dict(arrowstyle="->", color="purple"))
+    _annotate_last_point(ax_right, len(versions) - 1, load_lines[-1], f'{load_lines[-1]}', "purple", y_offset=-14)
 
     ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
     ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
@@ -203,7 +214,13 @@ def page_core_system_refs(pdf, core_refs_by_file, versions):
 
     skip_if_ref_under = 3
     excluded_files = []
-    fig, ax = plt.subplots(figsize=(15, 8))
+    included_files = [file for file, refs in core_refs_by_file.items() if refs[-1] > skip_if_ref_under]
+    fig, ax = plt.subplots(
+        figsize=(
+            min(max(16, 12 + max(0, len(versions) - 10) * 0.22), 42),
+            min(max(8, 7 + len(included_files) * 0.18), 18),
+        )
+    )
     for file, refs in core_refs_by_file.items():
         if refs[-1] <= skip_if_ref_under:
             excluded_files.append(f"{file} ({refs[-1]})")
@@ -214,22 +231,29 @@ def page_core_system_refs(pdf, core_refs_by_file, versions):
     ax.set_xticks(range(len(versions)))
     ax.set_xticklabels(versions, rotation=90, fontsize=8)
     ax.grid(True, linestyle="--", alpha=0.1)
-    ax.set_xlim([-0.5, len(versions) + 20])  # Extend x-axis to make space for annotations
+    annotation_margin = max(3, min(12, math.ceil(len(included_files) / 4) + 2))
+    excluded_margin = max(4, min(10, math.ceil(len(excluded_files) / 4) + 3)) if excluded_files else 0
+    right_margin = annotation_margin + excluded_margin
+    ax.set_xlim([-0.5, len(versions) - 0.5 + right_margin])
     # Annotate the last data point of each file with its filename and value
+    visible_index = 0
     for file, refs in core_refs_by_file.items():
         last_index = len(versions) - 1
         last_value = refs[-1]
         if last_value <= skip_if_ref_under:
             continue
+        y_offset = ((visible_index % 6) - 2.5) * 7
         ax.annotate(f"{file} ({last_value})",
                     xy=(last_index, last_value),
-                    xytext=(15, 0), textcoords='offset points',
+                    xytext=(12, y_offset), textcoords='offset points',
                     fontsize=8, color='white',
                     verticalalignment='center', horizontalalignment='left')
+        visible_index += 1
     # Display excluded files list
     if excluded_files:
         excluded_text = "\n".join(excluded_files)
-        ax.text(len(versions) + 10, max(max(core_refs_by_file.values(), key=max)) / 4,
+        ax.text(len(versions) - 0.5 + annotation_margin + excluded_margin * 0.25,
+                max(max(core_refs_by_file.values(), key=max)) / 4,
                 f"Excluded Files:\n{excluded_text}", fontsize=8, color='white',
                 verticalalignment='center', horizontalalignment='left')
     plt.title("Core References Evolution Per File", fontweight="bold", fontsize=TITLE_FONT_SIZE)
@@ -240,7 +264,7 @@ def page_core_system_refs(pdf, core_refs_by_file, versions):
 def page_pylint_scores(pdf, versions, core_scores, load_scores, highlighted_versions):
     #########################################################
     # Plot 4: Core and Load Scores
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=_timeline_figsize(len(versions)))
     ax.plot(versions, core_scores, label="Core Score", color="brown", marker="o")
     ax.plot(versions, load_scores, label="Load Score", color="grey", marker="x")
     ax.set_ylabel("Scores")
@@ -262,7 +286,7 @@ def page_pylint_scores(pdf, versions, core_scores, load_scores, highlighted_vers
 def page_dep_warnings(pdf, versions, dependency_warnings):
     #########################################################
     # Plot 5: Dependency Warnings
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=_timeline_figsize(len(versions)))
     ax.plot(versions, dependency_warnings, label="Dependency Warnings", color="brown", marker="o")
     ax.set_ylabel("Warnings")
     ax.set_xlabel("Versions")
@@ -279,9 +303,9 @@ def page_dep_warnings(pdf, versions, dependency_warnings):
 def page_commit_log(pdf, meta_data):
     #########################################################
     # Plot 6: Commit Log (Table fitted to page height with text truncation)
-    wrap_width = 105  # Maximum characters per line for wrapping
-    max_lines = 1  # Maximum number of lines allowed per commit message cell
-    meta_data = meta_data[-MAX_COMMIT_HISTORY:]  # Set last 40 lines of comments
+    meta_data = meta_data[:MAX_COMMIT_HISTORY]
+    wrap_width = 120 if len(meta_data) < 20 else 96
+    max_lines = 1 if len(meta_data) > 28 else 2
     table_data = [["Version", "Commit ID", "Message"]]
     for entry in meta_data:
         truncated_message = truncate_message(entry["message"], wrap_width, max_lines)
@@ -289,28 +313,28 @@ def page_commit_log(pdf, meta_data):
 
     num_rows = len(table_data)
 
-    # Set figure size to fill most of the PDF page (adjust as needed)
-    fig, ax = plt.subplots(figsize=(15, 11))
+    fig, ax = plt.subplots(figsize=_table_figsize(num_rows, width=18, row_height=0.36 if max_lines == 1 else 0.5))
     ax.axis('off')  # Hide axes for a clean table look
 
     # Create the table; using loc='center' so we can later force cell heights
     table = ax.table(cellText=table_data,
                      loc='center',
                      cellLoc='left',
-                     colWidths=[0.06, 0.3, 0.64])
+                     colWidths=[0.08, 0.20, 0.72])
 
     # Force a fixed font size for clarity
-    font_size = 12 if len(meta_data) < 10 else 10
+    font_size = 12 if len(meta_data) < 10 else 10 if len(meta_data) < 30 else 8
     table.auto_set_font_size(False)
     table.set_fontsize(font_size)
 
     # Adjust each cell’s height so that the table fits the full page height.
     # We leave a small vertical margin (here 0.90 of the figure height is used for the table).
-    cell_height = 1 / num_rows
+    cell_height = min(0.09, 0.92 / max(1, num_rows))
     for key, cell in table.get_celld().items():
         cell.set_height(cell_height)
         cell.set_edgecolor("gray")
         cell.get_text().set_color("white")
+        cell.get_text().set_wrap(True)
         # Header formatting
         if key[0] == 0:
             cell.set_facecolor("#404040")
@@ -320,7 +344,9 @@ def page_commit_log(pdf, meta_data):
 
     # Adjust margins so that the table fills the entire figure height.
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
-    plt.title(f"Version Commit History (last {MAX_COMMIT_HISTORY})", fontweight="bold", fontsize=16)
+    newest_version = meta_data[0]["version"] if meta_data else "n/a"
+    oldest_version = meta_data[-1]["version"] if meta_data else "n/a"
+    plt.title(f"Version Commit History (newest first: {newest_version} -> {oldest_version})", fontweight="bold", fontsize=16)
     pdf.savefig(fig)
     plt.close(fig)
 
@@ -335,7 +361,7 @@ def page_contributors(pdf, user_data):
     # Bar chart for minor contributors
     if minor_contributors:
         users, contributions = zip(*sorted(minor_contributors.items(), key=lambda x: x[1], reverse=True))
-        fig, ax = plt.subplots(figsize=(15, 8))
+        fig, ax = plt.subplots(figsize=_bar_figsize(len(users), base_width=14, width_per_bar=0.7))
         bars = ax.bar(users, contributions, color="steelblue")
 
         # Highlight the owner distinctly and separate major vs minor contributors
@@ -355,7 +381,7 @@ def page_contributors(pdf, user_data):
         ax.set_ylabel("Contribution (%)")
         ax.set_xlabel("Contributors")
         ax.set_xticks(range(len(users)))
-        ax.set_xticklabels(users, rotation=45, ha="right", fontsize=10)
+        ax.set_xticklabels(users, rotation=45, ha="right", fontsize=9 if len(users) > 12 else 10)
         ax.grid(axis="y", linestyle="--", alpha=0.3)
 
         plt.title("Project Contributors", fontweight="bold", fontsize=14)
@@ -383,23 +409,33 @@ def page_contributors_areas(pdf, contributors_areas):
     # Get a sorted list of contributors to maintain consistent order
     contributors = list(contributors_areas.keys())
     num_contributors = len(contributors)
+    if num_contributors == 0:
+        return
 
-    # Create a subplot for each contributor
-    fig, axs = plt.subplots(1, num_contributors, figsize=(15, 10))
-    # When there is only one contributor, axs is not a list
-    if num_contributors == 1:
+    cols = min(3, num_contributors)
+    rows = math.ceil(num_contributors / cols)
+    fig, axs = plt.subplots(rows, cols, figsize=(cols * 6.2, max(8, rows * 5.6)))
+    if rows == 1 and cols == 1:
         axs = [axs]
+    else:
+        axs = list(getattr(axs, "flat", axs))
 
     for ax, user in zip(axs, contributors):
         # Sort the file list alphabetically for the current contributor
         files_sorted = sorted(contributors_areas[user])
+        max_lines = max(16, int(62 - (rows - 1) * 8))
+        if len(files_sorted) > max_lines:
+            files_sorted = files_sorted[:max_lines - 1] + [f"... (+{len(contributors_areas[user]) - max_lines + 1} more)"]
         # Display the username in bold at the top
         ax.text(0.05, 0.95, user, transform=ax.transAxes,
                 va="top", ha="left", fontsize=12, family="monospace", fontweight="bold")
         # Leave an empty line and list the files below in alphabetical order
         ax.text(0.05, 0.90, "\n".join(files_sorted), transform=ax.transAxes,
-                va="top", ha="left", fontsize=10, family="monospace")
+                va="top", ha="left", fontsize=9, family="monospace", wrap=True)
         ax.axis("off")  # Hide axis lines and ticks
+
+    for ax in axs[num_contributors:]:
+        ax.axis("off")
 
     # Add an overall title for the page
     fig.suptitle("Contributors' File Changes", fontsize=16, fontweight="bold")
@@ -424,7 +460,12 @@ def visualize_device_metrics(pdf, data):
     num_plots = len(time_metrics) + 2  # +2 for memory and filesystem plots
 
     # Ensure the number of subplots matches the number of metrics
-    fig, axes = plt.subplots(num_plots, 1, figsize=(15, 6 * num_plots))
+    max_devices = 0
+    for devices in data.values():
+        for device_list in devices.values():
+            max_devices = max(max_devices, len(device_list))
+    fig_width = min(max(15, 11 + max_devices * 1.4), 42)
+    fig, axes = plt.subplots(num_plots, 1, figsize=(fig_width, 6 * num_plots))
     if num_plots == 1:
         axes = [axes]  # Ensure iterable for a single metric case
 
@@ -436,6 +477,9 @@ def visualize_device_metrics(pdf, data):
                 device_types[device_type] = []
             for device, metrics in device_list.items():
                 device_types[device_type].append((f"{device}:{version}", metrics))
+
+    for device_type, devices in device_types.items():
+        device_types[device_type] = sorted(devices, key=lambda item: item[0].lower())
 
     # Plot all _ms metrics dynamically
     for i, metric in enumerate(sorted(time_metrics)):  # Sort for consistency
@@ -449,7 +493,7 @@ def visualize_device_metrics(pdf, data):
             for bar, value in zip(bars, values):
                 ax.annotate(f"{value} ms",
                             xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                            ha='center', va='bottom', fontsize=10, fontweight='bold')
+                            ha='center', va='bottom', fontsize=8, fontweight='bold', rotation=0)
         ax.set_ylabel("Time (ms)")
         ax.legend()
         ax.tick_params(axis='x', rotation=45)
@@ -465,12 +509,15 @@ def visualize_device_metrics(pdf, data):
         for i, bar in enumerate(bars):
             kb_value = mem_used[i]
             modules = devices[i][1].get("modules", [])
-            modules_str = ",\n".join(modules)
+            modules_preview = modules[:6]
+            modules_str = ",\n".join(modules_preview)
+            if len(modules) > len(modules_preview):
+                modules_str += f"\n... (+{len(modules) - len(modules_preview)} more)"
             annotation_text = f"{kb_value:.1f} KB\nModules({len(modules)}):\n{modules_str}"
             ax.annotate(annotation_text,
                         xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
                         ha='center', va='bottom',
-                        fontsize=10, fontweight='bold')
+                        fontsize=8, fontweight='bold')
     ax.set_ylabel("Memory Usage (%)")
     ax.set_ylim(0, 110)
     ax.legend()
@@ -488,7 +535,7 @@ def visualize_device_metrics(pdf, data):
         for bar, value in zip(bars, fs_used):
             ax.annotate(f"{value:.1f} KB\n55+ Modules",
                         xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                        ha='center', va='bottom', fontsize=10, fontweight='bold')
+                        ha='center', va='bottom', fontsize=8, fontweight='bold')
     ax.set_ylabel("Filesystem Usage (%)")
     ax.set_ylim(0, 80)
     ax.legend()
@@ -496,6 +543,8 @@ def visualize_device_metrics(pdf, data):
 
     for ay in axes:
         ay.yaxis.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+        ay.tick_params(axis='x', labelsize=8)
+        plt.setp(ay.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
 
     # Save the figure
     fig.tight_layout()

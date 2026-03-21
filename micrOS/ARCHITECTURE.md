@@ -105,6 +105,7 @@ flowchart LR
 | `irq1..irq4`, `irq*_cbf`, `irq*_trig` | Enables external event interrupts |
 | `webui`, `webui_max_con` | Enables HTTP server and bounds web memory usage |
 | `espnow` | Enables ESP-NOW server path |
+| `ha` | Enables watchdog startup and periodic STA self-heal checks |
 | `cstmpmap` | Selects board pin map and overrides |
 | `boostmd` | Sets CPU frequency policy |
 | `aioqueue` | Governs LM task queue and affects pool sizing |

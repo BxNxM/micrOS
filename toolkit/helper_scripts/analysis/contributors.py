@@ -2,7 +2,9 @@ import subprocess
 import json
 
 OUTPUT_JSON = "analysis_workdir/contributions.json"
-USER_ALIASES = {"Bán Marcell": 'BNM', "Kasza Kristof": 'KKristof452', "Kristóf Kasza": 'KKristof452', "Kristof Kasza": "KKristof452"}
+USER_ALIASES = {"Bán Marcell": 'BNM',
+                "Kasza Kristof": 'KKristof452', "Kristóf Kasza": 'KKristof452', "Kristof Kasza": "KKristof452",
+                "Florian": "fmandl"}
 
 def get_contributions():
     # Get the list of all contributors

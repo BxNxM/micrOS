@@ -19,7 +19,7 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from Config import cfgget, cfgput
 from Debug import console_write, syslog
-from Tasks import exec_lm_pipe
+from Tasks import TaskBase, exec_lm_pipe
 from Auth import resolve_secret
 from machine import freq
 try:
@@ -36,6 +36,10 @@ def bootup():
     """
     Executes when system boots up.
     """
+    # Apply resource tuning before running user boot: queue/performance policy
+    boot_cause()            # Load and Save boot cause
+    _tune_queue_size()      # Autotune queue size
+
     # Execute LMs from boothook config parameter
     console_write("[BOOT] EXECUTION...")
     bootasks = cfgget('boothook')
@@ -46,10 +50,6 @@ def bootup():
         else:
             console_write("|-[BOOT] ERROR")
 
-    # Load and Save boot cause
-    boot_cause()
-    # Autotune queue size
-    _tune_queue_size()
     # Configure CPU performance
     _tune_performance()
 
@@ -64,8 +64,11 @@ def _tune_queue_size():
     est_queue = max(est_queue, min_queue)
     est_queue = min(est_queue, max_queue)
     current_queue = cfgget('aioqueue')
-    if est_queue > current_queue:
-        cfgput('aioqueue', est_queue)
+    # Preserve user tuning, only clamp down when configured queue is too large for current RAM.
+    tuned_queue = min(current_queue, est_queue)
+    TaskBase.QUEUE_SIZE = tuned_queue
+    if tuned_queue != current_queue:
+        cfgput('aioqueue', tuned_queue)
 
 
 def _tune_performance():

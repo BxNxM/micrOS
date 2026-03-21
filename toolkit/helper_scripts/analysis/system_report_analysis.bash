@@ -39,6 +39,10 @@ function collect_sys_analysis_resources() {
       # Create target path
       save_version_json="$analysis_workdir/$version.json"
       save_version_meta="$analysis_workdir/$version.meta"
+      if [[ -e "$save_version_json" || -e "$save_version_meta" ]]; then
+        debug_print "[${changes_cnt}] Skip older duplicate for version ${version}: $commit_hash"
+        continue
+      fi
       debug_print "[${changes_cnt}] Change in system_analysis_sum.json - Commit: $commit_hash\n\t${commit_message}\n\tSave to $save_version_json"
       echo "${analysis_content}" > "$save_version_json"
       echo "${commit_hash}: ${commit_message}" > "$save_version_meta"

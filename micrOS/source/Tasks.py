@@ -453,7 +453,7 @@ class Manager:
         if _task is None:
             return False
         # Get task output
-        if tag is None:
+        if msg is None:
             return _task.out
         # Set task output
         _task.out = msg

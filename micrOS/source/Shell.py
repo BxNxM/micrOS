@@ -25,7 +25,7 @@ from Debug import syslog
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '2.29.0-0'
+    MICROS_VERSION = '2.30.0-0'
 
     def __init__(self):
         """
@@ -139,6 +139,7 @@ class Shell:
                 # reboot / reboot -h
                 hard = True
             await self.reboot(hard)
+            return True
 
         if is_local_cmd and msg_list[0].startswith('webrepl'):
             if len(msg_list) == 2 and '-u' in msg_list[1]:

@@ -1,6 +1,6 @@
 # micrOS Architecture
 
-**Heigh level architecture**
+**High level architecture**
 ![MICROSARCHITECTURE](./../media/micrOSArchitecture.png?raw=true)
 
 ## Purpose
@@ -113,23 +113,34 @@ flowchart LR
 
 micrOS uses practical lazy loading, not aggressive eviction.
 
-### Core idea
+The mandatory runtime stays resident, while optional subsystems and feature modules are loaded only when configuration or execution flow requires them.
 
-The mandatory runtime stays resident, while optional subsystems and feature modules are loaded only when configuration or command flow requires them.
+### Config-driven loading
 
-### User-input and event-triggered loading
+These modules are imported only when boot configuration enables the related feature path:
 
-Besides config-gated imports, micrOS also defers some resources until a user command or runtime event selects that path.
+| Module / family | Load condition | Trigger file |
+| --- | --- | --- |
+| `Scheduler` | `cron = true` | `Interrupts.py` |
+| `Web.WebEngine` | `webui = true` | `Server.py` |
+| `Espnow.ESPNowSS` | `espnow = true` | `Hooks.py`, `InterConnect.py` |
+| `Time.ntp_time`, `Time.suntime` | STA mode selected at boot | `micrOS.py` |
+| `Time.uptime` | AP / non-STA path | `micrOS.py` |
+| `micropython.mem_info` | `dbg = true` and profiling is invoked | `Hooks.py` |
+| `microIO.detect_platform` | CPU tuning path | `Hooks.py` |
 
-Examples already present in `/micrOS/source`:
+### Action-driven loading
 
-- `Tasks.exec_builtins(...)` imports `InterConnect.send_cmd` only when a command ends with `>>hostname`
-- `Tasks._exec_lm_core(...)` imports `LM_<module>` only on first command, hook, IRQ, or REST execution of that module
-- `microIO.__resolve_pin(...)` imports the selected `IO_*` map only when a logical pin must actually be resolved
-- `Shell.webrepl(...)` imports `webrepl` only when the shell command requests it
-- `micrOSloader.__recovery_mode()` imports `webrepl` only when boot falls into recovery mode
+These modules are imported only when user commands, callbacks, or runtime actions actually touch the feature:
 
-This keeps transport helpers, board maps, and feature modules out of the default steady-state footprint until command flow or boot mode actually needs them.
+| Module / family | Load condition | Trigger file |
+| --- | --- | --- |
+| `LM_*` | First command / hook / IRQ / REST execution | `Tasks.py` |
+| `InterConnect.send_cmd` | First remote command using `>>host` | `Tasks.py` |
+| `IO_*` | First physical pin resolution | `microIO.py` |
+| `webrepl` | Recovery boot mode or explicit shell command | `micrOSloader.py`, `Shell.py` |
+
+This keeps transport helpers, board maps, and feature modules out of the default steady-state footprint until boot policy or runtime behavior actually needs them.
 
 ### Load module path
 
@@ -150,35 +161,6 @@ sequenceDiagram
     LM-->>Core: result
     Core-->>Tasks: formatted output
 ```
-
-### What is lazy-loaded
-
-- `LM_*` modules are imported on first execution from `Tasks._exec_lm_core(...)`
-- `InterConnect.send_cmd` is imported on first remote execution request (`>>host`) from `Tasks.exec_builtins(...)`
-- `Scheduler` is imported only when `cron` is enabled
-- `Web.WebEngine` is imported only when `webui` is enabled
-- `Espnow.ESPNowSS` is imported only when `espnow` is enabled
-- `IO_*` board maps are imported only when a pin must be resolved
-- `webrepl` is imported only in recovery mode or on explicit shell request
-
-### Optionally loaded modules
-
-The following modules or module families are not part of the mandatory default boot footprint and load only when their feature path is activated:
-
-| Module | Load condition | Trigger file |
-| --- | --- | --- |
-| `LM_*` | First command / hook / IRQ / REST execution | `Tasks.py` |
-| `InterConnect` | First remote command using `>>host` | `Tasks.py` |
-| `Scheduler` | `cron = true` | `Interrupts.py` |
-| `Web.WebEngine` | `webui = true` | `Server.py` |
-| `Espnow.ESPNowSS` | `espnow = true` | `Hooks.py`, `InterConnect.py` |
-| `IO_*` | First physical pin resolution | `microIO.py` |
-| `Time.ntp_time`, `Time.suntime` | STA mode only | `micrOS.py` |
-| `Time.uptime` | AP / non-STA path | `micrOS.py` |
-| `webrepl` | Recovery boot mode or shell command | `micrOSloader.py`, `Shell.py` |
-| `micropython.mem_info` | `dbg = true` and profiling call | `Hooks.py` |
-| `machine.reset_cause` constants | Boot-cause evaluation | `Hooks.py` |
-| `microIO.detect_platform` | CPU tuning path | `Hooks.py` |
 
 ### What remains resident
 

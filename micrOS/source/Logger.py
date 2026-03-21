@@ -41,7 +41,7 @@ def logger(data, f_name:str, limit:int):
     """
     def _logger(f_mode='r+'):
         nonlocal data, f_path, limit
-        limit = min(limit, 30)  # Hardcoded max data line = 30
+        limit = 1 if limit <= 0 else min(limit, 30)  # Hardcoded max data line = 30
         # [1] GET TIME STUMP
         ts_buff = [str(k) for k in localtime()]
         ts = ".".join(ts_buff[0:3]) + "-" + ":".join(ts_buff[3:6])
@@ -57,7 +57,8 @@ def logger(data, f_name:str, limit:int):
             # line data rotate
             if lines_len >= limit:
                 lines = lines[-limit:]
-            # write file
+        # write file
+        with open(f_path, 'w') as f:
             f.write(''.join(lines))
 
     f_path = path_join(_dir_select(f_name), f_name)
@@ -106,7 +107,7 @@ def syslog(data=None, msgobj=None):
     """
     if data is None:
         # READ LOGS
-        err_cnt = sum([log_get(f, msgobj) for f in ilist_fs(OSPath.LOGS, type_filter='f') if f.endswith(".sys.log")])
+        err_cnt = sum(log_get(f, msgobj) for f in ilist_fs(OSPath.LOGS, type_filter='f') if f.endswith(".sys.log"))
         return err_cnt
     # WRITE LOGS - [target].sys.log automatic log level detection
     _match = match(r"^\[([^\[\]]+)\]", data)

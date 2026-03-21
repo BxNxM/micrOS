@@ -98,7 +98,8 @@ class Config:
         return getattr(self, key)
 
     def set(self, key, value):
-        setattr(self, key, value)
+        if type(self).keys(key):
+            setattr(self, key, value)
 
     @classmethod
     def keys(cls, key=None):
@@ -142,13 +143,15 @@ class Config:
     def _inject_default_conf(cls):
         # Load config and template
         liveconf = cls.read_cfg_file(nosafe=True)
+        _persist = False
         # Remove obsolete keys from conf
         try:
             remove('.cleanup')       # Try to remove .cleanup (cleanup indicator by micrOSloader)
             console_write("[CONF] Purge obsolete keys")
             for key in tuple(liveconf):
-                if not cls.keys(key):
+                if key not in cls.__slots__:
                     liveconf.pop(key, None)
+                    _persist = True
         except Exception:
             console_write("[CONF] SKIP obsolete keys check (no .cleanup)")
         # Merge template to live conf
@@ -156,9 +159,15 @@ class Config:
             cls.INSTANCE.set(key, value)
         console_write("[CONF] User config injection done")
         try:
-            # [LOOP] Only returns True
-            cls.write_cfg_file()
-            console_write("[CONF] Save conf successful")
+            if not _persist:
+                for key in cls.__slots__:
+                    if key not in liveconf:
+                        _persist = True
+                        break
+            if _persist:
+                # Only persist when migration cleanup removed keys or defaults are missing from the file.
+                cls.write_cfg_file()
+                console_write("[CONF] Save conf successful")
         except Exception as e:
             syslog(f"[ERR] Save (__inject) conf failed: {e}")
         finally:

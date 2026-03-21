@@ -162,13 +162,14 @@ def request(method:str, url:str, data:str=None, json=None, headers:dict=None, so
         receive = sock.recv                         # Save Read object
 
     # [3] RECEIVE RESPONSE
-    response = receive(sock_size)
+    response_parts = [receive(sock_size)]
     while True:
         data = receive(sock_size)
         if not data:
             break
-        response += data
+        response_parts.append(data)
     sock.close()
+    response = b"".join(response_parts)
 
     # [4] PARSE RESPONSE
     status_code, body = _parse_response(response)
@@ -218,12 +219,13 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
         await writer.drain()
 
         # Receive response
-        response = b''
+        response_parts = []
         while True:
             chunk = await reader.read(sock_size)
             if not chunk:
                 break
-            response += chunk
+            response_parts.append(chunk)
+        response = b''.join(response_parts)
 
         # Parse response
         status_code, body = _parse_response(response)

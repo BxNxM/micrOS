@@ -549,6 +549,8 @@ Version **3.X.0-0** `micrOS-SecurePower`
 <a id="release-note"></a>
 ## Release notes
 
+[Development Metrics](toolkit/helper_scripts/analysis/timeline_visualization.pdf)
+
 |  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |  SUPPORTED DEVICE(S) | APP PROFILES | Load Modules  |     NOTE       |
 | :----------: | :----------------: | :------------------------:   |  :-----------------: | :------------: | :------------:| -------------- |
 |  **v0.1.0-0** | [release_Info-0.1.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| **78,4%** 29 776 byte | esp8266 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_0.1.0-0.json)| Stable Core with applications - first release

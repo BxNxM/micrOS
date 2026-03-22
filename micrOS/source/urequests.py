@@ -37,32 +37,21 @@ def _host_to_addr(host, port, force=False):
 def _chunked(_body):
     decoded = bytearray()
     while _body:
-        # Find the end of the chunk size line
         line_end = _body.find(b"\r\n")
         if line_end < 0:
             break
-
-        # Extract the chunk size and convert to int
-        chunk_size_str = _body[:line_end]
         try:
-            chunk_size = int(chunk_size_str, 16)
+            chunk_size = int(bytes(_body[:line_end]).decode('ascii'), 16)
         except ValueError:
-            chunk_size = 0
-
-        # Check chunk size
+            break
         if chunk_size == 0:
             break
-
-        # Add the chunk data to the decoded data
-        chunk_data = _body[line_end + 2: line_end + 2 + chunk_size]
-        decoded += chunk_data
-
-        # Move to the next chunk
-        _body = _body[line_end + 4 + chunk_size:]
-
-        # Check for end of message marker again
-        if not _body.startswith(b"\r\n"):
+        data_start = line_end + 2
+        data_end = data_start + chunk_size
+        decoded.extend(_body[data_start:data_end])
+        if _body[data_end:data_end + 2] != b"\r\n":
             break
+        _body = _body[data_end + 2:]
     return decoded
 
 
@@ -78,38 +67,100 @@ def _parse_url(url):
 
 
 def _build_request(host, method, path, headers, data=None, json=None):
-    # Create request (body, headers)
-    body = None
-    if data:
-        body = data.encode('utf-8')
+    body = b'' if data is None and json is None else \
+           data.encode('utf-8') if data is not None else dumps(json).encode('utf-8')
+    if body:
         headers['Content-Length'] = len(body)
-    elif json:
-        body = dumps(json).encode('utf-8')
-        headers['Content-Length'] = len(body)
+    if json is not None:
         headers['Content-Type'] = 'application/json'
 
-    # [3.1] Create request lines list (body)
-    lines = [f'{method} /{path} HTTP/1.1']
+    req = bytearray(f'{method} /{path} HTTP/1.1\r\n'.encode('utf-8'))
     for k, v in headers.items():
-        lines.append(f'{k}: {v}')
-    lines.append('Host: %s' % host)
-    lines.append('Connection: close')
-    http_request = '\r\n'.join(lines) + '\r\n\r\n'
-    if body:
-        http_request += body.decode('utf-8')
-    return http_request
+        req.extend(f'{k}: {v}\r\n'.encode('utf-8'))
+    req.extend(f'Host: {host}\r\nConnection: close\r\n\r\n'.encode('utf-8'))
+    req.extend(body)
+    return req
 
 
-def _parse_response(response):
-    # Parse response - get body
-    headers, body = response.split(b'\r\n\r\n', 1)
-    status_code = int(headers.split(b' ')[1])
-    headers = dict(h.split(b': ') for h in headers.split(b'\r\n')[1:])
+def _parse_response_head(raw):
+    header_end = raw.find(b'\r\n\r\n')
+    if header_end == -1:
+        raise ValueError("Invalid HTTP response")
+    headers_raw = bytes(raw[:header_end])
+    status_code = int(headers_raw.split(b' ', 2)[1].decode('ascii'))
+    headers = {}
+    for line in headers_raw.split(b'\r\n')[1:]:
+        if b': ' in line:
+            key, value = line.split(b': ', 1)
+            headers[key] = value
+    return status_code, headers, header_end + 4
+
+
+def _body_requires_more(headers, body):
     if headers.get(b'Transfer-Encoding', b'') == b'chunked':
-        body = _chunked(body)
-    else:
-        body = body.decode('utf-8')
-    return status_code, body
+        return not body.endswith(b'0\r\n\r\n')
+    content_len = headers.get(b'Content-Length')
+    if content_len is not None:
+        return len(body) < int(content_len.decode('ascii'))
+    return True
+
+
+def _finalize_body(headers, body):
+    if headers.get(b'Transfer-Encoding', b'') == b'chunked':
+        return bytes(_chunked(body))
+    content_len = headers.get(b'Content-Length')
+    if content_len is not None:
+        body = body[:int(content_len.decode('ascii'))]
+    return body.decode('utf-8')
+
+
+def _sock_write(sock, data):
+    try:
+        return sock.write(data)
+    except AttributeError:
+        return sock.send(data)
+
+
+def _sock_read_factory(sock):
+    return sock.read if hasattr(sock, "read") else sock.recv
+
+
+def _read_response(receive, sock_size):
+    raw = bytearray()
+    while b'\r\n\r\n' not in raw:
+        chunk = receive(sock_size)
+        if not chunk:
+            break
+        raw.extend(chunk)
+    status_code, headers, body_start = _parse_response_head(raw)
+    body = raw[body_start:]
+    while _body_requires_more(headers, body):
+        chunk = receive(sock_size)
+        if not chunk:
+            break
+        body.extend(chunk)
+        if headers.get(b'Content-Length') is None and headers.get(b'Transfer-Encoding', b'') != b'chunked':
+            continue
+    return status_code, _finalize_body(headers, body)
+
+
+async def _aread_response(reader, sock_size):
+    raw = bytearray()
+    while b'\r\n\r\n' not in raw:
+        chunk = await reader.read(sock_size)
+        if not chunk:
+            break
+        raw.extend(chunk)
+    status_code, headers, body_start = _parse_response_head(raw)
+    body = raw[body_start:]
+    while _body_requires_more(headers, body):
+        chunk = await reader.read(sock_size)
+        if not chunk:
+            break
+        body.extend(chunk)
+        if headers.get(b'Content-Length') is None and headers.get(b'Transfer-Encoding', b'') != b'chunked':
+            continue
+    return status_code, _finalize_body(headers, body)
 
 
 #############################################
@@ -145,37 +196,34 @@ def request(method:str, url:str, data:str=None, json=None, headers:dict=None, so
         sock.connect(addr)
 
     try:
-        sock = wrap_socket(sock) if proto == 'https:' else sock
+        if proto == 'https:':
+            try:
+                sock = wrap_socket(sock, server_hostname=host)
+            except TypeError:
+                sock = wrap_socket(sock)
+        else:
+            sock = sock
     except Exception as e:
         syslog(f'[ERR] https soc-wrap: {e}')
+        raise
 
     # [1] BUILD REQUEST
     http_request = _build_request(host, method, path, headers, data, json)
 
     # [2] SEND REQUEST
-    if proto == 'https:':
-        sock.write(http_request.encode('utf-8'))    # Send request (secure)
-        receive = sock.read                         # Save Read object (secure)
-    else:
-        # Send request
-        sock.send(http_request.encode('utf-8'))     # Send request
-        receive = sock.recv                         # Save Read object
+    try:
+        _sock_write(sock, http_request)
+        receive = _sock_read_factory(sock)
 
-    # [3] RECEIVE RESPONSE
-    response_parts = [receive(sock_size)]
-    while True:
-        data = receive(sock_size)
-        if not data:
-            break
-        response_parts.append(data)
-    sock.close()
-    response = b"".join(response_parts)
-
-    # [4] PARSE RESPONSE
-    status_code, body = _parse_response(response)
+        # [3][4] RECEIVE + PARSE RESPONSE
+        status_code, body = _read_response(receive, sock_size)
+    finally:
+        sock.close()
 
     # Return status code, body (text or json)
-    return status_code, loads(body) if jsonify and status_code == 200 else body
+    if jsonify and status_code == 200:
+        return status_code, loads(body.decode('utf-8') if isinstance(body, (bytes, bytearray)) else body)
+    return status_code, body
 
 
 #############################################
@@ -196,7 +244,6 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
     headers = {} if headers is None else headers
     host, port, proto, path = _parse_url(url)
     addr = _host_to_addr(host, port)
-    reader, writer = None, None
 
     # Open a connection
     try:
@@ -205,9 +252,16 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
         # Refresh host address & reconnect
         if "EHOSTUNREACH" in str(e):
             addr = _host_to_addr(host, port, force=True)
-            reader, writer = await asyncio.open_connection(addr[0], port, ssl=(proto == 'https:'))
+            try:
+                reader, writer = await asyncio.open_connection(addr[0], port, ssl=(proto == 'https:'))
+            except Exception as e2:
+                body = f"[ERR] arequest connection: {e2}"
+                syslog(body)
+                return 500, {} if jsonify else body
         else:
-            syslog(f"[ERR] arequest connection: {e}")
+            body = f"[ERR] arequest connection: {e}"
+            syslog(body)
+            return 500, {} if jsonify else body
 
     # Send request + Wait for the response
     try:
@@ -215,20 +269,11 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
         http_request = _build_request(host, method, path, headers, data, json)
 
         # Send the request
-        writer.write(http_request.encode('utf-8'))
+        writer.write(http_request)
         await writer.drain()
 
         # Receive response
-        response_parts = []
-        while True:
-            chunk = await reader.read(sock_size)
-            if not chunk:
-                break
-            response_parts.append(chunk)
-        response = b''.join(response_parts)
-
-        # Parse response
-        status_code, body = _parse_response(response)
+        status_code, body = await _aread_response(reader, sock_size)
     except Exception as e:
         status_code = 500
         # https://github.com/micropython/micropython/blob/8785645a952c03315dbf93667b5f7c7eec49762f/cc3200/simplelink/include/device.h
@@ -243,7 +288,9 @@ async def arequest(method:str, url:str, data:str=None, json=None, headers:dict=N
         if writer:
             writer.close()
             await writer.wait_closed()
-    return status_code, loads(body) if jsonify and status_code == 200 else body
+    if jsonify and status_code == 200:
+        return status_code, loads(body.decode('utf-8') if isinstance(body, (bytes, bytearray)) else body)
+    return status_code, body
 
 
 #############################################

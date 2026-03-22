@@ -270,10 +270,11 @@ class SmartADC:
         ADC.ATTN_11DB: 11 dB ... of 0-2450mV/
     Note that the absolute maximum voltage rating for input pins is 3.6V. Going near to this boundary risks damage to the IC!
     """
+    __slots__ = ("adc_prop", "adc")
     OBJS = {}
 
     def __init__(self, pin):
-        self.adp_prop = (65535, 2450)                               # raw value, 2450mV (so 2,45V)
+        self.adc_prop = (65535, 2450)                               # raw value, 2450mV (so 2,45V)
         self.adc = None
         if not isinstance(pin, int):
             pin = resolve_pin(pin)
@@ -282,8 +283,8 @@ class SmartADC:
 
     def get(self):
         raw = int((self.adc.read_u16() + self.adc.read_u16())/2)    # 16-bit ADC value (0-65535)
-        percent = raw / self.adp_prop[0]
-        volt = round(percent * self.adp_prop[1] / 1000, 2)          # devide with 1000 to get V from mV
+        percent = raw / self.adc_prop[0]
+        volt = round(percent * self.adc_prop[1] / 1000, 2)          # devide with 1000 to get V from mV
         return {'raw': raw, 'percent': round(percent*100, 1), 'volt': volt}
 
     @staticmethod
@@ -298,6 +299,8 @@ class AnimationPlayer:
     """
     Generic async animation (generator) player.
     """
+    __slots__ = ("animation", "batch_draw", "__max_batch_size", "__batch_size",
+                 "__loop", "_player_speed_ms", "_task_tag", "__running")
 
     def __init__(self, animation:callable=None, tag:str=None, batch_draw:bool=False, batch_size:int=None, loop:bool=True):
         """

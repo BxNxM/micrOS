@@ -10,6 +10,10 @@ import io
 from pathlib import Path
 
 
+def setUpModule():
+    print(f"== RUN {Path(__file__).name} ==")
+
+
 def _load_web_module():
     here = Path(__file__).resolve()
     web_engine_path = (here.parent.parent / "source" / "Web.py").resolve()

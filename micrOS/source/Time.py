@@ -123,8 +123,9 @@ def suntime():
     :return: sun dict {'sunset': (h:m:s), 'sunrise': (h:m:s)}
     """
 
-    if not cfgget('cron'):
-        msg = f"Cron: {cfgget('cron')} - SKIP sync"
+    cron = cfgget('cron')
+    if not cron:
+        msg = f"Cron: {cron} - SKIP sync"
         console_write(msg)
         return msg
 
@@ -135,7 +136,10 @@ def suntime():
     url = 'http://ip-api.com/json/?fields=lat,lon,timezone,offset'
     response = {}
     try:
-        _, response = http_get(url, jsonify=True)
+        status, response = http_get(url, jsonify=True)
+        if status != 200 or not isinstance(response, dict):
+            syslog(f'[ERR] ip-api: invalid response status={status} data: {response}')
+            return Sun.TIME
         lat = response.get('lat')
         lon = response.get('lon')
         Sun.UTC = int(response.get('offset') / 60)      # IN MINUTE
@@ -148,13 +152,19 @@ def suntime():
     # Get sunrise, sunset date times by lon, lat params
     sun = {'sunrise': (), 'sunset': ()}
     if not (lat is None or lon is None):
-        url = f'http://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'
+        url = f'https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0'
         try:
-            _, response = http_get(url, sock_size=512, jsonify=True)
-            results = response.get('results')
-            time_regex = re_comp(r'T([0-9:]+)')
-            sun = {'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
-                   'sunset': time_regex.search(results.get('sunset')).group(1).split(':')}
+            status, response = http_get(url, sock_size=512, jsonify=True)
+            if status != 200 or not isinstance(response, dict):
+                syslog(f'[ERR] sunrise-api: invalid response status={status} data={response}')
+            else:
+                results = response.get('results')
+                if not isinstance(results, dict):
+                    syslog(f'[ERR] sunrise-api: invalid results data: {results}')
+                else:
+                    time_regex = re_comp(r'T([0-9:]+)')
+                    sun = {'sunrise': time_regex.search(results.get('sunrise')).group(1).split(':'),
+                           'sunset': time_regex.search(results.get('sunset')).group(1).split(':')}
         except Exception as e:
             syslog(f'[ERR] sunrise-api: {e} data: {response}')
     # Try to parse response by expected sun_keys

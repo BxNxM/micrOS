@@ -514,114 +514,6 @@ Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gatew
 
 ## FUTURE MAIN RELEASE PLANS
 
-Version **3.0.0-0** `micrOS-Autonomous`
-
-```
-    Core:
-    - (1) Async SSL/TLS integration (micropython 1.22+ required)                [DONE]
-        - urequest module async redesign for rest clients                       [OK]
-            - LM_telegram (Notify) + server (listener - chatbot)                [OK]
-    - (2) ESP-NOW (peer-to-peer communication) integration into InterCon        [DONE]
-       - Multi command same device improvement (session ID handling)            [DONE]
-    - (3) New intercon syntax - command level integration:                      [DONE]
-    	- rgb toggle >>RingLight.local
-    	- similar as (obsolete): intercon sendcmd host="RingLight.local" cmd="rgb toggle"
-    	- espnow integration into `rgb toggle >>RingLight.local` syntax (when available on target)
-    - (4) Create multi level project structure (curret is flat fs)              [DONE]
-		- New micrOS FS structure:
-			- Automatic dir creation at bootup: '/logs', '/web', '/data', '/config', '/modules'
-			- Automatic sub-dir handling /source and /precompiled
-			- Automatic dir creation over USB
-			
-			System Core File Structure:
-			- [DONE] root fs (stays untouched (approx.: 24)): /
-				- micrOS.py (core)
-				- Config.py (core)
-				- Tasks.py (core)
-				- Shell.py (core)
-				- Web.py (core)
-				- Server.py (core)
-				- etc... (core)
-			- [DONE] web folder: /web
-				- *.html
-				- *.js
-				- *.css
-				- etc.
-			- [DONE][RUNTIME] data folder: /data
-			   - Dynamic/Runtime (approx.: 0-8):
-				   - *.pds (LM app cache - persistent data storage)
-					- *.dat (Common datalogger output)
-				- Or store any application data here
-			- [DONE][RUNTIME] logs folder: /logs
-				- *.log
-				- *.sys.log
-			- [DONE] config folder /config
-             - node_config.json (core config)
-             - *.key files (offloaded core config values, like: guimeta)
-          - [DONE] module folder /modules - (mip complient: /modules/lib)
-				- LM_* (approx.: 54)
-				- IO_* (approx.: 5)
-
-
-		- (5) [DONE] Universal task creation response: `{taskID: verdict}`
-
-		- (6) [DONE] Proper mip installer support (/modules or /lib or /web)
-			- Note: Autonomous package management over wifi (github)
-				- pacman install <package-url>
-				- pacman uninstall <package-name>
-				- pacman upgrade <package-name>
-				- pacman ls
-				- pacman dirtree
-		- (7) [DONE] /config/requirements.txt handling (native micropython requirements syntax)
-			-  pacman install "requirements.txt"
-		- (8) [DONE] micrOS/packages - submodule to create individual installable applications for micrOS
-			- Application registry (package.json and pacman.json): https://github.com/BxNxM/micrOSPackages 
-			- micrOS devToolKit micrOS/packages Load Module feature rendering (same as for built-in LMs)
-				- sfuncman.json and sfuncman.html - external packages highlight
-
-		- (9) [DONE] micropython uplift to `1.27`
-			- [DONE] fix micrOS USB update config restore issue
-
-		- (10) [DONE] WebEngine: Web mounts/aliases for /data and /modules
-			- Default web mount: /web
-			- Extended web mounts (if in this dict logic): 
-				WEB_MOUNTS = {
-					#             PATH
-    				"$modules": "/modules",
-    				"$data": "/data",
-    				...
-				}
-		   - Absolute usr input path check (Files.py)
-			- Fileserver integration
-				- custom listing for /modules (without .mpy files)
-				- mount pathes write access handlig
-				- mount pathes read (+visibility) access handlig
-
-		- (11) [DONE] @Auth.sudo decorator
-			- Require pwd="<password>" parameter
-			- Two modes:
-				- Always require
-				- Require when force=True (_force_only=(True, 0))
-			- Apply this to:
-				- pacman rm
-				- pacman rmdir
-				- pacman uninstall
-				- pacman upgrade ... force=True
-				- ...
-
-        - (12) [DONE] WebEngine: robust protocol parsing with finite state machine
-            - Restructure WebEngine to decouple transport handling from protocol parsing
-            - Always forward response headers to load module callback functions
-            - Bounded memory allocations and configurable memory profiles
-            - Fixed instabilities in WebUI with improved socket handling
-
-	[TODO] TESTING + RELEASE  `./micrOS/release_info/micrOS_ReleaseInfo`
-		- Create release notes (legacy: `release_3.0.0-0_note_esp32.md`)
-		- Introduce automatic release metrics generation...
-			- `system_analysis_sum.json` and `devices_system_metrics.json` 
-
-```
-
 Version **3.1.0-0** `micrOS-Waterbear`
 
 ```
@@ -669,7 +561,7 @@ Version **3.X.0-0** `micrOS-SecurePower`
 |  **v 1.21.0-4** | [release_Info-1.21.0-4](./micrOS/release_info/micrOS_ReleaseInfo/release_1.21.0-4_note_esp32.md) |  **57.3%** 63 728 byte | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.21.0-4.json) | Full async core system with advanced task management and device to device communication, task scheduling and much more ... with more then 30 application/pheriphery support.
 |  **v 2.0.0-0** | [release_Info-2.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.0.0-0_note_esp32.md) |  **45.4%** 68.7 kb | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.0.0-0.json) | Optimizations, WebCli with web frontends, Camera support. Micropython 1.21 async maxed out :D
 |  **v 2.6.0-0** | [release_Info-2.6.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.6.0-0_note_esp32.md) |  **48.3%** 72.6 kb  | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.6.0-0.json) | WebCli http server enhancements. New webapps: dashboard. Core system official interface finalization towards Load Modules: Common.py, Types.py (frontend generation), microIO.py (pinout handling).
-|  **v 3.0.0-0** | [release_Info-3.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_3.0.0-0_note_esp32.md) |  **??%** ?? kb  | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_3.0.0-0.json) | ... Coming soon ...
+|  **v 3.0.0-0** | [release_Info-3.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_3.0.0-0_note_esp32.md) |  **66.0%** 95,5 kb  | esp32 (tinyPico, esp32c6, esp32s3+PSRAM, etc.) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_3.0.0-0.json) | **Min. required RAM: 200kb**. Standalone micrOS with multi layer file system (resource separation) and advanced package management, etc. [more details](https://github.com/BxNxM/micrOS/discussions/55)
 
 ----------------------------------------
 ----------------------------------------

@@ -6,6 +6,10 @@ import importlib.util
 from pathlib import Path
 
 
+def setUpModule():
+    print(f"== RUN {Path(__file__).name} ==")
+
+
 def _load_buffer_module():
     here = Path(__file__).resolve()
     buffer_path = (here.parent.parent / "source" / "Buffer.py").resolve()

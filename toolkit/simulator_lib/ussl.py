@@ -1,16 +1,42 @@
+class _MicroPythonSSLWrapper:
+    def __init__(self, sock):
+        self._sock = sock
 
-def wrap_socket(sock):
+    def read(self, size=-1):
+        reader = getattr(self._sock, "read", None)
+        if callable(reader):
+            return reader(size)
+        return self._sock.recv(size)
+
+    def write(self, data):
+        writer = getattr(self._sock, "write", None)
+        if callable(writer):
+            return writer(data)
+        return self._sock.send(data)
+
+    def close(self):
+        return self._sock.close()
+
+    def __getattr__(self, name):
+        return getattr(self._sock, name)
+
+
+def _as_micropython_stream(sock):
+    if hasattr(sock, "read") and hasattr(sock, "write"):
+        return sock
+    return _MicroPythonSSLWrapper(sock)
+
+
+def wrap_socket(sock, server_side=False, key=None, cert=None, cert_reqs=None,
+                cadata=None, server_hostname=None, do_handshake=True):
     try:
-        from ssl import wrap_socket
-        return wrap_socket(sock)
+        from ssl import _create_unverified_context
+        context = _create_unverified_context()
+        if server_hostname is None:
+            server_hostname = getattr(sock, "_micropython_server_hostname", None)
+        return _as_micropython_stream(context.wrap_socket(sock, server_side=server_side,
+                                                          server_hostname=server_hostname,
+                                                          do_handshake_on_connect=do_handshake))
     except Exception as e:
-        print(f"[SIMULATOR][micropython DIFF] WARNING(1/2) - SSL INTERFACE CHANCE IN PYTHON 3.12...: {e}")
-    try:
-        from ssl import create_default_context, CERT_NONE
-        context = create_default_context()
-        context.check_hostname = False
-        context.verify_mode = CERT_NONE
-        return context.wrap_socket(sock)
-    except Exception as e:
-        print(f"[SIMULATOR][WRAP] ERROR(2/2) - SSL INTERFACE CHANCE IN PYTHON 3.12...: {e}")
-    return sock
+        print(f"[SIMULATOR][WRAP] ERROR - SSL wrap failed: {e}")
+    return _as_micropython_stream(sock)

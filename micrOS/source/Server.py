@@ -31,7 +31,7 @@ if cfgget('webui'):
 else:
     # Load WebEngine compatibility interface class (dummy)
     class WebEngine:
-        __slots__ = []
+        __slots__ = ()
         MTU_SIZE = 1460
 
         def __init__(self, *args, **kwargs):
@@ -198,6 +198,8 @@ class WebCli(Client, WebEngine):
 
 
 class ShellCli(Client, Shell):
+    __slots__ = ("drain_event",)
+
     def __init__(self, reader, writer):
         Client.__init__(self, reader, writer, r_size=2048)          # r_size: 2048 default on ShellCli!
         Client.console(f"[ShellCli] new conn: {self.client_id}")

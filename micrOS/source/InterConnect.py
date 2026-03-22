@@ -28,6 +28,7 @@ else:
 
 
 class InterCon:
+    __slots__ = ("reader", "writer", "auth_pwd", "task")
     CONN_MAP: dict[str, str] = {}   # hostname: IP address pairs
     NO_ESPNOW: list[str] = []       # disabled ESPNow hostname list (cache for fallback speed-up)
     PORT = cfgget('socport')
@@ -57,9 +58,10 @@ class InterCon:
             hostname = host
             # Lookup hostname without .domain (sub-hostname matching)
             if '.' not in hostname:
-                _hosts = list([d for d in InterCon.CONN_MAP if hostname in d])
-                if len(_hosts) > 0:
-                    hostname = _hosts[0]
+                for cached_host in InterCon.CONN_MAP:
+                    if hostname in cached_host:
+                        hostname = cached_host
+                        break
             # Retrieve IP address by hostname.domain dynamically
             if InterCon.CONN_MAP.get(hostname, None) is None:
                 try:

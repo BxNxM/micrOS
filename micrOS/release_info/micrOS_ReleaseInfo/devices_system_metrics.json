@@ -347,5 +347,96 @@
                 "shell_multi_session_dt_ms": 94
             }
         }
+    },
+    "3.0.0-0": {
+        "ESP32-PICO-D4": {
+            "TinyDevBoard": {
+                "micropython_version": "v1.27.0 on 2025-12-09",
+                "modules": [
+                    "gameOfLife",
+                    "oled_ui",
+                    "web",
+                    "fileserver",
+                    "dimmer",
+                    "telegram",
+                    "system",
+                    "rgb",
+                    "cluster",
+                    "cct",
+                    "oled",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 128,
+                "mem_percent": 6.7,
+                "mem_used_byte": 274752,
+                "fs_percent": 37.3,
+                "fs_used_byte": 782336,
+                "web_rest_response_ms": 190,
+                "web_landingpage_response_ms": 350,
+                "shell_single_session_dt_ms": 26,
+                "shell_multi_session_dt_ms": 282
+            }
+        },
+        "ESP32C6": {
+            "ColorSensor": {
+                "micropython_version": "v1.25.0 on 2025-04-15",
+                "modules": [
+                    "web",
+                    "tcs3472",
+                    "system",
+                    "cluster",
+                    "neopixel",
+                    "fileserver",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 33,
+                "mem_percent": 55.9,
+                "mem_used_byte": 150960,
+                "fs_percent": 38.3,
+                "fs_used_byte": 802816,
+                "web_rest_response_ms": 110,
+                "web_landingpage_response_ms": 200,
+                "shell_single_session_dt_ms": 19,
+                "shell_multi_session_dt_ms": 62
+            }
+        },
+        "ESP32": {
+            "Cabinet": {
+                "micropython_version": "v1.21.0 on 2023-10-05",
+                "modules": [
+                    "system",
+                    "cct",
+                    "dht22",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 34,
+                "mem_percent": 70.2,
+                "mem_used_byte": 104880,
+                "fs_percent": 39.6,
+                "fs_used_byte": 831488,
+                "web_rest_response_ms": 110,
+                "web_landingpage_response_ms": 200,
+                "shell_single_session_dt_ms": 28,
+                "shell_multi_session_dt_ms": 77
+            }
+        },
+        "ESP32C5": {
+            "espC5": {
+                "micropython_version": "v1.27.0 on 2025-12-09",
+                "modules": [
+                    "system",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 24,
+                "mem_percent": 61.7,
+                "mem_used_byte": 117424,
+                "fs_percent": 10.3,
+                "fs_used_byte": 647168,
+                "web_rest_response_ms": 90,
+                "web_landingpage_response_ms": 240,
+                "shell_single_session_dt_ms": 17,
+                "shell_multi_session_dt_ms": 58
+            }
+        }
     }
 }

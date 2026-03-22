@@ -25,6 +25,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Tuple
 
+
+def setUpModule():
+    print(f"== RUN {Path(__file__).name} ==")
+
 # =============================================================================
 # EDIT HERE: generic test tasks
 # =============================================================================

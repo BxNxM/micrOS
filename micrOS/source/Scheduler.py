@@ -69,7 +69,7 @@ def __resolve_time_tag(check_time, crontask):
         # Resolve tag
         value = Sun.TIME.get(tag, None)
         if value is None or len(value) < 3:
-            syslog(f'[ERR] cron syntax error: {tag}:{value}')
+            syslog(f'[WARN] cron syntax error: {tag}:{value}')
             return ()
 
         # Update check_time with resolved value by tag

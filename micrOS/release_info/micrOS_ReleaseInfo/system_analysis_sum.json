@@ -14,7 +14,7 @@
         ],
         "Files.py": [
             9.72,
-            13
+            12
         ],
         "micrOSloader.py": [
             7.06,
@@ -38,7 +38,7 @@
         ],
         "Config.py": [
             9.63,
-            17
+            15
         ],
         "Shell.py": [
             9.37,
@@ -46,11 +46,11 @@
         ],
         "Notify.py": [
             9.78,
-            3
+            2
         ],
         "Types.py": [
-            8.54,
-            28
+            9.21,
+            1
         ],
         "Logger.py": [
             8.86,
@@ -58,7 +58,7 @@
         ],
         "Common.py": [
             9.86,
-            33
+            7
         ],
         "InterConnect.py": [
             9.7,
@@ -74,11 +74,11 @@
         ],
         "Network.py": [
             9.81,
-            8
+            6
         ],
         "Espnow.py": [
             9.87,
-            4
+            2
         ],
         "Scheduler.py": [
             9.62,
@@ -86,7 +86,7 @@
         ],
         "microIO.py": [
             9.37,
-            43
+            9
         ],
         "micrOS.py": [
             9.09,
@@ -102,22 +102,10 @@
         ],
         "urequests.py": [
             9.75,
-            6
+            3
         ],
         "helpers.py": [
             9.88,
-            0
-        ],
-        "modules/LM_roboarm.py": [
-            7.83,
-            0
-        ],
-        "modules/LM_stepper.py": [
-            8.9,
-            0
-        ],
-        "modules/LM_L298N.py": [
-            8.25,
             0
         ],
         "modules/LM_pacman.py": [
@@ -132,10 +120,6 @@
             9.12,
             0
         ],
-        "modules/LM_oled_ui.py": [
-            9.22,
-            0
-        ],
         "modules/LM_system.py": [
             8.87,
             0
@@ -144,176 +128,8 @@
             8.47,
             0
         ],
-        "modules/LM_qmi8658.py": [
-            9.1,
-            0
-        ],
-        "modules/LM_co2.py": [
-            8.5,
-            0
-        ],
-        "modules/LM_mh_z19c.py": [
-            9.78,
-            0
-        ],
-        "modules/LM_rest.py": [
-            8.6,
-            0
-        ],
-        "modules/LM_tcs3472.py": [
-            9.48,
-            0
-        ],
-        "modules/LM_oled.py": [
-            9.37,
-            0
-        ],
-        "modules/LM_tinyrgb.py": [
-            7.95,
-            0
-        ],
-        "modules/LM_aht10.py": [
-            8.79,
-            0
-        ],
-        "modules/LM_bme280.py": [
-            8.09,
-            0
-        ],
-        "modules/LM_buzzer.py": [
-            9.09,
-            0
-        ],
-        "modules/LM_switch.py": [
-            8.68,
-            0
-        ],
-        "modules/LM_servo.py": [
-            7.73,
-            0
-        ],
-        "modules/LM_rgbcct.py": [
-            8.62,
-            0
-        ],
-        "modules/LM_oled_sh1106.py": [
-            9.2,
-            0
-        ],
-        "modules/LM_haptic.py": [
-            9.25,
-            0
-        ],
-        "modules/LM_ld2410.py": [
-            9.07,
-            0
-        ],
-        "modules/LM_neopixel.py": [
-            7.77,
-            0
-        ],
-        "modules/LM_cct.py": [
-            9.03,
-            0
-        ],
-        "modules/LM_L9110_DCmotor.py": [
-            7.69,
-            0
-        ],
-        "modules/LM_neoeffects.py": [
-            9.08,
-            0
-        ],
         "modules/LM_i2c.py": [
             7.6,
-            0
-        ],
-        "modules/LM_dht22.py": [
-            7.94,
-            0
-        ],
-        "modules/LM_esp32.py": [
-            6.79,
-            0
-        ],
-        "modules/LM_veml7700.py": [
-            7.3,
-            0
-        ],
-        "modules/LM_rencoder.py": [
-            8.65,
-            0
-        ],
-        "modules/LM_dht11.py": [
-            7.94,
-            0
-        ],
-        "modules/LM_sound_event.py": [
-            8.52,
-            0
-        ],
-        "modules/LM_cluster.py": [
-            8.82,
-            0
-        ],
-        "modules/LM_espnow.py": [
-            7.14,
-            0
-        ],
-        "modules/LM_telegram.py": [
-            9.55,
-            0
-        ],
-        "modules/LM_OV2640.py": [
-            9.29,
-            0
-        ],
-        "modules/LM_rgb.py": [
-            9.01,
-            0
-        ],
-        "modules/LM_distance.py": [
-            8.86,
-            0
-        ],
-        "modules/LM_VL53L0X.py": [
-            9.07,
-            0
-        ],
-        "modules/LM_light_sensor.py": [
-            9.12,
-            0
-        ],
-        "modules/LM_rp2w.py": [
-            4.44,
-            0
-        ],
-        "modules/LM_presence.py": [
-            8.89,
-            0
-        ],
-        "modules/LM_trackball.py": [
-            8.6,
-            0
-        ],
-        "modules/LM_dimmer.py": [
-            8.32,
-            0
-        ],
-        "modules/LM_gameOfLife.py": [
-            9.29,
-            0
-        ],
-        "modules/LM_ds18.py": [
-            6.0,
-            0
-        ],
-        "modules/LM_i2s_mic.py": [
-            8.42,
-            0
-        ],
-        "modules/LM_sdcard.py": [
-            8.11,
             0
         ],
         "modules/LM_fileserver.py": [
@@ -327,8 +143,8 @@
             27
         ],
         "load": [
-            8828,
-            53
+            1022,
+            7
         ],
         "core_dep": [
             true,
@@ -336,10 +152,10 @@
         ],
         "load_dep": [
             true,
-            4
+            1
         ],
-        "core_score": 9.26,
-        "load_score": 8.44,
+        "core_score": 9.29,
+        "load_score": 8.29,
         "version": "3.0.0-0"
     }
 }

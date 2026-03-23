@@ -1,4 +1,4 @@
-# ![LOGO](./media/logo_mini.png?raw=true) micrOS
+# ![LOGO](./media/logo_mini.png?raw=true) micrOS - Core Edition
 
 > **"The mini yet powerful operating system for DIY projects."**
 

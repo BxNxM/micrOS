@@ -1,5 +1,14 @@
 # ![LOGO](./media/logo_mini.png?raw=true) micrOS - Core Edition
 
+```
+micrOS Compact/Core Edition
+
+- Reduced built-in Load Modules:
+	system, pacman, web, fileserver, genIO
+   + robustness for testing only
+- No built-in IO_modules
+```
+
 > **"The mini yet powerful operating system for DIY projects."**
 
 ![stable](https://img.shields.io/badge/master-HEAD-success)
@@ -76,7 +85,7 @@ Access rest api over browser: `http://<nodename>.local`
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32-and-more)
 3. ▶️ micrOS Tutorials [link](https://github.com/BxNxM/micrOS/#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
-5. 🎮 Built-in app modules: [link](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
+5. 🎮 Built-in app modules: [link](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/core/micrOS/client/sfuncman/sfuncman.html)
 5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
 6. ⚙️ micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
 7. 🧑‍💻 micrOS create custom Load Modules: [link](./micrOS/MODULE_GUIDE.md)
@@ -377,9 +386,9 @@ So prefer boards with more psram 2Mb-8Mb, **minumum requirement for the full fla
 
 `#Sensors / inputes` `#Actuators / outputs`
 
-[![pheriphery-io-preview](./media/pheriphery-io-preview.png)](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
+[![pheriphery-io-preview](./media/pheriphery-io-preview.png)](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/core/micrOS/client/sfuncman/sfuncman.html)
 
-[[CLICK] Show micrOS Load Module functions](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)</br>
+[[CLICK] Show micrOS Load Module functions](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/core/micrOS/client/sfuncman/sfuncman.html)</br>
 
 ----------------------------------------
 
@@ -1050,4 +1059,4 @@ gource \
     | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 output.mp4
 ```
 
-git push -u origin master
+git push -u origin core

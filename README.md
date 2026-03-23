@@ -575,6 +575,14 @@ Note:
 
 > Secure Core (OTA static modules) (GUI): `boot.py`, `micrOSloader.mpy`, `Network.mpy`, `ConfigHandler.mpy`, `Debug.mpy`
 
+Alternative branches:
+
+[micrOS-Core 3.0](https://github.com/BxNxM/micrOS/tree/core) - with minimal set of default Load Modules
+
+[micrOS-develop](https://github.com/BxNxM/micrOS/tree/develop) - for experimentation
+
+[lightweight-for-esp8266](https://github.com/BxNxM/micrOS/tree/lightweight) - really old legacy v1.3
+
 
 #### Erase device & Deploy micropython & Install micrOS 
 

@@ -87,11 +87,11 @@ def _tune_performance():
     # Set boosted (boost mode)
     if cfgget('boostmd'):
         max_hz = cpu_min_max[1]
-        console_write(f"[BOOT HOOKS] CPU boost mode ON: {max_hz} Hz")
+        console_write(f"[BOOT HOOKS] CPU boost: ON - {max_hz} Hz")
         freq(max_hz)
     else:
         min_hz = cpu_min_max[0]
-        console_write(f"[BOOT HOOKS] CPU boost mode OFF: {min_hz} Hz")
+        console_write(f"[BOOT HOOKS] CPU boost: OFF - {min_hz} Hz")
         freq(min_hz)
 
 

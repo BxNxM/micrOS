@@ -12,6 +12,8 @@ from machine import Pin, ADC
 from Notify import Notify
 
 
+MISSING_METHOD = "Child class must implement method.: "
+
 #####################################################################################
 #                                     SYSTEM                                        #
 #####################################################################################
@@ -451,16 +453,16 @@ class AnimationPlayer:
         """
         Child class must implement this method to handle drawing logic.
         """
-        raise NotImplementedError("Child class must implement update method.")
+        raise NotImplementedError(MISSING_METHOD + "update")
 
     def draw(self):
         """
         Draw the current frame.
         """
-        raise NotImplementedError("Child class must implement draw method.")
+        raise NotImplementedError(MISSING_METHOD + "draw")
 
     def clear(self):
         """
         Clear the display.
         """
-        raise NotImplementedError("Child class must implement clear method.")
+        raise NotImplementedError(MISSING_METHOD + "clear")

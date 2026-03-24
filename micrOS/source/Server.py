@@ -436,7 +436,7 @@ class Server:
                 cli.send(f"~~~ {msg}")
 
     def __del__(self):
-        Client.console("[ socket server ] <<destructor>>")
+        Client.console("[ socket server ] <<del>>")
         if self.server:
             self.server.close()
         if self.web:

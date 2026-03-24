@@ -26,6 +26,9 @@ from microIO import detect_platform
 class NW:
     NIF = None          # NETWORK INTERFACE STA/AP OBJECT
 
+STA_TAG = "[NW: STA] "
+AP_TAG = "[NW: AP] "
+
 #################################################################
 #                 NW INTERFACE STATUS FUNCTIONS                 #
 #################################################################
@@ -87,17 +90,17 @@ def _select_available_wifi_nw(raw_essid:str, raw_pwd:str):
         # Scan wifi network - retry workaround
         for _ in range(0, 2):
             if essid in (wifispot[0].decode('utf-8') for wifispot in NW.NIF.scan()):
-                console_write(f'\t| - [NW: STA] ESSID WAS FOUND: {essid}')
+                console_write(f'\t| - {STA_TAG}ESSID WAS FOUND: {essid}')
                 try:
                     return essid, str(raw_pwd.split(';')[idx]).strip()
                 except Exception as e:
-                    syslog(f'[ERR][SET STA] stapwd config error: {e}')
+                    syslog(f'[ERR]{STA_TAG}stapwd config error: {e}')
             sleep_ms(400)
     return None, ''
 
 
 def set_wifi(essid:str, pwd:str, timeout=60):
-    console_write('[NW: STA] Enable')
+    console_write(f'{STA_TAG}Enable')
 
     # Disable AP mode
     ap_if = WLAN(AP_IF)
@@ -123,19 +126,19 @@ def set_wifi(essid:str, pwd:str, timeout=60):
             syslog(f"[ERR] ESPNow STA PM_NONE: {e}")
     # Check are we already connected
     if sta_if.isconnected():
-        console_write(f"\t| [NW: STA] ALREADY CONNECTED TO {essid}")
+        console_write(f"\t| {STA_TAG}ALREADY CONNECTED TO {essid}")
     else:
         # Multiple essid and pwd handling with retry mechanism
         essid, pwd = _select_available_wifi_nw(essid, pwd)
 
         # Connect to the located wifi network
         if essid is not None:
-            console_write(f'\t| [NW: STA] CONNECT TO NETWORK {essid}')
+            console_write(f'\t| {STA_TAG}CONNECT TO NETWORK {essid}')
             # connect to network
             sta_if.connect(essid, pwd)
             # wait for connection, with timeout set
             while not sta_if.isconnected() and timeout > 0:
-                console_write(f"\t| [NW: STA] Waiting for connection... {timeout} sec")
+                console_write(f"\t| {STA_TAG}Waiting for connection... {timeout} sec")
                 timeout -= 1
                 sleep_ms(500)
             # Set static IP - here because some data comes from connection. (subnet, etc.)
@@ -144,10 +147,10 @@ def set_wifi(essid:str, pwd:str, timeout=60):
                 del sta_if
                 return set_wifi(essid, pwd)
         else:
-            console_write(f"\t| [NW: STA] Wifi network was NOT found: {essid}")
+            console_write(f"\t| {STA_TAG}Wifi network was NOT found: {essid}")
             return False
-        console_write(f"\t|\t| [NW: STA] network config: {str(sta_if.ifconfig())}")
-        console_write(f"\t|\t| [NW: STA] CONNECTED: {str(sta_if.isconnected())}")
+        console_write(f"\t|\t| {STA_TAG}network config: {str(sta_if.ifconfig())}")
+        console_write(f"\t|\t| {STA_TAG}CONNECTED: {str(sta_if.isconnected())}")
 
     # Store STA IP (make it static ip)
     cfgput("devip", str(sta_if.ifconfig()[0]))
@@ -156,13 +159,13 @@ def set_wifi(essid:str, pwd:str, timeout=60):
 
 
 def _set_wifi_dev_static_ip(sta_if:STA_IF):
-    console_write("[NW: STA] Set device static IP.")
+    console_write(f"{STA_TAG}Set device static IP.")
     stored_ip = cfgget('devip')
     if 'n/a' not in stored_ip.lower() and '.' in stored_ip:
         conn_ips = list(sta_if.ifconfig())
         # Check ip type before change, conn_ip structure: 10.0.1.X
         if conn_ips[0] != stored_ip and conn_ips[-1].split('.')[0:3] == stored_ip.split('.')[0:3]:
-            console_write(f"\t| [NW: STA] micrOS dev. StaticIP request: {stored_ip}")
+            console_write(f"\t| {STA_TAG}micrOS dev. StaticIP request: {stored_ip}")
             conn_ips[0] = stored_ip
             try:
                 # IP address, subnet mask, gateway and DNS server
@@ -171,9 +174,9 @@ def _set_wifi_dev_static_ip(sta_if:STA_IF):
             except Exception as e:
                 syslog(f"[ERR][STA] StaticIP conf failed: {e}")
         else:
-            console_write(f"[NW: STA][SKIP] StaticIP conf.: {stored_ip} ? {conn_ips[0]}")
+            console_write(f"{STA_TAG}[SKIP] StaticIP conf.: {stored_ip} ? {conn_ips[0]}")
     else:
-        console_write(f"[NW: STA] IP was not stored: {stored_ip}")
+        console_write(f"{STA_TAG}IP was not stored: {stored_ip}")
     return False   # was not reconfigured
 
 
@@ -183,7 +186,7 @@ def _set_wifi_dev_static_ip(sta_if:STA_IF):
 
 
 def set_access_point(_essid:str, _pwd:str, _authmode:int=3):
-    console_write(f"[NW: AP] SET AP MODE: {_essid} - {_pwd} - auth mode: {_authmode} (if possible)")
+    console_write(f"{AP_TAG}SET AP MODE: {_essid} - {_pwd} - auth mode: {_authmode} (if possible)")
 
     sta_if = WLAN(STA_IF)
     if sta_if.isconnected():
@@ -195,11 +198,11 @@ def set_access_point(_essid:str, _pwd:str, _authmode:int=3):
     # Set WiFi access point name (formally known as ESSID) and WiFi authmode (3): WPA2-PSK
     try:
         # Config #1 (esp)
-        console_write("[NW: AP] Configure")
+        console_write(f"{AP_TAG}Configure")
         ap_if.config(essid=_essid, password=_pwd, authmode=_authmode, max_clients=5)
     except Exception as e1:
         # Correction because rp2-w network interface limitation (parameter mismatch)
-        console_write(f"[NW: AP] Config Error: {e1}")
+        console_write(f"{AP_TAG}Config Error: {e1}")
         try:
             console_write("|- Simplified config...")
             # Config #2 (rp2-w)???
@@ -208,7 +211,7 @@ def set_access_point(_essid:str, _pwd:str, _authmode:int=3):
             syslog(f"[ERR][AP] config failed: {e2}")
     if not (ap_if.active() and str(ap_if.config('essid')) == str(_essid)):
         syslog("[ERR][AP] error")
-    console_write(f"\t|\t| [NW: AP] network config: {str(ap_if.ifconfig())}")
+    console_write(f"\t|\t| {AP_TAG}network config: {str(ap_if.ifconfig())}")
     set_dev_uid()
     return ap_if.active()
 

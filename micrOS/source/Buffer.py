@@ -1,5 +1,6 @@
 """
 Data structures for buffered processing & streaming
+    Designed by szeka9 (GitHub)
 """
 
 class BufferFullError(RuntimeError):

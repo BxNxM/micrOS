@@ -1,5 +1,5 @@
 """
-micrOS Load Module Authentication features
+micrOS Load Module Authentication/Access feature
     Designed by Marcell Ban aka BxNxM
 """
 from Config import cfgget as __cfgget
@@ -8,21 +8,20 @@ PWD_KEY = "pwd"
 def sudo(_f=None, *, _when_true=None):
     """
     Decorator for password-protected functions.
-      his decorator can be used with or without arguments:
+    Usage:
         @sudo
         def fn(...): ...
-
+    Or:
         @sudo(_when_true=("flag", 0))
         def fn(flag, ...): ...
 
-    :param _f: Internal use only.
-        The decorated function when the decorator is used without parentheses.
-        If None, the decorator is being configured and will return a wrapper.
+    :param _f: Internal use only. When decorator is used without parentheses.
+        If None, the decorator is being configured, return a wrapper.
     :param _when_true: optional pwd check
       - _when_true=None: always require pwd
       - _when_true=(keyword:str, position:int): require pwd only when keyword/position is True
     Password check:
-      - pwd is checked against node_config appwd value, and is not passed to the decorated function
+      - pwd check against node_config 'appwd' value
     """
 
     def deco(f):

@@ -293,7 +293,6 @@ class Shell:
         from Network import ifconfig
 
         await msg_obj(" Start micropython WEBREPL - file transfer and debugging")
-        await msg_obj("  [i] restart machine shortcut: import reset")
         await msg_obj(f"  Connect over http://micropython.org/webrepl/#{ifconfig()[1][0]}:8266/")
         await msg_obj(f"  \t[!] webrepl password: {cfgget('appwd')}")
         if update:

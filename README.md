@@ -56,11 +56,11 @@ Access rest api over browser: `http://<nodename>.local`
 ----------------------------------------
 
 📲 💻 ShellCli: Generic session-based communication API (OAM Interface) <br/>
-📲 WebCli: Apple shortcuts compatible **REST API** and **HTTP Homepage** <br/>
+📲 WebCli: mini webserver **REST API** and **HTTP Server** <br/>
 &nbsp;&nbsp; ✉️ Expose upython module functions - telnet **TCP/IP** and **REST API** <br/>
 ⚙️ 📝 Device initialization from user config <br/>
 🧩  Codeless end user experience via phone client <br/>
-⚠️  No external server or service required for client-device communication <br/>
+⚠️  No external server or service required for client-device/device-device communication <br/>
 &nbsp;&nbsp; ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
 🛠 Easy to create custom application(s) aka create your own Load Modules: <br/>
 🦾 Built-in scheduling (IRQs):<br/>
@@ -103,7 +103,7 @@ End-to-End solution for deployment, update, monitor and develop micrOS boards.
 
 I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you prefer.
 
-> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources from `micrOs/toolkit/workspace/precompiled` to the connected board.
+> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources from `micrOS/toolkit/workspace/precompiled` to the connected board.
 
 <br/>
 
@@ -186,7 +186,7 @@ It will open a graphical user interface for micrOS device management, like usb d
 2. Click on [Deploy (USB)] button -> presss YES
 ```
 
-It will install your board via USB with default settings. **Continue with micrOS Client app...**
+It will install your board via USB with default settings. **Continue with micrOS Client app...** or "devToolKit.py -s -c"
 
 > Note: At the first USB deployment, devToolKit will ask to install **SerialUSB driver** and it will open the driver installer as well, please follow the steps and install the necessary driver.
 
@@ -346,7 +346,7 @@ Yes       espnow.server
 
 ### Boards and suggestions
 
-There are multiple types of MCU-s (esp32, esp32s3, etc.) available to order, **BUT** to be able to enable **more features** (~2 Load Modules) and **full capable WebUI** interface you need to have more then **190-210kb** of ram (basic boards)(ℹ️).
+There are multiple types of MCU-s (esp32, esp32s3, etc.) available to order, **BUT** to be able to enable **more features** (more then ~2 Load Modules) and **full capable WebUI** interface you need to have more then **150-200kb** of ram (basic boards)(ℹ️).
 
 There is a solution ✅, additinal psram: **~2-4-8Mb** boards are available. It used to name as **psram** or **spiram**, even there is a type **octo-psram**, so check it before buy!!! Psram needs to be **supported on micropython** side as well !!!
 
@@ -360,16 +360,14 @@ There is a solution ✅, additinal psram: **~2-4-8Mb** boards are available. It 
 
 **`esp32cam`** it has a custom image and attached 8Mb of ram.
 
-So prefer boards with more psram 2Mb-8Mb, **minumum requirement for the full flatched setup ~400kb** but smallest psram is **2Mb**, in practive:
+So prefer boards with more psram 2Mb-8Mb, **minumum requirement for the full flatched setup ~250kb** but smallest psram is **2Mb**:
 
-- max measured 4Mb is 3.2% 128kb - oled_ui and lot of things loaded...
+- max measured 4Mb is 5.6% 230kb - oled_ui and lot of things loaded...
 - camera stream can use about 50% of ram, that means about 2Mb of ram usage.
-
-ℹ️ With basic 190-210kb of ram you can use the system with ShellCli with no issue, just webUI dashboard cannot be load due to memory limitations..., **under 140kb of system ram the system not reliable**, so these boards are not supported.
 
 > Note:
 
-**`esp32`** also can be totally fine with ShellCli, WebCli and 1 load module or multiple modules based on module size... just can be limited by the available memory soonor the later ... (WebCli javascript, htmls are quite small but can be few tens of kilobytes, also multiple async tasks in the background can take same, and roughly around 80% of memory usage system can be instable and restarts.) **So if you have a spare one try out micrOS with a range of features :)**
+**`esp32`** also can be totally fine with ShellCli, and no WebCli ... (WebCli javascript, htmls are quite small but can be few tens of kilobytes, also multiple async tasks in the background can take same, and roughly around 80% of memory usage system can be instable and restarts.) **So if you have a spare one try out micrOS with a range of features :)**
 
 ----------------------
 
@@ -519,12 +517,7 @@ Version **3.1.0-0** `micrOS-Waterbear`
 ```
     Core:
     - Low power mode (wake on event, hibernate command)?
-    	- Remote controller / Sensor UseCase
-    - WebEngine additional path shering:
-    	- web shared root (already done): /web
-    	- optional additional pathes:
-    		- @modules -> /modules
-    		- @data    -> /data
+    	- Remote controller / Sensor on battery UseCases
 ```
 
 
@@ -535,10 +528,12 @@ Version **3.X.0-0** `micrOS-SecurePower`
     - Async socket servers with SSL/TLS integration (with auth.)
         - ShellCli (with TLS) and InterCon adaptation (default port: 9008, new secure port 9009)
         - WebCli (https) and webUI adaptation
+ 
     - Intercon-Wire (?)
     	- Idea of wired message communication protocol same as Intercon-Shell/Intercon-ESPNow
     	- Possible HW protocols: i2c / onewire / uart BUT it should support bidirectional message transfers
     	- Goal: CoProcessor easy integration feature - Arduino env support
+ 
     - Application deployment automation: /config/compose.json
     	- enables application deployment:
     		- configuration (node_config.json) handling - safe parameter injection (boothook and irqs)
@@ -622,6 +617,8 @@ Base commands:
                         List/Execute frontend applications. [list]
   -stat, --node_status  Show all available micrOS devices status data.
   -cl, --clean          Clean user connection data: device_conn_cache.json
+  
+  ...
 ```
 
 **Search devices**

@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+import importlib
 
 MYPATH = os.path.dirname(__file__)
 print("Module [MicrOSDevEnv] path: {} __package__: {} __name__: {} __file__: {}".format(
@@ -98,19 +99,21 @@ class MicrOSDevTool(OTA, USB):
 
     def exec_app(self, app_name, dev_name, password=None):
         print("=== NEW ===")
-        import_cmd = "from {} import {}".format(".dashboard_apps", app_name)
-        print("[APP] Import: {}".format(import_cmd))
-        exec(import_cmd)
+        module_root = f"{__package__}.dashboard_apps" if __package__ else "dashboard_apps"
+        module_path = f"{module_root}.{app_name}"
+        print("[APP] Import: {}".format(module_path))
+        module = importlib.import_module(module_path)
+        app_entry = getattr(module, 'app')
         if password is None:
             print(f"[APP] Exec: {app_name}.app(devfid='{dev_name}')")
-            return_value = eval(f"{app_name}.app(devfid='{dev_name}')")
+            return_value = app_entry(devfid=dev_name)
         else:
             try:
                 print(f"[APP] Exec: {app_name}.app(devfid='{dev_name}', pwd='******')")
-                return_value = eval(f"{app_name}.app(devfid='{dev_name}', pwd='{password}')")
-            except Exception as e:
-                print(f"[APP] Exec: {app_name}.app(devfid='{dev_name}' password error: {e}\nRETRY")
-                return_value = eval(f"{app_name}.app(devfid='{dev_name}')")
+                return_value = app_entry(devfid=dev_name, pwd=password)
+            except TypeError as e:
+                print(f"[APP] Exec: {app_name}.app(devfid='{dev_name}') password error: {e}\nRETRY")
+                return_value = app_entry(devfid=dev_name)
         if return_value is not None:
             return return_value
         return ''

@@ -264,7 +264,7 @@ class USB(Compile):
         workdir_handler.popd()
         return True
 
-    def update_micros_via_usb(self, force=False):
+    def update_micros_via_usb(self, force=False, skip_micropython=False):
         self.select_board_n_micropython()
         exitcode, stdout, stderr = self.__get_node_config()
         if exitcode == 0:
@@ -277,7 +277,7 @@ class USB(Compile):
                 self.console("Update necesarry {} -> {}".format(node_version, repo_version), state='ok')
                 state = self.__override_local_config_from_node(node_config=stdout)
                 if state:
-                    self.deploy_micros(restore_config=False, cleanup_workdir=False)
+                    self.deploy_micros(restore_config=False, cleanup_workdir=False, skip_micropython=skip_micropython)
                 else:
                     self.console("Saving node config failed - SKIP update/redeploy", state='err')
             else:
@@ -291,7 +291,7 @@ class USB(Compile):
         self.execution_verdict.append("[OK] usb_update was finished")
         return True
 
-    def deploy_micros(self, restore_config=True, cleanup_workdir=True):
+    def deploy_micros(self, restore_config=True, cleanup_workdir=True, skip_micropython=False):
         """
         Clean board deployment with micropython + micrOS
         :param restore_config: restore and create node config
@@ -303,6 +303,13 @@ class USB(Compile):
 
         if restore_config:
             self._restore_and_create_node_config()
+
+        if skip_micropython:
+            self.console("Skip micropython deployment: copy micrOS resources only", state='warn')
+            self.put_micros_to_dev()
+            self._archive_node_config()
+            self.execution_verdict.append("[OK] usb_deploy was finished")
+            return
 
         is_erased = False
         for _ in range(0, 4):

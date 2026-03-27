@@ -9,7 +9,7 @@ import time
 
 from PyQt5.QtWidgets import (QApplication, QPlainTextEdit, QPushButton, QProgressBar, QComboBox, QLabel, QCheckBox,
                              QLineEdit, QMessageBox, QWidget, QToolTip)
-from PyQt5.QtCore import pyqtSlot, QThread, QSize, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, QThread, QSize, pyqtSignal, QTimer
 from PyQt5.QtGui import QIcon, QTextCursor, QFont, QPixmap
 
 import concurrent.futures
@@ -225,13 +225,24 @@ class MicropythonSelector(DropDownBase):
             micropython_bin_pathes = self.devtool_obj.get_micropython_binaries()
         else:
             micropython_bin_pathes = [b for b in self.devtool_obj.get_micropython_binaries() if f"{device_prefix}-" in os.path.basename(b)]
+        if len(micropython_bin_pathes) == 0:
+            self.micropython_bin_dirpath = None
+            self.create_dropdown(items_list=[], title=title, geometry_tuple=geometry, tooltip=help_msg,
+                                 style=style)
+            self.parent_obj.console.append_output(
+                f"[WARN] No micropython binary found for board: {device_prefix or 'any'}"
+            )
+            return
         self.micropython_bin_dirpath = os.path.dirname(micropython_bin_pathes[0])
         micropython_bin_names = [os.path.basename(path) for path in micropython_bin_pathes]
         self.create_dropdown(items_list=micropython_bin_names, title=title, geometry_tuple=geometry, tooltip=help_msg,
                              style=style)
 
     def get(self):
-        return os.path.join(self.micropython_bin_dirpath, super(MicropythonSelector, self).get())
+        selected_item = super(MicropythonSelector, self).get()
+        if self.micropython_bin_dirpath is None or selected_item is None:
+            return None
+        return os.path.join(self.micropython_bin_dirpath, selected_item)
 
 
 class MicrOSDeviceSelector(DropDownBase):
@@ -317,10 +328,12 @@ class DevelopmentModifiers:
     def __init__(self, parent_obj):
         self.parent_obj = parent_obj
         self.ignore_version_check = False
+        self.skip_micropython_update = False
         self.unsafe_ota_enabled = FSCO_STATE
 
     def create(self):
         self.ignore_version_check_checkbox()
+        self.skip_micropython_update_checkbox()
         self.unsafe_core_update_ota_check_checkbox()
 
     def ignore_version_check_checkbox(self):
@@ -330,6 +343,15 @@ class DevelopmentModifiers:
         checkbox.setToolTip(
             "[OTA][USB]\nIgnore version check.\nYou can force resource update on the same software version.")
         checkbox.toggled.connect(self.__on_click_ignore_version_check)
+
+    def skip_micropython_update_checkbox(self):
+        checkbox = QCheckBox('Skip micropython', self.parent_obj)
+        checkbox.setStyleSheet("QCheckBox::indicator:checked{background-color: red;} QCheckBox::indicator:hover{background-color: red;}")
+        checkbox.move(80, 208)
+        checkbox.setToolTip(
+            "Skip device erase and micropython deployment.\nOnly copy micrOS files over USB."
+        )
+        checkbox.toggled.connect(self.__on_click_skip_micropython_update)
 
     def unsafe_core_update_ota_check_checkbox(self):
         self.checkbox = QCheckBox('DEV+', self.parent_obj)  # ForceSystemCoreOta update
@@ -348,6 +370,15 @@ class DevelopmentModifiers:
             self.ignore_version_check = False
         print("DEBUG: ignore_version_check: {}".format(self.ignore_version_check))
 
+    def __on_click_skip_micropython_update(self):
+        radioBtn = self.parent_obj.sender()
+        if radioBtn.isChecked():
+            self.skip_micropython_update = True
+            self.parent_obj.console.append_output("🔴 PREINSTALLED MICROPYTHON REQUIRED !!!")
+        else:
+            self.skip_micropython_update = False
+        print("DEBUG: skip_micropython_update: {}".format(self.skip_micropython_update))
+
     def __on_click_unsafe_core_update_ota(self):
         radioBtn = self.parent_obj.sender()
         if radioBtn.isChecked():
@@ -365,7 +396,7 @@ class DevelopmentModifiers:
 
 class MyConsole(QPlainTextEdit):
     console = None
-    lock = False
+    append_request = pyqtSignal(str, str, int)
 
     def __init__(self, parent_obj=None, line_limit=120, x=240, y=132, w=420, h=210):
         super().__init__(parent=parent_obj)
@@ -376,26 +407,26 @@ class MyConsole(QPlainTextEdit):
         self.setMaximumBlockCount(self.line_limit)  # limit console lines
         self._cursor_output = self.textCursor()
         self.setGeometry(x, y, w, h)
+        self.append_request.connect(self.append_output)
         MyConsole.console = self
 
-    @pyqtSlot(str)
+    @pyqtSlot(str, str, int)
     def append_output(self, text, end='\n', maxlen=62):
         self.clear_console()
-        if not MyConsole.lock:
-            MyConsole.lock = True
-            try:
-                text2 = None
-                if len(text) > maxlen:
-                    text2 = text[maxlen:]
-                    text = text[0:maxlen]
-                self._cursor_output.insertText("{}{}".format(text, end))
+        try:
+            text2 = None
+            if len(text) > maxlen:
+                text2 = text[maxlen:]
+                text = text[0:maxlen]
+            self._cursor_output.movePosition(QTextCursor.End)
+            self._cursor_output.insertText("{}{}".format(text, end))
+            self.scroll_to_last_line()
+            if text2 is not None:
+                self._cursor_output.movePosition(QTextCursor.End)
+                self._cursor_output.insertText("{}{}".format(text2, end))
                 self.scroll_to_last_line()
-                if text2 is not None:
-                    self._cursor_output.insertText("{}{}".format(text2, end))
-                    self.scroll_to_last_line()
-            except Exception as e:
-                print("MyConsole.append_output failure: {}".format(e))
-            MyConsole.lock = False
+        except Exception as e:
+            print("MyConsole.append_output failure: {}".format(e))
 
     def clear_console(self, force=False):
         if force or self.blockCount() >= self.line_limit:
@@ -403,11 +434,9 @@ class MyConsole(QPlainTextEdit):
 
     def scroll_to_last_line(self):
         cursor = self.textCursor()
-        # TODO: Problematic code part - sometimes crashes ...
-        time.sleep(0.05)
         cursor.movePosition(QTextCursor.End)
-        cursor.movePosition(QTextCursor.Up if cursor.atBlockStart() else QTextCursor.StartOfLine)
         self.setTextCursor(cursor)
+        self.ensureCursorVisible()
 
     @staticmethod
     def gui_console(msg):
@@ -415,9 +444,9 @@ class MyConsole(QPlainTextEdit):
             print(f"GUI: {msg}")
         else:
             try:
-                MyConsole.console.append_output(text=msg)
-            except:
-                MyConsole.lock = False
+                MyConsole.console.append_request.emit(str(msg), '\n', 62)
+            except Exception as e:
+                print(f"MyConsole.gui_console failure: {e}")
 
 
 class HeaderInfo:
@@ -557,8 +586,14 @@ class ClusterStatus:
         button.setGeometry(460, 430, 150, 20)
         button.setStyleSheet("QPushButton{background-color: Gray;} QPushButton::pressed{background-color : green;}")
         button.clicked.connect(self.get_status_callback)
+        self.status_button = button
 
     def get_status_callback(self):
+        self.parent_obj.console.append_output('[status] Query device status in background')
+
+        threading.Thread(target=self._query_status, daemon=True).start()
+
+    def _query_status(self):
         # Get stored devices
         conn_data = self.socket_data_obj
         conn_data.read_micrOS_device_cache()
@@ -586,8 +621,8 @@ class ClusterStatus:
                 query_list.append(f)
 
         for q in query_list:
-            self.parent_obj.console.append_output(q.result(), maxlen=58)
-        self.parent_obj.console.append_output(f'ALL: {len(conn_data.MICROS_DEVICES.keys())}')
+            MyConsole.gui_console(q.result())
+        MyConsole.gui_console(f'ALL: {len(conn_data.MICROS_DEVICES.keys())}')
 
 
 class QuickOTAUpload(QLabel):
@@ -705,6 +740,7 @@ class micrOSGUI(QWidget):
         self.socketcli_obj = socketClient.ConnectionData()
         self.bgjob_thread_obj_dict = {}
         self.bgjon_progress_monitor_thread_obj_dict = {}
+        self.job_monitor_timer = None
         self.appwd_textbox = None
         # Init UI elements
         self.initUI()
@@ -751,42 +787,41 @@ class micrOSGUI(QWidget):
 
     def __recreate_MicrOSDeviceSelector(self):
         self.micrOS_devide_dropdown.update_elements()
+        self.device_conn_struct = list(self.micrOS_devide_dropdown.device_conn_struct)
         self.draw()
 
     def __thread_progress_monitor(self):
-        th = threading.Thread(target=self.__thread_monitor_logic, daemon=True)
-        th.start()
+        self.job_monitor_timer = QTimer(self)
+        self.job_monitor_timer.timeout.connect(self.__thread_monitor_logic)
+        self.job_monitor_timer.start(500)
 
     def __thread_monitor_logic(self):
         def close_action(tag):
             if tag == 'search_devices':
                 self.__recreate_MicrOSDeviceSelector()
 
-        while True:
-            remove_from_key = None
-            for bgprog, bgjob in self.bgjob_thread_obj_dict.items():
-                if not bgjob.is_alive():
-                    remove_from_key = bgprog
-                    # Get job (execution) verdicts
-                    try:
-                        job_verdict = '\n'.join(self.devtool_obj.execution_verdict)
-                        self.devtool_obj.execution_verdict = []
-                    except Exception as e:
-                        self.console("Obj {} thread verdict read error: {}".format(bgprog, e))
-                        job_verdict = 'ERROR'
-                    # Print to console GUI
-                    self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
-            time.sleep(0.5)
-            if remove_from_key is not None:
-                self.bgjob_thread_obj_dict.pop(remove_from_key, None)
-                if remove_from_key in self.bgjon_progress_monitor_thread_obj_dict:
-                    try:
-                        self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
-                    except Exception as e:
-                        self.console("Process terminate error: {}".format(e))
-                    self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
-                close_action(remove_from_key)
-            time.sleep(1)
+        remove_keys = []
+        for bgprog, bgjob in list(self.bgjob_thread_obj_dict.items()):
+            if not bgjob.is_alive():
+                remove_keys.append(bgprog)
+                # Get job (execution) verdicts
+                try:
+                    job_verdict = '\n'.join(self.devtool_obj.execution_verdict)
+                    self.devtool_obj.execution_verdict = []
+                except Exception as e:
+                    self.console.append_output("Obj {} thread verdict read error: {}".format(bgprog, e))
+                    job_verdict = 'ERROR'
+                # Print to console GUI
+                self.console.append_output("[DONE] Job was finished: {}\n{}".format(bgprog, job_verdict))
+        for remove_from_key in remove_keys:
+            self.bgjob_thread_obj_dict.pop(remove_from_key, None)
+            if remove_from_key in self.bgjon_progress_monitor_thread_obj_dict:
+                try:
+                    self.bgjon_progress_monitor_thread_obj_dict[remove_from_key].terminate()
+                except Exception as e:
+                    self.console.append_output("Process terminate error: {}".format(e))
+                self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
+            close_action(remove_from_key)
 
     def __create_console(self):
         start_x = 460
@@ -799,15 +834,61 @@ class micrOSGUI(QWidget):
         dropdown_label.setGeometry(start_x, start_y, width, height)
         self.console = MyConsole(self, x=start_x, y=start_y+15, w=width, h=185)
 
+    def __active_job_keys(self, exclude=None):
+        if exclude is None:
+            exclude = set()
+        return [key for key, job in self.bgjob_thread_obj_dict.items() if key not in exclude and job.is_alive()]
+
+    def __block_on_active_job(self, current_key=None):
+        exclude = {'simulator'}
+        if current_key is not None:
+            exclude.add(current_key)
+        active_jobs = self.__active_job_keys(exclude=exclude)
+        if len(active_jobs) > 0:
+            self.console.append_output(
+                "[BUSY] Current job is running: {}. Wait until it finishes.".format(', '.join(active_jobs))
+            )
+            return True
+        return False
+
+    def __resolve_selected_device(self):
+        fuid = self.micrOS_devide_dropdown.get()
+        current_devices = list(self.micrOS_devide_dropdown.device_conn_struct)
+        self.device_conn_struct = current_devices
+        for conn_data in current_devices:
+            if fuid == conn_data[0]:
+                return fuid, conn_data[1]
+        self.console.append_output("[ERROR] Selected device is not available in the current cache: {}".format(fuid))
+        return fuid, None
+
     def __validate_selected_device_with_micropython(self):
         selected_micropython_bin = self.micropython_dropdown.get()
         selected_device_type = self.board_dropdown.get()
         if selected_micropython_bin is None or selected_device_type is None:
-            print("Selected\ndevice {} and/or\nmicropython {} was not selected properly,incompatibilityty.".format(
+            self.console.append_output("Selected device {} and/or micropython {} was not selected properly.".format(
                 selected_micropython_bin, selected_device_type))
+            return False
         if selected_device_type in selected_micropython_bin:
             return True
         return False
+
+    def __validate_usb_update_selection(self):
+        selected_device_type = self.board_dropdown.get()
+        if selected_device_type is None:
+            self.console.append_output("Selected board type was not selected properly.")
+            return False
+        if self.modifiers_obj.skip_micropython_update:
+            return True
+        return self.__validate_selected_device_with_micropython()
+
+    def __validate_usb_deploy_selection(self):
+        selected_device_type = self.board_dropdown.get()
+        if selected_device_type is None:
+            self.console.append_output("Selected board type was not selected properly.")
+            return False
+        if self.modifiers_obj.skip_micropython_update:
+            return True
+        return self.__validate_selected_device_with_micropython()
 
     def start_bg_application_popup(self, text="Please verify data before continue:", verify_data_dict=None):
         if verify_data_dict is None:
@@ -890,6 +971,8 @@ class micrOSGUI(QWidget):
         password = self.appwd_textbox.get()
         process_key = "{}_{}".format(selected_app, selected_device)
 
+        if self.__block_on_active_job(current_key=process_key):
+            return
         if process_key in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict[process_key].is_alive():
                 self.console.append_output('[{}][SKIP] already running.'.format(process_key))
@@ -917,19 +1000,22 @@ class micrOSGUI(QWidget):
     @pyqtSlot()
     def __on_click_usb_deploy(self):
         self.__show_gui_state_on_console()
+        if self.__block_on_active_job(current_key='usb_deploy'):
+            return False
         if 'usb_deploy' in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict['usb_deploy'].is_alive():
                 self.console.append_output('[usb_deploy]SKIP] already running.')
                 return False
-        if not self.__validate_selected_device_with_micropython():
+        if not self.__validate_usb_deploy_selection():
             self.console.append_output(
                 "[usb_deploy][WARN] Selected device is not compatible with selected micropython.")
             return False
         # Verify data
         if not self.start_bg_application_popup(text="Deploy new device?",
                                                verify_data_dict={'board': self.board_dropdown.get(),
-                                                                 'micropython': os.path.basename(
+                                                                 'micropython': 'SKIPPED' if self.modifiers_obj.skip_micropython_update else os.path.basename(
                                                                      self.micropython_dropdown.get()),
+                                                                 'skip_micropython': self.modifiers_obj.skip_micropython_update,
                                                                  'force': self.modifiers_obj.ignore_version_check}):
             return
 
@@ -948,7 +1034,9 @@ class micrOSGUI(QWidget):
         self.devenv_usb_deployment_is_active = True
         # Create a Thread with a function without any arguments
         self.console.append_output('[usb_deploy] |- start usb_deploy job')
-        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore_config': False, "cleanup_workdir": True},
+        th = threading.Thread(target=self.devtool_obj.deploy_micros, kwargs={'restore_config': False,
+                                                                             "cleanup_workdir": True,
+                                                                             'skip_micropython': self.modifiers_obj.skip_micropython_update},
                               daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['usb_deploy'] = th
@@ -958,6 +1046,8 @@ class micrOSGUI(QWidget):
     @pyqtSlot()
     def __on_click_ota_update(self):
         self.__show_gui_state_on_console()
+        if self.__block_on_active_job(current_key='ota_update'):
+            return
         if 'ota_update' in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict['ota_update'].is_alive():
                 self.console.append_output('[ota_update][SKIP] already running.')
@@ -981,15 +1071,14 @@ class micrOSGUI(QWidget):
         self.bgjon_progress_monitor_thread_obj_dict['ota_update'] = pth
 
         # Start job
-        fuid = self.micrOS_devide_dropdown.get()
+        fuid, devip = self.__resolve_selected_device()
         ignore_version_check = self.modifiers_obj.ignore_version_check
         unsafe_ota_update = self.modifiers_obj.unsafe_ota_enabled
-        devip = None
-        for conn_data in self.device_conn_struct:
-            if fuid == conn_data[0]:
-                devip = conn_data[1]
         if devip is None:
             self.console.append_output("[ota_update][ERROR] Selecting device")
+            self.bgjon_progress_monitor_thread_obj_dict['ota_update'].terminate()
+            self.bgjon_progress_monitor_thread_obj_dict.pop('ota_update', None)
+            return
         self.console.append_output("[ota_update] Start OTA update on {}:{}".format(fuid, devip))
         # create a thread with a function without any arguments
         self.console.append_output('[ota_update] |- start ota_update job')
@@ -1003,6 +1092,8 @@ class micrOSGUI(QWidget):
 
     def __on_click_lm_update(self):
         self.__show_gui_state_on_console()
+        if self.__block_on_active_job(current_key='lm_update'):
+            return
         if 'lm_update' in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict['lm_update'].is_alive():
                 self.console.append_output('[lm_update][SKIP] already running.')
@@ -1025,14 +1116,13 @@ class micrOSGUI(QWidget):
         self.bgjon_progress_monitor_thread_obj_dict['lm_update'] = pth
 
         # Start job
-        fuid = self.micrOS_devide_dropdown.get()
+        fuid, devip = self.__resolve_selected_device()
         ignore_version_check = self.modifiers_obj.ignore_version_check
-        devip = None
-        for conn_data in self.device_conn_struct:
-            if fuid == conn_data[0]:
-                devip = conn_data[1]
         if devip is None:
             self.console.append_output("[lm_update][ERROR] Selecting device")
+            self.bgjon_progress_monitor_thread_obj_dict['lm_update'].terminate()
+            self.bgjon_progress_monitor_thread_obj_dict.pop('lm_update', None)
+            return
         self.console.append_output("[lm_update] Start OTA lm_update on {}:{}".format(fuid, devip))
         self.console.append_output('[lm_update] |- start lm_update job')
         self.progressbar.progressbar_update()
@@ -1046,6 +1136,8 @@ class micrOSGUI(QWidget):
 
     def on_click_lm_quick_update(self, upload_path_list):
         self.__show_gui_state_on_console()
+        if self.__block_on_active_job(current_key='quick_ota'):
+            return
         if 'quick_ota' in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict['quick_ota'].is_alive():
                 self.console.append_output('[quick_ota][SKIP] already running.')
@@ -1068,14 +1160,13 @@ class micrOSGUI(QWidget):
         self.bgjon_progress_monitor_thread_obj_dict['quick_ota'] = pth
 
         # Start job
-        fuid = self.micrOS_devide_dropdown.get()
+        fuid, devip = self.__resolve_selected_device()
         ignore_version_check = self.modifiers_obj.ignore_version_check
-        devip = None
-        for conn_data in self.device_conn_struct:
-            if fuid == conn_data[0]:
-                devip = conn_data[1]
         if devip is None:
             self.console.append_output("[quick_ota][ERROR] Selecting device")
+            self.bgjon_progress_monitor_thread_obj_dict['quick_ota'].terminate()
+            self.bgjon_progress_monitor_thread_obj_dict.pop('quick_ota', None)
+            return
         self.console.append_output("[quick_ota] Start OTA quick update on {}:{}".format(fuid, devip))
         self.console.append_output('[quick_ota] |- start update job')
         self.progressbar.progressbar_update()
@@ -1092,19 +1183,22 @@ class micrOSGUI(QWidget):
     @pyqtSlot()
     def __on_click_usb_update(self):
         self.__show_gui_state_on_console()
+        if self.__block_on_active_job(current_key='usb_update'):
+            return False
         if 'usb_update' in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict['usb_update'].is_alive():
                 self.console.append_output('[usb_update][SKIP] already running.')
                 return False
-        if not self.__validate_selected_device_with_micropython():
+        if not self.__validate_usb_update_selection():
             self.console.append_output(
                 "[usb_update] [WARN] Selected device is not compatible with selected micropython.")
             return False
         # Verify data
         if not self.start_bg_application_popup(text="Start USB update?",
                                                verify_data_dict={'board': self.board_dropdown.get(),
-                                                                 'micropython': os.path.basename(
+                                                                 'micropython': 'SKIPPED' if self.modifiers_obj.skip_micropython_update else os.path.basename(
                                                                      self.micropython_dropdown.get()),
+                                                                 'skip_micropython': self.modifiers_obj.skip_micropython_update,
                                                                  'force': self.modifiers_obj.ignore_version_check}):
             return
 
@@ -1124,7 +1218,8 @@ class micrOSGUI(QWidget):
         # create a thread with a function without any arguments
         self.console.append_output('[usb_update] |- start usb_update job')
         th = threading.Thread(target=self.devtool_obj.update_micros_via_usb,
-                              kwargs={'force': self.modifiers_obj.ignore_version_check}, daemon=DAEMON)
+                              kwargs={'force': self.modifiers_obj.ignore_version_check,
+                                      'skip_micropython': self.modifiers_obj.skip_micropython_update}, daemon=DAEMON)
         th.start()
         self.bgjob_thread_obj_dict['usb_update'] = th
         self.console.append_output('[usb_update] |- usb_update job was started')
@@ -1132,6 +1227,8 @@ class micrOSGUI(QWidget):
 
     @pyqtSlot()
     def __on_click_search_devices(self):
+        if self.__block_on_active_job(current_key='search_devices'):
+            return
         if 'search_devices' in self.bgjob_thread_obj_dict.keys():
             if self.bgjob_thread_obj_dict['search_devices'].is_alive():
                 self.console.append_output('[search_devices][SKIP] already running.')
@@ -1167,12 +1264,14 @@ class micrOSGUI(QWidget):
                 # Verify data
                 if self.start_bg_application_popup(text="Stop simulator?"):
                     try:
-                        self.console("Stop simulator")
+                        self.console.append_output("Stop simulator")
                     except Exception as e:
                         print("Stop simulator: {}".format(e))
                     self.devtool_obj.simulator(stop=True)
                 return
 
+        if self.__block_on_active_job(current_key='simulator'):
+            return
         # Verify data
         if not self.start_bg_application_popup(text="Start micrOS on host?"):
             return
@@ -1207,6 +1306,7 @@ class micrOSGUI(QWidget):
         self.console.append_output("  micropython: {}".format(self.micropython_dropdown.get()))
         self.console.append_output("  board type: {}".format(self.board_dropdown.get()))
         self.console.append_output("  ignore version: {}".format(self.modifiers_obj.ignore_version_check))
+        self.console.append_output("  skip micropython: {}".format(self.modifiers_obj.skip_micropython_update))
         self.console.append_output("  Force full OTA: {}".format(self.modifiers_obj.unsafe_ota_enabled))
         self.console.append_output("  OTA passwd: {}".format(self.appwd_textbox.get()))
 

@@ -1,8 +1,6 @@
 import sys
 import os
 import subprocess
-import getpass
-USER = getpass.getuser()
 MYPATH = os.path.dirname(__file__)
 USER_DATA_OPT_INST_DONE = os.path.join(MYPATH, '../user_data/.opt_dep_install')
 INTERPRETER = sys.executable
@@ -59,9 +57,9 @@ def install_package(name, additional_pip_param=None):
     print(f"Install optional dependency (pip): {name}")
     try:
         if additional_pip_param is None:
-            state, out = run_subprocess([INTERPRETER, '-m', 'pip', 'install', '--user', USER, name])
+            state, out = run_subprocess([INTERPRETER, '-m', 'pip', 'install', '--user', name])
         else:
-            state, out = run_subprocess([INTERPRETER, '-m', 'pip', 'install', '--user', USER, name, additional_pip_param])
+            state, out = run_subprocess([INTERPRETER, '-m', 'pip', 'install', '--user', name, additional_pip_param])
         if state:
             print(f"{TerminalColors.Colors.OK}[PIP] install {name} OK{TerminalColors.Colors.NC}")
         else:

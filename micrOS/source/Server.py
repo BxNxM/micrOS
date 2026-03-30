@@ -267,7 +267,7 @@ class ShellCli(Client, Shell):
             try:
                 # Read request msg from client
                 state, request = await self.read()
-                if state or request in ('exit', ''):
+                if state or request.strip() in ('exit', ''):
                     break
                 # Run micrOS shell with request string
                 Client.console("[ShellCli] --- #Run shell")
@@ -333,7 +333,7 @@ class Server:
             self._timeout = 5 if soc_timeout < 5 else soc_timeout
             # ---         ----
             self._initialized = True
-            Client.console("[ socket server ] <<constructor>>")
+            Client.console("[ socket server ] <<init>>")
 
     #####################################
     #       Socket Server Methods       #

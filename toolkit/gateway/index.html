@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#101418">
+    <title>micrOS Gateway</title>
+    <link rel="stylesheet" href="/gateway.css">
+</head>
+<body class="page-gateway">
+    <main class="shell">
+        <section class="panel hero">
+            <div class="hero-top">
+                <div class="brand">
+                    <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo">
+                    <div>
+                        <div class="eyebrow" id="gatewayUiTag">Gateway UI</div>
+                        <h1>micrOS Gateway</h1>
+                        <p>A lighter control surface for device discovery, status inspection, command execution, camera access, and webhook entrypoints.</p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <div class="meta-chip" id="camera_stream_link">Camera stream link</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <div class="section-head">
+                <h2 class="section-title">Known Devices</h2>
+                <div class="section-note">Populated from `/list/`</div>
+            </div>
+            <div id="micrOSDevices" class="device-cloud">
+                <div class="empty">No devices loaded yet.</div>
+            </div>
+        </section>
+
+        <section class="panel section">
+            <div class="section-head">
+                <h2 class="section-title">Quick Actions</h2>
+                <div class="section-note">Gateway shortcuts</div>
+            </div>
+            <div class="hero-actions">
+                <button class="button-accent" onclick="restApi('list')">List</button>
+                <button onclick="restApi('status')">Status</button>
+                <button onclick="restApi('search')">Search Devices</button>
+                <a class="link-button" href="https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html" target="_blank" rel="noreferrer">Open Help</a>
+            </div>
+        </section>
+
+        <div class="grid">
+            <section class="panel section">
+                <div class="section-head">
+                    <h2 class="section-title">Gateway Actions</h2>
+                    <div class="section-note">Simple UI for the `/sendcmd` endpoint</div>
+                </div>
+
+                <form class="form-grid" onsubmit="restApi(cmd=''); return false;">
+                    <div class="inline-form">
+                        <div class="field">
+                            <label for="dropdown">Device</label>
+                            <select id="dropdown"></select>
+                        </div>
+                        <div class="field">
+                            <label for="inputApiCmd">Command</label>
+                            <input type="text" id="inputApiCmd" placeholder="rgb toggle" list="commandSuggestions" autocomplete="off">
+                        </div>
+                        <button class="button-accent" type="submit">Send</button>
+                    </div>
+                </form>
+                <datalist id="commandSuggestions"></datalist>
+
+                <div style="height: 18px;"></div>
+
+                <p id="usrApiCallUrl" class="response-link"></p>
+                <pre id="usrApiCallResponse" class="response-box">Run a gateway action to see the response here.</pre>
+                <div style="height: 12px;"></div>
+                <p id="rest_response_time" class="response-time"></p>
+            </section>
+
+            <section class="panel section">
+                <div class="section-head">
+                    <h2 class="section-title">Available Endpoints</h2>
+                    <div class="section-note">Reference</div>
+                </div>
+
+                <div class="endpoint-list">
+                    <div class="endpoint"><code>/list</code><span>List known devices and sort them by online and offline state.</span></div>
+                    <div class="endpoint"><code>/search</code><span>Trigger device discovery on the current network.</span></div>
+                    <div class="endpoint"><code>/status</code><span>Collect node status data and system-level health details.</span></div>
+                    <div class="endpoint"><code>/sendcmd/&lt;device&gt;/&lt;cmd&gt;</code><span>Send a command to a selected device. Use `+` instead of spaces.</span></div>
+                    <div class="endpoint"><code>/metrics/&lt;device&gt;/&lt;cmd&gt;</code><span>Expose command output in Prometheus scrape format.</span></div>
+                    <div class="endpoint"><code>/image/&lt;device&gt;</code><span>Fetch an ESP camera image. Without a device parameter, the endpoint lists cameras.</span></div>
+                    <div class="endpoint"><code>/imgstream</code><span>Open the camera stream page with auto-refreshing camera tiles.</span></div>
+                    <div class="endpoint"><code>/webhooks/&lt;payload&gt;/&lt;args&gt;</code><span>Run a gateway webhook script with optional arguments.</span></div>
+                    <div class="endpoint"><code>/webhooks/macro/&lt;macroName&gt;</code><span>Run a macro-oriented webhook by macro name.</span></div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const GATEWAY_UI_VERSION = 'v3';
+        const COMMAND_SUGGESTIONS = [
+            'help',
+            'version',
+            'modules',
+            'task list',
+            'task show ',
+            'task kill ',
+            'system info',
+            'system alarms',
+        ];
+        const COMMAND_HISTORY_KEY = 'micros_gateway_command_history';
+        const proto = window.location.protocol;
+        const hostname = window.location.hostname;
+        const port = window.location.port ? `:${window.location.port}` : "";
+        const apiBaseUrl = `${proto}//${hostname}${port}`;
+        var deviceLinksHTML = [];
+
+        function restApi(cmd = 'list') {
+            if (cmd == '') {
+                cmd = document.getElementById('inputApiCmd').value;
+                store_command_history(cmd);
+            }
+            cmd = cmd.trim().replace(/\s+/g, '+');
+            if (!cmd.startsWith("list") && !cmd.startsWith("search") && !cmd.startsWith("status")){
+                const dropdown = document.getElementById("dropdown");
+                let fuid = dropdown.value;
+                cmd = `sendcmd/${fuid}/${cmd}`;
+            }
+
+            let apiUrl = `${apiBaseUrl}/${cmd}`;
+
+            const startTime = performance.now();
+            let endTime;
+
+            fetch(apiUrl).then(response => {
+                if (!response.ok) {throw new Error('Network response was not ok: '+response.status);}
+                endTime = performance.now();
+                return response.json();
+            }).then(data => {
+                document.getElementById('usrApiCallUrl').innerHTML = `<strong>Generated URL:</strong> <a href="${apiUrl}" target="_blank">${apiUrl}</a>`;
+                document.getElementById('usrApiCallResponse').textContent = JSON.stringify(data, null, 4);
+                const delta = (endTime - startTime).toFixed(0);
+                document.getElementById('rest_response_time').textContent = `Response time: ${delta} ms`;
+
+                if (cmd === 'list' && data) {
+                    deviceLinksHTML = [];
+                    document.getElementById("dropdown").innerHTML = "";
+                    if (data['online']){
+                        Object.entries(data['online']).forEach(([UID, deviceInfo]) => {
+                            upload_device_dropdown(deviceInfo[2]);
+                            update_device_links(deviceInfo[2]);
+                        });
+                    }
+                    if (data['offline']){
+                        Object.entries(data['offline']).forEach(([UID, deviceInfo]) => {
+                            if (!deviceInfo[2].startsWith("__")) {
+                                update_device_links(deviceInfo[2], 'var(--danger-soft)', true);
+                            }
+                        });
+                    }
+                    document.getElementById("micrOSDevices").innerHTML = deviceLinksHTML.length > 0
+                        ? deviceLinksHTML.join("")
+                        : `<div class="empty">No devices in cache.</div>`;
+                }
+            }).catch(error => {
+                console.error('Fetch error:', error);
+                document.getElementById('usrApiCallUrl').innerHTML = `<strong>Generated URL:</strong> <a href="${apiUrl}" target="_blank">${apiUrl}</a>`;
+                document.getElementById('usrApiCallResponse').textContent = `Request failed: ${error}`;
+                document.getElementById('rest_response_time').textContent = '';
+            });
+        }
+
+        function update_device_links(fuid, color='var(--accent)', offline=false) {
+            const className = offline ? 'offline' : '';
+            var linkTemplate = `<a href="${proto}//${fuid}.local" target="_blank" class="${className}" style="background-color: ${color};">${fuid}</a>`;
+            deviceLinksHTML.push(linkTemplate);
+        }
+
+        function upload_device_dropdown(option='-new-') {
+            var dropdown = document.getElementById("dropdown");
+
+            if (!isOptionExists(dropdown, option)) {
+                var newOption = document.createElement("option");
+                newOption.value = option;
+                newOption.text = option;
+                dropdown.appendChild(newOption);
+            }
+        }
+
+        function isOptionExists(dropdown, option) {
+            for (var i = 0; i < dropdown.options.length; i++) {
+                if (dropdown.options[i].value === option) {
+                    return true;
+                }}
+            return false;
+        }
+
+        function set_gateway_ui_version() {
+            document.getElementById('gatewayUiTag').textContent = `Gateway UI ${GATEWAY_UI_VERSION}`;
+        }
+
+        function get_command_history() {
+            try {
+                const stored = localStorage.getItem(COMMAND_HISTORY_KEY);
+                return stored ? JSON.parse(stored) : [];
+            } catch (error) {
+                console.error('Failed to read command history:', error);
+                return [];
+            }
+        }
+
+        function store_command_history(cmd) {
+            const normalized = cmd.trim();
+            if (!normalized) {
+                return;
+            }
+            const history = get_command_history().filter(item => item !== normalized);
+            history.unshift(normalized);
+            localStorage.setItem(COMMAND_HISTORY_KEY, JSON.stringify(history.slice(0, 12)));
+            render_command_suggestions();
+        }
+
+        function render_command_suggestions() {
+            const suggestionValues = [...new Set([...get_command_history(), ...COMMAND_SUGGESTIONS])];
+            const datalist = document.getElementById('commandSuggestions');
+            datalist.innerHTML = suggestionValues
+                .map(value => `<option value="${value}"></option>`)
+                .join('');
+        }
+
+        function create_camera_stream_link() {
+            let apiUrl = `${apiBaseUrl}/imgstream`;
+            var link = document.createElement('a');
+            link.href = apiUrl;
+            link.textContent = 'Open Camera Stream';
+            link.className = 'link-button';
+            link.target = '_blank';
+
+            var elementToReplace = document.getElementById('camera_stream_link');
+            elementToReplace.parentNode.replaceChild(link, elementToReplace);
+        }
+
+        set_gateway_ui_version();
+        render_command_suggestions();
+        create_camera_stream_link();
+        restApi();
+    </script>
+</body>
+</html>

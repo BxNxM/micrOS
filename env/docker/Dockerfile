@@ -10,7 +10,7 @@ RUN apk add --no-cache iputils-ping git
 WORKDIR /gateway
 
 # Install micrOS
-RUN python3 -m pip install micrOSDevToolKit==2.19.0
+RUN python3 -m pip install micrOSDevToolKit==3.0.3
 
 # Change to the micrOS directory
 WORKDIR /gateway/micrOS

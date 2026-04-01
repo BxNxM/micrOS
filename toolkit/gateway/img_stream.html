@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#101418">
+    <title>micrOS Camera Stream</title>
+    <link rel="stylesheet" href="/gateway.css">
+</head>
+<body class="page-camera">
+    <main class="shell">
+        <section class="panel hero">
+            <div>
+                <div class="eyebrow">Live View</div>
+                <h1>Camera Stream</h1>
+                <p>Available camera endpoints refresh continuously through the gateway image proxy.</p>
+            </div>
+            <p>Auto-refresh interval: 1 second</p>
+        </section>
+
+        <section class="panel summary">
+            <strong>Detected Cameras</strong>
+            <div id="camera_device_list" class="cam-list">Loading camera devices...</div>
+        </section>
+
+        <section id="image_content" class="gallery"></section>
+    </main>
+
+    <script>
+        var deviceListCache = [];
+        const proto = window.location.protocol;
+        const currentHostname = window.location.hostname;
+        const port = window.location.port ? `:${window.location.port}` : "";
+
+        function fetchDeviceList() {
+            const camApiUrl = `${proto}//${currentHostname}${port}/image`;
+
+            return fetch(camApiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch device list. Status: ${response.status}`);
+                    }
+                    return response.json();
+                }).then(deviceList => {
+                    deviceListCache = deviceList;
+                    return deviceList;
+                }).catch(error => {
+                    console.error("Error fetching device list:", error);
+                    return [];
+                });
+        }
+
+        function ensureCameraCard(device) {
+            let card = document.getElementById(`card_${device}`);
+            if (card) {
+                return card;
+            }
+
+            card = document.createElement('article');
+            card.className = 'panel camera-card';
+            card.id = `card_${device}`;
+            card.innerHTML = `
+                <img id="image_${device}" alt="${device} camera stream">
+                <div class="camera-meta">
+                    <a id="name_${device}" href="#" target="_blank" rel="noreferrer">${device}</a>
+                    <span id="info_${device}">Waiting for frame...</span>
+                </div>
+            `;
+            document.getElementById('image_content').appendChild(card);
+            return card;
+        }
+
+        function fetchImage(device) {
+            const apiUrl = `${proto}//${currentHostname}${port}/image/${device}`;
+            ensureCameraCard(device);
+
+            const currentDate = new Date();
+            const hours = currentDate.getHours().toString().padStart(2, '0');
+            const minutes = currentDate.getMinutes().toString().padStart(2, '0');
+            const seconds = currentDate.getSeconds().toString().padStart(2, '0');
+
+            fetch(apiUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                    const imageUrl = URL.createObjectURL(blob);
+                    setTimeout(function() {
+                        var img = new Image();
+                        img.src = imageUrl;
+                        img.onload = function() {
+                            document.getElementById(`name_${device}`).href = apiUrl;
+                            document.getElementById(`info_${device}`).textContent = `Last refresh ${hours}:${minutes}:${seconds}`;
+                            document.getElementById(`image_${device}`).src = imageUrl;
+                        };
+                        img.onerror = function() {
+                            console.error(`Error loading image with URL: ${imageUrl}`);
+                        };
+                    }, 3000);
+                })
+                .catch(error => {
+                    console.error(`Error fetching image for ${device}:`, error);
+                    document.getElementById(`info_${device}`).textContent = `Request failed: ${error}`;
+                });
+        }
+
+        function updateImages() {
+            document.getElementById('camera_device_list').textContent = deviceListCache.length > 0
+                ? deviceListCache.join(', ')
+                : 'No camera devices detected yet.';
+
+            if (deviceListCache.length === 0) {
+                document.getElementById('image_content').innerHTML = '<div class="panel empty">No camera previews available yet.</div>';
+                return;
+            }
+
+            if (document.querySelector('.empty')) {
+                document.getElementById('image_content').innerHTML = '';
+            }
+
+            deviceListCache.forEach(device => {
+                fetchImage(device);
+            });
+        }
+
+        fetchDeviceList().then(updateImages);
+        setInterval(updateImages, 1000);
+    </script>
+</body>
+</html>

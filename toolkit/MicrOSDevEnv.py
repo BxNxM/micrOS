@@ -10,6 +10,264 @@ MYPATH = os.path.dirname(__file__)
 print("Module [MicrOSDevEnv] path: {} __package__: {} __name__: {} __file__: {}".format(
     sys.path[0], __package__, __name__, MYPATH))
 
+SFUNCMAN_HTML_CSS = """
+:root {
+    --bg: #0b1117;
+    --surface: rgba(16, 23, 31, 0.92);
+    --surface-soft: rgba(255, 255, 255, 0.03);
+    --text: #e7edf4;
+    --muted: #97a6b4;
+    --line: rgba(231, 237, 244, 0.08);
+    --accent: #4e9f75;
+    --accent-soft: rgba(78, 159, 117, 0.14);
+    --info: #7bc7db;
+    --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+    --radius: 24px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 28px;
+    color: var(--text);
+    font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+    overflow-x: hidden;
+    background:
+        radial-gradient(circle at top left, rgba(78, 159, 117, 0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(123, 199, 219, 0.08), transparent 22%),
+        linear-gradient(180deg, #0f1720 0%, var(--bg) 100%);
+}
+
+a {
+    color: inherit;
+}
+
+.page {
+    max-width: 1220px;
+    margin: 0 auto;
+    display: grid;
+    gap: 20px;
+    min-width: 0;
+}
+
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+}
+
+.hero {
+    padding: 28px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.brand {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.brand img {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, #1c2631, #121a23);
+    box-shadow: inset 0 0 0 1px rgba(231, 237, 244, 0.06);
+    padding: 10px;
+}
+
+.eyebrow {
+    display: inline-flex;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 10px 0 8px;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+}
+
+h2 {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+}
+
+h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+.hero-links {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hero-links a,
+.shortcut-list a,
+.package-links a {
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+}
+
+.section {
+    padding: 24px;
+}
+
+.section-copy {
+    display: grid;
+    gap: 10px;
+}
+
+.pinmap-list {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+    columns: 2;
+}
+
+.pinmap-list li {
+    margin: 0 0 8px;
+}
+
+.shortcut-list,
+.package-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.module-grid {
+    display: grid;
+    gap: 20px;
+    min-width: 0;
+}
+
+.module-nav {
+    padding: 20px 24px;
+}
+
+.module-sections {
+    display: grid;
+    gap: 18px;
+}
+
+.module-card {
+    padding: 22px;
+    min-width: 0;
+}
+
+.module-card h2 a {
+    text-decoration: none;
+}
+
+.doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.doc-table th,
+.doc-table td {
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+    vertical-align: top;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.doc-table th {
+    width: 170px;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.doc-table td {
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.doc-table tr:nth-child(even) td,
+.doc-table tr:nth-child(even) th {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.doc-table img {
+    max-width: 160px;
+    height: auto;
+    border-radius: 14px;
+    display: block;
+}
+
+code {
+    font-family: "SFMono-Regular", "Menlo", "Monaco", monospace;
+}
+
+@media (max-width: 900px) {
+    .pinmap-list {
+        columns: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    body {
+        padding: 16px;
+    }
+
+    .hero,
+    .section,
+    .module-nav,
+    .module-card {
+        padding: 18px;
+    }
+
+    .doc-table th,
+    .doc-table td {
+        display: block;
+        width: 100%;
+    }
+}
+"""
+
 try:
     from .DevEnvOTA import OTA
     from .DevEnvUSB import USB
@@ -210,23 +468,34 @@ class MicrOSDevTool(OTA, USB):
         [!] name dependency with micrOS internal manual provider
         """
 
-        def _my_json_to_html(mod_func_dict):
+        def _my_json_to_html(mod_func_dict, title="Built-in Control Modules", description=None, section_id=None):
             import json2html
-            table_attributes = 'border="1" cellspacing="1" cellpadding="5" width="80%"'
+            table_attributes = 'class="doc-table"'
 
             sorted_modules_w_data = dict(sorted(mod_func_dict.items(), key=lambda item: item[0].lower()))
-            module_shortcuts = ' | '.join(
+            module_shortcuts = ''.join(
                 f'<a href="#{mod_name.replace(" ", "_")}">{mod_name}</a>'
                 for mod_name in sorted_modules_w_data)
-            html_tables = module_shortcuts + "<br><hr><br>"
+            title_id_attr = f' id="{section_id}"' if section_id else ''
+            description_html = f'<p>{description}</p>' if description else ''
+            html_tables = (
+                f'<div class="panel module-nav"{title_id_attr}>'
+                f'<h2>{title}</h2>'
+                f'{description_html}'
+                f'<div class="shortcut-list">{module_shortcuts}</div>'
+                '</div>'
+            )
+            html_tables += '<div class="module-sections">'
             for key, value in sorted_modules_w_data.items():
                 anchor = key.replace(" ", "_")  # Replace spaces with underscores for a valid anchor
-                html_tables += f'\n<br><br>\n<h2 id="{anchor}"><a href="#{anchor}">{key}</a></h2>\n'
+                html_tables += f'\n<section class="panel module-card">\n<h2 id="{anchor}"><a href="#{anchor}">{key}</a></h2>\n'
                 html_tables += json2html.json2html.convert(json=value,
                                                            table_attributes=table_attributes,
                                                            clubbing=True,
                                                            escape=False,
                                                            encode=False)
+                html_tables += '\n</section>\n'
+            html_tables += '</div>'
             return html_tables
 
         if not os.path.isdir(self.sfuncman_output_path):
@@ -276,75 +545,72 @@ class MicrOSDevTool(OTA, USB):
         _url = hardcoded_manual["task"]["img"]
         hardcoded_manual['task']['img'] = f'<img src="{_url}" alt="tasks" height=150>'
         module_function_dict_html.update(hardcoded_manual)
-        html_tables = _my_json_to_html(module_function_dict_html)
-        html_tables_ext = _my_json_to_html(module_function_dict_html_ext)
+        html_tables = _my_json_to_html(
+            module_function_dict_html,
+            title="Built-in Control Modules",
+            description="Compact module index and generated function reference for the current micrOS repository state."
+        )
+        html_tables_ext = _my_json_to_html(
+            module_function_dict_html_ext,
+            title="External Modules",
+            description="Installable package documentation generated alongside built-in load modules.",
+            section_id="external-modules"
+        )
         if len(html_tables_ext) > 0:
-            html_tables_ext = '<br><h2 id="external-modules"> External modules (packages).:</h2>' + html_tables_ext
+            html_tables_ext = f"\n{html_tables_ext}\n"
 
-        # http://corelangs.com/css/table/tablecolor.html
-        # http://corelangs.com/css/table/tablecolor.html
-
-        html_body_start = """<!DOCTYPE html>
+        html_body_start = f"""<!DOCTYPE html>
 <html>
 <head>
 <title>micrOS Load Modules</title>
 <style>
-  table,th,td
-  {
-    border:2px solid black;
-    color:black;
-  }
-  table{border-collapse:collapse;width:80%;}
-  td{height:40px;}
-  
-  tbody tr:nth-child(even){background: rgb(82, 122, 122);}
-
+{SFUNCMAN_HTML_CSS}
 </style>
 </head>
 
-<body style="background-color:LightGray;">
-<h1 style="background-color: rgb(82, 122, 122);">
-<img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" target="_blank" alt="{mod}" height=150>
-micrOS Load Modules
-</h1>
-<p>
-    <b>Generated function manual with module doc strings.</b><br>
-    <a href="https://github.com/BxNxM/micrOS/tree/master/micrOS/client/sfuncman" target="_blank">JSON formatted manuals</a>
-</p>
+<body>
+<main class="page">
+<section class="panel hero">
+    <div class="brand">
+        <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS logo">
+        <div>
+            <div class="eyebrow">Generated Manual</div>
+            <h1>micrOS Load Modules</h1>
+            <p>Static reference for built-in and external module functions, including pin maps, parameter shapes, and doc strings.</p>
+        </div>
+    </div>
+    <div class="hero-links">
+        <a href="https://github.com/BxNxM/micrOS/tree/master/micrOS/client/sfuncman" target="_blank">JSON Manuals</a>
+        <a href="#external-modules">External Packages</a>
+        <a href="https://github.com/BxNxM/micrOSPackages" target="_blank">Package Repo</a>
+    </div>
+</section>
 
-<h2>
-microIO Pin-Mapping (names to integers)
-</h2>
-    <b> Multi-platform pinmap IO handling feature - resolve pin number by name (tag)<br>
-    <b>[i] Use 'module_name pinmap()' function to get pins on a runtime system (micrOS shell) and start DIY</b>
-<ul>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_m5stamp.py" target="_blank">m5stamp</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_tinypico.py" target="_blank">tinypico</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_s3matrix.py" target="_blank">s3matrix</a></li>
+<section class="panel section">
+    <h2>microIO Pin Mapping</h2>
+    <div class="section-copy">
+        <p>Resolve logical pin names to integer values across supported boards.</p>
+        <p>Use <code>module_name pinmap()</code> on a runtime system to inspect the active pin mapping before wiring hardware.</p>
+        <ul class="pinmap-list">
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_m5stamp.py" target="_blank">m5stamp</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_tinypico.py" target="_blank">tinypico</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_s3matrix.py" target="_blank">s3matrix</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32.py" target="_blank">esp32</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32s3.py" target="_blank">esp32s3</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32c3.py" target="_blank">esp32c3</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32c6.py" target="_blank">esp32c6</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32s2.py" target="_blank">esp32s2</a></li>
+            <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_rp2.py" target="_blank">rp2 (experimental)</a></li>
+        </ul>
+    </div>
+</section>
 
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32.py" target="_blank">esp32</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32s3.py" target="_blank">esp32s3</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32c3.py" target="_blank">esp32c3</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32c6.py" target="_blank">esp32c6</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_esp32s2.py" target="_blank">esp32s2</a></li>
-  <li><a href="https://github.com/BxNxM/micrOS/blob/master/micrOS/source/modules/IO_rp2.py" target="_blank">rp2 (experimental)</a></li>
-</ul>
-
-<h2>External package support</h2>
-<a href="#external-modules">Go to external packages</a>
-&nbsp;|&nbsp;
-<a href="https://github.com/BxNxM/micrOSPackages" target="_blank">
-  View Packages on GitHub
-</a>
-<br>
-
-<h2> Built-in control modules for various peripheries.: </h2>
-
+<div class="module-grid">
 """
         html_body_end = """</body>
 </html>"""
 
-        html_page = html_body_start + html_tables + html_tables_ext + html_body_end
+        html_page = html_body_start + html_tables + html_tables_ext + "\n</div>\n</main>\n" + html_body_end
         # Write html to file
         with open(static_help_html_path, 'w') as f:
             f.write(html_page)

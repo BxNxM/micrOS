@@ -48,13 +48,13 @@ Grafana dasboard [examples.json](https://github.com/BxNxM/micrOS/blob/master/env
 Without BasicAuth
 
 ```bash
-docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -d bxnxm/micros-gateway:1.55.4
+docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -d bxnxm/micros-gateway:3.0.3
 ```
 
 With BasicAuth
 
 ```bash
-docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -e API_AUTH=usr:pwd -d bxnxm/micros-gateway:1.55.4
+docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -e API_AUTH=usr:pwd -d bxnxm/micros-gateway:3.0.3
 ```
 
 
@@ -75,7 +75,7 @@ docker build --no-cache -t micros-gateway:1.0 .
 ## Start `micros-gateway` container
 
 ```
-docker run --name micros-gateway -p 5000:5000 -e GATEWAYIP="10.0.1.1" -d micros-gateway:1.0
+docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -d micros-gateway:1.0
 ```
 
 ### List docker image
@@ -121,7 +121,7 @@ docker run --name prometheus -d -p 9090:9090 -v ./prometheus.yml:/etc/prometheus
 ### Gateway on localhost (hybrid setup):
 
 ```
-docker run --name prometheus -d -p 9090:9090 -p 5000:5000 -v ./prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+docker run --name prometheus -d -p 9090:9090 -p 5005:5005 -v ./prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
 ```
 
 ```
@@ -185,4 +185,4 @@ docker-compose restart prometheus
                           
 # Docker external service access:
 Prometheus: http://10.0.1.61:9090
-micrOS gateway for Prometheus: http://10.0.1.61:5000/metrics/TinyDevBoard/esp32+temp
+micrOS gateway for Prometheus: http://10.0.1.61:5005/metrics/TinyDevBoard/esp32+temp

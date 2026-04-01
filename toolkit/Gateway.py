@@ -3,12 +3,14 @@
 # using flask_restful
 import json
 import os
+import ipaddress
 from flask import Flask, jsonify, Response, make_response, request, send_file, abort
 from flask_restful import Resource, Api
 import threading
 import time
 import concurrent.futures
 MYPATH = os.path.dirname(__file__)
+WEBUI_PATH = os.path.join(MYPATH, 'gateway')
 import requests
 from io import BytesIO
 from socket import gethostbyname
@@ -35,6 +37,11 @@ API_URL_CACHE = ""
 # creating the flask app
 app = Flask(__name__)
 
+
+@app.route('/gateway.css')
+def gateway_css():
+    return send_file(os.path.join(WEBUI_PATH, 'gateway.css'), mimetype='text/css')
+
 # --------------------- AUTH BEGIN ------------------------- #
 ADDRESS_CACHE = {}
 try:
@@ -52,6 +59,8 @@ except Exception as e:
     print("[GW-AUTH][DISABLED] API_AUTH ENV VAR NOT FOUND.")
     __rest_usr_name, __rest_usr_pwd, ALLOWED_COUNTRY = None, None, []
 
+if (__rest_usr_name and __rest_usr_pwd) and BasicAuth is None:
+    raise RuntimeError("API_AUTH is configured, but flask_basicauth is not available")
 
 if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
     basic_auth = BasicAuth(app)
@@ -62,15 +71,16 @@ if BasicAuth is not None and (__rest_usr_name and __rest_usr_pwd):
     #app.config['BASIC_AUTH_PASSWORD'] = f'{__rest_usr_pwd}{datetime.now().day}'  # month-day (21)
 
     def _is_local_network():
-        # Define local network IP prefixes (adjust as needed)
-        local_network_prefixes = ['192.168.', '10.0.', '172.']
         #local_network_prefixes = []
         remote_ip = request.remote_addr
         print(f"\t[GW-AUTH] Check incoming IP address: {remote_ip}")
-        for prefix in local_network_prefixes:
-            if remote_ip.startswith(prefix):
-                print(f"\t\t[GW-AUTH] SKIP AUTH - LOCAL NETWORK: {prefix} match with {remote_ip}")
+        try:
+            remote_addr = ipaddress.ip_address(remote_ip)
+            if remote_addr.is_private or remote_addr.is_loopback:
+                print(f"\t\t[GW-AUTH] SKIP AUTH - LOCAL NETWORK: {remote_ip}")
                 return True, remote_ip
+        except ValueError:
+            print(f"\t\t[GW-AUTH] INVALID REMOTE IP: {remote_ip}")
         return False, remote_ip
 
 
@@ -142,7 +152,7 @@ class Hello(Resource):
     # is a GET request for this resource
 
     def get(self):
-        index_html = os.path.join(MYPATH, 'index.html')
+        index_html = os.path.join(WEBUI_PATH, 'index.html')
         try:
             with open(index_html, 'r') as file:
                 html = file.read()
@@ -185,6 +195,8 @@ class SendCmd(Resource):
         cmd_str = ' '.join(cmd_list)
 
         ip, port, fid, uid = socketClient.ConnectionData.select_device(device_tag=device)
+        if uid is None:
+            abort(404, description=f"Unknown device: {device}")
         device_detailed = (uid, ip, port, fid)
 
         print("[Gateway] Raw command params: --dev {} {}".format(uid, cmd_str))
@@ -322,7 +334,7 @@ class DeviceStatus(Resource):
 
             # Clean Alarms
             clean_alarms = DeviceStatus.CLEAN_MICROS_ALARMS
-            log_data = alarms.get('log', None)
+            log_data = alarms.get('log', None) if isinstance(alarms, dict) else None
             if clean_alarms and log_data and len(log_data) > 0:
                 _, _ = socketClient.run(['--dev', fuid.strip(), 'system alarms True'])
 
@@ -341,7 +353,7 @@ class DeviceStatus(Resource):
 
             # Get cpu temp
             _status4, cpu_temp = socketClient.run(['--dev', fuid.strip(), 'esp32 temp'])
-            if 'temp' in cpu_temp:
+            if isinstance(cpu_temp, str) and 'temp' in cpu_temp:
                 try:
                     cpu_temp = cpu_temp.split(":")[1].strip()
                 except:
@@ -352,6 +364,7 @@ class DeviceStatus(Resource):
         output_dev_struct = {}
         online_dev_cnt = 0
         device_struct = socketClient.ConnectionData.list_devices()
+        real_device_count = max(1, len(device_struct) - 2)
         dev_query_list = []
 
         # Start parallel status queries
@@ -362,7 +375,11 @@ class DeviceStatus(Resource):
 
         # Collect results from queries
         for query in dev_query_list:
-            node_info = query.result()
+            try:
+                node_info = query.result()
+            except Exception as e:
+                print(f"Node status worker error: {e}")
+                continue
 
             if node_info is None:
                 continue
@@ -372,7 +389,7 @@ class DeviceStatus(Resource):
             # Status calculation
             if status:
                 online_dev_cnt += 1
-                DeviceStatus.DEVS_AVAIL = round((online_dev_cnt / (len(device_struct)-2)) *100, 1)
+                DeviceStatus.DEVS_AVAIL = round((online_dev_cnt / real_device_count) * 100, 1)
                 status = 'HEALTHY'
             else:
                 status = 'UNHEALTHY'
@@ -574,7 +591,7 @@ class ImgStream(Resource):
     # is a GET request for this resource
 
     def get(self):
-        index_html = os.path.join(MYPATH, 'img_stream.html')
+        index_html = os.path.join(WEBUI_PATH, 'img_stream.html')
         try:
             with open(index_html, 'r') as file:
                 html = file.read()
@@ -620,6 +637,8 @@ api.add_resource(WebHook, '/webhooks', '/webhooks/<string:payload>', '/webhooks/
 
 
 def gateway(debug=True):
+    if (__rest_usr_name and __rest_usr_pwd) and BasicAuth is None:
+        raise RuntimeError("API_AUTH is set but flask_basicauth is unavailable. Refusing to start unsecured gateway.")
     global API_URL_CACHE
     API_URL_CACHE = f"http://{my_local_ip()}:5005"
     print("\n############### START MICROS GATEWAY ###############")

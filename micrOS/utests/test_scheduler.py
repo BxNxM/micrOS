@@ -62,7 +62,7 @@ RUN_DAYS = 365
 # - scheduler sampling/tolerance window (deltasec)
 # - execution period (how frequently scheduler() is called)
 # - virtual time tick step
-EXEC_PERIOD_SEC = 5  # default 5 seconds
+EXEC_PERIOD_SEC = 30  # default 30 seconds
 
 # Provide sunrise/sunset times for tag resolution (Sun.TIME)
 SUN_TIME = {"sunrise": (6, 0, 0), "sunset": (18, 0, 0)}

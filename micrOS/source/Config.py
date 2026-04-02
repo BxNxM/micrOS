@@ -14,7 +14,6 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from re import search
 from json import load, dump
-from utime import sleep
 from Debug import DebugCfg, console_write, syslog
 from Files import OSPath, path_join, is_file
 from uos import remove, rename
@@ -142,7 +141,7 @@ class Config:
     @classmethod
     def _inject_default_conf(cls):
         # Load config and template
-        liveconf = cls.read_cfg_file(nosafe=True)
+        liveconf = cls.read_cfg_file()
         _persist = False
         # Remove obsolete keys from conf
         try:
@@ -166,43 +165,38 @@ class Config:
                         break
             if _persist:
                 # Only persist when migration cleanup removed keys or defaults are missing from the file.
-                cls.write_cfg_file()
-                console_write("[CONF] Save conf successful")
+                state = "successful" if cls.write_cfg_file() else "failed"
+                console_write(f"[CONF] Save conf {state}")
         except Exception as e:
             syslog(f"[ERR] Save (__inject) conf failed: {e}")
         finally:
             del liveconf
 
     @staticmethod
-    def read_cfg_file(nosafe=False):
-        conf = {}
-        while True:
+    def read_cfg_file():
+        if not is_file(Config.CONFIG_PATH):
+            return {}
+        try:
+            with open(Config.CONFIG_PATH, 'r') as f:
+                return load(f)
+        except Exception as e:
+            syslog(f'[ERR] read_cfg_file error: {e}')
             try:
-                with open(Config.CONFIG_PATH, 'r') as f:
-                    conf = load(f)
-                break
-            except Exception as e:
-                console_write(f"[CONF] read_cfg_file error {conf} (json): {e}")
-                # Write out initial config, if no config exists.
-                if nosafe:
-                    break
-                sleep(0.2)
-                syslog(f'[ERR] read_cfg_file error: {e}')
-        # Return config cache
-        return conf
+                rename(Config.CONFIG_PATH, f"{Config.CONFIG_PATH}.bad")
+                console_write(f"[CONF] Corrupted config moved: {Config.CONFIG_PATH}.bad")
+            except Exception as e2:
+                syslog(f'[ERR] read_cfg_file quarantine failed: {e2}')
+            return {}
 
     @staticmethod
     def write_cfg_file():
-        while True:
-            try:
-                # WRITE JSON CONFIG
-                with open(Config.CONFIG_PATH, 'w') as f:
-                    dump({key: value for key, value in Config.INSTANCE.items()}, f)
-                break
-            except Exception as e:
-                syslog(f'[ERR] write_cfg_file {Config.CONFIG_PATH} (json): {e}')
-            sleep(0.2)
-        return True
+        try:
+            with open(Config.CONFIG_PATH, 'w') as f:
+                dump({key: value for key, value in Config.INSTANCE.items()}, f)
+            return True
+        except Exception as e:
+            syslog(f'[ERR] write_cfg_file {Config.CONFIG_PATH}: {e}')
+            return False
 
     @staticmethod
     def type_handler(key, value):
@@ -251,16 +245,16 @@ class Config:
     def validate_pwd(password):
         """
         Validate appwd parameter
-        - webrepl password
+        - webrepl password (max 9 char)
         - micrOS auth password (Shell/WebCli)
-        - wifi access point password
+        - wifi access point password (WPA2-PSK)
         """
         # Check password rules
-        if 4 <= len(password) <= 9:
+        if 8 <= len(password) <= 9:
             if search(r"[A-Z]", password) and search(r"[a-z]", password):
                 if search(r"\d", password):
                     return True, ''
-        return False, 'Password must include [0-9] both [a-z][A-Z] and length between 4-9 char.'
+        return False, 'Password must include [0-9] both [a-z][A-Z] and length between 8-9 char.'
 
 
 #################################################################

@@ -43,7 +43,7 @@ def __cron_task_cache_manager(now_in_sec, sec_tolerant):
         tasktime_in_sec = int(str(taskid.split('|')[0]).split(':')[1])
         sec_diff = tasktime_in_sec - (now_in_sec - sec_tolerant)
         # Remove outdated cache registration
-        if sec_diff < 0 or sec_diff > 20:
+        if sec_diff < 0 or sec_diff > sec_tolerant * 2:
             LAST_CRON_TASKS.remove(LAST_CRON_TASKS[index])
 
 

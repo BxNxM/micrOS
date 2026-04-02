@@ -95,7 +95,8 @@ class ProgressBar:
             self.pbar_status = 0
         if value is not None and 0 <= value <= 100:
             self.pbar_status = value
-        self.pbar_status = self.pbar_status + 1 if self.pbar_status < 100 else 0
+        elif self.pbar_status < 100:
+            self.pbar_status += 1
         self.pbar.setValue(self.pbar_status)
 
 

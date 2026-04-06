@@ -1,4 +1,33 @@
 // API HELPER FUNCTION - get module exposed widgets
+const OPTIONAL_WIDGET_TYPES = {
+    joystick: { src: 'uwidgets_pro.js', ready: () => typeof joystickWidget === 'function' }
+};
+const optionalWidgetLoaders = {};
+const normalizeCallback = callback => String(callback || '').trim().replace(/\s+/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
+
+function loadOptionalWidgetScript(src) {
+    if (optionalWidgetLoaders[src]) {
+        return optionalWidgetLoaders[src];
+    }
+    optionalWidgetLoaders[src] = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Failed to load ${src}`));
+        document.head.appendChild(script);
+    });
+    return optionalWidgetLoaders[src];
+}
+
+function ensureOptionalWidgetsLoaded(widgets) {
+    const scripts = [...new Set(widgets
+        .map(({ type }) => OPTIONAL_WIDGET_TYPES[type])
+        .filter(Boolean)
+        .filter(({ ready }) => !ready())
+        .map(({ src }) => src))];
+    return scripts.length ? Promise.all(scripts.map(loadOptionalWidgetScript)) : Promise.resolve();
+}
+
 function moduleHelp(module) {
     const endpoint = `${module}/help/True`;
     console.log(`[API] Endpoint: ${endpoint}`);
@@ -24,11 +53,11 @@ function containerAppendChild(elements, container) {
         container.appendChild(element);});
 }
 
-function generateElement(type, module, lm_call="", options={}) {
+function generateElement(type, module, callback="", options={}) {
     // type: slider, button, box, h1, h2, p, li, etc.
     // data: rest command
     console.log(`type: ${type}`);
-    const data = `${module}/${lm_call}`;
+    const data = `${module}/${callback}`;
     console.log(`data: ${data}`);
     const container = document.getElementById(`container-${module}`);
     if(!container) {
@@ -48,7 +77,14 @@ function generateElement(type, module, lm_call="", options={}) {
         colorPaletteWidget(container, data, options)
     } else if (type === 'joystick') {
         // Create joystick widget
+        if (typeof joystickWidget !== 'function') {
+            console.error("Optional widget not loaded: joystick");
+            return;
+        }
         joystickWidget(container, data, options)
+    } else if (type === 'embed') {
+        // Create embedded image stream or webpage widget
+        embedWidget(container, data, options)
     } else {
         // Create other elements
         const element = document.createElement(type);
@@ -57,10 +93,10 @@ function generateElement(type, module, lm_call="", options={}) {
     }
 }
 
-function autoTitleLen(widgets, lm_call) {
+function autoTitleLen(widgets, callback) {
     try {
-        const func = lm_call.split('/')[0].split(' ')[0];
-        const count = widgets.reduce((accumulator, { lm_call }) => accumulator + (lm_call.split(' ')[0] === func ? 1 : 0), 0);
+        const func = normalizeCallback(callback).split('/')[0];
+        const count = widgets.reduce((accumulator, item) => accumulator + (normalizeCallback(item.callback).split('/')[0] === func ? 1 : 0), 0);
         return count > 1 ? 2 : 1;
     } catch (error) {
         console.error(error);
@@ -68,10 +104,15 @@ function autoTitleLen(widgets, lm_call) {
     }
 }
 
-function craftModuleWidgets(module, widgets) {
+async function craftModuleWidgets(module, widgets) {
     if (!widgets.length) {
         console.log(`${module} no exposed widgets`);
         return;
+    }
+    try {
+        await ensureOptionalWidgetsLoaded(widgets);
+    } catch (error) {
+        console.error(`Error loading optional widgets for ${module}:`, error);
     }
 
     console.log(`Craft widget to ${module}`);
@@ -85,17 +126,24 @@ function craftModuleWidgets(module, widgets) {
     generateElement('h2', module);
 
     const widgetTypeOptions = {
-        button: item => ({title_len: autoTitleLen(widgets, item.lm_call), options: item.options }),
-        slider: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
-        color: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range }),
-        textbox: item => ({title_len: autoTitleLen(widgets, item.lm_call), refresh: item.refresh }),
-        joystick: item => ({title_len: autoTitleLen(widgets, item.lm_call), range: item.range })
+        button: item => ({title_len: autoTitleLen(widgets, item.callback), options: item.options }),
+        slider: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
+        color: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
+        textbox: item => ({title_len: autoTitleLen(widgets, item.callback), refresh: item.refresh }),
+        joystick: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
+        embed: item => ({
+            title_len: item.callback ? Math.max(autoTitleLen(widgets, item.callback), 2) : 1,
+            callback: normalizeCallback(item.callback || ''),
+            image: item.image,
+            retry: item.retry,
+            title: item.title
+        })
     };
 
     // Create control elements for widget
     widgets.forEach(item => {
-        let { type, lm_call } = item;
-        lm_call = lm_call.replace(/\s/g, '/');
+        let { type, callback = '' } = item;
+        callback = normalizeCallback(callback);
         const type_options = widgetTypeOptions[type] ? widgetTypeOptions[type](item) : null;
         if (!type_options) {
             console.log(`Unsupported micrOS widget html_type: ${type}`);
@@ -104,7 +152,7 @@ function craftModuleWidgets(module, widgets) {
 
         try {
             console.log("adding widget controls");
-            generateElement(type, module, lm_call, type_options);
+            generateElement(type, module, callback, type_options);
         } catch (error) {
             console.error(error);
         }
@@ -116,7 +164,7 @@ function DynamicWidgetLoad() {
         const app_list = data.result;
         app_list.forEach(module => {
             moduleHelp(module).then(widgets => {
-                craftModuleWidgets(module, widgets);
+                return craftModuleWidgets(module, widgets);
             }).catch(error => {
                 console.error(`Error processing module ${module}:`, error);
             });

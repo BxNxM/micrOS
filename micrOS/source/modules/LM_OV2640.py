@@ -242,6 +242,7 @@ def help(widgets=False):
     """
     return resolve(('load quality="medium/low/high" freq="default/high"',
         'settings quality=None flip=None mirror=None effect="NONE"',
+        'EMBED{"callback": "/cam/stream", "title": "camera stream", "image": true, "retry": 3000}',
         'SLIDER settings saturation=<0-100>',
         'SLIDER settings brightness=<0-100>',
         'SLIDER settings contrast=<0-100>',

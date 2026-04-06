@@ -10,6 +10,7 @@ USAGE:
     SLIDER brightness br
     SLIDER brightness br=<0-100>
     SLIDER brightness br=<0-100-5>
+    EMBED{"callback": "/cam/stream", "title": "live stream", "image": true}
 """
 from json import dumps, loads
 from Debug import syslog
@@ -18,18 +19,20 @@ from Debug import syslog
 #                 HELP TUPLE RESOLVER                  #
 ########################################################
 
-__TEMPLATE = {'type': 'n/a', 'lm_call': ''}
+__TEMPLATE = {'type': 'n/a', 'callback': ''}
 __RANGE_100 = {'range': (0, 100, 2)}
 __RANGE_255 = {'range': (0, 255, 2)}
 __OPTIONS = {'options': ("None",)}
 
-# Widget Types
+# Widget Types - Load Module Callbacks
 BUTTON = lambda: __TEMPLATE | {'type': 'button'} | __OPTIONS
 SLIDER = lambda: __TEMPLATE | {'type': 'slider'} | __RANGE_100
 TEXTBOX = lambda: __TEMPLATE | {'type': 'textbox', 'refresh': 10000}
 COLOR = lambda: __TEMPLATE | {'type': 'color'} | __RANGE_255
 WHITE = lambda: __TEMPLATE | {'type': 'white'} | __RANGE_255
 JOYSTICK = lambda: __TEMPLATE | {'type': 'joystick'} | __RANGE_100
+# Widget Types - Web endpoints
+EMBED = lambda: __TEMPLATE | {'type': 'embed', 'image': False, 'retry': 3000, 'title': None}
 
 
 ########################################################
@@ -76,7 +79,7 @@ def _generate(type_dict, help_msg):
             else:
                 param_str = f'{p}=:{"range" if "range" in type_dict else "options"}:'
                 valid_params.append(param_str)
-    type_dict['lm_call'] = f"{func} {' '.join(valid_params)}"
+    type_dict['callback'] = f"{func} {' '.join(valid_params)}"
     return dumps(type_dict | overwrite)
 
 
@@ -127,15 +130,19 @@ def resolve(help_data, widgets=False):
                     # Apply inline widget-only overrides, e.g. TEXTBOX{'refresh': 5000}
                     resolved_tag.update(overrides)
                 try:
-                    # Build a clean message for _generate, without inline {...}
-                    cleaned_msg = (tag + ' ' + cmd).strip()
-                    # Generate JSON output with TAG
-                    help_msg.append(_generate(resolved_tag, cleaned_msg))
+                    if not cmd and isinstance(resolved_tag, dict):
+                        help_msg.append(dumps(resolved_tag))
+                    else:
+                        # Build a clean message for _generate, without inline {...}
+                        cleaned_msg = (tag + ' ' + cmd).strip()
+                        # Generate JSON output with TAG
+                        help_msg.append(_generate(resolved_tag, cleaned_msg))
                 except Exception as e:
                     syslog(f"[ERR] resolve {tag} help msg: {e}")
                 continue
             # Widgets OFF - TAG exists - remove TAG from output
-            help_msg.append(cmd.strip())
+            if tag not in ('EMBED',):
+                help_msg.append(cmd.strip())
         elif not widgets:
             # No TAG - Widgets OFF output
             help_msg.append(msg)

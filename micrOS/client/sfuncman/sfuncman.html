@@ -316,7 +316,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/aht10.png?raw=true" alt="aht10" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/aht10.png?raw=true" alt="aht10" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -333,7 +333,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure&nbsp;ntfy=False',&nbsp;'refresh':&nbsp;2000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true" alt="bme280" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;ntfy=False',&nbsp;'refresh':&nbsp;2000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/bme280.png?raw=true" alt="bme280" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -358,8 +358,8 @@ pin&nbsp;map:&nbsp;buzzer</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'bipp&nbsp;repeat=3&nbsp;freq=600',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'play&nbsp;rtttlstr=:options:',&nbsp;'options':&nbsp;['Indiana',&nbsp;'TakeOnMe',&nbsp;'StarWars',&nbsp;'MissionImp']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true" alt="buzzer" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'bipp&nbsp;repeat=3&nbsp;freq=600',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'play&nbsp;rtttlstr=:options:',&nbsp;'options':&nbsp;['Indiana',&nbsp;'TakeOnMe',&nbsp;'StarWars',&nbsp;'MissionImp']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/buzzer.png?raw=true" alt="buzzer" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -411,10 +411,10 @@ pin&nbsp;map:&nbsp;cwhite,&nbsp;wwhite</td></tr></table></td></tr><tr><th>help</
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'white',&nbsp;'lm_call':&nbsp;'white&nbsp;cw=:range:&nbsp;ww=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;5]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true" alt="cct" height=150></td></tr></table>
+	{'type':&nbsp;'white',&nbsp;'callback':&nbsp;'white&nbsp;cw=:range:&nbsp;ww=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;5]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true" alt="cct" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -457,7 +457,7 @@ pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table cl
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure_mq135&nbsp;temp=None&nbsp;hum=None',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true" alt="co2" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure_mq135&nbsp;temp=None&nbsp;hum=None',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true" alt="co2" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -474,7 +474,7 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure&nbsp;log=False',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true" alt="dht11" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;log=False',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dht11.png?raw=true" alt="dht11" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -491,7 +491,7 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure&nbsp;log=False',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true" alt="dht22" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;log=False',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dht22.png?raw=true" alt="dht22" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -528,8 +528,8 @@ pin&nbsp;map:&nbsp;dim_1</td></tr></table></td></tr><tr><th>help</th><td><table 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'set_value&nbsp;value=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true" alt="dimmer" height=150></td></tr></table>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'set_value&nbsp;value=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;2]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true" alt="dimmer" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -549,7 +549,7 @@ pin&nbsp;map:&nbsp;hcsrtrig,&nbsp;hcsrecho,&nbsp;dimmer</td></tr></table></td></
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure_cm&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true" alt="distance" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure_cm&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true" alt="distance" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -567,7 +567,7 @@ pin&nbsp;map:&nbsp;ds18</td></tr></table></td></tr><tr><th>help</th><td><table c
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/ds18.png?raw=true" alt="ds18" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/ds18.png?raw=true" alt="ds18" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -677,9 +677,9 @@ pin&nbsp;map:&nbsp;ds18</td></tr></table></td></tr><tr><th>help</th><td><table c
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 pin&nbsp;map:&nbsp;haptic</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'tap&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'effect1&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'effect2&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/haptic.png?raw=true" alt="haptic" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'tap&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'effect1&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'effect2&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/haptic.png?raw=true" alt="haptic" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -816,8 +816,8 @@ pin&nbsp;map:&nbsp;temp6000</td></tr></table></td></tr><tr><th>help</th><td><tab
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'intensity&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'illuminance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true" alt="light_sensor" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'intensity&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'illuminance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true" alt="light_sensor" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -836,9 +836,9 @@ pin&nbsp;map:&nbsp;mh_z19c_tx,&nbsp;mh_z19c_rx,&nbsp;mh_z19c_hd</td></tr></table
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'start&nbsp;interval=5000',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'stop&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/mh_z19c.png?raw=true" alt="mh_z19c" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'start&nbsp;interval=5000',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'stop&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/mh_z19c.png?raw=true" alt="mh_z19c" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -875,13 +875,13 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table c
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'meteor&nbsp;speed_ms=60',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'cycle&nbsp;speed_ms=60',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'rainbow&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'fire&nbsp;speed_ms=150',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'stop&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'control&nbsp;speed_ms=:range:&nbsp;batch=None',&nbsp;'range':&nbsp;[1,&nbsp;200,&nbsp;2]}<br>
-	{'type':&nbsp;'color',&nbsp;'lm_call':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;10]}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true" alt="neoeffects" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'meteor&nbsp;speed_ms=60',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'cycle&nbsp;speed_ms=60',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'rainbow&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'fire&nbsp;speed_ms=150',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'stop&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'control&nbsp;speed_ms=:range:&nbsp;batch=None',&nbsp;'range':&nbsp;[1,&nbsp;200,&nbsp;2]}<br>
+	{'type':&nbsp;'color',&nbsp;'callback':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;10]}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neoeffects.png?raw=true" alt="neoeffects" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -936,10 +936,10 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table c
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'color',&nbsp;'lm_call':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;5]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=254',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true" alt="neopixel" height=150></td></tr></table>
+	{'type':&nbsp;'color',&nbsp;'callback':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;5]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=254',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true" alt="neopixel" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -983,9 +983,9 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'invert&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'poweron&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'poweroff&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true" alt="oled" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'invert&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'poweron&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'poweroff&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled.png?raw=true" alt="oled" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1020,9 +1020,9 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'invert&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'poweron&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'poweroff&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_sh1106.png?raw=true" alt="oled_sh1106" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'invert&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'poweron&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'poweroff&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_sh1106.png?raw=true" alt="oled_sh1106" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1053,7 +1053,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'control&nbsp;cmd=:options:',&nbsp;'options':&nbsp;['prev',&nbsp;'press',&nbsp;'next',&nbsp;'on',&nbsp;'off']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true" alt="oled_ui" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'control&nbsp;cmd=:options:',&nbsp;'options':&nbsp;['prev',&nbsp;'press',&nbsp;'next',&nbsp;'on',&nbsp;'off']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oled_ui.png?raw=true" alt="oled_ui" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1077,11 +1077,12 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'settings&nbsp;saturation=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'settings&nbsp;brightness=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'settings&nbsp;contrast=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'settings&nbsp;effect=:options:',&nbsp;'options':&nbsp;['NONE',&nbsp;'NEG',&nbsp;'BW',&nbsp;'RED',&nbsp;'GREEN',&nbsp;'BLUE',&nbsp;'RETRO']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'flashlight&nbsp;state=None',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true" alt="OV2640" height=150></td></tr></table>
+	{'type':&nbsp;'embed',&nbsp;'callback':&nbsp;'/cam/stream',&nbsp;'image':&nbsp;True,&nbsp;'retry':&nbsp;3000,&nbsp;'title':&nbsp;'camera&nbsp;stream'}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'settings&nbsp;saturation=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'settings&nbsp;brightness=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'settings&nbsp;contrast=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'settings&nbsp;effect=:options:',&nbsp;'options':&nbsp;['NONE',&nbsp;'NEG',&nbsp;'BW',&nbsp;'RED',&nbsp;'GREEN',&nbsp;'BLUE',&nbsp;'RETRO']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'flashlight&nbsp;state=None',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true" alt="OV2640" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1171,7 +1172,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation&nbsp;(widgets=True)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 pin&nbsp;map:&nbsp;rot_clk,&nbsp;rot_dt</td></tr></table></td></tr><tr><th>color_indicator</th><td><table class="doc-table"><tr><th>doc</th><td>Encoder&nbsp;visualization&nbsp;on&nbsp;LED&nbsp;colors&nbsp;(LM_neopixel)</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'read_state&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rencoder.png?raw=true" alt="rencoder" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'read_state&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rencoder.png?raw=true" alt="rencoder" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1234,10 +1235,10 @@ pin&nbsp;map:&nbsp;redgb,&nbsp;rgreenb,&nbsp;rgbue</td></tr></table></td></tr><t
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'color',&nbsp;'lm_call':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;10]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true" alt="rgb" height=150></td></tr></table>
+	{'type':&nbsp;'color',&nbsp;'callback':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;10]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true" alt="rgb" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1250,8 +1251,8 @@ pin&nbsp;map:&nbsp;redgb,&nbsp;rgreenb,&nbsp;rgbue,&nbsp;cwhite,&nbsp;wwhite</td
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgbcct.png?raw=true" alt="rgbcct" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgbcct.png?raw=true" alt="rgbcct" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1292,11 +1293,11 @@ pin&nbsp;map:&nbsp;servo_1,&nbsp;servo_2,&nbsp;switch_1,&nbsp;switch_2,&nbsp;swi
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'joystick',&nbsp;'lm_call':&nbsp;'control&nbsp;x=:range:&nbsp;y=:range:&nbsp;speed_ms=5&nbsp;smooth=True',&nbsp;'range':&nbsp;[40,&nbsp;115,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'boot_move&nbsp;speed_ms=10',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'standby&nbsp;y_pos=45',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'jiggle&nbsp;delta=3',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'play&nbsp;deinit=True',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true" alt="roboarm" height=150></td></tr></table>
+	{'type':&nbsp;'joystick',&nbsp;'callback':&nbsp;'control&nbsp;x=:range:&nbsp;y=:range:&nbsp;speed_ms=5&nbsp;smooth=True',&nbsp;'range':&nbsp;[40,&nbsp;115,&nbsp;2]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'boot_move&nbsp;speed_ms=10',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'standby&nbsp;y_pos=45',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'jiggle&nbsp;delta=3',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'play&nbsp;deinit=True',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true" alt="roboarm" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1380,8 +1381,8 @@ pin&nbsp;map:&nbsp;i2s_sck,&nbsp;i2s_ws,&nbsp;i2s_sd</td></tr></table></td></tr>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'classify_last_event&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'get_performance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/sound_event.png?raw=true" alt="sound_event" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'classify_last_event&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'get_performance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/sound_event.png?raw=true" alt="sound_event" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1441,10 +1442,10 @@ pin&nbsp;map:&nbsp;switch_1,&nbsp;switch_2,&nbsp;switch_3,&nbsp;switch_4</td></t
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle2&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle3&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'toggle4&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true" alt="switch" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle2&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle3&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle4&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/switch.png?raw=true" alt="switch" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1490,7 +1491,7 @@ pin&nbsp;map:&nbsp;map,&nbsp;booked,&nbsp;custom,&nbsp;known_maps</td></tr></tab
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'top&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true" alt="system" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'top&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/system.png?raw=true" alt="system" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1508,11 +1509,11 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;led</td></tr></table></td></tr><t
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;br:&nbsp;brightness&nbsp;0-100</td></tr></table></td></tr><tr><th>neomatrix_update</th><td><table class="doc-table"><tr><th>doc</th><td>DEMO&nbsp;-&nbsp;Send&nbsp;color&nbsp;codes&nbsp;for&nbsp;all&nbsp;neomatrix&nbsp;devices&nbsp;over&nbsp;espnow&nbsp;cluster</td></tr></table></td></tr><tr><th>neomatrix_animation</th><td><table class="doc-table"><tr><th>doc</th><td>DEMO&nbsp;-&nbsp;Set&nbsp;random&nbsp;animation&nbsp;on&nbsp;neomatrix&nbsp;espnow&nbsp;cluster</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>TCS3472&nbsp;Color&nbsp;sensor<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'led&nbsp;state=:options:',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'led&nbsp;state=True&nbsp;br=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;5]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'neomatrix_update&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'neomatrix_animation&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true" alt="tcs3472" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'led&nbsp;state=:options:',&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'led&nbsp;state=True&nbsp;br=:range:',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;5]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'neomatrix_update&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'neomatrix_animation&nbsp;',&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true" alt="tcs3472" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1579,7 +1580,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;trackball_int</td></tr></table></
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'lm_call':&nbsp;'read_lux&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/veml7700.png?raw=true" alt="veml7700" height=150></td></tr></table>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'read_lux&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/veml7700.png?raw=true" alt="veml7700" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1699,15 +1700,15 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;ds18,&nbsp;neop</td></tr></table>
 &nbsp;&nbsp;&nbsp;&nbsp;Change&nbsp;animation&nbsp;color&nbsp;(when&nbsp;possible)</td></tr></table></td></tr><tr><th>brightness</th><td><table class="doc-table"><tr><th>param(s)</th><td>br: int</td></tr><tr><th>doc</th><td>Change&nbsp;the&nbsp;brightness&nbsp;of&nbsp;the&nbsp;display.&nbsp;(0-100)</td></tr></table></td></tr><tr><th>control</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=None bt_draw:bool=None</td></tr><tr><th>doc</th><td>Change&nbsp;the&nbsp;speed&nbsp;of&nbsp;frame&nbsp;generation&nbsp;for&nbsp;animations.</td></tr></table></td></tr><tr><th>stop</th><td><table class="doc-table"><tr><th>doc</th><td>Stop&nbsp;the&nbsp;current&nbsp;animation</td></tr></table></td></tr><tr><th>draw_colormap</th><td><table class="doc-table"><tr><th>param(s)</th><td>bitmap</td></tr><tr><th>doc</th><td>Draw&nbsp;colors&nbsp;as&nbsp;a&nbsp;color&nbsp;map<br>
 &nbsp;&nbsp;&nbsp;&nbsp;[(x,&nbsp;y,&nbsp;(r,&nbsp;g,b)),&nbsp;...]</td></tr></table></td></tr><tr><th>get_colormap</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>status</th><td><table class="doc-table"><tr><th>doc</th><td>Get&nbsp;the&nbsp;current&nbsp;status&nbsp;of&nbsp;the&nbsp;matrix</td></tr></table></td></tr><tr><th>rainbow</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=0</td></tr><tr><th>doc</th><td>Play&nbsp;rainbow&nbsp;effect</td></tr></table></td></tr><tr><th>snake</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms:int=30 length:int=6</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>spiral</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=40</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>noise</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms:int=85</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'clear&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'color',&nbsp;'lm_call':&nbsp;'color_fill&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;5]}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'brightness&nbsp;br=:range:',&nbsp;'range':&nbsp;[0,&nbsp;60,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'stop&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'snake&nbsp;speed_ms=50&nbsp;length=5',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'rainbow&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'spiral&nbsp;speed_ms=40',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'noise&nbsp;speed_ms=85',&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'slider',&nbsp;'lm_call':&nbsp;'control&nbsp;speed_ms=:range:&nbsp;bt_draw=None',&nbsp;'range':&nbsp;[1,&nbsp;200,&nbsp;2]}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true" alt="neomatrix" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'clear&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'color',&nbsp;'callback':&nbsp;'color_fill&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;5]}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;br=:range:',&nbsp;'range':&nbsp;[0,&nbsp;60,&nbsp;2]}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'stop&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'snake&nbsp;speed_ms=50&nbsp;length=5',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'rainbow&nbsp;',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'spiral&nbsp;speed_ms=40',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'noise&nbsp;speed_ms=85',&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'control&nbsp;speed_ms=:range:&nbsp;bt_draw=None',&nbsp;'range':&nbsp;[1,&nbsp;200,&nbsp;2]}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true" alt="neomatrix" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1731,8 +1732,8 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;ds18,&nbsp;neop</td></tr></table>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'control&nbsp;cmd=:options:',&nbsp;'options':&nbsp;['prev',&nbsp;'press',&nbsp;'next',&nbsp;'on',&nbsp;'off']}<br>
-	{'type':&nbsp;'button',&nbsp;'lm_call':&nbsp;'debug&nbsp;state=:options:',&nbsp;'options':&nbsp;['True',&nbsp;'False']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true" alt="oledui" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'control&nbsp;cmd=:options:',&nbsp;'options':&nbsp;['prev',&nbsp;'press',&nbsp;'next',&nbsp;'on',&nbsp;'off']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'debug&nbsp;state=:options:',&nbsp;'options':&nbsp;['True',&nbsp;'False']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true" alt="oledui" height=150></td></tr></table>
 </section>
 </div>
 

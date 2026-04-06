@@ -199,7 +199,7 @@ class Buffer:
         return len(request)
 
     async def _response_handler(self, resp_handler):
-        if "closure" == type(resp_handler).__name__:
+        if type(resp_handler).__name__ in ("function", "closure"):
             for is_finished in resp_handler(self._send_buf):
                 await self._flush_response()
                 if is_finished:

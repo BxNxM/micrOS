@@ -387,11 +387,15 @@ Main steps:
 
 Tags:
 
-* `BUTTON`, requires[0]: no param
-* `COLOR`, requires[3]: r, g, b function parameters
-* `SLIDER`, requires[1]: br function parameters (or any other single param)
-* `TEXTBOX`, requires[0]: no param
-* `JOYSTICK`, requires[1]: x and y function parameters
+* `BUTTON`, no required parameter
+* `SLIDER`, one primary numeric parameter
+* `TEXTBOX`, no required parameter, optional `{"refresh": ms}` override
+* `COLOR`, three primary numeric parameters: `r`, `g`, `b`
+* `WHITE`, two primary numeric parameters: `cw`, `ww`
+* `JOYSTICK`, two primary numeric parameters: `x`, `y`
+* `EMBED`, widget-only type for image streams or embedded web pages
+* All widget JSON uses the `callback` field
+* `EMBED` is hidden from normal `help()` output and shown only in `help(widgets=True)`
 * Implementation of [TYPES](./source/Types.py)
 
 
@@ -516,7 +520,7 @@ def help(widgets=False):
     """
     [Naming convention]
     [i] micrOS LM naming convention - built-in help message
-    :param widgets: only a placeholder here - has no effect
+    :param widgets: False -> normal help, True -> widget json
     :return tuple:
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
@@ -544,9 +548,9 @@ simulator $ types_demo help
  help,
 
 simulator $ types_demo help True
- {"type": "button", "lm_call": "on ", "options": ["None"]},
- {"type": "button", "lm_call": "off ", "options": ["None"]},
- {"type": "button", "lm_call": "toggle ", "options": ["None"]},
+ {"type": "button", "callback": "on ", "options": ["None"]},
+ {"type": "button", "callback": "off ", "options": ["None"]},
+ {"type": "button", "callback": "toggle ", "options": ["None"]},
 ```
 
 Usage(s): [LM_neopixel](./source/modules/LM_neopixel.py), etc. in most of the modules :)
@@ -555,11 +559,16 @@ TYPE Example sytax:
 
 ```python
     return resolve(('COLOR color r=<0-255> g b',                 # range syntax: <min-max-step> step is optional
+                    'WHITE white cw=<0-255> ww',                 # white/cold-white control widget
                     'SLIDER brightness br=<0-1000-10>',          # range syntax: <min-max-step> step is optional
                     'BUTTON action',
-                    'BUTTON conntrol cmd=<Hello,Bello>',         # options syntax: <opt1,opt2,...> list of parameters
+                    'BUTTON control cmd=<Hello,Bello>',          # options syntax: <opt1,opt2,...> list of parameters
+                    'TEXTBOX{"refresh": 2000} measure',          # optional widget override before the command
+                    'EMBED{"callback": "/cam/stream", "title": "camera stream", "image": true, "retry": 3000}',
                     'other_function num'), widgets=widgets)
 ```
+
+`EMBED` uses `callback` as the source URL. With `image: true` it renders an image stream, with `image: false` it renders an embedded page.
 
 -------------------------------------------------------------------------------
 

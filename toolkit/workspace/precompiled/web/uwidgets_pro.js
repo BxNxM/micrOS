@@ -95,5 +95,53 @@ function joystickWidget(container, command, params={}) {
     updateValueDisplay((max - min) / 2, (max - min) / 2);
 }
 
+function embedWidget(container, command, params={}) {
+    const { title_len = 1, callback = '', image = false, title = null } = params;
+    const embedUrl = toAbsoluteEndpoint(callback);
+    const label = title || (command ? createTitle(command, title_len) : 'embedded content');
+    const paragraph = document.createElement('p');
+    const wrapper = document.createElement('div');
+    const content = document.createElement(image ? 'img' : 'iframe');
+    const widgetWidth = `${Math.min(windowWidth * 0.8, 480)}px`;
 
+    paragraph.style.textIndent = widget_indent;
+    paragraph.textContent = label;
+    Object.assign(wrapper.style, { marginLeft: widget_indent, width: widgetWidth });
+    Object.assign(content.style, {
+        width: '100%',
+        border: '2px solid #e7e7e7',
+        borderRadius: '8px',
+        backgroundColor: '#101418'
+    });
 
+    if (!image) {
+        content.src = embedUrl;
+        content.title = label;
+        content.loading = 'lazy';
+        content.style.height = '320px';
+        wrapper.appendChild(content);
+        containerAppendChild([paragraph, wrapper], container);
+        return;
+    }
+
+    Object.assign(content.style, {
+        minHeight: '180px',
+        display: 'block',
+        objectFit: 'contain',
+        cursor: 'pointer'
+    });
+    content.alt = label;
+    const connect = () => {
+        if (!embedUrl) {return;}
+        console.log(`[API] Embed connect: ${embedUrl}`);
+        content.removeAttribute('src');
+        requestAnimationFrame(() => {
+            content.src = embedUrl;
+        });
+    };
+
+    content.addEventListener('click', connect);
+    wrapper.appendChild(content);
+    containerAppendChild([paragraph, wrapper], container);
+    connect();
+}

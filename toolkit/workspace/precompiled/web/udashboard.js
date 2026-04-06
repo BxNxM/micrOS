@@ -1,6 +1,7 @@
 // API HELPER FUNCTION - get module exposed widgets
 const OPTIONAL_WIDGET_TYPES = {
-    joystick: { src: 'uwidgets_pro.js', ready: () => typeof joystickWidget === 'function' }
+    joystick: { src: 'uwidgets_pro.js', ready: () => typeof joystickWidget === 'function' },
+    embed: { src: 'uwidgets_pro.js', ready: () => typeof embedWidget === 'function' }
 };
 const optionalWidgetLoaders = {};
 const normalizeCallback = callback => String(callback || '').trim().replace(/\s+/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
@@ -84,6 +85,10 @@ function generateElement(type, module, callback="", options={}) {
         joystickWidget(container, data, options)
     } else if (type === 'embed') {
         // Create embedded image stream or webpage widget
+        if (typeof embedWidget !== 'function') {
+            console.error("Optional widget not loaded: embed");
+            return;
+        }
         embedWidget(container, data, options)
     } else {
         // Create other elements

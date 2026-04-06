@@ -58,9 +58,7 @@ def _set_web_endpoints():
     # Register rest endpoint
     web_endpoint('cam/snapshot', _snapshot_clb)
     web_endpoint('cam/stream', _image_stream_clb)
-    web_endpoint('cam/photo', lambda _, body: \
-                 ('text/plain', photo() if not body else photo(body.encode('ascii'))))
-    return "Endpoint created: /cam/snapshot, /cam/stream, /cam/photo"
+    return "Endpoint created: /cam/snapshot, /cam/stream"
 
 
 def settings(quality=None, flip=None, mirror=None, effect=None, saturation=None, brightness=None, contrast=None, whitebalace=None, q=None):
@@ -248,7 +246,7 @@ def help(widgets=False):
         'SLIDER settings contrast=<0-100>',
         'BUTTON settings effect=<NONE,NEG,BW,RED,GREEN,BLUE,RETRO>',
         'capture',
-        'photo',
+        'BUTTON photo',
         'BUTTON flashlight state=None',
         '[Hint] after load you can access the /cam/snapshot and /cam/stream endpoints',
         'Thanks to :) https://github.com/lemariva/micropython-camera-driver'), widgets=widgets)

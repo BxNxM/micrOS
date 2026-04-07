@@ -2,7 +2,7 @@
 const OPTIONAL_WIDGET_TYPES = {
     joystick: { src: 'uwidgets_pro.js', ready: () => typeof joystickWidget === 'function' },
     embed: { src: 'uwidgets_pro.js', ready: () => typeof embedWidget === 'function' },
-    graph: { src: 'uwidgets_pro.js', ready: () => typeof graphWidget === 'function' }
+    white: { src: 'uwidgets_pro.js', ready: () => typeof whiteWidget === 'function' }
 };
 const optionalWidgetLoaders = {};
 const normalizeCallback = callback => String(callback || '').trim().replace(/\s+/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
@@ -77,6 +77,13 @@ function generateElement(type, module, callback="", options={}) {
     } else if (type === 'color') {
         // Create color palette widget
         colorPaletteWidget(container, data, options)
+    } else if (type === 'white') {
+        // Create cold white / warm white widget
+        if (typeof whiteWidget !== 'function') {
+            console.error("Optional widget not loaded: white");
+            return;
+        }
+        whiteWidget(container, data, options)
     } else if (type === 'joystick') {
         // Create joystick widget
         if (typeof joystickWidget !== 'function') {
@@ -142,6 +149,7 @@ async function craftModuleWidgets(module, widgets) {
         button: item => ({title_len: autoTitleLen(widgets, item.callback), options: item.options }),
         slider: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
         color: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
+        white: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
         textbox: item => ({title_len: autoTitleLen(widgets, item.callback), refresh: item.refresh }),
         graph: item => ({title_len: autoTitleLen(widgets, item.callback), refresh: item.refresh, limit: item.limit }),
         joystick: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),

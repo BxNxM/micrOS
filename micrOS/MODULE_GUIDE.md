@@ -555,7 +555,22 @@ simulator $ types_demo help True
 
 Usage(s): [LM_neopixel](./source/modules/LM_neopixel.py), etc. in most of the modules :)
 
-TYPE Example sytax:
+Optional TYPE parameters: `TYPE{...}`
+
+| Type | Optional inline parameters |
+| ---- | -------------------------- |
+| `BUTTON` | none |
+| `SLIDER` | none |
+| `COLOR` | none |
+| `WHITE` | none |
+| `JOYSTICK` | none |
+| `TEXTBOX{"refresh": 10000}` | `refresh`: polling interval in ms |
+| `GRAPH{"refresh": 3000, "limit": 30}` | `refresh`: polling interval in ms, `limit`: retained samples |
+| `EMBED{"callback": "/cam/stream", "image": false, "title": null}` | `callback`: URL/path, `image`: image stream mode, `retry`: reserved, `title`: optional label |
+
+`range`, `options`, and regular callback commands are rendered from the command syntax below, so they are not listed as optional `TYPE{...}` parameters.
+
+TYPE Example syntax:
 
 ```python
     return resolve(('COLOR color r=<0-255> g b',                 # range syntax: <min-max-step> step is optional
@@ -564,11 +579,13 @@ TYPE Example sytax:
                     'BUTTON action',
                     'BUTTON control cmd=<Hello,Bello>',          # options syntax: <opt1,opt2,...> list of parameters
                     'TEXTBOX{"refresh": 2000} measure',          # optional widget override before the command
+                    'GRAPH{"refresh": 3000, "limit": 30} top',   # plot numeric dict values over time
                     'EMBED{"callback": "/cam/stream", "title": "camera stream", "image": true, "retry": 3000}',
                     'other_function num'), widgets=widgets)
 ```
 
 `EMBED` uses `callback` as the source URL. With `image: true` it renders an image stream, with `image: false` it renders an embedded page.
+`GRAPH` polls `callback` and plots top-level numeric JSON/dict fields over received time.
 
 -------------------------------------------------------------------------------
 

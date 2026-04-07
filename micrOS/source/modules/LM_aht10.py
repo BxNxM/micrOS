@@ -136,4 +136,4 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('TEXTBOX measure', 'reset', 'load', 'pinmap'), widgets=widgets)
+    return resolve(('GRAPH measure', 'reset', 'load', 'pinmap'), widgets=widgets)

@@ -145,3 +145,128 @@ function embedWidget(container, command, params={}) {
     containerAppendChild([paragraph, wrapper], container);
     connect();
 }
+
+function graphWidget(container, command, params={}) {
+    const { title_len = 1, refresh = 3000, limit = 30 } = params;
+    const paragraph = document.createElement('p');
+    const canvas = document.createElement('canvas');
+    const legend = document.createElement('div');
+    const width = Math.round(Math.min(windowWidth * 0.6, 320));
+    const height = 180;
+    const pad = 28;
+    const samples = [];
+    const keys = [];
+    const colors = ['#00d1ff', '#ffca3a', '#7bd88f', '#ff6b6b', '#c77dff', '#f4a261'];
+    const ctx = canvas.getContext('2d');
+    const timeText = stamp => new Date(stamp).toLocaleTimeString();
+
+    paragraph.style.textIndent = widget_indent;
+    paragraph.textContent = createTitle(command, title_len);
+    Object.assign(canvas, { width, height });
+    Object.assign(canvas.style, {
+        marginLeft: widget_indent,
+        width: `${width}px`,
+        border: '2px solid #e7e7e7',
+        borderRadius: '8px',
+        backgroundColor: 'rgba(16, 20, 24, 0.72)'
+    });
+    Object.assign(legend.style, { marginLeft: widget_indent, width: `${width}px`, fontSize: '11px' });
+
+    const draw = () => {
+        let min = Infinity;
+        let max = -Infinity;
+        samples.forEach(sample => keys.forEach(key => {
+            if (key in sample.values) {
+                min = Math.min(min, sample.values[key]);
+                max = Math.max(max, sample.values[key]);
+            }
+        }));
+        if (!isFinite(min)) {return;}
+        const highest = max;
+        const span = min === max ? 1 : max - min;
+        min -= span * (min === max ? 1 : 0.12);
+        max += span * 0.15;
+        const first = samples[0];
+        const latest = samples[samples.length - 1];
+        const last = latest.values;
+        const scaleX = Math.max(latest.time - first.time, 1);
+        const xOf = time => pad + ((time - first.time) / scaleX) * (width - pad - 12);
+        const yOf = value => height - pad - ((value - min) / (max - min)) * (height - pad - 14);
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#64707c';
+        ctx.fillStyle = '#b7c0c8';
+        ctx.font = '10px sans-serif';
+        ctx.beginPath();
+        ctx.moveTo(pad, 10);
+        ctx.lineTo(pad, height - pad);
+        ctx.lineTo(width - 10, height - pad);
+        ctx.stroke();
+        ctx.fillText(timeText(first.time), pad, height - 4);
+        ctx.textAlign = 'right';
+        ctx.fillText(timeText(latest.time), width - 10, height - 4);
+        ctx.textAlign = 'left';
+        ctx.lineWidth = 2;
+
+        keys.forEach((key, i) => {
+            const color = colors[i % colors.length];
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            let started = false;
+            samples.forEach(sample => {
+                if (!(key in sample.values)) {return;}
+                const x = xOf(sample.time);
+                const y = yOf(sample.values[key]);
+                started ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+                started = true;
+                ctx.fillRect(x - 2, y - 2, 4, 4);
+            });
+            ctx.stroke();
+        });
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(highest, pad - 4, yOf(highest) + 3);
+        legend.textContent = '';
+        keys.forEach((key, i) => {
+            const value = key in last ? last[key] : '-';
+            const color = colors[i % colors.length];
+            if (value !== '-') {
+                ctx.fillStyle = color;
+                ctx.fillText(value, pad - 4, yOf(value) + 3);
+            }
+            const item = document.createElement('span');
+            item.style.color = color;
+            item.textContent = `${key}: ${value}  `;
+            legend.appendChild(item);
+        });
+        ctx.textAlign = 'left';
+    };
+
+    const update = () => restAPI(command, false).then(({ result }) => {
+        const values = {};
+        const resultData = result || {};
+        let hasData = false;
+        for (const key in resultData) {
+            const value = resultData[key];
+            if (typeof value === 'number' && isFinite(value)) {
+                values[key] = value;
+                hasData = true;
+                if (keys.indexOf(key) < 0) {keys.push(key);}
+            }
+        }
+        if (!hasData) {return;}
+        samples.push({ time: Date.now(), values });
+        if (samples.length > limit) {samples.splice(0, samples.length - limit);}
+        draw();
+    });
+
+    containerAppendChild([paragraph, canvas, legend], container);
+    update();
+    if (refresh > 0) {
+        const intervalId = setInterval(update, refresh);
+        container.addEventListener('DOMNodeRemovedFromDocument', () => clearInterval(intervalId));
+    }
+}

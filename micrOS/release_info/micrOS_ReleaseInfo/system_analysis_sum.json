@@ -49,7 +49,7 @@
             3
         ],
         "Types.py": [
-            8.39,
+            9.04,
             28
         ],
         "Logger.py": [
@@ -323,7 +323,7 @@
     },
     "summary": {
         "core": [
-            5309,
+            5311,
             27
         ],
         "load": [
@@ -338,8 +338,8 @@
             true,
             4
         ],
-        "core_score": 9.26,
+        "core_score": 9.28,
         "load_score": 8.44,
-        "version": "3.0.5-0"
+        "version": "3.0.6-0"
     }
 }

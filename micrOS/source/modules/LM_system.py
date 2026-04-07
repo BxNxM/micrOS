@@ -268,7 +268,7 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('info', 'TEXTBOX top', 'gclean', 'heartbeat', 'clock',
+    return resolve(('info', 'GRAPH{"refresh":5000} top', 'gclean', 'heartbeat', 'clock',
                     'setclock year month mday hour minute sec',
                     'ntp', 'rssi', 'list_stations', 'pinmap key="builtin"', 'alarms clean=False',
                     'notifications enable=<None,True,False>',

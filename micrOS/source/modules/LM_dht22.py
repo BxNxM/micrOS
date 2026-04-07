@@ -79,5 +79,5 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return resolve(('TEXTBOX measure log=False',
+    return resolve(('GRAPH measure log=False',
                              'logger', 'load', 'pinmap'), widgets=widgets)

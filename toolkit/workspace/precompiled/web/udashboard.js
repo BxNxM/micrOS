@@ -1,7 +1,8 @@
 // API HELPER FUNCTION - get module exposed widgets
 const OPTIONAL_WIDGET_TYPES = {
     joystick: { src: 'uwidgets_pro.js', ready: () => typeof joystickWidget === 'function' },
-    embed: { src: 'uwidgets_pro.js', ready: () => typeof embedWidget === 'function' }
+    embed: { src: 'uwidgets_pro.js', ready: () => typeof embedWidget === 'function' },
+    graph: { src: 'uwidgets_pro.js', ready: () => typeof graphWidget === 'function' }
 };
 const optionalWidgetLoaders = {};
 const normalizeCallback = callback => String(callback || '').trim().replace(/\s+/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
@@ -90,6 +91,13 @@ function generateElement(type, module, callback="", options={}) {
             return;
         }
         embedWidget(container, data, options)
+    } else if (type === 'graph') {
+        // Create graph widget
+        if (typeof graphWidget !== 'function') {
+            console.error("Optional widget not loaded: graph");
+            return;
+        }
+        graphWidget(container, data, options)
     } else {
         // Create other elements
         const element = document.createElement(type);
@@ -135,6 +143,7 @@ async function craftModuleWidgets(module, widgets) {
         slider: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
         color: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
         textbox: item => ({title_len: autoTitleLen(widgets, item.callback), refresh: item.refresh }),
+        graph: item => ({title_len: autoTitleLen(widgets, item.callback), refresh: item.refresh, limit: item.limit }),
         joystick: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
         embed: item => ({
             title_len: item.callback ? Math.max(autoTitleLen(widgets, item.callback), 2) : 1,

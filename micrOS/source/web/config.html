@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Config</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="stylesheet" href="../ustyle.css">
+  <style>
+    #top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    #cfg {
+      width: 100%;
+      min-height: 70vh;
+      box-sizing: border-box;
+      font-family: monospace;
+      font-size: 14px;
+      resize: vertical;
+    }
+    #out {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1> micrOS Config </h1>
+  <p>Current node configuration as JSON.</p>
+  <div id="top">
+    <button onclick="loadConfig()">Reload</button>
+  </div>
+  <textarea id="cfg" spellcheck="false" readonly></textarea>
+  <pre id="out"></pre>
+
+  <script>
+    const cfg = document.getElementById('cfg');
+    const out = document.getElementById('out');
+
+    function show(value) {
+      out.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    }
+
+    function loadConfig(report = true) {
+      return fetch('/config')
+        .then(r => r.json())
+        .then(data => {
+          cfg.value = JSON.stringify(data, null, 2);
+          if (report) { show('Config loaded'); }
+        })
+        .catch(e => show('Load failed: ' + e.message));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => loadConfig());
+  </script>
+</body>
+</html>

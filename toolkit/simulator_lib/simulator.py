@@ -4,6 +4,7 @@ import multiprocessing
 import time
 import copy
 import json
+import ast
 from pathlib import Path
 
 MYPATH = os.path.dirname(__file__)
@@ -151,6 +152,19 @@ class micrOSIM():
         micrOSIM.SIM_PROCESS_LIST = []
 
     @staticmethod
+    def _lm_source_docstring(mod, func):
+        module_path = os.path.join(SIM_PATH, "modules", f"LM_{mod}.py")
+        try:
+            with open(module_path, "r") as f:
+                tree = ast.parse(f.read(), filename=module_path)
+            for node in tree.body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == func:
+                    return ast.get_docstring(node)
+        except Exception as e:
+            console(f"[micrOSIM][DOC WARN] Source doc lookup failed: LM_{mod}.{func}: {e}")
+        return None
+
+    @staticmethod
     def _lm_doc_builder(mod, func_dict, structure, structure_to_html):
         # Embed img url to table - module level
         img_url = structure[mod]['img']
@@ -167,6 +181,8 @@ class micrOSIM():
                 # Get function doc string
                 exec(f"from modules import LM_{mod}")
                 doc_str = eval(f"LM_{mod}.{func}.__doc__")
+                if doc_str is None:
+                    doc_str = micrOSIM._lm_source_docstring(mod, func)
                 # Get function pin map
                 if func == 'pinmap':
                     # Get module pin map - module level
@@ -270,4 +286,3 @@ if __name__ == '__main__':
     time.sleep(3)
     sim.terminate()
     micrOSIM.stop_all()
-

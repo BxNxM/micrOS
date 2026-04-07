@@ -4,7 +4,13 @@ Web backend loader
     - Fileserver
 """
 
+from json import dumps
+
 from Common import web_endpoint, web_mounts
+from Config import cfgget
+from Auth import sudo
+
+_CFG_HIDE = ("webui", "hwuid", "guimeta", "socport", "version", "auth", "soctout")
 
 
 def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False):
@@ -27,37 +33,33 @@ def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False):
     return endpoints
 
 
-def _cfg_get_clb():
+@sudo
+def enable_config():
     """
-    Get system config - beta - example
+    Enable web configuration option
     """
-    example_load = "system clock; rgb load"
-    example_cron = "0:16:30:0!rgb toggle"
-    example_irq = "rgb toggle"
-    example_pins = "map-name; pin-name:0"
-    return {"network": {"ssid": ["wifi-name",],                                                 # staessid
-                        "password": ["wifi-password",],                                         # stapwd
-                        "webui": False,                                                         # webui
-                        "espnow": False,                                                        # espnow
-                        "mode": "STA/AP"},                                                      # nwmd
-            "tasks": {"boot": example_load,                                                     # boothook
-                      "cron": False, "cron-tasks": example_cron,                                # cron, crontasks
-                      "timirq": False, "timirq-tasks": example_irq, "timirq-seq": 3000,         # timirq, timirqcbf, timirqseq
-                      "irq1": False, "irq1-tasks": example_irq, "irq1-trig": "down/up/both",    # irq1, irq1_cbf, irq1_trig
-                      "irq2": False, "irq2-tasks": example_irq, "irq2-trig": "down/up/both",
-                      "irq3": False, "irq3-tasks": example_irq, "irq3-trig": "down/up/both",
-                      "irq4": False, "irq4-tasks": example_irq, "irq4-trig": "down/up/both"},
-            "system": {"device-name": "node01",                                                 # devfid
-                       "password": "system-and-ap-and-webrepl-password",                        # appwd
-                       "custom-pins": example_pins                                              # cstmpmap
-                       }
-            }
+    web_endpoint("config", _cfg_get_clb)
+    web_endpoint("config", _cfg_set_clb, "POST")
+    web_endpoint("config/ui", 'config.html')
+    return "Endpoints: /config and /config/ui"
 
-def _cfg_set_clb(delta=None):
+
+def _cfg_json(data):
+    return "application/json", dumps(data)
+
+
+def _cfg_get_clb(*_):
     """
-    Set system config delta - beta - example
+    Get system config
     """
-    pass
+    return _cfg_json({k: v for k, v in cfgget().items() if k not in _CFG_HIDE})
+
+
+def _cfg_set_clb(*_):
+    """
+    Set system config delta - not implemented yet
+    """
+    return _cfg_json({"state": False, "result": "Config set is not implemented"})
 
 
 def help(widgets=False):
@@ -67,5 +69,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return ('load dashboard=True fileserver=False fsdir=None fs_explore=False',
+    return ('load dashboard=True fileserver=False fs_explore=False',
+            'enable_config',
             'help')

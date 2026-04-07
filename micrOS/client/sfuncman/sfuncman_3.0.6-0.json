@@ -1209,7 +1209,7 @@
     },
     "pacman": {
         "cachedump": {
-            "doc": null,
+            "doc": "Cache system persistent data storage files (.cache)\n:param delete: cache name to delete\n:param ext: cache file extension (default: cache)",
             "param(s)": "delete=None ext=\"cache\""
         },
         "cat": {
@@ -1225,7 +1225,7 @@
             "param(s)": "migrate=True"
         },
         "delmod": {
-            "doc": null,
+            "doc": "Module package manager\n:param mod:\n    Delete Load Module with full name: module.py or module.mpy\n    OR delete any web resource: *.js, *.css, *.html",
             "param(s)": "mod"
         },
         "dirtree": {
@@ -1242,7 +1242,7 @@
             "param(s)": "ref=None"
         },
         "listmods": {
-            "doc": null,
+            "doc": "Load module package manager\n- list all load modules",
             "param(s)": ""
         },
         "ls": {
@@ -1258,15 +1258,15 @@
             "param(s)": ""
         },
         "rm": {
-            "doc": null,
+            "doc": "Linux like rm command - delete app resources and folders\n:param path: app resource name/path, ex.: LM_robustness.py\n:param force: bypasses protection check - sudo mode",
             "param(s)": "path force=False"
         },
         "rmdir": {
-            "doc": null,
+            "doc": "Linux like rmdir command for directory deletion\n:param path: app resource folder path, ex.: /lib/myapp\n:param force: bypasses protection check - sudo mode",
             "param(s)": "path force=False"
         },
         "uninstall": {
-            "doc": null,
+            "doc": "Delete package by name from /lib\n:param name: None (default) show installed package name\n             OR package name to delete (str)",
             "param(s)": "name=None"
         },
         "unload": {
@@ -1355,7 +1355,7 @@
             "param(s)": ""
         },
         "read_state": {
-            "doc": null,
+            "doc": "Read rotary encoder status / relative position",
             "param(s)": ""
         },
         "reset_state": {
@@ -1505,11 +1505,11 @@
             "param(s)": ""
         },
         "func_sudo": {
-            "doc": null,
+            "doc": "Function execution requires pwd=<...>",
             "param(s)": ""
         },
         "func_sudo_opt": {
-            "doc": null,
+            "doc": "Function requires pwd=<...> when force=True",
             "param(s)": "opt=False"
         },
         "help": {
@@ -1518,15 +1518,15 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/robustness.png?raw=true",
         "memory_leak": {
-            "doc": null,
+            "doc": "Test function - allocate lot of memory\n:param cnt: data counter, default 160 iteration\n:return: verdict",
             "param(s)": "cnt=160"
         },
         "mytask": {
-            "doc": null,
+            "doc": "New shorter way of task creation\n with decorator function",
             "param(s)": "tag period_ms=30"
         },
         "raise_error": {
-            "doc": null,
+            "doc": "Test function - raise  LM exception",
             "param(s)": ""
         },
         "recursion_limit": {
@@ -1750,7 +1750,7 @@
     },
     "system": {
         "alarms": {
-            "doc": null,
+            "doc": "Show micrOS alarms - system error list\n:param clean bool: clean alarms, default: False\n:return dict: verdict",
             "param(s)": "clean=False"
         },
         "clock": {
@@ -1974,6 +1974,10 @@
         }
     },
     "web": {
+        "enable_config": {
+            "doc": "Enable web configuration option",
+            "param(s)": ""
+        },
         "help": {
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"

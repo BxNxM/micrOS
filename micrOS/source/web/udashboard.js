@@ -157,7 +157,6 @@ async function craftModuleWidgets(module, widgets) {
             title_len: item.callback ? Math.max(autoTitleLen(widgets, item.callback), 2) : 1,
             callback: normalizeCallback(item.callback || ''),
             image: item.image,
-            retry: item.retry,
             title: item.title
         })
     };

@@ -34,7 +34,7 @@ WHITE = lambda: __TEMPLATE | {'type': 'white'} | __RANGE_255                    
 JOYSTICK = lambda: __TEMPLATE | {'type': 'joystick'} | __RANGE_100                  # pylint: disable=invalid-name
 GRAPH = lambda: __TEMPLATE | {'type': 'graph', 'refresh': 3000, 'limit': 30}        # pylint: disable=invalid-name
 # Widget Types - Web endpoints
-EMBED = lambda: __TEMPLATE | {'type': 'embed', 'image': False, 'retry': 3000, 'title': None}    # pylint: disable=invalid-name
+EMBED = lambda: __TEMPLATE | {'type': 'embed', 'image': False, 'title': None}    # pylint: disable=invalid-name
 
 
 ########################################################

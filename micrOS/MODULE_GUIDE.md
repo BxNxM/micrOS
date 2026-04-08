@@ -389,17 +389,16 @@ Tags:
 
 * `BUTTON`, no required parameter
 * `SLIDER`, one primary numeric parameter
-* `TEXTBOX`, no required parameter, optional `{"refresh": ms}` override
 * `COLOR`, three primary numeric parameters: `r`, `g`, `b`
+* `TEXTBOX`, no required parameter
+* `GRAPH`, no required parameter, but should return a `dict` with numeric values
 * `WHITE`, two primary numeric parameters: `cw`, `ww`
 * `JOYSTICK`, two primary numeric parameters: `x`, `y`
-* `EMBED`, widget-only type for image streams or embedded web pages
-* All widget JSON uses the `callback` field
-* `EMBED` is hidden from normal `help()` output and shown only in `help(widgets=True)`
+* `EMBED`, widget-only type for image streams or embedded web pages `{"callback": "<endpoint>", "image": <bool>, "title": <str>}`
 * Implementation of [TYPES](./source/Types.py)
 
 
-## micrOS LM\_types\_demo.py
+## micrOS LM\_types\_demo.py (simple)
 
 ```python
 """
@@ -555,20 +554,20 @@ simulator $ types_demo help True
 
 Usage(s): [LM_neopixel](./source/modules/LM_neopixel.py), etc. in most of the modules :)
 
-Optional TYPE parameters: `TYPE{...}`
+### Types cheatsheat
 
-| Type | Optional inline parameters |
-| ---- | -------------------------- |
-| `BUTTON` | none |
-| `SLIDER` | none |
-| `COLOR` | none |
-| `WHITE` | none |
-| `JOYSTICK` | none |
-| `TEXTBOX{"refresh": 10000}` | `refresh`: polling interval in ms |
-| `GRAPH{"refresh": 3000, "limit": 30}` | `refresh`: polling interval in ms, `limit`: retained samples |
-| `EMBED{"callback": "/cam/stream", "image": false, "title": null}` | `callback`: URL/path, `image`: image stream mode, `retry`: reserved, `title`: optional label |
+|    Type     | Widget input param syntax  | Optional inline parameters |               Example
+| ----------- | -------------------------- | ---------------------------| ---------------------------------- |
+|   `BUTTON`  | `func` + none / named options param: `name=<p1,p2,pn>`   |        none     |  function def in load module: `def toggle(state)` -> `BUTTON toggle state=<True,False>` corresponding help message with type annotation, or no param option: `def toggle()` -> `BUTTON toggle`
+|   `SLIDER`  | `func` + range param: `<min-max-step>`            |        none     | Function must have one numeric parameter. `def set_value(value, ...)` -> `SLIDER set_value value=<0-255>`
+|   `COLOR`   | `func` + range param: `<min-max-step>`            |        none     | Function must have `r, g, b` input parameters. `def color(r, g, b, ...)` -> `COLOR color r=<0-255> g b`
+|   `WHITE`   | `func` + range param: `<min-max-step>`            |        none     | Function must have `cw, ww` input parameters. `def white(cw, ww, ...)` -> `WHITE white cw=<0-255> ww`
+|  `JOYSTICK` | `func` + range param: `<min-max-step>`            |        none     | Function must have `x, y` input parameters. `def position(x, y, ...)` -> `JOYSTICK position x=<40-70> y`
+|  `TEXTBOX`  | `func` + none                                     | `TEXTBOX{"refresh": 5000}`: polling interval in ms |
+|  `GRAPH`    | `func` + none                                     | `GRAPH{"refresh": 3000, "limit": 30}` where `refresh`: polling interval in ms, `limit`: retained samples |
+| `EMBED{"callback": "<endpoint>", "image": <bool>, "title": <str>}` | none | `callback`: URL/path, `image`: image stream mode, `title`: optional label |
 
-`range`, `options`, and regular callback commands are rendered from the command syntax below, so they are not listed as optional `TYPE{...}` parameters.
+> `range`, `options`, and regular callback commands are rendered from the command syntax below, so they are not listed as optional `TYPE{...}` parameters.
 
 TYPE Example syntax:
 
@@ -580,7 +579,7 @@ TYPE Example syntax:
                     'BUTTON control cmd=<Hello,Bello>',          # options syntax: <opt1,opt2,...> list of parameters
                     'TEXTBOX{"refresh": 2000} measure',          # optional widget override before the command
                     'GRAPH{"refresh": 3000, "limit": 30} top',   # plot numeric dict values over time
-                    'EMBED{"callback": "/cam/stream", "title": "camera stream", "image": true, "retry": 3000}',
+                    'EMBED{"callback": "/cam/stream", "title": "camera stream", "image": true}',
                     'other_function num'), widgets=widgets)
 ```
 

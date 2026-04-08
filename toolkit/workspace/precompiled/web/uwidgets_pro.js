@@ -121,39 +121,31 @@ function embedWidget(container, command, params={}) {
 
 function whiteWidget(container, command, params={}) {
     const { title_len = 1, range = [0, 1000, 5] } = params;
-    const initialValue = Math.round((range[0] + range[1]) / 2);
-    const wrapper = createElement('div', {
+    const [min, max] = range;
+    const wrapper = createElement('label', {
         marginLeft: widget_indent,
-        width: widgetWidth(0.7, 360),
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px'
+        width: widgetWidth(0.6, 300),
+        display: 'grid',
+        gridTemplateColumns: '36px 1fr 36px',
+        alignItems: 'center',
+        gap: '6px'
     });
-    const createSlider = labelText => {
-        const row = createElement('label', {
-            display: 'grid',
-            gridTemplateColumns: '88px 1fr 52px',
-            alignItems: 'center',
-            gap: '8px'
-        });
-        const slider = rangeInput(range, initialValue, { width: '100%' });
-        const valueDisplay = createElement('span', { textAlign: 'right' });
+    const slider = rangeInput(range, Math.round((min + max) / 2), { width: '100%' });
+    const whiteValues = value => ({ cw: min + max - value, ww: value });
 
-        bindRangeDisplay(slider, valueDisplay);
-        appendChildren(row, [createElement('span', {}, { textContent: labelText }), slider, valueDisplay]);
-        return { row, slider };
-    };
-    const cold = createSlider('Cold white');
-    const warm = createSlider('Warm white');
     const execute = () => {
-        const call_cmd = command.replace('cw=:range:', `cw=${cold.slider.value}`)
-                                .replace('ww=:range:', `ww=${warm.slider.value}`);
+        const { cw, ww } = whiteValues(Number(slider.value));
+        const call_cmd = command.replace('cw=:range:', `cw=${cw}`)
+                                .replace('ww=:range:', `ww=${ww}`);
         console.log(`[API] White exec: ${call_cmd}`);
         restAPI(call_cmd);
     };
 
-    cold.slider.addEventListener('change', execute);
-    warm.slider.addEventListener('change', execute);
-    appendChildren(wrapper, [cold.row, warm.row]);
+    slider.addEventListener('change', execute);
+    appendChildren(wrapper, [
+        createElement('span', { textAlign: 'right', fontSize: '11px' }, { textContent: 'Cold' }),
+        slider,
+        createElement('span', { textAlign: 'right', fontSize: '11px' }, { textContent: 'Warm' })
+    ]);
     appendChildren(container, [createWidgetTitle(command, title_len), wrapper]);
 }

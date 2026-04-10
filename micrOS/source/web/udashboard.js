@@ -194,5 +194,3 @@ function DynamicWidgetLoad() {
         console.error('Error loading modules:', error);
     });
 }
-
-// craftModuleWidgets

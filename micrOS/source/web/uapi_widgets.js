@@ -27,7 +27,9 @@ function restWidget(container='restWidget', opts={}) {
     };
     const acceptHint = () => {
         if (!ghost.textContent) {return;}
-        input.value = ghost.textContent;
+        const suffix = ghost.textContent.slice(input.value.length);
+        const word = suffix.match(/^\s*\S+\s*/);
+        input.value += word ? word[0] : suffix;
         input.setSelectionRange(input.value.length, input.value.length);
         updateHint();
         input.focus();

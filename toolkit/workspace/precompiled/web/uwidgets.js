@@ -121,7 +121,7 @@ function textBoxWidget(container, command, params={}) {
     }, { id: uniqueId });
     const updateTextbox = () => {
         const call_cmd = command.replace(':range:', 'None');
-        restAPI(call_cmd).then(resp => {
+        restAPI(call_cmd, false).then(resp => {
             console.log(`[API] textBox[${uniqueId}] call: ${call_cmd}`);
             element.innerHTML = JSON.stringify(resp.result, null, 4).replace(/,\s*"/g, ',<br>"');
         }).catch(error => {

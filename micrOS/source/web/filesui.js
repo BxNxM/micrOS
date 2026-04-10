@@ -201,7 +201,7 @@ async function uploadFile(fileToUpload) {
   if (!f) return false;
 
   const chunkSize = 1024;
-  const totalChunks = Math.ceil(f.size / chunkSize);
+  const totalChunks = Math.max(1, Math.ceil(f.size / chunkSize));
 
   const fd = new FormData();
   const targetPath = `${selectedDir}/${f.name}`;

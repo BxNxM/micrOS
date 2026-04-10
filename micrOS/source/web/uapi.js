@@ -23,7 +23,10 @@ function restAPICore(cmd, timeout=5000) {
 }
 
 function restAPI(cmd='', consoleOut=true, timeout=5000) {
-    if (cmd === '') {cmd = document.getElementById('restCmdInput').value;}
+    if (cmd === '') {
+        const input = document.getElementById('restCmdInput');
+        cmd = input ? input.value : '';
+    }
     return restAPICore(cmd, timeout).then(({ response, delta, query }) => {
             if (consoleOut) {restConsole(query, response, delta);}
             return response;
@@ -34,63 +37,45 @@ function restAPI(cmd='', consoleOut=true, timeout=5000) {
         });
 }
 
-function restConsole(apiUrl, data, delta) {
-    // UPDATES: restConsoleUrl, restConsoleResponse, restConsoleTime
-    document.getElementById('restConsoleUrl').innerHTML = `<strong>Generated URL:</strong><br> <a href="${apiUrl}" target="_blank" style="color: white;">${apiUrl}</a>`;
-    document.getElementById('restConsoleResponse').innerHTML = JSON.stringify(data, null, 4).replace(/\\n/g, "<br/>" + "&nbsp;".repeat(15));
-    document.getElementById('restConsoleTime').innerHTML = `⏱ Response time: ${delta} ms`;
+function byId(id, root=document) {
+    if (typeof id !== 'string') {return id;}
+    root = root || document;
+    if (root.getElementById) {return root.getElementById(id);}
+    return root.querySelector ? root.querySelector(`#${id}`) : document.getElementById(id);
 }
 
-function renderEndpointGroups(endpoints) {
-    const container = document.getElementById('endpointGroups');
-    if (!container) {return;}
-    container.innerHTML = '';
-    if (!Array.isArray(endpoints) || endpoints.length === 0) {return;}
-    const groups = endpoints.reduce((acc, endpoint) => {
-        const trimmed = endpoint.replace(/^\/+/, '');
-        if (!trimmed) {return acc;}
-        const root = trimmed.split('/')[0];
-        acc[root] = acc[root] || [];
-        acc[root].push(trimmed);
-        return acc;
-    }, {});
-    Object.keys(groups).sort().forEach(group => {
-        const entries = groups[group].sort();
-        const isSingle = entries.length === 1 && entries[0] === group;
-        if (isSingle) {
-            const button = document.createElement('button');
-            button.textContent = group;
-            button.onclick = () => window.open(`/${group}`, '_blank');
-            container.appendChild(button);
-            return;
-        }
-        const groupEl = document.createElement('div');
-        groupEl.className = 'endpoint-group';
-        const title = document.createElement('span');
-        title.className = 'endpoint-group-title';
-        title.textContent = group;
-        groupEl.appendChild(title);
-        entries.forEach(entry => {
-            const label = entry === group ? group : entry.replace(`${group}/`, '');
-            const button = document.createElement('button');
-            button.textContent = label;
-            button.onclick = () => window.open(`/${entry}`, '_blank');
-            groupEl.appendChild(button);
-        });
-        container.appendChild(groupEl);
-    });
+function makeEl(tag, props={}, children=[]) {
+    const el = Object.assign(document.createElement(tag), props);
+    el.append(...children);
+    return el;
+}
+
+function restConsole(apiUrl, data, delta, root=document) {
+    const urlEl = root.url || byId('restConsoleUrl', root);
+    const responseEl = root.response || byId('restConsoleResponse', root);
+    const timeEl = root.time || byId('restConsoleTime', root);
+    if (!urlEl || !responseEl || !timeEl) {return;}
+
+    urlEl.textContent = '';
+    urlEl.append(
+        makeEl('strong', {textContent: 'Generated URL:'}),
+        makeEl('br'),
+        makeEl('a', {href: apiUrl, target: '_blank', textContent: apiUrl})
+    );
+    responseEl.textContent = JSON.stringify(data, null, 4);
+    timeEl.textContent = `⏱ Response time: ${delta} ms`;
 }
 
 function restInfo(showPages=true) {
     // UPDATES: 'restInfo' and restConsole(...)
-    restAPICore(cmd = '').then(({ response, delta, query }) => {
+    restAPICore('').then(({ response, delta, query }) => {
         // Update API Console
         restConsole(query, response, delta)
         // Update 'restInfo' tag
         const result = response['result'];
         const auth = result.auth ? "🔑" : "";
         let infoHeader = `micrOS: ${result.micrOS} ❖ node: ${result.node}${auth}`;
-        if (showPages) {
+        if (showPages && typeof renderEndpointGroups === 'function') {
             const endpoints = result['usr_endpoints'] ? Array.from(result['usr_endpoints']) : [];
             renderEndpointGroups(endpoints);
         }
@@ -99,5 +84,3 @@ function restInfo(showPages=true) {
         console.error('Error in restAPI:', error);
     });
 }
-
-// Designed by BxNxM |/|/|/|/

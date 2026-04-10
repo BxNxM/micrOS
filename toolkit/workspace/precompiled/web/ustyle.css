@@ -83,7 +83,9 @@ button {
 
 /* Only text-like inputs get controlled height */
 input[type="text"] {
+    font-family: inherit;
     font-size: 14px;
+    line-height: 1.4;
     min-height: 36px;
     padding: 6px 12px;
     border-radius: 6px;
@@ -125,34 +127,8 @@ form button {
     flex-shrink: 0;
 }
 
-/* ---------- Endpoint groups ---------- */
-
-.endpoint-groups {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 12px;
-    width: 100%;
-}
-
-.endpoint-group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-
-    padding: 8px;
-    border-radius: 6px;
-
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(2px);
-
-    max-width: 100%;
-}
-
-/* Prevent tiny buttons */
-.endpoint-group button {
-    white-space: nowrap;
+#restConsoleUrl a {
+    color: white;
 }
 
 /* ---------- Widgets section ---------- */

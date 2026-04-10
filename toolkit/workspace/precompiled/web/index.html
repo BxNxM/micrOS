@@ -44,6 +44,7 @@
       }
     </style>
     <script src="uapi.js" defer></script>
+    <script src="uapiui.js" defer></script>
 </head>
 <body>
     <img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60">
@@ -60,22 +61,11 @@
     <button onclick="restAPI('system/alarms')">Alarms</button>
     <button onclick="restAPI('system/clock')">Clock</button>
     <button onclick="restAPI('task/list')">Tasks</button>
-    <!-- Input field for string -->
-    <h3><label for="restCmdInput">⚙️ Enter micrOS command: </label></h3>
-    <!-- Button to send data -->
-    <form onsubmit="restAPI(); return false;">
-        <input type="text" id="restCmdInput">
-        <button type="submit">Send</button>
-    </form>
-    <!-- Display usrApiCallUrl generated from restCmdInput -->
-    <p id="restConsoleUrl"></p>
-    <!-- Display api response -->
-    <pre id="restConsoleResponse"></pre>
-    <!-- Display response time in ms -->
-    <p id="restConsoleTime"></p>
+    <div id="restWidget"></div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Init basic info from board after DOM is fully loaded
+            restWidget('restWidget');
             restInfo();     // Update restInfo html tag
         });
     </script>

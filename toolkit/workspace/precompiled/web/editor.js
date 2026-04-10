@@ -1,6 +1,6 @@
 /* ============================================================
  * Embedded MicroPython Editor
- * Self-contained, embeddable, dependency-free
+ * Dependency-free editor shell; syntax support lives in editor_plugins.js.
  *
  * Public API:
  *   createEditor(container)
@@ -9,66 +9,36 @@
  * ============================================================ */
 
 let _editor = null;
-
-// 🔹 track original DOM position of editor container
-let _host = {
-    container: null,
-    parent: null,
-    next: null
-};
-
-/* ---------- Public API ---------- */
+let _pluginsPromise = null;
+const _host = { container: null };
+const _editorSrc = (document.currentScript && document.currentScript.src) || "../editor.js";
 
 window.createEditor = function (container) {
-    console.info("editor.js: createEditor");
     injectCSS();
-
     if (!_editor) {
         _host.container = container;
-        _host.parent = container.parentNode;
-        _host.next = container.nextSibling;
-
         _editor = new EmbeddedEditor(container);
     }
     return _editor;
 };
 
 window.openEditor = function (url, opts = {}) {
-    if (!_editor) {
-        console.warn("Editor not active");
-        return;
-    }
-    console.info("editor.js: openEditor");
+    if (!_editor) return console.warn("Editor not active");
+
     const { anchor, list } = opts;
-    const c = _host.container;
-    // 🔹 editor owns placement logic
-    if (anchor) {
-        anchor.insertAdjacentElement("afterend", c);
-        console.info("editor.js: openEditor.placed after selected element");
-    } else if (list) {
-        list.insertAdjacentElement("beforebegin", c);
-        console.info("editor.js: openEditor.placed before selected element");
-    }
+    if (anchor) anchor.insertAdjacentElement("afterend", _host.container);
+    else if (list) list.insertAdjacentElement("beforebegin", _host.container);
 
     _editor.open(url);
 };
 
 window.destroyEditor = function () {
-    if (_editor) {
-        _editor.close();
-        if (_host.container) {
-            _host.container.remove();
-            console.info("editor.js: destroyEditor - container removed");
-        }
-        _editor = null;
-        _host.container = null;
-        _host.parent = null;
-        _host.next = null;
-        console.info("editor.js: destroyEditor - editor destroyed");
-    }
+    if (!_editor) return;
+    _editor.close();
+    if (_host.container) _host.container.remove();
+    _editor = null;
+    _host.container = null;
 };
-
-/* ---------- CSS (scoped + injected) ---------- */
 
 function injectCSS() {
     if (document.getElementById("mp-editor-css")) return;
@@ -77,43 +47,47 @@ function injectCSS() {
     css.id = "mp-editor-css";
     css.textContent = `
 .mp-editor {
-    font-family: monospace;
+    --mp-code-font: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --mp-code-line: 20px;
+    --mp-code-pad: 8px;
+    --mp-code-size: 14px;
     background: #1e1e1e;
     color: #d4d4d4;
+    font-family: var(--mp-code-font);
 }
 .mp-editor .toolbar {
+    align-items: center;
     background: #252526;
-    padding: 6px;
     display: flex;
     gap: 6px;
-    align-items: center;
+    padding: 6px;
 }
 .mp-editor input {
     background: #1e1e1e;
-    color: #d4d4d4;
     border: 1px solid #555;
+    color: #d4d4d4;
     padding: 4px 6px;
 }
 .mp-editor button {
     background: #0e639c;
     border: none;
     color: #fff;
-    padding: 6px 10px;
     cursor: pointer;
+    padding: 6px 10px;
 }
 .mp-editor button:hover { background: #1177bb; }
 .mp-editor .close {
-    margin-left: auto;
     background: transparent;
     color: #ccc;
     font-size: 16px;
+    margin-left: auto;
     padding: 4px 8px;
 }
 .mp-editor .close:hover { background: #333; color: #fff; }
 .mp-editor .status { font-size: 13px; }
-.mp-editor .status.ok   { color: #6a9955; }
-.mp-editor .status.err  { color: #f44747; }
-.mp-editor .status.info { color: #cccccc; }
+.mp-editor .status.ok { color: #6a9955; }
+.mp-editor .status.err { color: #f44747; }
+.mp-editor .status.info { color: #ccc; }
 .mp-editor .editor {
     display: flex;
     height: 500px;
@@ -122,61 +96,140 @@ function injectCSS() {
 .mp-editor .lines {
     background: #252526;
     color: #858585;
-    padding: 8px;
+    flex-shrink: 0;
+    font-family: var(--mp-code-font);
+    font-size: var(--mp-code-size);
+    line-height: var(--mp-code-line);
+    overflow: hidden;
+    padding: var(--mp-code-pad);
     text-align: right;
     user-select: none;
-    line-height: 20px;
-    flex-shrink: 0;
-    overflow: hidden;
     white-space: pre;
 }
-.mp-editor textarea {
-    flex: 1;
+.mp-editor .code-wrap {
     background: #1e1e1e;
-    color: #d4d4d4;
+    cursor: text;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+.mp-editor .highlight,
+.mp-editor textarea {
+    appearance: none;
     border: none;
-    padding: 8px;
-    resize: none;
+    border-radius: 0;
+    box-sizing: border-box;
+    display: block;
+    font-family: var(--mp-code-font);
+    font-size: var(--mp-code-size);
+    font-style: normal;
+    font-weight: 400;
+    height: 100%;
+    inset: 0;
+    letter-spacing: 0;
+    line-height: var(--mp-code-line);
+    margin: 0;
+    max-width: none;
+    overflow-wrap: normal;
+    padding: var(--mp-code-pad);
+    position: absolute;
+    tab-size: 4;
+    white-space: pre;
+    width: 100%;
+    word-break: normal;
+    word-wrap: normal;
+}
+.mp-editor .highlight {
+    background: transparent;
+    color: #d4d4d4;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 1;
+}
+.mp-editor textarea {
+    background: transparent;
+    caret-color: #d4d4d4;
+    color: transparent;
     outline: none;
-    font-family: monospace;
-    line-height: 20px;
     overflow: auto;
+    resize: none;
+    -webkit-text-fill-color: transparent;
+    z-index: 2;
+}
+.mp-editor textarea::selection {
+    background: rgba(38, 79, 120, 0.65);
+    color: transparent;
+    -webkit-text-fill-color: transparent;
 }
 .mp-editor .lines,
-.mp-editor input,
-.mp-editor textarea {
+.mp-editor input {
     font-size: 14px;
+    line-height: 20px;
 }
 `;
     document.head.appendChild(css);
 }
 
-/* ---------- Syntax registry ---------- */
+/* ---------- Plugin bridge ---------- */
 
-// 🔹 NEW
-const SYNTAX_CHECKERS = {
-    ".py": checkPythonSyntax,
-    // ".js": checkJSSyntax,
-    // ".html": checkHTMLSyntax,
-};
-
-// 🔹 NEW
-function getCheckerFor(name) {
-    const ext = "." + name.split(".").pop().toLowerCase();
-    return SYNTAX_CHECKERS[ext] || null;
+function escapeHTML(text) {
+    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+    return text.replace(/[&<>"']/g, ch => map[ch]);
 }
 
-/* ---------- Editor Implementation ---------- */
+function fileExt(name) {
+    const leaf = (name || "").split(/[?#]/)[0].split("/").pop();
+    const dot = leaf.lastIndexOf(".");
+    return dot >= 0 ? leaf.slice(dot).toLowerCase() : "";
+}
+
+function pluginUrl() {
+    const src = _editorSrc.replace(/editor\.js([?#].*)?$/, "editor_plugins.js$1");
+    return src === _editorSrc ? "../editor_plugins.js" : src;
+}
+
+function plugins() {
+    return window.EditorPlugins || null;
+}
+
+function syntaxFor(name) {
+    const api = plugins();
+    return api && api.getSyntaxFor ? api.getSyntaxFor(name) : null;
+}
+
+function loadPlugins() {
+    if (plugins()) return Promise.resolve(plugins());
+    if (_pluginsPromise) return _pluginsPromise;
+
+    _pluginsPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = pluginUrl();
+        script.onload = () => {
+            const api = plugins();
+            api ? resolve(api) : reject(new Error("editor_plugins.js did not register EditorPlugins"));
+        };
+        script.onerror = () => reject(new Error("editor_plugins.js load failed"));
+        document.head.appendChild(script);
+    }).catch(err => {
+        _pluginsPromise = null;
+        throw err;
+    });
+
+    return _pluginsPromise;
+}
+
+/* ---------- Editor ---------- */
 
 class EmbeddedEditor {
     constructor(container) {
         this.container = container;
+        this.pluginsLoading = false;
         this.buildUI();
         this.bindEvents();
+        this.refresh(false);
     }
 
     buildUI() {
-        console.info("editor.js: EmbeddedEditor.buildUI");
         this.container.innerHTML = `
 <div class="mp-editor">
     <div class="toolbar">
@@ -185,159 +238,163 @@ class EmbeddedEditor {
         <button class="save">Save</button>
         <button class="syntax">Syntax</button>
         <span class="status info">ready</span>
-        <button class="close" title="Close">✕</button>
+        <button class="close" title="Close">&times;</button>
     </div>
     <div class="editor">
         <div class="lines"></div>
-        <textarea class="code" wrap="off"></textarea>
+        <div class="code-wrap">
+            <pre class="highlight" aria-hidden="true"></pre>
+            <textarea class="code" wrap="off" spellcheck="false"></textarea>
+        </div>
     </div>
 </div>`;
         this.codeEl = this.container.querySelector(".code");
-        this.linesEl = this.container.querySelector(".lines");
         this.fileEl = this.container.querySelector(".filename");
+        this.highlightEl = this.container.querySelector(".highlight");
+        this.linesEl = this.container.querySelector(".lines");
         this.statusEl = this.container.querySelector(".status");
-        this.syntaxBtn = this.container.querySelector(".syntax"); // 🔹 NEW
+        this.syntaxBtn = this.container.querySelector(".syntax");
     }
 
     bindEvents() {
         this.codeEl.addEventListener("input", () => {
-            this.updateLines();
+            this.refresh();
             this.setStatus("edited");
         });
-        this.codeEl.addEventListener("scroll", () =>
-            this.linesEl.scrollTop = this.codeEl.scrollTop
-        );
-        this.codeEl.addEventListener("keydown", e => {
-            if (e.key === "Tab") {
-                e.preventDefault();
-                const s = this.codeEl.selectionStart;
-                const ePos = this.codeEl.selectionEnd;
-                this.codeEl.value =
-                    this.codeEl.value.slice(0, s) +
-                    "    " +
-                    this.codeEl.value.slice(ePos);
-                this.codeEl.selectionStart = this.codeEl.selectionEnd = s + 4;
-                this.updateLines();
-            }
-        });
-        this.fileEl.addEventListener("input", () => // 🔹 NEW
-            this.updateSyntaxAvailability()
-        );
-        this.container.querySelector(".load")
-            .addEventListener("click", () => this.loadFile());
-        this.container.querySelector(".save")
-            .addEventListener("click", () => this.save());
-        this.container.querySelector(".syntax")
-            .addEventListener("click", () => this.syntaxCheck());
-        this.container.querySelector(".close")
-            .addEventListener("click", () => window.destroyEditor());
+        this.codeEl.addEventListener("scroll", () => this.syncScroll());
+        this.codeEl.addEventListener("keydown", e => this.handleKeydown(e));
+        this.fileEl.addEventListener("input", () => this.refresh());
+        this.container.querySelector(".load").addEventListener("click", () => this.loadFile());
+        this.container.querySelector(".save").addEventListener("click", () => this.save());
+        this.syntaxBtn.addEventListener("click", () => this.syntaxCheck());
+        this.container.querySelector(".close").addEventListener("click", () => window.destroyEditor());
     }
 
-    /* ---------- UI helpers ---------- */
+    handleKeydown(e) {
+        if (e.key !== "Tab") return;
+        e.preventDefault();
+        const s = this.codeEl.selectionStart;
+        const ePos = this.codeEl.selectionEnd;
+        this.codeEl.value = this.codeEl.value.slice(0, s) + "    " + this.codeEl.value.slice(ePos);
+        this.codeEl.selectionStart = this.codeEl.selectionEnd = s + 4;
+        this.refresh();
+    }
 
     setStatus(text, type = "info") {
         this.statusEl.textContent = text;
         this.statusEl.className = "status " + type;
     }
 
-    updateSyntaxAvailability() { // 🔹 NEW
-        this.syntaxBtn.style.display =
-            getCheckerFor(this.fileEl.value) ? "" : "none";
+    refresh(loadPlugin = true) {
+        this.updateLines();
+        this.paint();
+        const syntax = syntaxFor(this.fileEl.value);
+        this.syntaxBtn.style.display = syntax && syntax.checker ? "" : "none";
+        if (loadPlugin) this.ensurePlugins();
+    }
+
+    paint() {
+        const syntax = syntaxFor(this.fileEl.value);
+        const highlighter = syntax && syntax.highlighter;
+        const code = this.codeEl.value;
+        this.highlightEl.innerHTML = (highlighter ? highlighter(code) : escapeHTML(code)) || " ";
+        this.syncScroll();
+    }
+
+    ensurePlugins() {
+        if (plugins() || this.pluginsLoading || !fileExt(this.fileEl.value)) return;
+
+        this.pluginsLoading = true;
+        loadPlugins().then(
+            () => {
+                this.pluginsLoading = false;
+                this.refresh(false);
+            },
+            err => {
+                this.pluginsLoading = false;
+                console.warn("editor.js:", err.message);
+            }
+        );
+    }
+
+    syncScroll() {
+        this.linesEl.scrollTop = this.codeEl.scrollTop;
+        this.highlightEl.style.transform = `translate(${-this.codeEl.scrollLeft}px, ${-this.codeEl.scrollTop}px)`;
     }
 
     updateLines() {
-        const scroll = this.codeEl.scrollTop;
         const count = this.codeEl.value.split("\n").length;
-        this.linesEl.textContent =
-            Array.from({ length: count }, (_, i) => i + 1).join("\n");
-        this.linesEl.scrollTop = scroll;
+        this.linesEl.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
+        this.linesEl.scrollTop = this.codeEl.scrollTop;
     }
 
-    /* ---------- File ops ---------- */
+    setValue(file, text, status, type = "info") {
+        this.fileEl.value = file || "";
+        this.codeEl.value = text || "";
+        this.refresh();
+        this.setStatus(status, type);
+    }
+
     open(url) {
-        const name = url?.split("/").pop();
+        const name = (url || "").split("/").pop();
         this.setStatus("loading...");
         fetch(url)
-            .then(r => r.ok ? r.text() : Promise.reject())
-            .then(t => {
-                // 🔹 Success → show file content + path
-                this.codeEl.value = t;
-                this.fileEl.value = url;
-                this.updateLines();
-                this.updateSyntaxAvailability();
-                this.setStatus("loaded", "ok");
-            })
+            .then(r => r.ok ? r.text() : Promise.reject(new Error(r.statusText || "load failed")))
+            .then(text => this.setValue(url, text, "loaded", "ok"))
             .catch(() => {
-                // 🔹 Failure → special case for LM_blinky.py
-                if (name === "LM_blinky.py") {
-                    this.fileEl.value = url || ""; // 🔹 show path in input
-                    this.loadExample();
-                } else {
-                    // 🔹 Empty editor, but still show file path
-                    this.codeEl.value = "";
-                    this.fileEl.value = url || "";
-                    this.updateLines();
-                    this.updateSyntaxAvailability();
-                    this.setStatus("file not found or unreadable", "err");
-                }
+                if (name === "LM_blinky.py") this.loadExample(url);
+                else this.setValue(url, "", "file not found or unreadable", "err");
             });
     }
 
     loadFile() {
-        if (!this.fileEl.value)
-            return this.setStatus("no filename", "err");
-        console.info("editor.js: EmbeddedEditor.loadFile: ", this.fileEl.value);
-        this.open(this.fileEl.value);
+        this.fileEl.value ? this.open(this.fileEl.value) : this.setStatus("no filename", "err");
     }
 
     save() {
         const name = this.fileEl.value;
-        if (!name) {
-            this.setStatus("no filename", "err");
-            return;
-        }
+        if (!name) return this.setStatus("no filename", "err");
+        if (!window.uploadFile) return this.setStatus("upload unavailable", "err");
 
-        console.info("editor.js: EmbeddedEditor.save (upload): ", name);
-        const blob = new Blob([this.codeEl.value], { type: "text/plain" });
-        const file = new File([blob], name);
-        window.uploadFile(file).then( r => {
-            this.setStatus("saved", "ok");
-        })
-        .catch(err => {
-            console.error("editor.js: upload error:", err);
-            this.setStatus("Save failed: " + err.message, "err");
-        });
+        const file = new File([this.codeEl.value], name, { type: "text/plain" });
+        window.uploadFile(file)
+            .then(ok => this.setStatus(ok ? "saved" : "save failed", ok ? "ok" : "err"))
+            .catch(err => this.setStatus("Save failed: " + err.message, "err"));
     }
 
-    /* ---------- Syntax ---------- */
-    syntaxCheck() { // 🔹 MODIFIED
-        const checker = getCheckerFor(this.fileEl.value);
-        if (!checker) return;
+    syntaxCheck() {
+        const syntax = syntaxFor(this.fileEl.value);
+        const checker = syntax && syntax.checker;
+        if (!checker) {
+            if (plugins() || !fileExt(this.fileEl.value)) return this.setStatus("syntax unavailable");
+            this.setStatus("loading syntax...");
+            return loadPlugins().then(() => this.syntaxCheck(), err => this.setStatus(err.message, "err"));
+        }
 
-        const r = checker(this.codeEl.value);
+        const result = checker(this.codeEl.value);
+        const error = result.errors && result.errors[0];
         this.setStatus(
-            r.ok ? "syntax OK" : Object.entries(r.errors[0]).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(" "),
-            r.ok ? "ok" : "err"
+            result.ok ? "syntax OK" : Object.entries(error || {}).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(" "),
+            result.ok ? "ok" : "err"
         );
     }
 
-    /* ---------- Close ---------- */
     close() {
+        const file = this.fileEl ? this.fileEl.value : "";
         this.container.innerHTML = "";
+        try {
+            window.dispatchEvent(new CustomEvent("micros-editor-close", { detail: { file } }));
+        } catch (_) {}
     }
 
-    /* ---------- Example ---------- */
-
-    loadExample() {
-      console.info("editor.js: EmbeddedEditor.loadExample");
-      this.codeEl.value =
-`# LM_blinky.py – MicroPython example
+    loadExample(file = "") {
+        this.setValue(file, `# LM_blinky.py - MicroPython example
 # Guide: https://github.com/BxNxM/micrOS/blob/master/micrOS/MODULE_GUIDE.md
 import machine
 from microIO import bind_pin, pinmap_search
 from Common import micro_task
 
-global LED = None
+LED = None
 
 def load(pin=2):
     global LED
@@ -346,7 +403,7 @@ def load(pin=2):
     return LED
 
 @micro_task("blinky", _wrap=True)
-def blink(tag):
+async def blink(tag):
     with micro_task(tag=tag) as my_task:
         if LED is None:
             my_task.out = "LED uninitialized"
@@ -361,71 +418,6 @@ def pinmap():
 
 def help(widgets=False):
     return "load pin=2", "blink", "pinmap"
-`;
-      this.updateLines();
-      this.updateSyntaxAvailability();
-      this.setStatus("example loaded", "info");
+`, "example loaded");
     }
-
-}
-
-/* ----------  Syntax checker(s) ---------- */
-
-function checkPythonSyntax(text) {
-    const lines = text
-        .replace(/\t/g, "    ")
-        .replace(/\s+$/, "")
-        .split("\n");
-    const stack = [0];
-    const errors = [];
-    const colonRE = /^(async\s+)?(def|with|class)\s+/;
-    let depth = 0;
-    function lastCodeLine(i) {
-        while (i >= 0) {
-            const t = lines[i].trim();
-            if (t && !t.startsWith("#")) return t;
-            i--;
-        }
-        return "";
-    }
-    function updateDepth(d, line) {
-        for (const c of line.replace(/#.*$/, "")) {
-            if ("([{".includes(c)) d++;
-            else if (")]}".includes(c)) d = Math.max(0, d - 1);
-        }
-        return d;
-    }
-    lines.forEach((line, i) => {
-        const n = i + 1;
-        const t = line.trim();
-        const depthBefore = depth;
-        depth = updateDepth(depth, line);
-        const topLevel = depthBefore === 0 && depth === 0;
-        if (!t || t.startsWith("#")) return;
-        const ind = line.match(/^ */)[0].length;
-        const cur = stack[stack.length - 1];
-        // Indentation check (only at top level)
-        if (topLevel) {
-            if (ind > cur) {
-                const prev = lastCodeLine(i - 1);
-                if (!prev.endsWith(":")) {
-                    errors.push({ line: n, error: "indent", prev, got: ind, expected: cur });
-                    return;
-                }
-                stack.push(ind);
-            }
-            while (stack.length > 1 && ind < stack[stack.length - 1]) {
-                stack.pop();
-            }
-            if (ind !== stack[stack.length - 1]) {
-                errors.push({ line: n, error: "dedent", got: ind, expected: stack[stack.length - 1] });
-                return;
-            }
-        }
-        // Colon check
-        if (colonRE.test(t) && !t.endsWith(":")) {
-            errors.push({ line: n, error: "colon", lineText: t });
-        }
-    });
-    return { ok: errors.length === 0, errors };
 }

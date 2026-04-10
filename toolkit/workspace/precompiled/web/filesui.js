@@ -1,8 +1,24 @@
 let selected = null;
 let selectedEl = null;              // DOM element of selected file row
-let selectedDir = 'user_data';     // fallback
+const selectedDirKey = 'micros.files.selectedDir';
+let selectedDir = loadSelectedDir(); // session fallback: user_data
 let _editorScriptLoaded = false;
 let editorFile = null;             // 🔹 track what's currently opened in editor
+
+function loadSelectedDir() {
+  try {
+    return sessionStorage.getItem(selectedDirKey) || 'user_data';
+  } catch (_) {
+    return 'user_data';
+  }
+}
+
+function rememberDir(dir) {
+  selectedDir = dir || 'user_data';
+  try {
+    sessionStorage.setItem(selectedDirKey, selectedDir);
+  } catch (_) {}
+}
 
 // 🔹 Simple root message output
 let _msgTimer, _fadeTimer;
@@ -76,7 +92,7 @@ function loadFiles() {
   })
     .then(r => r.json())
     .then(files => {
-       list.innerHTML = '';
+       contentList.innerHTML = '';
        clearSelection();
        // 🔹 Empty folder placeholder
        if (!Array.isArray(files) || files.length === 0) {
@@ -85,7 +101,7 @@ function loadFiles() {
          d.textContent = '.empty';
          d.style.opacity = '0.5';
          d.style.pointerEvents = 'none'; // 🔹 non-clickable
-         list.appendChild(d);
+         contentList.appendChild(d);
 
          console.info("Files loaded (empty folder)");
          return;
@@ -111,7 +127,7 @@ function loadFiles() {
            selectedEl = d;
          };
 
-         list.appendChild(d);
+         contentList.appendChild(d);
        });
 
        console.info("Files loaded");
@@ -147,14 +163,14 @@ function loadDirs() {
             .forEach(x => x.className = 'dir-item');
 
           d.className = 'dir-item sel';
-          selectedDir = normalized;
+          rememberDir(normalized);
           console.info('dirChange.loadFiles:', selectedDir);
           loadFiles();
         };
 
         // 🔹 Selection logic
         if (!selectedDir) {
-          selectedDir = normalized;
+          rememberDir(normalized);
           d.className = 'dir-item sel';
         }
         else if (normalized === selectedDir) {
@@ -170,7 +186,7 @@ function loadDirs() {
         !container.querySelector('.dir-item.sel') &&
         container.firstChild
       ) {
-        selectedDir = container.firstChild.textContent;
+        rememberDir(container.firstChild.textContent);
         container.firstChild.classList.add('sel');
       }
     })
@@ -182,7 +198,7 @@ function loadDirs() {
 
 async function uploadFile(fileToUpload) {
   const f = fileToUpload || file.files[0];
-  if (!f) return;
+  if (!f) return false;
 
   const chunkSize = 1024;
   const totalChunks = Math.ceil(f.size / chunkSize);
@@ -203,13 +219,19 @@ async function uploadFile(fileToUpload) {
       const resp = (await r.text()) || r.statusText;
       throw new Error(`${r.status} - ${resp}`);
     }
+    return true;
   } catch (err) {
     console.error("uploadFile error:", err);
     popUpMsg("Upload failed: " + err.message);
+    return false;
   }
 }
 
 window.uploadFile = uploadFile;
+
+window.addEventListener('micros-editor-close', () => {
+  editorFile = null;
+});
 
 function openFile() {
   if (!selected) return;
@@ -247,7 +269,7 @@ function deleteFile() {
     .then(() => {
       // 🔹 If the deleted file is open in editor → DESTROY editor
       if (_editorScriptLoaded && editorFile === toDelete) {
-        window.destroyEditor?.();
+        if (window.destroyEditor) window.destroyEditor();
         editorFile = null;
         console.info("deleteFile: editor destroyed");
       }

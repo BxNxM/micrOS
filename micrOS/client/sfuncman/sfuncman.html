@@ -1633,7 +1633,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/web.png?raw=true" alt="web" height=150></td></tr></table>
 </section>
 </div>
-<div class="panel module-nav" id="external-modules"><h2>External Modules</h2><p>Installable package documentation generated alongside built-in load modules.</p><div class="shortcut-list"><a href="#blinky">blinky</a><a href="#keychain">keychain</a><a href="#mqtt_client">mqtt_client</a><a href="#neomatrix">neomatrix</a><a href="#oledui">oledui</a></div></div><div class="module-sections">
+<div class="panel module-nav" id="external-modules"><h2>External Modules</h2><p>Installable package documentation generated alongside built-in load modules.</p><div class="shortcut-list"><a href="#blinky">blinky</a><a href="#garage">garage</a><a href="#keychain">keychain</a><a href="#mqtt_client">mqtt_client</a><a href="#neomatrix">neomatrix</a><a href="#oledui">oledui</a><a href="#sim800">sim800</a><a href="#users">users</a></div></div><div class="module-sections">
 <section class="panel module-card">
 <h2 id="blinky"><a href="#blinky">blinky</a></h2>
 <table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pin_number=26</td></tr><tr><th>doc</th><td>Initialize&nbsp;and&nbsp;cache&nbsp;the&nbsp;LED&nbsp;pin.<br>
@@ -1654,6 +1654,27 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/blinky.png?raw=true" alt="blinky" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
+<h2 id="garage"><a href="#garage">garage</a></h2>
+<table class="doc-table"><tr><th>get_timestamp</th><td><table class="doc-table"><tr><th>doc</th><td>Return&nbsp;current&nbsp;local&nbsp;time&nbsp;as&nbsp;formatted&nbsp;string.</td></tr></table></td></tr><tr><th>open_garage</th><td><table class="doc-table"><tr><th>doc</th><td>Open&nbsp;garage&nbsp;door&nbsp;by&nbsp;pressing&nbsp;the&nbsp;relay&nbsp;button.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;status</td></tr></table></td></tr><tr><th>press_alarm_button</th><td><table class="doc-table"><tr><th>doc</th><td>Press&nbsp;the&nbsp;alarm&nbsp;remote&nbsp;button&nbsp;to&nbsp;toggle&nbsp;alarm&nbsp;state.</td></tr></table></td></tr><tr><th>garage_alarm_off</th><td><table class="doc-table"><tr><th>param(s)</th><td>minutes phone='shell'</td></tr><tr><th>doc</th><td>Temporarily&nbsp;disable&nbsp;the&nbsp;garage&nbsp;alarm&nbsp;for&nbsp;a&nbsp;given&nbsp;duration.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Starts&nbsp;the&nbsp;observer&nbsp;task&nbsp;if&nbsp;not&nbsp;already&nbsp;running.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;minutes&nbsp;int:&nbsp;duration&nbsp;in&nbsp;minutes&nbsp;(capped&nbsp;at&nbsp;MAX_ALARM_MINUTES)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;of&nbsp;the&nbsp;requester&nbsp;(default:&nbsp;'shell')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>garage_alarm_on</th><td><table class="doc-table"><tr><th>param(s)</th><td>phone='shell'</td></tr><tr><th>doc</th><td>Immediately&nbsp;reactivate&nbsp;the&nbsp;garage&nbsp;alarm&nbsp;for&nbsp;a&nbsp;given&nbsp;phone&nbsp;session.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;of&nbsp;the&nbsp;requester&nbsp;(default:&nbsp;'shell')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pin_code</td></tr><tr><th>doc</th><td>Initialize&nbsp;garage&nbsp;module:&nbsp;relay,&nbsp;users,&nbsp;SIM800,&nbsp;subscribe&nbsp;to&nbsp;events.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin_code&nbsp;int:&nbsp;SIM&nbsp;card&nbsp;PIN&nbsp;code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>unload</th><td><table class="doc-table"><tr><th>doc</th><td>Gracefully&nbsp;stop&nbsp;garage&nbsp;module:&nbsp;unsubscribe&nbsp;events,&nbsp;clear&nbsp;alarm&nbsp;sessions.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/garage.png?raw=true" alt="garage" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1752,6 +1773,113 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;ds18,&nbsp;neop</td></tr></table>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'control&nbsp;cmd=:options:',&nbsp;'options':&nbsp;['prev',&nbsp;'press',&nbsp;'next',&nbsp;'on',&nbsp;'off']}<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'debug&nbsp;state=:options:',&nbsp;'options':&nbsp;['True',&nbsp;'False']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true" alt="oledui" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
+<h2 id="sim800"><a href="#sim800">sim800</a></h2>
+<table class="doc-table"><tr><th>is_connected</th><td><table class="doc-table"><tr><th>doc</th><td>Check&nbsp;network&nbsp;registration&nbsp;and&nbsp;signal&nbsp;quality.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;connected,&nbsp;reg_status,&nbsp;operator,&nbsp;rssi,&nbsp;ber,&nbsp;dbm</td></tr></table></td></tr><tr><th>get_signal_quality</th><td><table class="doc-table"><tr><th>doc</th><td>Query&nbsp;signal&nbsp;quality&nbsp;(RSSI&nbsp;and&nbsp;BER).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;rssi,&nbsp;ber,&nbsp;dbm</td></tr></table></td></tr><tr><th>get_network_info</th><td><table class="doc-table"><tr><th>doc</th><td>Query&nbsp;network&nbsp;registration&nbsp;status&nbsp;and&nbsp;operator&nbsp;name.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;reg_status,&nbsp;operator</td></tr></table></td></tr><tr><th>reject_call</th><td><table class="doc-table"><tr><th>param(s)</th><td>busy=False</td></tr><tr><th>doc</th><td>Reject&nbsp;an&nbsp;incoming&nbsp;call.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;busy&nbsp;bool:&nbsp;True&nbsp;=&nbsp;send&nbsp;busy&nbsp;signal,&nbsp;False&nbsp;=&nbsp;silent&nbsp;disconnect&nbsp;(default)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;bytes:&nbsp;raw&nbsp;response</td></tr></table></td></tr><tr><th>make_call</th><td><table class="doc-table"><tr><th>param(s)</th><td>number ring_time=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;a&nbsp;voice&nbsp;call.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;number&nbsp;str:&nbsp;phone&nbsp;number&nbsp;to&nbsp;call<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ring_time&nbsp;int|None:&nbsp;seconds&nbsp;to&nbsp;ring&nbsp;before&nbsp;hanging&nbsp;up<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;task&nbsp;state</td></tr></table></td></tr><tr><th>send_sms</th><td><table class="doc-table"><tr><th>param(s)</th><td>number text callback=None</td></tr><tr><th>doc</th><td>Queue&nbsp;an&nbsp;SMS&nbsp;for&nbsp;sending.&nbsp;Messages&nbsp;are&nbsp;sent&nbsp;one&nbsp;by&nbsp;one.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;number&nbsp;str:&nbsp;destination&nbsp;phone&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;text&nbsp;str:&nbsp;message&nbsp;text<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;callback&nbsp;func|None:&nbsp;called&nbsp;with&nbsp;(bool&nbsp;success,&nbsp;str&nbsp;detail)&nbsp;when&nbsp;done<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;queued&nbsp;status</td></tr></table></td></tr><tr><th>send_ussd</th><td><table class="doc-table"><tr><th>param(s)</th><td>code timeout=10000</td></tr><tr><th>doc</th><td>Send&nbsp;a&nbsp;USSD&nbsp;request.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;code&nbsp;str:&nbsp;USSD&nbsp;code&nbsp;(e.g.&nbsp;'*102#')<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;timeout&nbsp;int:&nbsp;response&nbsp;timeout&nbsp;in&nbsp;ms<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;status,&nbsp;message,&nbsp;dcs</td></tr></table></td></tr><tr><th>get_balance</th><td><table class="doc-table"><tr><th>param(s)</th><td>code='*102#' timeout=10000</td></tr><tr><th>doc</th><td>Query&nbsp;prepaid&nbsp;balance&nbsp;via&nbsp;USSD.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;code&nbsp;str:&nbsp;USSD&nbsp;balance&nbsp;code&nbsp;(default:&nbsp;*102#&nbsp;for&nbsp;Telekom&nbsp;HU)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;timeout&nbsp;int:&nbsp;response&nbsp;timeout&nbsp;in&nbsp;ms<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;status,&nbsp;message,&nbsp;dcs</td></tr></table></td></tr><tr><th>receive_sms</th><td><table class="doc-table"><tr><th>param(s)</th><td>index delete=True</td></tr><tr><th>doc</th><td>Read,&nbsp;parse&nbsp;and&nbsp;reassemble&nbsp;a&nbsp;(possibly&nbsp;multipart)&nbsp;SMS&nbsp;by&nbsp;SIM&nbsp;index.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;index:&nbsp;SIM&nbsp;memory&nbsp;index<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;delete&nbsp;bool:&nbsp;delete&nbsp;SMS&nbsp;from&nbsp;SIM&nbsp;after&nbsp;reading&nbsp;(default:&nbsp;True)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict|None:&nbsp;complete&nbsp;SMS&nbsp;dict&nbsp;or&nbsp;None&nbsp;if&nbsp;still&nbsp;waiting&nbsp;for&nbsp;more&nbsp;parts</td></tr></table></td></tr><tr><th>clear_sms</th><td><table class="doc-table"><tr><th>param(s)</th><td>mode=6</td></tr><tr><th>doc</th><td>Delete&nbsp;all&nbsp;SMS&nbsp;messages.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;mode&nbsp;int:&nbsp;delete&nbsp;mode&nbsp;(default:&nbsp;6&nbsp;=&nbsp;delete&nbsp;all)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;bytes:&nbsp;raw&nbsp;response</td></tr></table></td></tr><tr><th>delete_sms</th><td><table class="doc-table"><tr><th>param(s)</th><td>index</td></tr><tr><th>doc</th><td>Delete&nbsp;a&nbsp;single&nbsp;SMS&nbsp;by&nbsp;index.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;index&nbsp;int:&nbsp;SIM&nbsp;memory&nbsp;index<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;bytes:&nbsp;raw&nbsp;response</td></tr></table></td></tr><tr><th>get_sms</th><td><table class="doc-table"><tr><th>param(s)</th><td>option=4</td></tr><tr><th>doc</th><td>List&nbsp;SMS&nbsp;messages&nbsp;from&nbsp;SIM&nbsp;memory.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;option&nbsp;int:&nbsp;message&nbsp;status&nbsp;filter&nbsp;(default:&nbsp;4&nbsp;=&nbsp;ALL)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;bytes:&nbsp;raw&nbsp;response</td></tr></table></td></tr><tr><th>read_uart</th><td><table class="doc-table"><tr><th>doc</th><td>Read&nbsp;and&nbsp;decode&nbsp;pending&nbsp;UART&nbsp;data.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple|False:&nbsp;(lines_list,&nbsp;raw_bytes)&nbsp;or&nbsp;False&nbsp;if&nbsp;no&nbsp;data</td></tr></table></td></tr><tr><th>send_command</th><td><table class="doc-table"><tr><th>param(s)</th><td>command timeout=1000</td></tr><tr><th>doc</th><td>Send&nbsp;an&nbsp;AT&nbsp;command&nbsp;and&nbsp;return&nbsp;the&nbsp;raw&nbsp;response&nbsp;bytes.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;command&nbsp;str:&nbsp;AT&nbsp;command&nbsp;to&nbsp;send<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;timeout&nbsp;int:&nbsp;response&nbsp;timeout&nbsp;in&nbsp;ms<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;bytes:&nbsp;raw&nbsp;response</td></tr></table></td></tr><tr><th>reset</th><td><table class="doc-table"><tr><th>doc</th><td>Hard&nbsp;reset&nbsp;the&nbsp;SIM800&nbsp;module&nbsp;and&nbsp;clear&nbsp;the&nbsp;instance.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pin_code=None tx_pin=16 rx_pin=17 ri_pin=23</td></tr><tr><th>doc</th><td>Initialize&nbsp;and&nbsp;connect&nbsp;the&nbsp;SIM800&nbsp;module.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin_code&nbsp;int:&nbsp;SIM&nbsp;PIN&nbsp;code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;tx_pin&nbsp;int:&nbsp;UART&nbsp;TX&nbsp;GPIO&nbsp;pin&nbsp;(default:&nbsp;16)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;rx_pin&nbsp;int:&nbsp;UART&nbsp;RX&nbsp;GPIO&nbsp;pin&nbsp;(default:&nbsp;17)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;ri_pin&nbsp;int:&nbsp;Ring&nbsp;Indicator&nbsp;GPIO&nbsp;pin&nbsp;(default:&nbsp;23)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>subscribe</th><td><table class="doc-table"><tr><th>param(s)</th><td>event_type callback</td></tr><tr><th>doc</th><td>Subscribe&nbsp;to&nbsp;SIM800&nbsp;events.&nbsp;Starts&nbsp;listener&nbsp;automatically&nbsp;on&nbsp;first&nbsp;subscriber.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;event_type&nbsp;str:&nbsp;'call',&nbsp;'sms',&nbsp;or&nbsp;'signal'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;callback&nbsp;func:&nbsp;called&nbsp;with&nbsp;event&nbsp;data&nbsp;when&nbsp;event&nbsp;occurs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;call:&nbsp;callback(call_params_dict)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;sms:&nbsp;callback(sms_dict)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;signal:&nbsp;callback(uart_message_list)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>unsubscribe</th><td><table class="doc-table"><tr><th>param(s)</th><td>event_type callback</td></tr><tr><th>doc</th><td>Unsubscribe&nbsp;from&nbsp;SIM800&nbsp;events.&nbsp;Stops&nbsp;listener&nbsp;when&nbsp;no&nbsp;subscribers&nbsp;remain.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;event_type&nbsp;str:&nbsp;'call',&nbsp;'sms',&nbsp;or&nbsp;'signal'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;callback&nbsp;func:&nbsp;previously&nbsp;subscribed&nbsp;callback<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;sim800_tx,&nbsp;sim800_rx,&nbsp;sim800_ri</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/sim800.png?raw=true" alt="sim800" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
+<h2 id="users"><a href="#users">users</a></h2>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>json_file='users.json'</td></tr><tr><th>doc</th><td>Initialize&nbsp;the&nbsp;UserManagement&nbsp;module.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;json_file&nbsp;str:&nbsp;JSON&nbsp;filename&nbsp;stored&nbsp;in&nbsp;data_dir&nbsp;(default:&nbsp;users.json)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>add_user</th><td><table class="doc-table"><tr><th>param(s)</th><td>phone name status='A' role='user' info='' valid_from='' expires=''</td></tr><tr><th>doc</th><td>Add&nbsp;a&nbsp;new&nbsp;user.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;(unique&nbsp;identifier)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;name&nbsp;str:&nbsp;display&nbsp;name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;status&nbsp;str:&nbsp;'A'&nbsp;(active)&nbsp;or&nbsp;'B'&nbsp;(blocked)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;role&nbsp;str:&nbsp;'user'&nbsp;or&nbsp;'admin'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;info&nbsp;str:&nbsp;additional&nbsp;info<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;valid_from&nbsp;str:&nbsp;start&nbsp;datetime&nbsp;'YYYY-MM-DDTHH:MM'&nbsp;or&nbsp;''&nbsp;for&nbsp;immediate<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;expires&nbsp;str:&nbsp;end&nbsp;datetime&nbsp;'YYYY-MM-DDTHH:MM'&nbsp;or&nbsp;''&nbsp;for&nbsp;no&nbsp;expiry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;success&nbsp;or&nbsp;error&nbsp;message</td></tr></table></td></tr><tr><th>modify_user</th><td><table class="doc-table"><tr><th>param(s)</th><td>phone **kwargs</td></tr><tr><th>doc</th><td>Modify&nbsp;an&nbsp;existing&nbsp;user's&nbsp;fields.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;of&nbsp;user&nbsp;to&nbsp;modify<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;kwargs:&nbsp;field=value&nbsp;pairs&nbsp;to&nbsp;update<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;success&nbsp;or&nbsp;error&nbsp;message</td></tr></table></td></tr><tr><th>delete_user</th><td><table class="doc-table"><tr><th>param(s)</th><td>phone</td></tr><tr><th>doc</th><td>Delete&nbsp;a&nbsp;user&nbsp;by&nbsp;phone&nbsp;number.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;of&nbsp;user&nbsp;to&nbsp;delete<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;success&nbsp;or&nbsp;error&nbsp;message</td></tr></table></td></tr><tr><th>get_user</th><td><table class="doc-table"><tr><th>param(s)</th><td>**kwargs</td></tr><tr><th>doc</th><td>Find&nbsp;users&nbsp;matching&nbsp;all&nbsp;given&nbsp;field=value&nbsp;criteria.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;kwargs:&nbsp;field=value&nbsp;pairs&nbsp;to&nbsp;match<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;list|None:&nbsp;list&nbsp;of&nbsp;matching&nbsp;user&nbsp;dicts,&nbsp;or&nbsp;None</td></tr></table></td></tr><tr><th>get_all_users</th><td><table class="doc-table"><tr><th>doc</th><td>Return&nbsp;all&nbsp;users.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;list:&nbsp;list&nbsp;of&nbsp;user&nbsp;dicts</td></tr></table></td></tr><tr><th>count_users</th><td><table class="doc-table"><tr><th>doc</th><td>Return&nbsp;number&nbsp;of&nbsp;users.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;int:&nbsp;user&nbsp;count</td></tr></table></td></tr><tr><th>export_users</th><td><table class="doc-table"><tr><th>param(s)</th><td>file='users_backup.json'</td></tr><tr><th>doc</th><td>Export&nbsp;users&nbsp;to&nbsp;a&nbsp;backup&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;file&nbsp;str:&nbsp;backup&nbsp;filename<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;success&nbsp;or&nbsp;error&nbsp;message</td></tr></table></td></tr><tr><th>import_users</th><td><table class="doc-table"><tr><th>param(s)</th><td>data=None file=None mode='replace'</td></tr><tr><th>doc</th><td>Import&nbsp;users&nbsp;from&nbsp;JSON&nbsp;string&nbsp;or&nbsp;backup&nbsp;file.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;data&nbsp;str|None:&nbsp;JSON&nbsp;string&nbsp;(from&nbsp;get_all_users&nbsp;output)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;file&nbsp;str|None:&nbsp;backup&nbsp;filename<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;mode&nbsp;str:&nbsp;'replace'&nbsp;or&nbsp;'merge'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;success&nbsp;or&nbsp;error&nbsp;message</td></tr></table></td></tr><tr><th>check_access</th><td><table class="doc-table"><tr><th>param(s)</th><td>phone</td></tr><tr><th>doc</th><td>Check&nbsp;if&nbsp;a&nbsp;user's&nbsp;access&nbsp;is&nbsp;currently&nbsp;valid.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;to&nbsp;check<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;bool:&nbsp;True&nbsp;if&nbsp;access&nbsp;denied&nbsp;(inactive)</td></tr></table></td></tr><tr><th>grant_access</th><td><table class="doc-table"><tr><th>param(s)</th><td>phone valid_from='' expires=''</td></tr><tr><th>doc</th><td>Grant&nbsp;or&nbsp;extend&nbsp;access&nbsp;for&nbsp;an&nbsp;existing&nbsp;user.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;valid_from&nbsp;str:&nbsp;start&nbsp;datetime&nbsp;'YYYY-MM-DDTHH:MM'&nbsp;or&nbsp;''&nbsp;for&nbsp;immediate<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;expires&nbsp;str:&nbsp;end&nbsp;datetime&nbsp;'YYYY-MM-DDTHH:MM'&nbsp;or&nbsp;''&nbsp;for&nbsp;no&nbsp;expiry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;success&nbsp;or&nbsp;error&nbsp;message</td></tr></table></td></tr><tr><th>get_inactive_users</th><td><table class="doc-table"><tr><th>doc</th><td>Return&nbsp;all&nbsp;users&nbsp;whose&nbsp;access&nbsp;is&nbsp;not&nbsp;currently&nbsp;valid.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;list:&nbsp;list&nbsp;of&nbsp;inactive&nbsp;user&nbsp;dicts</td></tr></table></td></tr><tr><th>clear_users</th><td><table class="doc-table"><tr><th>doc</th><td>Delete&nbsp;all&nbsp;users.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;success&nbsp;or&nbsp;error&nbsp;message</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'get_all_users&nbsp;',&nbsp;'refresh':&nbsp;30000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/users.png?raw=true" alt="users" height=150></td></tr></table>
 </section>
 </div>
 

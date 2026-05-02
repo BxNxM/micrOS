@@ -523,6 +523,41 @@
             "param(s)": ""
         }
     },
+    "garage": {
+        "garage_alarm_off": {
+            "doc": "Temporarily disable the garage alarm for a given duration.\n    Starts the observer task if not already running.\n    :param minutes int: duration in minutes (capped at MAX_ALARM_MINUTES)\n    :param phone str: phone number of the requester (default: 'shell')\n    :return str: status message\n    ",
+            "param(s)": "minutes phone='shell'"
+        },
+        "garage_alarm_on": {
+            "doc": "Immediately reactivate the garage alarm for a given phone session.\n    :param phone str: phone number of the requester (default: 'shell')\n    :return str: status message\n    ",
+            "param(s)": "phone='shell'"
+        },
+        "get_timestamp": {
+            "doc": "Return current local time as formatted string.",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/garage.png?raw=true",
+        "load": {
+            "doc": "Initialize garage module: relay, users, SIM800, subscribe to events.\n    :param pin_code int: SIM card PIN code\n    :return str: status message\n    ",
+            "param(s)": "pin_code"
+        },
+        "open_garage": {
+            "doc": "Open garage door by pressing the relay button.\n    :return dict: status\n    ",
+            "param(s)": ""
+        },
+        "press_alarm_button": {
+            "doc": "Press the alarm remote button to toggle alarm state.",
+            "param(s)": ""
+        },
+        "unload": {
+            "doc": "Gracefully stop garage module: unsubscribe events, clear alarm sessions.\n    :return str: status message\n    ",
+            "param(s)": ""
+        }
+    },
     "genIO": {
         "get_adc": {
             "doc": "\n    Get Analog Digital conersion input\n    :param pin: pin number or logical pin name\n    :param key: select adc parameter by key\n    :return dict: adc volt, percent, raw\n    ",
@@ -1603,6 +1638,89 @@
             "param(s)": "lmf=None"
         }
     },
+    "sim800": {
+        "clear_sms": {
+            "doc": "\n    Delete all SMS messages.\n    :param mode int: delete mode (default: 6 = delete all)\n    :return bytes: raw response\n    ",
+            "param(s)": "mode=6"
+        },
+        "delete_sms": {
+            "doc": "\n    Delete a single SMS by index.\n    :param index int: SIM memory index\n    :return bytes: raw response\n    ",
+            "param(s)": "index"
+        },
+        "get_balance": {
+            "doc": "\n    Query prepaid balance via USSD.\n    :param code str: USSD balance code (default: *102# for Telekom HU)\n    :param timeout int: response timeout in ms\n    :return dict: status, message, dcs\n    ",
+            "param(s)": "code='*102#' timeout=10000"
+        },
+        "get_network_info": {
+            "doc": "\n    Query network registration status and operator name.\n    :return dict: reg_status, operator\n    ",
+            "param(s)": ""
+        },
+        "get_signal_quality": {
+            "doc": "\n    Query signal quality (RSSI and BER).\n    :return dict: rssi, ber, dbm\n    ",
+            "param(s)": ""
+        },
+        "get_sms": {
+            "doc": "\n    List SMS messages from SIM memory.\n    :param option int: message status filter (default: 4 = ALL)\n    :return bytes: raw response\n    ",
+            "param(s)": "option=4"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sim800.png?raw=true",
+        "is_connected": {
+            "doc": "\n    Check network registration and signal quality.\n    :return dict: connected, reg_status, operator, rssi, ber, dbm\n    ",
+            "param(s)": ""
+        },
+        "load": {
+            "doc": "\n    Initialize and connect the SIM800 module.\n    :param pin_code int: SIM PIN code\n    :param tx_pin int: UART TX GPIO pin (default: 16)\n    :param rx_pin int: UART RX GPIO pin (default: 17)\n    :param ri_pin int: Ring Indicator GPIO pin (default: 23)\n    :return str: status message\n    ",
+            "param(s)": "pin_code=None tx_pin=16 rx_pin=17 ri_pin=23"
+        },
+        "make_call": {
+            "doc": "\n    Initiate a voice call.\n    :param number str: phone number to call\n    :param ring_time int|None: seconds to ring before hanging up\n    :return dict: task state\n    ",
+            "param(s)": "number ring_time=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: sim800_tx, sim800_rx, sim800_ri",
+            "param(s)": ""
+        },
+        "read_uart": {
+            "doc": "\n    Read and decode pending UART data.\n    :return tuple|False: (lines_list, raw_bytes) or False if no data\n    ",
+            "param(s)": ""
+        },
+        "receive_sms": {
+            "doc": "\n    Read, parse and reassemble a (possibly multipart) SMS by SIM index.\n    :param index: SIM memory index\n    :param delete bool: delete SMS from SIM after reading (default: True)\n    :return dict|None: complete SMS dict or None if still waiting for more parts\n    ",
+            "param(s)": "index delete=True"
+        },
+        "reject_call": {
+            "doc": "\n    Reject an incoming call.\n    :param busy bool: True = send busy signal, False = silent disconnect (default)\n    :return bytes: raw response\n    ",
+            "param(s)": "busy=False"
+        },
+        "reset": {
+            "doc": "\n    Hard reset the SIM800 module and clear the instance.\n    :return str: status message\n    ",
+            "param(s)": ""
+        },
+        "send_command": {
+            "doc": "\n    Send an AT command and return the raw response bytes.\n    :param command str: AT command to send\n    :param timeout int: response timeout in ms\n    :return bytes: raw response\n    ",
+            "param(s)": "command timeout=1000"
+        },
+        "send_sms": {
+            "doc": "\n    Queue an SMS for sending. Messages are sent one by one.\n    :param number str: destination phone number\n    :param text str: message text\n    :param callback func|None: called with (bool success, str detail) when done\n    :return str: queued status\n    ",
+            "param(s)": "number text callback=None"
+        },
+        "send_ussd": {
+            "doc": "\n    Send a USSD request.\n    :param code str: USSD code (e.g. '*102#')\n    :param timeout int: response timeout in ms\n    :return dict: status, message, dcs\n    ",
+            "param(s)": "code timeout=10000"
+        },
+        "subscribe": {
+            "doc": "\n    Subscribe to SIM800 events. Starts listener automatically on first subscriber.\n    :param event_type str: 'call', 'sms', or 'signal'\n    :param callback func: called with event data when event occurs\n        - call: callback(call_params_dict)\n        - sms: callback(sms_dict)\n        - signal: callback(uart_message_list)\n    :return str: status message\n    ",
+            "param(s)": "event_type callback"
+        },
+        "unsubscribe": {
+            "doc": "\n    Unsubscribe from SIM800 events. Stops listener when no subscribers remain.\n    :param event_type str: 'call', 'sms', or 'signal'\n    :param callback func: previously subscribed callback\n    :return str: status message\n    ",
+            "param(s)": "event_type callback"
+        }
+    },
     "sound_event": {
         "autolearn": {
             "doc": "\n    enable/disable automated learning, use it when there are already labeled\n    instances in the dataset\n    :param enabled: bool\n    ",
@@ -1952,6 +2070,65 @@
         "subscribe_event": {
             "doc": "\n    [LM] Add callback function to trackball events\n    ",
             "param(s)": "func"
+        }
+    },
+    "users": {
+        "add_user": {
+            "doc": "\n    Add a new user.\n    :param phone str: phone number (unique identifier)\n    :param name str: display name\n    :param status str: 'A' (active) or 'B' (blocked)\n    :param role str: 'user' or 'admin'\n    :param info str: additional info\n    :param valid_from str: start datetime 'YYYY-MM-DDTHH:MM' or '' for immediate\n    :param expires str: end datetime 'YYYY-MM-DDTHH:MM' or '' for no expiry\n    :return str: success or error message\n    ",
+            "param(s)": "phone name status='A' role='user' info='' valid_from='' expires=''"
+        },
+        "check_access": {
+            "doc": "\n    Check if a user's access is currently valid.\n    :param phone str: phone number to check\n    :return bool: True if access denied (inactive)\n    ",
+            "param(s)": "phone"
+        },
+        "clear_users": {
+            "doc": "\n    Delete all users.\n    :return str: success or error message\n    ",
+            "param(s)": ""
+        },
+        "count_users": {
+            "doc": "\n    Return number of users.\n    :return int: user count\n    ",
+            "param(s)": ""
+        },
+        "delete_user": {
+            "doc": "\n    Delete a user by phone number.\n    :param phone str: phone number of user to delete\n    :return str: success or error message\n    ",
+            "param(s)": "phone"
+        },
+        "export_users": {
+            "doc": "\n    Export users to a backup file.\n    :param file str: backup filename\n    :return str: success or error message\n    ",
+            "param(s)": "file='users_backup.json'"
+        },
+        "get_all_users": {
+            "doc": "\n    Return all users.\n    :return list: list of user dicts\n    ",
+            "param(s)": ""
+        },
+        "get_inactive_users": {
+            "doc": "\n    Return all users whose access is not currently valid.\n    :return list: list of inactive user dicts\n    ",
+            "param(s)": ""
+        },
+        "get_user": {
+            "doc": "\n    Find users matching all given field=value criteria.\n    :param kwargs: field=value pairs to match\n    :return list|None: list of matching user dicts, or None\n    ",
+            "param(s)": "**kwargs"
+        },
+        "grant_access": {
+            "doc": "\n    Grant or extend access for an existing user.\n    :param phone str: phone number\n    :param valid_from str: start datetime 'YYYY-MM-DDTHH:MM' or '' for immediate\n    :param expires str: end datetime 'YYYY-MM-DDTHH:MM' or '' for no expiry\n    :return str: success or error message\n    ",
+            "param(s)": "phone valid_from='' expires=''"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'get_all_users ', 'refresh': 30000}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/users.png?raw=true",
+        "import_users": {
+            "doc": "\n    Import users from JSON string or backup file.\n    :param data str|None: JSON string (from get_all_users output)\n    :param file str|None: backup filename\n    :param mode str: 'replace' or 'merge'\n    :return str: success or error message\n    ",
+            "param(s)": "data=None file=None mode='replace'"
+        },
+        "load": {
+            "doc": "\n    Initialize the UserManagement module.\n    :param json_file str: JSON filename stored in data_dir (default: users.json)\n    :return str: status message\n    ",
+            "param(s)": "json_file='users.json'"
+        },
+        "modify_user": {
+            "doc": "\n    Modify an existing user's fields.\n    :param phone str: phone number of user to modify\n    :param kwargs: field=value pairs to update\n    :return str: success or error message\n    ",
+            "param(s)": "phone **kwargs"
         }
     },
     "veml7700": {

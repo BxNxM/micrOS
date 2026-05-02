@@ -1,9 +1,79 @@
-// WIDGETS ELEMENTS
+// DASHBOARD: DEFAULT WIDGETS AND HELPERS
 
 const widget_indent = '40px';
 const windowWidth = window.innerWidth;
 const widgetColors = ['#00d1ff', '#ffca3a', '#7bd88f', '#ff6b6b', '#c77dff', '#f4a261'];
 
+// ---- shared input helpers ----
+function createWidgetSender(buildCommand, { minInterval = 200 } = {}) {
+    let last = 0, busy = false, timer = null, pending = false, finalPending = false;
+    const clear = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    const done = () => { busy = false; if (pending) { schedule(finalPending); } };
+    const send = final => {
+        clear();
+        pending = finalPending = false;
+        busy = true;
+        last = Date.now();
+        const call_cmd = buildCommand();
+        console.log(`[API] Widget exec${final ? ' final' : ''}: ${call_cmd}`);
+        restAPI(call_cmd).then(done, done);
+    };
+
+    function schedule(final = false) {
+        pending = true;
+        finalPending = finalPending || final;
+        if (busy) { return; }
+        const wait = finalPending ? 0 : Math.max(minInterval - (Date.now() - last), 0);
+        clear();
+        timer = setTimeout(() => send(finalPending), wait);
+    }
+    return { update: () => schedule(), final: () => schedule(true) };
+}
+
+function bindPressDrag(target, handlers = {}) {
+    target.style.touchAction = 'none';
+    const point = event => {
+        const source = event.touches ? event.touches[0] : event.changedTouches ? event.changedTouches[0] : event;
+        return { clientX: source.clientX, clientY: source.clientY };
+    };
+    const call = (name, event) => {
+        if (handlers[name]) { handlers[name](point(event), event); }
+        event.preventDefault();
+    };
+
+    if (window.PointerEvent) {
+        target.addEventListener('pointerdown', event => {
+            if (target.setPointerCapture) { target.setPointerCapture(event.pointerId); }
+            call('start', event);
+        });
+        target.addEventListener('pointermove', event => call('move', event));
+        target.addEventListener('pointerup', event => call('end', event));
+        target.addEventListener('pointercancel', event => call('end', event));
+        return;
+    }
+
+    const move = event => call('move', event);
+    const end = event => {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', end);
+        document.removeEventListener('touchmove', move);
+        document.removeEventListener('touchend', end);
+        document.removeEventListener('touchcancel', end);
+        call('end', event);
+    };
+    const start = event => {
+        document.addEventListener('mousemove', move);
+        document.addEventListener('mouseup', end);
+        document.addEventListener('touchmove', move, { passive: false });
+        document.addEventListener('touchend', end);
+        document.addEventListener('touchcancel', end);
+        call('start', event);
+    };
+    target.addEventListener('mousedown', start);
+    target.addEventListener('touchstart', start, { passive: false });
+}
+
+// ---- shared DOM handlers ----
 function createElement(tag, styles={}, props={}) {
     const element = document.createElement(tag);
     Object.assign(element, props);
@@ -35,6 +105,7 @@ function paramPythonify(opt) {
     return `"${opt}"`;
 }
 
+// ---- default widgets ----
 function rangeInput(range, value=(range[1] - range[0]) / 2, styles={}) {
     const [min, max, step] = range;
     return createElement('input', styles, { type: 'range', min, max, step, value });
@@ -43,6 +114,36 @@ function rangeInput(range, value=(range[1] - range[0]) / 2, styles={}) {
 function bindRangeDisplay(input, display) {
     display.textContent = input.value;
     input.addEventListener('input', () => display.textContent = input.value);
+}
+
+function createResultBox(styles = {}, closable = true) {
+    const body = createElement('pre', { margin: '0', whiteSpace: 'pre-wrap' });
+    const element = createElement('div', Object.assign({
+        marginLeft: widget_indent,
+        width: widgetWidth(0.6, 300),
+        padding: '10px',
+        boxSizing: 'border-box',
+        borderRadius: '4px',
+        display: 'none'
+    }, styles));
+    let closed = element.style.display === 'none';
+    if (closable) {
+        const close = createElement('button', { float: 'right', marginLeft: '8px' }, { textContent: 'x', title: 'close' });
+        close.addEventListener('click', () => {
+            closed = true;
+            element.style.display = 'none';
+        });
+        element.appendChild(close);
+    }
+    element.appendChild(body);
+    return {
+        element,
+        show: (value, reopen = true) => {
+            if (reopen) { closed = false; }
+            body.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 4);
+            element.style.display = closed ? 'none' : 'block';
+        }
+    };
 }
 
 function scheduleWidgetRefresh(container, refresh, update) {
@@ -72,24 +173,24 @@ function sliderWidget(container, command, params={}) {
         width: widgetWidth(0.6, 300)
     });
     const valueDisplay = createElement('span');
+    const buildCommand = () => command.includes(':range:') ? command.replace(':range:', element.value) :
+                           command.endsWith('=') ? `${command}${element.value}` :
+                           `${command}/${element.value}`;
+    const sender = createWidgetSender(buildCommand);
 
     bindRangeDisplay(element, valueDisplay);
-    element.addEventListener('change', () => {
-        const call_cmd = command.includes(':range:') ? command.replace(':range:', element.value) :
-                         command.endsWith('=') ? `${command}${element.value}` :
-                         `${command}/${element.value}`;
-        console.log(`[API] Slider exec: ${call_cmd}`);
-        restAPI(call_cmd);
-    });
+    element.addEventListener('input', sender.update);
+    element.addEventListener('change', sender.final);
 
     appendChildren(container, [createWidgetTitle(command, title_len), element, valueDisplay]);
 }
 
 function buttonWidget(container, command, params={}) {
-    const { title_len = 1, options = ['None'] } = params;
+    const { title_len = 1, options = ['None'], result = false } = params;
     const text = createTitle(command, title_len);
     const optionLabels = { 'True': 'ON', 'False': 'OFF', 'None': 'Default' };
     const paragraph = createElement('p', { textIndent: widget_indent });
+    const output = result ? createResultBox() : null;
 
     if (options.length > 1) {
         container.appendChild(createWidgetTitle(command, title_len, text));
@@ -101,36 +202,33 @@ function buttonWidget(container, command, params={}) {
         element.addEventListener('click', () => {
             const call_cmd = command.replace(':options:', paramPythonify(opt));
             console.log(`[API] Button clicked: ${call_cmd}`);
-            restAPI(call_cmd);
+            restAPI(call_cmd).then(resp => {
+                if (output) { output.show(resp.result, true); }
+            });
         });
         paragraph.appendChild(element);
     });
     appendChildren(container, [paragraph]);
+    if (output) { container.appendChild(output.element); }
 }
 
 function textBoxWidget(container, command, params={}) {
     const { title_len = 1, refresh = 5000 } = params;
     const uniqueId = `textbox-${command}-${Date.now()}`;
-    const element = createElement('div', {
-        marginLeft: widget_indent,
-        width: widgetWidth(0.6, 300),
-        padding: '10px',
-        boxSizing: 'border-box',
-        border: '2px solid #e7e7e7',
-        borderRadius: '4px'
-    }, { id: uniqueId });
+    const output = createResultBox({ display: 'block' }, false);
+    output.element.id = uniqueId;
     const updateTextbox = () => {
         const call_cmd = command.replace(':range:', 'None');
         restAPI(call_cmd, false).then(resp => {
             console.log(`[API] textBox[${uniqueId}] call: ${call_cmd}`);
-            element.innerHTML = JSON.stringify(resp.result, null, 4).replace(/,\s*"/g, ',<br>"');
+            output.show(resp.result, false);
         }).catch(error => {
             console.error('[API] Textbox error:', error);
-            element.textContent = 'Error loading data';
+            output.show('Error loading data', false);
         });
     };
 
-    appendChildren(container, [createWidgetTitle(command, title_len), element]);
+    appendChildren(container, [createWidgetTitle(command, title_len), output.element]);
     scheduleWidgetRefresh(container, refresh, updateTextbox);
 }
 
@@ -152,14 +250,15 @@ function colorPaletteWidget(container, command, params = {}) {
     };
 
     colorPicker.classList.add('custom-color-picker');
-    colorPicker.addEventListener('change', () => {
+    const buildCommand = () => {
         const { r, g, b } = hexToRgb(colorPicker.value, range[1]);
-        const call_cmd = command.replace('r=:range:', `r=${r}`)
-                                .replace('g=:range:', `g=${g}`)
-                                .replace('b=:range:', `b=${b}`);
-        console.log(`[API] colorPalette exec: ${call_cmd}`);
-        restAPI(call_cmd);
-    });
+        return command.replace('r=:range:', `r=${r}`)
+                      .replace('g=:range:', `g=${g}`)
+                      .replace('b=:range:', `b=${b}`);
+    };
+    const sender = createWidgetSender(buildCommand);
+    colorPicker.addEventListener('input', sender.update);
+    colorPicker.addEventListener('change', sender.final);
 
     appendChildren(container, [createWidgetTitle(command, title_len), colorPicker, createElement('span')]);
 }

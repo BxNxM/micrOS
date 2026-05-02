@@ -387,7 +387,7 @@ Main steps:
 
 Tags:
 
-* `BUTTON`, no required parameter
+* `BUTTON`, no required parameter; optional `result=True` shows the command response below the button
 * `SLIDER`, one primary numeric parameter
 * `COLOR`, three primary numeric parameters: `r`, `g`, `b`
 * `TEXTBOX`, no required parameter
@@ -558,7 +558,7 @@ Usage(s): [LM_neopixel](./source/modules/LM_neopixel.py), etc. in most of the mo
 
 |    Type     | Widget input param syntax  | Optional inline parameters |               Example
 | ----------- | -------------------------- | ---------------------------| ---------------------------------- |
-|   `BUTTON`  | `func` + none / named options param: `name=<p1,p2,pn>`   |        none     |  function def in load module: `def toggle(state)` -> `BUTTON toggle state=<True,False>` corresponding help message with type annotation, or no param option: `def toggle()` -> `BUTTON toggle`
+|   `BUTTON`  | `func` + none / named options param: `name=<p1,p2,pn>`   | `BUTTON{'result': True}`: show closable REST result below the button |  function def in load module: `def toggle(state)` -> `BUTTON toggle state=<True,False>` corresponding help message with type annotation, or no param option: `def toggle()` -> `BUTTON toggle`
 |   `SLIDER`  | `func` + range param: `<min-max-step>`            |        none     | Function must have one numeric parameter. `def set_value(value, ...)` -> `SLIDER set_value value=<0-255>`
 |   `COLOR`   | `func` + range param: `<min-max-step>`            |        none     | Function must have `r, g, b` input parameters. `def color(r, g, b, ...)` -> `COLOR color r=<0-255> g b`
 |   `WHITE`   | `func` + range param: `<min-max-step>`            |        none     | Function must have `cw, ww` input parameters. `def white(cw, ww, ...)` -> `WHITE white cw=<0-255> ww`
@@ -576,6 +576,7 @@ TYPE Example syntax:
                     'WHITE white cw=<0-255> ww',                 # white/cold-white control widget
                     'SLIDER brightness br=<0-1000-10>',          # range syntax: <min-max-step> step is optional
                     'BUTTON action',
+                    "BUTTON{'result': True} action_status",      # show command response under the button
                     'BUTTON control cmd=<Hello,Bello>',          # options syntax: <opt1,opt2,...> list of parameters
                     'TEXTBOX{"refresh": 2000} measure',          # optional widget override before the command
                     'GRAPH{"refresh": 3000, "limit": 30} top',   # plot numeric dict values over time

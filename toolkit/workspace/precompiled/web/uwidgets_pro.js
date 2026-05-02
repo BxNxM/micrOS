@@ -32,41 +32,38 @@ function joystickWidget(container, command, params={}) {
     };
     const stopDragging = () => {
         if (!isDragging) {return;}
+        isDragging = false;
+        sender.final();
+    };
+    const buildCommand = () => {
         const rect = joystickContainer.getBoundingClientRect();
         const x = scaled(parseFloat(joystick.style.left), rect.width);
         const y = scaled(parseFloat(joystick.style.top), rect.height);
-        const call_cmd = command.includes('x=:range:') && command.includes('y=:range:') ?
+        return command.includes('x=:range:') && command.includes('y=:range:') ?
             command.replace('x=:range:', `x=${x}`).replace('y=:range:', `y=${y}`) :
             `${command}`;
-
-        console.log(`[API] Joystick exec: ${call_cmd}`);
-        restAPI(call_cmd);
-        isDragging = false;
     };
-    const drag = event => {
+    const sender = createWidgetSender(buildCommand);
+    const drag = point => {
         if (!isDragging) {return;}
-        const touch = event.touches ? event.touches[0] : event;
         const rect = joystickContainer.getBoundingClientRect();
-        const x = constrain(touch.clientX - rect.left, 0, rect.width);
-        const y = constrain(touch.clientY - rect.top, 0, rect.height);
+        const x = constrain(point.clientX - rect.left, 0, rect.width);
+        const y = constrain(point.clientY - rect.top, 0, rect.height);
 
         joystick.style.left = `${x}px`;
         joystick.style.top = `${y}px`;
         updateValueDisplay(scaled(x, rect.width), scaled(y, rect.height));
+        sender.update();
     };
 
-    joystick.addEventListener('mousedown', event => {
-        isDragging = true;
-        event.preventDefault();
+    bindPressDrag(joystickContainer, {
+        start: point => {
+            isDragging = true;
+            drag(point);
+        },
+        move: drag,
+        end: stopDragging
     });
-    joystick.addEventListener('touchstart', event => {
-        isDragging = true;
-        event.preventDefault();
-    });
-    document.addEventListener('mouseup', stopDragging);
-    document.addEventListener('touchend', stopDragging);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('touchmove', drag);
 
     joystickContainer.appendChild(joystick);
     appendChildren(container, [createWidgetTitle(command, title_len), joystickContainer, valueDisplay]);
@@ -133,15 +130,15 @@ function whiteWidget(container, command, params={}) {
     const slider = rangeInput(range, Math.round((min + max) / 2), { width: '100%' });
     const whiteValues = value => ({ cw: min + max - value, ww: value });
 
-    const execute = () => {
+    const buildCommand = () => {
         const { cw, ww } = whiteValues(Number(slider.value));
-        const call_cmd = command.replace('cw=:range:', `cw=${cw}`)
-                                .replace('ww=:range:', `ww=${ww}`);
-        console.log(`[API] White exec: ${call_cmd}`);
-        restAPI(call_cmd);
+        return command.replace('cw=:range:', `cw=${cw}`)
+                      .replace('ww=:range:', `ww=${ww}`);
     };
+    const sender = createWidgetSender(buildCommand);
 
-    slider.addEventListener('change', execute);
+    slider.addEventListener('input', sender.update);
+    slider.addEventListener('change', sender.final);
     appendChildren(wrapper, [
         createElement('span', { textAlign: 'right', fontSize: '11px' }, { textContent: 'Cold' }),
         slider,

@@ -146,7 +146,7 @@ async function craftModuleWidgets(module, widgets) {
     generateElement('h2', module);
 
     const widgetTypeOptions = {
-        button: item => ({title_len: autoTitleLen(widgets, item.callback), options: item.options }),
+        button: item => ({title_len: autoTitleLen(widgets, item.callback), options: item.options, result: item.result }),
         slider: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
         color: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
         white: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),

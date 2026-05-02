@@ -822,6 +822,7 @@ class micrOSGUI(QWidget):
                 except Exception as e:
                     self.console.append_output("Process terminate error: {}".format(e))
                 self.bgjon_progress_monitor_thread_obj_dict.pop(remove_from_key, None)
+            self.progressbar.progressbar_update(100)
             close_action(remove_from_key)
 
     def __create_console(self):

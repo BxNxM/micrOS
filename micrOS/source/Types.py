@@ -5,6 +5,7 @@ micrOS Frontend element types - 'This is the frontend perspective of micrOS func
 USAGE:
     <TAG> function params*
     BUTTON toggle
+    BUTTON{'result': True} toggle
 
     <range> int
     SLIDER brightness br
@@ -26,7 +27,7 @@ __RANGE_255 = {'range': (0, 255, 2)}
 __OPTIONS = {'options': ("None",)}
 
 # Widget Types - Load Module Callbacks
-BUTTON = lambda: __TEMPLATE | {'type': 'button'} | __OPTIONS                        # pylint: disable=invalid-name
+BUTTON = lambda: __TEMPLATE | {'type': 'button', 'result': False} | __OPTIONS        # pylint: disable=invalid-name
 SLIDER = lambda: __TEMPLATE | {'type': 'slider'} | __RANGE_100                      # pylint: disable=invalid-name
 TEXTBOX = lambda: __TEMPLATE | {'type': 'textbox', 'refresh': 10000}                # pylint: disable=invalid-name
 COLOR = lambda: __TEMPLATE | {'type': 'color'} | __RANGE_255                        # pylint: disable=invalid-name
@@ -111,7 +112,12 @@ def _extract_tag_and_overrides(msg):
         i = cmd.find('}')
         if i >= 0:
             try:
-                overrides = loads('{' + cmd[1:i].replace("'", '"') + '}')
+                raw = cmd[1:i].replace("'", '"')
+                try:
+                    overrides = loads('{' + raw + '}')
+                except ValueError:
+                    raw = raw.replace('True', 'true').replace('False', 'false').replace('None', 'null')
+                    overrides = loads('{' + raw + '}')
             except Exception as e:
                 syslog(f"[ERR] Types tag overrides: {e}")
             cmd = cmd[i + 1:].lstrip()

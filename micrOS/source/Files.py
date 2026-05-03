@@ -43,7 +43,9 @@ def is_protected(path:str='/') -> bool:
         - protected root folders and files: /*
         - protected system files by name
     """
-    protected_files = ("node_config.json", "LM_system.mpy", "LM_pacman.mpy", "LM_cluster.mpy")
+    protected_files = ("node_config.json",
+                       "LM_system.mpy", "LM_pacman.mpy", "LM_web.mpy",
+                       "LM_fileserver.mpy", "LM_cluster.mpy")
     # Detect parent directory
     parent = "/".join(path.split("/")[:-1]) or "/"
     # Get file/folder name

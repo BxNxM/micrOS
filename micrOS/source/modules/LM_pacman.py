@@ -78,52 +78,16 @@ def cat(path):
     return content
 
 
-def install(ref=None):
+def makedir(path):
     """
-    Unified mip-based installer for micrOS.
-    Automatically detects:
-      1. Official MicroPython packages (from https://micropython.org/pi/v2)
-            Example: pacman install "umqtt.simple"
-      2. Single-file load modules (LM_/IO_ names or URLs)
-            Example: pacman install "https://github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
-                     pacman install "github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
-      3. GitHub packages (folders via tree/blob URLs or github: form)
-            Example: pacman install "github:peterhinch/micropython-mqtt"
-                     pacman install "https://github.com/peterhinch/micropython-mqtt/tree/master"
-                     pacman install "https://github.com/peterhinch/micropython-mqtt/blob/master/package.json"
-                     pacman install "https://github.com/peterhinch/micropython-mqtt"
-                     [NOK] pacman install "https://github.com/basanovase/sim7600/tree/main/sim7600" -> Package not found: github:basanovase/sim7600/package.json
-      4. Install from local /config/requirements.txt file
-            Example: pacman install "requirements.txt"
+    Create directory command
     """
-    from Pacman import install as pm_install
-    return pm_install(ref)
-
-
-@sudo
-def uninstall(name=None):
-    """
-    Delete package by name from /lib
-    :param name: None (default) show installed package name
-                 OR package name to delete (str)
-    """
-    if name is None:
-        return list_fs(path=OSPath.LIB, type_filter='d')
-    from Pacman import uninstall as pm_uninstall
-    return pm_uninstall(name)
-
-
-def upgrade(name=None, force=False):
-    """
-    Upgrade package by name from /lib
-    :param name: None (default) show installed package name
-                 OR package name to upgrade (str)
-    :param force: skip version check
-    """
-    if name is None:
-        return list_fs(path=OSPath.LIB, type_filter='d')
-    from Pacman import upgrade as pm_upgrade
-    return pm_upgrade(name, force)
+    from uos import mkdir
+    try:
+        mkdir(path)
+        return f"{path} dir created."
+    except Exception as e:
+        return f"{path} failed to create: {e}"
 
 
 def del_duplicates(migrate=True):
@@ -173,6 +137,78 @@ def del_duplicates(migrate=True):
             msg_buf.append(f'   Purged (/): {_deleted}')
 
     return '\n'.join(msg_buf) if len(msg_buf) > 0 else 'Nothing to delete.'
+
+
+######################     Package management    ##################
+def install(ref=None):
+    """
+    Unified mip-based installer for micrOS.
+    Automatically detects:
+      1. Official MicroPython packages (from https://micropython.org/pi/v2)
+            Example: pacman install "umqtt.simple"
+      2. Single-file load modules (LM_/IO_ names or URLs)
+            Example: pacman install "https://github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
+                     pacman install "github.com/BxNxM/micrOS/blob/master/toolkit/workspace/precompiled/modules/LM_rgb.mpy"
+      3. GitHub packages (folders via tree/blob URLs or github: form)
+            Example: pacman install "github:peterhinch/micropython-mqtt"
+                     pacman install "https://github.com/peterhinch/micropython-mqtt/tree/master"
+                     pacman install "https://github.com/peterhinch/micropython-mqtt/blob/master/package.json"
+                     pacman install "https://github.com/peterhinch/micropython-mqtt"
+                     [NOK] pacman install "https://github.com/basanovase/sim7600/tree/main/sim7600" -> Package not found: github:basanovase/sim7600/package.json
+      4. Install from local /config/requirements.txt file
+            Example: pacman install "requirements.txt"
+    """
+    from Pacman import install as pm_install
+    return pm_install(ref)
+
+
+@sudo
+def uninstall(name=None):
+    """
+    Delete package by name from /lib
+    :param name: None (default) show installed package name
+                 OR package name to delete (str)
+    """
+    if name is None:
+        return pack_ls()
+    from Pacman import uninstall as pm_uninstall
+    return pm_uninstall(name)
+
+
+def upgrade(name=None, force=False):
+    """
+    Upgrade package by name from /lib
+    :param name: None (default) show installed package name
+                 OR package name to upgrade (str)
+    :param force: skip version check
+    """
+    if name is None:
+        return pack_ls()
+    from Pacman import upgrade as pm_upgrade
+    return pm_upgrade(name, force)
+
+
+def pack_ls():
+    """
+    List local packages
+    return list of package names
+    """
+    return list_fs(path=OSPath.LIB, type_filter='d')
+
+##########################     MISC    ###########################
+
+@socket_stream
+def micros_checksum(msgobj=None):
+    from hashlib import sha1
+    from binascii import hexlify
+    from Config import cfgget
+
+    for f_name in ilist_fs(path=OSPath.MODULES, type_filter='f', select='LM'):
+        with open(f_name, 'rb') as f:
+            cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
+        msgobj(f"{cs} {f_name}")
+    # GC collect?
+    return f"micrOS version: {cfgget('version')}"
 
 
 def unload(module=None):
@@ -233,21 +269,33 @@ def datdump():
     return out
 
 
-def makedir(path):
+def help(widgets=False):
     """
-    Create directory command
+    [i] micrOS LM naming convention - built-in help message
+    :return tuple:
+        (widgets=False) list of functions implemented by this application
+        (widgets=True) list of widget json for UI generation
     """
-    from uos import mkdir
-    try:
-        mkdir(path)
-        return f"{path} dir created."
-    except Exception as e:
-        return f"{path} failed to create: {e}"
+    return ('listmods', 'delmod mod=<module>.py/.mpy', 'del_duplicates',
+            'unload module="LM_rgb"',
+            'cachedump delete=None',
+            'datdump',
+            # Package commands
+            'install url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
+            'uninstall name=None',
+            'upgrade name=None',
+            'pack_ls',
+            # File system commands
+            'micros_checksum',
+            'ls path="/" content="*/f/d" select="*/LM/IO"',
+            'rm <path>',
+            'rmdir <path>',
+            'dirtree path="/"',
+            'makedir <path>')
 
 #############################################
 #              Legacy features              #
 #############################################
-
 
 @socket_stream
 def listmods(msgobj=None):
@@ -281,41 +329,3 @@ def delmod(mod):
         return remove_file(path_join(OSPath.MODULES, to_remove))
     except Exception as e:
         return f'Cannot delete: {mod}: {e}'
-
-
-@socket_stream
-def micros_checksum(msgobj=None):
-    from hashlib import sha1
-    from binascii import hexlify
-    from Config import cfgget
-
-    for f_name in ilist_fs(path=OSPath.MODULES, type_filter='f', select='LM'):
-        with open(f_name, 'rb') as f:
-            cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
-        msgobj(f"{cs} {f_name}")
-    # GC collect?
-    return f"micrOS version: {cfgget('version')}"
-
-
-def help(widgets=False):
-    """
-    [i] micrOS LM naming convention - built-in help message
-    :return tuple:
-        (widgets=False) list of functions implemented by this application
-        (widgets=True) list of widget json for UI generation
-    """
-    return ('listmods', 'delmod mod=<module>.py/.mpy', 'del_duplicates',
-            'unload module="LM_rgb"',
-            'cachedump delete=None',
-            'datdump',
-            # Package commands
-            'install url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
-            'uninstall name=None',
-            'upgrade name=None',
-            # File system commands
-            'micros_checksum',
-            'ls path="/" content="*/f/d" select="*/LM/IO"',
-            'rm <path>',
-            'rmdir <path>',
-            'dirtree path="/"',
-            'makedir <path>')

@@ -121,7 +121,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.62,
+            7.65,
             0
         ],
         "modules/LM_web.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            5317,
+            5319,
             27
         ],
         "load": [
-            8823,
+            8830,
             53
         ],
         "core_dep": [

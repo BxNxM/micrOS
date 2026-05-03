@@ -155,7 +155,7 @@ async def _network(tag:str, anchor=False):
             # MICROS in AP MODE: CLUSTER FOLLOWER - WIFI CHANNEL SYNC WITH ANCHOR
             ap, sta = WLAN(AP_IF), _enable_sta()
             # Sync Channel with Cluster Anchor
-            _align_channel(sta, ap)
+            await _align_channel(sta, ap)
             if anchor:
                 # MICROS in AP MODE - RECONFIGURE AP NAME to match Anchor
                 # EXPERIMENTAL FEATURE: Scans and Advertise the channel as well.

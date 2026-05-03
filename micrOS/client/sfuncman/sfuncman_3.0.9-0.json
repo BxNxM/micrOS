@@ -1292,6 +1292,10 @@
             "doc": null,
             "param(s)": ""
         },
+        "pack_ls": {
+            "doc": "\n    List local packages\n    return list of package names\n    ",
+            "param(s)": ""
+        },
         "rm": {
             "doc": "Linux like rm command - delete app resources and folders\n:param path: app resource name/path, ex.: LM_robustness.py\n:param force: bypasses protection check - sudo mode",
             "param(s)": "path force=False"

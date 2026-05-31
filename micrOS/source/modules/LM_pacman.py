@@ -170,7 +170,7 @@ def uninstall(name=None):
                  OR package name to delete (str)
     """
     if name is None:
-        return pack_ls()
+        return inspect()
     from Pacman import uninstall as pm_uninstall
     return pm_uninstall(name)
 
@@ -183,17 +183,21 @@ def upgrade(name=None, force=False):
     :param force: skip version check
     """
     if name is None:
-        return pack_ls()
+        return inspect()
     from Pacman import upgrade as pm_upgrade
     return pm_upgrade(name, force)
 
 
-def pack_ls():
+def inspect(package:str=None)->list|str:
     """
-    List local packages
-    return list of package names
+    Inspect packages
+    :param package: package name to inspect
+        if None, list available package names
+    return list of package names / inspection str
     """
-    return list_fs(path=OSPath.LIB, type_filter='d')
+    if package is None:
+        return list_fs(path=OSPath.LIB, type_filter='d')
+    return cat(path_join(OSPath.LIB, package, 'pacman.json'))
 
 ##########################     MISC    ###########################
 
@@ -284,7 +288,7 @@ def help(widgets=False):
             'install url="BxNxM/micrOS/master/toolkit/workspace/precompiled/LM_robustness.py"',
             'uninstall name=None',
             'upgrade name=None',
-            'pack_ls',
+            'inspect',
             # File system commands
             'micros_checksum',
             'ls path="/" content="*/f/d" select="*/LM/IO"',

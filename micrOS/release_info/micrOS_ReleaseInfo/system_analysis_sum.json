@@ -9,7 +9,7 @@
             5
         ],
         "Pacman.py": [
-            9.48,
+            9.31,
             3
         ],
         "Files.py": [
@@ -121,7 +121,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.65,
+            7.68,
             0
         ],
         "modules/LM_web.py": [
@@ -323,11 +323,11 @@
     },
     "summary": {
         "core": [
-            5319,
+            5360,
             27
         ],
         "load": [
-            8830,
+            8834,
             53
         ],
         "core_dep": [
@@ -339,7 +339,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.46,
-        "version": "3.0.9-0"
+        "load_score": 8.47,
+        "version": "3.0.10-0"
     }
 }

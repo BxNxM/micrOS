@@ -82,35 +82,61 @@ def _protected_resource(source_name):
     return source_name.split(".")[0] in ("LM_system", "LM_pacman", "LM_cluster")
 
 
-def _unpack_from_pacman_json(path:str, packages:tuple) -> tuple[bool, str]:
+def _unpack_from_pacman_json(path:str, packages:tuple, unpacked=None) -> tuple[bool, str]:
     """
     Unpack Load Modules and other resources based on pacman.json
     :param path: packages library path (default: /lib)
     :param packages: list of package names, but least one to unpack
     """
+    nested = unpacked is not None
+    unpacked = set() if unpacked is None else unpacked
     verdict = ""
     # Check all input packages
     for pack in packages:
+        if not isinstance(pack, str) or not pack or "/" in pack or "\\" in pack or pack in (".", "..") or pack in unpacked:
+            continue
+        unpacked.add(pack)
         pack_meta_path = path_join(path, pack, 'pacman.json')
         if is_file(pack_meta_path):
             verdict += f"\n    UNPACKING {pack_meta_path}"
             # Load package layout metadata
             try:
                 with open(pack_meta_path, 'r') as p:
-                    layout = load(p).get('layout', {})
+                    metadata = load(p)
+                layout = metadata.get('layout', {})
+                deps = metadata.get('deps', [])
             except Exception as e:
                 syslog(f"[ERR] Package unpack {pack_meta_path}: {e}")
-                layout = {}
+                layout, deps = {}, []
+            # Unpack package dependencies first
+            if isinstance(deps, list) and deps:
+                verdict += _unpack_from_pacman_json(path, deps, unpacked)
             # Unpack files based on layout metadata
             for target, source_list in layout.items():
                 # Restrict write access for /config/*
                 if target.lstrip("/").startswith("config"):
                     verdict += f"\n  ✗ Protected target dir: {target}"
                     continue
+                target_parts = target.lstrip("/").split("/")
                 target_dir = path_join(OSPath._ROOT, target)
                 for source in source_list:
-                    source_path = path_join(path, source)
+                    if not isinstance(source, str) or source.startswith("/") or ".." in source.split("/"):
+                        verdict += f"\n  ✗ Invalid source: {source}"
+                        continue
                     source_name = source.split('/')[-1] if '/' in source else source
+                    is_resource = target_parts[0] in ("data", "web")
+                    target_name = source if is_resource else source_name
+                    source_path = path_join(path, pack, source) if is_resource else path_join(path, source)
+                    child_dir = "/".join(target_parts[1:])
+                    if child_dir and not (target_parts[0] == "web" and target_parts[1] == "data"):
+                        child_source = path_join(path, pack, child_dir, source)
+                        if is_file(child_source):
+                            source_path = child_source
+                    if not is_file(source_path):
+                        if not is_resource:
+                            source_path = path_join(path, pack, source)
+                        if not is_file(source_path) and source.startswith("data/"):
+                            source_path = path_join(path, pack, source[5:])
                     if _protected_resource(source_name):
                         verdict += f"\n  ! Unpack skip - protected target: {source_name}"
                         continue
@@ -119,17 +145,24 @@ def _unpack_from_pacman_json(path:str, packages:tuple) -> tuple[bool, str]:
                             if not is_dir(target_dir):
                                 # Support single-level child dir
                                 mkdir(target_dir)
+                            sub_dir = target_dir
+                            for name in target_name.split('/')[:-1]:
+                                sub_dir = path_join(sub_dir, name)
+                                if not is_dir(sub_dir):
+                                    mkdir(sub_dir)
                         except Exception as e:
                             verdict += f"\n  ✗ Unpack subdir error {target_dir}: {e}"
                         try:
-                            rename(source_path, path_join(target_dir, source_name))
+                            rename(source_path, path_join(target_dir, target_name))
                             verdict += f"\n  ✓ Unpacked {source} -> {target_dir}"
                         except Exception as e:
                             verdict += f"\n  ✗ Unpack error {source}: {e}"
-                    elif not is_file(path_join(target_dir, source)):
+                    elif not is_file(path_join(target_dir, target_name)):
                         # Check already unpacked target resource
                         verdict += f"\n  ✗ Unpack error: {source} not exists"
-    return "\nNothing to unpack" if verdict == "" else verdict
+        elif nested:
+            verdict += f"\n  ! Skip dep unpack - metadata not found: {pack}"
+    return verdict or ("" if nested else "\nNothing to unpack")
 
 
 # ---------------------------------------------------------------------
@@ -239,7 +272,7 @@ def install(ref):
 
 def uninstall(package_name):
     """
-    Uninstalls package from /lib with its dependencies
+    Uninstalls package from /lib and leaves its dependencies installed
     :param package_name: package name under /lib
     """
     pack_path = path_join(OSPath.LIB, package_name)
@@ -253,26 +286,36 @@ def uninstall(package_name):
         # Load package layout metadata
         try:
             with open(pack_meta, 'r') as p:
-                layout = load(p).get('layout', {})
+                metadata = load(p)
+            layout = metadata.get('layout', {})
+            deps = metadata.get('deps', [])
         except Exception as e:
             syslog(f"[ERR] Package uninstall {pack_meta}: {e}")
-            layout = {}
+            layout, deps = {}, []
 
         for target, source_list in layout.items():
             # Restrict write access for /config/*
             if target.lstrip("/").startswith("config"):
                 verdict += f"  ✗ Protected target dir: {target}\n"
                 continue
+            target_parts = target.lstrip("/").split("/")
             target_dir = path_join(OSPath._ROOT, target)
             for source in source_list:
+                if not isinstance(source, str) or source.startswith("/") or ".." in source.split("/"):
+                    verdict += f"  ✗ Invalid source: {source}\n"
+                    continue
                 source_name = source.split('/')[-1] if '/' in source else source
                 if _protected_resource(source_name):
                     verdict += f"  ✗ Remove skip - protected target: {source_name}\n"
                     continue
-                unpacked_path = path_join(target_dir, source_name)
+                target_name = source if target_parts[0] in ("data", "web") else source_name
+                unpacked_path = path_join(target_dir, target_name)
                 if is_file(unpacked_path):
                     remove_file(unpacked_path)
                     verdict += f"  ✓ Removed: {unpacked_path}\n"
+
+        if isinstance(deps, list) and deps:
+            verdict += f"  ! Skip dep delete: {deps}\n"
 
     # Delete package
     verdict += "  " + remove_dir(pack_path)

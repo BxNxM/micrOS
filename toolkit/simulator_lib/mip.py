@@ -116,6 +116,11 @@ def _mip_emu(ref, target:Path=Path("lib"), version:str="master"):
         except Exception as e:
             console(f"❌ Failed to read {url}: {e}")
             return []
+        if not data:
+            if ref.startswith("github") and version == "master":
+                console("Retry mip install with branch: main")
+                return _mip_emu(ref, target=target, version="main")
+            return []
 
         if url.endswith("package.json"):
             # Install based on package.json content

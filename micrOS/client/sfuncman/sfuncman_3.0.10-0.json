@@ -78,7 +78,7 @@
     },
     "VL53L0X": {
         "help": {
-            "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true",
@@ -1956,7 +1956,7 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'classify_last_event ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'get_performance ', 'refresh': 10000}",
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'classify_last_event ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'get_performance ', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sound_event.png?raw=true",
@@ -2171,7 +2171,7 @@
     },
     "tcs3472": {
         "help": {
-            "doc": "\n    TCS3472 Color sensor\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure ', 'refresh': 10000}\n\t{'type': 'button', 'callback': 'led state=:options:', 'result': False, 'options': ['True', 'False']}\n\t{'type': 'slider', 'callback': 'led state=True br=:range:', 'range': [0, 100, 5]}\n\t{'type': 'button', 'callback': 'neomatrix_update ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'neomatrix_animation ', 'result': False, 'options': ['None']}",
+            "doc": "\n    TCS3472 Color sensor\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure ', 'refresh': 10000}\n\t{'type': 'button', 'callback': 'led state=:options:', 'result': False, 'options': ['True', 'False']}\n\t{'type': 'slider', 'callback': 'led state=True br=:range:', 'range': [0, 100, 5]}\n\t{'type': 'button', 'callback': 'neomatrix_update ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'neomatrix_animation ', 'result': False, 'options': ['None']}",
             "param(s)": "widgets=False"
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true",

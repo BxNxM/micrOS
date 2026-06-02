@@ -50,7 +50,7 @@
         ],
         "Types.py": [
             9.09,
-            28
+            26
         ],
         "Logger.py": [
             8.86,
@@ -58,7 +58,7 @@
         ],
         "Common.py": [
             9.86,
-            33
+            32
         ],
         "InterConnect.py": [
             9.7,
@@ -86,7 +86,7 @@
         ],
         "microIO.py": [
             9.37,
-            43
+            40
         ],
         "micrOS.py": [
             9.09,
@@ -160,10 +160,6 @@
             8.6,
             0
         ],
-        "modules/LM_tcs3472.py": [
-            9.48,
-            0
-        ],
         "modules/LM_oled.py": [
             9.37,
             1
@@ -210,7 +206,7 @@
         ],
         "modules/LM_neopixel.py": [
             7.77,
-            3
+            2
         ],
         "modules/LM_cct.py": [
             9.03,
@@ -248,13 +244,9 @@
             7.94,
             0
         ],
-        "modules/LM_sound_event.py": [
-            8.52,
-            0
-        ],
         "modules/LM_cluster.py": [
             8.82,
-            1
+            0
         ],
         "modules/LM_espnow.py": [
             7.14,
@@ -274,10 +266,6 @@
         ],
         "modules/LM_distance.py": [
             8.86,
-            0
-        ],
-        "modules/LM_VL53L0X.py": [
-            9.07,
             0
         ],
         "modules/LM_light_sensor.py": [
@@ -310,7 +298,7 @@
         ],
         "modules/LM_i2s_mic.py": [
             8.42,
-            2
+            1
         ],
         "modules/LM_sdcard.py": [
             8.11,
@@ -327,8 +315,8 @@
             27
         ],
         "load": [
-            8834,
-            53
+            7820,
+            50
         ],
         "core_dep": [
             true,
@@ -339,7 +327,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.47,
+        "load_score": 8.43,
         "version": "3.0.10-0"
     }
 }

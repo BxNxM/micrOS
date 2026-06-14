@@ -80,6 +80,9 @@ function fail_safe_pip_install {
     while IFS= read -r line; do
         # Strip leading and trailing whitespace from the current line
         pip_package=$(_trim "$line")
+        if [[ -z "$pip_package" || "$pip_package" == \#* ]]; then
+            continue
+        fi
         echo -e "Attempt to install: $pip_package"
         python3 -m pip install "$pip_package"
         if [ $? -ne 0 ]; then

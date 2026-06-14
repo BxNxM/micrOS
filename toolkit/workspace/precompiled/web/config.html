@@ -1,11 +1,4 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Config</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <link rel="stylesheet" href="../ustyle.css">
-  <style>
+<!doctype html><html><head><meta charset="utf-8"><title>Config</title><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><link rel="stylesheet" href="../ustyle.css"><style>
     #top {
       display: flex;
       align-items: center;
@@ -24,18 +17,7 @@
     #out {
       white-space: pre-wrap;
     }
-  </style>
-</head>
-<body>
-  <h1> micrOS Config </h1>
-  <p>Current node configuration as JSON.</p>
-  <div id="top">
-    <button onclick="loadConfig()">Reload</button>
-  </div>
-  <textarea id="cfg" spellcheck="false" readonly></textarea>
-  <pre id="out"></pre>
-
-  <script>
+  </style></head><body><h1> micrOS Config </h1><p>Current node configuration as JSON.</p><div id="top"><button onclick="loadConfig()">Reload</button></div><textarea id="cfg" spellcheck="false" readonly></textarea><pre id="out"></pre><script>
     const cfg = document.getElementById('cfg');
     const out = document.getElementById('out');
 
@@ -54,6 +36,4 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => loadConfig());
-  </script>
-</body>
-</html>
+  </script></body></html>

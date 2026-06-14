@@ -12,7 +12,8 @@ else:
     # INSTALL OPTIONAL DEPENDENCIES - PIP HACK
     from toolkit.lib import pip_package_installer as pip_install
     pip_install.install_optional_dependencies(['PyQt5', 'PyQt5-Qt5', 'PyQt5-sip', 'opencv-python',
-                                               'PyAudio', 'mpy-cross==1.27.0.post2', 'matplotlib'])
+                                               'PyAudio', 'mpy-cross==1.27.0.post2', 'matplotlib',
+                                               'rjsmin', 'rcssmin', 'htmlmin'])
     if sys.platform.startswith("win"):
         pip_install.install_optional_dependencies(['pyreadline3'])
 
@@ -73,7 +74,7 @@ def arg_parse():
     dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")
     dev_group.add_argument("-b", "--backup_node_config", action="store_true", help="Backup usb connected node config.")
     dev_group.add_argument("-sim", "--simulate", action="store_true", help="start micrOS on your computer in simulated mode")
-    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy], MICROS_DEV env. var: enable compile-> True (disabled for pip deployments)")
+    dev_group.add_argument("-cc", "--cross_compile_micros", action="store_true", help="Cross Compile micrOS system [py -> mpy] and optimize precompiled web resources, MICROS_DEV env. var: enable compile-> True (disabled for pip deployments)")
     dev_group.add_argument("-gw", "--gateway", action="store_true", help="Start micrOS Gateway rest-api server, Env. vars: API_AUTH='username:password' (optional), GATEWAYIP needed for container deployment only.")
     dev_group.add_argument("-v", "--version", action="store_true", help="Get micrOS version - repo + connected device.")
     dev_group.add_argument("-lint", "--linter", action="store_true", help="Run micrOS system linter (pylint+)")

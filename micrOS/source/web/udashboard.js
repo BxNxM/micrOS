@@ -6,6 +6,7 @@ const OPTIONAL_WIDGET_TYPES = {
 };
 const optionalWidgetLoaders = {};
 const normalizeCallback = callback => String(callback || '').trim().replace(/\s+/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
+const FEATURE_DISCOVERY_TIMEOUT = 20000;
 
 function loadOptionalWidgetScript(src) {
     if (optionalWidgetLoaders[src]) {
@@ -33,7 +34,7 @@ function ensureOptionalWidgetsLoaded(widgets) {
 function moduleHelp(module) {
     const endpoint = `${module}/help/True`;
     console.log(`[API] Endpoint: ${endpoint}`);
-    return restAPI(endpoint).then(({ result }) => {
+    return restAPI(endpoint, true, FEATURE_DISCOVERY_TIMEOUT).then(({ result }) => {
         const parsedWidgets = result.map(item => JSON.parse(item.replace(/\\"/g, '"')));
         console.log(`Parsed ${module} help:`, parsedWidgets);
         return parsedWidgets;
@@ -181,7 +182,7 @@ async function craftModuleWidgets(module, widgets) {
 }
 
 function DynamicWidgetLoad() {
-    restAPI('modules').then(data => {
+    restAPI('modules', true, FEATURE_DISCOVERY_TIMEOUT).then(data => {
         const app_list = data.result;
         app_list.forEach(module => {
             moduleHelp(module).then(widgets => {

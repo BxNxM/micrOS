@@ -1,15 +1,4 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Files</title>
-  <!-- Mobile viewport -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <!-- Base micrOS style -->
-  <link rel="stylesheet" href="../ustyle.css">
-
-  <!-- Files UI layout-only CSS -->
-  <style>
+<!doctype html><html><head><meta charset="utf-8"><title>Files</title><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><link rel="stylesheet" href="../ustyle.css"><style>
     /* Main layout */
     #ui {
       display: flex;
@@ -132,48 +121,4 @@
       pointer-events: none; /* prevents clicking while loading */
       transition: filter 0.15s ease, opacity 0.15s ease;
      }
-  </style>
-</head>
-
-<body>
-  <h1> micrOS Files </h1>
-
-  <div id="ui">
-    <!-- Left sidebar (fixed, no scroll) -->
-    <aside id="folders">
-      <header id="diskbar">
-        <div id="disktext">Disk: — MB used / — MB free</div>
-        <div id="diskmeter">
-          <div id="diskused"></div>
-        </div>
-      </header>
-
-      <!-- Sticky folder block -->
-      <div id="folders-sticky">
-        <div class="folders">📂 Folders</div>
-        <div id="folder-path">/user_data</div>
-      </div>
-    </aside>
-
-    <!-- Files column -->
-    <main id="files">
-      <!-- Sticky files header -->
-      <div id="files-header">
-        <div id="top">
-          <input type="file" id="file">
-          <button onclick="uploadFile().then(() => load())">🔼 Upload</button>
-          <button onclick="openFile()">📖 Open</button>
-          <button onclick="download()">🔽 Download</button>
-          <button onclick="deleteFile()"> 🗑️ Delete</button>
-          <button onclick="editor()">📄 Edit</button>
-        </div>
-      </div>
-
-      <!-- Only this scrolls -->
-      <div id="list"></div>
-    </main>
-  </div>
-
-  <script src="../filesui.js"></script>
-</body>
-</html>
+  </style></head><body><h1> micrOS Files </h1><div id="ui"><aside id="folders"><header id="diskbar"><div id="disktext">Disk: — MB used / — MB free</div><div id="diskmeter"><div id="diskused"></div></div></header><div id="folders-sticky"><div class="folders">📂 Folders</div><div id="folder-path">/user_data</div></div></aside><main id="files"><div id="files-header"><div id="top"><input type="file" id="file"><button onclick="uploadFile().then(() => load())">🔼 Upload</button><button onclick="openFile()">📖 Open</button><button onclick="download()">🔽 Download</button><button onclick="deleteFile()"> 🗑️ Delete</button><button onclick="editor()">📄 Edit</button></div></div><div id="list"></div></main></div><script src="../filesui.js"></script></body></html>

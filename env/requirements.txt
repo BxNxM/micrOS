@@ -25,3 +25,8 @@ requests
 opencv-python
 soundfile
 PyAudio
+
+# Optional web resource optimizers for devToolKit.py -cc
+rjsmin
+rcssmin
+htmlmin

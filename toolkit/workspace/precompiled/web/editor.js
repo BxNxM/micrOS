@@ -1,51 +1,5 @@
-/* ============================================================
- * Embedded MicroPython Editor
- * Dependency-free editor shell; syntax support lives in editor_plugins.js.
- *
- * Public API:
- *   createEditor(container)
- *   openEditor(url, { anchor, list })
- *   destroyEditor()
- * ============================================================ */
-
-let _editor = null;
-let _pluginsPromise = null;
-const _host = { container: null };
-const _editorSrc = (document.currentScript && document.currentScript.src) || "../editor.js";
-
-window.createEditor = function (container) {
-    injectCSS();
-    if (!_editor) {
-        _host.container = container;
-        _editor = new EmbeddedEditor(container);
-    }
-    return _editor;
-};
-
-window.openEditor = function (url, opts = {}) {
-    if (!_editor) return console.warn("Editor not active");
-
-    const { anchor, list } = opts;
-    if (anchor) anchor.insertAdjacentElement("afterend", _host.container);
-    else if (list) list.insertAdjacentElement("beforebegin", _host.container);
-
-    _editor.open(url);
-};
-
-window.destroyEditor = function () {
-    if (!_editor) return;
-    _editor.close();
-    if (_host.container) _host.container.remove();
-    _editor = null;
-    _host.container = null;
-};
-
-function injectCSS() {
-    if (document.getElementById("mp-editor-css")) return;
-
-    const css = document.createElement("style");
-    css.id = "mp-editor-css";
-    css.textContent = `
+let _editor=null;let _pluginsPromise=null;const _host={container:null};const _editorSrc=(document.currentScript&&document.currentScript.src)||"../editor.js";window.createEditor=function(container){injectCSS();if(!_editor){_host.container=container;_editor=new EmbeddedEditor(container);}
+return _editor;};window.openEditor=function(url,opts={}){if(!_editor)return console.warn("Editor not active");const{anchor,list}=opts;if(anchor)anchor.insertAdjacentElement("afterend",_host.container);else if(list)list.insertAdjacentElement("beforebegin",_host.container);_editor.open(url);};window.destroyEditor=function(){if(!_editor)return;_editor.close();if(_host.container)_host.container.remove();_editor=null;_host.container=null;};function injectCSS(){if(document.getElementById("mp-editor-css"))return;const css=document.createElement("style");css.id="mp-editor-css";css.textContent=`
 .mp-editor {
     --mp-code-font: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     --mp-code-line: 20px;
@@ -166,71 +120,15 @@ function injectCSS() {
     font-size: 14px;
     line-height: 20px;
 }
-`;
-    document.head.appendChild(css);
-}
-
-/* ---------- Plugin bridge ---------- */
-
-function escapeHTML(text) {
-    const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
-    return text.replace(/[&<>"']/g, ch => map[ch]);
-}
-
-function fileExt(name) {
-    const leaf = (name || "").split(/[?#]/)[0].split("/").pop();
-    const dot = leaf.lastIndexOf(".");
-    return dot >= 0 ? leaf.slice(dot).toLowerCase() : "";
-}
-
-function pluginUrl() {
-    const src = _editorSrc.replace(/editor\.js([?#].*)?$/, "editor_plugins.js$1");
-    return src === _editorSrc ? "../editor_plugins.js" : src;
-}
-
-function plugins() {
-    return window.EditorPlugins || null;
-}
-
-function syntaxFor(name) {
-    const api = plugins();
-    return api && api.getSyntaxFor ? api.getSyntaxFor(name) : null;
-}
-
-function loadPlugins() {
-    if (plugins()) return Promise.resolve(plugins());
-    if (_pluginsPromise) return _pluginsPromise;
-
-    _pluginsPromise = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = pluginUrl();
-        script.onload = () => {
-            const api = plugins();
-            api ? resolve(api) : reject(new Error("editor_plugins.js did not register EditorPlugins"));
-        };
-        script.onerror = () => reject(new Error("editor_plugins.js load failed"));
-        document.head.appendChild(script);
-    }).catch(err => {
-        _pluginsPromise = null;
-        throw err;
-    });
-
-    return _pluginsPromise;
-}
-
-/* ---------- Editor ---------- */
-
-class EmbeddedEditor {
-    constructor(container) {
-        this.container = container;
-        this.pluginsLoading = false;
-        this.buildUI();
-        this.bindEvents();
-        this.refresh(false);
-    }
-
-    buildUI() {
-        this.container.innerHTML = `
+`;document.head.appendChild(css);}
+function escapeHTML(text){const map={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};return text.replace(/[&<>"']/g,ch=>map[ch]);}
+function fileExt(name){const leaf=(name||"").split(/[?#]/)[0].split("/").pop();const dot=leaf.lastIndexOf(".");return dot>=0?leaf.slice(dot).toLowerCase():"";}
+function pluginUrl(){const src=_editorSrc.replace(/editor\.js([?#].*)?$/,"editor_plugins.js$1");return src===_editorSrc?"../editor_plugins.js":src;}
+function plugins(){return window.EditorPlugins||null;}
+function syntaxFor(name){const api=plugins();return api&&api.getSyntaxFor?api.getSyntaxFor(name):null;}
+function loadPlugins(){if(plugins())return Promise.resolve(plugins());if(_pluginsPromise)return _pluginsPromise;_pluginsPromise=new Promise((resolve,reject)=>{const script=document.createElement("script");script.src=pluginUrl();script.onload=()=>{const api=plugins();api?resolve(api):reject(new Error("editor_plugins.js did not register EditorPlugins"));};script.onerror=()=>reject(new Error("editor_plugins.js load failed"));document.head.appendChild(script);}).catch(err=>{_pluginsPromise=null;throw err;});return _pluginsPromise;}
+class EmbeddedEditor{constructor(container){this.container=container;this.pluginsLoading=false;this.buildUI();this.bindEvents();this.refresh(false);}
+buildUI(){this.container.innerHTML=`
 <div class="mp-editor">
     <div class="toolbar">
         <input class="filename" value="">
@@ -247,148 +145,23 @@ class EmbeddedEditor {
             <textarea class="code" wrap="off" spellcheck="false"></textarea>
         </div>
     </div>
-</div>`;
-        this.codeEl = this.container.querySelector(".code");
-        this.fileEl = this.container.querySelector(".filename");
-        this.highlightEl = this.container.querySelector(".highlight");
-        this.linesEl = this.container.querySelector(".lines");
-        this.statusEl = this.container.querySelector(".status");
-        this.syntaxBtn = this.container.querySelector(".syntax");
-    }
-
-    bindEvents() {
-        this.codeEl.addEventListener("input", () => {
-            this.refresh();
-            this.setStatus("edited");
-        });
-        this.codeEl.addEventListener("scroll", () => this.syncScroll());
-        this.codeEl.addEventListener("keydown", e => this.handleKeydown(e));
-        this.fileEl.addEventListener("input", () => this.refresh());
-        this.container.querySelector(".load").addEventListener("click", () => this.loadFile());
-        this.container.querySelector(".save").addEventListener("click", () => this.save());
-        this.syntaxBtn.addEventListener("click", () => this.syntaxCheck());
-        this.container.querySelector(".close").addEventListener("click", () => window.destroyEditor());
-    }
-
-    handleKeydown(e) {
-        if (e.key !== "Tab") return;
-        e.preventDefault();
-        const s = this.codeEl.selectionStart;
-        const ePos = this.codeEl.selectionEnd;
-        this.codeEl.value = this.codeEl.value.slice(0, s) + "    " + this.codeEl.value.slice(ePos);
-        this.codeEl.selectionStart = this.codeEl.selectionEnd = s + 4;
-        this.refresh();
-    }
-
-    setStatus(text, type = "info") {
-        this.statusEl.textContent = text;
-        this.statusEl.className = "status " + type;
-    }
-
-    refresh(loadPlugin = true) {
-        this.updateLines();
-        this.paint();
-        const syntax = syntaxFor(this.fileEl.value);
-        this.syntaxBtn.style.display = syntax && syntax.checker ? "" : "none";
-        if (loadPlugin) this.ensurePlugins();
-    }
-
-    paint() {
-        const syntax = syntaxFor(this.fileEl.value);
-        const highlighter = syntax && syntax.highlighter;
-        const code = this.codeEl.value;
-        this.highlightEl.innerHTML = (highlighter ? highlighter(code) : escapeHTML(code)) || " ";
-        this.syncScroll();
-    }
-
-    ensurePlugins() {
-        if (plugins() || this.pluginsLoading || !fileExt(this.fileEl.value)) return;
-
-        this.pluginsLoading = true;
-        loadPlugins().then(
-            () => {
-                this.pluginsLoading = false;
-                this.refresh(false);
-            },
-            err => {
-                this.pluginsLoading = false;
-                console.warn("editor.js:", err.message);
-            }
-        );
-    }
-
-    syncScroll() {
-        this.linesEl.scrollTop = this.codeEl.scrollTop;
-        this.highlightEl.style.transform = `translate(${-this.codeEl.scrollLeft}px, ${-this.codeEl.scrollTop}px)`;
-    }
-
-    updateLines() {
-        const count = this.codeEl.value.split("\n").length;
-        this.linesEl.textContent = Array.from({ length: count }, (_, i) => i + 1).join("\n");
-        this.linesEl.scrollTop = this.codeEl.scrollTop;
-    }
-
-    setValue(file, text, status, type = "info") {
-        this.fileEl.value = file || "";
-        this.codeEl.value = text || "";
-        this.refresh();
-        this.setStatus(status, type);
-    }
-
-    open(url) {
-        const name = (url || "").split("/").pop();
-        this.setStatus("loading...");
-        fetch(url)
-            .then(r => r.ok ? r.text() : Promise.reject(new Error(r.statusText || "load failed")))
-            .then(text => this.setValue(url, text, "loaded", "ok"))
-            .catch(() => {
-                if (name === "LM_blinky.py") this.loadExample(url);
-                else this.setValue(url, "", "file not found or unreadable", "err");
-            });
-    }
-
-    loadFile() {
-        this.fileEl.value ? this.open(this.fileEl.value) : this.setStatus("no filename", "err");
-    }
-
-    save() {
-        const name = this.fileEl.value;
-        if (!name) return this.setStatus("no filename", "err");
-        if (!window.uploadFile) return this.setStatus("upload unavailable", "err");
-
-        const file = new File([this.codeEl.value], name, { type: "text/plain" });
-        window.uploadFile(file)
-            .then(ok => this.setStatus(ok ? "saved" : "save failed", ok ? "ok" : "err"))
-            .catch(err => this.setStatus("Save failed: " + err.message, "err"));
-    }
-
-    syntaxCheck() {
-        const syntax = syntaxFor(this.fileEl.value);
-        const checker = syntax && syntax.checker;
-        if (!checker) {
-            if (plugins() || !fileExt(this.fileEl.value)) return this.setStatus("syntax unavailable");
-            this.setStatus("loading syntax...");
-            return loadPlugins().then(() => this.syntaxCheck(), err => this.setStatus(err.message, "err"));
-        }
-
-        const result = checker(this.codeEl.value);
-        const error = result.errors && result.errors[0];
-        this.setStatus(
-            result.ok ? "syntax OK" : Object.entries(error || {}).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(" "),
-            result.ok ? "ok" : "err"
-        );
-    }
-
-    close() {
-        const file = this.fileEl ? this.fileEl.value : "";
-        this.container.innerHTML = "";
-        try {
-            window.dispatchEvent(new CustomEvent("micros-editor-close", { detail: { file } }));
-        } catch (_) {}
-    }
-
-    loadExample(file = "") {
-        this.setValue(file, `# LM_blinky.py - MicroPython example
+</div>`;this.codeEl=this.container.querySelector(".code");this.fileEl=this.container.querySelector(".filename");this.highlightEl=this.container.querySelector(".highlight");this.linesEl=this.container.querySelector(".lines");this.statusEl=this.container.querySelector(".status");this.syntaxBtn=this.container.querySelector(".syntax");}
+bindEvents(){this.codeEl.addEventListener("input",()=>{this.refresh();this.setStatus("edited");});this.codeEl.addEventListener("scroll",()=>this.syncScroll());this.codeEl.addEventListener("keydown",e=>this.handleKeydown(e));this.fileEl.addEventListener("input",()=>this.refresh());this.container.querySelector(".load").addEventListener("click",()=>this.loadFile());this.container.querySelector(".save").addEventListener("click",()=>this.save());this.syntaxBtn.addEventListener("click",()=>this.syntaxCheck());this.container.querySelector(".close").addEventListener("click",()=>window.destroyEditor());}
+handleKeydown(e){if(e.key!=="Tab")return;e.preventDefault();const s=this.codeEl.selectionStart;const ePos=this.codeEl.selectionEnd;this.codeEl.value=this.codeEl.value.slice(0,s)+"    "+this.codeEl.value.slice(ePos);this.codeEl.selectionStart=this.codeEl.selectionEnd=s+4;this.refresh();}
+setStatus(text,type="info"){this.statusEl.textContent=text;this.statusEl.className="status "+type;}
+refresh(loadPlugin=true){this.updateLines();this.paint();const syntax=syntaxFor(this.fileEl.value);this.syntaxBtn.style.display=syntax&&syntax.checker?"":"none";if(loadPlugin)this.ensurePlugins();}
+paint(){const syntax=syntaxFor(this.fileEl.value);const highlighter=syntax&&syntax.highlighter;const code=this.codeEl.value;this.highlightEl.innerHTML=(highlighter?highlighter(code):escapeHTML(code))||" ";this.syncScroll();}
+ensurePlugins(){if(plugins()||this.pluginsLoading||!fileExt(this.fileEl.value))return;this.pluginsLoading=true;loadPlugins().then(()=>{this.pluginsLoading=false;this.refresh(false);},err=>{this.pluginsLoading=false;console.warn("editor.js:",err.message);});}
+syncScroll(){this.linesEl.scrollTop=this.codeEl.scrollTop;this.highlightEl.style.transform=`translate(${-this.codeEl.scrollLeft}px, ${-this.codeEl.scrollTop}px)`;}
+updateLines(){const count=this.codeEl.value.split("\n").length;this.linesEl.textContent=Array.from({length:count},(_,i)=>i+1).join("\n");this.linesEl.scrollTop=this.codeEl.scrollTop;}
+setValue(file,text,status,type="info"){this.fileEl.value=file||"";this.codeEl.value=text||"";this.refresh();this.setStatus(status,type);}
+open(url){const name=(url||"").split("/").pop();this.setStatus("loading...");fetch(url).then(r=>r.ok?r.text():Promise.reject(new Error(r.statusText||"load failed"))).then(text=>this.setValue(url,text,"loaded","ok")).catch(()=>{if(name==="LM_blinky.py")this.loadExample(url);else this.setValue(url,"","file not found or unreadable","err");});}
+loadFile(){this.fileEl.value?this.open(this.fileEl.value):this.setStatus("no filename","err");}
+save(){const name=this.fileEl.value;if(!name)return this.setStatus("no filename","err");if(!window.uploadFile)return this.setStatus("upload unavailable","err");const file=new File([this.codeEl.value],name,{type:"text/plain"});window.uploadFile(file).then(ok=>this.setStatus(ok?"saved":"save failed",ok?"ok":"err")).catch(err=>this.setStatus("Save failed: "+err.message,"err"));}
+syntaxCheck(){const syntax=syntaxFor(this.fileEl.value);const checker=syntax&&syntax.checker;if(!checker){if(plugins()||!fileExt(this.fileEl.value))return this.setStatus("syntax unavailable");this.setStatus("loading syntax...");return loadPlugins().then(()=>this.syntaxCheck(),err=>this.setStatus(err.message,"err"));}
+const result=checker(this.codeEl.value);const error=result.errors&&result.errors[0];this.setStatus(result.ok?"syntax OK":Object.entries(error||{}).map(([k,v])=>`${k}=${JSON.stringify(v)}`).join(" "),result.ok?"ok":"err");}
+close(){const file=this.fileEl?this.fileEl.value:"";this.container.innerHTML="";try{window.dispatchEvent(new CustomEvent("micros-editor-close",{detail:{file}}));}catch(_){}}
+loadExample(file=""){this.setValue(file,`# LM_blinky.py - MicroPython example
 # Guide: https://github.com/BxNxM/micrOS/blob/master/micrOS/MODULE_GUIDE.md
 import machine
 from microIO import bind_pin, pinmap_search
@@ -418,6 +191,4 @@ def pinmap():
 
 def help(widgets=False):
     return "load pin=2", "blink", "pinmap"
-`, "example loaded");
-    }
-}
+`,"example loaded");}}

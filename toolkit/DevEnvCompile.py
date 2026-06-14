@@ -245,6 +245,7 @@ class Compile:
                 self.console("Copy error", state='err')
                 error_cnt += 1
         self.copy_other_resources_to_precompiled()
+        self.optimize_precompiled_web_resources()
         self._save_precompiled_mpy_cross_version()
         # Evaluation summary
         if error_cnt != 0:
@@ -277,6 +278,63 @@ class Compile:
                     self.console("Copy error", state='err')
 
         workdir_handler.popd()
+
+    def optimize_precompiled_web_resources(self):
+        """Minify copied web resources in the precompiled workspace."""
+        web_path = os.path.join(self.precompiled_micrOS_dir_path, "web")
+        if not LocalMachine.FileHandler.path_is_exists(web_path)[0]:
+            self.console(f"SKIP web optimization - missing path: {web_path}", state="warn")
+            return False
+
+        try:
+            import htmlmin
+            import rcssmin
+            import rjsmin
+        except Exception as e:
+            self.console(f"SKIP web optimization - optional dependency missing: {e}", state="warn")
+            self.console("Install optimizers: pip install rjsmin rcssmin htmlmin", state="warn")
+            return False
+
+        optimizers = {
+            ".js": rjsmin.jsmin,
+            ".css": rcssmin.cssmin,
+            ".html": lambda content: htmlmin.minify(
+                content,
+                remove_comments=True,
+                remove_empty_space=True,
+                reduce_boolean_attributes=True,
+                remove_optional_attribute_quotes=False,
+            ),
+        }
+        optimized_cnt = 0
+        original_size = 0
+        optimized_size = 0
+        self.console("OPTIMIZE precompiled web resources...", state="ok")
+        for root, _, files in os.walk(web_path):
+            for file_name in files:
+                ext = os.path.splitext(file_name)[1].lower()
+                optimizer = optimizers.get(ext)
+                if optimizer is None:
+                    continue
+                file_path = os.path.join(root, file_name)
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                compact_content = optimizer(content)
+                if compact_content and not compact_content.endswith("\n"):
+                    compact_content += "\n"
+                before = len(content.encode("utf-8"))
+                after = len(compact_content.encode("utf-8"))
+                if not self.dry_run:
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(compact_content)
+                original_size += before
+                optimized_size += after
+                optimized_cnt += 1
+                self.console(f"|- WEB OPT: {file_name} {before} -> {after} bytes", state="ok")
+
+        saved = original_size - optimized_size
+        self.console(f"WEB optimization summary: {optimized_cnt} file(s), saved {saved} bytes", state="ok")
+        return True
 
 
     def get_micrOS_version(self, config_string=None):

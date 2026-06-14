@@ -512,7 +512,7 @@ Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gatew
 
 ## FUTURE MAIN RELEASE PLANS
 
-Version **3.1.0-0** `micrOS-Waterbear`
+Version **3.X.0-0** `micrOS-Waterbear`
 
 ```
     Core:
@@ -521,7 +521,7 @@ Version **3.1.0-0** `micrOS-Waterbear`
 ```
 
 
-Version **3.X.0-0** `micrOS-SecurePower`
+Version **3.X+1.0-0** `micrOS-SecurePower`
 
 ```
     Core:
@@ -676,10 +676,18 @@ Development & Deployment & Connection:
                         Backup usb connected node config.
   -sim, --simulate      start micrOS on your computer in simulated mode
   -cc, --cross_compile_micros
-                        Cross Compile micrOS system [py -> mpy]
+                        Cross Compile micrOS system [py -> mpy] and optimize
+                        precompiled web resources
   -gw, --gateway        Start micrOS Gateway rest-api server
   -v, --version         Get micrOS version - repo + connected device.
 ```
+
+`-cc` copies `micrOS/source/web` into `toolkit/workspace/precompiled/web`,
+then overwrites the copied `.js`, `.css`, and `.html` files with optimized
+versions for deployment. Source web files stay readable.
+
+Optional optimizer dependencies are installed by the normal toolkit bootstrap
+unless `--light` is used:
 
 ## Socket terminal example - non interactive
 

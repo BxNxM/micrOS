@@ -39,6 +39,7 @@ Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), fo
 [![Thingiverse](https://img.shields.io/badge/Thingiverse-micrOS_3Dprints-%231489FF?logo=thingiverse&logoColor=white)](https://www.thingiverse.com/micros_framework/designs)
 [![DockerHub](https://img.shields.io/badge/DockerHub-micrOS%20Gateway-blue)](https://hub.docker.com/r/bxnxm/micros-gateway)<br/>
 
+
 [![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
 
 
@@ -83,6 +84,10 @@ Access rest api over browser: `http://<nodename>.local`
 8. 📦 micrOS Package Management: [link](https://github.com/BxNxM/micrOSPackages)
 9. micrOS Gateway server with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
 10. Release notes: [release-note](https://github.com/BxNxM/micrOS/#release-note)
+
+### AI
+
+[![DockerHub](https://img.shields.io/badge/DockerHub-micrOS%20MCP-blue)](https://hub.docker.com/r/bxnxm/micros-mcp)
 
 ----------------------------------------
 ----------------------------------------

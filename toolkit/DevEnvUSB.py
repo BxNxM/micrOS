@@ -25,6 +25,26 @@ except Exception as e:
 
 class USB(Compile):
     usb_driver_ok = False
+    MICROS_IMAGE_PREFIX = "micrOS-"
+    MICROS_IMAGE_CONFIG = os.path.join(MYPATH, "micrOSImageConfig.json")
+    DEPLOY_MODE_ART = {
+        "development": (
+            "+------------------------------------------+",
+            "|  [::] DEVELOPMENT / FULL DEPLOYMENT [::] |",
+            "|                                          |",
+            "|  HOST  [CORE][LM][IO][WEB][CONFIG]       |",
+            "|    +========== FULL COPY ==========> MCU |",
+            "+------------------------------------------+",
+        ),
+        "release": (
+            "+------------------------------------------+",
+            "|  [##] CORE RELEASE / PREBUILT micrOS [##]|",
+            "|                                          |",
+            "|  IMAGE [CORE] =====================> MCU |",
+            "|  HOST  [LM][IO][WEB] -- allowlist --> +  |",
+            "+------------------------------------------+",
+        ),
+    }
 
     def __init__(self, dry_run=False):
         super().__init__(dry_run=dry_run)
@@ -79,6 +99,157 @@ class USB(Compile):
     #############################
     #       Main interfaces     #
     #############################
+    def is_micros_image_selected(self):
+        """Return True when the selected firmware already contains micrOS core."""
+        if not self.selected_micropython_bin:
+            return False
+        image_name = os.path.basename(self.selected_micropython_bin)
+        return image_name.startswith(self.MICROS_IMAGE_PREFIX)
+
+    def show_deploy_mode(self, release_mode):
+        """Render the selected USB deployment mode as compact pixel art."""
+        mode = "release" if release_mode else "development"
+        for line in self.DEPLOY_MODE_ART[mode]:
+            self.console(line, state="imp")
+
+    def image_mode_summary(self, binary=None, platform=None):
+        """Return short UI lines describing the selected firmware mode."""
+        selected_binary = binary or self.selected_micropython_bin
+        image_name = os.path.basename(selected_binary or "")
+        if not image_name.startswith(self.MICROS_IMAGE_PREFIX):
+            return (
+                "",
+                "[IMAGE] {}".format(image_name or "<not selected>"),
+                "  MODE: DEVELOPMENT",
+                "  CONTENT: stock MicroPython + micrOS core + all features",
+                "",
+            )
+
+        platform = platform or self.selected_device_type or "platform"
+        try:
+            with open(self.MICROS_IMAGE_CONFIG, "r") as config_file:
+                config = json.load(config_file)
+            profile = config["profiles"][config["default_profile"]]
+            builtins = []
+            for configured_name in profile["modules"]["include"]:
+                module_name = configured_name.format(platform=platform)
+                module_stem, extension = os.path.splitext(module_name)
+                builtins.append(module_stem if extension else module_name)
+            builtin_summary = "web, {}".format(", ".join(builtins[:3]))
+            remaining = len(builtins) - 3
+            if remaining > 0:
+                builtin_summary += " +{} more".format(remaining)
+            return (
+                "",
+                "[IMAGE] {}".format(image_name),
+                "  MODE: RELEASE",
+                "  CORE: frozen micrOS",
+                "  FEATURES: minimum release set",
+                "  BUILT-INS: {}".format(builtin_summary),
+                "",
+            )
+        except (OSError, KeyError, TypeError, ValueError):
+            return (
+                "",
+                "[IMAGE] {}".format(image_name),
+                "  MODE: RELEASE",
+                "  CORE: frozen micrOS",
+                "  FEATURES: minimum release set",
+                "",
+            )
+
+    def micros_image_copy_plan(self):
+        """Return allowed directories and files copied after flashing an image."""
+        try:
+            with open(self.MICROS_IMAGE_CONFIG, "r") as config_file:
+                config = json.load(config_file)
+            profile = config["profiles"][config["default_profile"]]
+            directories = tuple(
+                entry["target"].strip("/")
+                for entry in profile["directories"]
+                if entry.get("delivery") == "copy"
+            )
+            modules = profile["modules"]
+            platform = self.selected_device_type.lower()
+            module_target = modules["target"].strip("/")
+            files = []
+            if modules.get("delivery") == "copy":
+                for configured_name in modules["include"]:
+                    module_name = configured_name.format(platform=platform)
+                    module_stem, extension = os.path.splitext(module_name)
+                    if extension not in ("", ".py", ".mpy"):
+                        raise ValueError(
+                            "Unsupported image module extension: {}".format(
+                                module_name
+                            )
+                        )
+                    if not extension:
+                        module_stem = module_name
+                    candidates = tuple(
+                        os.path.join(
+                            module_target,
+                            "{}{}".format(module_stem, candidate_extension),
+                        )
+                        for candidate_extension in (".mpy", ".py")
+                    )
+                    selected = next(
+                        (
+                            candidate
+                            for candidate in candidates
+                            if os.path.isfile(
+                                os.path.join(
+                                    self.precompiled_micrOS_dir_path,
+                                    candidate,
+                                )
+                            )
+                        ),
+                        None,
+                    )
+                    if selected is None:
+                        raise OSError(
+                            "No precompiled module resource found for {}".format(
+                                module_name
+                            )
+                        )
+                    files.append(selected)
+            return {"directories": directories, "files": tuple(files)}
+        except (OSError, KeyError, TypeError, ValueError) as error:
+            self.console(
+                "Cannot load micrOS image copy configuration: {}".format(error),
+                state="err",
+            )
+            return {"directories": (), "files": ()}
+
+    def put_selected_mode_resources(self, include_node_config=False):
+        """Copy resources for the selected binary's development/release mode."""
+        release_mode = self.is_micros_image_selected()
+        self.show_deploy_mode(release_mode)
+        node_config_resource = os.path.normpath(self.micrOS_node_config_path)
+        if include_node_config:
+            self.console(
+                "USB update state restore: /{}".format(
+                    node_config_resource.replace(os.sep, "/")
+                ),
+                state="ok",
+            )
+        if release_mode:
+            copy_plan = self.micros_image_copy_plan()
+            if include_node_config:
+                copy_plan["files"] += (node_config_resource,)
+            copy_items = copy_plan["directories"] + copy_plan["files"]
+            self.console(
+                "core copy skipped - built into micrOS image; "
+                "copy configured resources: {}".format(
+                    ", ".join("/{}".format(target) for target in copy_items)
+                    or "none"
+                ),
+                state='ok'
+            )
+            if copy_items:
+                return self.put_micros_to_dev(resource_plan=copy_plan)
+            return True
+        return self.put_micros_to_dev()
+
     def select_board_n_micropython(self, board=None, binary=None):
         if self.selected_device_type is None:
             if board is None:
@@ -211,7 +382,7 @@ class USB(Compile):
         return True if status == 0 else False
 
 
-    def put_micros_to_dev(self):
+    def put_micros_to_dev(self, resource_plan=None):
         self.select_board_n_micropython()
         status = True
         config_is_valid = self.__validate_json()
@@ -229,15 +400,41 @@ class USB(Compile):
 
         # Parse micrOS resources with folders
         _source_to_put_device, dir_list_to_create = micros_resource_list(self.precompiled_micrOS_dir_path)
+        # Generate resource list to be put on the device
+        source_to_put_device = list([s.replace(self.precompiled_micrOS_dir_path + os.sep, '') for s in _source_to_put_device])
+        if resource_plan is not None:
+            resource_directories = resource_plan["directories"]
+            resource_files = resource_plan["files"]
+            source_to_put_device = [
+                source for source in source_to_put_device
+                if source in resource_files or any(
+                    source.startswith(target + os.sep)
+                    for target in resource_directories
+                )
+            ]
+            dir_list_to_create = [
+                folder for folder in dir_list_to_create
+                if folder in resource_directories
+                or any(path.startswith(folder + os.sep) for path in resource_files)
+            ]
+            self.console(
+                "micrOS image resource copy: {}".format(
+                    ", ".join(resource_directories + resource_files)
+                    or "nothing configured"
+                ),
+                state="ok",
+            )
         self.console(f"CREATE FOLDERS: {dir_list_to_create}", state="ok")
         # Create sub folders
         if not self._mkdir_on_dev(dir_list_to_create):
             self.console(f"Error creating directories on device: {dir_list_to_create}")
             sys.exit(1)
-        # Generate resource list to be put on the device
-        source_to_put_device = list([s.replace(self.precompiled_micrOS_dir_path + os.sep, '') for s in _source_to_put_device])
         # Set source order - main, boot
-        source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index("main.py")))
+        if resource_plan is None:
+            # Preserve the legacy full-deployment requirement and ordering.
+            source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index("main.py")))
+        elif "main.py" in source_to_put_device:
+            source_to_put_device.append(source_to_put_device.pop(source_to_put_device.index("main.py")))
 
         mpremote_cmd = self.dev_types_and_cmds[self.selected_device_type]['mpremote_cmd']
         device = self.get_devices()[0]
@@ -277,7 +474,12 @@ class USB(Compile):
                 self.console("Update necesarry {} -> {}".format(node_version, repo_version), state='ok')
                 state = self.__override_local_config_from_node(node_config=stdout)
                 if state:
-                    self.deploy_micros(restore_config=False, cleanup_workdir=False, skip_micropython=skip_micropython)
+                    self.deploy_micros(
+                        restore_config=False,
+                        cleanup_workdir=False,
+                        skip_micropython=skip_micropython,
+                        preserve_node_config=True,
+                    )
                 else:
                     self.console("Saving node config failed - SKIP update/redeploy", state='err')
             else:
@@ -291,11 +493,19 @@ class USB(Compile):
         self.execution_verdict.append("[OK] usb_update was finished")
         return True
 
-    def deploy_micros(self, restore_config=True, cleanup_workdir=True, skip_micropython=False):
+    def deploy_micros(
+        self,
+        restore_config=True,
+        cleanup_workdir=True,
+        skip_micropython=False,
+        preserve_node_config=False,
+    ):
         """
         Clean board deployment with micropython + micrOS
         :param restore_config: restore and create node config
         :param cleanup_workdir: clean up workdir as part of precompile
+        :param skip_micropython: copy resources without erasing or flashing
+        :param preserve_node_config: include the connected node config in an update
         :return: None
         """
         self.select_board_n_micropython()
@@ -306,7 +516,9 @@ class USB(Compile):
 
         if skip_micropython:
             self.console("Skip micropython deployment: copy micrOS resources only", state='warn')
-            self.put_micros_to_dev()
+            self.put_selected_mode_resources(
+                include_node_config=preserve_node_config
+            )
             self._archive_node_config()
             self.execution_verdict.append("[OK] usb_deploy was finished")
             return
@@ -321,7 +533,9 @@ class USB(Compile):
         if is_erased:
             if self.deploy_micropython_dev():
                 time.sleep(3)
-                self.put_micros_to_dev()
+                self.put_selected_mode_resources(
+                    include_node_config=preserve_node_config
+                )
                 self._archive_node_config()
             else:
                 self.console("Deploy micropython error", state='err')

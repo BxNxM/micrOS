@@ -12,6 +12,7 @@ graft toolkit/gateway
 recursive-include toolkit/user_data .include
 recursive-include toolkit/user_data/node_config_archive/.include
 include toolkit/LM_to_compile.dat
+include toolkit/micrOSImageConfig.json
 graft toolkit/user_data/webhooks/
 
 include media/dnd.png

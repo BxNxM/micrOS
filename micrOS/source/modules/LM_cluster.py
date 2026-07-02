@@ -14,7 +14,7 @@ from Config import cfgget, cfgput
 from Network import _select_available_wifi_nw, ifconfig, WLAN, STA_IF, AP_IF
 from Common import micro_task, exec_cmd, syslog
 if cfgget("espnow"):
-    from Espnow import ESPNowSS
+    from mespnow import ESPNowSS
     ESPNOW = ESPNowSS()
 else:
     ESPNOW = None

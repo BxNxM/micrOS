@@ -54,7 +54,12 @@ def arg_parse():
     base_group = parser.add_argument_group("Base commands")
     base_group.add_argument("-pupdate", "--pip_update", action="store_true", help="Update micrOS devToolKit (pip) package - app")
     base_group.add_argument("-m", "--make", action="store_true", help="Erase & Deploy & Precompile (micrOS) & Install (micrOS)")
-    base_group.add_argument("-r", "--update", action="store_true", help="Update/redeploy connected (usb) micrOS. - node config will be restored")
+    base_group.add_argument(
+        "-r",
+        "--update",
+        action="store_true",
+        help="Update/redeploy connected (USB) micrOS using the selected image mode",
+    )
     base_group.add_argument("-s", "--search_devices", action="store_true", help="Search devices on connected wifi network.")
     base_group.add_argument("-o", "--OTA", action="store_true", help="OTA (OverTheArir update with webrepl)")
     base_group.add_argument("-c", "--connect", action="store_true", help="Connect via socketclinet")
@@ -67,8 +72,8 @@ def arg_parse():
     dev_group = parser.add_argument_group("Development & Deployment & Connection")
     dev_group.add_argument("-f", "--force_update", action="store_true", help="Force mode for -r/--update and -o/--OTA")
     dev_group.add_argument("-e", "--erase", action="store_true", help="Erase device")
-    dev_group.add_argument("-d", "--deploy", action="store_true", help="Deploy micropython binary (image) over usb. After this, python interpreter will be available on the board.")
-    dev_group.add_argument("-i", "--install", action="store_true", help="Install micrOS on micropython, copy all micrOS code to the board after micropython was installed.")
+    dev_group.add_argument("-d", "--deploy", action="store_true", help="Flash only the selected MicroPython image over USB.")
+    dev_group.add_argument("-i", "--install", action="store_true", help="Legacy full copy of the precompiled micrOS tree onto MicroPython.")
     dev_group.add_argument("-l", "--list_devs_n_bins", action="store_true", help="List connected devices & micropython binaries.")
     dev_group.add_argument("-ls", "--node_ls", action="store_true", help="List micrOS node filesystem content.")
     dev_group.add_argument("-u", "--connect_via_usb", action="store_true", help="Connect via serial port - usb")

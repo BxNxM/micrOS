@@ -108,7 +108,9 @@ End-to-End solution for deployment, update, monitor and develop micrOS boards.
 
 I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you prefer.
 
-> Note: The main purpose of the USB deployment scripts to install micropython on the board and put all micrOS resources from `micrOS/toolkit/workspace/precompiled` to the connected board.
+> USB deployment supports both stock MicroPython development images and
+> prebuilt `micrOS-*` release images. The selected firmware filename determines
+> which resources are copied from `toolkit/workspace/precompiled/`.
 
 <br/>
 
@@ -194,6 +196,31 @@ It will open a graphical user interface for micrOS device management, like usb d
 It will install your board via USB with default settings. **Continue with micrOS Client app...** or "devToolKit.py -s -c"
 
 > Note: At the first USB deployment, devToolKit will ask to install **SerialUSB driver** and it will open the driver installer as well, please follow the steps and install the necessary driver.
+
+### USB deployment and update modes
+
+The selected firmware name controls the deployment mode:
+
+- A stock MicroPython image keeps the legacy full-file deployment.
+- A `micrOS-*` image already contains the core and copies only the configured
+  web assets and minimum LM/IO modules.
+
+USB deploy and update show the selected mode. USB update always restores
+`node_config.json` for both image types. **Skip MicroPython** keeps the current
+firmware and copies only the required files.
+
+Build all configured `micrOS-*` images with:
+
+```bash
+python3 toolkit/micrOSImageBuilder.py
+```
+
+Supported custom targets: `esp32`, `esp32c3`, `esp32c6`, and `esp32s3`.
+
+Image settings and release resources are defined in
+`toolkit/micrOSImageConfig.json`.
+Custom images also add a `[micrOS]` marker to the board shown by `system info`.
+Full OTA reads the `hello` mode and skips frozen core files on `rel` devices.
 
 
 ```
@@ -612,7 +639,7 @@ optional arguments:
 
 Base commands:
   -m, --make            Erase & Deploy & Precompile (micrOS) & Install (micrOS)
-  -r, --update          Update/redeploy connected (usb) micrOS. - node config will be restored
+  -r, --update          Update/redeploy connected (USB) micrOS
   -s, --search_devices  Search devices on connected wifi network.
   -o, --OTA             OTA (OverTheArir update with webrepl)
   -c, --connect         Connect via socketclinet
@@ -670,8 +697,8 @@ micr<ID>cOS            experipurple      10.0.1.94	OFFLINE		<n/a>		n/a
 Development & Deployment & Connection:
   -f, --force_update    Force mode for -r/--update and -o/--OTA
   -e, --erase           Erase device
-  -d, --deploy          Deploy micropython
-  -i, --install         Install micrOS on micropython
+  -d, --deploy          Flash only the selected micropython image
+  -i, --install         Copy the full precompiled micrOS tree
   -l, --list_devs_n_bins
                         List connected devices & micropython binaries.
   -ls, --node_ls        List micrOS node filesystem content.
@@ -705,7 +732,7 @@ Activate MicrOS device connection address
 [i]         FUID        IP               UID
 [0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
 Device was found: slim01
-hello:slim01:0x500x20x910x680xc0xf7
+hello:slim01:0x500x20x910x680xc0xf7:dev
 ```
 
 ### Get help
@@ -882,7 +909,7 @@ Bye!
 ├── Common.py
 ├── Config.py
 ├── Debug.py
-├── Espnow.py
+├── mespnow.py
 ├── Files.py
 ├── Hooks.py
 ├── InterConnect.py

@@ -40,8 +40,12 @@
             9.62,
             18
         ],
+        "mespnow.py": [
+            9.92,
+            4
+        ],
         "Shell.py": [
-            9.36,
+            9.37,
             2
         ],
         "Notify.py": [
@@ -75,10 +79,6 @@
         "Network.py": [
             9.81,
             8
-        ],
-        "Espnow.py": [
-            9.87,
-            4
         ],
         "Scheduler.py": [
             9.62,
@@ -249,7 +249,7 @@
             0
         ],
         "modules/LM_espnow.py": [
-            7.14,
+            7.86,
             0
         ],
         "modules/LM_telegram.py": [
@@ -311,7 +311,7 @@
     },
     "summary": {
         "core": [
-            5360,
+            5362,
             27
         ],
         "load": [
@@ -327,7 +327,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.43,
-        "version": "3.1.0-0"
+        "load_score": 8.45,
+        "version": "3.1.1-0"
     }
 }

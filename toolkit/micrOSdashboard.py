@@ -200,7 +200,9 @@ class BoardTypeSelector(DropDownBase):
         print("Click action -> update micropython bin list")
         micrpython_dropdown_obj = MicropythonSelector.recreate_on_action_self_obj
         if micrpython_dropdown_obj is not None:
-            micrpython_dropdown_obj.dropdown_micropythonbin(self.get())
+            binary_type_selector = getattr(self.parent_obj, "binary_type_dropdown", None)
+            binary_type = binary_type_selector.get() if binary_type_selector is not None else "ALL"
+            micrpython_dropdown_obj.dropdown_micropythonbin(self.get(), binary_type)
 
     def get(self):
         return super(BoardTypeSelector, self).get()
@@ -215,7 +217,7 @@ class MicropythonSelector(DropDownBase):
         self.color = color
         MicropythonSelector.recreate_on_action_self_obj = self
 
-    def dropdown_micropythonbin(self, device_prefix=None):
+    def dropdown_micropythonbin(self, device_prefix=None, binary_type="ALL"):
         title = "Select micropython"
         geometry = (245, 60, 200, 30)
         help_msg = "Select micropython binary for USB deployment"
@@ -226,24 +228,71 @@ class MicropythonSelector(DropDownBase):
             micropython_bin_pathes = self.devtool_obj.get_micropython_binaries()
         else:
             micropython_bin_pathes = [b for b in self.devtool_obj.get_micropython_binaries() if f"{device_prefix}-" in os.path.basename(b)]
+        if binary_type == "Stock":
+            micropython_bin_pathes = [
+                binary for binary in micropython_bin_pathes
+                if not os.path.basename(binary).startswith("micrOS-")
+            ]
+        elif binary_type == "micrOS":
+            micropython_bin_pathes = [
+                binary for binary in micropython_bin_pathes
+                if os.path.basename(binary).startswith("micrOS-")
+            ]
         if len(micropython_bin_pathes) == 0:
             self.micropython_bin_dirpath = None
             self.create_dropdown(items_list=[], title=title, geometry_tuple=geometry, tooltip=help_msg,
                                  style=style)
             self.parent_obj.console.append_output(
-                f"[WARN] No micropython binary found for board: {device_prefix or 'any'}"
+                f"[WARN] No {binary_type} micropython binary found for board: {device_prefix or 'any'}"
             )
             return
         self.micropython_bin_dirpath = os.path.dirname(micropython_bin_pathes[0])
         micropython_bin_names = [os.path.basename(path) for path in micropython_bin_pathes]
         self.create_dropdown(items_list=micropython_bin_names, title=title, geometry_tuple=geometry, tooltip=help_msg,
                              style=style)
+        self.add_child_callback(self.selected_action)
+        self.selected_action()
+
+    def selected_action(self):
+        selected_binary = self.get()
+        if selected_binary is None:
+            return
+        board_selector = getattr(self.parent_obj, "board_dropdown", None)
+        platform = board_selector.get() if board_selector is not None else None
+        for line in self.devtool_obj.image_mode_summary(
+            binary=selected_binary,
+            platform=platform,
+        ):
+            self.parent_obj.console.append_output(line)
 
     def get(self):
         selected_item = super(MicropythonSelector, self).get()
         if self.micropython_bin_dirpath is None or selected_item is None:
             return None
         return os.path.join(self.micropython_bin_dirpath, selected_item)
+
+
+class BinaryTypeSelector(DropDownBase):
+
+    def __init__(self, parent_obj, color='green'):
+        super().__init__(parent_obj)
+        self.color = color
+
+    def dropdown_binary_type(self):
+        title = "Binary type"
+        geometry = (285, 120, 160, 30)
+        help_msg = "Filter stock MicroPython and micrOS firmware binaries."
+        style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
+        self.create_dropdown(items_list=("Stock", "micrOS", "ALL"), title=title, geometry_tuple=geometry,
+                             tooltip=help_msg, style=style)
+        self.add_child_callback(self.selected_action)
+
+    def selected_action(self):
+        micropython_selector = getattr(self.parent_obj, "micropython_dropdown", None)
+        board_selector = getattr(self.parent_obj, "board_dropdown", None)
+        if micropython_selector is not None:
+            device_prefix = board_selector.get() if board_selector is not None else None
+            micropython_selector.dropdown_micropythonbin(device_prefix=device_prefix, binary_type=self.get())
 
 
 class MicrOSDeviceSelector(DropDownBase):
@@ -725,6 +774,7 @@ class micrOSGUI(QWidget):
         self.height = 500
         self.board_dropdown = None
         self.micropython_dropdown = None
+        self.binary_type_dropdown = None
         self.micrOS_devide_dropdown = None
         self.application_dropdown = None
         self.modifiers_obj = None
@@ -767,7 +817,10 @@ class micrOSGUI(QWidget):
         self.board_dropdown.dropdown_board()
 
         self.micropython_dropdown = MicropythonSelector(parent_obj=self, color=self.usb_color_code)
-        self.micropython_dropdown.dropdown_micropythonbin(device_prefix=self.board_dropdown.get())
+        self.micropython_dropdown.dropdown_micropythonbin(device_prefix=self.board_dropdown.get(),
+                                                          binary_type="Stock")
+        self.binary_type_dropdown = BinaryTypeSelector(parent_obj=self, color=self.usb_color_code)
+        self.binary_type_dropdown.dropdown_binary_type()
 
         # Draw OTA related dropdowns
         self.create_ota_buttons()

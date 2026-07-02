@@ -1,4 +1,4 @@
-from Espnow import ESPNowSS
+from mespnow import ESPNowSS
 ESPNOW = ESPNowSS()
 
 

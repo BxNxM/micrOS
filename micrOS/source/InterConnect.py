@@ -22,7 +22,7 @@ from Server import Server
 from Tasks import NativeTask
 
 if cfgget('espnow'):
-    from Espnow import ESPNowSS
+    from mespnow import ESPNowSS
 else:
     ESPNowSS = None
 

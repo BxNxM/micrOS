@@ -1,0 +1,76 @@
+{
+  "build": {
+    "core_source": "micrOS/source",
+    "output_directory": "micrOS/micropython",
+    "output_filename": "micrOS-{device}-{micropython_version}-{micros_version}.bin",
+    "micropython": {
+      "version": "v1.28.0",
+      "repository": "https://github.com/micropython/micropython.git"
+    },
+    "esp_idf": {
+      "version": "v5.5.1",
+      "repository": "https://github.com/espressif/esp-idf.git"
+    }
+  },
+  "supported_devices": {
+    "esp32": {
+      "description": "Generic ESP32 (4 MiB flash or larger)",
+      "micropython_board": "ESP32_GENERIC",
+      "idf_target": "esp32",
+      "platform": "esp32",
+      "status": "supported"
+    },
+    "esp32c3": {
+      "description": "Generic ESP32-C3 (4 MiB flash or larger)",
+      "micropython_board": "ESP32_GENERIC_C3",
+      "idf_target": "esp32c3",
+      "platform": "esp32c3",
+      "status": "supported"
+    },
+    "esp32c6": {
+      "description": "Generic ESP32-C6 (4 MiB flash or larger)",
+      "micropython_board": "ESP32_GENERIC_C6",
+      "idf_target": "esp32c6",
+      "platform": "esp32c6",
+      "status": "supported"
+    },
+    "esp32s3": {
+      "description": "Generic ESP32-S3 (4 MiB flash or larger)",
+      "micropython_board": "ESP32_GENERIC_S3",
+      "idf_target": "esp32s3",
+      "platform": "esp32s3",
+      "status": "supported"
+    }
+  },
+  "default_profile": "prebuiltmicrOS",
+  "profiles": {
+    "prebuiltmicrOS": {
+      "description": "Resources copied after flashing a micrOS- image with frozen core",
+      "directories": [
+        {
+          "source": "micrOS/source/web",
+          "target": "web",
+          "delivery": "copy",
+          "include": [
+            "**/*"
+          ]
+        }
+      ],
+      "modules": {
+        "source": "micrOS/source/modules",
+        "target": "modules",
+        "delivery": "copy",
+        "include": [
+          "LM_system",
+          "LM_pacman",
+          "LM_fileserver",
+          "LM_web",
+          "LM_i2c",
+          "LM_genIO",
+          "LM_cluster",
+          "IO_{platform}"
+        ]
+      }
+    }
+  }
+}

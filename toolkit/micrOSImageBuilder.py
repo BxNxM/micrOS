@@ -2,8 +2,9 @@
 """
 Build a MicroPython firmware image with the micrOS core frozen into it.
 
-Only Python files directly inside ``micrOS/source`` are frozen. Subdirectories
-such as ``modules``, ``web`` and ``config`` are deliberately excluded.
+All Python files directly inside ``micrOS/source`` are frozen as core modules.
+Configured web assets and allowed load modules are left to the normal
+post-flash resource copier.
 
 The direct source set includes ``main.py``. MicroPython's ESP32 startup checks
 for a frozen ``main.py`` before checking the writable filesystem, so micrOS
@@ -11,6 +12,7 @@ starts directly from the firmware image.
 """
 
 import argparse
+import json
 import os
 from pathlib import Path
 import re
@@ -20,34 +22,41 @@ import sys
 from time import monotonic
 
 
+class BuildError(RuntimeError):
+    """Raised when the image cannot be built safely."""
+
+
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
-MICROS_SOURCE = REPOSITORY_ROOT / "micrOS" / "source"
-DEFAULT_OUTPUT_DIR = REPOSITORY_ROOT / "micrOS" / "micropython"
+DEFAULT_IMAGE_CONFIG = REPOSITORY_ROOT / "toolkit" / "micrOSImageConfig.json"
+MICROS_FIRMWARE_MARKER = "[micrOS]"
 WORKSPACE_BUILD_DIR = REPOSITORY_ROOT / "toolkit" / "workspace" / "build"
 DEFAULT_BUILD_DIR = WORKSPACE_BUILD_DIR / "micrOSImageBuilder"
 DEFAULT_MICROPYTHON_DIR = WORKSPACE_BUILD_DIR / "micropython"
 DEFAULT_ESP_IDF_DIR = WORKSPACE_BUILD_DIR / "esp-idf"
 DEFAULT_IDF_TOOLS_DIR = WORKSPACE_BUILD_DIR / "esp-idf-tools"
-MICROPYTHON_REPOSITORY = "https://github.com/micropython/micropython.git"
-ESP_IDF_REPOSITORY = "https://github.com/espressif/esp-idf.git"
-
-# Keep releases pinned so that firmware builds remain reproducible.
-MICROPYTHON_STABLE_VERSION = "v1.28.0"
-ESP_IDF_VERSION = "v5.5.1"
-
-# Add future targets here after their MicroPython board build has been tested.
-SUPPORTED_DEVICES = {
-    "esp32c6": {
-        "description": "Generic ESP32-C6 (4 MiB flash or larger)",
-        "micropython_board": "ESP32_GENERIC_C6",
-        "idf_target": "esp32c6",
-        "status": "supported",
-    },
-}
 
 
-class BuildError(RuntimeError):
-    """Raised when the image cannot be built safely."""
+def _load_config_file(config_path):
+    try:
+        return json.loads(Path(config_path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise BuildError("Cannot load image configuration: {}".format(config_path)) from exc
+
+
+def _repository_path(relative_path):
+    return (REPOSITORY_ROOT / relative_path).resolve()
+
+
+DEFAULT_IMAGE_SETTINGS = _load_config_file(DEFAULT_IMAGE_CONFIG)
+BUILD_SETTINGS = DEFAULT_IMAGE_SETTINGS["build"]
+MICROS_SOURCE = _repository_path(BUILD_SETTINGS["core_source"])
+DEFAULT_OUTPUT_DIR = _repository_path(BUILD_SETTINGS["output_directory"])
+MICROPYTHON_REPOSITORY = BUILD_SETTINGS["micropython"]["repository"]
+ESP_IDF_REPOSITORY = BUILD_SETTINGS["esp_idf"]["repository"]
+MICROPYTHON_STABLE_VERSION = BUILD_SETTINGS["micropython"]["version"]
+ESP_IDF_VERSION = BUILD_SETTINGS["esp_idf"]["version"]
+OUTPUT_FILENAME_TEMPLATE = BUILD_SETTINGS["output_filename"]
+SUPPORTED_DEVICES = DEFAULT_IMAGE_SETTINGS["supported_devices"]
 
 
 def log(level, message):
@@ -95,29 +104,109 @@ def core_source_files(source_dir=MICROS_SOURCE):
     return files
 
 
+def configured_module_files(profile, platform):
+    """Return validated module names selected for post-flash copying."""
+    modules = profile["modules"]
+    if modules.get("delivery") != "copy":
+        raise BuildError("Image modules must use delivery='copy'")
+    module_source_dir = _configured_source(modules["source"])
+    files = []
+    for configured_name in modules["include"]:
+        module_name = configured_name.format(platform=platform)
+        module_path = Path(module_name)
+        if module_path.name != module_name:
+            raise BuildError("Image module entries must be filenames: {}".format(module_name))
+        if module_path.suffix not in ("", ".py", ".mpy"):
+            raise BuildError("Unsupported image module extension: {}".format(module_name))
+        module_stem = module_path.stem if module_path.suffix else module_name
+        source = module_source_dir / "{}.py".format(module_stem)
+        if not source.is_file():
+            raise BuildError("Configured image module is missing: {}".format(source))
+        files.append(module_stem)
+    return module_source_dir, files
+
+
+def prepare_custom_board(micropython_dir, build_dir, device):
+    """Create a generated board overlay carrying the micrOS runtime marker."""
+    board = device["micropython_board"]
+
+    source_board_dir = Path(micropython_dir) / "ports" / "esp32" / "boards" / board
+    if not source_board_dir.is_dir():
+        raise BuildError("MicroPython board directory is missing: {}".format(source_board_dir))
+
+    custom_board_dir = Path(build_dir) / "boards" / device["platform"]
+    if custom_board_dir.exists():
+        shutil.rmtree(str(custom_board_dir))
+    custom_board_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(str(source_board_dir), str(custom_board_dir))
+
+    board_header = custom_board_dir / "mpconfigboard.h"
+    try:
+        header_text = board_header.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise BuildError("Cannot read MicroPython board header: {}".format(board_header)) from exc
+
+    board_name_match = re.search(
+        r'^\s*#define\s+MICROPY_HW_BOARD_NAME\s+"([^"]*)"',
+        header_text,
+        flags=re.MULTILINE,
+    )
+    if board_name_match is None:
+        raise BuildError("MICROPY_HW_BOARD_NAME was not found in: {}".format(board_header))
+    board_name = board_name_match.group(1)
+    runtime_mcu_name = []
+
+    def add_micros_marker(match):
+        mcu_name = match.group(2)
+        if MICROS_FIRMWARE_MARKER not in mcu_name:
+            mcu_name = "{} {}".format(mcu_name, MICROS_FIRMWARE_MARKER)
+        runtime_mcu_name.append(mcu_name)
+        return "{}{}{}".format(match.group(1), json.dumps(mcu_name), match.group(3))
+
+    header_text, replacements = re.subn(
+        r'^(\s*#define\s+MICROPY_HW_MCU_NAME\s+)"([^"]*)"(.*)$',
+        add_micros_marker,
+        header_text,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    if replacements != 1:
+        raise BuildError("MICROPY_HW_MCU_NAME was not found in: {}".format(board_header))
+    board_header.write_text(header_text, encoding="utf-8")
+    log("IDENTITY", "Custom firmware key: {}".format(MICROS_FIRMWARE_MARKER))
+    log(
+        "IDENTITY",
+        "Runtime machine: {} with {}".format(board_name, runtime_mcu_name[0]),
+    )
+    return custom_board_dir
+
+
 def manifest_text(source_dir=MICROS_SOURCE):
-    """Create the MicroPython frozen-module manifest."""
+    """Create the core-only MicroPython frozen-module manifest."""
     source_dir = Path(source_dir).resolve()
     files = core_source_files(source_dir)
     file_lines = "\n".join('        "{}",'.format(name) for name in files)
     return """# Generated by toolkit/micrOSImageBuilder.py; do not edit.
-# Minimal ESP32 runtime support. Deliberately do not freeze the port's
-# espnow.py or micropython-lib's urequests.py because micrOS owns modules with
-# those names (Espnow.py and urequests.py).
+# Minimal ESP32 runtime support. Keep MicroPython's espnow.py and aioespnow
+# because micrOS mespnow.py builds its async integration on top of them.
+# Deliberately do not freeze micropython-lib's urequests.py because micrOS owns
+# that module.
 module("_boot.py", base_path="$(PORT_DIR)/modules")
 module("apa106.py", base_path="$(PORT_DIR)/modules")
+module("espnow.py", base_path="$(PORT_DIR)/modules")
 module("flashbdev.py", base_path="$(PORT_DIR)/modules")
 module("inisetup.py", base_path="$(PORT_DIR)/modules")
 module("machine.py", base_path="$(PORT_DIR)/modules")
 
 include("$(MPY_DIR)/extmod/asyncio")
+require("aioespnow")
 require("mip")
 require("ntptime")
 require("requests")
 require("ssl")
 require("webrepl")
 
-# Freeze only direct micrOS/source/*.py files. No child directory is included.
+# Freeze only direct micrOS/source/*.py core files.
 freeze(
     {source_dir!r},
     (
@@ -125,15 +214,53 @@ freeze(
     ),
     opt=3,
 )
-""".format(source_dir=str(source_dir), file_lines=file_lines)
+""".format(
+        source_dir=str(source_dir),
+        file_lines=file_lines,
+    )
 
 
 def write_manifest(output_dir, source_dir=MICROS_SOURCE):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = output_dir / "micrOS-manifest.py"
-    manifest_path.write_text(manifest_text(source_dir), encoding="utf-8")
+    manifest_path.write_text(
+        manifest_text(source_dir),
+        encoding="utf-8",
+    )
     return manifest_path
+
+
+def load_image_profile(config_path=DEFAULT_IMAGE_CONFIG, profile_name=None):
+    """Load and validate a declarative image resource profile."""
+    config_path = Path(config_path).expanduser().resolve()
+    config = _load_config_file(config_path)
+
+    profile_name = profile_name or config.get("default_profile")
+    profile = config.get("profiles", {}).get(profile_name)
+    if not profile:
+        raise BuildError("Image profile {!r} was not found in {}".format(profile_name, config_path))
+    try:
+        profile["directories"]
+        profile["modules"]["include"]
+    except (KeyError, TypeError) as exc:
+        raise BuildError("Invalid image profile {!r}".format(profile_name)) from exc
+    for directory in profile["directories"]:
+        if directory.get("delivery") != "copy":
+            raise BuildError("Resource directories must use delivery='copy'")
+        source = _configured_source(directory["source"])
+        if not source.is_dir():
+            raise BuildError("Configured resource directory is missing: {}".format(source))
+    return profile_name, profile
+
+
+def _configured_source(relative_path):
+    source = (REPOSITORY_ROOT / relative_path).resolve()
+    try:
+        source.relative_to(REPOSITORY_ROOT)
+    except ValueError as exc:
+        raise BuildError("Configured source escapes the repository: {}".format(relative_path)) from exc
+    return source
 
 
 def run(command, cwd, env=None):
@@ -330,6 +457,8 @@ def build_image(
     esp_idf_dir,
     output_dir,
     build_dir=DEFAULT_BUILD_DIR,
+    config_path=DEFAULT_IMAGE_CONFIG,
+    profile_name=None,
     allow_version_mismatch=False,
 ):
     device = SUPPORTED_DEVICES[device_name]
@@ -338,11 +467,25 @@ def build_image(
     log("INFO", "Target: {} ({})".format(device_name, device["micropython_board"]))
     log("INFO", "Output directory: {}".format(Path(output_dir).expanduser().resolve()))
 
+    profile_name, profile = load_image_profile(config_path, profile_name)
+    log("INFO", "Resource profile: {}".format(profile_name))
+
     log_step(1, 7, "Validate source selection and generate frozen manifest")
     source_files = core_source_files()
     log("INFO", "Freezing {} direct source/*.py files:".format(len(source_files)))
     for source_file in source_files:
         log("SOURCE", source_file)
+    _, module_files = configured_module_files(profile, device["platform"])
+    log("INFO", "Copying {} allowed modules after flash:".format(len(module_files)))
+    for module_file in module_files:
+        log("COPY", "modules/{} (.mpy preferred, .py fallback)".format(module_file))
+    for resource in profile["directories"]:
+        log(
+            "COPY",
+            "{} -> /{} (post-flash resource copier)".format(
+                resource["source"], resource["target"].strip("/")
+            ),
+        )
 
     micropython_dir = ensure_micropython_checkout(micropython_dir)
     micropython_dir = validate_micropython_checkout(
@@ -366,38 +509,54 @@ def build_image(
     env = idf_environment(esp_idf_dir, device["idf_target"])
     board = device["micropython_board"]
     esp32_port = micropython_dir / "ports" / "esp32"
+    target_build_dir = esp32_port / "build-{}".format(board)
+    custom_board_dir = prepare_custom_board(micropython_dir, build_dir, device)
+    make_target_args = [
+        "BOARD={}".format(board),
+        "BOARD_DIR={}".format(custom_board_dir),
+    ]
 
     log_step(3, 7, "Build MicroPython cross-compiler")
     run(["make", "-C", "mpy-cross"], cwd=micropython_dir, env=env)
-    log_step(4, 7, "Clean target build to prevent stale frozen modules")
-    run(["make", "clean", "BOARD={}".format(board)], cwd=esp32_port, env=env)
+
+    log_step(4, 7, "Reset target build to prevent stale frozen modules")
+    if target_build_dir.exists():
+        shutil.rmtree(str(target_build_dir))
+        log("OK", "Removed previous target build: {}".format(target_build_dir))
+    else:
+        log("OK", "Target build is already clean")
     log_step(5, 7, "Prepare MicroPython ESP32 submodules")
-    run(["make", "submodules", "BOARD={}".format(board)], cwd=esp32_port, env=env)
-    log_step(6, 7, "Build ESP32-C6 firmware with frozen micrOS core")
+    run(["make", "submodules"] + make_target_args, cwd=esp32_port, env=env)
+    log_step(6, 7, "Build firmware with frozen micrOS core")
     run(
         [
             "make",
-            "BOARD={}".format(board),
             "FROZEN_MANIFEST={}".format(manifest_path),
-        ],
+        ] + make_target_args,
         cwd=esp32_port,
         env=env,
     )
 
-    firmware_source = esp32_port / "build-{}".format(board) / "firmware.bin"
+    firmware_source = target_build_dir / "firmware.bin"
     if not firmware_source.is_file():
         raise BuildError("Build completed without producing: {}".format(firmware_source))
 
     log_step(7, 7, "Publish versioned firmware image")
     micropython_version = MICROPYTHON_STABLE_VERSION.lstrip("v")
-    firmware_output = output_dir / "micrOS-{}-{}-{}.bin".format(
-        device_name,
-        micropython_version,
-        micros_version(),
+    firmware_output = output_dir / OUTPUT_FILENAME_TEMPLATE.format(
+        device=device_name,
+        micropython_version=micropython_version,
+        micros_version=micros_version(),
     )
     shutil.copy2(str(firmware_source), str(firmware_output))
 
     log("SUCCESS", "Firmware: {}".format(firmware_output))
+    log(
+        "SUCCESS",
+        "Runtime identification key: {}".format(MICROS_FIRMWARE_MARKER),
+    )
+    log("SUCCESS", "Only direct source/*.py core files are frozen")
+    log("SUCCESS", "Allowed web and module resources will be copied post-flash")
     log("SUCCESS", "Completed in {:.1f}s".format(monotonic() - started))
     log("BOOT", "Frozen main.py will be executed automatically by MicroPython")
     return firmware_output
@@ -426,8 +585,7 @@ def parse_args(argv=None):
     parser.add_argument(
         "--device",
         choices=sorted(SUPPORTED_DEVICES),
-        default="esp32c6",
-        help="target device (default: esp32c6)",
+        help="build only one target device (default: build every supported device)",
     )
     parser.add_argument(
         "--micropython-dir",
@@ -456,6 +614,15 @@ def parse_args(argv=None):
         help="temporary manifest and bootstrap destination",
     )
     parser.add_argument(
+        "--config",
+        default=str(DEFAULT_IMAGE_CONFIG),
+        help="image resource configuration (default: toolkit/micrOSImageConfig.json)",
+    )
+    parser.add_argument(
+        "--profile",
+        help="resource profile name (default: config default_profile)",
+    )
+    parser.add_argument(
         "--manifest-only",
         action="store_true",
         help="generate the manifest without invoking the compiler",
@@ -480,22 +647,33 @@ def main(argv=None):
         return 0
 
     if args.manifest_only:
+        profile_name, _ = load_image_profile(args.config, args.profile)
         manifest_path = write_manifest(args.build_dir)
         source_files = core_source_files()
         log("OK", "Manifest: {}".format(manifest_path))
+        log("INFO", "Resource profile: {}".format(profile_name))
         log("INFO", "Frozen core files: {}".format(len(source_files)))
         for source_file in source_files:
             log("SOURCE", source_file)
         return 0
 
-    build_image(
-        args.device,
-        args.micropython_dir,
-        args.esp_idf_dir,
-        args.output_dir,
-        build_dir=args.build_dir,
-        allow_version_mismatch=args.allow_version_mismatch,
-    )
+    devices = [args.device] if args.device else sorted(SUPPORTED_DEVICES)
+    log("INFO", "Build targets: {}".format(", ".join(devices)))
+    outputs = []
+    for device_name in devices:
+        outputs.append(
+            build_image(
+                device_name,
+                args.micropython_dir,
+                args.esp_idf_dir,
+                args.output_dir,
+                build_dir=args.build_dir,
+                config_path=args.config,
+                profile_name=args.profile,
+                allow_version_mismatch=args.allow_version_mismatch,
+            )
+        )
+    log("SUCCESS", "Built {} firmware image(s)".format(len(outputs)))
     return 0
 
 

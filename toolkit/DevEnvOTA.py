@@ -33,6 +33,21 @@ import socketClient
 #################################################
 
 class OTA(Compile):
+    OTA_MODE_ART = {
+        "development": (
+            "+------------------------------------------+",
+            "|  [::] OTA DEVELOPMENT / FULL COPY [::]   |",
+            "|  HOST [CORE][LM][IO][WEB][CONFIG] -> MCU |",
+            "+------------------------------------------+",
+        ),
+        "release": (
+            "+------------------------------------------+",
+            "|  [##] OTA CORE RELEASE / FROZEN [##]     |",
+            "|  IMAGE [CORE] already active on MCU      |",
+            "|  HOST [LM][IO][WEB][CONFIG] -> MCU       |",
+            "+------------------------------------------+",
+        ),
+    }
 
     def __init__(self, cmdgui=None, gui_console=None, dry_run=False):
         super().__init__(dry_run=dry_run)
@@ -46,6 +61,59 @@ class OTA(Compile):
 
     def safe_core_list(self):
         return self.safe_mode_file_exception_list
+
+    def _show_ota_mode(self, release_mode):
+        mode = "release" if release_mode else "development"
+        for line in self.OTA_MODE_ART[mode]:
+            self.console(line, state="IMP")
+
+    def _ota_release_mode(self, fuid, ota_password):
+        """Detect frozen-core firmware from the fourth hello field."""
+        if self.dry_run:
+            status, answer_msg = True, "hello:dry-run:dry-run:dev"
+        else:
+            status, answer_msg = socketClient.run(
+                ["--dev", fuid, "--pwd", ota_password, "hello"]
+            )
+
+        hello_line = ""
+        if status and answer_msg:
+            hello_line = next(
+                (
+                    line.strip()
+                    for line in str(answer_msg).splitlines()
+                    if line.strip().startswith("hello:")
+                ),
+                "",
+            )
+        hello_fields = hello_line.split(":")
+        image_mode = (
+            hello_fields[3].strip().split()[0]
+            if len(hello_fields) >= 4 and hello_fields[3].strip()
+            else "dev"
+        )
+        release_mode = image_mode == "rel"
+        if not hello_line or len(hello_fields) < 4:
+            self.console(
+                "[OTA] hello image mode unavailable; use development full copy",
+                state="WARN",
+            )
+        self._show_ota_mode(release_mode)
+        self.console(
+            "[OTA] Runtime image mode: {}".format(
+                "release (rel)" if release_mode else "development (dev)"
+            ),
+            state="OK",
+        )
+        return release_mode
+
+    @staticmethod
+    def _is_frozen_core_resource(source, resource_root):
+        relative_source = os.path.relpath(source, resource_root)
+        return (
+            os.path.dirname(relative_source) in ("", ".")
+            and check_python_extensions(relative_source)
+        )
 
     def __clone_webrepl_repo(self):
         """Clone webrepl if not available"""
@@ -183,6 +251,10 @@ class OTA(Compile):
             device = fuid, device_ip       # pass that to OTA update core
         self.console("\tDevice was selected (fuid, ip): {} -> {}".format(fuid, device_ip), state='OK')
 
+        release_mode = False
+        if not lm_only:
+            release_mode = self._ota_release_mode(fuid, ota_password)
+
         # Get device appwd - device password for webrepl connection (not too safe - ???)
         status, answer_msg = socketClient.run(['--dev', fuid, '--pwd', ota_password, 'conf', '<a>', 'appwd'])
         webrepl_password = answer_msg.strip() if status else None
@@ -247,8 +319,16 @@ class OTA(Compile):
         # LIMITATION: WEBREPL Cannot create directories with remote command...
 
         # Apply upload settings on parsed resources
+        skipped_frozen_core = []
         for index, source in enumerate(resource_list_to_upload):
             source_name = os.path.basename(source)
+            if release_mode and self._is_frozen_core_resource(
+                source,
+                self.precompiled_micrOS_dir_path,
+            ):
+                skipped_frozen_core.append(source_name)
+                continue
+
             # Handle force mode + file exception list (skip)
             if not force_mode and source_name in self.safe_mode_file_exception_list:
                 self.console(
@@ -269,6 +349,13 @@ class OTA(Compile):
 
             # Add source to upload
             upload_path_list.append(source)
+        if skipped_frozen_core:
+            self.console(
+                "[OTA][RELEASE] Skipped {} frozen core resource(s)".format(
+                    len(skipped_frozen_core)
+                ),
+                state="OK",
+            )
         # Upload files / sources
         return self.ota_webrepl_update_core(device, upload_path_list=upload_path_list,
                                             ota_password=webrepl_password, upload_root_dir=self.precompiled_micrOS_dir_path)

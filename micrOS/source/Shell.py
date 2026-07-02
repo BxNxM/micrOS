@@ -12,11 +12,14 @@ Designed by Marcell Ban aka BxNxM
 #                           IMPORTS                             #
 #################################################################
 from sys import modules
+from os import uname
 from machine import reset as hard_reset, soft_reset
 from Config import cfgget, cfgput
 from Files import OSPath, ilist_fs, path_join
 from Tasks import lm_exec
 from Debug import syslog
+
+IMAGE_MODE = 'rel' if 'micrOS' in uname()[-1] else 'dev'
 
 
 #################################################################
@@ -25,7 +28,7 @@ from Debug import syslog
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '3.1.0-0'
+    MICROS_VERSION = '3.1.1-0'
 
     def __init__(self):
         """
@@ -116,7 +119,7 @@ class Shell:
         # Hello message
         if is_local_cmd and msg_list[0] == 'hello':
             # For low level device identification - hello msg
-            await self.a_send(f"hello:{self.__devfid}:{self.__hwuid}")
+            await self.a_send(f"hello:{self.__devfid}:{self.__hwuid}:{IMAGE_MODE}")
             return True
 
         # [!] AUTH

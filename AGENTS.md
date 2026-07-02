@@ -178,6 +178,9 @@ Important consequences:
 - `LM_*` modules are action-driven and imported lazily on first use.
 - Stateful modules remain resident after import by design.
 - Config keys are part of runtime behavior, not just docs.
+- The shell `hello` response is
+  `hello:<devfid>:<hwuid>:<dev|rel>`; `rel` is selected when the firmware
+  machine description contains the fixed `micrOS` marker.
 
 If you change runtime behavior, verify where in boot or lazy-load flow it activates.
 
@@ -226,6 +229,63 @@ Host-side code is normal CPython code, but it serves the runtime and deployment 
 - UI/dashboard logic belongs in `micrOSdashboard.py` or `toolkit/dashboard_apps/`
 - device communication belongs in `socketClient.py` and `toolkit/lib/micrOSClient.py`
 - gateway behavior belongs in `Gateway.py`
+
+### USB deployment modes
+
+USB deployment has two intentionally different paths selected by the firmware
+binary basename:
+
+- **Release / prebuilt micrOS mode:** a binary whose name starts with
+  `micrOS-` already contains every direct `micrOS/source/*.py` core file.
+  `DevEnvUSB.py` must not copy those core files again. After flashing, it copies
+  only the allowlisted release resources from `toolkit/workspace/precompiled/`:
+  all configured `web/*` assets and the configured minimum extensionless LM/IO
+  module names. Each module resolves to `.mpy` when precompiled, with `.py` as
+  the fallback. The allowlist is defined by `toolkit/micrOSImageConfig.json`.
+- **Development mode:** every other binary name is treated as stock
+  MicroPython. After flashing, the existing full precompiled deployment remains
+  in effect and copies all generated `source/*` core files, modules, web assets,
+  and other normal resources.
+
+Keep the `micrOS-` prefix check narrow and based on the selected binary's
+basename. Do not infer release mode from the board name or directory path.
+Apply the same mode selection and console banner to clean USB deploys and USB
+upgrades, including upgrades that skip reflashing MicroPython.
+
+Operation boundaries must remain explicit:
+
+- `deploy_micros()` is the mode-aware orchestration path used by full USB
+  deploys and by USB updates after their version/configuration checks.
+- `deploy_micropython_dev()` is the legacy low-level image-only flash command.
+- `put_micros_to_dev()` without a resource plan is the legacy low-level full
+  precompiled copy used by the standalone install command.
+- Skipping MicroPython means no erase or image flash; it still uses the
+  selected binary basename to choose the resource-copy mode.
+
+Full OTA uses the fourth shell `hello` field. A `rel` device already has its
+direct core files frozen, so `DevEnvOTA.py` must skip root-level `.py`/`.mpy`
+core uploads while continuing with modules, IO maps, web assets, and config.
+Show the OTA mode banner and one core-skip summary. LM-only OTA remains
+unchanged, and legacy hello responses without a mode use development behavior.
+
+The release allowlist intentionally excludes `config/node_config.json` from a
+clean deployment. USB update is the exception: it must read the connected
+configuration before deployment and include that saved file in the update copy
+for both stock and `micrOS-*` images, whether or not MicroPython flashing is
+skipped. Keep this update-state restoration separate from the minimum clean
+release resource profile.
+
+`toolkit/micrOSImageConfig.json` is also the source of truth for image-builder
+defaults: supported devices, pinned MicroPython/ESP-IDF versions and repository
+URLs, core/output paths, and the output filename template. Managed workspace
+paths remain internal defaults in `micrOSImageBuilder.py`. Add or change image
+target support in the JSON rather than introducing a parallel device registry
+in the builder.
+
+The builder always appends `[micrOS]` to the end of MicroPython's generated
+machine description using a generated board overlay. This fixed marker is
+exposed through `os.uname().machine` and `system info`; the builder must not
+patch the managed MicroPython checkout.
 
 ### Avoid these mistakes
 

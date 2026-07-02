@@ -134,7 +134,7 @@ def enableESPNow() -> str:
     """
     if cfgget('espnow'):
         try:
-            from Espnow import ESPNowSS
+            from mespnow import ESPNowSS
             verdict = ESPNowSS().start_server()
             console_write(f"[TASK] Start ESPNow-InterCon server: {verdict}")
         except Exception as e:

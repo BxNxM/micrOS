@@ -124,7 +124,7 @@ These modules are imported only when boot configuration enables the related feat
 | --- | --- | --- |
 | `Scheduler` | `cron = true` | `Interrupts.py` |
 | `Web.WebEngine` | `webui = true` | `Server.py` |
-| `Espnow.ESPNowSS` | `espnow = true` | `Hooks.py`, `InterConnect.py` |
+| `mespnow.ESPNowSS` | `espnow = true` | `Hooks.py`, `InterConnect.py` |
 | `Time.ntp_time`, `Time.suntime` | STA mode selected at boot | `micrOS.py` |
 | `Time.uptime` | AP / non-STA path | `micrOS.py` |
 | `micropython.mem_info` | `dbg = true` and profiling is invoked | `Hooks.py` |

@@ -228,11 +228,14 @@ class OTA(Compile):
         # Not compatible
         return False
 
-    def update_with_webrepl(self, force=False, device=None, lm_only=False, loader_update=False, ota_password='ADmin123'):
+    def update_with_webrepl(self, force=False, device=None, lm_only=False, loader_update=False,
+                            ota_password='ADmin123', app_only=False):
         """
         OTA UPDATE via webrepl
             info: https://techoverflow.net/2020/02/22/how-to-upload-files-to-micropython-using-webrepl-using-webrepl_cli-py/
             ./webrepl/webrepl_cli.py -p <password> <input_file> espressif.local:<output_file>
+            app_only: upload all LM_* modules and web resources
+            lm_only: legacy mode that uploads only LM_* modules
         """
         print("OTA UPDATE")
         upload_path_list = []
@@ -335,11 +338,24 @@ class OTA(Compile):
                     "\t[SKIP UPLOAD][SKIP MICROS LOADER] {}".format(source_name), state='WARN')
                 continue
 
-            # Handle lm_only mode - skip upload for not LM_
-            if lm_only:
+            # App update includes public load modules and built-in web resources.
+            if app_only:
+                relative_source = os.path.relpath(source, self.precompiled_micrOS_dir_path)
+                is_load_module = (
+                    os.path.dirname(relative_source) == "modules"
+                    and source_name.startswith("LM_")
+                )
+                is_web_resource = relative_source.startswith("web{}".format(os.sep))
+                if not is_load_module and not is_web_resource:
+                    self.console(
+                        "\t[SKIP UPLOAD][SKIP NON-APP RESOURCE] {}".format(source_name), state='WARN')
+                    continue
+
+            # Keep the previous LM-only API behavior for non-UI callers.
+            elif lm_only:
                 if not source_name.startswith("LM_"):
                     self.console(
-                        "\t[SKIP UPLOAD][SKIP MICROS CORE] {}".format(source_name, lm_only), state='WARN')
+                        "\t[SKIP UPLOAD][SKIP NON-LM RESOURCE] {}".format(source_name), state='WARN')
                     continue
 
             # macOS icloud sync workaround ...

@@ -53,7 +53,7 @@ class ProgressbarTimers:
     usb_deploy = 6 * base_minute            # min estimation
     usb_update = 6 * base_minute            # min estimation
     ota_update = 4 * base_minute            # min estimation
-    lm_update = int(1.5 * base_minute)      # min estimation
+    app_update = int(1.5 * base_minute)     # min estimation
     search_devices = int(1.5 * base_minute)  # min estimation
     general_app = base_minute               # min estimation
     simulator = 4                           # sec estimation
@@ -978,11 +978,11 @@ class micrOSGUI(QWidget):
         width = 200
         yoffset = 3
         buttons_ota = {
-            'Update (OTA)': ['[micrOS OTA Update]\nOTA - Over The Air (wifi) update.\nUpload micrOS resources over webrepl',
+            'Update (OTA)': ['[Full micrOS OTA Update]\nUpdate Core and APP resources\nIncludes Load Modules and Web resources over WebREPL',
                              start_x, start_y, width, height, self.__on_click_ota_update, 'darkCyan', self.ota_color_code],
-            'LM Update (OTA)': ['[micrOS LMs OTA Update]\nUpdate LM (LoadModules) ONLY\nUpload micrOS LM resources over webrepl',
-                             start_x, start_y + (height + yoffset) * 1, width, height, self.__on_click_lm_update, 'darkCyan', self.ota_color_code],
-            'Search device': ['[Search on WLAN]\nSearch online micrOS devices on 9008 port,\nOn local wifi network.',
+            'App Update (OTA)': ['[micrOS APP OTA Update]\nUpdate all Load Modules and Web resources\nUpload micrOS APP resources over WebREPL',
+                             start_x, start_y + (height + yoffset) * 1, width, height, self.__on_click_app_update, 'darkCyan', self.ota_color_code],
+            'Search devices': ['[Search on WLAN]\nSearch online micrOS devices on 9008 port,\nOn local wifi network.',
                                start_x, start_y + (height + yoffset) * 2, width, height, self.__on_click_search_devices,
                               'darkCyan', self.ota_color_code],
             'Simulator': ['Start micrOS on host.\nRuns with micropython dummy (module) interfaces',
@@ -1145,48 +1145,48 @@ class micrOSGUI(QWidget):
         self.bgjob_thread_obj_dict['ota_update'] = th
         self.console.append_output('[ota_update] |- ota_update job was started')
 
-    def __on_click_lm_update(self):
+    def __on_click_app_update(self):
         self.__show_gui_state_on_console()
-        if self.__block_on_active_job(current_key='lm_update'):
+        if self.__block_on_active_job(current_key='app_update'):
             return
-        if 'lm_update' in self.bgjob_thread_obj_dict.keys():
-            if self.bgjob_thread_obj_dict['lm_update'].is_alive():
-                self.console.append_output('[lm_update][SKIP] already running.')
+        if 'app_update' in self.bgjob_thread_obj_dict.keys():
+            if self.bgjob_thread_obj_dict['app_update'].is_alive():
+                self.console.append_output('[app_update][SKIP] already running.')
                 return
 
         # Verify data
-        if not self.start_bg_application_popup(text="Update load modules?",
+        if not self.start_bg_application_popup(text="Update APP resources?",
                                                verify_data_dict={'device': self.micrOS_devide_dropdown.get(),
                                                                  'force': self.modifiers_obj.ignore_version_check,
                                                                  'ota_pwd': self.appwd_textbox.get()}):
             return
 
-        self.console.append_output('[lm_update] Update Load Modules over wifi')
+        self.console.append_output('[app_update] Update Load Modules and Web resources over wifi')
         # Start init_progressbar
         pth = ProgressbarUpdateThread()
-        pth.eta_sec = ProgressbarTimers.lm_update
+        pth.eta_sec = ProgressbarTimers.app_update
         pth.callback.connect(self.progressbar.progressbar_update)
         pth.start()
         pth.setTerminationEnabled(True)
-        self.bgjon_progress_monitor_thread_obj_dict['lm_update'] = pth
+        self.bgjon_progress_monitor_thread_obj_dict['app_update'] = pth
 
         # Start job
         fuid, devip = self.__resolve_selected_device()
         ignore_version_check = self.modifiers_obj.ignore_version_check
         if devip is None:
-            self.console.append_output("[lm_update][ERROR] Selecting device")
-            self.bgjon_progress_monitor_thread_obj_dict['lm_update'].terminate()
-            self.bgjon_progress_monitor_thread_obj_dict.pop('lm_update', None)
+            self.console.append_output("[app_update][ERROR] Selecting device")
+            self.bgjon_progress_monitor_thread_obj_dict['app_update'].terminate()
+            self.bgjon_progress_monitor_thread_obj_dict.pop('app_update', None)
             return
-        self.console.append_output("[lm_update] Start OTA lm_update on {}:{}".format(fuid, devip))
-        self.console.append_output('[lm_update] |- start lm_update job')
+        self.console.append_output("[app_update] Start OTA APP update on {}:{}".format(fuid, devip))
+        self.console.append_output('[app_update] |- start app_update job')
         self.progressbar.progressbar_update()
         th = threading.Thread(target=self.devtool_obj.update_with_webrepl,
-                              kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'lm_only': True,
+                              kwargs={'device': (fuid, devip), 'force': ignore_version_check, 'app_only': True,
                                       'ota_password': self.appwd_textbox.get()}, daemon=DAEMON)
         th.start()
-        self.bgjob_thread_obj_dict['lm_update'] = th
-        self.console.append_output('[lm_update] |- lm_update job was started')
+        self.bgjob_thread_obj_dict['app_update'] = th
+        self.console.append_output('[app_update] |- app_update job was started')
         self.progressbar.progressbar_update()
 
     def on_click_lm_quick_update(self, upload_path_list):

@@ -34,7 +34,13 @@
       .endpoint-group button {
           white-space: nowrap;
       }
-    </style><script src="uapi.js" defer></script><script src="uapi_widgets.js" defer></script></head><body><img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60"><h1> microWeb server </h1><div id="restInfo"><div id="restInfoHeader"></div><div id="endpointHint">🔗 Endpoints:</div><div id="endpointGroups" class="endpoint-groups"></div></div><hr><h2>🚀 REST API</h2><p>Shortcuts:</p><button onclick="restAPI('system/info')">SysInfo</button><button onclick="restAPI('system/alarms')">Alarms</button><button onclick="restAPI('system/clock')">Clock</button><button onclick="restAPI('task/list')">Tasks</button><div id="restWidget"></div><script>
+
+      .shortcut-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+      }
+    </style><script src="uapi.js" defer></script><script src="uapi_widgets.js" defer></script></head><body><img src="https://github.com/BxNxM/micrOS/blob/master/media/logo_mini.png?raw=true" alt="micrOS Logo" width="60" height="60"><h1> microWeb server </h1><div id="restInfo"><div id="restInfoHeader"></div><div id="endpointHint">🔗 Endpoints:</div><div id="endpointGroups" class="endpoint-groups"></div></div><hr><h2>🚀 REST API</h2><p>Shortcuts:</p><div class="shortcut-buttons"><button onclick="restAPI('system/info')">SysInfo</button><button onclick="restAPI('system/alarms')">Alarms</button><button onclick="restAPI('system/clock')">Clock</button><button onclick="restAPI('task/list')">Tasks</button></div><div id="restWidget"></div><script>
         document.addEventListener("DOMContentLoaded", function() {
             // Init basic info from board after DOM is fully loaded
             restWidget('restWidget');

@@ -97,7 +97,10 @@ function renderEndpointGroups(endpoints) {
     const container = byId('endpointGroups');
     if (!container) {return;}
     container.textContent = '';
-    if (!Array.isArray(endpoints) || !endpoints.length) {return;}
+    const hint = byId('endpointHint');
+    const hasEndpoints = Array.isArray(endpoints) && endpoints.length > 0;
+    if (hint) {hint.hidden = !hasEndpoints;}
+    if (!hasEndpoints) {return;}
 
     const groups = {};
     const button = (label, entry) => makeEl('button', {textContent: label, onclick: () => window.open(`/${entry}`, '_blank')});

@@ -42,6 +42,12 @@
       .endpoint-group button {
           white-space: nowrap;
       }
+
+      .shortcut-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+      }
     </style>
     <script src="uapi.js" defer></script>
     <script src="uapi_widgets.js" defer></script>
@@ -57,10 +63,12 @@
     <hr>
     <h2>🚀 REST API</h2>
     <p>Shortcuts:</p>
-    <button onclick="restAPI('system/info')">SysInfo</button>
-    <button onclick="restAPI('system/alarms')">Alarms</button>
-    <button onclick="restAPI('system/clock')">Clock</button>
-    <button onclick="restAPI('task/list')">Tasks</button>
+    <div class="shortcut-buttons">
+        <button onclick="restAPI('system/info')">SysInfo</button>
+        <button onclick="restAPI('system/alarms')">Alarms</button>
+        <button onclick="restAPI('system/clock')">Clock</button>
+        <button onclick="restAPI('task/list')">Tasks</button>
+    </div>
     <div id="restWidget"></div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {

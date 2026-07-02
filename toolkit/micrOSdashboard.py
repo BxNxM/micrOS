@@ -280,7 +280,7 @@ class BinaryTypeSelector(DropDownBase):
 
     def dropdown_binary_type(self):
         title = "Binary type"
-        geometry = (285, 120, 160, 30)
+        geometry = (345, 120, 100, 30)
         help_msg = "Filter stock MicroPython and micrOS firmware binaries."
         style = "QComboBox{border : 3px solid " + self.color + ";}QComboBox::on{border : 4px solid;border-color : orange orange orange orange;}"
         self.create_dropdown(items_list=("Stock", "micrOS", "ALL"), title=title, geometry_tuple=geometry,

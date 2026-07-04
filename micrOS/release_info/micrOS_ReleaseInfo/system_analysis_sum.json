@@ -54,7 +54,7 @@
         ],
         "Types.py": [
             9.09,
-            26
+            24
         ],
         "Logger.py": [
             8.86,
@@ -62,7 +62,7 @@
         ],
         "Common.py": [
             9.86,
-            32
+            31
         ],
         "InterConnect.py": [
             9.7,
@@ -86,7 +86,7 @@
         ],
         "microIO.py": [
             9.37,
-            40
+            38
         ],
         "micrOS.py": [
             9.09,
@@ -146,14 +146,6 @@
         ],
         "modules/LM_qmi8658.py": [
             9.1,
-            0
-        ],
-        "modules/LM_co2.py": [
-            8.5,
-            0
-        ],
-        "modules/LM_mh_z19c.py": [
-            9.78,
             0
         ],
         "modules/LM_rest.py": [
@@ -315,8 +307,8 @@
             27
         ],
         "load": [
-            7820,
-            50
+            7544,
+            48
         ],
         "core_dep": [
             true,
@@ -327,7 +319,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.45,
+        "load_score": 8.42,
         "version": "3.1.1-0"
     }
 }

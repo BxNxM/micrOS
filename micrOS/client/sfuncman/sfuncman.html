@@ -301,7 +301,7 @@ code {
 </section>
 
 <div class="module-grid">
-<div class="panel module-nav"><h2>Built-in Control Modules</h2><p>Compact module index and generated function reference for the current micrOS repository state.</p><div class="shortcut-list"><a href="#aht10">aht10</a><a href="#bme280">bme280</a><a href="#buzzer">buzzer</a><a href="#cct">cct</a><a href="#cluster">cluster</a><a href="#co2">co2</a><a href="#dht11">dht11</a><a href="#dht22">dht22</a><a href="#dimmer">dimmer</a><a href="#distance">distance</a><a href="#ds18">ds18</a><a href="#esp32">esp32</a><a href="#espnow">espnow</a><a href="#fileserver">fileserver</a><a href="#gameOfLife">gameOfLife</a><a href="#genIO">genIO</a><a href="#haptic">haptic</a><a href="#i2c">i2c</a><a href="#i2s_mic">i2s_mic</a><a href="#L298N">L298N</a><a href="#L9110_DCmotor">L9110_DCmotor</a><a href="#ld2410">ld2410</a><a href="#light_sensor">light_sensor</a><a href="#mh_z19c">mh_z19c</a><a href="#neoeffects">neoeffects</a><a href="#neopixel">neopixel</a><a href="#oled">oled</a><a href="#oled_sh1106">oled_sh1106</a><a href="#oled_ui">oled_ui</a><a href="#OV2640">OV2640</a><a href="#pacman">pacman</a><a href="#presence">presence</a><a href="#qmi8658">qmi8658</a><a href="#rencoder">rencoder</a><a href="#rest">rest</a><a href="#rgb">rgb</a><a href="#rgbcct">rgbcct</a><a href="#roboarm">roboarm</a><a href="#robustness">robustness</a><a href="#rp2w">rp2w</a><a href="#sdcard">sdcard</a><a href="#servo">servo</a><a href="#stepper">stepper</a><a href="#switch">switch</a><a href="#system">system</a><a href="#task">task</a><a href="#telegram">telegram</a><a href="#tinyrgb">tinyrgb</a><a href="#trackball">trackball</a><a href="#veml7700">veml7700</a><a href="#web">web</a></div></div><div class="module-sections">
+<div class="panel module-nav"><h2>Built-in Control Modules</h2><p>Compact module index and generated function reference for the current micrOS repository state.</p><div class="shortcut-list"><a href="#aht10">aht10</a><a href="#bme280">bme280</a><a href="#buzzer">buzzer</a><a href="#cct">cct</a><a href="#cluster">cluster</a><a href="#dht11">dht11</a><a href="#dht22">dht22</a><a href="#dimmer">dimmer</a><a href="#distance">distance</a><a href="#ds18">ds18</a><a href="#esp32">esp32</a><a href="#espnow">espnow</a><a href="#fileserver">fileserver</a><a href="#gameOfLife">gameOfLife</a><a href="#genIO">genIO</a><a href="#haptic">haptic</a><a href="#i2c">i2c</a><a href="#i2s_mic">i2s_mic</a><a href="#L298N">L298N</a><a href="#L9110_DCmotor">L9110_DCmotor</a><a href="#ld2410">ld2410</a><a href="#light_sensor">light_sensor</a><a href="#neoeffects">neoeffects</a><a href="#neopixel">neopixel</a><a href="#oled">oled</a><a href="#oled_sh1106">oled_sh1106</a><a href="#oled_ui">oled_ui</a><a href="#OV2640">OV2640</a><a href="#pacman">pacman</a><a href="#presence">presence</a><a href="#qmi8658">qmi8658</a><a href="#rencoder">rencoder</a><a href="#rest">rest</a><a href="#rgb">rgb</a><a href="#rgbcct">rgbcct</a><a href="#roboarm">roboarm</a><a href="#robustness">robustness</a><a href="#rp2w">rp2w</a><a href="#sdcard">sdcard</a><a href="#servo">servo</a><a href="#stepper">stepper</a><a href="#switch">switch</a><a href="#system">system</a><a href="#task">task</a><a href="#telegram">telegram</a><a href="#tinyrgb">tinyrgb</a><a href="#trackball">trackball</a><a href="#veml7700">veml7700</a><a href="#web">web</a></div></div><div class="module-sections">
 <section class="panel module-card">
 <h2 id="aht10"><a href="#aht10">aht10</a></h2>
 <table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;AHT10&nbsp;module</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;aht10<br>
@@ -430,34 +430,6 @@ pin&nbsp;map:&nbsp;cwhite,&nbsp;wwhite</td></tr></table></td></tr><tr><th>help</
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/cluster.png?raw=true" alt="cluster" height=150></td></tr></table>
-</section>
-
-<section class="panel module-card">
-<h2 id="co2"><a href="#co2">co2</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;mq135&nbsp;CO2&nbsp;(ppm)&nbsp;sensor&nbsp;module</td></tr></table></td></tr><tr><th>raw_measure_mq135</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;raw&nbsp;mq135&nbsp;CO2&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;raw&nbsp;value&nbsp;/&nbsp;adc_property</td></tr></table></td></tr><tr><th>measure_mq135</th><td><table class="doc-table"><tr><th>param(s)</th><td>temperature=None humidity=None</td></tr><tr><th>doc</th><td>CO2&nbsp;Gas&nbsp;Concentration&nbsp;-&nbsp;Parts-per-million&nbsp;-&nbsp;PPM<br>
-&nbsp;&nbsp;&nbsp;&nbsp;->&nbsp;1ppm&nbsp;=&nbsp;0.0001%&nbsp;gas.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Concentration&nbsp;evaluation:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;250-400ppm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Normal&nbsp;background&nbsp;concentration&nbsp;in&nbsp;outdoor&nbsp;ambient&nbsp;air<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;400-1,000ppm&nbsp;&nbsp;&nbsp;&nbsp;Concentrations&nbsp;typical&nbsp;of&nbsp;occupied&nbsp;indoor&nbsp;spaces&nbsp;with&nbsp;good&nbsp;air&nbsp;exchange<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1,000-2,000ppm&nbsp;&nbsp;Complaints&nbsp;of&nbsp;drowsiness&nbsp;and&nbsp;poor&nbsp;air.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2,000-5,000&nbsp;ppm&nbsp;Headaches,&nbsp;sleepiness&nbsp;and&nbsp;stagnant,&nbsp;stale,&nbsp;stuffy&nbsp;air.&nbsp;Poor&nbsp;concentration,&nbsp;loss&nbsp;of&nbsp;attention,&nbsp;increased&nbsp;heart&nbsp;rate&nbsp;and&nbsp;slight&nbsp;nausea&nbsp;may&nbsp;also&nbsp;be&nbsp;present.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5,000ppm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Workplace&nbsp;exposure&nbsp;limit&nbsp;(as&nbsp;8-hour&nbsp;TWA)&nbsp;in&nbsp;most&nbsp;jurisdictions.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;>40,000&nbsp;ppm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exposure&nbsp;may&nbsp;lead&nbsp;to&nbsp;serious&nbsp;oxygen&nbsp;deprivation&nbsp;resulting&nbsp;in&nbsp;permanent&nbsp;brain&nbsp;damage,&nbsp;coma,&nbsp;even&nbsp;death.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;temperature&nbsp;int:&nbsp;temp&nbsp;compensation&nbsp;-&nbsp;celsius<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;humidity&nbsp;int:&nbsp;hum&nbsp;compensation<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure_mq135&nbsp;temp=None&nbsp;hum=None',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/co2.png?raw=true" alt="co2" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -818,27 +790,6 @@ pin&nbsp;map:&nbsp;temp6000</td></tr></table></td></tr><tr><th>help</th><td><tab
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'intensity&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
 	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'illuminance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true" alt="light_sensor" height=150></td></tr></table>
-</section>
-
-<section class="panel module-card">
-<h2 id="mh_z19c"><a href="#mh_z19c">mh_z19c</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Create&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor&nbsp;(over&nbsp;UART)</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor</td></tr></table></td></tr><tr><th>calibrate</th><td><table class="doc-table"><tr><th>doc</th><td>Calibrate&nbsp;MH-Z19&nbsp;sensor</td></tr></table></td></tr><tr><th>start</th><td><table class="doc-table"><tr><th>param(s)</th><td>interval:int=5000 topic:str="MH_Z19C" channels:list=None</td></tr><tr><th>doc</th><td>Start&nbsp;sensor&nbsp;measurement&nbsp;loop&nbsp;and&nbsp;publish&nbsp;results&nbsp;over&nbsp;micros&nbsp;notify&nbsp;feature<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;interval:&nbsp;update&nbsp;interval&nbsp;in&nbsp;milliseconds<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;topic:&nbsp;for&nbsp;MQTT&nbsp;channel,&nbsp;default:&nbsp;MH_Z19C<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;channels:&nbsp;selected&nbsp;notification&nbsp;channels,&nbsp;ex.:&nbsp;["MQTT"],&nbsp;default:&nbsp;None&nbsp;(all)</td></tr></table></td></tr><tr><th>stop</th><td><table class="doc-table"><tr><th>doc</th><td>Stop&nbsp;sensor&nbsp;measurement&nbsp;loop&nbsp;and&nbsp;publish,&nbsp;delete&nbsp;MHZ19.INSTANCE</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-pin&nbsp;map:&nbsp;mh_z19c_tx,&nbsp;mh_z19c_rx,&nbsp;mh_z19c_hd</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'start&nbsp;interval=5000',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'stop&nbsp;',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/mh_z19c.png?raw=true" alt="mh_z19c" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1573,7 +1524,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/web.png?raw=true" alt="web" height=150></td></tr></table>
 </section>
 </div>
-<div class="panel module-nav" id="external-modules"><h2>External Modules</h2><p>Installable package documentation generated alongside built-in load modules.</p><div class="shortcut-list"><a href="#alarm_system">alarm_system</a><a href="#blinky">blinky</a><a href="#garage">garage</a><a href="#keychain">keychain</a><a href="#mqtt_client">mqtt_client</a><a href="#neomatrix">neomatrix</a><a href="#oledui">oledui</a><a href="#sim800">sim800</a><a href="#sim800_http">sim800_http</a><a href="#sim800mqtt">sim800mqtt</a><a href="#sound_event">sound_event</a><a href="#tcs3472">tcs3472</a><a href="#users">users</a><a href="#VL53L0X">VL53L0X</a></div></div><div class="module-sections">
+<div class="panel module-nav" id="external-modules"><h2>External Modules</h2><p>Installable package documentation generated alongside built-in load modules.</p><div class="shortcut-list"><a href="#alarm_system">alarm_system</a><a href="#blinky">blinky</a><a href="#garage">garage</a><a href="#keychain">keychain</a><a href="#mh_z19c">mh_z19c</a><a href="#mq135">mq135</a><a href="#mqtt_client">mqtt_client</a><a href="#neomatrix">neomatrix</a><a href="#oledui">oledui</a><a href="#sim800">sim800</a><a href="#sim800_http">sim800_http</a><a href="#sim800mqtt">sim800mqtt</a><a href="#sound_event">sound_event</a><a href="#tcs3472">tcs3472</a><a href="#users">users</a><a href="#VL53L0X">VL53L0X</a></div></div><div class="module-sections">
 <section class="panel module-card">
 <h2 id="alarm_system"><a href="#alarm_system">alarm_system</a></h2>
 <table class="doc-table"><tr><th>status</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>config='alarm_config.json'</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>unload</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>arm</th><td><table class="doc-table"><tr><th>param(s)</th><td>mode='full' force=False</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>disarm</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>zone_trigger</th><td><table class="doc-table"><tr><th>param(s)</th><td>name event</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>add_sensor</th><td><table class="doc-table"><tr><th>param(s)</th><td>name pin type='delayed' group='perimeter'</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>remove_sensor</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>add_zone</th><td><table class="doc-table"><tr><th>param(s)</th><td>name type='instant' group='perimeter' cross_pair=None cross_window=30</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>remove_zone</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>list_zones</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>show_config</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>add_watch</th><td><table class="doc-table"><tr><th>param(s)</th><td>topic zone trigger_value reset_value=None trigger_field=None</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>remove_watch</th><td><table class="doc-table"><tr><th>param(s)</th><td>topic</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>list_watches</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>event_log</th><td><table class="doc-table"><tr><th>param(s)</th><td>count=20</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>clear_log</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>alarm_memory</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>chime</th><td><table class="doc-table"><tr><th>param(s)</th><td>state=None</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>auto_arm</th><td><table class="doc-table"><tr><th>param(s)</th><td>delay=None mode='full'</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>bypass</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>unbypass</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>supervise</th><td><table class="doc-table"><tr><th>param(s)</th><td>name timeout=600</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>unsupervise</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/alarm_system.png?raw=true" alt="alarm_system" height=150></td></tr></table>
@@ -1644,6 +1595,60 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;ds18,&nbsp;neop</td></tr></table>
 	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/keychain.png?raw=true" alt="keychain" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
+<h2 id="mh_z19c"><a href="#mh_z19c">mh_z19c</a></h2>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Create&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor&nbsp;(over&nbsp;UART)</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor</td></tr></table></td></tr><tr><th>calibrate</th><td><table class="doc-table"><tr><th>doc</th><td>Calibrate&nbsp;MH-Z19&nbsp;sensor</td></tr></table></td></tr><tr><th>start</th><td><table class="doc-table"><tr><th>param(s)</th><td>interval:int=5000 topic:str="MH_Z19C" channels:list=None</td></tr><tr><th>doc</th><td>Start&nbsp;sensor&nbsp;measurement&nbsp;loop&nbsp;and&nbsp;publish&nbsp;results&nbsp;over&nbsp;micros&nbsp;notify&nbsp;feature<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;interval:&nbsp;update&nbsp;interval&nbsp;in&nbsp;milliseconds<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;topic:&nbsp;for&nbsp;MQTT&nbsp;channel,&nbsp;default:&nbsp;MH_Z19C<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;channels:&nbsp;selected&nbsp;notification&nbsp;channels,&nbsp;ex.:&nbsp;["MQTT"],&nbsp;default:&nbsp;None&nbsp;(all)</td></tr></table></td></tr><tr><th>stop</th><td><table class="doc-table"><tr><th>doc</th><td>Stop&nbsp;sensor&nbsp;measurement&nbsp;loop&nbsp;and&nbsp;publish,&nbsp;delete&nbsp;MHZ19.INSTANCE</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;mh_z19c_tx,&nbsp;mh_z19c_rx,&nbsp;mh_z19c_hd</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'start&nbsp;interval=5000',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'stop&nbsp;',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/mh_z19c.png?raw=true" alt="mh_z19c" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
+<h2 id="mq135"><a href="#mq135">mq135</a></h2>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;mq135&nbsp;CO2&nbsp;(ppm)&nbsp;sensor&nbsp;module</td></tr></table></td></tr><tr><th>raw_measure_mq135</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;raw&nbsp;mq135&nbsp;CO2&nbsp;value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;raw&nbsp;value&nbsp;/&nbsp;adc_property</td></tr></table></td></tr><tr><th>measure_mq135</th><td><table class="doc-table"><tr><th>param(s)</th><td>temperature=None humidity=None</td></tr><tr><th>doc</th><td>Estimated&nbsp;CO2-equivalent&nbsp;gas&nbsp;concentration&nbsp;in&nbsp;parts&nbsp;per&nbsp;million&nbsp;(ppm).<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MQ-135&nbsp;is&nbsp;a&nbsp;broad&nbsp;air-quality&nbsp;sensor,&nbsp;not&nbsp;a&nbsp;selective&nbsp;CO2&nbsp;sensor.&nbsp;Results<br>
+&nbsp;&nbsp;&nbsp;&nbsp;depend&nbsp;on&nbsp;calibration,&nbsp;warm-up,&nbsp;supply&nbsp;stability,&nbsp;and&nbsp;interfering&nbsp;gases.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;->&nbsp;1ppm&nbsp;=&nbsp;0.0001%&nbsp;gas.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Concentration&nbsp;evaluation:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;250-400ppm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Normal&nbsp;background&nbsp;concentration&nbsp;in&nbsp;outdoor&nbsp;ambient&nbsp;air<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;400-1,000ppm&nbsp;&nbsp;&nbsp;&nbsp;Concentrations&nbsp;typical&nbsp;of&nbsp;occupied&nbsp;indoor&nbsp;spaces&nbsp;with&nbsp;good&nbsp;air&nbsp;exchange<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1,000-2,000ppm&nbsp;&nbsp;Complaints&nbsp;of&nbsp;drowsiness&nbsp;and&nbsp;poor&nbsp;air.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2,000-5,000&nbsp;ppm&nbsp;Headaches,&nbsp;sleepiness&nbsp;and&nbsp;stagnant,&nbsp;stale,&nbsp;stuffy&nbsp;air.&nbsp;Poor&nbsp;concentration,&nbsp;loss&nbsp;of&nbsp;attention,&nbsp;increased&nbsp;heart&nbsp;rate&nbsp;and&nbsp;slight&nbsp;nausea&nbsp;may&nbsp;also&nbsp;be&nbsp;present.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5,000ppm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Workplace&nbsp;exposure&nbsp;limit&nbsp;(as&nbsp;8-hour&nbsp;TWA)&nbsp;in&nbsp;most&nbsp;jurisdictions.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;>40,000&nbsp;ppm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exposure&nbsp;may&nbsp;lead&nbsp;to&nbsp;serious&nbsp;oxygen&nbsp;deprivation&nbsp;resulting&nbsp;in&nbsp;permanent&nbsp;brain&nbsp;damage,&nbsp;coma,&nbsp;even&nbsp;death.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;temperature&nbsp;int:&nbsp;temperature&nbsp;compensation&nbsp;in&nbsp;Celsius<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;humidity&nbsp;int:&nbsp;relative&nbsp;humidity&nbsp;compensation&nbsp;in&nbsp;percent<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;verdict</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'measure_mq135&nbsp;temperature=None&nbsp;humidity=None',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/mq135.png?raw=true" alt="mq135" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">

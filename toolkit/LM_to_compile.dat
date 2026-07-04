@@ -8,7 +8,6 @@ LM_neopixel.py
 LM_switch.py
 LM_dimmer.py
 LM_bme280.py
-LM_co2.py
 LM_dht11.py
 LM_light_sensor.py
 LM_tinyrgb.py

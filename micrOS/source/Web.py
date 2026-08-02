@@ -47,6 +47,43 @@ def url_path_resolve(path:str) -> tuple[bool, str]:
     return False, path_join(OSPath.WEB, path)
 
 
+def _parse_rest_cmd(cmd:str) -> list[str]:
+    """Split REST command tokens while preserving quoted values as single arguments."""
+    if not cmd:
+        return []
+
+    decoded = (cmd.replace("%3E", ">")
+               .replace('%22', '"')
+               .replace('%E2%80%9C', '"')
+               .replace('%E2%80%9D', '"'))
+
+    tokens = []
+    index = 0
+    while index < len(decoded):
+        if decoded[index] == '"':
+            end = decoded.find('"', index + 1)
+            if end == -1:
+                tokens.append(decoded[index:].strip())
+                break
+            quoted_value = decoded[index:end + 1]
+            if quoted_value:
+                tokens.append(quoted_value)
+            index = end + 1
+            continue
+
+        start = index
+        while index < len(decoded) and decoded[index] != '"':
+            index += 1
+        segment = decoded[start:index]
+        if segment:
+            segment = (segment.replace('/', ' ')
+                      .replace('-', ' ')
+                      .strip())
+            if segment:
+                tokens.extend(token for token in segment.split() if token)
+    return tokens
+
+
 class HeaderParsingError(ValueError):
     """Exception for errors occurring while parsing HTTP/MIME headers"""
 
@@ -584,11 +621,9 @@ class WebEngine(Buffer):
         resp_schema = {'result': {}, 'state': False}
         cmd = self.url.decode("ascii").replace('rest', '', 1)
         if len(cmd) > 1:
-            # TODO: create url_decode helper for: " ' >
-            cmd = (cmd.replace('/', ' ').replace('-', ' ').replace("%3E", ">")
-                .replace('%22', '"').replace('%E2%80%9C', '"').replace('%E2%80%9D', '"')
-                .strip().split())
-             # EXECUTE COMMAND - LoadModule
+            cmd = _parse_rest_cmd(cmd)
+            print(f"[DEBUG] REST command: {cmd}")
+            # EXECUTE COMMAND - LoadModule
             if WebEngine.AUTH:
                 if lm_is_loaded(cmd[0]):
                     state, out = lm_exec(cmd, jsonify=True)

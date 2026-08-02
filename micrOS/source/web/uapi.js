@@ -1,8 +1,16 @@
 // CORE MICROS BACKEND INTERFACE
 
-const BASE_URL = `http://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ""}`;
+let BASE_URL = '';
+
+function initializeBaseURL() {
+    if (!BASE_URL && typeof window !== 'undefined') {
+        BASE_URL = `http://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ""}`;
+    }
+}
 
 function restAPICore(cmd, timeout=5000) {
+    initializeBaseURL();
+    console.log('BASE_URL:', BASE_URL);
     const query = `${BASE_URL}/rest/${cmd.trim().replace(/\s+/g, '/')}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);

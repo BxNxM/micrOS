@@ -1,0 +1,85 @@
+#configContainer {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  margin: 0rem;
+  gap: 12px;
+}
+
+#configMenu {
+  max-width: 30vw;
+  min-width: 12vw;
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: 8px 0;
+  background: transparent;
+}
+
+#configMenu p {
+  cursor: pointer;
+  padding: 0.2rem 0rem 0.2rem 1rem;
+}
+
+#configMenu p:hover {
+  background-color: #4B376C;
+}
+
+#configFields {
+  flex-grow: 1;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.selected {
+  background-color: #4B376C;
+}
+
+#menuToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  #configContainer {
+    flex-direction: column;
+    position: relative;
+  }
+
+  #menuToggle {
+    display: inline-flex;
+  }
+
+  #configMenu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(80vw, 280px);
+    max-width: none;
+    min-width: 0;
+    margin: 0;
+    padding: 56px 8px 16px 8px;
+    border-radius: 0 8px 8px 0;
+    transform: translateX(-110%);
+    transition: transform 0.2s ease;
+    z-index: 1000;
+    background: rgba(33, 24, 79, 0.96);
+  }
+
+  #configMenu.open {
+    transform: translateX(0);
+  }
+
+  #configFields {
+    padding: 0 4px 16px 4px;
+  }
+}

@@ -565,20 +565,36 @@ def _exec_lm_core(cmd_list, jsonify):
     """
 
     def _func_params(param):
-        buf = None
-        if "'" in param or '"' in param:
-            str_index = [i for i, c in enumerate(param) if c in ('"', "'")]
-            buf = [param[str_index[str_i]:str_index[str_i + 1] + 1] for str_i in range(0, len(str_index), 2)]
-            for substr in buf:
-                param = param.replace(substr, '{}')
-        param = param.replace(' ', ', ')
-        if isinstance(buf, list):
-            param = param.format(*buf)
-        return param
+        if not param:
+            return ''
+
+        chunks = []
+        current = ''
+        quote = None
+        for char in param:
+            if char in ('"', "'"):
+                if quote is None:
+                    quote = char
+                elif quote == char:
+                    quote = None
+                current += char
+                continue
+            if char == ' ' and quote is None:
+                if current:
+                    chunks.append(current)
+                    current = ''
+                continue
+            current += char
+
+        if current:
+            chunks.append(current)
+
+        return ', '.join(chunks)
 
     # LoadModule execution
     if len(cmd_list) >= 2:
         lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], _func_params(' '.join(cmd_list[2:]))
+        print(f"[DEBUG] LM exec: {lm_mod}.{lm_func}({lm_params})")
         try:
             # ------------- LM LOAD & EXECUTE ------------- #
             # [1] LOAD MODULE - OPTIMIZED by sys.modules

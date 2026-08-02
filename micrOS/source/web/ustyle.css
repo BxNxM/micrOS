@@ -14,17 +14,11 @@
 /* ---------- Base layout ---------- */
 
 body {
-    min-height: 100vh;
-
     /* FIX: removed min-width:100vw (caused horizontal overflow) */
 
-    margin: 3%;
+    /* margin: 3%; */
 
-    padding:
-        env(safe-area-inset-top)
-        env(safe-area-inset-right)
-        env(safe-area-inset-bottom)
-        env(safe-area-inset-left);
+    padding: 16px;
 
     background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
     background-size: 200% 200%;
@@ -82,7 +76,9 @@ button {
 }
 
 /* Only text-like inputs get controlled height */
-input[type="text"] {
+input[type="text"],
+input[type="number"],
+select {
     font-family: inherit;
     font-size: 14px;
     line-height: 1.4;
@@ -92,6 +88,23 @@ input[type="text"] {
     box-sizing: border-box;
     width: 100%;
     max-width: 350px;
+}
+
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    vertical-align: middle;
+    accent-color: #4B376C;
+    border: 2px solid rgba(255,255,255,0.75);
+    border-radius: 4px;
+    background-color: rgba(255,255,255,0.12);
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #4B376C;
+    border-color: #4B376C;
 }
 
 /* Buttons */

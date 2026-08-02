@@ -4,13 +4,13 @@ Web backend loader
     - Fileserver
 """
 
-from json import dumps
+from json import dumps, loads
 
 from Common import web_endpoint, web_mounts
-from Config import cfgget
+from Config import cfgget, cfgput, cfgput
 from Auth import sudo
 
-_CFG_HIDE = ("webui", "hwuid", "guimeta", "socport", "version", "auth", "soctout")
+_CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "auth", "soctout")
 
 
 def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False):
@@ -55,11 +55,18 @@ def _cfg_get_clb(*_):
     return _cfg_json({k: v for k, v in cfgget().items() if k not in _CFG_HIDE})
 
 
-def _cfg_set_clb(*_):
+def _cfg_set_clb(_, body):
     """
-    Set system config delta - not implemented yet
+    Set system config delta
     """
-    return _cfg_json({"state": False, "result": "Config set is not implemented"})
+    try:
+        incoming_data = loads(body.decode('utf-8'))
+        print('Received config update request:', incoming_data)
+        for k, v in incoming_data.items():
+            cfgput(k, v)
+        return _cfg_json({"state": True, "result": "Config updated"})
+    except Exception as e:
+        return _cfg_json({"state": False, "result": str(e)})
 
 
 def help(widgets=False):

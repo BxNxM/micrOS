@@ -371,6 +371,12 @@ class TestWebStateMachine(unittest.TestCase):
             b"Upload content", first=True, last=True
         )
 
+    def test_parse_rest_cmd_preserves_quoted_values(self):
+        self.assertEqual(
+            self.web_module._parse_rest_cmd('system/clock/"my value"/foo-bar'),
+            ['system', 'clock', '"my value"', 'foo', 'bar']
+        )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

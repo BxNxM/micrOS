@@ -77,12 +77,13 @@ button {
 
 /* Only text-like inputs get controlled height */
 input[type="text"],
+input[type="password"],
 input[type="number"],
 select {
     font-family: inherit;
     font-size: 14px;
     line-height: 1.4;
-    min-height: 36px;
+    height: 36px;
     padding: 6px 12px;
     border-radius: 6px;
     box-sizing: border-box;

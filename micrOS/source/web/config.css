@@ -18,10 +18,11 @@
 #configMenu p {
   cursor: pointer;
   padding: 0.2rem 0rem 0.2rem 1rem;
+  border-radius: 3px;
 }
 
 #configMenu p:hover {
-  background-color: #4B376C;
+  background: rgba(255,255,255,.08);
 }
 
 #configFields {
@@ -32,8 +33,70 @@
   min-width: 0;
 }
 
-.selected {
-  background-color: #4B376C;
+#configMenu .selected {
+  background: color-mix(in srgb, white 15%, transparent);
+}
+
+.config-toggle {
+  display: inline-flex;
+  width: 160px;
+  max-width: 100%;
+  border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+}
+
+.config-toggle-option {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  color: rgba(255,255,255,0.78);
+  background: transparent;
+  font-weight: bold;
+}
+
+.config-toggle-option:hover {
+  color: white;
+  background: rgba(255,255,255,0.12);
+}
+
+.config-toggle-option.selected {
+  color: white;
+  background: var(--toggle-color);
+}
+
+.config-toggle-option.selected:hover {
+  background: var(--toggle-color);
+}
+
+.config-toggle-off {
+  --toggle-color: #b02a37;
+}
+
+.config-toggle-on {
+  --toggle-color: #20843a;
+}
+
+.config-save-button {
+  align-self: center;
+  margin: 0;
+  padding: 8px 16px;
+}
+
+.config-save-button:disabled {
+  background: #777;
+  color: #d8d8d8;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.config-save-button:disabled:hover {
+  background: #777;
+  color: #d8d8d8;
 }
 
 #menuToggle {

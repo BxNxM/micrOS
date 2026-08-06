@@ -125,7 +125,7 @@
             0
         ],
         "modules/LM_web.py": [
-            8.57,
+            9.09,
             0
         ],
         "modules/LM_genIO.py": [
@@ -307,7 +307,7 @@
             27
         ],
         "load": [
-            7554,
+            7567,
             48
         ],
         "core_dep": [
@@ -319,7 +319,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.42,
-        "version": "3.2.1-0"
+        "load_score": 8.43,
+        "version": "3.2.2-0"
     }
 }

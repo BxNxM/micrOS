@@ -7,7 +7,7 @@ Web backend loader
 from json import dumps, loads
 
 from Common import web_endpoint, web_mounts
-from Config import cfgget, cfgput, cfgput
+from Config import cfgget, cfgput
 from Auth import sudo
 
 _CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "auth", "soctout")
@@ -62,8 +62,21 @@ def _cfg_set_clb(_, body):
     try:
         incoming_data = loads(body.decode('utf-8'))
         print('Received config update request:', incoming_data)
+        failed_keys = []
         for k, v in incoming_data.items():
-            cfgput(k, v)
+            try:
+                state = cfgput(k, v)
+            except Exception as e:
+                state = False
+                k = f"{k}: {e}"
+            if not state:
+                failed_keys.append(k)
+        if failed_keys:
+            return _cfg_json({
+                "state": False,
+                "result": "Config update failed",
+                "failed": failed_keys
+            })
         return _cfg_json({"state": True, "result": "Config updated"})
     except Exception as e:
         return _cfg_json({"state": False, "result": str(e)})

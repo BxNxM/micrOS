@@ -26,6 +26,10 @@ const configLabelMap = {
   'webui_max_con': 'Allowed Number of Connections',
   'irq_prell_ms': 'Interrupt Debounce',
 };
+const configSelectOptions = {
+  'nwmd': ['STA', 'AP'],
+  'irq_trig': ['up', 'down', 'both'],
+};
 
 // Fields with semicolon-separated parameters
 const multiParamFields = new Set(['boothook', 'timirqcbf', 'staessid', 'stapwd']);
@@ -35,6 +39,122 @@ const irqCallbackRegex = /^irq\d+_cbf$/;
 
 let configData = {};
 let changedValues = {};
+const selectedCategoryKey = 'micros.config.selectedCategory';
+
+function loadSelectedCategory() {
+  try {
+    return sessionStorage.getItem(selectedCategoryKey);
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveSelectedCategory(category) {
+  try {
+    sessionStorage.setItem(selectedCategoryKey, category);
+  } catch (_) {}
+}
+
+function isPasswordField(key) {
+  return /pwd|password/i.test(key);
+}
+
+function createPasswordToggle(input) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = 'Show';
+  button.style.width = '56px';
+  button.style.height = '32px';
+  button.style.padding = '0';
+  button.style.cursor = 'pointer';
+  button.style.flexShrink = '0';
+  button.onclick = () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    button.textContent = show ? 'Hide' : 'Show';
+  };
+  return button;
+}
+
+function appendInputWithPasswordToggle(wrapper, input, key) {
+  if (!isPasswordField(key)) {
+    wrapper.appendChild(input);
+    return;
+  }
+  const row = document.createElement('div');
+  row.style.display = 'flex';
+  row.style.alignItems = 'center';
+  row.style.gap = '8px';
+  row.style.width = '100%';
+  row.style.maxWidth = '350px';
+  input.style.flex = '1';
+  input.style.boxSizing = 'border-box';
+  input.style.minWidth = '0';
+  input.style.maxWidth = 'none';
+  row.appendChild(input);
+  row.appendChild(createPasswordToggle(input));
+  wrapper.appendChild(row);
+}
+
+function createBooleanToggle(key, value, onChange) {
+  const toggle = document.createElement('div');
+  toggle.className = 'config-toggle';
+  toggle.setAttribute('role', 'group');
+  toggle.setAttribute('aria-label', configLabelMap[key] || key);
+
+  const buttons = [];
+  const setValue = nextValue => {
+    buttons.forEach(([button, buttonValue]) => {
+      const selected = buttonValue === !!nextValue;
+      button.classList.toggle('selected', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+  };
+  const addButton = (label, buttonValue, className) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'config-toggle-option ' + className;
+    button.textContent = label;
+    button.onclick = () => {
+      setValue(buttonValue);
+      onChange(buttonValue);
+    };
+    toggle.appendChild(button);
+    buttons.push([button, buttonValue]);
+  };
+
+  addButton('Off', false, 'config-toggle-off');
+  addButton('On', true, 'config-toggle-on');
+  setValue(value);
+  return toggle;
+}
+
+function createSelectInput(key, value) {
+  const select = document.createElement('select');
+  getSelectOptions(key).forEach(option => {
+    const opt = document.createElement('option');
+    opt.value = option;
+    opt.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+    select.appendChild(opt);
+  });
+  select.value = value;
+  select.onchange = () => trackChange(key, select.value);
+  return select;
+}
+
+function getSelectOptions(key) {
+  return configSelectOptions[key] || (key.match(/^irq\d+_trig$/) ? configSelectOptions.irq_trig : null);
+}
+
+function hasUnsavedChanges() {
+  return Object.keys(changedValues).length > 0;
+}
+
+function updateSaveButtonState() {
+  document.querySelectorAll('.config-save-button').forEach(button => {
+    button.disabled = !hasUnsavedChanges();
+  });
+}
 
 // Helper: Check if field supports multi-parameters
 function isMultiParamField(key) {
@@ -72,19 +192,6 @@ function loadConfig(report = true) {
     .catch(e => show('Load failed: ' + e.message));
 }
 
-function updateConfig(key, value) {
-  return fetch('/config', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ [key]: value })
-  })
-  .then(r => r.json())
-  .then(data => {
-    console.log('Update response:', data);
-  })
-  .catch(e => show('Update failed: ' + e.message));
-}
-
 function handleUpdateConfig() {
   if (Object.keys(changedValues).length === 0) {
     alert('No changes to save');
@@ -98,7 +205,14 @@ function handleUpdateConfig() {
   .then(r => r.json())
   .then(data => {
     console.log('Update response:', data);
+    if (!data || data.state !== true) {
+      const detail = data && data.result ? data.result : 'Unknown error';
+      const failed = data && Array.isArray(data.failed) ? ` (${data.failed.join(', ')})` : '';
+      alert('Update failed: ' + detail + failed);
+      return;
+    }
     changedValues = {};
+    updateSaveButtonState();
     alert('Configuration updated successfully');
   })
   .catch(e => {
@@ -122,6 +236,7 @@ function addMenuListeners() {
       setSelectedMenuItem(item);
       closeMobileMenu();
       const key = item.textContent;
+      saveSelectedCategory(key);
       if (key === 'Packages') {
         renderPackagesSection();
         return;
@@ -170,11 +285,10 @@ function isEditableConfigSection(sectionKey) {
 function renderSaveButton(container) {
   const button = document.createElement('button');
   button.type = 'button';
+  button.className = 'config-save-button';
   button.textContent = '💾 Save';
-  button.style.margin = '0';
-  button.style.padding = '8px 16px';
-  button.style.alignSelf = 'center';
   button.onclick = () => handleUpdateConfig();
+  button.disabled = !hasUnsavedChanges();
   return button;
 }
 
@@ -200,11 +314,12 @@ function renderConfigFields(data, sectionKey = '') {
     container.appendChild(headerRow);
   }
 
-  // Check if this is the Interrupts section
-  if (Object.keys(data).some(key => key.startsWith('irq'))) {
+  if (sectionKey === 'Pin-mapping') {
+    renderPinMappingSection(data, container);
+  } else if (Object.keys(data).some(key => key.startsWith('irq'))) {
     renderInterruptFields(data, container);
   } else {
-    renderDefaultFields(data, container);
+    renderDefaultFields(data, container, sectionKey);
   }
 }
 
@@ -241,18 +356,26 @@ function renderTaskSection() {
 }
 
 function renderTaskGroup(container, title, tasks, showActionButtons) {
+  const actions = [{label: 'Details', handler: handleTaskDetails}];
+  if (showActionButtons) {
+    actions.unshift({label: 'Kill', handler: handleTaskKill});
+  }
+  renderActionList(container, title, tasks, actions);
+}
+
+function renderActionList(container, title, items, actions) {
   const section = document.createElement('section');
   section.style.marginBottom = '24px';
 
-  const titleEl = document.createElement('h3');
-  titleEl.textContent = `${title} (${tasks.length})`;
-  titleEl.style.marginBottom = '12px';
-  section.appendChild(titleEl);
+  if (title) {
+    const titleEl = document.createElement('h3');
+    titleEl.textContent = `${title} (${items.length})`;
+    titleEl.style.marginBottom = '12px';
+    section.appendChild(titleEl);
+  }
 
-  if (tasks.length === 0) {
-    const empty = document.createElement('div');
-    empty.textContent = 'None';
-    section.appendChild(empty);
+  if (items.length === 0) {
+    section.appendChild(document.createTextNode('None'));
     container.appendChild(section);
     return;
   }
@@ -260,90 +383,89 @@ function renderTaskGroup(container, title, tasks, showActionButtons) {
   const list = document.createElement('div');
   list.style.display = 'grid';
   list.style.gap = '8px';
-
-  tasks.forEach(tag => {
-    const row = document.createElement('div');
-    row.style.display = 'flex';
-    row.style.alignItems = 'center';
-    row.style.justifyContent = 'space-between';
-    row.style.padding = '10px';
-    row.style.border = '1px solid #4B376C';
-    row.style.borderRadius = '6px';
-    row.style.backgroundColor = '#1F1433';
-
-    const label = document.createElement('span');
-    label.textContent = tag;
-    label.style.flex = '1';
-    row.appendChild(label);
-
-    const actions = document.createElement('div');
-    actions.style.display = 'flex';
-    actions.style.alignItems = 'center';
-    actions.style.gap = '8px';
-
-    if (showActionButtons) {
-      const killButton = document.createElement('button');
-      killButton.textContent = 'Kill';
-      killButton.onclick = () => handleTaskKill(tag, row);
-      actions.appendChild(killButton);
-    }
-
-    const detailsButton = document.createElement('button');
-    detailsButton.textContent = 'Details';
-    detailsButton.onclick = () => handleTaskDetails(tag, row);
-    actions.appendChild(detailsButton);
-
-    row.appendChild(actions);
-    list.appendChild(row);
-  });
-
+  items.forEach(item => renderActionRow(list, item, actions));
   section.appendChild(list);
   container.appendChild(section);
 }
 
-function handleTaskKill(tag, rowElement) {
-  const statusEl = getOrCreateTaskStatus(rowElement);
-  statusEl.textContent = 'Killing...';
+function renderActionRow(container, labelText, actions) {
+  const row = document.createElement('div');
+  row.style.padding = '10px';
+  row.style.border = '1px solid #4B376C';
+  row.style.borderRadius = '6px';
+  row.style.backgroundColor = '#1F1433';
+
+  const header = document.createElement('div');
+  header.style.display = 'flex';
+  header.style.alignItems = 'center';
+  header.style.justifyContent = 'space-between';
+  header.style.gap = '8px';
+
+  const label = document.createElement('span');
+  label.textContent = labelText;
+  label.style.flex = '1';
+  header.appendChild(label);
+
+  const details = document.createElement('pre');
+  details.style.display = 'none';
+  details.style.marginTop = '8px';
+
+  actions.forEach(action => {
+    const button = document.createElement('button');
+    button.textContent = action.label;
+    button.onclick = () => action.handler(labelText, details, button);
+    header.appendChild(button);
+  });
+
+  row.appendChild(header);
+  row.appendChild(details);
+  container.appendChild(row);
+}
+
+function setInlineDetails(details, text) {
+  details.textContent = text;
+  details.style.display = 'block';
+}
+
+function styleGroupBox(element, padding = '12px') {
+  element.style.border = '1px solid #4B376C';
+  element.style.borderRadius = '6px';
+  element.style.padding = padding;
+  element.style.backgroundColor = '#1F1433';
+}
+
+function handleTaskKill(tag, details) {
+  setInlineDetails(details, 'Killing...');
   restAPI(`task/kill/${encodeURIComponent(tag)}`, false)
     .then(response => {
       if (response && response.state) {
-        statusEl.textContent = `Killed: ${JSON.stringify(response.result)}`;
+        setInlineDetails(details, `Killed: ${JSON.stringify(response.result)}`);
       } else {
-        statusEl.textContent = `Kill failed: ${JSON.stringify(response)}`;
+        setInlineDetails(details, `Kill failed: ${JSON.stringify(response)}`);
       }
     })
     .catch(error => {
-      statusEl.textContent = 'Kill error: ' + error.message;
+      setInlineDetails(details, 'Kill error: ' + error.message);
     });
 }
 
-function handleTaskDetails(tag, rowElement) {
-  const statusEl = getOrCreateTaskStatus(rowElement);
-  statusEl.textContent = 'Loading details...';
+function handleTaskDetails(tag, details) {
+  if (details.textContent && details.textContent !== 'Loading details...') {
+    details.style.display = details.style.display === 'none' ? 'block' : 'none';
+    return;
+  }
+  setInlineDetails(details, 'Loading details...');
   restAPI(`task/show/${encodeURIComponent(tag)}`, false)
     .then(response => {
       if (response && response.hasOwnProperty('result')) {
-        statusEl.textContent = `${response.result} (${response.state === false ? 'state=false' : 'state=true'})`;
+        setInlineDetails(details, `${response.result} (${response.state === false ? 'state=false' : 'state=true'})`);
       } else {
-        statusEl.textContent = `No detail response: ${JSON.stringify(response)}`;
+        setInlineDetails(details, `No detail response: ${JSON.stringify(response)}`);
       }
     })
     .catch(error => {
-      statusEl.textContent = 'Details error: ' + error.message;
+      setInlineDetails(details, 'Details error: ' + error.message);
     });
-}
-
-function getOrCreateTaskStatus(rowElement) {
-  let statusEl = rowElement.querySelector('.task-status');
-  if (!statusEl) {
-    statusEl = document.createElement('div');
-    statusEl.className = 'task-status';
-    statusEl.style.marginLeft = '12px';
-    statusEl.style.fontSize = '0.9rem';
-    statusEl.style.opacity = '0.9';
-    rowElement.appendChild(statusEl);
-  }
-  return statusEl;
 }
 
 function makeError(message) {
@@ -411,11 +533,14 @@ function renderPackagesSection() {
   const pkgSection = document.createElement('section');
   const pkgHeader = document.createElement('div');
   pkgHeader.style.display = 'flex';
-  pkgHeader.style.justifyContent = 'space-between';
   pkgHeader.style.alignItems = 'center';
+  pkgHeader.style.gap = '8px';
+  pkgHeader.style.padding = '0 10px';
+  pkgHeader.style.boxSizing = 'border-box';
   const title = document.createElement('h3');
   title.textContent = 'Packages';
   title.style.margin = '0';
+  title.style.flex = '1';
   pkgHeader.appendChild(title);
   const refreshBtn = document.createElement('button');
   refreshBtn.textContent = 'Refresh';
@@ -437,54 +562,328 @@ function renderPackagesSection() {
 function refreshPackagesList() {
   const list = document.getElementById('packagesList');
   if (!list) return;
-  list.innerHTML = 'Loading...';
+  list.textContent = 'Loading...';
   restAPI('pacman/inspect', false)
     .then(resp => {
-      list.innerHTML = '';
+      list.textContent = '';
       if (!resp || !resp.hasOwnProperty('result')) {
         list.textContent = 'No packages';
         return;
       }
-      const items = resp.result || [];
+      const items = normalizePackageList(resp.result);
       if (Array.isArray(items) && items.length === 0) {
         list.textContent = 'No packages installed.';
         return;
       }
       if (Array.isArray(items)) {
-        items.forEach(pkg => {
-          const row = document.createElement('div');
-          row.style.padding = '8px';
-          row.style.border = '1px solid #4B376C';
-          row.style.borderRadius = '6px';
-          row.style.marginBottom = '6px';
-          row.textContent = typeof pkg === 'string' ? pkg : JSON.stringify(pkg);
-          list.appendChild(row);
-        });
+        renderActionList(list, '', items.map(pkg => typeof pkg === 'string' ? pkg : JSON.stringify(pkg)), [
+          {label: 'Details', handler: loadPackageDetails}
+        ]);
         return;
       }
       if (typeof items === 'object') {
-        Object.keys(items).forEach(k => {
-          const row = document.createElement('div');
-          row.style.padding = '8px';
-          row.style.border = '1px solid #4B376C';
-          row.style.borderRadius = '6px';
-          row.style.marginBottom = '6px';
-          row.textContent = `${k}: ${JSON.stringify(items[k])}`;
-          list.appendChild(row);
-        });
+        renderActionList(list, '', Object.keys(items), [
+          {label: 'Details', handler: loadPackageDetails}
+        ]);
         return;
       }
       list.textContent = JSON.stringify(items);
     })
     .catch(err => {
-      list.innerHTML = 'Failed to load packages: ' + err.message;
+      list.textContent = 'Failed to load packages: ' + err.message;
     });
 }
 
-function renderDefaultFields(data, container) {
+function normalizePackageList(result) {
+  if (Array.isArray(result)) return result;
+  if (typeof result !== 'string') return result || [];
+  try {
+    const jsonList = JSON.parse(result.replace(/'/g, '"'));
+    if (Array.isArray(jsonList)) return jsonList;
+  } catch (_) {}
+  return result.split('\n').map(item => item.trim()).filter(item => item);
+}
+
+function loadPackageDetails(packageName, details, button) {
+  if (details.textContent) {
+    details.style.display = details.style.display === 'none' ? 'block' : 'none';
+    return;
+  }
+  button.disabled = true;
+  button.textContent = 'Loading...';
+  restAPI('pacman/inspect/"' + packageName + '"', false, 10000)
+    .then(resp => {
+      setInlineDetails(details, formatPackageDetails(resp && resp.result));
+    })
+    .catch(err => {
+      setInlineDetails(details, 'Failed to load details: ' + err.message);
+    })
+    .finally(() => {
+      button.disabled = false;
+      button.textContent = 'Details';
+    });
+}
+
+function formatPackageDetails(result) {
+  if (typeof result !== 'string') {
+    return JSON.stringify(result, null, 2);
+  }
+  try {
+    return JSON.stringify(JSON.parse(result), null, 2);
+  } catch (_) {
+    return result;
+  }
+}
+
+function renderPinMappingSection(data, container) {
+  renderDefaultFields(data, container);
+  const input = container.querySelector('input[type="text"]');
+  const select = document.createElement('select');
+  select.disabled = true;
+  select.appendChild(new Option('Loading known maps...', ''));
+  if (input) {
+    input.parentNode.appendChild(select);
+  }
+
+  const infoSection = document.createElement('section');
+  infoSection.style.marginTop = '20px';
+
+  const title = document.createElement('h3');
+  title.textContent = 'Runtime Pin Map';
+  title.style.marginBottom = '8px';
+  infoSection.appendChild(title);
+
+  const status = document.createElement('div');
+  status.textContent = 'Loading pin map...';
+  infoSection.appendChild(status);
+  container.appendChild(infoSection);
+
+  restAPI('system/pinmap', false, 10000)
+    .then(response => {
+      status.remove();
+      if (!response || !response.result || response.state === false) {
+        infoSection.appendChild(makeError('Unable to load pin map.'));
+        return;
+      }
+      populatePinMapSelector(select, input, response.result.known_maps || []);
+      renderPinMapInfo(infoSection, response.result);
+    })
+    .catch(error => {
+      status.remove();
+      infoSection.appendChild(makeError('Failed to load pin map: ' + error.message));
+    });
+}
+
+function populatePinMapSelector(select, input, knownMaps) {
+  if (!select || !input) return;
+  select.innerHTML = '';
+  select.appendChild(new Option('Select known map...', ''));
+  knownMaps.forEach(mapName => {
+    select.appendChild(new Option(mapName, mapName));
+  });
+  select.disabled = knownMaps.length === 0;
+  const selectedMap = getPinMapName(input.value);
+  select.value = knownMaps.includes(selectedMap) ? selectedMap : '';
+  select.onchange = () => {
+    if (!select.value) return;
+    input.value = mergePinMapName(input.value, select.value);
+    trackChange('cstmpmap', input.value);
+  };
+}
+
+function getPinMapName(value) {
+  const firstPart = (value || '').split(';')[0].trim();
+  return firstPart && !firstPart.includes(':') ? firstPart : '';
+}
+
+function mergePinMapName(value, mapName) {
+  const parts = (value || '').split(';').map(part => part.trim()).filter(part => part);
+  const customPins = parts[0] && !parts[0].includes(':') ? parts.slice(1) : parts;
+  return [mapName].concat(customPins).join('; ');
+}
+
+function renderPinMapInfo(container, pinmap) {
+  renderKeyValueTable(container, 'Active Map', {'map': pinmap.map || 'n/a'});
+  renderKeyValueTable(container, 'Custom Pins', pinmap.custom || {});
+  renderKeyValueTable(container, 'Booked Pins', pinmap.booked || {});
+}
+
+function renderKeyValueTable(container, titleText, data) {
+  const section = document.createElement('section');
+  section.style.marginBottom = '16px';
+  const title = document.createElement('h4');
+  title.textContent = titleText;
+  title.style.marginBottom = '6px';
+  section.appendChild(title);
+  container.appendChild(section);
+  const entries = Object.entries(data);
+  if (entries.length === 0) {
+    section.appendChild(document.createTextNode('None'));
+    return;
+  }
+  const table = document.createElement('table');
+  table.style.borderCollapse = 'collapse';
+  table.style.width = '100%';
+  table.style.maxWidth = '720px';
+  entries.forEach(([key, value]) => {
+    const row = document.createElement('tr');
+    [key, String(value)].forEach(text => {
+      const cell = document.createElement('td');
+      cell.textContent = text;
+      cell.style.border = '1px solid #4B376C';
+      cell.style.padding = '6px 8px';
+      row.appendChild(cell);
+    });
+    table.appendChild(row);
+  });
+  section.appendChild(table);
+}
+
+function renderDefaultFields(data, container, sectionKey = '') {
   Object.entries(data).forEach(([key, value]) => {
+    if (sectionKey === 'Network' && key === 'staessid' && data.hasOwnProperty('stapwd')) {
+      renderWifiCredentialPairs(container, data.staessid, data.stapwd);
+      return;
+    }
+    if (sectionKey === 'Network' && key === 'stapwd' && data.hasOwnProperty('staessid')) {
+      return;
+    }
     renderField(container, key, value);
   });
+}
+
+function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
+  const wrapper = document.createElement('div');
+  wrapper.style.marginBottom = '12px';
+
+  const label = document.createElement('label');
+  label.textContent = 'WiFi Networks: ';
+  label.style.fontWeight = 'bold';
+  label.style.display = 'block';
+  label.style.marginBottom = '8px';
+  wrapper.appendChild(label);
+
+  const pairContainer = document.createElement('div');
+  pairContainer.style.display = 'flex';
+  pairContainer.style.flexDirection = 'column';
+  pairContainer.style.gap = '8px';
+
+  const addButton = document.createElement('button');
+  addButton.textContent = '+';
+  addButton.style.width = '40px';
+  addButton.style.height = '32px';
+  addButton.style.padding = '0';
+  addButton.style.cursor = 'pointer';
+  addButton.onclick = () => {
+    if (addButton.disabled) return;
+    createWifiCredentialPair(pairContainer, '', '', addButton, -1);
+    updateWifiCredentialTrack(pairContainer, addButton);
+  };
+
+  const ssids = parseSemicolonValues(ssidValue);
+  const passwords = parseSemicolonValues(passwordValue);
+  const count = Math.max(ssids.length, passwords.length, 1);
+  for (let idx = 0; idx < count; idx++) {
+    createWifiCredentialPair(pairContainer, ssids[idx] || '', passwords[idx] || '', addButton, count);
+  }
+
+  updateWifiCredentialAddButton(pairContainer, addButton);
+  wrapper.appendChild(pairContainer);
+  container.appendChild(wrapper);
+}
+
+function createWifiCredentialPair(container, ssid, password, addButton, totalCount) {
+  const row = document.createElement('div');
+  row.className = 'wifi-pair-row';
+  row.style.display = 'flex';
+  row.style.alignItems = 'flex-end';
+  row.style.gap = '8px';
+  row.style.flexWrap = 'wrap';
+
+  const ssidWrap = document.createElement('div');
+  ssidWrap.style.display = 'flex';
+  ssidWrap.style.flexDirection = 'column';
+  ssidWrap.style.width = '100%';
+  ssidWrap.style.maxWidth = '350px';
+  const ssidLabel = document.createElement('label');
+  ssidLabel.textContent = 'WiFi SSID:';
+  const ssidInput = document.createElement('input');
+  ssidInput.type = 'text';
+  ssidInput.value = ssid;
+  ssidInput.dataset.wifiSsid = 'true';
+  ssidInput.oninput = () => updateWifiCredentialTrack(container, addButton);
+  ssidWrap.appendChild(ssidLabel);
+  ssidWrap.appendChild(ssidInput);
+  row.appendChild(ssidWrap);
+
+  const pwdWrap = document.createElement('div');
+  pwdWrap.style.display = 'flex';
+  pwdWrap.style.flexDirection = 'column';
+  pwdWrap.style.width = '100%';
+  pwdWrap.style.maxWidth = '350px';
+  const pwdLabel = document.createElement('label');
+  pwdLabel.textContent = 'WiFi Password:';
+  const pwdInput = document.createElement('input');
+  pwdInput.type = 'password';
+  pwdInput.value = password;
+  pwdInput.dataset.wifiPassword = 'true';
+  pwdInput.oninput = () => updateWifiCredentialTrack(container, addButton);
+  pwdWrap.appendChild(pwdLabel);
+  appendInputWithPasswordToggle(pwdWrap, pwdInput, 'stapwd');
+  row.appendChild(pwdWrap);
+
+  const existingRows = container.querySelectorAll('.wifi-pair-row');
+  if (existingRows.length > 0 || totalCount > 1 || totalCount === -1) {
+    const delButton = document.createElement('button');
+    delButton.textContent = '−';
+    delButton.style.width = '40px';
+    delButton.style.height = '32px';
+    delButton.style.cursor = 'pointer';
+    delButton.style.color = '#ff8b8b';
+    delButton.onclick = () => {
+      if (container.querySelectorAll('.wifi-pair-row').length <= 1) {
+        ssidInput.value = '';
+        pwdInput.value = '';
+        updateWifiCredentialTrack(container, addButton);
+        return;
+      }
+      row.remove();
+      moveWifiAddButtonToLastRow(container, addButton);
+      updateWifiCredentialTrack(container, addButton);
+    };
+    row.appendChild(delButton);
+  }
+
+  container.appendChild(row);
+  moveWifiAddButtonToLastRow(container, addButton);
+  updateWifiCredentialAddButton(container, addButton);
+}
+
+function moveWifiAddButtonToLastRow(container, addButton) {
+  const rows = Array.from(container.querySelectorAll('.wifi-pair-row'));
+  if (rows.length > 0) {
+    rows[rows.length - 1].appendChild(addButton);
+  }
+}
+
+function updateWifiCredentialAddButton(container, addButton) {
+  const rows = Array.from(container.querySelectorAll('.wifi-pair-row'));
+  const lastRow = rows[rows.length - 1];
+  const ssidInput = lastRow ? lastRow.querySelector('input[data-wifi-ssid]') : null;
+  const pwdInput = lastRow ? lastRow.querySelector('input[data-wifi-password]') : null;
+  const enabled = !!(ssidInput && pwdInput && ssidInput.value.trim() && pwdInput.value.trim());
+  addButton.disabled = !enabled;
+  addButton.style.opacity = enabled ? '1' : '0.5';
+}
+
+function updateWifiCredentialTrack(container, addButton) {
+  const pairs = Array.from(container.querySelectorAll('.wifi-pair-row')).map(row => ({
+    ssid: row.querySelector('input[data-wifi-ssid]').value.trim(),
+    password: row.querySelector('input[data-wifi-password]').value.trim()
+  })).filter(pair => pair.ssid && pair.password);
+  trackChange('staessid', joinSemicolonValues(pairs.map(pair => pair.ssid)));
+  trackChange('stapwd', joinSemicolonValues(pairs.map(pair => pair.password)));
+  updateWifiCredentialAddButton(container, addButton);
 }
 
 function renderField(container, key, value) {
@@ -509,18 +908,17 @@ function renderField(container, key, value) {
 
   let input;
   if (typeof value === 'boolean') {
-    input = document.createElement('input');
-    input.type = 'checkbox';
-    input.checked = value;
-    input.onchange = () => trackChange(key, input.checked);
+    input = createBooleanToggle(key, value, nextValue => trackChange(key, nextValue));
   } else if (typeof value === 'number') {
     input = document.createElement('input');
     input.type = 'number';
     input.value = value;
     input.onchange = () => trackChange(key, Number(input.value));
+  } else if (getSelectOptions(key)) {
+    input = createSelectInput(key, value);
   } else if (typeof value === 'string') {
     input = document.createElement('input');
-    input.type = 'text';
+    input.type = isPasswordField(key) ? 'password' : 'text';
     input.value = value;
     input.onchange = () => trackChange(key, input.value);
   } else {
@@ -529,7 +927,7 @@ function renderField(container, key, value) {
   }
 
   wrapper.appendChild(label);
-  wrapper.appendChild(input);
+  appendInputWithPasswordToggle(wrapper, input, key);
   container.appendChild(wrapper);
 }
 
@@ -560,7 +958,7 @@ function renderMultiParamField(container, key, value) {
   addButton.style.cursor = 'pointer';
   addButton.onclick = () => {
     if (addButton.disabled) return;
-    createParamInput(inputContainer, key, '', inputContainer.querySelectorAll('input[type="text"]').length, -1, addButton);
+    createParamInput(inputContainer, key, '', inputContainer.querySelectorAll('input[data-param-input]').length, -1, addButton);
     updateMultiParamTrack(inputContainer, key);
   };
 
@@ -572,7 +970,7 @@ function renderMultiParamField(container, key, value) {
     createParamInput(inputContainer, key, val, idx, values.length, addButton);
   });
 
-  updateRowAddButtonState(inputContainer, addButton, 'input[type="text"]');
+  updateRowAddButtonState(inputContainer, addButton, 'input[data-param-input]');
   wrapper.appendChild(inputContainer);
   container.appendChild(wrapper);
 }
@@ -585,18 +983,19 @@ function createParamInput(container, key, value, idx, totalCount, addButton) {
   inputWrapper.className = 'param-row';
 
   const input = document.createElement('input');
-  input.type = 'text';
+  input.type = isPasswordField(key) ? 'password' : 'text';
   input.value = value;
   input.style.flex = '1';
   input.style.boxSizing = 'border-box';
   input.placeholder = `Parameter ${idx + 1}`;
+  input.dataset.paramInput = 'true';
   input.onchange = () => updateMultiParamTrack(container.closest('[data-type="multi-param"]') || container, key);
   input.oninput = () => updateMultiParamTrack(container.closest('[data-type="multi-param"]') || container, key);
 
-  inputWrapper.appendChild(input);
+  appendInputWithPasswordToggle(inputWrapper, input, key);
 
   // Add delete button if more than one field exists
-  const currentInputs = container.querySelectorAll('input[type="text"]');
+  const currentInputs = container.querySelectorAll('input[data-param-input]');
   if (currentInputs.length > 0 || totalCount > 1 || totalCount === -1) {
     const delButton = document.createElement('button');
     delButton.textContent = '−';
@@ -614,7 +1013,7 @@ function createParamInput(container, key, value, idx, totalCount, addButton) {
 
   container.appendChild(inputWrapper);
   moveAddButtonToLastRow(container, addButton);
-  updateRowAddButtonState(container, addButton, 'input[type="text"]');
+  updateRowAddButtonState(container, addButton, 'input[data-param-input]');
 }
 
 function moveAddButtonToLastRow(container, addButton) {
@@ -641,13 +1040,13 @@ function updateRowAddButtonState(container, addButton, inputSelector) {
 }
 
 function updateMultiParamTrack(container, key) {
-  const inputs = container.querySelectorAll('input[type="text"]');
+  const inputs = container.querySelectorAll('input[data-param-input]');
   const values = Array.from(inputs).map(input => input.value.trim()).filter(v => v.length > 0);
   const result = joinSemicolonValues(values);
   trackChange(key, result);
   const addButton = container.querySelector('.multi-param-add');
   if (addButton) {
-    updateRowAddButtonState(container, addButton, 'input[type="text"]');
+    updateRowAddButtonState(container, addButton, 'input[data-param-input]');
   }
 }
 
@@ -677,6 +1076,7 @@ function renderCrontaskField(container, key, value) {
   // Add button for new block
   const addBlockButton = document.createElement('button');
   addBlockButton.textContent = '+ Add Schedule';
+  addBlockButton.className = 'schedule-add';
   addBlockButton.style.width = '100%';
   addBlockButton.style.padding = '8px';
   addBlockButton.style.cursor = 'pointer';
@@ -691,23 +1091,21 @@ function renderCrontaskField(container, key, value) {
 }
 
 function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
-  const blockWrapper = document.createElement('div');
-  blockWrapper.style.border = '1px solid #4B376C';
-  blockWrapper.style.borderRadius = '6px';
-  blockWrapper.style.padding = '20px';
-  blockWrapper.style.backgroundColor = '#1F1433';
+  const blockWrapper = document.createElement('fieldset');
+  styleGroupBox(blockWrapper, '20px');
   blockWrapper.dataset.blockIndex = blockIdx;
+
+  const legend = document.createElement('legend');
+  legend.textContent = `Schedule ${blockIdx + 1}`;
+  legend.style.fontWeight = 'bold';
+  legend.style.fontSize = '1.1rem';
+  blockWrapper.appendChild(legend);
 
   const blockHeader = document.createElement('div');
   blockHeader.style.display = 'flex';
-  blockHeader.style.justifyContent = 'space-between';
+  blockHeader.style.justifyContent = 'flex-end';
   blockHeader.style.alignItems = 'center';
   blockHeader.style.marginBottom = '12px';
-
-  const blockTitle = document.createElement('span');
-  blockTitle.textContent = `Schedule ${blockIdx + 1}`;
-  blockTitle.style.fontWeight = 'bold';
-  blockHeader.appendChild(blockTitle);
 
   if (totalBlocks > 1 || totalBlocks === -1) {
     const delBlockButton = document.createElement('button');
@@ -788,8 +1186,8 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
   blockWrapper.appendChild(fnWrapper);
 
   // Insert before the add button
-  const addBlockButton = container.querySelector('button:last-child');
-  if (addBlockButton && addBlockButton.textContent.includes('Add Schedule')) {
+  const addBlockButton = container.querySelector('.schedule-add');
+  if (addBlockButton) {
     container.insertBefore(blockWrapper, addBlockButton);
   } else {
     container.appendChild(blockWrapper);
@@ -926,9 +1324,7 @@ function renderInterruptFields(data, container) {
 function renderTimerInterruptGroup(container, groupData) {
   const groupWrapper = document.createElement('fieldset');
   groupWrapper.style.marginBottom = '20px';
-  groupWrapper.style.padding = '12px';
-  groupWrapper.style.border = '1px solid #4B376C';
-  groupWrapper.style.borderRadius = '4px';
+  styleGroupBox(groupWrapper);
 
   const legend = document.createElement('legend');
   legend.textContent = 'Timer Interrupt';
@@ -943,10 +1339,7 @@ function renderTimerInterruptGroup(container, groupData) {
     const label = document.createElement('label');
     label.textContent = 'Enable: ';
     label.style.fontWeight = 'bold';
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.checked = groupData['timirq'];
-    input.onchange = () => trackChange('timirq', input.checked);
+    const input = createBooleanToggle('timirq', groupData['timirq'], nextValue => trackChange('timirq', nextValue));
     wrapper.appendChild(label);
     wrapper.appendChild(input);
     groupWrapper.appendChild(wrapper);
@@ -990,9 +1383,7 @@ function renderTimerInterruptGroup(container, groupData) {
 function renderInterruptGroup(container, irqNum, groupData) {
   const groupWrapper = document.createElement('fieldset');
   groupWrapper.style.marginBottom = '20px';
-  groupWrapper.style.padding = '12px';
-  groupWrapper.style.border = '1px solid #4B376C';
-  groupWrapper.style.borderRadius = '4px';
+  styleGroupBox(groupWrapper);
 
   const legend = document.createElement('legend');
   legend.textContent = `Interrupt ${irqNum}`;
@@ -1012,10 +1403,7 @@ function renderInterruptGroup(container, irqNum, groupData) {
     const label = document.createElement('label');
     label.textContent = 'Enable: ';
     label.style.fontWeight = 'bold';
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.checked = groupData[enableKey];
-    input.onchange = () => trackChange(enableKey, input.checked);
+    const input = createBooleanToggle(enableKey, groupData[enableKey], nextValue => trackChange(enableKey, nextValue));
     wrapper.appendChild(label);
     wrapper.appendChild(input);
     groupWrapper.appendChild(wrapper);
@@ -1034,17 +1422,9 @@ function renderInterruptGroup(container, irqNum, groupData) {
     label.textContent = 'Trigger Mode: ';
     label.style.fontWeight = 'bold';
     label.style.display = 'block';
-    const select = document.createElement('select');
-    select.value = groupData[trigKey];
-    ['up', 'down', 'both'].forEach(option => {
-      const opt = document.createElement('option');
-      opt.value = option;
-      opt.textContent = option.charAt(0).toUpperCase() + option.slice(1);
-      select.appendChild(opt);
-    });
+    const select = createSelectInput(trigKey, groupData[trigKey]);
     select.style.width = '100%';
     select.style.boxSizing = 'border-box';
-    select.onchange = () => trackChange(trigKey, select.value);
     wrapper.appendChild(label);
     wrapper.appendChild(select);
     groupWrapper.appendChild(wrapper);
@@ -1054,7 +1434,12 @@ function renderInterruptGroup(container, irqNum, groupData) {
 }
 
 function trackChange(key, value) {
-  changedValues[key] = value;
+  if (configData[key] === value) {
+    delete changedValues[key];
+  } else {
+    changedValues[key] = value;
+  }
+  updateSaveButtonState();
   console.log('Tracked change:', key, '=', value);
   console.log('All changes:', changedValues);
 }
@@ -1072,10 +1457,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toggle) {
       toggle.addEventListener('click', toggleMenu);
     }
-    // Optionally, show the first section by default
-    const firstMenuItem = document.querySelector('#configMenu p');
-    if (firstMenuItem) {
-      firstMenuItem.click();
+    const selectedCategory = loadSelectedCategory();
+    const menuItems = Array.from(document.querySelectorAll('#configMenu p'));
+    const menuItem = menuItems.find(item => item.textContent === selectedCategory) || menuItems[0];
+    if (menuItem) {
+      menuItem.click();
     }
   });
 });

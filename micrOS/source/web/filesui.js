@@ -4,6 +4,7 @@ const selectedDirKey = 'micros.files.selectedDir';
 let selectedDir = loadSelectedDir(); // session fallback: user_data
 let _editorScriptLoaded = false;
 let editorFile = null;             // 🔹 track what's currently opened in editor
+const folders = document.getElementById('folders');
 
 function loadSelectedDir() {
   try {
@@ -66,6 +67,27 @@ function clearSelection() {
   selectedEl = null;
 }
 
+function itemRow(cls, name, meta) {
+  const d = document.createElement('div');
+  const nameEl = document.createElement('span');
+  const metaEl = document.createElement('span');
+  d.className = cls;
+  nameEl.className = 'item-name';
+  metaEl.className = 'item-meta';
+  nameEl.textContent = name;
+  metaEl.textContent = meta;
+  d.appendChild(nameEl);
+  d.appendChild(metaEl);
+  return d;
+}
+
+function sizeText(bytes) {
+  const mb = bytes >> 20;
+  const kb = (bytes >> 10) & 1023;
+  const b = bytes & 1023;
+  return ((mb ? mb + 'Mb ' : '') + (kb ? kb + 'Kb ' : '') + (b ? b + 'B' : '')).trim() || '0B';
+}
+
 function load() {
   console.info('load.loadDirs');
 
@@ -109,9 +131,7 @@ function loadFiles() {
        // 🔹 Files listing
        files.forEach(f => {
          const name = f.path.split('/').pop();
-         const d = document.createElement('div');
-         d.className = 'file-item';
-         d.textContent = `${name} ${f.size}B`;
+         const d = itemRow('file-item', name, sizeText(f.size));
 
          d.onclick = (e) => {
            e.stopPropagation();
@@ -152,10 +172,11 @@ function loadDirs() {
       if (!Array.isArray(dirs) || !dirs.length) return;
 
       dirs.forEach(dir => {
-        const normalized = dir.replace(/^\/+/, '');
-        const d = document.createElement('div');
-        d.className = 'dir-item';
-        d.textContent = normalized;
+        const path = typeof dir === 'string' ? dir : dir[0];
+        const access = typeof dir === 'string' ? 'r' : dir[1];
+        const normalized = path.replace(/^\/+/, '');
+        const d = itemRow('dir-item', normalized, access || 'r');
+        d.dataset.path = normalized;
 
         d.onclick = () => {
           document
@@ -164,6 +185,7 @@ function loadDirs() {
 
           d.className = 'dir-item sel';
           rememberDir(normalized);
+          if (window.innerWidth <= 768 && window.innerHeight > window.innerWidth) folders.classList.remove('open');
           console.info('dirChange.loadFiles:', selectedDir);
           loadFiles();
         };
@@ -186,7 +208,7 @@ function loadDirs() {
         !container.querySelector('.dir-item.sel') &&
         container.firstChild
       ) {
-        rememberDir(container.firstChild.textContent);
+        rememberDir(container.firstChild.dataset.path);
         container.firstChild.classList.add('sel');
       }
     })
@@ -204,13 +226,15 @@ async function uploadFile(fileToUpload) {
   const totalChunks = Math.max(1, Math.ceil(f.size / chunkSize));
 
   const fd = new FormData();
-  const targetPath = `${selectedDir}/${f.name}`;
+  const targetPath = f.name.includes('/') || f.name[0] === '$'
+    ? f.name.replace(/^\/+/, '')
+    : `${selectedDir}/${f.name}`;
 
   for (let i = 0; i < totalChunks; i++) {
     const start = i * chunkSize;
     const end = Math.min(f.size, start + chunkSize);
     const chunk = f.slice(start, end);
-    fd.append(`chunk_${i + 1}`, chunk, f.name);
+    fd.append(`chunk_${i + 1}`, chunk, targetPath);
   }
   console.info("Uploading (multipart chunked):", targetPath);
   try {
@@ -363,4 +387,5 @@ document.addEventListener('click', (e) => {
   }
 });
 
+document.getElementById('menuToggle').onclick = () => folders.classList.toggle('open');
 load();

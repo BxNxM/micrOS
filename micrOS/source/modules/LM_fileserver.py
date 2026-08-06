@@ -221,8 +221,11 @@ def get_shared_dirs() -> list:
     - default: /web/Shared.ROOT_DIR
     - extended: web_mounts()
     """
-    web_dirs = list([a for a, p in web_mounts().items() if p is not None])
-    web_dirs.insert(0, Shared.ROOT_DIR.replace(web_dir(), ""))
+    web_dirs = [
+        (a, "rw" if Shared.MOUNTS_WRITE_ACCESS.get(a, False) else "r")
+        for a, p in web_mounts().items() if p is not None
+    ]
+    web_dirs.insert(0, (Shared.ROOT_DIR.replace(web_dir(), ""), "rw"))
     return web_dirs
 
 

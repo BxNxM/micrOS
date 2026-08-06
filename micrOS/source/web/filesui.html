@@ -10,6 +10,9 @@
 
   <!-- Files UI layout-only CSS -->
   <style>
+    body {
+      min-height: calc(100vh - 32px);
+    }
     /* Main layout */
     #ui {
       display: flex;
@@ -76,6 +79,17 @@
     #top input[type="file"] {
       max-width: 100%;
     }
+    #menuToggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 8px;
+      font-size: 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
     /* Scrollable file list ONLY */
     #list {
       flex: 1;
@@ -107,10 +121,34 @@
       gap: 5px;
     }
     /* Folder item padding + touch-friendly */
+    #list > .file-item,
+    #folder-path .dir-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
     #folder-path .dir-item {
       padding: 5px 6px; /*makes them easier to tap*/
       border-radius: 3px;
       cursor: pointer;
+    }
+    .item-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .item-meta {
+      flex-shrink: 0;
+      min-width: 20px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(255,255,255,.14);
+      color: rgba(255,255,255,.75);
+      font-size: 10px;
+      line-height: 1.3;
+      text-align: center;
     }
     /* Hover effect for folders */
     #folder-path .dir-item:hover {
@@ -132,11 +170,33 @@
       pointer-events: none; /* prevents clicking while loading */
       transition: filter 0.15s ease, opacity 0.15s ease;
      }
+    @media (orientation: portrait) and (max-width: 768px) {
+      #menuToggle {
+        display: inline-flex;
+      }
+      #folders {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(80vw, 280px);
+        padding: 56px 8px 16px 8px;
+        box-sizing: border-box;
+        transform: translateX(-110%);
+        transition: transform 0.2s ease;
+        z-index: 1000;
+        background: rgba(33, 24, 79, 0.96);
+      }
+      #folders.open {
+        transform: translateX(0);
+      }
+    }
   </style>
 </head>
 
 <body>
   <h1> micrOS Files </h1>
+  <button id="menuToggle" type="button" aria-label="Toggle folders">☰</button>
 
   <div id="ui">
     <!-- Left sidebar (fixed, no scroll) -->

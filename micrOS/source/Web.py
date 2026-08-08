@@ -47,15 +47,25 @@ def url_path_resolve(path:str) -> tuple[bool, str]:
     return False, path_join(OSPath.WEB, path)
 
 
+def _rest_decode(value):
+    """Restore supported REST symbol encodings."""
+    decode_map = (
+        ('%22', '"'), ('%E2%80%9C', '"'), ('%E2%80%9D', '"'),
+        ('%27', "'"), ('%23', '#'), ('%3D', '='), ('%3E', '>'), ('%26', '&'),
+        ('%2F', '/'), ('%5C', '\\'), ('%20', ' '), ('%3F', '?'), ('%25', '%')
+    )
+
+    for encoded, char in decode_map:
+        value = value.replace(encoded, char)
+    return value
+
+
 def _parse_rest_cmd(cmd:str) -> list[str]:
     """Split REST command tokens while preserving quoted values as single arguments."""
     if not cmd:
         return []
 
-    decoded = (cmd.replace("%3E", ">")
-               .replace('%22', '"')
-               .replace('%E2%80%9C', '"')
-               .replace('%E2%80%9D', '"'))
+    decoded = _rest_decode(cmd)
 
     tokens = []
     index = 0
@@ -65,9 +75,12 @@ def _parse_rest_cmd(cmd:str) -> list[str]:
             if end == -1:
                 tokens.append(decoded[index:].strip())
                 break
-            quoted_value = decoded[index:end + 1]
+            quoted_value = '"' + decoded[index + 1:end] + '"'
             if quoted_value:
-                tokens.append(quoted_value)
+                if tokens and tokens[-1].endswith('='):
+                    tokens[-1] += quoted_value
+                else:
+                    tokens.append(quoted_value)
             index = end + 1
             continue
 
@@ -76,9 +89,7 @@ def _parse_rest_cmd(cmd:str) -> list[str]:
             index += 1
         segment = decoded[start:index]
         if segment:
-            segment = (segment.replace('/', ' ')
-                      .replace('-', ' ')
-                      .strip())
+            segment = segment.replace('/', ' ').strip()
             if segment:
                 tokens.extend(token for token in segment.split() if token)
     return tokens

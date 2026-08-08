@@ -30,6 +30,16 @@ const configSelectOptions = {
   'nwmd': ['STA', 'AP'],
   'irq_trig': ['up', 'down', 'both'],
 };
+const categoryIconMap = {
+  'Device': '📟',
+  'Network': '📡',
+  'Web': '🌐',
+  'Scheduler': '⏰',
+  'Interrupts': '⚡',
+  'Pin-mapping': '📍',
+  'Tasks': '✓',
+  'Packages': '📦',
+};
 
 // Fields with semicolon-separated parameters
 const multiParamFields = new Set(['boothook', 'timirqcbf', 'staessid', 'stapwd']);
@@ -40,6 +50,10 @@ const irqCallbackRegex = /^irq\d+_cbf$/;
 let configData = {};
 let changedValues = {};
 const selectedCategoryKey = 'micros.config.selectedCategory';
+const restEncodeMap = {
+  '"': '%5Cx22', "'": '%27', '#': '%23', '=': '%3D', '>': '%3E', '&': '%26',
+  '/': '%2F', '\\': '%5C%5C', ' ': '%20', '?': '%3F', '%': '%25'
+};
 
 function loadSelectedCategory() {
   try {
@@ -59,15 +73,38 @@ function isPasswordField(key) {
   return /pwd|password/i.test(key);
 }
 
-function createPasswordToggle(input) {
-  const button = document.createElement('button');
+function textElement(tag, text, className = '') {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  if (className) element.className = className;
+  return element;
+}
+
+function makeButton(label, onClick = null, className = '') {
+  const button = textElement('button', label, className);
   button.type = 'button';
-  button.textContent = 'Show';
-  button.style.width = '56px';
-  button.style.height = '32px';
-  button.style.padding = '0';
-  button.style.cursor = 'pointer';
-  button.style.flexShrink = '0';
+  if (onClick) button.onclick = onClick;
+  return button;
+}
+
+function categoryTitle(category) {
+  return (categoryIconMap[category] ? categoryIconMap[category] + ' ' : '') + category;
+}
+
+function categoryKeyFromMenuItem(item) {
+  return item.dataset.category || item.textContent;
+}
+
+function decorateCategoryMenu() {
+  document.querySelectorAll('#configMenu p').forEach(item => {
+    const category = categoryKeyFromMenuItem(item);
+    item.dataset.category = category;
+    item.textContent = categoryTitle(category);
+  });
+}
+
+function createPasswordToggle(input) {
+  const button = makeButton('Show', null, 'config-password-toggle');
   button.onclick = () => {
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
@@ -82,15 +119,7 @@ function appendInputWithPasswordToggle(wrapper, input, key) {
     return;
   }
   const row = document.createElement('div');
-  row.style.display = 'flex';
-  row.style.alignItems = 'center';
-  row.style.gap = '8px';
-  row.style.width = '100%';
-  row.style.maxWidth = '350px';
-  input.style.flex = '1';
-  input.style.boxSizing = 'border-box';
-  input.style.minWidth = '0';
-  input.style.maxWidth = 'none';
+  row.className = 'config-input-row';
   row.appendChild(input);
   row.appendChild(createPasswordToggle(input));
   wrapper.appendChild(row);
@@ -111,10 +140,7 @@ function createBooleanToggle(key, value, onChange) {
     });
   };
   const addButton = (label, buttonValue, className) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'config-toggle-option ' + className;
-    button.textContent = label;
+    const button = makeButton(label, null, 'config-toggle-option ' + className);
     button.onclick = () => {
       setValue(buttonValue);
       onChange(buttonValue);
@@ -132,10 +158,7 @@ function createBooleanToggle(key, value, onChange) {
 function createSelectInput(key, value) {
   const select = document.createElement('select');
   getSelectOptions(key).forEach(option => {
-    const opt = document.createElement('option');
-    opt.value = option;
-    opt.textContent = option.charAt(0).toUpperCase() + option.slice(1);
-    select.appendChild(opt);
+    select.appendChild(new Option(option.charAt(0).toUpperCase() + option.slice(1), option));
   });
   select.value = value;
   select.onchange = () => trackChange(key, select.value);
@@ -167,10 +190,35 @@ function parseSemicolonValues(value) {
   return value.split(';').map(v => v.trim()).filter(v => v.length > 0);
 }
 
-// Helper: Parse crontasks (double semicolon for blocks, single for functions)
+/** Select scheduler block separator using the same fallback as Scheduler.py. */
+function crontaskSeparator(value) {
+  return value && String(value).includes(';;') ? ';;' : ';';
+}
+
+/** Split scheduler config into timestamp blocks. */
 function parseCrontasks(value) {
   if (!value || typeof value !== 'string') return [];
-  return value.split(';;').map(block => block.trim()).filter(b => b.length > 0);
+  if (crontaskSeparator(value) === ';;') {
+    return value.split(';;').map(block => block.trim()).filter(b => b.length > 0);
+  }
+  return parseSemicolonValues(value).reduce((blocks, part) => {
+    if (blocks.length && !part.includes('!')) {
+      blocks[blocks.length - 1] += ';' + part;
+    } else {
+      blocks.push(part);
+    }
+    return blocks;
+  }, []);
+}
+
+/** Split scheduler command list when multiple commands are present. */
+function parseCrontaskFunctions(value, advancedMode) {
+  if (!value || typeof value !== 'string') return [];
+  if (advancedMode || value.includes(';')) {
+    return parseSemicolonValues(value);
+  }
+  const singleCommand = value.trim();
+  return singleCommand ? [singleCommand] : [];
 }
 
 // Helper: Join semicolon values
@@ -178,9 +226,11 @@ function joinSemicolonValues(values) {
   return values.filter(v => v && v.trim().length > 0).join('; ');
 }
 
-// Helper: Join crontask blocks
+/** Serialize scheduler blocks with canonical double-semicolon separators. */
 function joinCrontasks(blocks) {
-  return blocks.filter(b => b && b.trim().length > 0).join('; ');
+  const cleanBlocks = blocks.filter(b => b && b.trim().length > 0);
+  const cmdStart = cleanBlocks.length === 1 ? cleanBlocks[0].indexOf('!') : -1;
+  return cleanBlocks.join(';;') + (cmdStart >= 0 && cleanBlocks[0].slice(cmdStart).includes(';') ? ';;' : '');
 }
 
 function loadConfig(report = true) {
@@ -232,10 +282,10 @@ function addMenuListeners() {
   const menuItems = document.querySelectorAll('#configMenu p');
   menuItems.forEach(item => {
     item.addEventListener('click', () => {
-      console.log('Clicked menu item:', item.textContent);
+      const key = categoryKeyFromMenuItem(item);
+      console.log('Clicked menu item:', key);
       setSelectedMenuItem(item);
       closeMobileMenu();
-      const key = item.textContent;
       saveSelectedCategory(key);
       if (key === 'Packages') {
         renderPackagesSection();
@@ -283,11 +333,7 @@ function isEditableConfigSection(sectionKey) {
 }
 
 function renderSaveButton(container) {
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'config-save-button';
-  button.textContent = '💾 Save';
-  button.onclick = () => handleUpdateConfig();
+  const button = makeButton('💾 Save', () => handleUpdateConfig(), 'config-save-button');
   button.disabled = !hasUnsavedChanges();
   return button;
 }
@@ -298,16 +344,9 @@ function renderConfigFields(data, sectionKey = '') {
 
   if (isEditableConfigSection(sectionKey)) {
     const headerRow = document.createElement('div');
-    headerRow.style.display = 'flex';
-    headerRow.style.flexDirection = 'row';
-    headerRow.style.alignItems = 'center';
-    headerRow.style.justifyContent = 'flex-start';
-    headerRow.style.gap = '12px';
-    headerRow.style.marginBottom = '8px';
+    headerRow.className = 'config-header-row';
 
-    const heading = document.createElement('h2');
-    heading.textContent = sectionKey;
-    heading.style.margin = '0';
+    const heading = textElement('h2', categoryTitle(sectionKey), 'config-heading');
     headerRow.appendChild(heading);
 
     headerRow.appendChild(renderSaveButton(container));
@@ -326,13 +365,10 @@ function renderConfigFields(data, sectionKey = '') {
 function renderTaskSection() {
   const container = document.getElementById('configFields');
   container.innerHTML = '';
-  const heading = document.createElement('h2');
-  heading.textContent = 'Tasks';
-  heading.style.marginTop = '0';
+  const heading = textElement('h2', categoryTitle('Tasks'), 'config-heading-top');
   container.appendChild(heading);
 
-  const loading = document.createElement('div');
-  loading.textContent = 'Loading task list...';
+  const loading = textElement('div', 'Loading task list...');
   container.appendChild(loading);
 
   restAPI('task/list', false)
@@ -358,19 +394,23 @@ function renderTaskSection() {
 function renderTaskGroup(container, title, tasks, showActionButtons) {
   const actions = [{label: 'Details', handler: handleTaskDetails}];
   if (showActionButtons) {
-    actions.unshift({label: 'Kill', handler: handleTaskKill});
+    actions.push({label: 'Kill', handler: handleTaskKill, className: 'danger-button', disabled: isProtectedTask});
+  } else {
+    actions.push({label: 'Del', handler: handleTaskKill, className: 'danger-button'});
   }
   renderActionList(container, title, tasks, actions);
 }
 
+function isProtectedTask(tag) {
+  return ['server', 'idle'].includes(String(tag).split('.')[0]);
+}
+
 function renderActionList(container, title, items, actions) {
   const section = document.createElement('section');
-  section.style.marginBottom = '24px';
+  section.className = 'config-action-section config-section-gap-large';
 
   if (title) {
-    const titleEl = document.createElement('h3');
-    titleEl.textContent = `${title} (${items.length})`;
-    titleEl.style.marginBottom = '12px';
+    const titleEl = textElement('h3', `${title} (${items.length})`);
     section.appendChild(titleEl);
   }
 
@@ -381,8 +421,7 @@ function renderActionList(container, title, items, actions) {
   }
 
   const list = document.createElement('div');
-  list.style.display = 'grid';
-  list.style.gap = '8px';
+  list.className = 'config-action-list';
   items.forEach(item => renderActionRow(list, item, actions));
   section.appendChild(list);
   container.appendChild(section);
@@ -390,36 +429,44 @@ function renderActionList(container, title, items, actions) {
 
 function renderActionRow(container, labelText, actions) {
   const row = document.createElement('div');
-  row.style.padding = '10px';
-  row.style.border = '1px solid #4B376C';
-  row.style.borderRadius = '6px';
-  row.style.backgroundColor = '#1F1433';
+  row.className = 'config-action-row';
 
   const header = document.createElement('div');
-  header.style.display = 'flex';
-  header.style.alignItems = 'center';
-  header.style.justifyContent = 'space-between';
-  header.style.gap = '8px';
+  header.className = 'config-action-header';
 
-  const label = document.createElement('span');
-  label.textContent = labelText;
-  label.style.flex = '1';
+  const label = textElement('span', labelText, 'config-action-label');
   header.appendChild(label);
 
-  const details = document.createElement('pre');
-  details.style.display = 'none';
-  details.style.marginTop = '8px';
+  const actionGroup = document.createElement('div');
+  actionGroup.className = 'config-button-group';
+
+  const actionPanels = document.createElement('div');
 
   actions.forEach(action => {
-    const button = document.createElement('button');
-    button.textContent = action.label;
-    button.onclick = () => action.handler(labelText, details, button);
-    header.appendChild(button);
+    const button = makeButton(action.label, null, action.className || '');
+    if (action.disabled && action.disabled(labelText)) {
+      button.disabled = true;
+      button.title = 'System task cannot be killed';
+    }
+    const output = createInlineOutput();
+    button.onclick = () => {
+      if (button.disabled) return;
+      action.handler(labelText, output, button);
+    };
+    actionGroup.appendChild(button);
+    actionPanels.appendChild(output);
   });
+  header.appendChild(actionGroup);
 
   row.appendChild(header);
-  row.appendChild(details);
+  row.appendChild(actionPanels);
   container.appendChild(row);
+}
+
+function createInlineOutput() {
+  const output = document.createElement('pre');
+  output.className = 'config-inline-output';
+  return output;
 }
 
 function setInlineDetails(details, text) {
@@ -427,38 +474,44 @@ function setInlineDetails(details, text) {
   details.style.display = 'block';
 }
 
-function styleGroupBox(element, padding = '12px') {
-  element.style.border = '1px solid #4B376C';
-  element.style.borderRadius = '6px';
-  element.style.padding = padding;
-  element.style.backgroundColor = '#1F1433';
+function setTemporaryInlineDetails(details, text, timeout = 5000, onHide = null) {
+  if (details.hideTimer) {
+    clearTimeout(details.hideTimer);
+  }
+  setInlineDetails(details, text);
+  details.hideTimer = setTimeout(() => {
+    details.textContent = '';
+    details.style.display = 'none';
+    details.hideTimer = null;
+    if (onHide) {
+      onHide();
+    }
+  }, timeout);
 }
 
-function handleTaskKill(tag, details) {
-  setInlineDetails(details, 'Killing...');
-  restAPI(`task/kill/${encodeURIComponent(tag)}`, false)
-    .then(response => {
-      if (response && response.state) {
-        setInlineDetails(details, `Killed: ${JSON.stringify(response.result)}`);
-      } else {
-        setInlineDetails(details, `Kill failed: ${JSON.stringify(response)}`);
-      }
-    })
-    .catch(error => {
-      setInlineDetails(details, 'Kill error: ' + error.message);
-    });
+function styleGroupBox(element, padding = '12px') {
+  element.classList.add('config-box');
+  element.style.padding = padding;
+}
+
+function handleTaskKill(tag, details, button) {
+  runCommandAction(details, button, button.textContent, `task/kill/${encodeURIComponent(tag)}`, 'Task response', renderTaskSection);
 }
 
 function handleTaskDetails(tag, details) {
-  if (details.textContent && details.textContent !== 'Loading details...') {
-    details.style.display = details.style.display === 'none' ? 'block' : 'none';
+  if (details.style.display !== 'none' && details.textContent) {
+    details.style.display = 'none';
     return;
   }
   setInlineDetails(details, 'Loading details...');
   restAPI(`task/show/${encodeURIComponent(tag)}`, false)
     .then(response => {
       if (response && response.hasOwnProperty('result')) {
-        setInlineDetails(details, `${response.result} (${response.state === false ? 'state=false' : 'state=true'})`);
+        if (response.state === false) {
+          setInlineDetails(details, `Details failed:\n${formatResponseBody(response)}`);
+        } else {
+          setInlineDetails(details, formatResponseBody(response.result));
+        }
       } else {
         setInlineDetails(details, `No detail response: ${JSON.stringify(response)}`);
       }
@@ -469,85 +522,86 @@ function handleTaskDetails(tag, details) {
 }
 
 function makeError(message) {
-  const err = document.createElement('div');
-  err.style.color = '#ff8b8b';
-  err.style.fontWeight = 'bold';
-  err.textContent = message;
-  return err;
+  return textElement('div', message, 'config-error');
+}
+
+function setButtonBusy(button, label) {
+  button.disabled = true;
+  button.textContent = label;
+}
+
+function resetButton(button, label) {
+  button.disabled = false;
+  button.textContent = label;
 }
 
 // Packages UI: install and inspect
 function renderPackagesSection() {
   const container = document.getElementById('configFields');
   container.innerHTML = '';
-  const heading = document.createElement('h2');
-  heading.textContent = 'Packages';
-  heading.style.marginTop = '0';
+  const heading = textElement('h2', categoryTitle('Packages'), 'config-heading-top');
   container.appendChild(heading);
 
   // Install block
   const installSection = document.createElement('section');
-  installSection.style.marginBottom = '16px';
-  const installLabel = document.createElement('label');
-  installLabel.textContent = 'Install Package (URL or name):';
-  installLabel.style.fontWeight = 'bold';
+  installSection.className = 'config-section-gap';
+  const installLabel = textElement('label', 'Install Package (URL or Package ref):', 'config-label-block');
   installSection.appendChild(installLabel);
 
   const input = document.createElement('input');
   input.type = 'text';
-  input.placeholder = 'e.g. umqtt.simple or https://...';
+  input.placeholder = 'e.g. github:BxNxM/micrOSPackages/async_oledui';
   input.id = 'packageUrlInput';
-  input.style.width = '100%';
-  input.style.boxSizing = 'border-box';
   input.style.margin = '8px 0';
   installSection.appendChild(input);
 
-  const installBtn = document.createElement('button');
-  installBtn.textContent = 'Install';
-  installBtn.onclick = () => {
+  const installResult = createInlineOutput();
+
+  const installBtn = makeButton('Install', () => {
     const url = input.value.trim();
     if (!url) {
-      alert('Enter package URL or name');
+      alert('Enter package URL or Package ref');
       return;
     }
-    installBtn.disabled = true;
-    installBtn.textContent = 'Installing...';
-    // encode the URL so slashes and other characters are preserved
-    restAPI('pacman/install/"' + url + '"', false)
+    setButtonBusy(installBtn, 'Installing...');
+    setInlineDetails(installResult, `Install Package (URL or Package ref): ${url}\n\nInstalling...`);
+    restAPI('pacman/install/' + restQuote(url), false)
       .then(resp => {
-        alert('Install response: ' + JSON.stringify(resp));
-        installBtn.disabled = false;
-        installBtn.textContent = 'Install';
+        setInlineDetails(installResult, formatInstallResponse(url, resp));
         refreshPackagesList();
       })
       .catch(err => {
-        alert('Install failed: ' + err.message);
-        installBtn.disabled = false;
-        installBtn.textContent = 'Install';
+        setInlineDetails(installResult, `Install Package (URL or Package ref): ${url}\n\nInstall failed:\n${err.message}`);
+      })
+      .finally(() => {
+        resetButton(installBtn, 'Install');
       });
-  };
+  });
   installSection.appendChild(installBtn);
+
+  const packageTools = document.createElement('div');
+  packageTools.className = 'config-package-tools';
+
+  const catalogBtn = makeButton('Catalog', () => {
+    window.open('https://github.com/BxNxM/micrOSPackages/tree/main', '_blank', 'noopener,noreferrer');
+  });
+  packageTools.appendChild(catalogBtn);
+
+  const refreshBtn = makeButton('Refresh', () => {
+    refreshPackagesList();
+  });
+  packageTools.appendChild(refreshBtn);
+
+  installSection.appendChild(packageTools);
+  installSection.appendChild(installResult);
   container.appendChild(installSection);
 
   // Packages list block
   const pkgSection = document.createElement('section');
   const pkgHeader = document.createElement('div');
-  pkgHeader.style.display = 'flex';
-  pkgHeader.style.alignItems = 'center';
-  pkgHeader.style.gap = '8px';
-  pkgHeader.style.padding = '0 10px';
-  pkgHeader.style.boxSizing = 'border-box';
-  const title = document.createElement('h3');
-  title.textContent = 'Packages';
-  title.style.margin = '0';
-  title.style.flex = '1';
+  pkgHeader.className = 'config-package-header';
+  const title = textElement('h3', 'Packages', 'config-package-title');
   pkgHeader.appendChild(title);
-  const refreshBtn = document.createElement('button');
-  refreshBtn.textContent = 'Refresh';
-  refreshBtn.onclick = () => {
-    refreshPackagesList();
-  };
-  pkgHeader.appendChild(refreshBtn);
   pkgSection.appendChild(pkgHeader);
 
   const list = document.createElement('div');
@@ -576,15 +630,11 @@ function refreshPackagesList() {
         return;
       }
       if (Array.isArray(items)) {
-        renderActionList(list, '', items.map(pkg => typeof pkg === 'string' ? pkg : JSON.stringify(pkg)), [
-          {label: 'Details', handler: loadPackageDetails}
-        ]);
+        renderActionList(list, '', items.map(pkg => typeof pkg === 'string' ? pkg : JSON.stringify(pkg)), getPackageActions());
         return;
       }
       if (typeof items === 'object') {
-        renderActionList(list, '', Object.keys(items), [
-          {label: 'Details', handler: loadPackageDetails}
-        ]);
+        renderActionList(list, '', Object.keys(items), getPackageActions());
         return;
       }
       list.textContent = JSON.stringify(items);
@@ -604,14 +654,53 @@ function normalizePackageList(result) {
   return result.split('\n').map(item => item.trim()).filter(item => item);
 }
 
+function formatResponseBody(result) {
+  return typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+}
+
+function formatInstallResponse(packageRef, resp) {
+  const header = `Install Package (URL or Package ref): ${packageRef}`;
+  if (!resp || resp.state !== true) {
+    const result = resp && resp.result !== undefined ? resp.result : 'No response';
+    return `${header}\n\nInstall response (NOK):\n${formatResponseBody(result)}`;
+  }
+  const result = resp.result !== undefined ? resp.result : resp;
+  return `${header}\n\nInstall response (OK):\n${formatResponseBody(result)}`;
+}
+
+function formatActionResponse(title, resp) {
+  const result = resp.result !== undefined ? resp.result : resp;
+  return `${title}:\n${formatResponseBody(result)}`;
+}
+
+function getPackageActions() {
+  return [
+    {label: 'Details', handler: loadPackageDetails},
+    {label: 'Update', handler: updatePackage},
+    {label: 'Delete', handler: deletePackage, className: 'danger-button'}
+  ];
+}
+
+function getAdminPassword() {
+  if (changedValues.hasOwnProperty('appwd')) {
+    return changedValues.appwd;
+  }
+  return configData.appwd || '';
+}
+
+/** Encode a value as one quoted REST argument for micrOS execution. */
+function restQuote(value) {
+  return '"' + String(value).replace(/["'#=>&/\\ ?%]/g, char => restEncodeMap[char]) + '"';
+}
+
 function loadPackageDetails(packageName, details, button) {
-  if (details.textContent) {
-    details.style.display = details.style.display === 'none' ? 'block' : 'none';
+  if (details.style.display !== 'none' && details.textContent) {
+    details.style.display = 'none';
     return;
   }
-  button.disabled = true;
-  button.textContent = 'Loading...';
-  restAPI('pacman/inspect/"' + packageName + '"', false, 10000)
+  setButtonBusy(button, 'Loading...');
+  setInlineDetails(details, 'Loading details...');
+  restAPI('pacman/inspect/' + restQuote(packageName), false, 10000)
     .then(resp => {
       setInlineDetails(details, formatPackageDetails(resp && resp.result));
     })
@@ -619,9 +708,55 @@ function loadPackageDetails(packageName, details, button) {
       setInlineDetails(details, 'Failed to load details: ' + err.message);
     })
     .finally(() => {
-      button.disabled = false;
-      button.textContent = 'Details';
+      resetButton(button, 'Details');
     });
+}
+
+function runCommandAction(details, button, actionName, command, doneTitle, onSuccessHide = null) {
+  setButtonBusy(button, actionName + '...');
+  setInlineDetails(details, actionName + '...');
+  restAPI(command, false, 20000)
+    .then(resp => {
+      if (!resp || resp.state !== true) {
+        setTemporaryInlineDetails(details, actionName + ' failed: ' + JSON.stringify(resp));
+        return;
+      }
+      setTemporaryInlineDetails(
+        details,
+        formatActionResponse(doneTitle, resp),
+        5000,
+        onSuccessHide
+      );
+    })
+    .catch(err => {
+      setTemporaryInlineDetails(details, actionName + ' error: ' + err.message);
+    })
+    .finally(() => {
+      resetButton(button, actionName);
+    });
+}
+
+function updatePackage(packageName, details, button) {
+  runCommandAction(details, button, 'Update', 'pacman/upgrade/' + restQuote(packageName), 'Update response');
+}
+
+function deletePackage(packageName, details, button) {
+  if (!confirm('Delete package "' + packageName + '"?')) {
+    return;
+  }
+  const appwd = getAdminPassword();
+  if (!appwd) {
+    setTemporaryInlineDetails(details, 'Delete failed: missing Admin Password / appwd');
+    return;
+  }
+  runCommandAction(
+    details,
+    button,
+    'Delete',
+    'pacman/uninstall/' + restQuote(packageName) + '/pwd=' + restQuote(appwd),
+    'Delete response',
+    refreshPackagesList
+  );
 }
 
 function formatPackageDetails(result) {
@@ -646,15 +781,12 @@ function renderPinMappingSection(data, container) {
   }
 
   const infoSection = document.createElement('section');
-  infoSection.style.marginTop = '20px';
+  infoSection.className = 'config-pin-info';
 
-  const title = document.createElement('h3');
-  title.textContent = 'Runtime Pin Map';
-  title.style.marginBottom = '8px';
+  const title = textElement('h3', 'Runtime Pin Map', 'config-pin-title');
   infoSection.appendChild(title);
 
-  const status = document.createElement('div');
-  status.textContent = 'Loading pin map...';
+  const status = textElement('div', 'Loading pin map...');
   infoSection.appendChild(status);
   container.appendChild(infoSection);
 
@@ -710,10 +842,8 @@ function renderPinMapInfo(container, pinmap) {
 
 function renderKeyValueTable(container, titleText, data) {
   const section = document.createElement('section');
-  section.style.marginBottom = '16px';
-  const title = document.createElement('h4');
-  title.textContent = titleText;
-  title.style.marginBottom = '6px';
+  section.className = 'config-action-section config-section-gap';
+  const title = textElement('h4', titleText, 'config-table-title');
   section.appendChild(title);
   container.appendChild(section);
   const entries = Object.entries(data);
@@ -722,16 +852,11 @@ function renderKeyValueTable(container, titleText, data) {
     return;
   }
   const table = document.createElement('table');
-  table.style.borderCollapse = 'collapse';
-  table.style.width = '100%';
-  table.style.maxWidth = '720px';
+  table.className = 'config-table';
   entries.forEach(([key, value]) => {
     const row = document.createElement('tr');
     [key, String(value)].forEach(text => {
-      const cell = document.createElement('td');
-      cell.textContent = text;
-      cell.style.border = '1px solid #4B376C';
-      cell.style.padding = '6px 8px';
+      const cell = textElement('td', text);
       row.appendChild(cell);
     });
     table.appendChild(row);
@@ -754,31 +879,19 @@ function renderDefaultFields(data, container, sectionKey = '') {
 
 function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
   const wrapper = document.createElement('div');
-  wrapper.style.marginBottom = '12px';
+  wrapper.className = 'config-field-group';
 
-  const label = document.createElement('label');
-  label.textContent = 'WiFi Networks: ';
-  label.style.fontWeight = 'bold';
-  label.style.display = 'block';
-  label.style.marginBottom = '8px';
+  const label = textElement('label', 'WiFi Networks: ', 'config-label-block');
   wrapper.appendChild(label);
 
   const pairContainer = document.createElement('div');
-  pairContainer.style.display = 'flex';
-  pairContainer.style.flexDirection = 'column';
-  pairContainer.style.gap = '8px';
+  pairContainer.className = 'config-stack';
 
-  const addButton = document.createElement('button');
-  addButton.textContent = '+';
-  addButton.style.width = '40px';
-  addButton.style.height = '32px';
-  addButton.style.padding = '0';
-  addButton.style.cursor = 'pointer';
-  addButton.onclick = () => {
+  const addButton = makeButton('+', () => {
     if (addButton.disabled) return;
     createWifiCredentialPair(pairContainer, '', '', addButton, -1);
     updateWifiCredentialTrack(pairContainer, addButton);
-  };
+  }, 'config-icon-button config-add-button');
 
   const ssids = parseSemicolonValues(ssidValue);
   const passwords = parseSemicolonValues(passwordValue);
@@ -795,18 +908,10 @@ function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
 function createWifiCredentialPair(container, ssid, password, addButton, totalCount) {
   const row = document.createElement('div');
   row.className = 'wifi-pair-row';
-  row.style.display = 'flex';
-  row.style.alignItems = 'flex-end';
-  row.style.gap = '8px';
-  row.style.flexWrap = 'wrap';
 
   const ssidWrap = document.createElement('div');
-  ssidWrap.style.display = 'flex';
-  ssidWrap.style.flexDirection = 'column';
-  ssidWrap.style.width = '100%';
-  ssidWrap.style.maxWidth = '350px';
-  const ssidLabel = document.createElement('label');
-  ssidLabel.textContent = 'WiFi SSID:';
+  ssidWrap.className = 'wifi-field';
+  const ssidLabel = textElement('label', 'WiFi SSID:');
   const ssidInput = document.createElement('input');
   ssidInput.type = 'text';
   ssidInput.value = ssid;
@@ -817,12 +922,8 @@ function createWifiCredentialPair(container, ssid, password, addButton, totalCou
   row.appendChild(ssidWrap);
 
   const pwdWrap = document.createElement('div');
-  pwdWrap.style.display = 'flex';
-  pwdWrap.style.flexDirection = 'column';
-  pwdWrap.style.width = '100%';
-  pwdWrap.style.maxWidth = '350px';
-  const pwdLabel = document.createElement('label');
-  pwdLabel.textContent = 'WiFi Password:';
+  pwdWrap.className = 'wifi-field';
+  const pwdLabel = textElement('label', 'WiFi Password:');
   const pwdInput = document.createElement('input');
   pwdInput.type = 'password';
   pwdInput.value = password;
@@ -834,12 +935,7 @@ function createWifiCredentialPair(container, ssid, password, addButton, totalCou
 
   const existingRows = container.querySelectorAll('.wifi-pair-row');
   if (existingRows.length > 0 || totalCount > 1 || totalCount === -1) {
-    const delButton = document.createElement('button');
-    delButton.textContent = '−';
-    delButton.style.width = '40px';
-    delButton.style.height = '32px';
-    delButton.style.cursor = 'pointer';
-    delButton.style.color = '#ff8b8b';
+    const delButton = makeButton('−', null, 'config-icon-button config-remove-button');
     delButton.onclick = () => {
       if (container.querySelectorAll('.wifi-pair-row').length <= 1) {
         ssidInput.value = '';
@@ -898,13 +994,9 @@ function renderField(container, key, value) {
   }
 
   const wrapper = document.createElement('div');
-  wrapper.style.marginBottom = '12px';
-  wrapper.style.display = 'flex';
-  wrapper.style.flexDirection = 'column';
+  wrapper.className = 'config-field';
 
-  const label = document.createElement('label');
-  label.textContent = (configLabelMap[key] || key) + ': ';
-  label.style.fontWeight = 'bold';
+  const label = textElement('label', (configLabelMap[key] || key) + ': ', 'config-label');
 
   let input;
   if (typeof value === 'boolean') {
@@ -933,34 +1025,21 @@ function renderField(container, key, value) {
 
 function renderMultiParamField(container, key, value) {
   const wrapper = document.createElement('div');
-  wrapper.style.marginBottom = '12px';
+  wrapper.className = 'config-field-group';
 
-  const label = document.createElement('label');
-  label.textContent = (configLabelMap[key] || key) + ': ';
-  label.style.fontWeight = 'bold';
-  label.style.display = 'block';
-  label.style.marginBottom = '8px';
+  const label = textElement('label', (configLabelMap[key] || key) + ': ', 'config-label-block');
   wrapper.appendChild(label);
 
   const inputContainer = document.createElement('div');
-  inputContainer.style.display = 'flex';
-  inputContainer.style.flexDirection = 'column';
-  inputContainer.style.gap = '8px';
+  inputContainer.className = 'config-stack';
   inputContainer.dataset.key = key;
   inputContainer.dataset.type = 'multi-param';
 
-  const addButton = document.createElement('button');
-  addButton.textContent = '+';
-  addButton.className = 'multi-param-add';
-  addButton.style.width = '40px';
-  addButton.style.height = '32px';
-  addButton.style.padding = '0';
-  addButton.style.cursor = 'pointer';
-  addButton.onclick = () => {
+  const addButton = makeButton('+', () => {
     if (addButton.disabled) return;
     createParamInput(inputContainer, key, '', inputContainer.querySelectorAll('input[data-param-input]').length, -1, addButton);
     updateMultiParamTrack(inputContainer, key);
-  };
+  }, 'multi-param-add config-icon-button config-add-button');
 
   const values = parseSemicolonValues(value);
   if (values.length === 0) {
@@ -977,16 +1056,11 @@ function renderMultiParamField(container, key, value) {
 
 function createParamInput(container, key, value, idx, totalCount, addButton) {
   const inputWrapper = document.createElement('div');
-  inputWrapper.style.display = 'flex';
-  inputWrapper.style.alignItems = 'center';
-  inputWrapper.style.gap = '8px';
   inputWrapper.className = 'param-row';
 
   const input = document.createElement('input');
   input.type = isPasswordField(key) ? 'password' : 'text';
   input.value = value;
-  input.style.flex = '1';
-  input.style.boxSizing = 'border-box';
   input.placeholder = `Parameter ${idx + 1}`;
   input.dataset.paramInput = 'true';
   input.onchange = () => updateMultiParamTrack(container.closest('[data-type="multi-param"]') || container, key);
@@ -997,17 +1071,11 @@ function createParamInput(container, key, value, idx, totalCount, addButton) {
   // Add delete button if more than one field exists
   const currentInputs = container.querySelectorAll('input[data-param-input]');
   if (currentInputs.length > 0 || totalCount > 1 || totalCount === -1) {
-    const delButton = document.createElement('button');
-    delButton.textContent = '−';
-    delButton.style.width = '40px';
-    delButton.style.height = '32px';
-    delButton.style.cursor = 'pointer';
-    delButton.style.color = '#ff8b8b';
-    delButton.onclick = () => {
+    const delButton = makeButton('−', () => {
       inputWrapper.remove();
       moveAddButtonToLastRow(container, addButton);
       updateMultiParamTrack(container.closest('[data-type="multi-param"]') || container, key);
-    };
+    }, 'config-icon-button config-remove-button');
     inputWrapper.appendChild(delButton);
   }
 
@@ -1052,21 +1120,16 @@ function updateMultiParamTrack(container, key) {
 
 function renderCrontaskField(container, key, value) {
   const wrapper = document.createElement('div');
-  wrapper.style.marginBottom = '12px';
+  wrapper.className = 'config-field-group';
 
-  const label = document.createElement('label');
-  label.textContent = (configLabelMap[key] || key) + ': ';
-  label.style.fontWeight = 'bold';
-  label.style.display = 'block';
-  label.style.marginBottom = '8px';
+  const label = textElement('label', (configLabelMap[key] || key) + ': ', 'config-label-block');
   wrapper.appendChild(label);
 
   const blockContainer = document.createElement('div');
-  blockContainer.style.display = 'flex';
-  blockContainer.style.flexDirection = 'column';
-  blockContainer.style.gap = '16px';
+  blockContainer.className = 'config-stack config-stack-large';
   blockContainer.dataset.key = key;
   blockContainer.dataset.type = 'crontask';
+  blockContainer.dataset.blockSeparator = crontaskSeparator(value);
 
   const blocks = parseCrontasks(value);
   blocks.forEach((block, idx) => {
@@ -1074,16 +1137,10 @@ function renderCrontaskField(container, key, value) {
   });
 
   // Add button for new block
-  const addBlockButton = document.createElement('button');
-  addBlockButton.textContent = '+ Add Schedule';
-  addBlockButton.className = 'schedule-add';
-  addBlockButton.style.width = '100%';
-  addBlockButton.style.padding = '8px';
-  addBlockButton.style.cursor = 'pointer';
-  addBlockButton.onclick = () => {
+  const addBlockButton = makeButton('+ Add Schedule', () => {
     createCrontaskBlock(blockContainer, key, '', blockContainer.querySelectorAll('[data-block-index]').length, -1);
     updateCrontaskTrack(blockContainer, key);
-  };
+  }, 'schedule-add config-add-button');
   blockContainer.appendChild(addBlockButton);
 
   wrapper.appendChild(blockContainer);
@@ -1095,43 +1152,27 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
   styleGroupBox(blockWrapper, '20px');
   blockWrapper.dataset.blockIndex = blockIdx;
 
-  const legend = document.createElement('legend');
-  legend.textContent = `Schedule ${blockIdx + 1}`;
-  legend.style.fontWeight = 'bold';
-  legend.style.fontSize = '1.1rem';
+  const legend = textElement('legend', `Schedule ${blockIdx + 1}`, 'config-legend');
   blockWrapper.appendChild(legend);
 
   const blockHeader = document.createElement('div');
-  blockHeader.style.display = 'flex';
-  blockHeader.style.justifyContent = 'flex-end';
-  blockHeader.style.alignItems = 'center';
-  blockHeader.style.marginBottom = '12px';
+  blockHeader.className = 'config-block-header';
 
   if (totalBlocks > 1 || totalBlocks === -1) {
-    const delBlockButton = document.createElement('button');
-    delBlockButton.textContent = 'Remove';
-    delBlockButton.style.cursor = 'pointer';
-    delBlockButton.style.color = '#ff8b8b';
-    delBlockButton.onclick = () => {
+    const delBlockButton = makeButton('Remove', () => {
       blockWrapper.remove();
       updateCrontaskTrack(container.closest('[data-type="crontask"]') || container, key);
-    };
+    }, 'config-remove-button');
     blockHeader.appendChild(delBlockButton);
   }
   blockWrapper.appendChild(blockHeader);
 
   // Timestamp field
   const tsWrapper = document.createElement('div');
-  tsWrapper.style.marginBottom = '12px';
-  const tsLabel = document.createElement('label');
-  tsLabel.textContent = 'Time (WD:H:M:S or sunset/sunrise +/- offset): ';
-  tsLabel.style.fontWeight = 'bold';
-  tsLabel.style.display = 'block';
-  tsLabel.style.marginBottom = '4px';
+  tsWrapper.className = 'config-field-group';
+  const tsLabel = textElement('label', 'Time (WD:H:M:S or sunset/sunrise +/- offset): ', 'config-label-tight');
   const tsInput = document.createElement('input');
   tsInput.type = 'text';
-  tsInput.style.width = '100%';
-  tsInput.style.boxSizing = 'border-box';
   tsInput.dataset.field = 'timestamp';
 
   const blockParts = block.split('!');
@@ -1147,33 +1188,22 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
 
   // Functions field
   const fnWrapper = document.createElement('div');
-  fnWrapper.style.marginBottom = '8px';
-  const fnLabel = document.createElement('label');
-  fnLabel.textContent = 'Functions: ';
-  fnLabel.style.fontWeight = 'bold';
-  fnLabel.style.display = 'block';
-  fnLabel.style.marginBottom = '4px';
+  const fnLabel = textElement('label', 'Functions: ', 'config-label-tight');
   fnWrapper.appendChild(fnLabel);
 
   const fnContainer = document.createElement('div');
-  fnContainer.style.display = 'flex';
-  fnContainer.style.flexDirection = 'column';
-  fnContainer.style.gap = '8px';
+  fnContainer.className = 'config-stack';
   fnContainer.dataset.type = 'function-list';
 
-  const addFnButton = document.createElement('button');
-  addFnButton.textContent = '+';
-  addFnButton.style.width = '40px';
+  const addFnButton = makeButton('+', null, 'config-icon-button config-add-button');
   addFnButton.style.height = '40px';
-  addFnButton.style.padding = '0';
-  addFnButton.style.cursor = 'pointer';
   addFnButton.onclick = () => {
     if (addFnButton.disabled) return;
     createFunctionRow(fnContainer, key, blockWrapper, '', fnContainer.querySelectorAll('input[data-function-input]').length, -1, addFnButton);
     updateCrontaskTrack(container.closest('[data-type="crontask"]') || container, key);
   };
 
-  const functionValues = parseSemicolonValues(functionsStr);
+  const functionValues = parseCrontaskFunctions(functionsStr, container.dataset.blockSeparator === ';;');
   if (functionValues.length === 0) {
     functionValues.push('');
   }
@@ -1196,16 +1226,11 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
 
 function createFunctionRow(container, key, blockWrapper, value, idx, totalCount, addButton) {
   const row = document.createElement('div');
-  row.style.display = 'flex';
-  row.style.alignItems = 'center';
-  row.style.gap = '8px';
   row.className = 'function-row';
 
   const input = document.createElement('input');
   input.type = 'text';
   input.value = value;
-  input.style.flex = '1';
-  input.style.boxSizing = 'border-box';
   input.placeholder = `Function ${idx + 1}`;
   input.dataset.functionInput = 'true';
   input.onchange = () => {
@@ -1220,18 +1245,12 @@ function createFunctionRow(container, key, blockWrapper, value, idx, totalCount,
 
   const fnInputs = container.querySelectorAll('input[data-function-input]');
   if (fnInputs.length > 0 || totalCount > 1 || totalCount === -1) {
-    const delButton = document.createElement('button');
-    delButton.textContent = '−';
-    delButton.style.width = '40px';
-    delButton.style.height = '32px';
-    delButton.style.cursor = 'pointer';
-    delButton.style.color = '#ff8b8b';
-    delButton.onclick = () => {
+    const delButton = makeButton('−', () => {
       row.remove();
       moveFunctionAddButtonToLastRow(container, addButton);
       updateRowAddButtonState(container, addButton, 'input[data-function-input]');
       updateCrontaskTrack(blockWrapper.closest('[data-type="crontask"]') || blockWrapper, key);
-    };
+    }, 'config-icon-button config-remove-button');
     row.appendChild(delButton);
   }
 
@@ -1245,9 +1264,6 @@ function moveFunctionAddButtonToLastRow(container, addButton) {
   const rows = Array.from(container.children).filter(child => child.classList && child.classList.contains('function-row'));
   if (rows.length === 0) {
     const placeholder = document.createElement('div');
-    placeholder.style.display = 'flex';
-    placeholder.style.alignItems = 'center';
-    placeholder.style.gap = '8px';
     placeholder.className = 'function-row';
     container.appendChild(placeholder);
     placeholder.appendChild(addButton);
@@ -1262,14 +1278,16 @@ function updateCrontaskTrack(container, key) {
     const tsInput = block.querySelector('input[data-field="timestamp"]');
     const fnInputs = block.querySelectorAll('input[data-function-input]');
     const timestamp = tsInput ? tsInput.value.trim() : '';
-    const functions = Array.from(fnInputs).map(input => input.value.trim()).filter(v => v.length > 0).join('; ');
+    const functionValues = Array.from(fnInputs).map(input => input.value.trim()).filter(v => v.length > 0);
+    const functions = functionValues.join(';');
 
     if (!timestamp) return '';
     if (!functions) return timestamp;
     return `${timestamp}!${functions}`;
   }).filter(b => b.length > 0);
 
-  const result = blockStrings.join(';;');
+  container.dataset.blockSeparator = ';;';
+  const result = joinCrontasks(blockStrings);
   trackChange(key, result);
 }
 
@@ -1323,22 +1341,17 @@ function renderInterruptFields(data, container) {
 
 function renderTimerInterruptGroup(container, groupData) {
   const groupWrapper = document.createElement('fieldset');
-  groupWrapper.style.marginBottom = '20px';
+  groupWrapper.className = 'config-fieldset';
   styleGroupBox(groupWrapper);
 
-  const legend = document.createElement('legend');
-  legend.textContent = 'Timer Interrupt';
-  legend.style.fontWeight = 'bold';
-  legend.style.fontSize = '1.1rem';
+  const legend = textElement('legend', 'Timer Interrupt', 'config-legend');
   groupWrapper.appendChild(legend);
 
   // Enable checkbox
   if ('timirq' in groupData) {
     const wrapper = document.createElement('div');
-    wrapper.style.marginBottom = '12px';
-    const label = document.createElement('label');
-    label.textContent = 'Enable: ';
-    label.style.fontWeight = 'bold';
+    wrapper.className = 'config-field-group';
+    const label = textElement('label', 'Enable: ', 'config-label');
     const input = createBooleanToggle('timirq', groupData['timirq'], nextValue => trackChange('timirq', nextValue));
     wrapper.appendChild(label);
     wrapper.appendChild(input);
@@ -1353,23 +1366,15 @@ function renderTimerInterruptGroup(container, groupData) {
   // Interval input with ms label
   if ('timirqseq' in groupData) {
     const wrapper = document.createElement('div');
-    wrapper.style.marginBottom = '12px';
-    const label = document.createElement('label');
-    label.textContent = 'Interval: ';
-    label.style.fontWeight = 'bold';
-    label.style.display = 'block';
+    wrapper.className = 'config-field-group';
+    const label = textElement('label', 'Interval: ', 'config-label-block');
     const inputWrapper = document.createElement('div');
-    inputWrapper.style.display = 'flex';
-    inputWrapper.style.alignItems = 'center';
-    inputWrapper.style.gap = '6px';
+    inputWrapper.className = 'config-input-row';
     const input = document.createElement('input');
     input.type = 'number';
     input.value = groupData['timirqseq'];
-    input.style.flex = '1';
     input.onchange = () => trackChange('timirqseq', Number(input.value));
-    const unit = document.createElement('span');
-    unit.textContent = 'ms';
-    unit.style.fontWeight = 'bold';
+    const unit = textElement('span', 'ms', 'config-unit');
     inputWrapper.appendChild(input);
     inputWrapper.appendChild(unit);
     wrapper.appendChild(label);
@@ -1382,13 +1387,10 @@ function renderTimerInterruptGroup(container, groupData) {
 
 function renderInterruptGroup(container, irqNum, groupData) {
   const groupWrapper = document.createElement('fieldset');
-  groupWrapper.style.marginBottom = '20px';
+  groupWrapper.className = 'config-fieldset';
   styleGroupBox(groupWrapper);
 
-  const legend = document.createElement('legend');
-  legend.textContent = `Interrupt ${irqNum}`;
-  legend.style.fontWeight = 'bold';
-  legend.style.fontSize = '1.1rem';
+  const legend = textElement('legend', `Interrupt ${irqNum}`, 'config-legend');
   groupWrapper.appendChild(legend);
 
   // Render the three fields for this interrupt
@@ -1399,10 +1401,8 @@ function renderInterruptGroup(container, irqNum, groupData) {
   // Enable checkbox
   if (enableKey in groupData) {
     const wrapper = document.createElement('div');
-    wrapper.style.marginBottom = '12px';
-    const label = document.createElement('label');
-    label.textContent = 'Enable: ';
-    label.style.fontWeight = 'bold';
+    wrapper.className = 'config-field-group';
+    const label = textElement('label', 'Enable: ', 'config-label');
     const input = createBooleanToggle(enableKey, groupData[enableKey], nextValue => trackChange(enableKey, nextValue));
     wrapper.appendChild(label);
     wrapper.appendChild(input);
@@ -1417,14 +1417,9 @@ function renderInterruptGroup(container, irqNum, groupData) {
   // Trigger Mode dropdown
   if (trigKey in groupData) {
     const wrapper = document.createElement('div');
-    wrapper.style.marginBottom = '12px';
-    const label = document.createElement('label');
-    label.textContent = 'Trigger Mode: ';
-    label.style.fontWeight = 'bold';
-    label.style.display = 'block';
+    wrapper.className = 'config-field-group';
+    const label = textElement('label', 'Trigger Mode: ', 'config-label-block');
     const select = createSelectInput(trigKey, groupData[trigKey]);
-    select.style.width = '100%';
-    select.style.boxSizing = 'border-box';
     wrapper.appendChild(label);
     wrapper.appendChild(select);
     groupWrapper.appendChild(wrapper);
@@ -1450,16 +1445,26 @@ function toggleMenu() {
   menu.classList.toggle('open');
 }
 
+function closeMenuOnOutsideClick(event) {
+  const menu = document.getElementById('configMenu');
+  const toggle = document.getElementById('menuToggle');
+  if (!menu || !menu.classList.contains('open') || window.innerWidth > 768) return;
+  if (menu.contains(event.target) || (toggle && toggle.contains(event.target))) return;
+  closeMobileMenu();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadConfig().then(() => {
+    decorateCategoryMenu();
     addMenuListeners();
     const toggle = document.getElementById('menuToggle');
     if (toggle) {
       toggle.addEventListener('click', toggleMenu);
     }
+    document.addEventListener('pointerdown', closeMenuOnOutsideClick);
     const selectedCategory = loadSelectedCategory();
     const menuItems = Array.from(document.querySelectorAll('#configMenu p'));
-    const menuItem = menuItems.find(item => item.textContent === selectedCategory) || menuItems[0];
+    const menuItem = menuItems.find(item => categoryKeyFromMenuItem(item) === selectedCategory) || menuItems[0];
     if (menuItem) {
       menuItem.click();
     }

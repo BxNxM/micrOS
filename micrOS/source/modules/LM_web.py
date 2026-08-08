@@ -65,6 +65,8 @@ def _cfg_set_clb(_, body):
         failed_keys = []
         for k, v in incoming_data.items():
             try:
+                if k == 'devfid' and not str(v).strip():
+                    raise Exception("Device name cannot be empty")
                 state = cfgput(k, v)
             except Exception as e:
                 state = False

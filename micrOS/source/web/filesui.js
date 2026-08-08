@@ -387,5 +387,14 @@ document.addEventListener('click', (e) => {
   }
 });
 
+function closeFoldersOnOutsideClick(e) {
+  const toggle = document.getElementById('menuToggle');
+  const isMobileFoldersMenu = window.innerWidth <= 768 && window.innerHeight > window.innerWidth;
+  if (!isMobileFoldersMenu || !folders.classList.contains('open')) return;
+  if (folders.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+  folders.classList.remove('open');
+}
+
+document.addEventListener('pointerdown', closeFoldersOnOutsideClick);
 document.getElementById('menuToggle').onclick = () => folders.classList.toggle('open');
 load();

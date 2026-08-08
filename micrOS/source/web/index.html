@@ -20,6 +20,7 @@
       .endpoint-groups {
           display: flex;
           flex-wrap: wrap;
+          align-items: stretch;
           gap: 12px;
           margin-bottom: 12px;
           width: 100%;
@@ -30,16 +31,20 @@
           display: flex;
           flex-wrap: wrap;
           align-items: center;
+          align-content: center;
           gap: 6px;
           padding: 8px;
+          border: 1px solid #4B376C;
           border-radius: 6px;
-          background: rgba(255, 255, 255, 0.12);
-          backdrop-filter: blur(2px);
+          background: #1F1433;
+          box-sizing: border-box;
+          min-height: 70px;
           max-width: 100%;
       }
 
       /* Prevent buttons from getting tiny */
       .endpoint-group button {
+          min-height: 44px;
           white-space: nowrap;
       }
 

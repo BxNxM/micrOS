@@ -41,47 +41,6 @@
   width: var(--config-input-width);
   max-width: 100%;
   min-width: 0;
-  border: 1px solid rgba(255,255,255,0.24);
-  background: rgba(255,255,255,0.12);
-  color: white;
-}
-
-#configFields input:focus,
-#configFields select:focus {
-  background: rgba(255,255,255,0.18);
-  outline: none;
-}
-
-#menuToggle,
-#configFields button:not(.config-toggle-option):not(.danger-button) {
-  border: 1px solid rgba(255,255,255,0.24);
-  background: rgba(255,255,255,0.14);
-  color: white;
-}
-
-#menuToggle:hover,
-#configFields button:not(.config-toggle-option):not(.danger-button):hover:not(:disabled) {
-  background: rgba(255,255,255,0.22);
-}
-
-#configFields button:disabled {
-  background: #777;
-  color: #d8d8d8;
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-#configFields button.config-save-button:not(:disabled) {
-  border-color: rgba(142,232,142,0.58);
-  background: rgba(32,132,58,0.72);
-  box-shadow: 0 0 0 2px rgba(142,232,142,0.18);
-  color: white;
-  font-weight: bold;
-}
-
-#configFields button.config-save-button:not(:disabled):hover {
-  background: rgba(32,132,58,0.9);
-  box-shadow: 0 0 0 2px rgba(142,232,142,0.28);
 }
 
 .config-field,
@@ -234,17 +193,17 @@
   font-weight: bold;
 }
 
-.config-toggle-option:hover {
+button.config-toggle-option:hover {
   color: white;
   background: rgba(255,255,255,0.12);
 }
 
-.config-toggle-option.selected {
+button.config-toggle-option.selected {
   color: white;
   background: var(--toggle-color);
 }
 
-.config-toggle-option.selected:hover {
+button.config-toggle-option.selected:hover {
   background: var(--toggle-color);
 }
 
@@ -260,16 +219,6 @@
   align-self: center;
   margin: 0;
   padding: 8px 16px;
-}
-
-.danger-button {
-  background: #b02a37;
-  color: white;
-}
-
-.danger-button:hover {
-  background: #8f1f2b;
-  color: white;
 }
 
 #menuToggle {

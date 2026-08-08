@@ -333,7 +333,7 @@ function isEditableConfigSection(sectionKey) {
 }
 
 function renderSaveButton(container) {
-  const button = makeButton('💾 Save', () => handleUpdateConfig(), 'config-save-button');
+  const button = makeButton('💾 Save', () => handleUpdateConfig(), 'config-save-button primary-button');
   button.disabled = !hasUnsavedChanges();
   return button;
 }

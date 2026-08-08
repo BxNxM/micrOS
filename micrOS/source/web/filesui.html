@@ -13,13 +13,56 @@
     body {
       min-height: calc(100vh - 32px);
     }
+
+    /* Top tools row */
+    #file-topbar {
+      display: grid;
+      grid-template-columns: clamp(120px, 20vw, 200px) minmax(0, 1fr);
+      align-items: stretch;
+      gap: 40px;
+      margin-bottom: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    #diskbar,
+    #files-header {
+      border: 1px solid #4B376C;
+      border-radius: 6px;
+      background: #1F1433;
+      box-sizing: border-box;
+    }
+    #diskbar {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    #files-header {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+    }
+    #top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+    #top input[type="file"] {
+      max-width: 100%;
+    }
+
     /* Main layout */
     #ui {
       display: flex;
       gap: 40px;
       height: 100%;
       max-width: 100%;
-      margin: 0 auto;   /* center layout */
+      margin: 0 auto;
     }
     #folders {
       width: clamp(120px, 20vw, 200px);
@@ -27,18 +70,13 @@
       display: flex;
       flex-direction: column;
     }
-    /* Disk bar on top of sidebar */
-    #diskbar {
-      position: sticky;
-      top: 0;
-      margin-bottom: 12px;
-      padding: 6px 10px;
-      font-size: 12px;
-      background: rgba(255,255,255,.1);
-      border-radius: 6px;
-      backdrop-filter: blur(2px);
-      z-index: 5;
+    #files {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
     }
+
     /* Disk Usage Widget */
     #diskmeter {
       height: 6px;
@@ -51,34 +89,7 @@
       width: 0%;
       background: #4caf50;
     }
-    /* Files column */
-    #files {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-    }
-    /* Always-visible header in Files */
-    #files-header {
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      padding-bottom: 8px;
-      background: rgba(255,255,255,.1);
-      border-radius: 6px;
-      backdrop-filter: blur(2px);
-    }
-    /* Toolbar */
-    #top {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 44px;
-      flex-wrap: wrap;
-    }
-    #top input[type="file"] {
-      max-width: 100%;
-    }
+
     #menuToggle {
       display: none;
       align-items: center;
@@ -90,6 +101,7 @@
       border-radius: 6px;
       cursor: pointer;
     }
+
     /* Scrollable file list ONLY */
     #list {
       flex: 1;
@@ -157,10 +169,9 @@
     .folders {
       margin-bottom: 8px;
     }
-    /* Keep Folders title + list sticky as ONE block under disk bar */
     #folders-sticky {
       position: sticky;
-      top: 60px; /* sits just below diskbar */
+      top: 60px;
       z-index: 4;
     }
     /* directory file listing effect */
@@ -169,10 +180,16 @@
       opacity: 0.5;
       pointer-events: none; /* prevents clicking while loading */
       transition: filter 0.15s ease, opacity 0.15s ease;
-     }
+    }
+
     @media (orientation: portrait) and (max-width: 768px) {
       #menuToggle {
         display: inline-flex;
+      }
+      #file-topbar {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        position: static;
       }
       #folders {
         position: fixed;
@@ -187,6 +204,9 @@
         z-index: 1000;
         background: rgba(33, 24, 79, 0.96);
       }
+      #folders-sticky {
+        top: 0;
+      }
       #folders.open {
         transform: translateX(0);
       }
@@ -197,17 +217,29 @@
 <body>
   <h1> micrOS Files </h1>
   <button id="menuToggle" type="button" aria-label="Toggle folders">☰</button>
+  <div id="file-topbar">
+    <header id="diskbar">
+      <div id="disktext">Disk: — MB used / — MB free</div>
+      <div id="diskmeter">
+        <div id="diskused"></div>
+      </div>
+    </header>
+
+    <div id="files-header">
+      <div id="top">
+        <input type="file" id="file">
+        <button onclick="uploadFile().then(() => load())">🔼 Upload</button>
+        <button onclick="openFile()">📖 Open</button>
+        <button onclick="download()">🔽 Download</button>
+        <button onclick="deleteFile()"> 🗑️ Delete</button>
+        <button onclick="editor()">📄 Edit</button>
+      </div>
+    </div>
+  </div>
 
   <div id="ui">
     <!-- Left sidebar (fixed, no scroll) -->
     <aside id="folders">
-      <header id="diskbar">
-        <div id="disktext">Disk: — MB used / — MB free</div>
-        <div id="diskmeter">
-          <div id="diskused"></div>
-        </div>
-      </header>
-
       <!-- Sticky folder block -->
       <div id="folders-sticky">
         <div class="folders">📂 Folders</div>
@@ -217,18 +249,6 @@
 
     <!-- Files column -->
     <main id="files">
-      <!-- Sticky files header -->
-      <div id="files-header">
-        <div id="top">
-          <input type="file" id="file">
-          <button onclick="uploadFile().then(() => load())">🔼 Upload</button>
-          <button onclick="openFile()">📖 Open</button>
-          <button onclick="download()">🔽 Download</button>
-          <button onclick="deleteFile()"> 🗑️ Delete</button>
-          <button onclick="editor()">📄 Edit</button>
-        </div>
-      </div>
-
       <!-- Only this scrolls -->
       <div id="list"></div>
     </main>

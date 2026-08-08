@@ -37,10 +37,10 @@ function restWidget(container='restWidget', opts={}) {
 
     const label = makeEl('label', {htmlFor: inputId, textContent: opts.label || '⚙️ Enter micrOS command: '});
     const input = styled(makeEl('input', {type: 'text', id: inputId, value: opts.value || ''}), 'background:transparent;max-width:none;min-width:0;padding-right:34px;position:relative;width:100%;z-index:1;');
-    const ghost = styled(makeEl('span'), 'box-sizing:border-box;color:rgba(0,0,0,.35);font:14px/1.4 Verdana,sans-serif;inset:2px;overflow:hidden;padding:6px 34px 6px 12px;pointer-events:none;position:absolute;white-space:pre;');
+    const ghost = styled(makeEl('span'), 'box-sizing:border-box;color:rgba(255,255,255,.35);font:14px/1.4 Verdana,sans-serif;inset:2px;overflow:hidden;padding:6px 34px 6px 12px;pointer-events:none;position:absolute;white-space:pre;');
     const accept = styled(makeEl('button', {type: 'button', textContent: '↦', title: 'Accept suggestion'}), 'bottom:2px;display:none;min-height:0;padding:0 8px;position:absolute;right:2px;top:2px;z-index:3;');
     const send = makeEl('button', {type: 'submit', textContent: opts.button || 'Send'});
-    const inputWrap = styled(makeEl('span', {}, [input, ghost, accept]), 'background:white;border-radius:6px;flex:1;max-width:350px;min-width:200px;position:relative;');
+    const inputWrap = styled(makeEl('span', {}, [input, ghost, accept]), 'flex:1;max-width:350px;min-width:200px;position:relative;');
     const form = makeEl('form', {}, [inputWrap, send]);
     const url = makeEl('p', {id: opts.urlId || `${prefix}restConsoleUrl`});
     const responseBox = makeEl('pre', {id: opts.responseId || `${prefix}restConsoleResponse`});
@@ -61,14 +61,7 @@ function restWidget(container='restWidget', opts={}) {
     };
 
     input.oninput = updateHint;
-    input.onkeydown = e => {
-        if (e.key === 'Tab' && ghost.textContent) {
-            e.preventDefault();
-            acceptHint();
-        }
-    };
-    accept.onclick = acceptHint;
-    form.onsubmit = () => {
+    const submitCommand = () => {
         const cmd = input.value.trim();
         if (cmd) {
             history = [cmd, ...history.filter(x => x !== cmd)].slice(0, opts.historyLimit || 20);
@@ -80,6 +73,17 @@ function restWidget(container='restWidget', opts={}) {
             .catch(error => restConsole('restAPI error', {error: error.message}, 0, {url, response: responseBox, time}));
         return false;
     };
+    input.onkeydown = e => {
+        if (e.key === 'Tab' && ghost.textContent) {
+            e.preventDefault();
+            acceptHint();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            submitCommand();
+        }
+    };
+    accept.onclick = acceptHint;
+    form.onsubmit = submitCommand;
 
     root.textContent = '';
     root.append(makeEl('h3', {}, [label]), form, url, responseBox, time);
@@ -93,6 +97,17 @@ function restWidget(container='restWidget', opts={}) {
     return {root, input, form, url, response: responseBox, time};
 }
 
+const endpointIconMap = {
+    'dashboard': '🎮',
+    'fs': '📁',
+    'config/ui': '⚙️'
+};
+
+function endpointLabel(label, entry) {
+    const icon = endpointIconMap[String(entry).replace(/^\/+|\/+$/g, '')];
+    return icon ? `${icon} ${label}` : label;
+}
+
 function renderEndpointGroups(endpoints) {
     const container = byId('endpointGroups');
     if (!container) {return;}
@@ -104,6 +119,7 @@ function renderEndpointGroups(endpoints) {
 
     const groups = {};
     const button = (label, entry) => makeEl('button', {textContent: label, onclick: () => window.open(`/${entry}`, '_blank')});
+    const groupBox = children => makeEl('div', {className: 'endpoint-group'}, children);
     endpoints.forEach(endpoint => {
         const entry = endpoint.replace(/^\/+/, '');
         const group = entry.split('/')[0];
@@ -113,11 +129,11 @@ function renderEndpointGroups(endpoints) {
     Object.keys(groups).sort().forEach(group => {
         const entries = groups[group].sort();
         if (entries.length === 1 && entries[0] === group) {
-            container.appendChild(button(group, group));
+            container.appendChild(groupBox([button(endpointLabel(group, group), group)]));
             return;
         }
-        const groupEl = makeEl('div', {className: 'endpoint-group'}, [makeEl('span', {className: 'endpoint-group-title', textContent: group})]);
-        entries.forEach(entry => groupEl.appendChild(button(entry === group ? group : entry.replace(`${group}/`, ''), entry)));
+        const groupEl = groupBox([makeEl('span', {className: 'endpoint-group-title', textContent: endpointLabel(group, group)})]);
+        entries.forEach(entry => groupEl.appendChild(button(endpointLabel(entry === group ? group : entry.replace(`${group}/`, ''), entry), entry)));
         container.appendChild(groupEl);
     });
 }

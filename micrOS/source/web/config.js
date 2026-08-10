@@ -186,6 +186,12 @@ function updateSaveButtonState() {
   });
 }
 
+function formatChangedKeys(values) {
+  return Object.keys(values)
+    .map(key => '- ' + (configLabelMap[key] || key))
+    .join('\n');
+}
+
 // Helper: Check if field supports multi-parameters
 function isMultiParamField(key) {
   return multiParamFields.has(key) || irqCallbackRegex.test(key) || key === 'crontasks';
@@ -254,10 +260,11 @@ function handleUpdateConfig() {
     alert('No changes to save');
     return;
   }
+  const savedChanges = {...changedValues};
   return fetch('/config', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(changedValues)
+    body: JSON.stringify(savedChanges)
   })
   .then(r => r.json())
   .then(data => {
@@ -268,9 +275,10 @@ function handleUpdateConfig() {
       alert('Update failed: ' + detail + failed);
       return;
     }
+    configData = {...configData, ...savedChanges};
     changedValues = {};
     updateSaveButtonState();
-    alert('Configuration updated successfully');
+    alert('Configuration updated successfully\n\n' + formatChangedKeys(savedChanges));
   })
   .catch(e => {
     console.error('Update failed:', e);

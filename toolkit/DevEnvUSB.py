@@ -143,7 +143,7 @@ class USB(Compile):
                 "",
                 "[IMAGE] {}".format(image_name),
                 "  MODE: RELEASE",
-                "  CORE: frozen micrOS",
+                "  CORE: frozen micrOS (Core OTA update disabled)",
                 "  FEATURES: minimum release set",
                 "  BUILT-INS: {}".format(builtin_summary),
                 "",
@@ -153,7 +153,7 @@ class USB(Compile):
                 "",
                 "[IMAGE] {}".format(image_name),
                 "  MODE: RELEASE",
-                "  CORE: frozen micrOS",
+                "  CORE: frozen micrOS (Core OTA update disabled)",
                 "  FEATURES: minimum release set",
                 "",
             )

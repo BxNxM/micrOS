@@ -87,6 +87,13 @@ function makeButton(label, onClick = null, className = '') {
   return button;
 }
 
+function makeInput(type, value = '', placeholder = '', dataset = {}, onInput = null) {
+  const input = Object.assign(document.createElement('input'), {type, value, placeholder});
+  Object.assign(input.dataset, dataset);
+  if (onInput) input.oninput = onInput;
+  return input;
+}
+
 function categoryTitle(category) {
   return (categoryIconMap[category] ? categoryIconMap[category] + ' ' : '') + category;
 }
@@ -565,7 +572,7 @@ function renderPackagesSection() {
     }
     setButtonBusy(installBtn, 'Installing...');
     setInlineDetails(installResult, `Install Package (URL or Package ref): ${url}\n\nInstalling...`);
-    restAPI('pacman/install/' + restQuote(url), false)
+    restAPI('pacman/install/' + restQuote(url), false, 10000)
       .then(resp => {
         setInlineDetails(installResult, formatInstallResponse(url, resp));
         refreshPackagesList();
@@ -771,14 +778,12 @@ function formatPackageDetails(result) {
 }
 
 function renderPinMappingSection(data, container) {
-  renderDefaultFields(data, container);
-  const input = container.querySelector('input[type="text"]');
+  const pinmapUi = renderCustomPinMapField(container, data.cstmpmap || '');
+
   const select = document.createElement('select');
   select.disabled = true;
   select.appendChild(new Option('Loading known maps...', ''));
-  if (input) {
-    input.parentNode.appendChild(select);
-  }
+  pinmapUi.mapRow.appendChild(select);
 
   const infoSection = document.createElement('section');
   infoSection.className = 'config-pin-info';
@@ -797,7 +802,7 @@ function renderPinMappingSection(data, container) {
         infoSection.appendChild(makeError('Unable to load pin map.'));
         return;
       }
-      populatePinMapSelector(select, input, response.result.known_maps || []);
+      populatePinMapSelector(select, pinmapUi.mapInput, response.result.known_maps || []);
       renderPinMapInfo(infoSection, response.result);
     })
     .catch(error => {
@@ -806,32 +811,110 @@ function renderPinMappingSection(data, container) {
     });
 }
 
-function populatePinMapSelector(select, input, knownMaps) {
-  if (!select || !input) return;
+function parsePinMapConfig(value) {
+  const parts = parseSemicolonValues(value);
+  const mapName = parts[0] && !parts[0].includes(':') ? parts.shift() : '';
+  const pairs = parts.map(part => {
+    const splitAt = part.indexOf(':');
+    if (splitAt < 0) return null;
+    return [part.slice(0, splitAt).trim(), part.slice(splitAt + 1).trim()];
+  }).filter(pair => pair && pair[0] && pair[1]);
+  return {mapName: mapName === 'n/a' ? '' : mapName, pairs};
+}
+
+function serializePinMapConfig(mapName, pairs) {
+  const clean = (value, pattern = /[;:]/g) => (value || '').replace(pattern, '').trim();
+  const cleanMap = clean(mapName);
+  const serialized = (cleanMap && cleanMap !== 'n/a' ? [cleanMap] : []).concat(
+    pairs.map(pair => [clean(pair[0]), clean(pair[1], /;/g)])
+      .filter(([key, value]) => key && value)
+      .map(([key, value]) => `${key}:${value}`)
+  );
+  return serialized.length ? serialized.join('; ') : 'n/a';
+}
+
+function renderCustomPinMapField(container, value) {
+  const parsed = parsePinMapConfig(value);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'config-field-group';
+
+  const label = textElement('label', 'Pin Map: ', 'config-label-block');
+  wrapper.appendChild(label);
+
+  const editor = document.createElement('div');
+  editor.className = 'config-stack';
+  editor.dataset.type = 'pinmap-editor';
+
+  const mapRow = document.createElement('div');
+  mapRow.className = 'pinmap-map-row';
+
+  const mapInput = makeInput('text', parsed.mapName, 'Automatic pin map', {pinmapName: 'true'}, () => updatePinMapTrack(editor));
+  mapRow.appendChild(mapInput);
+  editor.appendChild(mapRow);
+
+  const pairsLabel = textElement('label', 'Pin Overrides:', 'config-label-tight');
+  editor.appendChild(pairsLabel);
+
+  const pairContainer = document.createElement('div');
+  pairContainer.className = 'config-stack';
+  pairContainer.dataset.pinmapPairs = 'true';
+  editor.appendChild(pairContainer);
+
+  const addButton = makeButton('+', () => {
+    createPinMapPairRow(pairContainer);
+    updatePinMapTrack(editor);
+  }, 'pinmap-add config-icon-button config-add-button');
+
+  const pairs = parsed.pairs.length ? parsed.pairs : [['', '']];
+  pairs.forEach(pair => createPinMapPairRow(pairContainer, pair[0], pair[1]));
+
+  editor.appendChild(addButton);
+  wrapper.appendChild(editor);
+  container.appendChild(wrapper);
+  return {mapInput, mapRow};
+}
+
+function populatePinMapSelector(select, mapInput, knownMaps) {
+  if (!select || !mapInput) return;
   select.innerHTML = '';
-  select.appendChild(new Option('Select known map...', ''));
+  select.appendChild(new Option('Known maps...', ''));
   knownMaps.forEach(mapName => {
     select.appendChild(new Option(mapName, mapName));
   });
   select.disabled = knownMaps.length === 0;
-  const selectedMap = getPinMapName(input.value);
-  select.value = knownMaps.includes(selectedMap) ? selectedMap : '';
+  select.value = knownMaps.includes(mapInput.value.trim()) ? mapInput.value.trim() : '';
   select.onchange = () => {
     if (!select.value) return;
-    input.value = mergePinMapName(input.value, select.value);
-    trackChange('cstmpmap', input.value);
+    mapInput.value = select.value;
+    updatePinMapTrack(mapInput.closest('[data-type="pinmap-editor"]'));
   };
 }
 
-function getPinMapName(value) {
-  const firstPart = (value || '').split(';')[0].trim();
-  return firstPart && !firstPart.includes(':') ? firstPart : '';
+function createPinMapPairRow(container, key = '', value = '') {
+  const row = document.createElement('div');
+  row.className = 'pinmap-pair-row';
+  const editor = container.closest('[data-type="pinmap-editor"]');
+
+  row.appendChild(makeInput('text', key, 'key', {pinmapKey: 'true'}, () => updatePinMapTrack(editor)));
+  row.appendChild(makeInput('number', value, 'pin', {pinmapValue: 'true'}, () => updatePinMapTrack(editor)));
+
+  row.appendChild(makeButton('−', () => {
+    row.remove();
+    if (!container.querySelector('.pinmap-pair-row')) createPinMapPairRow(container);
+    updatePinMapTrack(editor);
+  }, 'config-icon-button config-remove-button'));
+
+  container.appendChild(row);
 }
 
-function mergePinMapName(value, mapName) {
-  const parts = (value || '').split(';').map(part => part.trim()).filter(part => part);
-  const customPins = parts[0] && !parts[0].includes(':') ? parts.slice(1) : parts;
-  return [mapName].concat(customPins).join('; ');
+function updatePinMapTrack(editor) {
+  if (!editor) return;
+  const mapInput = editor.querySelector('input[data-pinmap-name]');
+  const pairs = Array.from(editor.querySelectorAll('.pinmap-pair-row')).map(row => [
+    row.querySelector('input[data-pinmap-key]').value,
+    row.querySelector('input[data-pinmap-value]').value
+  ]);
+  trackChange('cstmpmap', serializePinMapConfig(mapInput ? mapInput.value : '', pairs));
 }
 
 function renderPinMapInfo(container, pinmap) {
@@ -1147,6 +1230,10 @@ function renderCrontaskField(container, key, value) {
   container.appendChild(wrapper);
 }
 
+function crontaskRoot(element) {
+  return element.closest('[data-type="crontask"]') || element;
+}
+
 function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
   const blockWrapper = document.createElement('fieldset');
   styleGroupBox(blockWrapper, '20px');
@@ -1161,7 +1248,7 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
   if (totalBlocks > 1 || totalBlocks === -1) {
     const delBlockButton = makeButton('Remove', () => {
       blockWrapper.remove();
-      updateCrontaskTrack(container.closest('[data-type="crontask"]') || container, key);
+      updateCrontaskTrack(crontaskRoot(container), key);
     }, 'config-remove-button');
     blockHeader.appendChild(delBlockButton);
   }
@@ -1170,20 +1257,17 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
   // Timestamp field
   const tsWrapper = document.createElement('div');
   tsWrapper.className = 'config-field-group';
-  const tsLabel = textElement('label', 'Time (WD:H:M:S or sunset/sunrise +/- offset): ', 'config-label-tight');
-  const tsInput = document.createElement('input');
-  tsInput.type = 'text';
-  tsInput.dataset.field = 'timestamp';
+  const tsLabel = textElement('label', '✨ Timestamp (WD:H:M:S or Tag +/-Offset): ', 'config-label-tight');
+  const tsGroup = textElement('div', '', 'schedule-time-config');
 
   const blockParts = block.split('!');
-  const timestamp = blockParts[0] || '';
+  const timestamp = defaultScheduleTimestamp(blockParts[0]);
   const functionsStr = blockParts.slice(1).join('!');
+  const tsInput = makeInput('text', timestamp, '', {field: 'timestamp'});
 
-  tsInput.value = timestamp;
-  tsInput.onchange = () => updateCrontaskTrack(container.closest('[data-type="crontask"]') || container, key);
-  tsInput.oninput = () => updateCrontaskTrack(container.closest('[data-type="crontask"]') || container, key);
   tsWrapper.appendChild(tsLabel);
-  tsWrapper.appendChild(tsInput);
+  renderScheduleTimeControls(tsGroup, tsInput, blockWrapper, key);
+  tsWrapper.appendChild(tsGroup);
   blockWrapper.appendChild(tsWrapper);
 
   // Functions field
@@ -1200,7 +1284,7 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
   addFnButton.onclick = () => {
     if (addFnButton.disabled) return;
     createFunctionRow(fnContainer, key, blockWrapper, '', fnContainer.querySelectorAll('input[data-function-input]').length, -1, addFnButton);
-    updateCrontaskTrack(container.closest('[data-type="crontask"]') || container, key);
+    updateCrontaskTrack(crontaskRoot(container), key);
   };
 
   const functionValues = parseCrontaskFunctions(functionsStr, container.dataset.blockSeparator === ';;');
@@ -1234,11 +1318,11 @@ function createFunctionRow(container, key, blockWrapper, value, idx, totalCount,
   input.placeholder = `Function ${idx + 1}`;
   input.dataset.functionInput = 'true';
   input.onchange = () => {
-    updateCrontaskTrack(blockWrapper.closest('[data-type="crontask"]') || blockWrapper, key);
+    updateCrontaskTrack(crontaskRoot(blockWrapper), key);
     updateRowAddButtonState(container, addButton, 'input[data-function-input]');
   };
   input.oninput = () => {
-    updateCrontaskTrack(blockWrapper.closest('[data-type="crontask"]') || blockWrapper, key);
+    updateCrontaskTrack(crontaskRoot(blockWrapper), key);
     updateRowAddButtonState(container, addButton, 'input[data-function-input]');
   };
   row.appendChild(input);
@@ -1249,7 +1333,7 @@ function createFunctionRow(container, key, blockWrapper, value, idx, totalCount,
       row.remove();
       moveFunctionAddButtonToLastRow(container, addButton);
       updateRowAddButtonState(container, addButton, 'input[data-function-input]');
-      updateCrontaskTrack(blockWrapper.closest('[data-type="crontask"]') || blockWrapper, key);
+      updateCrontaskTrack(crontaskRoot(blockWrapper), key);
     }, 'config-icon-button config-remove-button');
     row.appendChild(delButton);
   }
@@ -1272,17 +1356,141 @@ function moveFunctionAddButtonToLastRow(container, addButton) {
   rows[rows.length - 1].appendChild(addButton);
 }
 
+function defaultScheduleTimestamp(value) {
+  return value && value !== 'n/a' && value !== '*:*:*:0' ? value : '*:9:10:0';
+}
+
+function renderScheduleTimeControls(wrapper, tsInput, blockWrapper, key) {
+  const editor = document.createElement('div');
+  editor.className = 'schedule-time-ui';
+  const fixedGroup = textElement('div', '', 'schedule-time-section');
+  editor.appendChild(fixedGroup);
+  fixedGroup.appendChild(tsInput);
+
+  const dayRow = textElement('div', '', 'schedule-time-row');
+  ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'].forEach((label, idx) => {
+    const button = makeButton(label, () => {
+      button.classList.toggle('selected');
+      writeScheduleTime(editor, tsInput, blockWrapper, key, false);
+    }, 'schedule-day-button');
+    button.dataset.day = idx;
+    dayRow.appendChild(button);
+  });
+  fixedGroup.appendChild(dayRow);
+
+  const clockRow = textElement('div', '', 'schedule-time-row schedule-clock-row');
+  ['h', 'm', 's'].forEach((part, idx) => {
+    const input = makeInput('number', '', part.toUpperCase(), {timePart: part}, () => writeScheduleTime(editor, tsInput, blockWrapper, key, false));
+    input.min = 0;
+    input.max = idx === 0 ? 23 : 59;
+    clockRow.appendChild(input);
+  });
+  fixedGroup.appendChild(clockRow);
+
+  const sunRow = textElement('div', '', 'schedule-time-row schedule-sun-row');
+  const sunSection = textElement('div', '', 'schedule-time-section schedule-time-alt');
+  ['sunset', 'sunrise'].forEach(tag => {
+    const button = makeButton(tag, () => {
+      editor.dataset.sun = editor.dataset.sun === tag ? '' : tag;
+      writeScheduleTime(editor, tsInput, blockWrapper, key, true);
+    }, 'schedule-sun-button');
+    button.dataset.sunButton = tag;
+    sunRow.appendChild(button);
+  });
+  const offset = makeInput('text', '', '+/- min', {sunOffset: 'true'}, () => writeScheduleTime(editor, tsInput, blockWrapper, key, true));
+  offset.inputMode = 'numeric';
+  sunRow.appendChild(offset);
+  sunSection.appendChild(sunRow);
+  editor.appendChild(sunSection);
+
+  tsInput.oninput = () => {
+    syncScheduleTimeControls(editor, tsInput.value);
+    updateCrontaskTrack(crontaskRoot(blockWrapper), key);
+  };
+  tsInput.onchange = tsInput.oninput;
+  wrapper.appendChild(editor);
+  syncScheduleTimeControls(editor, tsInput.value);
+}
+
+function syncScheduleTimeControls(editor, value) {
+  const sunMatch = String(value || '').trim().match(/^(sunrise|sunset)([+-]\d+)?$/);
+  editor.dataset.sun = sunMatch ? sunMatch[1] : '';
+  editor.querySelectorAll('[data-sun-button]').forEach(button => {
+    button.classList.toggle('selected', button.dataset.sunButton === editor.dataset.sun);
+  });
+  const offset = editor.querySelector('[data-sun-offset]');
+  if (offset) offset.value = sunMatch && sunMatch[2] ? sunMatch[2].replace(/^\+/, '') : '';
+
+  const parts = sunMatch ? [] : String(value || '').split(':');
+  const selected = expandScheduleDays(parts.length === 4 ? parts[0].trim() : '*');
+  editor.querySelectorAll('[data-day]').forEach(button => {
+    button.classList.toggle('selected', selected.includes(Number(button.dataset.day)));
+  });
+  ['h', 'm', 's'].forEach((part, idx) => {
+    const input = editor.querySelector(`[data-time-part="${part}"]`);
+    if (input) input.value = parts.length === 4 ? parts[idx + 1].trim() : '';
+  });
+}
+
+function expandScheduleDays(wd) {
+  if (wd === '*') return [0, 1, 2, 3, 4, 5, 6];
+  const range = String(wd).match(/^(\d)-(\d)$/);
+  if (range) {
+    const days = [];
+    for (let day = Number(range[1]); ; day = (day + 1) % 7) {
+      days.push(day);
+      if (day === Number(range[2])) break;
+    }
+    return days;
+  }
+  return /^\d$/.test(wd) ? [Number(wd)] : [];
+}
+
+function compactScheduleDays(days) {
+  days = days.sort((a, b) => a - b);
+  if (days.length === 0 || days.length === 7) return '*';
+  if (days.length === 1) return String(days[0]);
+  const starts = days.filter(day => !days.includes((day + 6) % 7));
+  const start = starts.length === 1 ? starts[0] : days[0];
+  const ordered = [start];
+  while (days.includes((ordered[ordered.length - 1] + 1) % 7)) {
+    ordered.push((ordered[ordered.length - 1] + 1) % 7);
+    if (ordered.length > 7) break;
+  }
+  return ordered.length === days.length ? `${ordered[0]}-${ordered[ordered.length - 1]}` : `${days[0]}-${days[days.length - 1]}`;
+}
+
+function writeScheduleTime(editor, tsInput, blockWrapper, key, preferSun) {
+  const sun = editor.dataset.sun;
+  const offset = (editor.querySelector('[data-sun-offset]').value || '').trim();
+  if (preferSun && sun) {
+    tsInput.value = sun + (/^[+-]?\d+$/.test(offset) && Number(offset) !== 0 ? (/^[+-]/.test(offset) ? offset : '+' + offset) : '');
+    if (!['-', '+'].includes(offset)) syncScheduleTimeControls(editor, tsInput.value);
+  } else {
+    const days = Array.from(editor.querySelectorAll('[data-day].selected')).map(button => Number(button.dataset.day));
+    const defaults = ['9', '10', '0'];
+    const parts = ['h', 'm', 's'].map((part, idx) => {
+      const input = editor.querySelector(`[data-time-part="${part}"]`);
+      const max = idx === 0 ? 23 : 59;
+      return input.value === '' ? defaults[idx] : String(Math.min(max, Math.max(0, Number(input.value))));
+    });
+    editor.dataset.sun = '';
+    tsInput.value = compactScheduleDays(days) + ':' + parts.join(':');
+    syncScheduleTimeControls(editor, tsInput.value);
+  }
+  updateCrontaskTrack(crontaskRoot(blockWrapper), key);
+}
+
 function updateCrontaskTrack(container, key) {
   const blocks = container.querySelectorAll('[data-block-index]');
   const blockStrings = Array.from(blocks).map(block => {
     const tsInput = block.querySelector('input[data-field="timestamp"]');
     const fnInputs = block.querySelectorAll('input[data-function-input]');
-    const timestamp = tsInput ? tsInput.value.trim() : '';
+    const timestamp = tsInput ? defaultScheduleTimestamp(tsInput.value.trim()) : '';
     const functionValues = Array.from(fnInputs).map(input => input.value.trim()).filter(v => v.length > 0);
     const functions = functionValues.join(';');
 
-    if (!timestamp) return '';
-    if (!functions) return timestamp;
+    if (!timestamp || !functions) return '';
     return `${timestamp}!${functions}`;
   }).filter(b => b.length > 0);
 

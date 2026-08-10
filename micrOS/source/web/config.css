@@ -58,7 +58,9 @@
 
 .config-input-row,
 .param-row,
-.function-row {
+.function-row,
+.pinmap-map-row,
+.pinmap-pair-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -73,7 +75,9 @@
 
 .config-input-row input,
 .param-row input,
-.function-row input {
+.function-row input,
+.pinmap-map-row input,
+.pinmap-pair-row input {
   flex: 1 1 auto;
   width: auto;
   min-width: 0;
@@ -165,6 +169,25 @@
 .wifi-field > input,
 .wifi-field .config-input-row {
   width: 100%;
+}
+
+.pinmap-map-row select { flex: 0 1 180px; width: auto; }
+.pinmap-pair-row input[data-pinmap-value] { flex: 0 1 120px; }
+.schedule-time-config { display: grid; width: min(var(--config-input-width), 660px); max-width: 100%; }
+.schedule-time-section,
+.schedule-time-ui { display: grid; gap: 6px; width: 100%; }
+#configFields .schedule-time-section > input { width: 100%; box-sizing: border-box; }
+.schedule-time-alt { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.16); }
+.schedule-time-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; width: 100%; }
+.schedule-clock-row, .schedule-sun-row { flex-wrap: nowrap; }
+.schedule-day-button { flex: 1 1 0; min-width: 34px; height: 30px; padding: 0 6px; }
+.schedule-sun-button { flex: 1 1 0; height: 30px; padding: 0 8px; }
+#configFields .schedule-time-row input { flex: 1 1 0; width: 64px; height: 30px; }
+#configFields .schedule-time-row input[data-sun-offset] { flex: 1 1 auto; width: 104px; }
+.schedule-day-button.selected,
+.schedule-sun-button.selected {
+  color: white;
+  background: #20843a;
 }
 
 #configMenu .selected {
@@ -271,12 +294,26 @@ button.config-toggle-option.selected:hover {
 
   .config-input-row,
   .param-row,
-  .function-row {
+  .function-row,
+  .pinmap-map-row,
+  .pinmap-pair-row {
     gap: 6px;
   }
 
   .wifi-field {
     flex-basis: 100%;
     min-width: 0;
+  }
+
+  .pinmap-map-row {
+    flex-wrap: wrap;
+  }
+
+  .pinmap-map-row select {
+    flex-basis: 100%;
+  }
+
+  .pinmap-pair-row input[data-pinmap-value] {
+    flex-basis: 88px;
   }
 }

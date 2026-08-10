@@ -41,7 +41,7 @@ def enable_config():
     web_endpoint("config", _cfg_get_clb)
     web_endpoint("config", _cfg_set_clb, "POST")
     web_endpoint("config/ui", 'config.html')
-    return "Endpoints: /config and /config/ui"
+    return "[No AUTH Yet!!!] Endpoints: /config and /config/ui"
 
 
 def _cfg_json(data):
@@ -67,6 +67,8 @@ def _cfg_set_clb(_, body):
             try:
                 if k == 'devfid' and not str(v).strip():
                     raise Exception("Device name cannot be empty")
+                if k == 'crontasks' and isinstance(v, str) and not v.strip():
+                    v = 'n/a'
                 state = cfgput(k, v)
             except Exception as e:
                 state = False

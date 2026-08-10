@@ -186,18 +186,75 @@ class ConnectionData:
 
     @staticmethod
     def nodes_status(feature_stat=True):
-        spr_offset1 = 25
-        spr_offset2 = 57
+        table_columns = (
+            ("uid", "[ UID ]", 24),
+            ("fuid", "[ FUID ]", 22),
+            ("ip", "[ IP ]", 16),
+            ("status", "[ STATUS ]", 11),
+            ("version", "[ VERSION ]", 12),
+            ("mode", "[ MODE ]", 9),
+            ("comm_sec", "[COMM SEC]", 11),
+        )
+        feature_columns = (
+            ("webui", "WEBUI", 9),
+            ("espnow", "ESPNOW", 9),
+            ("cron", "CRON", 9),
+            ("timirq", "TIMIRQ", 6),
+        )
+
+        def _cell(value, width, color_prefix=""):
+            value = str(value)
+            formatted = "{:<{width}}".format(value, width=width)
+            if color_prefix:
+                return "{}{}{}".format(color_prefix, formatted, Colors.NC)
+            return formatted
+
+        def _format_row(values):
+            row = "".join(
+                _cell(
+                    values[key],
+                    width,
+                    values.get("{}_color".format(key), ""),
+                )
+                for key, _title, width in table_columns
+            )
+            if feature_stat:
+                row += "".join(
+                    _cell(
+                        values[key],
+                        width,
+                        values.get("{}_color".format(key), ""),
+                    )
+                    for key, _title, width in feature_columns
+                )
+            return row
+
+        def _parse_hello_mode(hello_reply):
+            hello_line = next(
+                (
+                    line.strip()
+                    for line in str(hello_reply).splitlines()
+                    if line.strip().startswith("hello:")
+                ),
+                "",
+            )
+            hello_fields = hello_line.split(":")
+            if len(hello_fields) >= 4 and hello_fields[3].strip():
+                return hello_fields[3].strip().split()[0]
+            return "n/a"
+
+        def _bool_text(value):
+            if value == "n/a":
+                return "n/a", ""
+            return ("ON", Colors.OKGREEN + Colors.BOLD) if str(value).strip() == "True" else ("OFF", Colors.BOLD)
 
         def _dev_status(ip, port, fuid, uid):
-            fuid = "{}{}{}".format(Colors.HEADER, fuid, Colors.NC)
             if uid not in ['__devuid__']:
-                spacer1 = " " * (spr_offset1 - len(uid))
-
-                # print status msgs
-                is_online = "{}ONLINE{}".format(Colors.OK, Colors.NC) if SearchDevices.node_is_online(ip, port=port) else "{}OFFLINE{}".format(
-                    Colors.WARN, Colors.NC)
+                is_online = SearchDevices.node_is_online(ip, port=port)
+                status_text = "ONLINE" if is_online else "OFFLINE"
+                status_color = Colors.OK if is_online else Colors.WARN
                 version_data = '<n/a>'
+                image_mode = 'n/a'
                 elapsed_time = 'n/a'
                 webui_state = 'n/a'
                 espnow_state  = 'n/a'
@@ -206,13 +263,14 @@ class ConnectionData:
                 online_ip = None
 
                 # is online
-                if 'ONLINE' in is_online:
+                if is_online:
                     # get version data
                     online_ip = ip
                     try:
                         connection = SocketDictClient(host=ip, port=port, silent_mode=True, tout=3)
-                        # Get version and elapsed time data
+                        # Get version, runtime image mode and elapsed time data
                         start_comm = time.time()
+                        image_mode = _parse_hello_mode(connection.non_interactive(['hello']))
                         version_data = connection.non_interactive(['version'])
                         elapsed_time = "{:.3f}".format(time.time() - start_comm)
                         if feature_stat:
@@ -224,26 +282,46 @@ class ConnectionData:
                     except Exception as e:
                         print(f"Getting device version {fuid}:{uid} error: {e}")
 
-                # Generate line printout
-                base_info = "{uid}{spr1}{fuid}".format(uid=uid, spr1=spacer1, fuid=fuid)
-                spacer1 = " " * (spr_offset2 - len(base_info))
-                spacer2 = "\t" if len(version_data) > 7 else "\t\t"
-                feature_info = ""
-                if feature_stat:
-                    _on_str = f"{Colors.OKGREEN}{Colors.BOLD}ON {Colors.NC}"
-                    _off_str = f"{Colors.BOLD}OFF{Colors.NC}"
-                    _fspacer = " "*6
-                    bool2str = lambda x: _on_str if x.strip() == "True" else _off_str if x != "n/a" else x
-                    feature_info = f"\t\t{bool2str(webui_state)}{_fspacer}{bool2str(espnow_state)}{_fspacer}{bool2str(cron_state)}{_fspacer}{bool2str(timirq_state)}"
-                data_line_str = f"{base_info}{spacer1}{ip}\t{is_online}\t\t{version_data}{spacer2}{elapsed_time}{feature_info}"
-                return data_line_str, online_ip
+                webui_text, webui_color = _bool_text(webui_state)
+                espnow_text, espnow_color = _bool_text(espnow_state)
+                cron_text, cron_color = _bool_text(cron_state)
+                timirq_text, timirq_color = _bool_text(timirq_state)
+                row_values = {
+                    "uid": uid,
+                    "fuid": fuid,
+                    "fuid_color": Colors.HEADER,
+                    "ip": ip,
+                    "status": status_text,
+                    "status_color": status_color,
+                    "version": version_data,
+                    "mode": image_mode,
+                    "mode_color": Colors.HEADER if image_mode == "dev" else "",
+                    "comm_sec": elapsed_time,
+                    "webui": webui_text,
+                    "webui_color": webui_color,
+                    "espnow": espnow_text,
+                    "espnow_color": espnow_color,
+                    "cron": cron_text,
+                    "cron_color": cron_color,
+                    "timirq": timirq_text,
+                    "timirq_color": timirq_color,
+                }
+                return _format_row(row_values), online_ip
             return None
 
+        def _header():
+            header_values = {key: title for key, title, _width in table_columns}
+            header = "".join(
+                _cell(header_values[key], width)
+                for key, _title, width in table_columns
+            )
+            if feature_stat:
+                feature_width = sum(width for _key, _title, width in feature_columns)
+                header += _cell("[WEBUI | ESPNOW | CRON | TIMIRQ]", feature_width)
+            return header
+
         nodes_dict = ConnectionData.read_micrOS_device_cache()
-        spacer1 = " " * (spr_offset1 - 8)
-        feature_header_str = "\t[WEBUI | ESPNOW | CRON | TIMIRQ]" if feature_stat else ""
-        print("{cols}[ UID ]{spr1}[ FUID ]\t\t[ IP ]\t\t[ STATUS ]\t[ VERSION ]\t[COMM SEC]{features}{cole}"
-              .format(spr1=spacer1, cols=Colors.OKBLUE + Colors.BOLD, features=feature_header_str, cole=Colors.NC))
+        print("{}{}{}{}".format(Colors.OKBLUE, Colors.BOLD, _header(), Colors.NC))
 
         # Start parallel status queries
         query_list = []

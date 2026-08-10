@@ -89,7 +89,7 @@ def _parse_rest_cmd(cmd:str) -> list[str]:
             index += 1
         segment = decoded[start:index]
         if segment:
-            segment = segment.replace('/', ' ').strip()
+            segment = segment.replace('/', ' ').replace('-', ' ').strip()
             if segment:
                 tokens.extend(token for token in segment.split() if token)
     return tokens

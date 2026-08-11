@@ -23,7 +23,7 @@ This guide provides a detailed walkthrough for building, testing, and uploading 
   - [exec\_cmd(cmd)](#exec_cmdcmd)
   - [data\_logger(f\_name, data=None, limit=12, msgobj=None)](#data_loggerf_name-datanone-limit12-msgobjnone)
   - [notify(text)](#notifytext)
-  - [web\_endpoint(endpoint, function)](#web_endpointendpoint-function)
+  - [web\_endpoint(endpoint, function, method)](#web_endpointendpoint-function-method)
   - [AnimationPlayer(animation: callable=None, tag: str=None, batch\_draw: bool=False, batch\_size: int=None)](#animationplayeranimationcallablenone-tagstrnone-batch_drawboolfalse-batch_sizeintnone)
   - [data\_dir(f\_name=None)](#data_dirf_namenone)
   - [web\_dir(f\_name=None)](#web_dirf_namenone)
@@ -947,7 +947,7 @@ Usage(s): [LM_presence](./source/modules/LM_presence.py) [LM_bme280](./source/mo
 
 ### web\_endpoint(endpoint, function, method):
 
-Custom endpoint creation in order to handle GET or POST requests. `<localhost.local>/endpoint` from Load Modules to WebCli web server.
+Custom endpoint creation in order to handle GET, POST or DELETE requests. `<localhost.local>/endpoint` from Load Modules to WebCli web server.
 
 **Prerequisite**
 > Enable `webui True` in node config.
@@ -957,15 +957,17 @@ Parameters:
 * **endpoint**: name of the http endpoint after the main address, like `localhost.local/my_endpoint`, in this case the `my_endpoint` is the input paramater here.
 
 * Simple **function** return: callback function, this will be called when endpoint is called. Depending on the request method, takes different number of arguments:
-    - "GET" method: the function takes no arguments
-    - "POST" method: single argument handled, populated by the request body, passed as a string
+    - "GET" method: the function takes `(headers, body)` where body is `b""`
+    - "POST" method: the function takes `(headers, body)` where body is bytes
+    - "DELETE" method: the function takes `(headers, body)` where body is `b""`
+    - multipart "POST" method: the function takes `(part_headers, part_body, first=True, last=False)`
 
-The function must return 2 values: html type and data for example `html/text, data` data for example: `hello world`. Supported data types: `text/html`, `text/plain`, `image/jpeg`. In short:
+The function must return 2 values: html type and data for example `html/text, data` data for example: `hello world`. Supported data types: `text/html`, `text/plain`, `application/json`, `image/jpeg`. In short:
 
 ```python
-return "image/jpeg" | "text/html" | "text/plain", <data>
+return "image/jpeg" | "text/html" | "text/plain" | "application/json", <data>
 	
-# <data>: binary | string
+# <data>: bytes | string | dict | tuple | list
 ```
 > select one from between | signs
 
@@ -978,20 +980,30 @@ return "multipart/x-mixed-replace" | "multipart/form-data", <data>
 ```
 > select one from between | signs
 
-* request **method**: either GET or POST.
+* Static web resource return: **function** can be a string file reference from `/web`, for example `'filesui.html'`.
+
+* request **method**: GET, POST or DELETE.
+
+* Authentication: protect an endpoint callback with `@sudo` from `Auth.py`. Web clients retry protected callbacks with the `x-micros-auth` header after the password is entered.
+
+* If the callback does not use request data, define it with `*_`.
 
 Returns:
 
-* True if function successfuly registered on the endpoint
+* True if function successfully registered on the endpoint
 
 **Example:** LM\_my\_endpoint.py
 
 ```python
+from json import loads
+
+from Auth import sudo
 from Common import web_endpoint
 
 def load():
 	...
-	web_endpoint('my_endpoint', _response)
+	web_endpoint('my_endpoint', _response_without_params)
+	web_endpoint('my_endpoint', _response_with_params, 'POST')
 	return "Endpoint was created: http://localhost/my_endpoint"
 
 # Ignore headers and body
@@ -1000,18 +1012,19 @@ def _response_without_params(*_):
 	return 'text/plain', reply
 
 # Header and body is passed
+@sudo
 def _response_with_params(headers:dict, body:bytes):
     if headers["content-type"] == "text/plain":
         name = body.decode("ascii")
     elif headers["content-type"] == "application/json":
-        name = json.loads(body)["name"]
+        name = loads(body.decode("utf-8"))["name"]
     else:
         raise ValueError("Invalid content type")
 	reply = f"hello {name}"
 	return 'text/plain', reply
 ```
 
-Usage(s): [LM_OV2640](./source/modules/LM_OV2640.py)
+Usage(s): [LM_OV2640](./source/modules/LM_OV2640.py), [LM_web](./source/modules/LM_web.py)
 
 --------------------------
 

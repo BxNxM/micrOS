@@ -110,6 +110,89 @@ flowchart LR
 | `boostmd` | Sets CPU frequency policy |
 | `aioqueue` | Governs LM task queue and affects pool sizing |
 
+## Runtime Web Authentication
+
+micrOS web authentication uses the same `@sudo` protection model as shell
+operations and adapts the password challenge to HTTP clients.
+
+### Source files
+
+| File | Responsibility |
+| --- | --- |
+| [`Auth.py`](./source/Auth.py) | Provides `@sudo`, validates `pwd=...` against `appwd`, and raises `AuthRequired` when a password is needed |
+| [`Web.py`](./source/Web.py) | Catches `AuthRequired`, builds the HTTP auth challenge, and retries callbacks with `pwd` |
+| [`auth.js`](./source/web/auth.js) | Standalone browser helper with compact built-in UI and same-origin `fetch()` retry support |
+| [`LM_web.py`](./source/modules/LM_web.py) | Registers `/config` and `/config/ui`; `/config` callbacks use `@sudo` |
+
+### Runtime model
+
+- Endpoint registration stores callbacks directly in `WebEngine.ENDPOINTS`.
+- Authentication is decided when a registered callback executes and `@sudo`
+  raises `AuthRequired`.
+- Browser clients receive a small HTML or JSON challenge, enter credentials in
+  the `micrOSAuth` popup, and retry the protected request with `x-micros-auth`.
+- The username field is accepted by the UI; the stored credential checked by the
+  runtime is `appwd`.
+- Password data stays in browser memory and is sent only on same-origin retry
+  after an auth challenge.
+- Non-interactive clients can retry with `x-micros-auth: <appwd>` after a `401`
+  response.
+
+### Web UI integration
+
+UI pages that use `fetch()` need the auth helper already loaded, because a
+protected fetch response is handled by JavaScript rather than rendered as a
+standalone page.
+
+The server does not rewrite UI HTML at runtime. Pages that call protected
+callbacks include `/auth.js` directly, keeping static file serving streaming and
+heap usage predictable.
+
+The `/config/ui` page is intentionally served as a normal UI resource. Its GET
+and POST calls to `/config` are protected by `@sudo`, so the popup appears when
+the page first reads or writes protected config data.
+
+### Authentication UML
+
+```mermaid
+sequenceDiagram
+    participant Client as Direct browser/curl
+    participant UI as Browser UI page
+    participant AuthJS as auth.js
+    participant Web as WebEngine
+    participant Sudo as @sudo callback
+
+    Client->>Web: GET /config
+    Web->>Sudo: callback(headers, body)
+    Sudo-->>Web: AuthRequired
+    alt Browser accepts HTML
+        Web-->>Client: 401 HTML shell loading /auth.js
+        Client->>AuthJS: boot prompt
+        AuthJS->>Web: retry /config with x-micros-auth
+    else curl/API
+        Web-->>Client: 401 JSON
+        Client->>Web: retry /config with x-micros-auth
+    end
+    Web->>Sudo: callback(headers, body, pwd=appwd)
+    Sudo-->>Web: application/json, config
+    Web-->>Client: 200 JSON
+
+    UI->>Web: GET /config/ui
+    Web-->>UI: config.html with /auth.js import
+    UI->>AuthJS: fetch("/config")
+    AuthJS->>Web: GET /config
+    Web->>Sudo: callback(headers, body)
+    Sudo-->>Web: AuthRequired
+    Web-->>AuthJS: 401 JSON auth challenge
+    AuthJS->>UI: show micrOSAuth popup
+    UI->>AuthJS: appwd
+    AuthJS->>Web: retry GET /config with x-micros-auth
+    Web->>Sudo: callback(headers, body, pwd=appwd)
+    Sudo-->>Web: application/json, config
+    Web-->>AuthJS: 200 JSON
+    AuthJS-->>UI: original fetch resolves
+```
+
 ## Lazy Loading Strategy
 
 micrOS uses practical lazy loading, not aggressive eviction.

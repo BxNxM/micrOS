@@ -1510,12 +1510,13 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 
 <section class="panel module-card">
 <h2 id="web"><a href="#web">web</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>dashboard=True fileserver:bool=False fs_explore:bool=False</td></tr><tr><th>doc</th><td>Centralized&nbsp;Web&nbsp;Backend&nbsp;Services&nbsp;Loader<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>dashboard=True fileserver:bool=False fs_explore:bool=False config=True</td></tr><tr><th>doc</th><td>Centralized&nbsp;Web&nbsp;Backend&nbsp;Services&nbsp;Loader<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Dynamic&nbsp;application&nbsp;dashboard<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Fileserver<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;dashboard:&nbsp;&nbsp;bool&nbsp;-&nbsp;enable*/disable&nbsp;application&nbsp;dashboard<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fileserver:&nbsp;bool&nbsp;-&nbsp;enable/disable*&nbsp;fileserver<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fs_explore:&nbsp;bool&nbsp;-&nbsp;enable&nbsp;all&nbsp;shared&nbsp;web&nbsp;mounts:&nbsp;modules,&nbsp;data</td></tr></table></td></tr><tr><th>enable_config</th><td><table class="doc-table"><tr><th>doc</th><td>Enable&nbsp;web&nbsp;configuration&nbsp;option</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fs_explore:&nbsp;bool&nbsp;-&nbsp;enable/disable*&nbsp;all&nbsp;shared&nbsp;web&nbsp;mounts:&nbsp;modules,&nbsp;data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;config:&nbsp;bool&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;enable*/disable&nbsp;micrOS&nbsp;web&nbsp;config&nbsp;with&nbsp;auth</td></tr></table></td></tr><tr><th>enable_config</th><td><table class="doc-table"><tr><th>doc</th><td>Enable&nbsp;web&nbsp;configuration&nbsp;option</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>

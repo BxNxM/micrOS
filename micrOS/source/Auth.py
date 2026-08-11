@@ -5,6 +5,22 @@ micrOS Load Module Authentication/Access feature
 from Config import cfgget as __cfgget
 PWD_KEY = "pwd"
 
+
+class AuthRequired(Exception):
+    """
+    Raised by @sudo when the caller did not provide a valid app password.
+    Shell and WebEngine translate this into their own response style.
+    """
+
+
+def check_password(password):
+    """
+    Shared app password check.
+    Username is intentionally not enforced yet: micrOS has only appwd.
+    """
+    return password == __cfgget("appwd")
+
+
 def sudo(_f=None, *, _when_true=None):
     """
     Decorator for password-protected functions.
@@ -42,9 +58,10 @@ def sudo(_f=None, *, _when_true=None):
                     if a[wt_idx]:
                         require = True
 
-            # Password check
-            if require and k.get(PWD_KEY) != __cfgget("appwd"):
-                raise Exception(f"Access denied, wrong password ({PWD_KEY})")
+            # Password check: callers use pwd=.
+            password = k.get(PWD_KEY)
+            if require and not check_password(password):
+                raise AuthRequired(f"Access denied, wrong password ({PWD_KEY})")
             # Remove password before calling function
             k.pop(PWD_KEY, None)
             return f(*a, **k)
@@ -58,5 +75,5 @@ def resolve_secret(commands:str):
     """
     placeholder = f"${PWD_KEY}"
     if placeholder in commands:
-        commands = commands.replace(placeholder, f"'{__cfgget("appwd")}'")
+        commands = commands.replace(placeholder, f"'{__cfgget('appwd')}'")
     return commands

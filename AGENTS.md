@@ -9,7 +9,9 @@ Humans should still read:
 - `micrOS/MODULE_GUIDE.md`
 - `CONTRIBUTING.md`
 
-Use this file as the operational summary for making safe changes.
+Use this file as the high-level operational summary for making safe changes.
+Keep detailed architecture, public API, and contribution guidance in the
+project markdowns linked above.
 
 ---
 
@@ -181,6 +183,8 @@ Important consequences:
 - The shell `hello` response is
   `hello:<devfid>:<hwuid>:<dev|rel>`; `rel` is selected when the firmware
   machine description contains the fixed `micrOS` marker.
+- Runtime web authentication design lives in `micrOS/ARCHITECTURE.md`; the
+  `web_endpoint()` LM interface lives in `micrOS/MODULE_GUIDE.md`.
 
 If you change runtime behavior, verify where in boot or lazy-load flow it activates.
 

@@ -28,7 +28,7 @@ IMAGE_MODE = 'rel' if 'micrOS' in uname()[-1] else 'dev'
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '3.2.5-0'
+    MICROS_VERSION = '3.3.0-0'
 
     def __init__(self):
         """

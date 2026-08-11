@@ -247,12 +247,19 @@ function joinCrontasks(blocks) {
 }
 
 function loadConfig(report = true) {
-  return fetch('/config')
-    .then(r => r.json())
+  return fetch('/config', {headers: {Accept: 'application/json'}})
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
     .then(data => {
       configData = data;
+      return true;
     })
-    .catch(e => show('Load failed: ' + e.message));
+    .catch(e => {
+      alert('Load failed: ' + e.message);
+      return false;
+    });
 }
 
 function handleUpdateConfig() {
@@ -266,7 +273,10 @@ function handleUpdateConfig() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(savedChanges)
   })
-  .then(r => r.json())
+  .then(r => {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
   .then(data => {
     console.log('Update response:', data);
     if (!data || data.state !== true) {
@@ -296,6 +306,8 @@ function closeMobileMenu() {
 function addMenuListeners() {
   const menuItems = document.querySelectorAll('#configMenu p');
   menuItems.forEach(item => {
+    if (item.dataset.bound) return;
+    item.dataset.bound = '1';
     item.addEventListener('click', () => {
       const key = categoryKeyFromMenuItem(item);
       console.log('Clicked menu item:', key);
@@ -1669,20 +1681,30 @@ function closeMenuOnOutsideClick(event) {
   closeMobileMenu();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadConfig().then(() => {
-    decorateCategoryMenu();
-    addMenuListeners();
-    const toggle = document.getElementById('menuToggle');
-    if (toggle) {
-      toggle.addEventListener('click', toggleMenu);
-    }
+function initializeConfigUi() {
+  decorateCategoryMenu();
+  addMenuListeners();
+  const toggle = document.getElementById('menuToggle');
+  if (toggle && !toggle.dataset.bound) {
+    toggle.addEventListener('click', toggleMenu);
+    toggle.dataset.bound = '1';
+  }
+  if (!document.body.dataset.configPointerBound) {
     document.addEventListener('pointerdown', closeMenuOnOutsideClick);
-    const selectedCategory = loadSelectedCategory();
-    const menuItems = Array.from(document.querySelectorAll('#configMenu p'));
-    const menuItem = menuItems.find(item => categoryKeyFromMenuItem(item) === selectedCategory) || menuItems[0];
-    if (menuItem) {
-      menuItem.click();
+    document.body.dataset.configPointerBound = '1';
+  }
+  const selectedCategory = loadSelectedCategory();
+  const menuItems = Array.from(document.querySelectorAll('#configMenu p'));
+  const menuItem = menuItems.find(item => categoryKeyFromMenuItem(item) === selectedCategory) || menuItems[0];
+  if (menuItem) {
+    menuItem.click();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadConfig().then(ok => {
+    if (ok) {
+      initializeConfigUi();
     }
   });
 });

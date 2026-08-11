@@ -21,6 +21,7 @@ from Config import cfgget
 from Files import OSPath, path_join
 from Buffer import SlidingBuffer, BufferFullError, MemoryPool
 from Debug import console_write, syslog
+from Auth import AuthRequired, PWD_KEY
 
 try:
     from gc import mem_free
@@ -97,6 +98,7 @@ def _parse_rest_cmd(cmd:str) -> list[str]:
 
 class HeaderParsingError(ValueError):
     """Exception for errors occurring while parsing HTTP/MIME headers"""
+
 
 #################################################################
 #                   Pre-allocated Memory Buffer                 #
@@ -300,6 +302,7 @@ class WebEngine(Buffer):
     VERSION = "n/a"
     RESP_HEADERS = (
         200, b"HTTP/1.1 200 OK",
+        401, b"HTTP/1.1 401 Unauthorized",
         400, b"HTTP/1.1 400 Bad Request",
         404, b"HTTP/1.1 404 Not Found",
         405, b"HTTP/1.1 405 Method Not Allowed",
@@ -353,6 +356,42 @@ class WebEngine(Buffer):
         self.mp_delimiter = None
         self.mp_closing_delimiter = None
 
+    def _auth_execute(self, callback, *args, **kwargs):
+        """Run endpoint callback, retrying @sudo callbacks with custom web auth."""
+        try:
+            return callback(*args, **kwargs)
+        except AuthRequired:
+            auth_header = "x-micros-auth"
+            password = self.headers.get(auth_header)
+            if password is None:
+                raise
+            kwargs[PWD_KEY] = password
+            return callback(*args, **kwargs)
+
+    def _auth_response(self, tx):
+        """Write the custom auth-required HTTP response."""
+        accept = self.headers.get("accept", "")
+        self.response_headers[b"cache-control"] = b"no-store"
+        self.response_headers[b"x-content-type-options"] = b"nosniff"
+        self.response_headers[b"referrer-policy"] = b"no-referrer"
+        wants_html = "text/html" in accept or "application/xhtml+xml" in accept
+        if self.method != self.GET or not wants_html:
+            self.terminate(401, b"application/json")
+            return self._generate_response(tx, {"state": False, "result": "Auth required"})
+        self.response_headers[b"content-security-policy"] = (
+            b"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            b"object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+        )
+        self.terminate(401, b"text/html")
+        auth_boot_script = '<script src="/auth.js" data-micros-auth="1"></script>'
+        body = (
+            '<!doctype html><html><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>micrOS Auth</title></head><body>'
+            f'{auth_boot_script}</body></html>'
+        )
+        return self._generate_response(tx, body)
+
     # =========================================
     # Public methods for load modules
     # =========================================
@@ -372,7 +411,6 @@ class WebEngine(Buffer):
         if method not in WebEngine.METHODS:
             raise ValueError(f"method must be one of {WebEngine.METHODS}")
         WebEngine.ENDPOINTS[endpoint][method] = callback
-
 
     @staticmethod
     def web_mounts(modules:bool=None, data:bool=None, logs:bool=None) -> dict:
@@ -663,27 +701,30 @@ class WebEngine(Buffer):
 
     def _lm_endpoint_st(self, rx, tx):
         """Process a request by registered load module callbacks"""
-        callback =  WebEngine.ENDPOINTS[self.url][self.method]
-        if "content-length" in self.headers and self.headers["content-length"] > 0:
-            if mp_boundary := WebEngine._is_multipart(self.headers):
-                self.mp_boundary = mp_boundary.encode("ascii")
-                self.engine_state = self._start_multipart_parser_st
-                return
-            if self.headers["content-length"] > rx.size():
-                return
-            if self.headers["content-length"] < rx.size():
-                self.on_client_error(tx, self.CONTENT_LENGTH_ERROR)
-                return
-            self.engine_state = None
-            dtype, data = callback(self.headers, bytes(rx.peek()))
-            dtype = dtype.encode("ascii")
-        else:
-            if not callable(callback):
-                # Handle endpoint callback as a static resource
-                self.engine_state = lambda _rx, _tx: self._send_file_st(_rx, _tx, callback)
-                return
-            dtype, data = callback(self.headers, b"")
-            dtype = dtype.encode("ascii")
+        callback = WebEngine.ENDPOINTS[self.url][self.method]
+        try:
+            if "content-length" in self.headers and self.headers["content-length"] > 0:
+                if mp_boundary := WebEngine._is_multipart(self.headers):
+                    self.mp_boundary = mp_boundary.encode("ascii")
+                    self.engine_state = self._start_multipart_parser_st
+                    return
+                if self.headers["content-length"] > rx.size():
+                    return
+                if self.headers["content-length"] < rx.size():
+                    self.on_client_error(tx, self.CONTENT_LENGTH_ERROR)
+                    return
+                self.engine_state = None
+                dtype, data = self._auth_execute(callback, self.headers, bytes(rx.peek()))
+                dtype = dtype.encode("ascii")
+            else:
+                if not callable(callback):
+                    # Handle endpoint callback as a static resource
+                    self.engine_state = lambda _rx, _tx: self._send_file_st(_rx, _tx, callback)
+                    return
+                dtype, data = self._auth_execute(callback, self.headers, b"")
+                dtype = dtype.encode("ascii")
+        except AuthRequired:
+            return self._auth_response(tx)
         # dtype:
         #   one-shot (simple MIME types): image/jpeg | text/html | text/plain
         #   - data contains the response to include in the body
@@ -760,8 +801,10 @@ class WebEngine(Buffer):
             self.on_missing_resource(tx, b"Mount not found")
             return
         try:
-            self.response_headers[b"content-length"] = str(stat(web_resource)[6]).encode()
-            self.terminate(200, WebEngine._file_type(web_resource))
+            file_size = stat(web_resource)[6]
+            content_type = WebEngine._file_type(web_resource)
+            self.response_headers[b"content-length"] = str(file_size).encode()
+            self.terminate(200, content_type)
             self._write_response_head(tx)
             return open(web_resource, "rb")
         except OSError:
@@ -811,16 +854,21 @@ class WebEngine(Buffer):
             return
         callback = WebEngine.ENDPOINTS[self.url][self.method]
         # Process complete part
-        if not is_final:
-            callback(part_headers, part_body, first=self.mp_first_part, last=False)
-            if rx.peek(len(self.mp_delimiter)) != self.mp_delimiter:
-                self.on_client_error(tx, self.MULTIPART_BOUNDARY_ERROR)
+        try:
+            if not is_final:
+                self._auth_execute(
+                    callback, part_headers, part_body,
+                    first=self.mp_first_part, last=False)
+                if rx.peek(len(self.mp_delimiter)) != self.mp_delimiter:
+                    self.on_client_error(tx, self.MULTIPART_BOUNDARY_ERROR)
+                    return
+                rx.consume(len(self.mp_delimiter))
+                self.content_length_cnt += len(self.mp_delimiter)
+                self.mp_first_part = False
+                self.engine_state = self._parse_boundary_st
                 return
-            rx.consume(len(self.mp_delimiter))
-            self.content_length_cnt += len(self.mp_delimiter)
-            self.mp_first_part = False
-            self.engine_state = self._parse_boundary_st
-            return
+        except AuthRequired:
+            return self._auth_response(tx)
         # Process last part
         rx.consume(len(self.mp_closing_delimiter))
         self.content_length_cnt += len(self.mp_closing_delimiter)
@@ -828,10 +876,14 @@ class WebEngine(Buffer):
         self.content_length_cnt + rx.size() != self.headers["content-length"]:
             self.on_client_error(tx, self.CONTENT_LENGTH_ERROR)
             return
-        dtype, data = callback(
-            part_headers,
-            part_body,
-            first=self.mp_first_part,
-            last=True)
+        try:
+            dtype, data = self._auth_execute(
+                callback,
+                part_headers,
+                part_body,
+                first=self.mp_first_part,
+                last=True)
+        except AuthRequired:
+            return self._auth_response(tx)
         self.terminate(200, dtype.encode("ascii"))
         return self._generate_response(tx, data)

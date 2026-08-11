@@ -87,6 +87,22 @@ def _install_import_stubs():
     m.cfgget = lambda _k: ""
     sys.modules["Config"] = m
 
+    m = types.ModuleType("Auth")
+    m.PWD_KEY = "pwd"
+    class AuthRequired(Exception):
+        pass
+    def sudo(func):
+        def wrapper(*args, **kwargs):
+            password = kwargs.get("pwd")
+            if password != "secret":
+                raise AuthRequired("Access denied")
+            kwargs.pop("pwd", None)
+            return func(*args, **kwargs)
+        return wrapper
+    m.AuthRequired = AuthRequired
+    m.sudo = sudo
+    sys.modules["Auth"] = m
+
     m = types.ModuleType("Debug")
     m.console_write = lambda *_a, **_k: None
     m.syslog = lambda *_a, **_k: None
@@ -375,6 +391,179 @@ class TestWebStateMachine(unittest.TestCase):
         self.assertEqual(
             self.web_module._parse_rest_cmd('system/clock/"my value"/foo-bar'),
             ['system', 'clock', '"my value"', 'foo', 'bar']
+        )
+
+    def test_html_endpoint_does_not_auto_load_auth_script(self):
+        callback = mock.Mock(return_value=("text/html", "<html><head></head><body>OK</body></html>"))
+        self.engine.register("api/page", callback)
+        self.engine.url = b"api/page"
+        self.engine.method = b"GET"
+        self.engine.headers = {}
+
+        self.engine._lm_endpoint_st(self.rx, self.tx)
+
+        response = bytes(self.tx.peek())
+        self.assertEqual(self.engine.status_code, 200)
+        self.assertNotIn(b'<script src="/auth.js"></script>', response)
+        callback.assert_called_once_with(self.engine.headers, b"")
+
+    def test_static_html_streams_without_rewrite(self):
+        body = b"<html><head><title>Test</title></head><body>OK</body></html>"
+
+        def fake_open(path, mode="r", *_args, **_kwargs):
+            self.assertEqual(path, "/web/index.html")
+            self.assertEqual(mode, "rb")
+            return io.BytesIO(body)
+
+        with mock.patch.object(self.web_module, "stat", return_value=fake_stat(len(body))), \
+             mock.patch("builtins.open", fake_open):
+            response_handler = self.engine._send_file_st(self.rx, self.tx, "index.html")
+
+        response_head = bytes(self.tx.peek())
+        self.assertIsInstance(response_handler, io.BytesIO)
+        self.assertEqual(self.engine.status_code, 200)
+        self.assertEqual(self.engine.response_headers[b"content-length"], str(len(body)).encode())
+        self.assertNotIn(b'<script src="/auth.js"></script>', response_head)
+        self.assertEqual(response_handler.getvalue(), body)
+
+    def test_mounted_html_streams_without_rewrite(self):
+        body = b"<html><head></head><body>User data</body></html>"
+        self.web_module.WebEngine.WEB_MOUNTS["$data"] = "/data"
+
+        def fake_open(path, mode="r", *_args, **_kwargs):
+            self.assertEqual(path, "/data/page.html")
+            self.assertEqual(mode, "rb")
+            return io.BytesIO(body)
+
+        try:
+            with mock.patch.object(self.web_module, "stat", return_value=fake_stat(len(body))), \
+                 mock.patch("builtins.open", fake_open):
+                response_handler = self.engine._send_file_st(self.rx, self.tx, "$data/page.html")
+        finally:
+            self.web_module.WebEngine.WEB_MOUNTS.pop("$data", None)
+
+        self.assertIsInstance(response_handler, io.BytesIO)
+        self.assertEqual(self.engine.status_code, 200)
+        self.assertEqual(self.engine.response_headers[b"content-length"], str(len(body)).encode())
+        self.assertEqual(response_handler.getvalue(), body)
+
+    def test_sudo_endpoint_rejects_missing_header_at_execution(self):
+        callback = mock.Mock(return_value=("application/json", {"ok": True}))
+        wrapped = sys.modules["Auth"].sudo(callback)
+        self.engine.register("api/test", wrapped)
+        self.assertIs(self.engine.ENDPOINTS[b"api/test"][b"GET"], wrapped)
+        self.engine.url = b"api/test"
+        self.engine.method = b"GET"
+        self.engine.headers = {"accept": "*/*"}
+
+        self.engine._lm_endpoint_st(self.rx, self.tx)
+
+        self.assertEqual(self.engine.status_code, 401)
+        self.assertEqual(self.engine.response_headers[b"content-type"], b"application/json")
+        self.assertNotIn(b"www-authenticate", bytes(self.tx.peek()).lower())
+        callback.assert_not_called()
+
+    def test_sudo_endpoint_accepts_get_header_at_execution(self):
+        callback = mock.Mock(return_value=("application/json", {"ok": True}))
+        wrapped = sys.modules["Auth"].sudo(callback)
+        self.engine.register("api/test", wrapped)
+        self.engine.url = b"api/test"
+        self.engine.method = b"GET"
+        self.engine.headers = {"x-micros-auth": "secret"}
+
+        self.engine._lm_endpoint_st(self.rx, self.tx)
+
+        self.assertEqual(self.engine.status_code, 200)
+        callback.assert_called_once_with(self.engine.headers, b"")
+
+    def test_plain_endpoint_ignores_auth_header_at_execution(self):
+        callback = mock.Mock(return_value=("application/json", {"ok": True}))
+        self.engine.register("api/test", callback)
+        self.engine.url = b"api/test"
+        self.engine.method = b"GET"
+        self.engine.headers = {"x-micros-auth": "secret"}
+
+        self.engine._lm_endpoint_st(self.rx, self.tx)
+
+        self.assertEqual(self.engine.status_code, 200)
+        callback.assert_called_once_with(self.engine.headers, b"")
+
+    def test_sudo_endpoint_browser_get_returns_popup_shell(self):
+        callback = mock.Mock(return_value=("text/plain", "ok"))
+        self.engine.register("api/test", sys.modules["Auth"].sudo(callback))
+        self.engine.url = b"api/test"
+        self.engine.method = b"GET"
+        self.engine.headers = {"accept": "text/html,application/xhtml+xml"}
+
+        self.engine._lm_endpoint_st(self.rx, self.tx)
+
+        body = bytes(self.tx.peek()).lower()
+        self.assertEqual(self.engine.status_code, 401)
+        self.assertEqual(self.engine.response_headers[b"content-type"], b"text/html")
+        self.assertIn(b"/auth.js", body)
+        self.assertIn(b"data-micros-auth", body)
+        self.assertNotIn(b"www-authenticate", body)
+        callback.assert_not_called()
+
+    def test_sudo_endpoint_accepts_post_header_at_execution(self):
+        callback = mock.Mock(return_value=("application/json", {"ok": True}))
+        self.engine.register("api/test", sys.modules["Auth"].sudo(callback), "POST")
+        self.engine.url = b"api/test"
+        self.engine.method = b"POST"
+        self.engine.headers = {
+            "x-micros-auth": "secret",
+            "content-length": 2
+        }
+        self.rx.write(b"{}")
+
+        self.engine._lm_endpoint_st(self.rx, self.tx)
+
+        self.assertEqual(self.engine.status_code, 200)
+        callback.assert_called_once_with(self.engine.headers, b"{}")
+
+    def test_sudo_endpoint_accepts_delete_header_at_execution(self):
+        callback = mock.Mock(return_value=("application/json", {"ok": True}))
+        self.engine.register("api/test", sys.modules["Auth"].sudo(callback), "DELETE")
+        self.engine.url = b"api/test"
+        self.engine.method = b"DELETE"
+        self.engine.headers = {"x-micros-auth": "secret"}
+
+        self.engine._lm_endpoint_st(self.rx, self.tx)
+
+        self.assertEqual(self.engine.status_code, 200)
+        callback.assert_called_once_with(self.engine.headers, b"")
+
+    def test_sudo_multipart_accepts_header_at_execution(self):
+        self.engine.engine_state = self.engine._parse_boundary_st
+        self.engine.url = b"/api/test"
+        self.engine.method = b"POST"
+        self.engine.headers = {"content-length": 129, "x-micros-auth": "secret"}
+        self.engine.mp_boundary = b"test-boundary"
+        self.engine.mp_delimiter = b'--test-boundary\r\n'
+        self.engine.mp_closing_delimiter = b'--test-boundary--'
+
+        callback = mock.Mock(return_value=("application/json", {"ok": True}))
+        self.engine.register("/api/test", sys.modules["Auth"].sudo(callback), "POST")
+
+        body_part = (
+            b"Content-Disposition:form-data;"
+            b"name=\"file-chunk\";filename=\"upload.txt\"Content-Type:text/plain\r\n\r\n"
+            b"Upload content\r\n"
+            b"--test-boundary--"
+        )
+
+        for i in range(len(body_part)):
+            self.assertEqual(self.engine.engine_state, self.engine._parse_boundary_st)
+            self.rx.write(body_part[i:i+1])
+            self.engine.engine_state(self.rx, self.tx)
+
+        self.assertEqual(self.engine.engine_state, self.engine._parse_complete_part_st)
+        self.engine.engine_state(self.rx, self.tx)
+
+        self.assertEqual(self.engine.status_code, 200)
+        callback.assert_called_once_with(
+            {"content-disposition": "form-data;name=\"file-chunk\";filename=\"upload.txt\"Content-Type:text/plain"},
+            b"Upload content", first=True, last=True
         )
 
 

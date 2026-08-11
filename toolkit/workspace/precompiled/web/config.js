@@ -15,6 +15,7 @@ function createSelectInput(key,value){const select=document.createElement('selec
 function getSelectOptions(key){return configSelectOptions[key]||(key.match(/^irq\d+_trig$/)?configSelectOptions.irq_trig:null);}
 function hasUnsavedChanges(){return Object.keys(changedValues).length>0;}
 function updateSaveButtonState(){document.querySelectorAll('.config-save-button').forEach(button=>{button.disabled=!hasUnsavedChanges();});}
+function formatChangedKeys(values){return Object.keys(values).map(key=>'- '+(configLabelMap[key]||key)).join('\n');}
 function isMultiParamField(key){return multiParamFields.has(key)||irqCallbackRegex.test(key)||key==='crontasks';}
 function parseSemicolonValues(value){if(!value||typeof value!=='string')return[];return value.split(';').map(v=>v.trim()).filter(v=>v.length>0);}
 function crontaskSeparator(value){return value&&String(value).includes(';;')?';;':';';}
@@ -25,12 +26,12 @@ function parseCrontaskFunctions(value,advancedMode){if(!value||typeof value!=='s
 const singleCommand=value.trim();return singleCommand?[singleCommand]:[];}
 function joinSemicolonValues(values){return values.filter(v=>v&&v.trim().length>0).join('; ');}
 function joinCrontasks(blocks){const cleanBlocks=blocks.filter(b=>b&&b.trim().length>0);const cmdStart=cleanBlocks.length===1?cleanBlocks[0].indexOf('!'):-1;return cleanBlocks.join(';;')+(cmdStart>=0&&cleanBlocks[0].slice(cmdStart).includes(';')?';;':'');}
-function loadConfig(report=true){return fetch('/config').then(r=>r.json()).then(data=>{configData=data;}).catch(e=>show('Load failed: '+e.message));}
+function loadConfig(report=true){return fetch('/config',{headers:{Accept:'application/json'}}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(data=>{configData=data;return true;}).catch(e=>{alert('Load failed: '+e.message);return false;});}
 function handleUpdateConfig(){if(Object.keys(changedValues).length===0){alert('No changes to save');return;}
-return fetch('/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(changedValues)}).then(r=>r.json()).then(data=>{console.log('Update response:',data);if(!data||data.state!==true){const detail=data&&data.result?data.result:'Unknown error';const failed=data&&Array.isArray(data.failed)?` (${data.failed.join(', ')})`:'';alert('Update failed: '+detail+failed);return;}
-changedValues={};updateSaveButtonState();alert('Configuration updated successfully');}).catch(e=>{console.error('Update failed:',e);alert('Update failed: '+e.message);});}
+const savedChanges={...changedValues};return fetch('/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(savedChanges)}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(data=>{console.log('Update response:',data);if(!data||data.state!==true){const detail=data&&data.result?data.result:'Unknown error';const failed=data&&Array.isArray(data.failed)?` (${data.failed.join(', ')})`:'';alert('Update failed: '+detail+failed);return;}
+configData={...configData,...savedChanges};changedValues={};updateSaveButtonState();alert('Configuration updated successfully\n\n'+formatChangedKeys(savedChanges));}).catch(e=>{console.error('Update failed:',e);alert('Update failed: '+e.message);});}
 function closeMobileMenu(){const menu=document.getElementById('configMenu');if(menu&&window.innerWidth<=768){menu.classList.remove('open');}}
-function addMenuListeners(){const menuItems=document.querySelectorAll('#configMenu p');menuItems.forEach(item=>{item.addEventListener('click',()=>{const key=categoryKeyFromMenuItem(item);console.log('Clicked menu item:',key);setSelectedMenuItem(item);closeMobileMenu();saveSelectedCategory(key);if(key==='Packages'){renderPackagesSection();return;}
+function addMenuListeners(){const menuItems=document.querySelectorAll('#configMenu p');menuItems.forEach(item=>{if(item.dataset.bound)return;item.dataset.bound='1';item.addEventListener('click',()=>{const key=categoryKeyFromMenuItem(item);console.log('Clicked menu item:',key);setSelectedMenuItem(item);closeMobileMenu();saveSelectedCategory(key);if(key==='Packages'){renderPackagesSection();return;}
 if(key==='Tasks'){renderTaskSection();return;}
 const filteredConfig=filterConfig(key);console.log('Filtered config for',key,':',filteredConfig);renderConfigFields(filteredConfig,key);});});}
 function setSelectedMenuItem(selectedItem){const menuItems=document.querySelectorAll('#configMenu p');menuItems.forEach(item=>{if(item===selectedItem){item.classList.add('selected');}else{item.classList.remove('selected');}});}
@@ -158,5 +159,7 @@ function trackChange(key,value){if(configData[key]===value){delete changedValues
 updateSaveButtonState();console.log('Tracked change:',key,'=',value);console.log('All changes:',changedValues);}
 function toggleMenu(){const menu=document.getElementById('configMenu');if(!menu)return;menu.classList.toggle('open');}
 function closeMenuOnOutsideClick(event){const menu=document.getElementById('configMenu');const toggle=document.getElementById('menuToggle');if(!menu||!menu.classList.contains('open')||window.innerWidth>768)return;if(menu.contains(event.target)||(toggle&&toggle.contains(event.target)))return;closeMobileMenu();}
-document.addEventListener('DOMContentLoaded',()=>{loadConfig().then(()=>{decorateCategoryMenu();addMenuListeners();const toggle=document.getElementById('menuToggle');if(toggle){toggle.addEventListener('click',toggleMenu);}
-document.addEventListener('pointerdown',closeMenuOnOutsideClick);const selectedCategory=loadSelectedCategory();const menuItems=Array.from(document.querySelectorAll('#configMenu p'));const menuItem=menuItems.find(item=>categoryKeyFromMenuItem(item)===selectedCategory)||menuItems[0];if(menuItem){menuItem.click();}});});
+function initializeConfigUi(){decorateCategoryMenu();addMenuListeners();const toggle=document.getElementById('menuToggle');if(toggle&&!toggle.dataset.bound){toggle.addEventListener('click',toggleMenu);toggle.dataset.bound='1';}
+if(!document.body.dataset.configPointerBound){document.addEventListener('pointerdown',closeMenuOnOutsideClick);document.body.dataset.configPointerBound='1';}
+const selectedCategory=loadSelectedCategory();const menuItems=Array.from(document.querySelectorAll('#configMenu p'));const menuItem=menuItems.find(item=>categoryKeyFromMenuItem(item)===selectedCategory)||menuItems[0];if(menuItem){menuItem.click();}}
+document.addEventListener('DOMContentLoaded',()=>{loadConfig().then(ok=>{if(ok){initializeConfigUi();}});});

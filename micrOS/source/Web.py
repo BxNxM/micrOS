@@ -690,11 +690,12 @@ class WebEngine(Buffer):
             resp_schema['result'] = {"micrOS": WebEngine.VERSION,
                                      'node': cfgget('devfid'),
                                      'auth': WebEngine.AUTH}
-            if len(tuple(WebEngine.ENDPOINTS.keys())) > 0:
-                resp_schema['result']['usr_endpoints'] = tuple(
-                    endpoint.decode("ascii") if isinstance(endpoint, (bytes, bytearray)) else endpoint
-                    for endpoint in WebEngine.ENDPOINTS
-                )
+            get_endpoints = tuple(
+                endpoint.decode("ascii") if isinstance(endpoint, (bytes, bytearray)) else endpoint
+                for endpoint, methods in WebEngine.ENDPOINTS.items()
+                if WebEngine.GET in methods
+            )
+            resp_schema['result']['usr_endpoints'] = get_endpoints
             resp_schema['state'] = True
         self.terminate(200, b"text/html")
         return self._generate_response(tx, resp_schema)

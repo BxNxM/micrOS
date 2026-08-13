@@ -120,9 +120,9 @@ operations and adapts the password challenge to HTTP clients.
 | File | Responsibility |
 | --- | --- |
 | [`Auth.py`](./source/Auth.py) | Provides `@sudo`, validates `pwd=...` against `appwd`, and raises `AuthRequired` when a password is needed |
-| [`Web.py`](./source/Web.py) | Catches `AuthRequired`, builds the HTTP auth challenge, and retries callbacks with `pwd` |
+| [`Web.py`](./source/Web.py) | Catches `AuthRequired` from callable registered endpoint callbacks, builds the HTTP auth challenge, and retries callbacks with `pwd` |
 | [`auth.js`](./source/web/auth.js) | Standalone browser helper with compact built-in UI and same-origin `fetch()` retry support |
-| [`LM_web.py`](./source/modules/LM_web.py) | Registers `/config` and `/config/ui`; `/config` callbacks use `@sudo` |
+| [`LM_web.py`](./source/modules/LM_web.py) | Registers `/config`, `/config/ui`, and `/config/reboot`; `/config/ui` is static, while `/config` and `/config/reboot` callbacks use `@sudo` |
 
 ### Runtime model
 
@@ -138,6 +138,19 @@ operations and adapts the password challenge to HTTP clients.
 - Non-interactive clients can retry with `x-micros-auth: <appwd>` after a `401`
   response.
 
+### Auth routing
+
+Keep the HTTP auth retry flow on the callable registered endpoint path only.
+The static file and `/rest/...` paths are intentionally lightweight and must not
+call web auth retry helpers.
+
+| Request case | WebEngine path | Auth behavior |
+| --- | --- | --- |
+| `/rest/...` GET | `_rest_api_st()` | Does not call `_auth_execute()` or `_auth_response()`. The existing REST load-module auth gate can still decide whether a command may run, but this is not the HTTP `@sudo` retry flow. |
+| Static `GET` such as `/`, `/auth.js`, `/ustyle.css` | `_send_file_st()` | Streams the file directly without invoking `@sudo` or web auth retry helpers. |
+| Registered endpoint mapped to a static file name | `_lm_endpoint_st()` -> `_send_file_st()` | Registered route, but still a pure file response; it does not invoke `@sudo`. |
+| Callable registered endpoint, including multipart callbacks | `_lm_endpoint_st()` or `_parse_complete_part_st()` | Uses `_auth_execute()`. If the callback raises `AuthRequired`, WebEngine returns `_auth_response()` or retries with `pwd` from `x-micros-auth`. |
+
 ### Web UI integration
 
 UI pages that use `fetch()` need the auth helper already loaded, because a
@@ -151,6 +164,10 @@ heap usage predictable.
 The `/config/ui` page is intentionally served as a normal UI resource. Its GET
 and POST calls to `/config` are protected by `@sudo`, so the popup appears when
 the page first reads or writes protected config data.
+
+The `usr_endpoints` list returned by `/rest` is dashboard navigation metadata,
+not a full method registry. It includes only registered GET endpoints so the
+main page does not generate buttons for POST-only or DELETE-only actions.
 
 ### Authentication UML
 

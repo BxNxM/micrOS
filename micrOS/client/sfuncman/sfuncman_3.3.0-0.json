@@ -2382,7 +2382,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/web.png?raw=true",
         "load": {
-            "doc": "\n    Centralized Web Backend Services Loader\n    - Dynamic application dashboard\n    - Fileserver\n    :param dashboard:  bool - enable*/disable application dashboard\n    :param fileserver: bool - enable/disable* fileserver\n    :param fs_explore: bool - enable/disable* all shared web mounts: modules, data\n    :param config: bool     - enable*/disable micrOS web config with auth\n    ",
+            "doc": "\n    Centralized Web Backend Services Loader\n    - Dynamic application dashboard\n    - Fileserver\n    :param dashboard:  bool - enable*/disable application dashboard\n    :param fileserver: bool - enable/disable* fileserver\n    :param fs_explore: bool - enable/disable* all shared web mounts: modules, data\n    :param config:     bool - enable*/disable micrOS web config with auth\n    ",
             "param(s)": "dashboard=True fileserver:bool=False fs_explore:bool=False config=True"
         }
     }

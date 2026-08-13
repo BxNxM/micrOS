@@ -980,11 +980,11 @@ return "multipart/x-mixed-replace" | "multipart/form-data", <data>
 ```
 > select one from between | signs
 
-* Static web resource return: **function** can be a string file reference from `/web`, for example `'filesui.html'`.
+* Static web resource return: **function** can be a string file reference from `/web`, for example `'filesui.html'`. This registers a file response and does not invoke `@sudo` or the web auth retry helpers.
 
 * request **method**: GET, POST or DELETE.
 
-* Authentication: protect an endpoint callback with `@sudo` from `Auth.py`. Web clients retry protected callbacks with the `x-micros-auth` header after the password is entered.
+* Authentication: protect a callable endpoint callback with `@sudo` from `Auth.py`. Web clients retry protected callbacks with the `x-micros-auth` header after the password is entered. The HTTP auth retry flow applies only to callable registered endpoint callbacks, not `/rest/...` requests or static file responses.
 
 * If the callback does not use request data, define it with `*_`.
 

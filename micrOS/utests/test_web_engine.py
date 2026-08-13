@@ -488,6 +488,34 @@ class TestWebStateMachine(unittest.TestCase):
         self.assertEqual(self.engine.status_code, 200)
         callback.assert_called_once_with(self.engine.headers, b"")
 
+    def test_rest_metadata_lists_get_endpoints_only(self):
+        self.engine.register("ui/page", "page.html")
+        self.engine.register("api/read", mock.Mock(return_value=("application/json", {})))
+        self.engine.register("api/write", mock.Mock(return_value=("application/json", {})), "POST")
+        self.engine.register("api/item", mock.Mock(return_value=("application/json", {})))
+        self.engine.register("api/item", mock.Mock(return_value=("application/json", {})), "DELETE")
+        self.engine.url = b"rest"
+        self.engine.method = b"GET"
+
+        self.engine._rest_api_st(self.rx, self.tx)
+
+        response = bytes(self.tx.peek())
+        body = response.split(b"\r\n\r\n", 1)[1]
+        endpoints = self.web_module.loads(body.decode("ascii"))["result"]["usr_endpoints"]
+        self.assertEqual(set(endpoints), {"ui/page", "api/read", "api/item"})
+        self.assertNotIn("api/write", endpoints)
+
+    def test_rest_metadata_includes_empty_endpoint_list(self):
+        self.engine.url = b"rest"
+        self.engine.method = b"GET"
+
+        self.engine._rest_api_st(self.rx, self.tx)
+
+        response = bytes(self.tx.peek())
+        body = response.split(b"\r\n\r\n", 1)[1]
+        endpoints = self.web_module.loads(body.decode("ascii"))["result"]["usr_endpoints"]
+        self.assertEqual(endpoints, [])
+
     def test_sudo_endpoint_browser_get_returns_popup_shell(self):
         callback = mock.Mock(return_value=("text/plain", "ok"))
         self.engine.register("api/test", sys.modules["Auth"].sudo(callback))

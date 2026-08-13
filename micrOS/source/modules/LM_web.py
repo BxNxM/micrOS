@@ -10,9 +10,6 @@ from Common import web_endpoint, web_mounts
 from Config import cfgget, cfgput
 from Auth import sudo
 
-_CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "auth", "soctout")
-
-
 def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False, config=True):
     """
     Centralized Web Backend Services Loader
@@ -21,7 +18,7 @@ def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False, config=Tr
     :param dashboard:  bool - enable*/disable application dashboard
     :param fileserver: bool - enable/disable* fileserver
     :param fs_explore: bool - enable/disable* all shared web mounts: modules, data
-    :param config: bool     - enable*/disable micrOS web config with auth
+    :param config:     bool - enable*/disable micrOS web config with auth
     """
     endpoints = []
     if dashboard:
@@ -35,6 +32,8 @@ def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False, config=Tr
         endpoints.append(enable_config())
     return endpoints
 
+######################## System Config ######################
+_CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "auth", "soctout")
 
 def enable_config():
     """
@@ -43,7 +42,8 @@ def enable_config():
     web_endpoint("config", _cfg_get_clb)
     web_endpoint("config", _cfg_set_clb, "POST")
     web_endpoint("config/ui", 'config.html')
-    return "Auth protected endpoint: /config GET|POST"
+    web_endpoint("config/reboot", _reboot_clb, "POST")
+    return "Config endpoints: config/ui GET, /config GET|POST (protected), /config/reboot POST (protected)"
 
 
 def _cfg_json(data):
@@ -69,11 +69,11 @@ def _cfg_set_clb(_, body):
         failed_keys = []
         for k, v in incoming_data.items():
             try:
-                if k == 'devfid' and not str(v).strip():
-                    raise Exception("Device name cannot be empty")
-                if k == 'crontasks' and isinstance(v, str) and not v.strip():
+                if isinstance(v, str) and not v.strip():
+                    if k == 'devfid':
+                        raise Exception("Device name cannot be empty")
                     v = 'n/a'
-                state = cfgput(k, v)
+                state = cfgput(k, v, type_check=True)
             except Exception as e:
                 state = False
                 k = f"{k}: {e}"
@@ -88,6 +88,25 @@ def _cfg_set_clb(_, body):
         return _cfg_json({"state": True, "result": "Config updated"})
     except Exception as e:
         return _cfg_json({"state": False, "result": str(e)})
+
+
+@sudo
+def _reboot_clb(*_):
+    """
+    Hard reboot system from web endpoint
+    """
+    from Common import micro_task
+    from machine import reset
+
+    @micro_task("web.reboot", _wrap=True)
+    async def _hard_reboot(tag):
+        with micro_task(tag) as my_task:
+            await my_task.feed(1000)
+            reset()
+
+    return _cfg_json({"state": bool(_hard_reboot()), "result": "Hard reboot scheduled"})
+
+#############################################################
 
 
 def help(widgets=False):

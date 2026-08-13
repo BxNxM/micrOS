@@ -76,7 +76,7 @@
     if (document.getElementById(ID + 'Style')) return;
     var s = document.createElement('style');
     s.id = ID + 'Style';
-    s.textContent = '#' + ID + '{position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0009;font:14px sans-serif;color:#fff}#' + ID + ' form{display:flex;flex-direction:column;width:240px;max-width:90%;padding:14px;border:1px solid #555;border-radius:6px;background:#161022}#' + ID + ' input,#' + ID + ' button{height:32px;margin-top:8px;border-radius:4px;border:1px solid #555;padding:0 9px;box-sizing:border-box}#' + ID + ' button{background:#17823a;color:#fff;font-weight:bold}#' + ID + ' span{min-height:18px;margin-top:6px;color:#ff9a9a}#' + ID + ' pre{white-space:pre-wrap;word-break:break-word}';
+    s.textContent = '#' + ID + '{position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0009;font:14px sans-serif;color:#fff}#' + ID + ' form{display:flex;flex-direction:column;width:240px;max-width:90%;padding:14px;border:1px solid #555;border-radius:6px;background:#161022}#' + ID + ' input,#' + ID + ' button{display:block;width:100%;min-width:0;max-width:none;flex:none;height:32px;min-height:32px;margin:8px 0 0;border-radius:4px;border:1px solid #555;padding:0 9px;box-sizing:border-box;font:14px sans-serif}#' + ID + ' input{background:#241a36;color:#fff}#' + ID + ' button{background:#17823a;color:#fff;font-weight:bold}#' + ID + ' span{min-height:18px;margin-top:6px;color:#ff9a9a}#' + ID + ' pre{white-space:pre-wrap;word-break:break-word}';
     (document.head || document.getElementsByTagName('head')[0]).appendChild(s);
   }
   function prompt(o) {

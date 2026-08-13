@@ -119,7 +119,7 @@ class USB(Compile):
         if not image_name.startswith(self.MICROS_IMAGE_PREFIX):
             return (
                 "",
-                "[IMAGE] {}".format(image_name or "<not selected>"),
+                "🔶 [IMAGE] {}".format(image_name or "<not selected>"),
                 "  MODE: DEVELOPMENT",
                 "  CONTENT: stock MicroPython + micrOS core + all features",
                 "",
@@ -141,7 +141,7 @@ class USB(Compile):
                 builtin_summary += " +{} more".format(remaining)
             return (
                 "",
-                "[IMAGE] {}".format(image_name),
+                "🔶 [IMAGE] {}".format(image_name),
                 "  MODE: RELEASE",
                 "  CORE: frozen micrOS (Core OTA update disabled)",
                 "  FEATURES: minimum release set",
@@ -151,7 +151,7 @@ class USB(Compile):
         except (OSError, KeyError, TypeError, ValueError):
             return (
                 "",
-                "[IMAGE] {}".format(image_name),
+                "🔶 [IMAGE] {}".format(image_name),
                 "  MODE: RELEASE",
                 "  CORE: frozen micrOS (Core OTA update disabled)",
                 "  FEATURES: minimum release set",

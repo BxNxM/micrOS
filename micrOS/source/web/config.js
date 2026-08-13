@@ -288,7 +288,7 @@ function handleUpdateConfig() {
     configData = {...configData, ...savedChanges};
     changedValues = {};
     updateSaveButtonState();
-    alert('Configuration updated successfully\n\n' + formatChangedKeys(savedChanges));
+    showConfigSaveSuccess(savedChanges);
   })
   .catch(e => {
     console.error('Update failed:', e);
@@ -560,6 +560,167 @@ function setButtonBusy(button, label) {
 function resetButton(button, label) {
   button.disabled = false;
   button.textContent = label;
+}
+
+const REBOOT_DEFAULTS = {
+  label: 'Reboot',
+  busy: 'Rebooting...',
+  confirm: 'Reboot device now?',
+  start: 'Rebooting...',
+  wait: 'Waiting for device...',
+  back: 'Device is back',
+  fail: 'Reboot failed',
+  timeout: 'Device did not come back',
+  endpoint: '/config/reboot',
+  health: '/rest',
+  pollMs: 5000,
+  requestMs: 4000,
+  maxMs: 120000
+};
+
+function closeConfigDialog(dialog) {
+  const restoreFocus = dialog && dialog.restoreFocus;
+  if (dialog) {
+    dialog.remove();
+  }
+  if (restoreFocus && restoreFocus.focus) {
+    restoreFocus.focus();
+  }
+}
+
+function showConfigSaveSuccess(savedChanges) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'config-dialog-backdrop';
+  backdrop.restoreFocus = document.activeElement;
+  backdrop.onkeydown = event => {
+    if (event.key === 'Escape') {
+      closeConfigDialog(backdrop);
+    }
+  };
+
+  const dialog = document.createElement('div');
+  dialog.className = 'config-dialog';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-labelledby', 'configSaveSuccessTitle');
+
+  const header = document.createElement('div');
+  header.className = 'config-dialog-header';
+  const title = textElement('h3', 'Configuration Updated', 'config-dialog-title');
+  title.id = 'configSaveSuccessTitle';
+  const closeButton = makeButton('Close', () => closeConfigDialog(backdrop), 'config-dialog-close');
+  header.append(title, closeButton);
+
+  const message = textElement('p', 'Configuration updated successfully.', 'config-dialog-message');
+  const changed = createInlineOutput();
+  changed.classList.add('config-wide-action-output');
+  setInlineDetails(changed, formatChangedKeys(savedChanges));
+
+  dialog.append(header, message, changed);
+  renderRebootButton(dialog, {
+    confirm: null,
+    start: 'Rebooting after config save...'
+  });
+
+  backdrop.append(dialog);
+  document.body.append(backdrop);
+  closeButton.focus();
+}
+
+function renderRebootButton(container, options = {}) {
+  const settings = {...REBOOT_DEFAULTS, ...options};
+  const section = document.createElement('section');
+  section.className = 'config-wide-action-section config-section-gap-large';
+
+  const button = makeButton(settings.label, null, 'danger-button config-wide-action-button');
+  const output = createInlineOutput();
+  output.classList.add('config-wide-action-output');
+  button.onclick = () => handleReboot(button, output, settings);
+
+  section.append(button, output);
+  container.appendChild(section);
+  return {section, button, output};
+}
+
+function handleReboot(button, details, settings = REBOOT_DEFAULTS) {
+  if (settings.confirm && !confirm(settings.confirm)) {
+    return;
+  }
+  setButtonBusy(button, settings.busy);
+  setInlineDetails(details, settings.start);
+  fetch(settings.endpoint, {method: 'POST', headers: {Accept: 'application/json'}})
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      const result = data && data.result ? data.result : settings.start;
+      setInlineDetails(details, result + '\n' + settings.wait);
+      waitForDeviceBack(button, details, settings);
+    })
+    .catch(e => {
+      if (e && (e.name === 'AbortError' || e.name === 'TypeError')) {
+        setInlineDetails(details, settings.wait);
+        waitForDeviceBack(button, details, settings);
+        return;
+      }
+      setTemporaryInlineDetails(details, settings.fail + ': ' + e.message);
+      resetButton(button, settings.label);
+    });
+}
+
+function waitForDeviceBack(button, details, settings = REBOOT_DEFAULTS) {
+  const startedAt = Date.now();
+  let checking = false;
+  const pollTimer = setInterval(() => {
+    if (!details.isConnected) {
+      clearInterval(pollTimer);
+      return;
+    }
+    if (Date.now() - startedAt >= settings.maxMs) {
+      clearInterval(pollTimer);
+      setInlineDetails(details, settings.timeout);
+      resetButton(button, settings.label);
+      return;
+    }
+    if (checking) return;
+    checking = true;
+    fetchDeviceHealth(settings)
+      .then(data => {
+        clearInterval(pollTimer);
+        const result = data && data.result ? data.result : {};
+        const node = result.node ? ' (' + result.node + ')' : '';
+        setInlineDetails(details, settings.back + node);
+        resetButton(button, settings.label);
+      })
+      .catch(() => {
+        checking = false;
+        if (details.isConnected) {
+          setInlineDetails(details, settings.wait);
+        }
+      });
+  }, settings.pollMs);
+}
+
+function fetchDeviceHealth(settings) {
+  const request = {
+    headers: {Accept: 'application/json'},
+    cache: 'no-store'
+  };
+  let timeoutId = null;
+  if (typeof AbortController === 'function') {
+    const controller = new AbortController();
+    timeoutId = setTimeout(() => controller.abort(), settings.requestMs);
+    request.signal = controller.signal;
+  }
+  return fetch(settings.health, request)
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .finally(() => {
+      if (timeoutId) clearTimeout(timeoutId);
+    });
 }
 
 // Packages UI: install and inspect
@@ -978,6 +1139,9 @@ function renderDefaultFields(data, container, sectionKey = '') {
     }
     renderField(container, key, value);
   });
+  if (sectionKey === 'Device') {
+    renderRebootButton(container);
+  }
 }
 
 function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
@@ -1704,6 +1868,7 @@ function initializeConfigUi() {
 document.addEventListener('DOMContentLoaded', () => {
   loadConfig().then(ok => {
     if (ok) {
+      restInfo(false);
       initializeConfigUi();
     }
   });

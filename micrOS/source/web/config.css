@@ -106,6 +106,15 @@
 }
 
 .config-action-section { width: var(--config-input-width); max-width: 100%; }
+.config-wide-action-section { width: var(--config-input-width); max-width: 100%; }
+#configFields .config-wide-action-button, .config-dialog .config-wide-action-button { width: 100%; display: block; font-weight: bold; }
+.config-wide-action-output { width: 100%; box-sizing: border-box; }
+.config-dialog-backdrop { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.62); }
+.config-dialog { width: min(420px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 16px; border: 1px solid #4B376C; border-radius: 8px; box-sizing: border-box; background: #1F1433; box-shadow: 0 16px 36px rgba(0,0,0,0.42); }
+.config-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.config-dialog-title { margin: 0; }
+.config-dialog-message { margin: 12px 0 8px 0; }
+.config-dialog .config-wide-action-section { width: 100%; margin-bottom: 0; }
 .config-header-row, .config-action-header, .config-button-group,
 .config-package-tools, .config-package-header {
   display: flex; align-items: center; gap: 8px;

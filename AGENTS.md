@@ -13,6 +13,11 @@ Use this file as the high-level operational summary for making safe changes.
 Keep detailed architecture, public API, and contribution guidance in the
 project markdowns linked above.
 
+IMPORTANT: DO NOT EDIT `toolkit/workspace/*` FILES BY HAND. THESE FILES ARE
+GENERATED BUILD, SIMULATOR, OR DEPLOYMENT ARTIFACTS. FIX THE AUTHORITATIVE
+SOURCE OR GENERATOR, THEN REGENERATE THEM ONLY WHEN THE MAINTAINER EXPLICITLY
+WANTS GENERATED ARTIFACTS REFRESHED.
+
 ---
 
 ## 1. First principle: there are two source systems in this repo
@@ -64,6 +69,8 @@ If a change is about install, deploy, dashboard, CLI, gateway, or simulation, st
 Generated files are not a third source system. Anything under `toolkit/workspace/`
 is build output, a simulator mirror, or bundled deployable data. Do not edit it
 manually to implement behavior.
+
+DO NOT WORK DIRECTLY IN `toolkit/workspace/`. IT IS GENERATED OUTPUT.
 
 Quick routing:
 

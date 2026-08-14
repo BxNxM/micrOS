@@ -93,18 +93,18 @@ def _cfg_set_clb(_, body):
 @sudo
 def _reboot_clb(*_):
     """
-    Hard reboot system from web endpoint
+    Soft reboot system from web endpoint
     """
     from Common import micro_task
-    from machine import reset
+    from machine import soft_reset
 
     @micro_task("web.reboot", _wrap=True)
-    async def _hard_reboot(tag):
+    async def _soft_reboot(tag):
         with micro_task(tag) as my_task:
             await my_task.feed(1000)
-            reset()
+            soft_reset()
 
-    return _cfg_json({"state": bool(_hard_reboot()), "result": "Hard reboot scheduled"})
+    return _cfg_json({"state": bool(_soft_reboot()), "result": "Soft reboot scheduled"})
 
 #############################################################
 

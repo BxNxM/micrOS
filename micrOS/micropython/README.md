@@ -1,6 +1,79 @@
 
 # Micropython images - source
 
+## Custom micrOS builds
+
+Custom micrOS firmware images are built by:
+
+```bash
+python3 toolkit/micrOSImageBuilder.py
+```
+
+The builder creates stable MicroPython ESP32 images with the direct
+`micrOS/source/*.py` runtime core frozen into firmware. This includes
+`main.py`, so a board flashed with a `micrOS-*` image boots micrOS directly
+from the firmware image. Runtime web assets and the minimum LM/IO modules are
+still copied after flashing by the DevToolKit resource copier.
+
+Current custom image targets:
+
+- `micrOS-esp32-1.28.0-3.3.0-0.bin`
+- `micrOS-esp32c3-1.28.0-3.3.0-0.bin`
+- `micrOS-esp32c6-1.28.0-3.3.0-0.bin`
+- `micrOS-esp32s3-1.28.0-3.3.0-0.bin`
+
+Supported builder device IDs:
+
+```bash
+python3 toolkit/micrOSImageBuilder.py --list-devices
+```
+
+- `esp32` -> `ESP32_GENERIC`
+- `esp32c3` -> `ESP32_GENERIC_C3`
+- `esp32c6` -> `ESP32_GENERIC_C6`
+- `esp32s3` -> `ESP32_GENERIC_S3`
+
+Build only one image with:
+
+```bash
+python3 toolkit/micrOSImageBuilder.py --device esp32s3
+```
+
+Build settings, pinned MicroPython/ESP-IDF versions, output filename format,
+supported devices, and the post-flash release resource profile are defined in:
+
+```text
+toolkit/micrOSImageConfig.json
+```
+
+Default builder paths:
+
+- MicroPython checkout: `toolkit/workspace/build/micropython`
+- ESP-IDF checkout: `toolkit/workspace/build/esp-idf`
+- ESP-IDF tools: `toolkit/workspace/build/esp-idf-tools`
+- temporary manifests and generated board overlays:
+  `toolkit/workspace/build/micrOSImageBuilder`
+- firmware output: `micrOS/micropython`
+
+The generated custom board overlay appends `[micrOS]` to the MicroPython
+machine description. micrOS exposes that marker through `system info` and uses
+it for release-mode detection (`hello:...:rel`).
+
+### Deployment behavior
+
+The DevToolKit USB deployment path selects its mode from the firmware basename:
+
+- `micrOS-*` images are treated as release/prebuilt micrOS firmware. The core is
+  already frozen, so deployment copies only the configured web assets and
+  minimum LM/IO modules from the precompiled workspace.
+- stock MicroPython images keep the legacy development behavior and receive the
+  full precompiled micrOS file set after flashing.
+
+USB updates preserve the connected node configuration separately, then restore
+`node_config.json` after the resource copy. Full OTA also detects release-mode
+devices and skips root-level frozen core uploads while still updating modules,
+IO maps, web assets, and config.
+
 ## Basic models
 
 - **2/5**⭐️ esp32 [ESP32\_GENERIC](https://micropython.org/download/ESP32_GENERIC/)

@@ -217,6 +217,9 @@ python3 toolkit/micrOSImageBuilder.py
 
 Supported custom targets: `esp32`, `esp32c3`, `esp32c6`, and `esp32s3`.
 
+For the MicroPython binary catalog, custom micrOS image list, and image notes,
+see [micrOS/micropython/README.md](micrOS/micropython/README.md).
+
 Image settings and release resources are defined in
 `toolkit/micrOSImageConfig.json`.
 Custom images also add a `[micrOS]` marker to the board shown by `system info`.

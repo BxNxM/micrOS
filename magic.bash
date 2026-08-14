@@ -234,6 +234,8 @@ then
       help
     elif [[ "${CMD_ARGS[0]}" == "distribute" ]]
     then
+        echo -e "Clean previous package build artifacts"
+        rm -rf build dist micrOSDevToolKit.egg-info
         echo -e "Create a source distribution"
         if python3 setup.py sdist;
         then

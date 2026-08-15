@@ -13,15 +13,22 @@
 
 /* ---------- Base layout ---------- */
 
+html {
+    min-height: 100%;
+    background: #21184f;
+}
+
 body {
     /* FIX: removed min-width:100vw (caused horizontal overflow) */
 
-    /* margin: 3%; */
-
+    margin: 0;
     padding: 16px;
+    box-sizing: border-box;
+    min-height: 100vh;
 
     background: linear-gradient(110deg, #4b3c66, #21184f, #712336);
     background-size: 200% 200%;
+    background-repeat: no-repeat;
     animation: backgroundAnimation 15s infinite;
 
     color: #d9d9d9;
@@ -182,7 +189,4 @@ ol.widget {
         margin-right: 0px;
     }
 
-    body {
-        margin: 16px;
-    }
 }

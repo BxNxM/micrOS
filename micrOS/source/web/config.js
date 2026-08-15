@@ -395,26 +395,48 @@ function renderTaskSection() {
   const heading = textElement('h2', categoryTitle('Tasks'), 'config-heading-top');
   container.appendChild(heading);
 
-  const loading = textElement('div', 'Loading task list...');
-  container.appendChild(loading);
+  const taskHost = document.createElement('div');
+  const moduleHost = document.createElement('div');
+  const taskLoading = textElement('div', 'Loading task list...');
+  const moduleLoading = textElement('div', 'Loading modules...');
+  taskHost.appendChild(taskLoading);
+  moduleHost.appendChild(moduleLoading);
+  container.appendChild(taskHost);
+  container.appendChild(moduleHost);
 
   restAPI('task/list', false)
-    .then(response => {
-      container.removeChild(loading);
-      if (!response || !response.result) {
-        container.appendChild(makeError('Unable to load task list.'));
+    .then(taskResponse => {
+      taskHost.removeChild(taskLoading);
+      if (!taskResponse || !taskResponse.result) {
+        taskHost.appendChild(makeError('Unable to load task list.'));
         return;
       }
 
-      const activeTasks = Array.isArray(response.result.active) ? response.result.active : [];
-      const inactiveTasks = Array.isArray(response.result.inactive) ? response.result.inactive : [];
+      const activeTasks = Array.isArray(taskResponse.result.active) ? taskResponse.result.active : [];
+      const inactiveTasks = Array.isArray(taskResponse.result.inactive) ? taskResponse.result.inactive : [];
 
-      renderTaskGroup(container, 'Active Tasks', activeTasks, true);
-      renderTaskGroup(container, 'Inactive Tasks', inactiveTasks, false);
+      renderTaskGroup(taskHost, 'Active Tasks', activeTasks, true);
+      renderTaskGroup(taskHost, 'Inactive Tasks', inactiveTasks, false);
     })
     .catch(error => {
-      container.removeChild(loading);
-      container.appendChild(makeError('Failed to load task list: ' + error.message));
+      taskHost.removeChild(taskLoading);
+      taskHost.appendChild(makeError('Failed to load task list: ' + error.message));
+    });
+
+  restAPI('modules', false)
+    .then(modulesResponse => {
+      moduleHost.removeChild(moduleLoading);
+      if (!modulesResponse || !Array.isArray(modulesResponse.result)) {
+        moduleHost.appendChild(makeError('Unable to load module list.'));
+        return;
+      }
+
+      const modules = modulesResponse.result.filter(moduleName => moduleName !== 'task');
+      renderActionList(moduleHost, 'Modules', modules, [{label: 'Help', handler: handleModuleHelp}]);
+    })
+    .catch(error => {
+      moduleHost.removeChild(moduleLoading);
+      moduleHost.appendChild(makeError('Failed to load module list: ' + error.message));
     });
 }
 
@@ -466,9 +488,7 @@ function renderActionRow(container, labelText, actions) {
 
   const actionGroup = document.createElement('div');
   actionGroup.className = 'config-button-group';
-
   const actionPanels = document.createElement('div');
-
   actions.forEach(action => {
     const button = makeButton(action.label, null, action.className || '');
     if (action.disabled && action.disabled(labelText)) {
@@ -545,6 +565,25 @@ function handleTaskDetails(tag, details) {
     })
     .catch(error => {
       setInlineDetails(details, 'Details error: ' + error.message);
+    });
+}
+
+function handleModuleHelp(moduleName, details) {
+  if (details.style.display !== 'none' && details.textContent) {
+    details.style.display = 'none';
+    return;
+  }
+  setInlineDetails(details, 'Loading help...');
+  restAPI(`${encodeURIComponent(moduleName)}/help`, false)
+    .then(response => {
+      if (response && response.hasOwnProperty('result')) {
+        setInlineDetails(details, formatResponseBody(response.result));
+      } else {
+        setInlineDetails(details, `No help response: ${JSON.stringify(response)}`);
+      }
+    })
+    .catch(error => {
+      setInlineDetails(details, 'Help error: ' + error.message);
     });
 }
 

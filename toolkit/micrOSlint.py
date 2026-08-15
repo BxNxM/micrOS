@@ -401,7 +401,7 @@ def _resource_printout_by_parent(resources):
     for parent, parent_resources in grouped.items():
         printout.append(f"  {parent}")
         for i, res in enumerate(parent_resources):
-            with open(os.path.join(MICROS_SOURCE_DIR, res), 'r') as file:
+            with open(os.path.join(MICROS_SOURCE_DIR, res), 'rb') as file:
                 printout.append(f"\t{i+1}\t{sum(1 for _ in file)}\t{res}")
     return printout
 

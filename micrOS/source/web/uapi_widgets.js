@@ -132,7 +132,7 @@ function renderEndpointGroups(endpoints) {
             container.appendChild(groupBox([button(endpointLabel(group, group), group)]));
             return;
         }
-        const groupEl = groupBox([makeEl('span', {className: 'endpoint-group-title', textContent: endpointLabel(group, group)})]);
+        const groupEl = groupBox([makeEl('span', {className: 'endpoint-group-title', textContent: group})]);
         entries.forEach(entry => groupEl.appendChild(button(endpointLabel(entry === group ? group : entry.replace(`${group}/`, ''), entry), entry)));
         container.appendChild(groupEl);
     });

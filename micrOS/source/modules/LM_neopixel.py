@@ -313,11 +313,12 @@ def status(lmf=None):
     Show Load Module state machine
     :param lmf str: selected load module function aka (function to show state of): None (show all states)
     - micrOS client state synchronization
-    :return dict: R, G, B, S
+    :return dict: R, G, B, S, BR
     """
     # Neopixel(=RGB) dedicated widget input - [OK]
     data = Data.DCACHE
-    return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
+    brightness = 0 if data[3] == 0 else int(max(data[:-1]) * 100 / Data.CH_MAX + 0.5)
+    return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3], 'BR': brightness}
 
 
 def pinmap():
@@ -344,7 +345,7 @@ def help(widgets=False):
                              'segment r g b s=<0-n>',
                              'transition r g b sec=1.0 wake=False',
                              'BUTTON random smooth=True max_val=254',
-                             'status',
+                             'STATUS status',
                              'subscribe_presence',
                              'pinmap',
                              'help widgets=False'), widgets=widgets)

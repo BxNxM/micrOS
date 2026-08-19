@@ -1,9 +1,13 @@
 from sim_common import console
+from threading import RLock
+
 try:
     import resource
 except Exception as e:
     console("resource module import error: {}".format(e))
     resource = None
+
+_SCHEDULE_LOCK = RLock()
 
 
 def alloc_emergency_exception_buf(*args, **kwargs):
@@ -30,7 +34,8 @@ def const(arg):
 
 
 def schedule(callback, arg):
-    return callback(arg)
+    with _SCHEDULE_LOCK:
+        return callback(arg)
 
 
 def heap_lock():

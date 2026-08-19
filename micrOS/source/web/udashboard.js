@@ -4,9 +4,20 @@ const OPTIONAL_WIDGET_TYPES = {
     embed: { src: 'uwidgets_pro.js', ready: () => typeof embedWidget === 'function' },
     white: { src: 'uwidgets_pro.js', ready: () => typeof whiteWidget === 'function' }
 };
+const WIDGET_RENDERERS = {
+    button: 'buttonWidget',
+    color: 'colorPaletteWidget',
+    embed: 'embedWidget',
+    graph: 'graphWidget',
+    joystick: 'joystickWidget',
+    slider: 'sliderWidget',
+    textbox: 'textBoxWidget',
+    white: 'whiteWidget'
+};
 const optionalWidgetLoaders = {};
 const normalizeCallback = callback => String(callback || '').trim().replace(/\s+/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
 const FEATURE_DISCOVERY_TIMEOUT = 20000;
+const moduleStatusSyncs = {};
 
 function loadOptionalWidgetScript(src) {
     if (optionalWidgetLoaders[src]) {
@@ -34,7 +45,7 @@ function ensureOptionalWidgetsLoaded(widgets) {
 function moduleHelp(module) {
     const endpoint = `${module}/help/True`;
     console.log(`[API] Endpoint: ${endpoint}`);
-    return restAPI(endpoint, true, FEATURE_DISCOVERY_TIMEOUT).then(({ result }) => {
+    return restAPI(endpoint, false, FEATURE_DISCOVERY_TIMEOUT).then(({ result }) => {
         const parsedWidgets = result.map(item => JSON.parse(item.replace(/\\"/g, '"')));
         console.log(`Parsed ${module} help:`, parsedWidgets);
         return parsedWidgets;
@@ -46,72 +57,28 @@ function moduleHelp(module) {
 
 // PAGE GENERATION
 
-function containerAppendChild(elements, container) {
-    // Append list of elements into the container aka draw elements :D
-    if (!elements || !container) {
-        console.error("Inputs array or container element is missing.");
+function generateElement(type, module, callback="", options={}) {
+    const data = `${module}/${callback}`;
+    const container = document.getElementById(`container-${module}`);
+    if (!container) {
+        console.error("No container");
         return;
     }
-    elements.forEach(function(element) {
-        container.appendChild(element);});
-}
 
-function generateElement(type, module, callback="", options={}) {
-    // type: slider, button, box, h1, h2, p, li, etc.
-    // data: rest command
-    console.log(`type: ${type}`);
-    const data = `${module}/${callback}`;
-    console.log(`data: ${data}`);
-    const container = document.getElementById(`container-${module}`);
-    if(!container) {
-        console.error("No container");
+    const rendererName = WIDGET_RENDERERS[type];
+    if (rendererName) {
+        const renderer = window[rendererName];
+        if (typeof renderer !== 'function') {
+            console.error(`Widget not loaded: ${type}`);
+            return;
+        }
+        renderer(container, data, options);
+        return;
     }
-    if (type === 'slider') {
-        // Create slider widget
-        sliderWidget(container, data, options)
-    } else if (type === 'button') {
-        // Create button widget
-        buttonWidget(container, data, options)
-    } else if (type === 'textbox') {
-        // Create textbox widget
-        textBoxWidget(container, data, options)
-    } else if (type === 'color') {
-        // Create color palette widget
-        colorPaletteWidget(container, data, options)
-    } else if (type === 'white') {
-        // Create cold white / warm white widget
-        if (typeof whiteWidget !== 'function') {
-            console.error("Optional widget not loaded: white");
-            return;
-        }
-        whiteWidget(container, data, options)
-    } else if (type === 'joystick') {
-        // Create joystick widget
-        if (typeof joystickWidget !== 'function') {
-            console.error("Optional widget not loaded: joystick");
-            return;
-        }
-        joystickWidget(container, data, options)
-    } else if (type === 'embed') {
-        // Create embedded image stream or webpage widget
-        if (typeof embedWidget !== 'function') {
-            console.error("Optional widget not loaded: embed");
-            return;
-        }
-        embedWidget(container, data, options)
-    } else if (type === 'graph') {
-        // Create graph widget
-        if (typeof graphWidget !== 'function') {
-            console.error("Optional widget not loaded: graph");
-            return;
-        }
-        graphWidget(container, data, options)
-    } else {
-        // Create other elements
-        const element = document.createElement(type);
-        element.textContent = `🧬 ${module}`;
-        containerAppendChild([element], container);
-    }
+
+    const element = document.createElement(type);
+    element.textContent = `🧬 ${module}`;
+    container.appendChild(element);
 }
 
 function autoTitleLen(widgets, callback) {
@@ -125,13 +92,76 @@ function autoTitleLen(widgets, callback) {
     }
 }
 
-async function craftModuleWidgets(module, widgets) {
+function createModuleStatusSync(module, widgets) {
+    const statusMeta = widgets.find(({ type }) => type === 'status');
+    if (!statusMeta) {
+        return null;
+    }
+    const handlers = [];
+    const callback = normalizeCallback(statusMeta.callback || 'status');
+    const endpoint = `${module}/${callback}`;
+    let inFlight = null, pending = false;
+    const fetchStatus = () => {
+        console.log(`[API] Widget status sync: ${endpoint}`);
+        inFlight = restAPI(endpoint, false).then(({ result }) => {
+            if (result && typeof result === 'object') {
+                handlers.forEach(handler => {
+                    try {
+                        handler(result);
+                    } catch (error) {
+                        console.error(`[API] Widget status apply failed: ${endpoint}`, error);
+                    }
+                });
+                return result;
+            }
+            return null;
+        }).catch(error => {
+            console.error(`[API] Widget status sync failed: ${endpoint}`, error);
+            return null;
+        }).then(result => {
+            inFlight = null;
+            if (pending) {
+                pending = false;
+                return fetchStatus();
+            }
+            return result;
+        });
+        return inFlight;
+    };
+    const sync = {
+        register: handler => {
+            if (typeof handler === 'function') { handlers.push(handler); }
+        },
+        refresh: () => {
+            if (inFlight) {
+                pending = true;
+                return inFlight;
+            }
+            return fetchStatus();
+        }
+    };
+    moduleStatusSyncs[module] = sync;
+    return sync;
+}
+
+function refreshModuleStatus(module) {
+    const sync = moduleStatusSyncs[module];
+    return sync ? sync.refresh() : Promise.resolve(null);
+}
+
+function refreshDashboardStatuses() {
+    return Promise.all(Object.keys(moduleStatusSyncs).map(refreshModuleStatus));
+}
+
+async function craftModuleWidgets(module, widgets, order = 0) {
     if (!widgets.length) {
         console.log(`${module} no exposed widgets`);
         return;
     }
+    const controls = widgets.filter(({ type }) => type !== 'status');
+    const statusSync = createModuleStatusSync(module, widgets);
     try {
-        await ensureOptionalWidgetsLoaded(widgets);
+        await ensureOptionalWidgetsLoaded(controls);
     } catch (error) {
         console.error(`Error loading optional widgets for ${module}:`, error);
     }
@@ -142,18 +172,22 @@ async function craftModuleWidgets(module, widgets) {
     const widget_container = document.createElement('ol');
     widget_container.id = `container-${module}`;
     widget_container.className = "widget";
+    widget_container.style.order = order;
     widgets_section.appendChild(widget_container);
     // Create widget title
     generateElement('h2', module);
 
+    const titleOptions = item => ({ title_len: autoTitleLen(widgets, item.callback) });
+    const baseOptions = item => ({ ...titleOptions(item), sync: statusSync });
+    const rangedOptions = item => ({ ...baseOptions(item), range: item.range });
     const widgetTypeOptions = {
-        button: item => ({title_len: autoTitleLen(widgets, item.callback), options: item.options, result: item.result }),
-        slider: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
-        color: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
-        white: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
-        textbox: item => ({title_len: autoTitleLen(widgets, item.callback), refresh: item.refresh }),
-        graph: item => ({title_len: autoTitleLen(widgets, item.callback), refresh: item.refresh, limit: item.limit }),
-        joystick: item => ({title_len: autoTitleLen(widgets, item.callback), range: item.range }),
+        button: item => ({ ...baseOptions(item), options: item.options, result: item.result }),
+        slider: rangedOptions,
+        color: rangedOptions,
+        white: rangedOptions,
+        joystick: rangedOptions,
+        textbox: item => ({ ...titleOptions(item), refresh: item.refresh }),
+        graph: item => ({ ...titleOptions(item), refresh: item.refresh, limit: item.limit }),
         embed: item => ({
             title_len: item.callback ? Math.max(autoTitleLen(widgets, item.callback), 2) : 1,
             callback: normalizeCallback(item.callback || ''),
@@ -163,7 +197,7 @@ async function craftModuleWidgets(module, widgets) {
     };
 
     // Create control elements for widget
-    widgets.forEach(item => {
+    controls.forEach(item => {
         let { type, callback = '' } = item;
         callback = normalizeCallback(callback);
         const type_options = widgetTypeOptions[type] ? widgetTypeOptions[type](item) : null;
@@ -171,7 +205,6 @@ async function craftModuleWidgets(module, widgets) {
             console.log(`Unsupported micrOS widget html_type: ${type}`);
             return;
         }
-
         try {
             console.log("adding widget controls");
             generateElement(type, module, callback, type_options);
@@ -179,15 +212,19 @@ async function craftModuleWidgets(module, widgets) {
             console.error(error);
         }
     });
+    if (statusSync) { statusSync.refresh(); }
 }
 
 function DynamicWidgetLoad() {
     restAPI('modules', true, FEATURE_DISCOVERY_TIMEOUT).then(data => {
-        const app_list = data.result;
-        app_list.forEach(module => {
-            moduleHelp(module).then(widgets => {
-                return craftModuleWidgets(module, widgets);
-            }).catch(error => {
+        const widgets_section = document.getElementById('widgets-section');
+        if (widgets_section) {
+            widgets_section.textContent = '';
+        }
+        Object.keys(moduleStatusSyncs).forEach(module => delete moduleStatusSyncs[module]);
+        const app_list = (data.result || []).slice().sort();
+        app_list.forEach((module, order) => {
+            moduleHelp(module).then(widgets => craftModuleWidgets(module, widgets, order)).catch(error => {
                 console.error(`Error processing module ${module}:`, error);
             });
         });

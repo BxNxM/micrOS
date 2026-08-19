@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Event, Lock, Thread, current_thread
 import time
 import micropython
 from sim_common import console
@@ -11,29 +11,93 @@ def machine(*args, **kwargs):
 
 class Timer:
     PERIODIC = "DUMMY"
+    ONE_SHOT = "ONE_SHOT"
 
     def __init__(self, timid=0, *args, **kwargs):
         self.timid = timid
         self.thread = None
         self.period_sec = 1
         self.callback = None
+        self.mode = self.PERIODIC
+        self._lock = Lock()
+        self._stop_event = Event()
+        self._generation = 0
         console("[Timer - {}] constructor".format(self.timid))
 
     def init(self, period, mode, callback, *args, **kwargs):
         console("[Timer - {}] init".format(self.timid))
         console("period: {}, mode: {}, callback: {}".format(period, mode, callback))
-        self.period_sec = period / 1000
-        self.callback = callback
-        self.thread = Thread(target=self.__thread, daemon=True)
-        self.thread.start()
+        if callback is None:
+            raise TypeError("Timer callback must not be None")
 
-    def __thread(self):
+        self.deinit()
+
+        period_sec = max(float(period) / 1000, 0.001)
+        stop_event = Event()
+        with self._lock:
+            self.period_sec = period_sec
+            self.callback = callback
+            self.mode = mode
+            self._stop_event = stop_event
+            self._generation += 1
+            generation = self._generation
+            self.thread = Thread(
+                target=self.__thread,
+                args=(stop_event, generation),
+                daemon=True,
+                name="micrOS-sim-timer-{}-{}".format(self.timid, generation)
+            )
+            thread = self.thread
+        thread.start()
+
+    def deinit(self):
+        with self._lock:
+            thread = self.thread
+            stop_event = self._stop_event
+            period_sec = self.period_sec
+            self.thread = None
+            self.callback = None
+            self._generation += 1
+
+        stop_event.set()
+        if thread is not None and thread.is_alive() and thread is not current_thread():
+            thread.join(timeout=max(period_sec, 0.1) + 0.1)
+        console("[Timer - {}] deinit".format(self.timid))
+        return True
+
+    def __thread(self, stop_event, generation):
         while True:
-            console("\t| thread --[{}s] {}".format(self.period_sec, self.callback))
-            output = self.callback(None)
+            with self._lock:
+                period_sec = self.period_sec
+
+            if stop_event.wait(period_sec):
+                break
+
+            with self._lock:
+                if stop_event.is_set() or generation != self._generation:
+                    break
+                callback = self.callback
+                mode = self.mode
+
+            if callback is None:
+                break
+
+            console("\t| thread --[{}s] {}".format(period_sec, callback))
+            try:
+                output = callback(self)
+            except Exception as e:
+                console("[Timer - {}] callback error: {}".format(self.timid, e))
+                break
             console("\t|--> {}\n".format(output), end='\r')
             micropython.mem_info()
-            time.sleep(self.period_sec)
+
+            if mode == self.ONE_SHOT:
+                break
+
+        with self._lock:
+            if generation == self._generation and self.thread is current_thread():
+                self.thread = None
+                self.callback = None
 
 
 class Pin:
@@ -48,21 +112,30 @@ class Pin:
         console("[Pin] object constructor")
         self.__value = False
         self.pin = None
+        self._lock = Lock()
 
     def irq(self, pin=0, *args, **kwargs):
-        self.pin = pin
-        console("[Pin - {}] Set event IRQ".format(self.pin))
+        with self._lock:
+            self.pin = pin
+            current_pin = self.pin
+        console("[Pin - {}] Set event IRQ".format(current_pin))
 
     def value(self, value=None):
-        if value is None:
-            console("[Pin - {}] GET value: {}".format(self.pin, self.__value), end='\r')
-            return self.__value
-        self.__value = value
-        console("[Pin - {}] SET value: {}".format(self.pin, self.__value), end='\r')
-        return self.__value
+        with self._lock:
+            if value is not None:
+                self.__value = value
+                action = "SET"
+            else:
+                action = "GET"
+            pin = self.pin
+            current_value = self.__value
+        console("[Pin - {}] {} value: {}".format(pin, action, current_value), end='\r')
+        return current_value
 
     def deinit(self):
-        console("[Pin - {}] Deinit obj".format(self.pin))
+        with self._lock:
+            pin = self.pin
+        console("[Pin - {}] Deinit obj".format(pin))
 
 
 class RTC:
@@ -78,8 +151,9 @@ class WDT:
 
     def __init__(self, timeout):
         self.timeout = timeout
+        self._lock = Lock()
         self._metrics = {
-            "last": time.time(),
+            "last": time.monotonic(),
             "min": 0,
             "max": 0,
             "avg": 0,
@@ -88,30 +162,32 @@ class WDT:
         }
 
     def feed(self):
-        now = time.time()
-        delta = now - self._metrics["last"]
-        self._metrics["last"] = now
-        self._metrics["dt"] = delta
-        self._metrics["count"] += 1
+        now = time.monotonic()
+        with self._lock:
+            delta = now - self._metrics["last"]
+            self._metrics["last"] = now
+            self._metrics["dt"] = delta
+            self._metrics["count"] += 1
 
-        if self._metrics["count"] == 1:
-            self._metrics["min"] = delta
-            self._metrics["max"] = delta
-            self._metrics["avg"] = delta
-        else:
-            self._metrics["min"] = min(self._metrics["min"], delta)
-            self._metrics["max"] = max(self._metrics["max"], delta)
-            count = self._metrics["count"]
-            self._metrics["avg"] = (((self._metrics["avg"] * (count - 1)) + delta) / count)
+            if self._metrics["count"] == 1:
+                self._metrics["min"] = delta
+                self._metrics["max"] = delta
+                self._metrics["avg"] = delta
+            else:
+                self._metrics["min"] = min(self._metrics["min"], delta)
+                self._metrics["max"] = max(self._metrics["max"], delta)
+                count = self._metrics["count"]
+                self._metrics["avg"] = (((self._metrics["avg"] * (count - 1)) + delta) / count)
+            metrics = dict(self._metrics)
 
-        if self._metrics["count"] == 10 or self._metrics["count"] % 50 == 0:
+        if metrics["count"] == 10 or metrics["count"] % 50 == 0:
             console((
                 f"[WDT.feed] timeout={self.timeout/1000}s "
-                f"count={self._metrics['count']} "
-                f"dt={self._metrics['dt'] * 1000:.1f}ms "
-                f"min={self._metrics['min'] * 1000:.1f}ms "
-                f"max={self._metrics['max'] * 1000:.1f}ms "
-                f"avg={self._metrics['avg'] * 1000:.1f}ms"
+                f"count={metrics['count']} "
+                f"dt={metrics['dt'] * 1000:.1f}ms "
+                f"min={metrics['min'] * 1000:.1f}ms "
+                f"max={metrics['max'] * 1000:.1f}ms "
+                f"avg={metrics['avg'] * 1000:.1f}ms"
             ))
 
 
@@ -121,19 +197,24 @@ class PWM:
         self.dimmer_pin = dimmer_pin
         self.__duty = 0
         self.__freq = freq
+        self._lock = Lock()
         console("[PWM - {}] {} Hz constructor".format(self.dimmer_pin, self.__freq))
 
     def duty(self, value=None):
-        if value is not None:
-            self.__duty = value
-        console("[PWM - {}] SET duty: {}".format(self.dimmer_pin, self.__duty))
-        return self.__duty
+        with self._lock:
+            if value is not None:
+                self.__duty = value
+            duty = self.__duty
+        console("[PWM - {}] SET duty: {}".format(self.dimmer_pin, duty))
+        return duty
 
     def freq(self, value=None):
-        if value is not None:
-            self.__freq = value
-        console("[PWM - {}] set freq: {}".format(self.dimmer_pin, self.__freq))
-        return self.__freq
+        with self._lock:
+            if value is not None:
+                self.__freq = value
+            freq = self.__freq
+        console("[PWM - {}] set freq: {}".format(self.dimmer_pin, freq))
+        return freq
 
     def deinit(self):
         return True
@@ -147,6 +228,7 @@ class ADC:
     def __init__(self, pin=None):
         self.pin = pin
         self.value = self.__gen()
+        self._lock = Lock()
 
     def __gen(self):
         while True:
@@ -164,10 +246,12 @@ class ADC:
         pass
 
     def read(self):
-        return self.value.__next__()
+        with self._lock:
+            return self.value.__next__()
 
     def read_u16(self):
-        return self.value.__next__()
+        with self._lock:
+            return self.value.__next__()
 
 
 class I2C:

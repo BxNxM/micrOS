@@ -394,8 +394,24 @@ Tags:
 * `GRAPH`, no required parameter, but should return a `dict` with numeric values
 * `WHITE`, two primary numeric parameters: `cw`, `ww`
 * `JOYSTICK`, two primary numeric parameters: `x`, `y`
+* `STATUS`, hidden dashboard metadata for widget state sync from a status callback
 * `EMBED`, widget-only type for image streams or embedded web pages `{"callback": "<endpoint>", "image": <bool>, "title": <str>}`
 * Implementation of [TYPES](./source/Types.py)
+
+`STATUS` is not rendered as a widget. It tells the dashboard which callback can
+sync real module state into matching widgets after they render with their default
+values, and again after widget actions. The same sync callback is reusable for
+future timer-driven refreshes. The status keys are detected from the function
+result; they are not listed in `Types.py`.
+
+Status return conventions for dashboard widgets:
+
+| Widget | Status keys | Notes |
+| ------ | ----------- | ----- |
+| `COLOR` | `R`, `G`, `B`, `BR`, `S` | `R/G/B` initialize the color picker as a soft-normalized preview color; `BR` is integer brightness percent, `S` is state. |
+| `SLIDER` | `X`, `BR`, `S` | Generic sliders initialize from `X`; brightness sliders initialize from integer `BR`; state-aware modules may return `S`. |
+| `JOYSTICK` | `X`, `Y` | Original joystick position keys. |
+| `WHITE` | `CW`, `WW`, `BR`, `S` | `BR` is integer brightness percent, `S` is state. |
 
 
 ## micrOS LM\_types\_demo.py (simple)
@@ -554,18 +570,19 @@ simulator $ types_demo help True
 
 Usage(s): [LM_neopixel](./source/modules/LM_neopixel.py), etc. in most of the modules :)
 
-### Types cheatsheat
+### Types cheatsheet
 
-|    Type     | Widget input param syntax  | Optional inline parameters |               Example
-| ----------- | -------------------------- | ---------------------------| ---------------------------------- |
-|   `BUTTON`  | `func` + none / named options param: `name=<p1,p2,pn>`   | `BUTTON{'result': True}`: show closable REST result below the button |  function def in load module: `def toggle(state)` -> `BUTTON toggle state=<True,False>` corresponding help message with type annotation, or no param option: `def toggle()` -> `BUTTON toggle`
-|   `SLIDER`  | `func` + range param: `<min-max-step>`            |        none     | Function must have one numeric parameter. `def set_value(value, ...)` -> `SLIDER set_value value=<0-255>`
-|   `COLOR`   | `func` + range param: `<min-max-step>`            |        none     | Function must have `r, g, b` input parameters. `def color(r, g, b, ...)` -> `COLOR color r=<0-255> g b`
-|   `WHITE`   | `func` + range param: `<min-max-step>`            |        none     | Function must have `cw, ww` input parameters. `def white(cw, ww, ...)` -> `WHITE white cw=<0-255> ww`
-|  `JOYSTICK` | `func` + range param: `<min-max-step>`            |        none     | Function must have `x, y` input parameters. `def position(x, y, ...)` -> `JOYSTICK position x=<40-70> y`
-|  `TEXTBOX`  | `func` + none                                     | `TEXTBOX{"refresh": 5000}`: polling interval in ms |
-|  `GRAPH`    | `func` + none                                     | `GRAPH{"refresh": 3000, "limit": 30}` where `refresh`: polling interval in ms, `limit`: retained samples |
-| `EMBED{"callback": "<endpoint>", "image": <bool>, "title": <str>}` | none | `callback`: URL/path, `image`: image stream mode, `title`: optional label |
+| Type | Widget input param syntax | Optional inline parameters | Example |
+| ---- | ------------------------- | -------------------------- | ------- |
+| `BUTTON` | `func` + none / named options param: `name=<p1,p2,pn>` | `BUTTON{'result': True}`: show closable REST result below the button | Function def: `def toggle(state)` -> `BUTTON toggle state=<True,False>`, or no param option: `def toggle()` -> `BUTTON toggle`. |
+| `SLIDER` | `func` + range param: `<min-max-step>` | none | Function must have one numeric parameter. `def set_value(value, ...)` -> `SLIDER set_value value=<0-255>`. |
+| `COLOR` | `func` + range param: `<min-max-step>` | none | Function must have `r`, `g`, `b` input parameters. `def color(r, g, b, ...)` -> `COLOR color r=<0-255> g b`. |
+| `WHITE` | `func` + range param: `<min-max-step>` | none | Function must have `cw`, `ww` input parameters. `def white(cw, ww, ...)` -> `WHITE white cw=<0-255> ww`. |
+| `JOYSTICK` | `func` + range param: `<min-max-step>` | none | Function must have `x`, `y` input parameters. `def position(x, y, ...)` -> `JOYSTICK position x=<40-70> y`. |
+| `STATUS` | `func` + none | none | `STATUS status` syncs matching widgets from the status function result. |
+| `TEXTBOX` | `func` + none | `TEXTBOX{"refresh": 5000}`: polling interval in ms | Renders command output as text. |
+| `GRAPH` | `func` + none | `GRAPH{"refresh": 3000, "limit": 30}` where `refresh`: polling interval in ms, `limit`: retained samples | Plots top-level numeric dict fields over time. |
+| `EMBED{"callback": "<endpoint>", "image": <bool>, "title": <str>}` | none | `callback`: URL/path, `image`: image stream mode, `title`: optional label | Renders an image stream or embedded web page. |
 
 > `range`, `options`, and regular callback commands are rendered from the command syntax below, so they are not listed as optional `TYPE{...}` parameters.
 
@@ -576,6 +593,7 @@ TYPE Example syntax:
                     'WHITE white cw=<0-255> ww',                 # white/cold-white control widget
                     'SLIDER brightness br=<0-1000-10>',          # range syntax: <min-max-step> step is optional
                     'BUTTON action',
+                    'STATUS status',
                     "BUTTON{'result': True} action_status",      # show command response under the button
                     'BUTTON control cmd=<Hello,Bello>',          # options syntax: <opt1,opt2,...> list of parameters
                     'TEXTBOX{"refresh": 2000} measure',          # optional widget override before the command

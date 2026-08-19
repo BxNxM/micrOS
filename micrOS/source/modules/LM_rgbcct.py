@@ -3,6 +3,15 @@ import LM_cct
 from Types import resolve
 
 
+def __merge_status(rgb, cct):
+    if not isinstance(rgb, dict) or not isinstance(cct, dict):
+        return {'RGB': rgb, 'CCT': cct}
+    rgb.pop('BR', None)
+    cct.pop('BR', None)
+    rgb.update(cct)                         # Merge rgb and cct status
+    return rgb
+
+
 def load(cache=None):
     """
     Unified rgb and cct module usage as one module
@@ -19,18 +28,7 @@ def toggle(state=None, smooth=True):
     rgb = LM_rgb.toggle(state, smooth)
     rgb_state = False if rgb['S'] == 0 else True
     cct = LM_cct.toggle(rgb_state, smooth)  # Set CCT value regarding rgb state (ensure it is in sync)
-    rgb.update(cct)                         # Merge rgb and cct status
-    return rgb
-
-
-def brightness(percent=None, smooth=True, wake=True):
-    """
-    Unified brightness function for rgb and cct control
-    """
-    rgb = LM_rgb.brightness(percent, smooth, wake)
-    cct = LM_cct.brightness(percent, smooth, wake)
-    rgb.update(cct)                         # Merge rgb and cct status
-    return rgb
+    return __merge_status(rgb, cct)
 
 
 def status(lmf=None):
@@ -39,8 +37,7 @@ def status(lmf=None):
     """
     rgb = LM_rgb.status(lmf)
     cct = LM_cct.status(lmf)
-    rgb.update(cct)                         # Merge rgb and cct status
-    return rgb
+    return __merge_status(rgb, cct)
 
 
 def pinmap():
@@ -61,5 +58,5 @@ def help(widgets=False):
     """
     return resolve(('load',
                              'BUTTON toggle state=<True,False> smooth=True',
-                             'SLIDER brightness percent smooth=True wake=True',
-                             'status', 'pinmap'), widgets=widgets)
+                             'STATUS status',
+                             'pinmap'), widgets=widgets)

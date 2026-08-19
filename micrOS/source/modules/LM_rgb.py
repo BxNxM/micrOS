@@ -281,10 +281,11 @@ def status(lmf=None):
     Show Load Module state machine
     :param lmf str: selected load module function aka (function to show state of): None (show all states)
     - micrOS client state synchronization
-    :return dict: R, G, B, S
+    :return dict: R, G, B, S, BR
     """
     data = Data.RGB_CACHE
-    return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3]}
+    brightness = 0 if data[3] == 0 else int(max(data[:-1]) * 100 / Data.CH_MAX + 0.5)
+    return {'R': data[0], 'G': data[1], 'B': data[2], 'S': data[3], 'BR': brightness}
 
 
 def pinmap():
@@ -309,4 +310,5 @@ def help(widgets=False):
                               'SLIDER brightness percent=<0-100> smooth=True wake=True',
                               'transition r=None g=None b=None sec=1.0 wake=False',
                               'BUTTON random smooth=True max_val=1000',
-                              'status', 'subscribe_presence', 'pinmap'), widgets=widgets)
+                              'STATUS status',
+                              'subscribe_presence', 'pinmap'), widgets=widgets)

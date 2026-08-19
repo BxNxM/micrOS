@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+from threading import RLock
 
 print("Module [sim_console] path: {} __package__: {} __name__: {}".format(sys.path[0], __package__, __name__))
 
@@ -14,16 +15,19 @@ except Exception as e:
     print("TerminalColors import error: {}".format(e))
     Colors = None
 
+_CONSOLE_LOCK = RLock()
+
 
 def console(msg, end='\n', skip_tmp_msgs=True):
-    if end == '\r' and skip_tmp_msgs:
-        return
-    if end == '\r':
-        print(' '*100, end='\r')
-    if Colors is None:
-        print("[SIM] {}".format(msg), end=end)
-    else:
-        print("{}[SIM]{} {}".format(Colors.OKGREEN, Colors.NC, msg), end=end)
+    with _CONSOLE_LOCK:
+        if end == '\r' and skip_tmp_msgs:
+            return
+        if end == '\r':
+            print(' '*100, end='\r')
+        if Colors is None:
+            print("[SIM] {}".format(msg), end=end)
+        else:
+            print("{}[SIM]{} {}".format(Colors.OKGREEN, Colors.NC, msg), end=end)
 
 
 if __name__ == "__main__":

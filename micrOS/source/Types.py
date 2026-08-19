@@ -11,6 +11,8 @@ USAGE:
     SLIDER brightness br
     SLIDER brightness br=<0-100>
     SLIDER brightness br=<0-100-5>
+
+    STATUS status
     GRAPH top
     EMBED{"callback": "/cam/stream", "title": "live stream", "image": true}
 """
@@ -27,15 +29,16 @@ __RANGE_255 = {'range': (0, 255, 2)}
 __OPTIONS = {'options': ("None",)}
 
 # Widget Types - Load Module Callbacks
-BUTTON = lambda: __TEMPLATE | {'type': 'button', 'result': False} | __OPTIONS        # pylint: disable=invalid-name
+BUTTON = lambda: __TEMPLATE | {'type': 'button', 'result': False} | __OPTIONS       # pylint: disable=invalid-name
 SLIDER = lambda: __TEMPLATE | {'type': 'slider'} | __RANGE_100                      # pylint: disable=invalid-name
 TEXTBOX = lambda: __TEMPLATE | {'type': 'textbox', 'refresh': 10000}                # pylint: disable=invalid-name
 COLOR = lambda: __TEMPLATE | {'type': 'color'} | __RANGE_255                        # pylint: disable=invalid-name
 WHITE = lambda: __TEMPLATE | {'type': 'white'} | __RANGE_255                        # pylint: disable=invalid-name
 JOYSTICK = lambda: __TEMPLATE | {'type': 'joystick'} | __RANGE_100                  # pylint: disable=invalid-name
+STATUS = lambda: __TEMPLATE | {'type': 'status', 'wtype': 'auto'}                   # pylint: disable=invalid-name
 GRAPH = lambda: __TEMPLATE | {'type': 'graph', 'refresh': 3000, 'limit': 30}        # pylint: disable=invalid-name
 # Widget Types - Web endpoints
-EMBED = lambda: __TEMPLATE | {'type': 'embed', 'image': False, 'title': None}    # pylint: disable=invalid-name
+EMBED = lambda: __TEMPLATE | {'type': 'embed', 'image': False, 'title': None}       # pylint: disable=invalid-name
 
 
 ########################################################

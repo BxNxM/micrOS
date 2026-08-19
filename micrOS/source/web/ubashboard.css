@@ -1,0 +1,98 @@
+input[type="range"],
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input[type="range"] {
+    width: 25%;
+    height: 5px;
+    background: #e7e7e7;
+    outline: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    width: 30px;
+    height: 30px;
+    background: #B0BEC5;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.custom-color-picker {
+    border: 1px solid #000;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.dashboard-state-on {
+    border-color: rgba(118,238,150,.42);
+    background: rgba(72,220,108,.24);
+}
+
+.dashboard-state-off {
+    border-color: rgba(255,142,142,.42);
+    background: rgba(255,92,92,.22);
+}
+
+.dashboard-state-on.is-selected {
+    border-color: #76ee96;
+    box-shadow: 0 0 0 2px rgba(118,238,150,.38);
+}
+
+.dashboard-state-off.is-selected {
+    border-color: #ff8e8e;
+    box-shadow: 0 0 0 2px rgba(255,142,142,.34);
+}
+
+#widgets-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: start;
+    margin-top: 18px;
+}
+
+ol.widget {
+    position: relative;
+    flex: 0 0 auto;
+    margin: 10px 0 0;
+    padding: 20px 14px 16px;
+    width: fit-content;
+    min-width: 280px;
+    box-sizing: border-box;
+    border: 1px solid #4b376c;
+    border-radius: 12px;
+    background: rgba(31,20,51,.78);
+    box-shadow: 0 16px 34px rgba(0,0,0,.22);
+    backdrop-filter: blur(12px) saturate(1.12);
+    -webkit-backdrop-filter: blur(12px) saturate(1.12);
+}
+
+ol.widget h2 {
+    position: absolute;
+    top: -0.72rem;
+    left: 12px;
+    margin: 0;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: bold;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+ol.widget p {
+    margin: 10px 0 6px;
+}
+
+ol.widget p.dashboard-single-button-row {
+    margin-top: 16px;
+}
+
+ol.widget :is(input[type="range"], pre, div, label, canvas) {
+    max-width: calc(100% - 40px);
+}

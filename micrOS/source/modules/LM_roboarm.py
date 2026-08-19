@@ -289,4 +289,4 @@ def help(widgets=False):
                              'record clean=False rec_limit=8',
                              'random x_range=20 y_range=20 speed_ms=5',
                              'load', 'pinmap',
-                             'status'), widgets=widgets)
+                             'STATUS status'), widgets=widgets)

@@ -400,7 +400,7 @@ pin&nbsp;map:&nbsp;buzzer</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Load&nbsp;Module&nbsp;state&nbsp;machine<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;lmf&nbsp;str:&nbsp;selected&nbsp;load&nbsp;module&nbsp;function&nbsp;aka&nbsp;(function&nbsp;to&nbsp;show&nbsp;state&nbsp;of):&nbsp;None&nbsp;(show&nbsp;all&nbsp;states)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;micrOS&nbsp;client&nbsp;state&nbsp;synchronization<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;CW,&nbsp;WW,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;CW,&nbsp;WW,&nbsp;S,&nbsp;BR</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
@@ -414,7 +414,8 @@ pin&nbsp;map:&nbsp;cwhite,&nbsp;wwhite</td></tr></table></td></tr><tr><th>help</
 	{'type':&nbsp;'white',&nbsp;'callback':&nbsp;'white&nbsp;cw=:range:&nbsp;ww=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;800,&nbsp;5]}<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
 	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true" alt="cct" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'status',&nbsp;'callback':&nbsp;'status&nbsp;',&nbsp;'wtype':&nbsp;'auto'}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/cct.png?raw=true" alt="cct" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -476,10 +477,10 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;value:&nbsp;(int)&nbsp;value&nbsp;0-1000&nbsp;default:&nbsp;None&nbsp;(set&nbsp;cached&nbsp;value)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth:&nbsp;(bool)&nbsp;run&nbsp;channel&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;force:&nbsp;(bool)&nbsp;clean&nbsp;fade&nbsp;generators&nbsp;and&nbsp;set&nbsp;value<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S</td></tr></table></td></tr><tr><th>toggle</th><td><table class="doc-table"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;dimmer&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S,&nbsp;BR</td></tr></table></td></tr><tr><th>toggle</th><td><table class="doc-table"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Toggle&nbsp;dimmer&nbsp;state&nbsp;based&nbsp;on&nbsp;the&nbsp;stored&nbsp;state<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state&nbsp;bool:&nbsp;True(1)/False(0)/None(default&nbsp;-&nbsp;automatic&nbsp;toggle)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;smooth&nbsp;bool:&nbsp;run&nbsp;channel&nbsp;change&nbsp;with&nbsp;smooth&nbsp;effect<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S</td></tr></table></td></tr><tr><th>transition</th><td><table class="doc-table"><tr><th>param(s)</th><td>value sec=1.0 wake=False</td></tr><tr><th>doc</th><td>[TASK]&nbsp;Set&nbsp;transition&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S,&nbsp;BR</td></tr></table></td></tr><tr><th>transition</th><td><table class="doc-table"><tr><th>param(s)</th><td>value sec=1.0 wake=False</td></tr><tr><th>doc</th><td>[TASK]&nbsp;Set&nbsp;transition&nbsp;color&nbsp;change&nbsp;for&nbsp;long&nbsp;dimming&nbsp;periods&nbsp;<&nbsp;30sec<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;creates&nbsp;the&nbsp;dimming&nbsp;generators<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;value:&nbsp;value&nbsp;0-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sec:&nbsp;transition&nbsp;length&nbsp;in&nbsp;sec<br>
@@ -489,7 +490,7 @@ pin&nbsp;map:&nbsp;dhtpin</td></tr></table></td></tr><tr><th>help</th><td><table
 &nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Load&nbsp;Module&nbsp;state&nbsp;machine<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;lmf&nbsp;str:&nbsp;selected&nbsp;load&nbsp;module&nbsp;function&nbsp;aka&nbsp;(function&nbsp;to&nbsp;show&nbsp;state&nbsp;of):&nbsp;None&nbsp;(show&nbsp;all&nbsp;states)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;micrOS&nbsp;client&nbsp;state&nbsp;synchronization<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;X,&nbsp;S,&nbsp;BR</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
@@ -501,7 +502,8 @@ pin&nbsp;map:&nbsp;dim_1</td></tr></table></td></tr><tr><th>help</th><td><table 
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'set_value&nbsp;value=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['True',&nbsp;'False']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true" alt="dimmer" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
+	{'type':&nbsp;'status',&nbsp;'callback':&nbsp;'status&nbsp;',&nbsp;'wtype':&nbsp;'auto'}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/dimmer.png?raw=true" alt="dimmer" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -876,7 +878,7 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table c
 &nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Load&nbsp;Module&nbsp;state&nbsp;machine<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;lmf&nbsp;str:&nbsp;selected&nbsp;load&nbsp;module&nbsp;function&nbsp;aka&nbsp;(function&nbsp;to&nbsp;show&nbsp;state&nbsp;of):&nbsp;None&nbsp;(show&nbsp;all&nbsp;states)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;micrOS&nbsp;client&nbsp;state&nbsp;synchronization<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S,&nbsp;BR</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
@@ -890,7 +892,8 @@ pin&nbsp;map:&nbsp;neop</td></tr></table></td></tr><tr><th>help</th><td><table c
 	{'type':&nbsp;'color',&nbsp;'callback':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;5]}<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
 	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=254',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true" alt="neopixel" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=254',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'status',&nbsp;'callback':&nbsp;'status&nbsp;',&nbsp;'wtype':&nbsp;'auto'}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/neopixel.png?raw=true" alt="neopixel" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1191,7 +1194,7 @@ pin&nbsp;map:&nbsp;rot_clk,&nbsp;rot_dt</td></tr></table></td></tr><tr><th>color
 &nbsp;&nbsp;&nbsp;&nbsp;Show&nbsp;Load&nbsp;Module&nbsp;state&nbsp;machine<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;lmf&nbsp;str:&nbsp;selected&nbsp;load&nbsp;module&nbsp;function&nbsp;aka&nbsp;(function&nbsp;to&nbsp;show&nbsp;state&nbsp;of):&nbsp;None&nbsp;(show&nbsp;all&nbsp;states)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;micrOS&nbsp;client&nbsp;state&nbsp;synchronization<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;R,&nbsp;G,&nbsp;B,&nbsp;S,&nbsp;BR</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
@@ -1205,12 +1208,13 @@ pin&nbsp;map:&nbsp;redgb,&nbsp;rgreenb,&nbsp;rgbue</td></tr></table></td></tr><t
 	{'type':&nbsp;'color',&nbsp;'callback':&nbsp;'color&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:&nbsp;smooth=True&nbsp;force=True',&nbsp;'range':&nbsp;[0,&nbsp;1000,&nbsp;10]}<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
 	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}<br>
-	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true" alt="rgb" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'random&nbsp;smooth=True&nbsp;max_val=1000',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'status',&nbsp;'callback':&nbsp;'status&nbsp;',&nbsp;'wtype':&nbsp;'auto'}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgb.png?raw=true" alt="rgb" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
 <h2 id="rgbcct"><a href="#rgbcct">rgbcct</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Unified&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;module&nbsp;usage&nbsp;as&nbsp;one&nbsp;module</td></tr></table></td></tr><tr><th>toggle</th><td><table class="doc-table"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Unified&nbsp;toggle&nbsp;function&nbsp;for&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;control</td></tr></table></td></tr><tr><th>brightness</th><td><table class="doc-table"><tr><th>param(s)</th><td>percent=None smooth=True wake=True</td></tr><tr><th>doc</th><td>Unified&nbsp;brightness&nbsp;function&nbsp;for&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;control</td></tr></table></td></tr><tr><th>status</th><td><table class="doc-table"><tr><th>param(s)</th><td>lmf=None</td></tr><tr><th>doc</th><td>Unified&nbsp;status&nbsp;function&nbsp;for&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;modules</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Unified&nbsp;pinmap&nbsp;function&nbsp;for&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;modules<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>cache=None</td></tr><tr><th>doc</th><td>Unified&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;module&nbsp;usage&nbsp;as&nbsp;one&nbsp;module</td></tr></table></td></tr><tr><th>toggle</th><td><table class="doc-table"><tr><th>param(s)</th><td>state=None smooth=True</td></tr><tr><th>doc</th><td>Unified&nbsp;toggle&nbsp;function&nbsp;for&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;control</td></tr></table></td></tr><tr><th>status</th><td><table class="doc-table"><tr><th>param(s)</th><td>lmf=None</td></tr><tr><th>doc</th><td>Unified&nbsp;status&nbsp;function&nbsp;for&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;modules</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Unified&nbsp;pinmap&nbsp;function&nbsp;for&nbsp;rgb&nbsp;and&nbsp;cct&nbsp;modules<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 pin&nbsp;map:&nbsp;redgb,&nbsp;rgreenb,&nbsp;rgbue,&nbsp;cwhite,&nbsp;wwhite</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
@@ -1219,7 +1223,7 @@ pin&nbsp;map:&nbsp;redgb,&nbsp;rgreenb,&nbsp;rgbue,&nbsp;cwhite,&nbsp;wwhite</td
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'toggle&nbsp;state=:options:&nbsp;smooth=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['True',&nbsp;'False']}<br>
-	{'type':&nbsp;'slider',&nbsp;'callback':&nbsp;'brightness&nbsp;percent=:range:&nbsp;smooth=True&nbsp;wake=True',&nbsp;'range':&nbsp;[0,&nbsp;100,&nbsp;2]}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgbcct.png?raw=true" alt="rgbcct" height=150></td></tr></table>
+	{'type':&nbsp;'status',&nbsp;'callback':&nbsp;'status&nbsp;',&nbsp;'wtype':&nbsp;'auto'}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/rgbcct.png?raw=true" alt="rgbcct" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1264,7 +1268,8 @@ pin&nbsp;map:&nbsp;servo_1,&nbsp;servo_2,&nbsp;switch_1,&nbsp;switch_2,&nbsp;swi
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'boot_move&nbsp;speed_ms=10',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'standby&nbsp;y_pos=45',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'jiggle&nbsp;delta=3',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
-	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'play&nbsp;deinit=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true" alt="roboarm" height=150></td></tr></table>
+	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'play&nbsp;deinit=True',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
+	{'type':&nbsp;'status',&nbsp;'callback':&nbsp;'status&nbsp;',&nbsp;'wtype':&nbsp;'auto'}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true" alt="roboarm" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">

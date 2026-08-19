@@ -192,6 +192,10 @@ Important consequences:
   machine description contains the fixed `micrOS` marker.
 - Runtime web authentication design lives in `micrOS/ARCHITECTURE.md`; the
   `web_endpoint()` LM interface lives in `micrOS/MODULE_GUIDE.md`.
+- Built-in dashboard widgets are generated from LM `help(widgets=True)` metadata.
+  Keep hidden `STATUS` widgets non-rendered, use them only to sync already
+  rendered controls, and avoid updating the REST console during dashboard
+  discovery calls.
 
 If you change runtime behavior, verify where in boot or lazy-load flow it activates.
 

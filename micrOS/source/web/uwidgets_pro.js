@@ -25,6 +25,7 @@ function joystickWidget(container, command, params={}) {
     const valueDisplay = createElement('span', { textIndent: widget_indent, display: 'block' });
     const constrain = (value, low, high) => Math.max(low, Math.min(value, high));
     const scaled = (value, size) => Math.round((value / size) * (max - min) + min);
+    const position = (value, size) => ((constrain(value, min, max) - min) / Math.max(max - min, 1)) * size;
     let isDragging = false;
 
     const updateValueDisplay = (x, y) => {
@@ -43,7 +44,14 @@ function joystickWidget(container, command, params={}) {
             command.replace('x=:range:', `x=${x}`).replace('y=:range:', `y=${y}`) :
             `${command}`;
     };
-    const sender = createWidgetSender(buildCommand);
+    const sender = createWidgetSender(buildCommand, { after: statusRefresh(params) });
+    const setPosition = (x, y) => {
+        const width = joystickContainer.clientWidth || 200;
+        const height = joystickContainer.clientHeight || 200;
+        joystick.style.left = `${position(x, width)}px`;
+        joystick.style.top = `${position(y, height)}px`;
+        updateValueDisplay(x, y);
+    };
     const drag = point => {
         if (!isDragging) {return;}
         const rect = joystickContainer.getBoundingClientRect();
@@ -67,7 +75,12 @@ function joystickWidget(container, command, params={}) {
 
     joystickContainer.appendChild(joystick);
     appendChildren(container, [createWidgetTitle(command, title_len), joystickContainer, valueDisplay]);
-    updateValueDisplay((max - min) / 2, (max - min) / 2);
+    registerStatusNumber(params, 'X', (x, status) => {
+        const y = statusNumber(status, 'Y');
+        if (y === null) {return;}
+        setPosition(x, y);
+    });
+    updateValueDisplay(Math.round((max - min) / 2), Math.round((max - min) / 2));
 }
 
 function toAbsoluteEndpoint(endpoint) {
@@ -121,13 +134,14 @@ function whiteWidget(container, command, params={}) {
     const [min, max] = range;
     const wrapper = createElement('label', {
         marginLeft: widget_indent,
-        width: widgetWidth(0.6, 300),
+        width: widgetWidth(0.68, 330),
         display: 'grid',
-        gridTemplateColumns: '36px 1fr 36px',
+        gridTemplateColumns: '36px minmax(0, 1fr) max-content',
         alignItems: 'center',
-        gap: '6px'
+        columnGap: '6px'
     });
-    const slider = rangeInput(range, Math.round((min + max) / 2), { width: '100%' });
+    const slider = rangeInput(range, Math.round((min + max) / 2), { width: '100%', maxWidth: '100%' });
+    const textStyle = { fontSize: '11px', whiteSpace: 'nowrap' };
     const whiteValues = value => ({ cw: min + max - value, ww: value });
 
     const buildCommand = () => {
@@ -135,14 +149,23 @@ function whiteWidget(container, command, params={}) {
         return command.replace('cw=:range:', `cw=${cw}`)
                       .replace('ww=:range:', `ww=${ww}`);
     };
-    const sender = createWidgetSender(buildCommand);
+    const sender = createWidgetSender(buildCommand, { after: statusRefresh(params) });
+    registerStatusSync(params, status => {
+        const cw = statusNumber(status, 'CW');
+        const ww = statusNumber(status, 'WW');
+        const total = cw + ww;
+        if (cw === null || ww === null || total <= 0) {return;}
+        const step = range[2] || 1;
+        const value = min + Math.round((ww / total) * (max - min) / step) * step;
+        setRangeValue(slider, value, range);
+    });
 
     slider.addEventListener('input', sender.update);
     slider.addEventListener('change', sender.final);
     appendChildren(wrapper, [
-        createElement('span', { textAlign: 'right', fontSize: '11px' }, { textContent: 'Cold' }),
+        createElement('span', { ...textStyle, textAlign: 'right' }, { textContent: 'Cold' }),
         slider,
-        createElement('span', { textAlign: 'right', fontSize: '11px' }, { textContent: 'Warm' })
+        createElement('span', textStyle, { textContent: 'Warm' })
     ]);
     appendChildren(container, [createWidgetTitle(command, title_len), wrapper]);
 }

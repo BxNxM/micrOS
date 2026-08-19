@@ -169,6 +169,18 @@ The `usr_endpoints` list returned by `/rest` is dashboard navigation metadata,
 not a full method registry. It includes only registered GET endpoints so the
 main page does not generate buttons for POST-only or DELETE-only actions.
 
+### Dashboard widget sync
+
+The built-in dashboard renders widget groups from each LM `help(widgets=True)`
+response. Group discovery is live and visually ordered, while hidden `STATUS`
+widgets are not rendered.
+
+After a group renders with default control values, the dashboard calls that
+module's status endpoint once and applies matching state keys to existing
+controls. The same per-module sync object is reused after widget actions and can
+be reused by future timers. Per-module status refreshes are coalesced so one
+module does not run overlapping status requests.
+
 ### Authentication UML
 
 ```mermaid

@@ -97,7 +97,7 @@ def set_value(value=None, smooth=True, force=True):
     :param value: (int) value 0-1000 default: None (set cached value)
     :param smooth: (bool) run channel change with smooth effect
     :param force: (bool) clean fade generators and set value
-    :return dict: X, S
+    :return dict: X, S, BR
     """
 
     def __buttery(from_val, to_val):
@@ -134,7 +134,7 @@ def toggle(state=None, smooth=True):
     Toggle dimmer state based on the stored state
     :param state bool: True(1)/False(0)/None(default - automatic toggle)
     :param smooth bool: run channel change with smooth effect
-    :return dict: X, S
+    :return dict: X, S, BR
     """
     # Set state directly (inverse) + check change
     if state is not None:
@@ -206,11 +206,12 @@ def status(lmf=None):
     Show Load Module state machine
     :param lmf str: selected load module function aka (function to show state of): None (show all states)
     - micrOS client state synchronization
-    :return dict: X, S
+    :return dict: X, S, BR
     """
     # Slider dedicated widget input - [OK]
     data = Data.DIMMER_CACHE
-    return {'X': data[1], 'S': data[0]}
+    brightness = 0 if data[0] == 0 else int(data[1] * 100 / 1000 + 0.5)
+    return {'X': data[1], 'S': data[0], 'BR': brightness}
 
 
 def pinmap():
@@ -234,4 +235,5 @@ def help(widgets=False):
                              'BUTTON toggle state=<True,False> smooth=True',
                              'subscribe_presence',
                              'transition value=<0-1000> sec wake=False',
-                             'status', 'load', 'pinmap'), widgets=widgets)
+                             'STATUS status',
+                             'load', 'pinmap'), widgets=widgets)

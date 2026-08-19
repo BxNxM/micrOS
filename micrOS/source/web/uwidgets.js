@@ -5,16 +5,21 @@ const windowWidth = window.innerWidth;
 const widgetColors = ['#00d1ff', '#ffca3a', '#7bd88f', '#ff6b6b', '#c77dff', '#f4a261'];
 
 // ---- shared input helpers ----
-function createWidgetSender(buildCommand, { minInterval = 200 } = {}) {
+function createWidgetSender(buildCommand, { minInterval = 200, after = null } = {}) {
     let last = 0, busy = false, timer = null, pending = false, finalPending = false;
     const clear = () => { if (timer) { clearTimeout(timer); timer = null; } };
-    const done = () => { busy = false; if (pending) { schedule(finalPending); } };
     const send = final => {
         clear();
         pending = finalPending = false;
         busy = true;
         last = Date.now();
         const call_cmd = buildCommand();
+        const done = () => {
+            const refresh = final && !pending && typeof after === 'function';
+            busy = false;
+            if (pending) { schedule(finalPending); }
+            if (refresh) { after(); }
+        };
         console.log(`[API] Widget exec${final ? ' final' : ''}: ${call_cmd}`);
         restAPI(call_cmd).then(done, done);
     };
@@ -166,7 +171,44 @@ function numericValues(result, keys=null) {
     return values;
 }
 
+function registerStatusSync(params, handler) {
+    const sync = params.sync;
+    if (sync && typeof sync.register === 'function') {
+        sync.register(handler);
+    }
+}
+
+function statusRefresh(params) {
+    const sync = params.sync;
+    return sync && typeof sync.refresh === 'function' ? () => sync.refresh() : null;
+}
+
+function statusNumber(status, key, fallback = null) {
+    const value = Number((status || {})[key]);
+    return isFinite(value) ? value : fallback;
+}
+
+function clampValue(value, min, max) {
+    return Math.max(min, Math.min(value, max));
+}
+
+function setRangeValue(input, value, range, display = null) {
+    input.value = clampValue(value, range[0], range[1]);
+    if (display) {
+        display.textContent = input.value;
+    }
+}
+
+function registerStatusNumber(params, key, handler) {
+    registerStatusSync(params, status => {
+        const value = statusNumber(status, key);
+        if (value === null) { return; }
+        handler(value, status);
+    });
+}
+
 function sliderWidget(container, command, params={}) {
+    const statusKey = command.includes('/brightness') ? 'BR' : 'X';
     const { title_len = 1, range = [0, 100, 5] } = params;
     const element = rangeInput(range, (range[1] - range[0]) / 2, {
         marginLeft: widget_indent,
@@ -176,9 +218,12 @@ function sliderWidget(container, command, params={}) {
     const buildCommand = () => command.includes(':range:') ? command.replace(':range:', element.value) :
                            command.endsWith('=') ? `${command}${element.value}` :
                            `${command}/${element.value}`;
-    const sender = createWidgetSender(buildCommand);
+    const sender = createWidgetSender(buildCommand, { after: statusRefresh(params) });
 
     bindRangeDisplay(element, valueDisplay);
+    registerStatusNumber(params, statusKey, value => {
+        setRangeValue(element, value, range, valueDisplay);
+    });
     element.addEventListener('input', sender.update);
     element.addEventListener('change', sender.final);
 
@@ -191,22 +236,40 @@ function buttonWidget(container, command, params={}) {
     const optionLabels = { 'True': 'ON', 'False': 'OFF', 'None': 'Default' };
     const paragraph = createElement('p', { textIndent: widget_indent });
     const output = result ? createResultBox() : null;
+    const refresh = statusRefresh(params);
+    const stateButtons = {};
+    const selectState = selected => Object.keys(stateButtons).forEach(label => {
+        stateButtons[label].classList.toggle('is-selected', label === selected);
+    });
 
     if (options.length > 1) {
         container.appendChild(createWidgetTitle(command, title_len, text));
+    } else {
+        paragraph.classList.add('dashboard-single-button-row');
     }
     options.forEach(opt => {
+        const label = options.length === 1 ? text : optionLabels[opt] || opt;
         const element = createElement('button', { marginRight: '10px', height: '30px' }, {
-            textContent: options.length === 1 ? text : optionLabels[opt] || opt
+            textContent: label
         });
+        if (label === 'ON' || label === 'OFF') {
+            element.classList.add(`dashboard-state-${label.toLowerCase()}`);
+            stateButtons[label] = element;
+        }
         element.addEventListener('click', () => {
             const call_cmd = command.replace(':options:', paramPythonify(opt));
+            if (stateButtons[label]) { selectState(label); }
             console.log(`[API] Button clicked: ${call_cmd}`);
             restAPI(call_cmd).then(resp => {
                 if (output) { output.show(resp.result, true); }
+                if (refresh) { refresh(); }
             });
         });
         paragraph.appendChild(element);
+    });
+    registerStatusSync(params, status => {
+        const state = statusNumber(status, 'S');
+        if (state !== null) { selectState(state ? 'ON' : 'OFF'); }
     });
     appendChildren(container, [paragraph]);
     if (output) { container.appendChild(output.element); }
@@ -235,6 +298,22 @@ function textBoxWidget(container, command, params={}) {
 function colorPaletteWidget(container, command, params = {}) {
     const { title_len = 1, range = [0, 255] } = params;
     const colors = ['#542040', '#2b2155', '#4c1e44', '#56213f', '#853366', '#493984', '#6f3487'];
+    const componentToHex = value => `0${clampValue(Math.round(value), 0, 255).toString(16)}`.slice(-2);
+    const statusToHex = data => {
+        const r = statusNumber(data, 'R');
+        const g = statusNumber(data, 'G');
+        const b = statusNumber(data, 'B');
+        if (r === null || g === null || b === null) {return null;}
+        const rangeMax = Math.max(statusNumber(range, 1, 255), 1);
+        const channelRatio = rangeMax > 255 ? 255 / rangeMax : 1;
+        const pickerRgb = [r * channelRatio, g * channelRatio, b * channelRatio];
+        const highest = Math.max(...pickerRgb);
+        if (highest <= 0) {return '#000000';}
+        const previewPeak = 128;
+        const previewRatio = highest < previewPeak ? previewPeak / highest : 1;
+        const previewRgb = pickerRgb.map(value => value * previewRatio);
+        return `#${componentToHex(previewRgb[0])}${componentToHex(previewRgb[1])}${componentToHex(previewRgb[2])}`;
+    };
     const colorPicker = createElement('input', { width: '60px', height: '40px', marginLeft: widget_indent }, {
         type: 'color',
         value: colors[Math.floor(Math.random() * colors.length)]
@@ -256,7 +335,11 @@ function colorPaletteWidget(container, command, params = {}) {
                       .replace('g=:range:', `g=${g}`)
                       .replace('b=:range:', `b=${b}`);
     };
-    const sender = createWidgetSender(buildCommand);
+    const sender = createWidgetSender(buildCommand, { after: statusRefresh(params) });
+    registerStatusSync(params, status => {
+        const color = statusToHex(status);
+        if (color) { colorPicker.value = color; }
+    });
     colorPicker.addEventListener('input', sender.update);
     colorPicker.addEventListener('change', sender.final);
 

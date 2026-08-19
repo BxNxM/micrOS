@@ -1,5 +1,6 @@
 import esp32
 from Common import syslog
+from Types import resolve
 
 #########################
 # Application functions #
@@ -66,4 +67,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'hall', 'temp', 'touch', 'battery', 'NOTE: battery only available on tinypico'
+    return resolve(('hall',
+                    'GRAPH temp',
+                    'touch', 'battery', 'NOTE: battery only available on tinypico'), widgets=widgets)

@@ -222,6 +222,81 @@ sequenceDiagram
     AuthJS-->>UI: original fetch resolves
 ```
 
+## Web UI
+
+The Web UI is a set of static frontend files under `micrOS/source/web/`.
+Dynamic pages are enabled by load modules through `Common.web_endpoint()` and
+served by `Web.py`.
+
+### Frontend
+
+| App | Route | Frontend files | Backend file |
+| --- | --- | --- | --- |
+| Dashboard | `/dashboard` | `dashboard.html`, `udashboard.js`, `uwidgets.js`, `uapi.js`, `ubashboard.css`, `ustyle.css` | `LM_web.py` |
+| Config | `/config/ui` | `config.html`, `config.js`, `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
+| Fileserver | `/fs` | `filesui.html`, `filesui.js`, `editor.js`, `ustyle.css` | `LM_fileserver.py` |
+
+### API
+
+| API | Method | Source file | Purpose |
+| --- | --- | --- | --- |
+| `/rest` | GET | `Web.py` | Node info plus registered GET endpoint list |
+| `/rest/<module>/<function>/...` | GET | `Web.py`, `Tasks.py` | Execute LM commands through the REST bridge |
+| `/dashboard` | GET | `LM_web.py` | Serve dashboard frontend |
+| `/config` | GET, POST | `LM_web.py` | Protected config read and update |
+| `/config/reboot` | POST | `LM_web.py` | Protected soft reboot request |
+| `/fs`, `/fs/files`, `/fs/list`, `/fs/dirs`, `/fs/usage` | GET, POST, DELETE | `LM_fileserver.py` | Fileserver UI, browse, upload, delete, and usage APIs |
+
+`/fs` routes are registered only when `web load fileserver=True` is used.
+
+### Dashboard UML
+
+```mermaid
+flowchart LR
+    A["LM_web.py: load(dashboard=True)"] --> B["Web.py: /dashboard -> dashboard.html"]
+    C["dashboard.html"] --> D["uapi.js: restAPI()"]
+    C --> E["udashboard.js: DynamicWidgetLoad()"]
+    C --> F["uwidgets.js: render controls"]
+    E --> G["/rest/modules"]
+    E --> H["/rest/<module>/help/True"]
+    H --> I["LM_*.py: help(widgets=True)"]
+    F --> J["/rest/<module>/<function>"]
+```
+
+### Config UML
+
+```mermaid
+flowchart LR
+    A["LM_web.py: enable_config()"] --> B["/config/ui -> config.html"]
+    A --> C["/config GET|POST -> _cfg_* @sudo"]
+    A --> D["/config/reboot POST -> _reboot_clb @sudo"]
+    E["config.html"] --> F["auth.js"]
+    E --> G["config.js"]
+    G --> H["fetch /config GET|POST"]
+    G --> I["restAPI task/list, modules, pacman, system/pinmap"]
+    F --> C
+```
+
+### Fileserver UML
+
+```mermaid
+flowchart LR
+    A["LM_web.py: load(fileserver=True)"] --> B["LM_fileserver.py: load()"]
+    B --> C["/fs -> filesui.html"]
+    B --> D["/fs/files GET|POST|DELETE"]
+    B --> E["/fs/list POST"]
+    B --> F["/fs/dirs GET"]
+    B --> G["/fs/usage GET"]
+    H["filesui.html"] --> I["filesui.js"]
+    I --> D
+    I --> E
+    I --> F
+    I --> G
+    I --> J["editor.js lazy load"]
+    D --> K["Files.py + Web.py: path checks"]
+    E --> K
+```
+
 ## Lazy Loading Strategy
 
 micrOS uses practical lazy loading, not aggressive eviction.

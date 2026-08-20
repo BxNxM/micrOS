@@ -81,7 +81,7 @@
             "doc": "\n    [BETA][i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/VL53L0X.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/tof_distance/media/VL53L0X.png?raw=true",
         "measure": {
             "doc": "\n    Experimental - Time of Flight Distance Sensor\n    ",
             "param(s)": ""
@@ -163,7 +163,7 @@
             "doc": "No module named 'alarm_system.actions'",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/alarm_system.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/alarm_system/media/alarm_system.png?raw=true",
         "list_watches": {
             "doc": "No module named 'alarm_system.actions'",
             "param(s)": ""
@@ -230,7 +230,7 @@
             "doc": "\n    micrOS LM naming convention - built-in help message.\n\n    :param widgets: kept for compatibility, not used here\n    :return: tuple of exported function names\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/blinky.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/blinky_example/media/blinky.png?raw=true",
         "load": {
             "doc": "\n    Initialize and cache the LED pin.\n\n    :param pin_number: physical GPIO number (default: 26)\n    :return: Pin instance\n    ",
             "param(s)": "pin_number=26"
@@ -593,7 +593,7 @@
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/garage.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/garage_remote/media/garage.png?raw=true",
         "load": {
             "doc": "Initialize garage module: relay, users, SIM800, subscribe to events.\n    :param pin_code int: SIM card PIN code\n    :param phonebook str: phonebook JSON filename (default: garage_users.json)\n    :return str: status message\n    ",
             "param(s)": "pin_code phonebook='garage_users.json'"
@@ -686,7 +686,7 @@
             "doc": "\n    micrOS LM naming convention - built-in help message.\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure_cm ', 'refresh': 500}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/hcsr04.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/ultrasonic_distance/media/hcsr04.png?raw=true",
         "load": {
             "doc": "\n    Initialize HC-SR04 ultrasonic distance sensor module.\n\n    Defaults intentionally mirror the core LM_distance module:\n    bind_pin(\"hcsrtrig\"), bind_pin(\"hcsrecho\"), 5us stabilize, 10us trigger,\n    and 1000000us echo timeout.\n    ",
             "param(s)": "trig_pin=None echo_pin=None timeout_us=DEFAULT_TIMEOUT_US"
@@ -783,7 +783,7 @@
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/keychain.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/keychaindemo/media/keychain.png?raw=true",
         "load": {
             "doc": "\n    Init OLED display 64x32 (default)\n    Init Neopixel LED (1 segment)\n    :param width: screen width (pixel)\n    :param height: screen height (pixel)\n    :param bootmsg: First text on page at bootup, default: \"micrOS\"\n    ",
             "param(s)": "width=64 height=32 bootmsg=\"micrOS\""
@@ -896,7 +896,7 @@
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'button', 'callback': 'start interval=5000', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'stop ', 'result': False, 'options': ['None']}\n\t{'type': 'textbox', 'callback': 'measure ', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mh_z19c.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/co2/media/mh_z19c.png?raw=true",
         "load": {
             "doc": "\n    Create MH-Z19 CO2 sensor (over UART)\n    ",
             "param(s)": ""
@@ -923,7 +923,7 @@
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure_mq135 temperature=None humidity=None', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mq135.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/co2/media/mq135.png?raw=true",
         "load": {
             "doc": "\n    Initialize mq135 CO2 (ppm) sensor module\n    ",
             "param(s)": ""
@@ -950,7 +950,7 @@
             "doc": "\n    Show public functions. Return a tuple of public function usage strings for the MQTT module.\n    :param widgets: Unused, reserved for extra help formatting.\n    :return: Tuple of help strings.\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/mqtt_client.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/async_mqtt/media/mqtt_client.png?raw=true",
         "load": {
             "doc": "\n    Configure, initialize, and start the MQTT client.\n    Requires that the micropython-mqtt package is installed. You can install it with:\n    mpremote mip install github:peterhinch/micropython-mqtt\n    :param username: Broker username.\n    :param password: Broker password.\n    :param server_ip: Broker IP or hostname.\n    :param server_port: MQTT port (default 1883).\n    :param qos: MQTT Quality of Service level (0, 1, or 2). Controls delivery guarantee.\n    :return: Status dict showing whether the client is starting or already running.\n    ",
             "param(s)": "username:str password:str server_ip:str server_port:str='1883' qos:int=1"
@@ -1064,7 +1064,7 @@
             "doc": "\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'button', 'callback': 'clear ', 'result': False, 'options': ['None']}\n\t{'type': 'color', 'callback': 'color_fill r=:range: g=:range: b=:range:', 'range': [0, 255, 5]}\n\t{'type': 'slider', 'callback': 'brightness br=:range:', 'range': [0, 60, 2]}\n\t{'type': 'button', 'callback': 'stop ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'snake speed_ms=50 length=5', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'rainbow ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'spiral speed_ms=40', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'noise speed_ms=85', 'result': False, 'options': ['None']}\n\t{'type': 'slider', 'callback': 'control speed_ms=:range: bt_draw=None', 'range': [1, 200, 2]}\n\t{'type': 'status', 'callback': 'status ', 'wtype': 'auto'}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/neomatrix.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/neopixel_matrix/media/neomatrix.png?raw=true",
         "load": {
             "doc": "\n    Load NeoPixelMatrix instance.\n    :param width: neopixel matrix width (default: 8)\n    :param height: neopixel matrix height (default: 8)\n    :param neop: neopixel pin number (default: 14)\n    :param i2c_sda: i2c bus data pin number (default: 11) for QMI8658C GYRO\n    :param i2c_scl: i2c bus clock pin number (default: 12) for QMI8658C GYRO\n\n    ESP32-S3 Matrix 8x8 RGB-LED WiFi Bluetooth With QST Attitude Gyro Sensor QMI8658C\n      https://spotpear.com/shop/ESP32-S3FH4R2-Matrix-8x8-RGB-LED-WiFi-Bluetooth-QST-Attitude-Gyro-Sensor-QMI8658C-Arduino-Python-ESP-IDF.html\n    ",
             "param(s)": "width=8 height=8 neop=14 i2c_sda=11 i2c_scl=12"
@@ -1335,7 +1335,7 @@
             "doc": "\n    New generation of oled_ui\n    - with async frames\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'button', 'callback': 'control cmd=:options:', 'result': False, 'options': ['prev', 'press', 'next', 'on', 'off']}\n\t{'type': 'button', 'callback': 'debug state=:options:', 'result': False, 'options': ['True', 'False']}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/oledui.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/async_oledui/media/oledui.png?raw=true",
         "load": {
             "doc": "\n    Create async oled UI\n    :param width: screen width in pixels\n    :param height: screen height in pixels\n    :param oled_type: sh1106 / ssd1306\n    :param control: trackball / None\n    :param poweroff: power off after given seconds\n    :param haptic: enable (True) / disable (False) haptic feedbacks (vibration)\n    ",
             "param(s)": "width=128 height=64 oled_type=\"sh1106\" control='trackball' poweroff=None haptic=False"
@@ -1487,7 +1487,7 @@
             "doc": "\n    micrOS LM naming convention - built-in help message.\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure_cm ', 'refresh': 500}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rcwl1670.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/ultrasonic_distance/media/rcwl1670.png?raw=true",
         "load": {
             "doc": "\n    Create and cache the RCWL-1670 trigger/echo sensor.\n\n    :param trig_pin int: MCU output connected to RX/TRIG, default: 16\n    :param echo_pin int: MCU input connected to TX/ECHO, default: 17\n    :param timeout_us int: echo pulse timeout in microseconds, default: 40000\n    :param trigger_us int: trigger pulse length in microseconds, default: 10\n    :param reset bool: recreate cached sensor instance\n    ",
             "param(s)": "trig_pin=16 echo_pin=17 timeout_us=40000 trigger_us=10 reset=False"
@@ -1801,7 +1801,7 @@
             "doc": "[i] micrOS LM naming convention - built-in help message\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sim800.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/sim800/media/sim800.png?raw=true",
         "is_connected": {
             "doc": "Check network registration and signal quality.",
             "param(s)": ""
@@ -1888,7 +1888,7 @@
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sim800_http.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/sim800/media/sim800_http.png?raw=true",
         "is_gprs_connected": {
             "doc": "\n    Check GPRS connection status.\n    :return bool: True if connected\n    ",
             "param(s)": ""
@@ -1919,7 +1919,7 @@
             "doc": "[i] micrOS LM naming convention - built-in help message\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sim800mqtt.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/sim800/media/sim800mqtt.png?raw=true",
         "is_connected": {
             "doc": "Check MQTT connection status.",
             "param(s)": ""
@@ -1978,7 +1978,7 @@
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'classify_last_event ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'get_performance ', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/sound_event.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/sound_event/media/sound_event.png?raw=true",
         "load": {
             "doc": "\n    start micro task for event detection, and mount SD storage if enabled\n    :param capture_duration_ms: int - duration of samples to capture at once\n    :param max_event_duration_ms: int - maximum duration of an event\n    :param frame_size_ms: int - duration of the audio frames used for features\n    :param event_buffer_length: int - number of events to store at once\n    :param sd_storage: bool - use SD card storage for the dataset\n    ",
             "param(s)": "dataset = 'sound_events.pds'"
@@ -2193,7 +2193,7 @@
             "doc": "\n    TCS3472 Color sensor\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure ', 'refresh': 10000}\n\t{'type': 'button', 'callback': 'led state=:options:', 'result': False, 'options': ['True', 'False']}\n\t{'type': 'slider', 'callback': 'led state=True br=:range:', 'range': [0, 100, 5]}\n\t{'type': 'button', 'callback': 'neomatrix_update ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'neomatrix_animation ', 'result': False, 'options': ['None']}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/tcs3472.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/color_sensor/media/tcs3472.png?raw=true",
         "indicator": {
             "doc": "\n    Color indicator Neopixel LED update\n    :param br: brightness 0-100\n    ",
             "param(s)": "br=5"
@@ -2349,7 +2349,7 @@
             "doc": "[i] micrOS LM naming convention - built-in help message\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/users.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/phone_manager/media/users.png?raw=true",
         "import_users": {
             "doc": null,
             "param(s)": "data=None file=None mode='replace' book='ault'"

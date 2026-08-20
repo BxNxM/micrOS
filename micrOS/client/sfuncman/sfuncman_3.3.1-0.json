@@ -453,37 +453,6 @@
             "param(s)": "value sec=1.0 wake=False"
         }
     },
-    "distance": {
-        "deinit": {
-            "doc": null,
-            "param(s)": ""
-        },
-        "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure_cm ', 'refresh': 10000}",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/distance.png?raw=true",
-        "load": {
-            "doc": "\n    Initialize HCSR04 ultrasonic distance sensor module\n    ",
-            "param(s)": ""
-        },
-        "measure_cm": {
-            "doc": null,
-            "param(s)": ""
-        },
-        "measure_mm": {
-            "doc": "\n    To calculate the distance we get the pulse_time and divide it by 2\n    (the pulse walk the distance twice) and by 29.1 becasue\n    the sound speed on air (343.2 m/s), that It's equivalent to\n    0.34320 mm/us that is 1mm each 2.91us\n    pulse_time // 2 // 2.91 -> pulse_time // 5.82 -> pulse_time * 100 // 582\n    ",
-            "param(s)": ""
-        },
-        "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: hcsrtrig, hcsrecho, dimmer",
-            "param(s)": ""
-        },
-        "start_dimmer_indicator": {
-            "doc": "Distance visualization on LED brightness (LM_dimmer)",
-            "param(s)": "idle_distance=180"
-        }
-    },
     "ds18": {
         "help": {
             "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure ', 'refresh': 10000}",
@@ -705,6 +674,33 @@
         },
         "tap": {
             "doc": "\n    Tap - buzz effect\n    ",
+            "param(s)": ""
+        }
+    },
+    "hcsr04": {
+        "deinit": {
+            "doc": "\n    Deinitialize HC-SR04 pins, matching core LM_distance behavior.\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    micrOS LM naming convention - built-in help message.\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure_cm ', 'refresh': 500}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/hcsr04.png?raw=true",
+        "load": {
+            "doc": "\n    Initialize HC-SR04 ultrasonic distance sensor module.\n\n    Defaults intentionally mirror the core LM_distance module:\n    bind_pin(\"hcsrtrig\"), bind_pin(\"hcsrecho\"), 5us stabilize, 10us trigger,\n    and 1000000us echo timeout.\n    ",
+            "param(s)": "trig_pin=None echo_pin=None timeout_us=DEFAULT_TIMEOUT_US"
+        },
+        "measure_cm": {
+            "doc": "\n    Compatibility helper for the core LM_distance API.\n    ",
+            "param(s)": ""
+        },
+        "measure_mm": {
+            "doc": "\n    Compatibility helper for the core LM_distance API.\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    Shows logical pins used by this Load Module.\n    \npin map: hcsrtrig, hcsrecho",
             "param(s)": ""
         }
     },
@@ -1479,6 +1475,33 @@
         },
         "temperature": {
             "doc": null,
+            "param(s)": ""
+        }
+    },
+    "rcwl1670": {
+        "deinit": {
+            "doc": "\n    Deinitialize RCWL-1670 pins.\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    micrOS LM naming convention - built-in help message.\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'measure_cm ', 'refresh': 500}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/rcwl1670.png?raw=true",
+        "load": {
+            "doc": "\n    Create and cache the RCWL-1670 trigger/echo sensor.\n\n    :param trig_pin int: MCU output connected to RX/TRIG, default: 16\n    :param echo_pin int: MCU input connected to TX/ECHO, default: 17\n    :param timeout_us int: echo pulse timeout in microseconds, default: 40000\n    :param trigger_us int: trigger pulse length in microseconds, default: 10\n    :param reset bool: recreate cached sensor instance\n    ",
+            "param(s)": "trig_pin=16 echo_pin=17 timeout_us=40000 trigger_us=10 reset=False"
+        },
+        "measure_cm": {
+            "doc": "\n    Measure distance in centimeters.\n    ",
+            "param(s)": ""
+        },
+        "measure_mm": {
+            "doc": "\n    Measure distance in millimeters.\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    Shows logical pins used by this Load Module.\n    \npin map: rcwl1670_trig, rcwl1670_echo",
             "param(s)": ""
         }
     },

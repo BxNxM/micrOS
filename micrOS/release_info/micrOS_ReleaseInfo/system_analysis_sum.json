@@ -54,7 +54,7 @@
         ],
         "Types.py": [
             9.0,
-            25
+            24
         ],
         "Logger.py": [
             8.86,
@@ -62,7 +62,7 @@
         ],
         "Common.py": [
             9.86,
-            32
+            31
         ],
         "InterConnect.py": [
             9.7,
@@ -86,7 +86,7 @@
         ],
         "microIO.py": [
             9.37,
-            38
+            37
         ],
         "micrOS.py": [
             9.09,
@@ -256,10 +256,6 @@
             8.95,
             1
         ],
-        "modules/LM_distance.py": [
-            8.86,
-            0
-        ],
         "modules/LM_light_sensor.py": [
             9.12,
             0
@@ -278,7 +274,7 @@
         ],
         "modules/LM_dimmer.py": [
             8.33,
-            1
+            0
         ],
         "modules/LM_gameOfLife.py": [
             9.29,
@@ -307,8 +303,8 @@
             27
         ],
         "load": [
-            7596,
-            48
+            7497,
+            47
         ],
         "core_dep": [
             true,
@@ -319,7 +315,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.42,
+        "load_score": 8.41,
         "version": "3.3.1-0"
     }
 }

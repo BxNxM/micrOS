@@ -22,11 +22,11 @@ ALLOWED_LM_DEP_WARNS = 5        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is 
 
 def parse_micros_file_categories(verbose=True):
     """
-    Parse files into categories: core, load_module, pin_maps, other
+    Parse files into categories: core, load_module, pin_maps, web, other
     """
     file_ignore_list = ['.DS_Store']
     # micrOS file categories
-    categories = {'core': [], 'load_module': [], 'pin_maps': [], 'other': []}
+    categories = {'core': [], 'load_module': [], 'pin_maps': [], 'web': [], 'other': []}
     modules_path = os.path.join(MICROS_SOURCE_DIR, "modules")
     web_path = os.path.join(MICROS_SOURCE_DIR, "web")
     check_file = lambda _b, _f: os.path.isfile(os.path.join(_b, _f)) and _f not in file_ignore_list
@@ -35,7 +35,9 @@ def parse_micros_file_categories(verbose=True):
     web_files = [f"web/{f}" for f in LocalMachine.FileHandler.list_dir(web_path) if check_file(web_path, f)]
     files = root_files + module_files + web_files
     for f in files:
-        if f.endswith('.py') and "LM_" in f:
+        if f.startswith('web/'):
+            categories['web'].append(f)
+        elif f.endswith('.py') and "LM_" in f:
             categories['load_module'].append(f)
         elif f.endswith('.py') and "IO_" in f:
             categories['pin_maps'].append(f)
@@ -145,8 +147,9 @@ def combine_data_structures(core_struct, lm_struct, all_struct, verbose=True):
     categories_lm = _update_dep_category(lm_struct, core_resource_names, lm_resource_names, master_key='load_module')
     pinmap_struct = parse_core_modules(all_struct['pin_maps'], verbose=verbose)
     categories_pinmaps = _update_dep_category(pinmap_struct, core_resource_names, lm_resource_names, master_key='pin_maps')
+    categories_web = {'web': all_struct['web']}
     categories_other = {'other': all_struct['other']}
-    categories = {**categories_core, **categories_lm, **categories_pinmaps, **categories_other}
+    categories = {**categories_core, **categories_lm, **categories_pinmaps, **categories_web, **categories_other}
     if verbose:
         print(f"{'_'*100}\nRUN combine_data_structures")
         print(json.dumps(categories, sort_keys=True, indent=4))
@@ -337,7 +340,7 @@ def add_ref_counter(categories, verbose=True):
 
     for master_key in categories:
         # Skip master keys
-        if master_key in ['pin_maps', 'other']:
+        if master_key in ['pin_maps', 'web', 'other']:
             continue
         for res in categories[master_key]:
             if 'linter' == res:
@@ -406,8 +409,27 @@ def _resource_printout_by_parent(resources):
     return printout
 
 
+def _web_resource_summary(resources):
+    web_resources = [res for res in resources if os.path.dirname(res) == 'web']
+    web_size = sum(os.path.getsize(os.path.join(MICROS_SOURCE_DIR, res)) for res in web_resources)
+    return [web_size, len(web_resources)]
+
+
+def _human_size(size):
+    sign = '-' if size < 0 else ''
+    value = abs(size)
+    for unit in ('bytes', 'KB', 'MB'):
+        if value < 1024 or unit == 'MB':
+            if unit == 'bytes':
+                return f"{sign}{value} bytes"
+            return f"{sign}{round(value, 1)} {unit}"
+        value /= 1024
+    return f"{sign}{round(value, 1)} MB"
+
+
 def create_summary_stat(categories, states, verbose=True):
     summary = {'files': {}, 'summary': {'core': ['<lines>', '<files>'], 'load': ['<lines>', '<files>'],
+                                    'web': ['<bytes>', '<files>'],
                                     'core_dep': [True, '<warning_cnt(s)>'], 'load_dep': [True, '<warning_cnt(s)>'],
                                     'core_score': 0, 'load_score': 0, 'version': 0}}
 
@@ -419,6 +441,8 @@ def create_summary_stat(categories, states, verbose=True):
     summary['summary']['core'] = [categories['core']['linter']['sum_lines'], len(categories['core'])-1]
     # Get LM code lines (0), and LM code files number
     summary['summary']['load'] = [categories['load_module']['linter']['sum_lines'], len(categories['load_module'])-1]
+    # Get WEB resource size (bytes), and WEB resource files number
+    summary['summary']['web'] = _web_resource_summary(categories['web'])
 
     # GET CORE micrOS lint verdict (bool, warnings) + extend categories
     core_dep = states.get('core_dep_checker')
@@ -458,12 +482,20 @@ def short_report(categories, states, verbose=True):
             return f"({Colors.ERR}{round(data, 1)}{Colors.NC})"
         else:
             return ''
+    def _size_vis(data):
+        if data > 0:
+            return f'({Colors.WARN}+{_human_size(data)}{Colors.NC})'
+        elif data < 0:
+            return f"({Colors.WARN}{_human_size(data)}{Colors.NC})"
+        else:
+            return ''
 
     # Create summary stat
     categories, summary = create_summary_stat(categories, states, verbose=True)
     # Unpack result of summary stat
     sum_core_lines, core_cnt = summary['summary']['core'][0], summary['summary']['core'][1]
     sum_lm_lines, lm_cnt = summary['summary']['load'][0], summary['summary']['load'][1]
+    web_size, web_cnt = summary['summary']['web'][0], summary['summary']['web'][1]
     core_dep = summary['summary']['core_dep']
     lm_dep = summary['summary']['load_dep']
     core_pylint = summary['summary']['core_score']
@@ -475,6 +507,7 @@ def short_report(categories, states, verbose=True):
     _files, printout2 = _verdict_gen(master_key='load_module', categories=categories, verbose=verbose)
     summary['files'].update(_files)
     _, pinmaps = _verdict_gen(master_key='pin_maps', categories=categories, verbose=verbose)
+    web = _resource_printout_by_parent(categories['web'])
     other = _resource_printout_by_parent(categories['other'])
 
     # Generate summary DIFF
@@ -482,6 +515,7 @@ def short_report(categories, states, verbose=True):
         summary_diff, is_better = diff_short_summary(summary, verbose=True)
         core_diff = summary_diff['summary']['core']
         load_diff = summary_diff['summary']['load']
+        web_diff = summary_diff['summary']['web']
         core_score_diff = summary_diff['summary']['core_score']
         load_score_diff = summary_diff['summary']['load_score']
         core_dep_diff = summary_diff['summary']['core_dep'][1]
@@ -489,7 +523,7 @@ def short_report(categories, states, verbose=True):
     except Exception as e:
         print(f"\n\ndiff_short_summary error: no file: {e}\n\n")
         is_better = True    # enable save
-        core_diff, load_diff, core_score_diff, load_score_diff, core_dep_diff, lm_dep_diff = [0, 0], [0, 0], 0, 0, 0, 0
+        core_diff, load_diff, web_diff, core_score_diff, load_score_diff, core_dep_diff, lm_dep_diff = [0, 0], [0, 0], [0, 0], 0, 0, 0, 0
 
     if not verbose:
         print(json.dumps(categories, sort_keys=True, indent=4))
@@ -504,12 +538,16 @@ def short_report(categories, states, verbose=True):
     print("micrOS PIN MAP resources")
     for line in pinmaps:
         print(line)
+    print("micrOS WEB resources")
+    for line in web:
+        print(line)
     print("micrOS Other resources")
     for line in other:
         print(line)
     print("########################        micrOS linter      ###########################")
     print(f"        core system:                {sum_core_lines}{_vis(core_diff[0])} lines / {core_cnt}{_vis(core_diff[1])} files")
     print(f"       load modules:                {sum_lm_lines}{_vis(load_diff[1])} lines / {lm_cnt}{_vis(load_diff[1])} files")
+    print(f"      web resources:                {_human_size(web_size)}{_size_vis(web_diff[0])} / {web_cnt}{_vis(web_diff[1])} files")
     print(f"   core_dep_checker:                core dependency check (no LM): {c_OK if core_dep[0]  else c_NOK} {'' if core_dep[1] == 0 else f'{core_dep[1]}{_vis(core_dep_diff)} warning(s)s'}")
     print(f"load_module_checker:                load module dependency check (no core): {c_OK if lm_dep[0] else c_NOK} {'' if lm_dep[1] == 0 else f'{lm_dep[1]}{_vis(lm_dep_diff)} warning(s)'}")
     print(f"  core pylint score:                {core_pylint}{_pyl_vis(core_score_diff)}")
@@ -525,6 +563,7 @@ def short_report(categories, states, verbose=True):
 def diff_short_summary(summary, verbose=True):
     is_better = False
     diff_summary = {'files': {}, 'summary': {'core': ['<lines>', '<files>'], 'load': ['<lines>', '<files>'],
+                                    'web': ['<bytes>', '<files>'],
                                     'core_dep': [True, '<warning_cnt(s)>'], 'load_dep': [True, '<warning_cnt(s)>'],
                                     'core_score': 0, 'load_score': 0, 'version': 0}}
     file_path = os.path.join(RELEASE_INFO_PATH, 'system_analysis_sum.json')
@@ -539,12 +578,14 @@ def diff_short_summary(summary, verbose=True):
         diff_summary['files'][f_name] = [score - stored_summary['files'][f_name][0], ref - stored_summary['files'][f_name][1]]
     for tag, data in summary['summary'].items():
         if isinstance(data, int) or isinstance(data, float):
-            diff_summary['summary'][tag] = data - stored_summary['summary'][tag]
+            stored_data = stored_summary['summary'].get(tag, 0)
+            diff_summary['summary'][tag] = data - stored_data
             is_better |= False if diff_summary['summary'][tag] < 0 else True
         if isinstance(data, list):
+            stored_data = stored_summary['summary'].get(tag, [0] * len(data))
             for i, d in enumerate(data):
                 if isinstance(d, int) or isinstance(d, float):
-                    diff_summary['summary'][tag][i] = d - stored_summary['summary'][tag][i]
+                    diff_summary['summary'][tag][i] = d - stored_data[i]
                     is_better |= False if diff_summary['summary'][tag][i] < 0 else True
     if verbose:
         print(f"{'_'*100}\nRUN diff_short_summary")

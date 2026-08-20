@@ -135,11 +135,17 @@ p {
 }
 
 .hero-actions,
-.meta,
 .toolbar {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+}
+
+.meta {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
 }
 
 .meta-chip {

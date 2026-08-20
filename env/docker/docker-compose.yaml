@@ -1,6 +1,6 @@
 services:
   micros-gateway:
-    image: bxnxm/micros-gateway:3.0.3
+    image: bxnxm/micros-gateway:3.3.5
     container_name: micros-gateway
     environment:
       - GATEWAYIP=10.0.1.1

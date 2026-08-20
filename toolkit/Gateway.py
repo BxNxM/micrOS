@@ -4,13 +4,17 @@
 import json
 import os
 import ipaddress
-from flask import Flask, jsonify, Response, make_response, request, send_file, abort
+import ast
+from html import escape
+from urllib.parse import quote, unquote
+from flask import Flask, jsonify, Response, make_response, request, send_file, send_from_directory, abort, stream_with_context
 from flask_restful import Resource, Api
 import threading
 import time
 import concurrent.futures
 MYPATH = os.path.dirname(__file__)
 WEBUI_PATH = os.path.join(MYPATH, 'gateway')
+MICROS_WEBUI_PATH = os.path.join(os.path.dirname(MYPATH), 'micrOS', 'source', 'web')
 import requests
 from io import BytesIO
 from socket import gethostbyname
@@ -41,6 +45,11 @@ app = Flask(__name__)
 @app.route('/gateway.css')
 def gateway_css():
     return send_file(os.path.join(WEBUI_PATH, 'gateway.css'), mimetype='text/css')
+
+
+@app.route('/micros-web/<path:resource>')
+def micros_web_resource(resource):
+    return send_from_directory(MICROS_WEBUI_PATH, resource)
 
 # --------------------- AUTH BEGIN ------------------------- #
 ADDRESS_CACHE = {}
@@ -162,6 +171,293 @@ class Hello(Resource):
         return make_response(response)
 
 
+def _parse_dashboard_rest_cmd(cmd):
+    """Mirror the device /rest path parsing for gateway dashboard calls."""
+    decoded = unquote(cmd or '')
+    tokens = []
+    index = 0
+    while index < len(decoded):
+        if decoded[index] == '"':
+            end = decoded.find('"', index + 1)
+            if end == -1:
+                tokens.append(decoded[index:].strip())
+                break
+            quoted_value = '"' + decoded[index + 1:end] + '"'
+            if quoted_value:
+                if tokens and tokens[-1].endswith('='):
+                    tokens[-1] += quoted_value
+                else:
+                    tokens.append(quoted_value)
+            index = end + 1
+            continue
+
+        start = index
+        while index < len(decoded) and decoded[index] != '"':
+            index += 1
+        segment = decoded[start:index]
+        if segment:
+            segment = segment.replace('/', ' ').replace('-', ' ').strip()
+            if segment:
+                tokens.extend(token for token in segment.split() if token)
+    return tokens
+
+
+def _decode_dashboard_result(response):
+    if response is None or isinstance(response, (dict, bool, int, float)):
+        return response
+    if isinstance(response, list):
+        if len(response) != 1:
+            return response
+        response = response[0]
+    text = str(response).strip()
+    if not text:
+        return text
+    for loader in (json.loads, ast.literal_eval):
+        try:
+            return loader(text)
+        except Exception:
+            pass
+    return response
+
+
+def _dashboard_state(execution_result):
+    response = execution_result.get('response')
+    if isinstance(response, str) and response.startswith('Core error:'):
+        return False
+    return bool(execution_result.get('state', True))
+
+
+def _gateway_auth_enabled():
+    return bool(globals().get('__rest_usr_name') and globals().get('__rest_usr_pwd'))
+
+
+class DeviceDashboardGroup(Resource):
+    """
+    One gateway page that groups every known device dashboard subpage.
+    """
+
+    @staticmethod
+    def _device_groups():
+        try:
+            groups = ListDevices().sort_devices()
+        except Exception as e:
+            print(f"[GatewayDashboard] device group refresh error: {e}")
+            groups = ListDevices.DEVICE_CACHE or {'online': {}, 'offline': {}}
+        return {
+            'online': {
+                uid: data for uid, data in groups.get('online', {}).items()
+                if len(data) > 2 and not str(data[2]).startswith('__')
+            },
+            'offline': {
+                uid: data for uid, data in groups.get('offline', {}).items()
+                if len(data) > 2 and not str(data[2]).startswith('__')
+            }
+        }
+
+    @staticmethod
+    def _device_tabs(label, devices, selected_device=''):
+        if not devices:
+            return '<div class="empty-row">No online devices available.</div>'
+        links = []
+        for uid, data in sorted(devices.items(), key=lambda item: str(item[1][2]).lower()):
+            fuid = str(data[2])
+            href = f"/dashboard/{quote(fuid, safe='')}"
+            css_classes = ['device-tab']
+            if fuid == selected_device:
+                css_classes.append('active')
+            title = escape(f"{fuid} ({uid})")
+            links.append(
+                f'<a class="{" ".join(css_classes)}" href="{href}" target="deviceFrame" '
+                f'data-device="{escape(fuid)}" title="{title}">{escape(fuid)}</a>'
+            )
+        return f'<nav class="device-tabs" aria-label="{label}">' + ''.join(links) + '</nav>'
+
+    def get(self):
+        groups = self._device_groups()
+        requested_device = request.args.get('device', '').strip()
+        known_devices = {
+            str(data[2]) for data in groups['online'].values()
+        }
+        first_online = next(iter(groups['online'].values()), None)
+        first_device = requested_device if requested_device in known_devices else str(first_online[2]) if first_online else ''
+        initial_src = f"/dashboard/{quote(first_device, safe='')}" if first_device else ''
+        online_tabs = self._device_tabs('online devices', groups['online'], first_device)
+        iframe = (
+            f'<iframe name="deviceFrame" id="deviceFrame" src="{initial_src}" '
+            'title="micrOS device dashboard"></iframe>'
+            if initial_src else
+            '<div class="empty-panel">No online device dashboard is available yet.</div>'
+        )
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#101418">
+    <title>micrOS Gateway Dashboards</title>
+    <link rel="stylesheet" href="/gateway.css">
+    <style>
+        .dashboard-shell {{ min-height: 100vh; display: grid; grid-template-rows: auto 1fr; gap: 8px; padding: 10px; }}
+        .dashboard-top {{ overflow: hidden; }}
+        .device-tabs {{ display: flex; gap: 6px; overflow-x: auto; padding: 4px; }}
+        .device-tab {{ display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 5px 10px; border-radius: 8px; background: var(--surface-strong); color: var(--text); text-decoration: none; font-weight: 700; font-size: 12px; white-space: nowrap; box-shadow: inset 0 0 0 1px var(--line); }}
+        .device-tab.active {{ background: var(--accent); color: #101418; box-shadow: none; }}
+        .dashboard-frame {{ min-height: calc(100vh - 56px); }}
+        #deviceFrame {{ width: 100%; min-height: calc(100vh - 56px); border: 1px solid var(--line); border-radius: 8px; background: #000; }}
+        .empty-row, .empty-panel {{ color: var(--muted); padding: 12px; border: 1px solid var(--line); border-radius: 8px; }}
+        @media (max-width: 820px) {{
+            .dashboard-shell {{ padding: 6px; }}
+            #deviceFrame {{ min-height: calc(100vh - 48px); }}
+        }}
+    </style>
+</head>
+<body class="page-gateway">
+    <main class="dashboard-shell">
+        <section class="dashboard-top">
+            {online_tabs}
+        </section>
+        <section class="dashboard-frame">
+            {iframe}
+        </section>
+    </main>
+    <script>
+        document.querySelectorAll('.device-tab').forEach(link => {{
+            link.addEventListener('click', () => {{
+                document.querySelectorAll('.device-tab').forEach(item => item.classList.remove('active'));
+                link.classList.add('active');
+            }});
+        }});
+    </script>
+</body>
+</html>"""
+        return make_response(html)
+
+
+class DeviceDashboard(Resource):
+    """
+    Gateway-served micrOS dashboard.
+
+    The HTML is loaded from micrOS/source/web/dashboard.html and only receives a
+    device-scoped BASE_URL so the original dashboard code calls the gateway.
+    """
+
+    def get(self, device):
+        dashboard_html = os.path.join(MICROS_WEBUI_PATH, 'dashboard.html')
+        try:
+            with open(dashboard_html, 'r', encoding='utf-8') as file:
+                html = file.read()
+        except OSError:
+            abort(404, description=f"micrOS dashboard resource not found: {dashboard_html}")
+
+        safe_device = escape(device)
+        rest_base = f"/dashboard/{quote(device, safe='')}"
+        html = html.replace(
+            '<head>',
+            '<head>\n    <base href="/micros-web/">',
+            1
+        )
+        html = html.replace(
+            '<title>microWebDashboard</title>',
+            f'<title>micrOS Gateway Dashboard - {safe_device}</title>',
+            1
+        )
+        html = html.replace(
+            '<script src="uapi.js" ></script>',
+            '<script src="uapi.js" ></script>\n'
+            f'    <script>BASE_URL = {json.dumps(rest_base)};</script>',
+            1
+        )
+        html = html.replace(
+            '<h1> micrOS dashboard </h1>',
+            f'<h1> micrOS dashboard - {safe_device}</h1>',
+            1
+        )
+        return make_response(html)
+
+
+class DeviceDashboardRest(Resource):
+    """
+    Device REST-compatible endpoint backed by gateway socket commands.
+    """
+
+    @staticmethod
+    def device_info(device):
+        _, _, fid, uid = socketClient.ConnectionData.select_device(device_tag=device)
+        if uid is None:
+            abort(404, description=f"Unknown device: {device}")
+        version_call = SendCmd.runcmd(device, 'version')
+        version = version_call.get('response') or 'Unknown'
+        return jsonify({
+            'result': {
+                'micrOS': version,
+                'node': fid,
+                'auth': _gateway_auth_enabled(),
+                'usr_endpoints': ('dashboard',)
+            },
+            'state': _dashboard_state(version_call)
+        })
+
+    def get(self, device, cmd=''):
+        cmd_tokens = _parse_dashboard_rest_cmd(cmd)
+        if not cmd_tokens:
+            return self.device_info(device)
+
+        if cmd_tokens[-1] != '>json':
+            cmd_tokens.append('>json')
+        execution = SendCmd.runcmd(device, '+'.join(cmd_tokens))
+        return jsonify({
+            'result': _decode_dashboard_result(execution.get('response')),
+            'state': _dashboard_state(execution),
+            'gateway': {
+                'cmd': execution.get('cmd'),
+                'device': execution.get('device'),
+                'latency': execution.get('latency')
+            }
+        })
+
+
+class DeviceDashboardEndpoint(Resource):
+    """
+    Gateway proxy for device web callbacks used by dashboard embed widgets.
+    """
+    ALLOWED_ENDPOINTS = ('cam/snapshot', 'cam/stream')
+
+    def get(self, device, endpoint):
+        endpoint = endpoint.strip('/')
+        if endpoint not in self.ALLOWED_ENDPOINTS:
+            abort(404, description=f"Unsupported dashboard endpoint: {endpoint}")
+
+        ip, _, _, uid = socketClient.ConnectionData.select_device(device_tag=device)
+        if uid is None:
+            abort(404, description=f"Unknown device: {device}")
+        device_url = f"http://{ip}/{endpoint}"
+        try:
+            upstream = requests.get(device_url, timeout=10, stream=True)
+        except Exception as e:
+            print(f"[GatewayDashboard] endpoint proxy error: {device_url}: {e}")
+            return f"Failed to retrieve device endpoint: {endpoint}", 502
+
+        if upstream.status_code != 200:
+            status = upstream.status_code
+            upstream.close()
+            return f"Device endpoint returned HTTP {status}: {endpoint}", status
+
+        content_type = upstream.headers.get('content-type', 'application/octet-stream')
+        if content_type.startswith('multipart/'):
+            def generate():
+                try:
+                    for chunk in upstream.iter_content(chunk_size=4096):
+                        if chunk:
+                            yield chunk
+                finally:
+                    upstream.close()
+            return Response(stream_with_context(generate()), content_type=content_type)
+
+        body = upstream.content
+        upstream.close()
+        return Response(body, content_type=content_type)
+
+
 class SendCmd(Resource):
     """
     http://127.0.0.1:5005/sendcmd/micr240ac4f679e8OS/rgb+toggle
@@ -214,7 +510,8 @@ class SendCmd(Resource):
             # FORMAT (strip) response
             if response is not None:
                 response = [k.strip() for k in response.splitlines()] if '\n' in response else response.strip()
-        return {'cmd': cmd_list, 'device': device_detailed, 'response': response, 'latency': diff}
+        return {'cmd': cmd_list, 'device': device_detailed, 'response': response, 'latency': diff, 'state': bool(status)}
+
 
 class ListDevices(Resource):
     DEVICE_CACHE = {}
@@ -629,6 +926,13 @@ api.add_resource(Hello, '/')
 api.add_resource(ListDevices, '/list/')
 api.add_resource(SearchDevices, '/search/')
 api.add_resource(DeviceStatus, '/status')
+api.add_resource(DeviceDashboardGroup, '/dashboard')
+api.add_resource(DeviceDashboard, '/dashboard/<string:device>')
+api.add_resource(DeviceDashboardRest,
+                 '/dashboard/<string:device>/rest',
+                 '/dashboard/<string:device>/rest/',
+                 '/dashboard/<string:device>/rest/<path:cmd>')
+api.add_resource(DeviceDashboardEndpoint, '/dashboard/<string:device>/<path:endpoint>')
 api.add_resource(SendCmd, '/sendcmd/<string:device>/<string:cmd>')
 api.add_resource(Prometheus, '/metrics/<string:device>/<string:cmd>')
 api.add_resource(ForwardImg, '/image', '/image/<string:device>')

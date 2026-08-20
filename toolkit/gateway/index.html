@@ -21,6 +21,7 @@
                 </div>
                 <div class="meta">
                     <div class="meta-chip" id="camera_stream_link">Camera stream link</div>
+                    <div class="meta-chip" id="dashboard_group_link">Dashboard group link</div>
                 </div>
             </div>
         </section>
@@ -88,6 +89,8 @@
                     <div class="endpoint"><code>/list</code><span>List known devices and sort them by online and offline state.</span></div>
                     <div class="endpoint"><code>/search</code><span>Trigger device discovery on the current network.</span></div>
                     <div class="endpoint"><code>/status</code><span>Collect node status data and system-level health details.</span></div>
+                    <div class="endpoint"><code>/dashboard</code><span>Open the gateway dashboard group for every known device.</span></div>
+                    <div class="endpoint"><code>/dashboard/&lt;device&gt;</code><span>Open a gateway-backed dashboard using the shared micrOS web resources.</span></div>
                     <div class="endpoint"><code>/sendcmd/&lt;device&gt;/&lt;cmd&gt;</code><span>Send a command to a selected device. Use `+` instead of spaces.</span></div>
                     <div class="endpoint"><code>/metrics/&lt;device&gt;/&lt;cmd&gt;</code><span>Expose command output in Prometheus scrape format.</span></div>
                     <div class="endpoint"><code>/image/&lt;device&gt;</code><span>Fetch an ESP camera image. Without a device parameter, the endpoint lists cameras.</span></div>
@@ -175,7 +178,7 @@
 
         function update_device_links(fuid, color='var(--accent)', offline=false) {
             const className = offline ? 'offline' : '';
-            var linkTemplate = `<a href="${proto}//${fuid}.local" target="_blank" class="${className}" style="background-color: ${color};">${fuid}</a>`;
+            var linkTemplate = `<a href="${apiBaseUrl}/dashboard?device=${encodeURIComponent(fuid)}" target="_blank" class="${className}" style="background-color: ${color};" title="Gateway dashboard group">${fuid}</a>`;
             deviceLinksHTML.push(linkTemplate);
         }
 
@@ -243,9 +246,22 @@
             elementToReplace.parentNode.replaceChild(link, elementToReplace);
         }
 
+        function create_dashboard_group_link() {
+            let apiUrl = `${apiBaseUrl}/dashboard`;
+            var link = document.createElement('a');
+            link.href = apiUrl;
+            link.textContent = 'Open Device Dashboards';
+            link.className = 'link-button';
+            link.target = '_blank';
+
+            var elementToReplace = document.getElementById('dashboard_group_link');
+            elementToReplace.parentNode.replaceChild(link, elementToReplace);
+        }
+
         set_gateway_ui_version();
         render_command_suggestions();
         create_camera_stream_link();
+        create_dashboard_group_link();
         restApi();
     </script>
 </body>

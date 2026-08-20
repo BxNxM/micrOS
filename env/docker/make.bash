@@ -1,9 +1,11 @@
 #!/bin/bash
 #set -x
+set -e
 
 VERSION=$1
 DEV=false
 DEV_STR=''
+BUILD_OUTPUT='--load'
 
 if [[ "$VERSION" == "" ]]
 then
@@ -36,13 +38,13 @@ echo -e "[CREATE IMAGE] DEV: ${DEV}"
 if [[ "${DEV}" == "true" ]]
 then
   # DEV BUILD
-  echo -e "|------- docker build --no-cache -t ${IMAGE} -f DockerfileDev"
-  docker buildx build  --no-cache -t "${IMAGE}" -f DockerfileDev .
+  echo -e "|------- docker buildx build ${BUILD_OUTPUT} --no-cache -t ${IMAGE} -f DockerfileDev"
+  docker buildx build "${BUILD_OUTPUT}" --no-cache -t "${IMAGE}" -f DockerfileDev .
 else
   # PROD BUILD
-  echo -e "|------- docker build --no-cache -t ${IMAGE} ..."
+  echo -e "|------- docker buildx build ${BUILD_OUTPUT} --no-cache -t ${IMAGE} ..."
   # Legacy way
-  docker buildx build --no-cache -t "${IMAGE}" -t "${IMAGE_LATEST}" .
+  docker buildx build "${BUILD_OUTPUT}" --no-cache -t "${IMAGE}" -t "${IMAGE_LATEST}" .
 
   # Multiplatform way
   #docker buildx create --use

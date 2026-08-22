@@ -4,7 +4,7 @@ const menuStructure = {
   'Web': ['webui', 'webui_max_con'],
   'Scheduler': ['cron', 'crontasks'],
   'Interrupts': ['timirq', 'timirqcbf', 'timirqseq', 'irq1', 'irq1_cbf', 'irq1_trig', 'irq2', 'irq2_cbf', 'irq2_trig', 'irq3', 'irq3_cbf', 'irq3_trig', 'irq4', 'irq4_cbf', 'irq4_trig', 'irq_prell_ms'],
-  'Pin-mapping': ['cstmpmap'],
+  'Pinmap': ['cstmpmap'],
 };
 const configLabelMap = {
   'devfid': 'Device name',
@@ -36,7 +36,7 @@ const categoryIconMap = {
   'Web': '🌐',
   'Scheduler': '⏰',
   'Interrupts': '⚡',
-  'Pin-mapping': '📍',
+  'Pinmap': '📍',
   'Tasks': '✓',
   'Packages': '📦',
 };
@@ -380,7 +380,7 @@ function renderConfigFields(data, sectionKey = '') {
     container.appendChild(headerRow);
   }
 
-  if (sectionKey === 'Pin-mapping') {
+  if (sectionKey === 'Pinmap') {
     renderPinMappingSection(data, container);
   } else if (Object.keys(data).some(key => key.startsWith('irq'))) {
     renderInterruptFields(data, container);

@@ -221,6 +221,73 @@
             "param(s)": "name event"
         }
     },
+    "aqua": {
+        "configure": {
+            "doc": "\n    Update dashboard configuration values.\n    ",
+            "param(s)": "tank_width_cm=None tank_depth_cm=None tank_height_cm=None"
+        },
+        "flow": {
+            "doc": "\n    Return pump and irrigation-head flow calculations.\n    ",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "\n    micrOS LM help.\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'status', 'callback': 'status ', 'wtype': 'auto'}\n\t{'type': 'textbox', 'callback': 'tank ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'flow ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'soil ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'sensor_distance module=None', 'refresh': 10000}\n\t{'type': 'button', 'callback': 'stop ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'on ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'off ', 'result': False, 'options': ['None']}",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/irrigation_system/media/aqua.png?raw=true",
+        "load": {
+            "doc": "\n    Register the Aqua dashboard and book the pump pin.\n    ",
+            "param(s)": "web=True pump_pin=None"
+        },
+        "off": {
+            "doc": "\n    Dummy manual pump-off command.\n    ",
+            "param(s)": ""
+        },
+        "on": {
+            "doc": "\n    Dummy manual pump-on command.\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    Shows logical pins used by this Load Module.\n    \npin map: aqua_pump",
+            "param(s)": ""
+        },
+        "plan": {
+            "doc": "\n    Preview a watering run from total or per-head volume.\n    ",
+            "param(s)": "volume_l=None per_head_l=None"
+        },
+        "ready": {
+            "doc": "\n    Return readiness based on tank level and requested volume.\n    ",
+            "param(s)": "volume_l=None"
+        },
+        "sensor_distance": {
+            "doc": "\n    Read top-to-water distance from the configured ultrasonic distance module.\n    ",
+            "param(s)": "module=None"
+        },
+        "set_level": {
+            "doc": "\n    Update top-to-water distance in manual mode or by sensor measurement.\n    ",
+            "param(s)": "distance_cm=None distance_mm=None measure=False module=None clear=False **_"
+        },
+        "soil": {
+            "doc": "\n    Return soil moisture sensor readings.\n    ",
+            "param(s)": ""
+        },
+        "status": {
+            "doc": "\n    Return the complete dashboard state.\n    ",
+            "param(s)": "measure=False"
+        },
+        "stop": {
+            "doc": "\n    Stop the active watering task.\n    ",
+            "param(s)": ""
+        },
+        "tank": {
+            "doc": "\n    Return tank level and volume.\n    ",
+            "param(s)": ""
+        },
+        "water": {
+            "doc": "\n    Start a calculated watering run.\n    ",
+            "param(s)": "volume_l=None per_head_l=None **_"
+        }
+    },
     "blinky": {
         "blink": {
             "doc": "\n    Blink the LED a given number of times with blocking delay.\n\n    :param count: how many times to toggle ON/OFF (default: 10)\n    :param delay_ms: delay between toggles in milliseconds (default: 200)\n    :return: status string when finished\n    ",

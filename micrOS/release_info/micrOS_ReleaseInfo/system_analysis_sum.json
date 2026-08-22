@@ -45,7 +45,7 @@
             4
         ],
         "Shell.py": [
-            9.37,
+            9.39,
             2
         ],
         "Notify.py": [
@@ -57,12 +57,12 @@
             24
         ],
         "Logger.py": [
-            8.86,
+            8.89,
             4
         ],
         "Common.py": [
-            9.86,
-            31
+            9.85,
+            30
         ],
         "InterConnect.py": [
             9.7,
@@ -121,7 +121,7 @@
             0
         ],
         "modules/LM_pacman.py": [
-            7.68,
+            7.63,
             0
         ],
         "modules/LM_web.py": [
@@ -137,11 +137,11 @@
             0
         ],
         "modules/LM_system.py": [
-            8.87,
+            8.86,
             3
         ],
         "modules/LM_robustness.py": [
-            8.47,
+            8.67,
             0
         ],
         "modules/LM_qmi8658.py": [
@@ -217,7 +217,7 @@
             0
         ],
         "modules/LM_dht22.py": [
-            7.94,
+            7.88,
             0
         ],
         "modules/LM_esp32.py": [
@@ -229,11 +229,11 @@
             0
         ],
         "modules/LM_rencoder.py": [
-            8.65,
+            8.59,
             0
         ],
         "modules/LM_dht11.py": [
-            7.94,
+            7.88,
             0
         ],
         "modules/LM_cluster.py": [
@@ -299,15 +299,15 @@
     },
     "summary": {
         "core": [
-            5479,
+            5478,
             27
         ],
         "load": [
-            7497,
+            7479,
             47
         ],
         "web": [
-            180949,
+            183761,
             18
         ],
         "core_dep": [
@@ -320,6 +320,6 @@
         ],
         "core_score": 9.28,
         "load_score": 8.41,
-        "version": "3.3.1-0"
+        "version": "3.3.2-0"
     }
 }

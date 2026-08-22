@@ -2,7 +2,7 @@
 micrOS Load Module programming Official API-s
     Designed by Marcell Ban aka BxNxM
 """
-from Server import Server, WebCli
+from Server import WebCli
 from Debug import syslog as debug_syslog, console_write
 from Logger import logger, log_get
 from Files import OSPath, path_join
@@ -142,19 +142,7 @@ def web_mounts(*args, **kwargs):
         return {}
 
 
-def socket_stream(func):
-    """
-    [LM] Decorator for Socket message stream - adds msgobj to the decorated function arg list.
-    Use msgobj as print function: msgobj("hello")
-    (Server singleton class - reply all bug/feature)
-    """
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs, msgobj=Server.reply_all)
-    return wrapper
-
-
-@socket_stream
-def data_logger(f_name, data=None, limit=12, msgobj=None):
+def data_logger(f_name, data=None, limit=12):
     """
     [LM] micrOS Common Data logger solution
     - if data None => read mode
@@ -162,14 +150,11 @@ def data_logger(f_name, data=None, limit=12, msgobj=None):
     :param f_name: log name (without extension, automatic: .dat, default folder: /data)
     :param data: data to append
     :param limit: line limit (max.: 12 with short lines: limited disk speed!)
-    :param msgobj: socket stream object (set automatically!)
     """
     f_name = f_name if f_name.endswith('.dat') else f'{f_name}.dat'
     # GET LOGGED DATA
     if data is None:
-        # return log as msg stream
-        log_get(f_name, msgobj=msgobj)
-        return True
+        return log_get(f_name)
     # ADD DATA TO LOG
     return logger(data, f_name, limit)
 

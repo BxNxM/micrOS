@@ -75,40 +75,40 @@ def logger(data, f_name:str, limit:int):
     return True
 
 
-def log_get(f_name:str, msgobj=None):
+def log_get(f_name:str):
     """
     Generic file getter for .log files
-    - log content critical [ERR] counter
+    - return file content
     """
     f_path = path_join(_dir_select(f_name), f_name)
-    err_cnt = 0
     try:
-        if msgobj is not None:
-            msgobj(f_path)
         with open(f_path, 'r') as f:
-            eline = f.readline().strip()
-            while eline:
-                # GET error from log line (tag: [ERR])
-                err_cnt += 1 if "[ERR]" in eline else 0
-                # GIVE BACK .log file contents
-                if msgobj is not None:
-                    msgobj(f"\t{eline}")
-                eline = f.readline().strip()
+            return f.read()
     except:
-        pass
-    return err_cnt
+        return ''
 
 
-def syslog(data=None, msgobj=None):
+def syslog(data=None, dump=False):
     """
     System log setter/getter
     :param data: None - read logs, str - write logs
-    :param msgobj: function to stream .log files
+    :param dump: include log file path/text entries in read response
     """
     if data is None:
         # READ LOGS
-        err_cnt = sum(log_get(f, msgobj) for f in ilist_fs(OSPath.LOGS, type_filter='f') if f.endswith(".sys.log"))
-        return err_cnt
+        err_cnt = 0
+        logs = {}
+        for f_name in (f for f in ilist_fs(OSPath.LOGS, type_filter='f') if f.endswith(".sys.log")):
+            text = log_get(f_name)
+            err_cnt += sum(1 for line in text.splitlines() if "[ERR]" in line)
+            if dump:
+                logs[path_join(OSPath.LOGS, f_name)] = text
+        health = err_cnt == 0
+        output = {'health': health,
+                  'verdict': f"{'OK' if health else 'NOK'} alarm: {err_cnt}"}
+        if dump:
+            output.update(logs)
+        return output
     # WRITE LOGS - [target].sys.log automatic log level detection
     _match = match(r"^\[([^\[\]]+)\]", data)
     log_lvl = _match.group(1).lower() if _match else 'user'
@@ -116,17 +116,18 @@ def syslog(data=None, msgobj=None):
     return logger(data, f_name, limit=4)
 
 
-def log_clean(msgobj=None):
+def log_clean():
     """
     Clean logs folder
     """
     logs_dir = OSPath.LOGS
     to_del = [file for file in ilist_fs(logs_dir, type_filter='f') if file.endswith('.log')]
+    deleted = []
     for _del in to_del:
         _del = path_join(logs_dir, _del)
-        if msgobj is not None:
-            msgobj(f" Delete: {_del}")
+        deleted.append(f" Delete: {_del}")
         remove(_del)
+    return '\n'.join(deleted)
 
 # Init log folder at module load
 _init_logger()

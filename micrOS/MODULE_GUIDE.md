@@ -21,7 +21,7 @@ This guide provides a detailed walkthrough for building, testing, and uploading 
   - [micro\_task(tag, task=None, \_wrap=False)](#micro_tasktag-tasknone-_wrapfalse)
   - [manage\_task(tag, operation)](#manage_tasktag-operation)
   - [exec\_cmd(cmd)](#exec_cmdcmd)
-  - [data\_logger(f\_name, data=None, limit=12, msgobj=None)](#data_loggerf_name-datanone-limit12-msgobjnone)
+  - [data\_logger(f\_name, data=None, limit=12)](#data_loggerf_name-datanone-limit12)
   - [notify(text)](#notifytext)
   - [web\_endpoint(endpoint, function, method)](#web_endpointendpoint-function-method)
   - [AnimationPlayer(animation: callable=None, tag: str=None, batch\_draw: bool=False, batch\_size: int=None)](#animationplayeranimationcallablenone-tagstrnone-batch_drawboolfalse-batch_sizeintnone)
@@ -840,20 +840,19 @@ Usage(s): [LM\_oled_ui](./source/modules/LM_oled_ui.py)
 
 ------------------------------------
 
-### data\_logger(f\_name, data=None, limit=12, msgobj=None)
+### data\_logger(f\_name, data=None, limit=12)
 
 micrOS Common Data logger solution.
 
 Parameters:
 
 * f\_name: Log name (without extension, automatically appends .dat)
-* data: Data to append to the log. If None, reads the log and returns it as a message stream.
+* data: Data to append to the log. If None, reads and returns the log content.
 * limit: Line limit for the log (default: 12)
-* msgobj: Socket stream object (automatically set)
 
 Returns:
 
-* If data is None, returns the log as a message stream. If data is provided, returns True if the write operation was successful, False otherwise.
+* If data is None, returns the log content as a string. If data is provided, returns True if the write operation was successful, False otherwise.
 
 
 **Example:** LM\_my\_logger.py
@@ -883,25 +882,6 @@ def help(widgets=False):
 ```
 
 Usage(s): [LM_dht22](./source/modules/LM_dht22.py)
-
-------------------------------------
-
-### socket_stream decorator
-
-Adds an extra `msgobj` to the wrapped function's argument list. The `msgobj` provides a socket message interface for the open connection.
-
-**Example:** LM\_my\_module.py
-
-```python
-from Common import socket_stream
-
-@socket_stream
-def function_name(arg1, arg2, ..., msgobj=None):
-    # function body
-    msgobj("Reply from Load Module to shellCli :)")
-```
-
-Usage(s): [LM_system](./source/modules/LM_system.py) 
 
 ------------------------------------
 

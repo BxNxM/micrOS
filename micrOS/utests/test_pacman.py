@@ -65,7 +65,7 @@ class _PacmanStubEnv:
         for path in (self.lib, self.modules, self.web, self.data, self.config):
             path.mkdir()
 
-        for name in ("Auth", "Common", "Debug", "Files", "mip", "Pacman", "uos", "urequests"):
+        for name in ("Auth", "Debug", "Files", "mip", "Pacman", "uos", "urequests"):
             self._saved[name] = sys.modules.get(name)
 
         env = self
@@ -79,10 +79,6 @@ class _PacmanStubEnv:
 
         auth_mod.sudo = sudo
         sys.modules["Auth"] = auth_mod
-
-        common_mod = types.ModuleType("Common")
-        common_mod.socket_stream = lambda callback: callback
-        sys.modules["Common"] = common_mod
 
         debug_mod = types.ModuleType("Debug")
         debug_mod.console_write = lambda *_a, **_k: None

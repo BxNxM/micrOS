@@ -53,8 +53,7 @@ def logger():
     """
     Return temp, hum logged data
     """
-    data_logger(_LOG_NAME)
-    return ''
+    return data_logger(_LOG_NAME)
 
 
 #######################

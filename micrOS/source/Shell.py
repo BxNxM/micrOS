@@ -28,7 +28,7 @@ IMAGE_MODE = 'rel' if 'micrOS' in uname()[-1] else 'dev'
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '3.3.1-0'
+    MICROS_VERSION = '3.3.2-0'
 
     def __init__(self):
         """
@@ -160,31 +160,36 @@ class Shell:
         # HELP MSG
         if is_local_cmd and msg_list[0] == "help":
             await self.a_send("[MICROS]")
-            await self.a_send("   hello     - hello msg - for device identification")
+            await self.a_send("   hello     - device hello msg ID")
             await self.a_send("   modules   - show active Load Modules")
-            await self.a_send("   version   - returns micrOS version")
+            await self.a_send("   version   - show micrOS version")
             await self.a_send("   exit      - exit shell session")
             await self.a_send("   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h")
             await self.a_send("   webrepl   - start webrepl, for file transfers use with --update")
             await self.a_send("[CONF] Configuration mode")
             await self.a_send("  conf       - Enter conf mode")
-            await self.a_send("    dump       - Dump all data, filter: dump <str>")
+            await self.a_send("    dump       - Dump all data, filter: dump [str]")
             await self.a_send("    key        - Get value")
             await self.a_send("    key value  - Set value")
             await self.a_send("  noconf     - Exit conf mode")
             await self.a_send("[TASK] Task operations")
             await self.a_send("  task list         - list tasks by tags")
-            await self.a_send("  task kill <tag>   - stop task")
-            await self.a_send("  task show <tag>   - show task output")
+            await self.a_send("  task kill [tag]   - stop task")
+            await self.a_send("  task show [tag]   - show task output")
             await self.a_send("[EXEC] Command mode, syntax(...): <module> <function> <params> <postfix>")
             await self.a_send("  Postfix hints:")
-            await self.a_send("    ... &<x>            - start one-shot task")
-            await self.a_send("    ... &&<x>           - start periodic task, where <x>: delay ms [x min: 20ms]")
+            await self.a_send("    ... &[x]            - start one-shot task")
+            await self.a_send("    ... &&[x]           - start periodic task, where [x]: delay ms [x min: 20ms]")
             await self.a_send("    ... >json           - request json formatted output")
             await self.a_send("    ... >>hostname      - remote command execution (intercon)")
-            await self.a_send("  help lm           - list ALL available LoadModules")
-            if "lm" in str(msg_list):
-                return await Shell._show_lm_funcs(msg_obj=self.a_send)
+            await self.a_send("help [all/-] [match]  - list Active/ALL modules with optional filtering")
+            # Help length: help [all/-] [match]
+            if len(msg_list) >= 2:
+                _loaded = msg_list[1].lower() != "all"
+                _match = msg_list[-1].lower() != "all"
+                if _match:
+                    return await Shell._show_lm_funcs(msg_obj=self.a_send, active_only=_loaded, match=msg_list[-1])
+                return await Shell._show_lm_funcs(msg_obj=self.a_send, active_only=_loaded)
             return await Shell._show_lm_funcs(msg_obj=self.a_send, active_only=True)
 
         # [2] EXECUTE:
@@ -254,13 +259,19 @@ class Shell:
     #                   COMMAND MODE & LMS HANDLER                  #
     #################################################################
     @staticmethod
-    async def _show_lm_funcs(msg_obj, active_only=False):
+    async def _show_lm_funcs(msg_obj, active_only:bool=False, match:str=None):
         """
         Dump LM modules with functions - in case of [py] files
         Dump LM module with help function call - in case of [mpy] files
+        :param msg_obj: message stream object for reply
+        :param active_only: show only loaded/active load modules
+        :param match: filter by substring
         """
         async def _help(mods):
             nonlocal mpath
+            if isinstance(match, str):
+                # Override mods with filtered mods by match
+                mods = [m for m in mods if match in m]
             for lm_path in mods:
                 lm_name = lm_path.replace('LM_', '').split('.')[0]
                 try:

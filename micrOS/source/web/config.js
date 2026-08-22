@@ -39,6 +39,7 @@ const categoryIconMap = {
   'Pinmap': '📍',
   'Tasks': '✓',
   'Packages': '📦',
+  'Debug': '🛠',
 };
 
 // Fields with semicolon-separated parameters
@@ -322,6 +323,10 @@ function addMenuListeners() {
         renderTaskSection();
         return;
       }
+      if (key === 'Debug') {
+        renderDebugSection();
+        return;
+      }
       const filteredConfig = filterConfig(key);
       console.log('Filtered config for', key, ':', filteredConfig);
       renderConfigFields(filteredConfig, key);
@@ -448,6 +453,83 @@ function renderTaskGroup(container, title, tasks, showActionButtons) {
     actions.push({label: 'Del', handler: handleTaskKill, className: 'danger-button'});
   }
   renderActionList(container, title, tasks, actions);
+}
+
+function renderDebugSection() {
+  const container = document.getElementById('configFields');
+  container.innerHTML = '';
+  const heading = textElement('h2', categoryTitle('Debug'), 'config-heading-top');
+  container.appendChild(heading);
+
+  const section = document.createElement('section');
+  section.className = 'config-action-section config-section-gap-large';
+  const list = document.createElement('div');
+  list.className = 'config-action-list';
+
+  renderActionRow(list, 'System Alarms', [
+    {label: 'Details', handler: handleDebugDetails},
+    {label: 'Clean', handler: handleAlarmClean, className: 'danger-button'},
+  ]);
+  renderActionRow(list, 'System Hosts', [{label: 'Details', handler: handleDebugDetails}]);
+
+  section.appendChild(list);
+  container.appendChild(section);
+}
+
+function formatAlarmDetails(response) {
+  const alarm = response && response.result;
+  if (!alarm || typeof alarm !== 'object' || Array.isArray(alarm)) return formatResponseBody(response);
+
+  const lines = [alarm.verdict || 'System alarms'];
+  const entries = Object.entries(alarm).filter(([key]) => !['health', 'verdict'].includes(key));
+  if (entries.length === 0) {
+    lines.push('', 'No alarm dump content.');
+    return lines.join('\n');
+  }
+
+  entries.forEach(([path, text]) => {
+    lines.push('', path);
+    const body = text === null || text === undefined ? '' : String(text);
+    if (!body) {
+      lines.push('  <empty>');
+      return;
+    }
+    body.split('\n').forEach(line => lines.push('  ' + line));
+  });
+  return lines.join('\n');
+}
+
+function getDebugDetails(label) {
+  return {
+    'System Alarms': {command: 'system/alarms/dump=True', timeout: 10000, formatter: formatAlarmDetails},
+    'System Hosts': {command: 'system/hosts', timeout: 5000},
+  }[label];
+}
+
+function handleDebugDetails(label, details, button) {
+  const debug = getDebugDetails(label);
+  if (!debug) return;
+  if (details.style.display !== 'none' && details.textContent) {
+    details.style.display = 'none';
+    return;
+  }
+  setButtonBusy(button, 'Loading...');
+  setInlineDetails(details, 'Loading details...');
+  restAPI(debug.command, false, debug.timeout)
+    .then(response => {
+      const result = response && response.hasOwnProperty('result') ? response.result : response;
+      setInlineDetails(details, debug.formatter ? debug.formatter(response) : formatResponseBody(result));
+    })
+    .catch(error => {
+      setInlineDetails(details, 'Details error: ' + error.message);
+    })
+    .finally(() => {
+      resetButton(button, 'Details');
+    });
+}
+
+function handleAlarmClean(label, details, button) {
+  runCommandAction(details, button, 'Clean', 'system/alarms/clean=True', 'Clean response');
 }
 
 function isProtectedTask(tag) {

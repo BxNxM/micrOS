@@ -1,51 +1,50 @@
 from LM_system import memory_usage
-from Common import socket_stream, syslog, micro_task
+from Common import syslog, micro_task
 from Auth import sudo
 
 
-@socket_stream
-def raise_error(msgobj=None):
+def raise_error():
     """
     Test function - raise  LM exception
     """
-    if msgobj is not None:
-        msgobj("Raise test exception")
     state = syslog('Robustness TeSt ErRoR')
     raise Exception(f"Test exception: {'OK' if state else 'NOK'}")
 
 
-@socket_stream
-def memory_leak(cnt=160, msgobj=None):
+def memory_leak(cnt=160):
     """
     Test function - allocate lot of memory
     :param cnt: data counter, default 160 iteration
     :return: verdict
     """
     dict_test = {}
+    out = []
     mem_start = memory_usage()['mem_used']
     for k in range(cnt):
         mem = memory_usage()['percent']
         data = "micrOS memory usage: {} %".format(mem)
-        if msgobj is not None:
-            msgobj("[{}] gen: {}".format(k, data))
+        out.append("[{}] gen: {}".format(k, data))
         dict_test[k] = data
     mem_end = memory_usage()['mem_used']
     delta = mem_start - mem_end
-    return '[{}] RAM Alloc.: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024))
+    out.append('[{}] RAM Alloc.: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024)))
+    return '\n'.join(out)
 
-@socket_stream
-def recursion_limit(limit=14, msgobj=None):
+
+def recursion_limit(limit=14):
     cnt = 0
+    out = []
     for cnt in range(1, limit+1):
         try:
-            _recursion(cnt, msgobj=msgobj)
+            _recursion(cnt, out=out)
         except Exception as e:
-            msgobj(f"ok error: {e}")
+            out.append(f"ok error: {e}")
             break
-    return f"Recursion limit: {cnt}"
+    out.append(f"Recursion limit: {cnt}")
+    return '\n'.join(out)
 
 
-def _recursion(cnt, msgobj=None):
+def _recursion(cnt, out=None):
     """
     Test function - recursion test
     :param cnt: recursion depth
@@ -56,8 +55,8 @@ def _recursion(cnt, msgobj=None):
     """
     if cnt > 0:
         remain = _recursion(cnt-1)
-        if msgobj is not None:
-            msgobj("recalled {}".format(cnt))
+        if out is not None:
+            out.append("recalled {}".format(cnt))
     else:
         remain = 0
     return remain
@@ -134,4 +133,3 @@ def help(widgets=False):
     return 'NOTE: This is a test module to validate system robustness', \
            'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14', \
            'create_task', 'mytask', "func_sudo", "func_sudo_opt opt=False"
-

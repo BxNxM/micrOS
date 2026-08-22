@@ -2,7 +2,7 @@ from uos import statvfs, getcwd, uname
 from utime import localtime
 from network import WLAN, STA_IF, AP_IF
 from binascii import hexlify
-from Common import socket_stream, console
+from Common import console
 from Network import get_mac, ifconfig as network_config
 from Time import ntp_time, set_time, uptime
 from Tasks import Manager
@@ -82,18 +82,18 @@ def heartbeat():
     return "<3 heartbeat <3"
 
 
-@socket_stream
-def alarms(clean=False, msgobj=None):
+def alarms(clean=False, dump=False):
     """
     Show micrOS alarms - system error list
     :param clean bool: clean alarms, default: False
+    :param dump bool: include log file path/text entries, default: False
     :return dict: verdict
     """
     from Logger import log_clean, syslog
     if clean:
-        log_clean(msgobj=msgobj)
-    errcnt = -1 if syslog is None else syslog(msgobj=msgobj)
-    return {'NOK alarm': errcnt} if errcnt > 0 else {'OK alarm': errcnt}
+        log_clean()
+    return {'health': False, 'verdict': 'NOK alarm: syslog unavailable'} \
+        if syslog is None else syslog(dump=dump)
 
 
 #############################
@@ -270,7 +270,7 @@ def help(widgets=False):
     """
     return resolve(('info', 'GRAPH{"refresh":5000} top', 'gclean', 'heartbeat', 'clock',
                     'setclock year month mday hour minute sec',
-                    'ntp', 'rssi', 'list_stations', 'pinmap key="builtin"', 'alarms clean=False',
+                    'ntp', 'rssi', 'list_stations', 'pinmap key="builtin"', 'alarms clean=False dump=False',
                     'notifications enable=<None,True,False>',
                     'notify "msg" *',
                     'sun refresh=False', 'ifconfig', 'memory_usage',

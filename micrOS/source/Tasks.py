@@ -601,14 +601,14 @@ def _exec_lm_core(cmd_list, jsonify):
             if lm_mod not in modules:
                 exec(f"import {lm_mod}")
             try:
-                # [2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
+                # [2] EXECUTE FUNCTION FROM MODULE
                 lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
             except Exception as e:
                 # Handle not proper module load (simulator), note: module in sys.modules BUT not available
                 if lm_mod in str(e):
                     # [2.1] LOAD MODULE - FORCED
                     exec(f"import {lm_mod}")
-                    # [2.2] EXECUTE FUNCTION FROM MODULE - over msgobj (socket or stdout)
+                    # [2.2] EXECUTE FUNCTION FROM MODULE
                     lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
                 else:
                     raise e
@@ -659,7 +659,7 @@ def exec_lm_pipe(taskstr):
         # Handle config default empty value (do nothing)
         if taskstr.startswith('n/a'):
             return True
-        # Execute individual commands - msgobj->"/dev/null"
+        # Execute individual commands.
         for cmd in (cmd.strip().split() for cmd in taskstr.split(';') if len(cmd) > 0):
             if cmd[0].startswith("#"):
                 console_write(f"[SKIP] exec_lm_pipe: {' '.join(cmd)}")

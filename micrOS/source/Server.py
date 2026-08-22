@@ -428,8 +428,7 @@ class Server:
     @staticmethod
     def reply_all(msg):
         """
-        Reply All - stream data to all connection...
-        Only used for LM msg stream over Common.socket_stream wrapper
+        Reply All - send notification data to all socket connections.
         """
         for _, cli in Client.ACTIVE_CLIS.items():
             if cli.connected:

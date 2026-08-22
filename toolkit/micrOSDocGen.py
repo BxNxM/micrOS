@@ -406,7 +406,6 @@ class MicrOSDocGen:
                         command = '{}'.format(line.split(')')[0]).replace("def", '').strip()
                         command = command.replace('(', ' ') \
                             .replace(',', '') \
-                            .replace('msgobj=None', '') \
                             .replace('force=True', '')
                         func = command.strip().split()[0]
                         param = ' '.join(command.strip().split()[1:])

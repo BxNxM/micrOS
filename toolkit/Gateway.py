@@ -621,18 +621,28 @@ class DeviceStatus(Resource):
                     hwuid = uid
 
             # Get system alarms response
-            _status2, alarms = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
+            _status2, alarm_resp = socketClient.run(['--dev', fuid.strip(), 'system alarms dump=True >json'])
             if _status2:
-                alarms = alarms.splitlines()
                 try:
-                    alarms = {'verdict': alarms[-1], 'log': alarms[0:-1]}
+                    alarms = json.loads(alarm_resp)
+                    if not isinstance(alarms, dict) or 'health' not in alarms or 'verdict' not in alarms:
+                        raise ValueError('invalid alarm response')
                 except:
-                    alarms = {'verdict': "NOK", "log": []}
+                    alarms = 'Unknown'
+            if not isinstance(alarms, dict):
+                _status2, alarm_resp = socketClient.run(['--dev', fuid.strip(), 'system alarms'])
+                if _status2:
+                    alarm_lines = alarm_resp.splitlines()
+                    try:
+                        verdict = alarm_lines[-1]
+                        alarms = {'health': 'OK alarm' in verdict and 'NOK alarm' not in verdict,
+                                  'verdict': verdict}
+                    except:
+                        alarms = {'health': False, 'verdict': "NOK"}
 
             # Clean Alarms
             clean_alarms = DeviceStatus.CLEAN_MICROS_ALARMS
-            log_data = alarms.get('log', None) if isinstance(alarms, dict) else None
-            if clean_alarms and log_data and len(log_data) > 0:
+            if clean_alarms and isinstance(alarms, dict) and alarms.get('health') is False:
                 _, _ = socketClient.run(['--dev', fuid.strip(), 'system alarms True'])
 
             # Get system info response -> upython version

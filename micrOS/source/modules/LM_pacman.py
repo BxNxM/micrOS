@@ -1,5 +1,4 @@
 from sys import modules
-from Common import socket_stream
 from Files import list_fs, ilist_fs, remove_file, remove_dir, OSPath, path_join, is_protected
 from Auth import sudo
 
@@ -201,18 +200,19 @@ def inspect(package:str=None)->list|str:
 
 ##########################     MISC    ###########################
 
-@socket_stream
-def micros_checksum(msgobj=None):
+def micros_checksum():
     from hashlib import sha1
     from binascii import hexlify
     from Config import cfgget
 
+    out = []
     for f_name in ilist_fs(path=OSPath.MODULES, type_filter='f', select='LM'):
-        with open(f_name, 'rb') as f:
+        with open(path_join(OSPath.MODULES, f_name), 'rb') as f:
             cs = hexlify(sha1(f.read()).digest()).decode('utf-8')
-        msgobj(f"{cs} {f_name}")
+        out.append(f"{cs} {f_name}")
     # GC collect?
-    return f"micrOS version: {cfgget('version')}"
+    out.append(f"micrOS version: {cfgget('version')}")
+    return '\n'.join(out)
 
 
 def unload(module=None):
@@ -231,8 +231,7 @@ def unload(module=None):
         return "Skip, module must start with LM_ or IO_"
 
 
-@socket_stream
-def cachedump(delete=None, ext="cache", msgobj=None):
+def cachedump(delete=None, ext="cache"):
     """
     Cache system persistent data storage files (.cache)
     :param delete: cache name to delete
@@ -245,11 +244,8 @@ def cachedump(delete=None, ext="cache", msgobj=None):
         for cache in (c for c in ilist_fs(data_dir, type_filter='f') if c.endswith('.cache')):
             _path = path_join(data_dir, cache)
             with open(_path, 'r') as f:
-                if msgobj is None:
-                    msg_buf.append(f'{_path}: {f.read()}')
-                else:
-                    msgobj(f'{_path}: {f.read()}')
-        return msg_buf if len(msg_buf) > 0 else ''
+                msg_buf.append(f'{_path}: {f.read()}')
+        return '\n'.join(msg_buf)
     # Remove given cache file
     try:
         delete_cache = path_join(data_dir, f"{delete}.cache")
@@ -301,8 +297,7 @@ def help(widgets=False):
 #              Legacy features              #
 #############################################
 
-@socket_stream
-def listmods(msgobj=None):
+def listmods():
     """
     Load module package manager
     - list all load modules
@@ -310,11 +305,8 @@ def listmods(msgobj=None):
     # Dump available LMs
     msg_buf = []
     for k in (res.replace('LM_', '') for res in ilist_fs(path=OSPath.MODULES, type_filter='f', select='LM')):
-        if msgobj is None:
-            msg_buf.append(f'   {k}')
-        else:
-            msgobj(f'   {k}')
-    return msg_buf if len(msg_buf) > 0 else ''
+        msg_buf.append(f'   {k}')
+    return '\n'.join(msg_buf)
 
 
 @sudo

@@ -1,6 +1,6 @@
 from machine import Pin
 import micropython
-from Common import socket_stream, syslog
+from Common import syslog
 from microIO import bind_pin, pinmap_search
 from Types import resolve
 
@@ -84,19 +84,13 @@ def load(min_val=0, max_val=20):
     return 'Init RotaryEncoder with IRQs.'
 
 
-@socket_stream
-def read_state(msgobj=None):
+def read_state():
     """
     Read rotary encoder status / relative position
     """
     load()
-    if msgobj is not None:
-        if Data.EVENT:
-            msgobj(f"[stream] RotaryState: {Data.VAL}")
-            Data.EVENT = False
-    else:
-        return f"RotaryState: {Data.VAL}"
-    return ""
+    Data.EVENT = False
+    return f"RotaryState: {Data.VAL}"
 
 
 def reset_state():

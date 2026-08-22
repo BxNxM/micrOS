@@ -167,18 +167,39 @@ def micrOS_config_set():
     return True, info
 
 
+def _wait_task_inactive(task_tag, timeout_sec=2, poll_sec=0.1):
+    deadline = time.time() + timeout_sec
+    last_output = ''
+    while time.time() < deadline:
+        output = CLIENT.execute(['task list >json'])
+        if output[0]:
+            last_output = output[1]
+            try:
+                task_data = json.loads(output[1].strip())
+                if task_tag not in task_data.get('active', []):
+                    return True, last_output
+            except Exception:
+                pass
+        time.sleep(poll_sec)
+    return False, last_output
+
+
 def micrOS_bgjob_one_shot_check():
     info = "[ST] Run async microTask check [system clock &]"
     print(info)
-    # Initial task cleanup...
-    CLIENT.execute(['task kill system.clock'])
-    time.sleep(1)
+    # Initial task guard: the one-shot check must prove auto-stop behavior.
+    state, task_output = _wait_task_inactive('system.clock')
+    if not state:
+        return False, f'{info} + task still running before start: {task_output}'
     cmd_list = ['system clock &']
     output = CLIENT.execute(cmd_list)
     if output[0]:
         # Legacy return OR New dict return
         if 'Start system.clock' in output[1].strip() or "{'system.clock': 'Starting'}" in output[1].strip():
-            return True, info
+            state, task_output = _wait_task_inactive('system.clock')
+            if state:
+                return True, f'{info} + auto-stop'
+            return False, f'{info} + task did not stop automatically: {task_output}'
     return False, f'{info} + not expected return: {output[1]}'
 
 
@@ -328,25 +349,29 @@ def measure_package_response_time():
 
 
 def micros_alarm_check():
-    info = "[ST] Test alarm state - system alarms should be null"
+    info = "[ST] Test alarm state - system alarms"
     print(info)
-    cmd_list = ['system alarms']
+    cmd_list = ['system alarms dump=True >json']
     output = CLIENT.execute(cmd_list)
-    alarm_cnt = 0
-    if output[0]:
-        try:
-            alarm_cnt = output[1].split(':')[-1]
-            alarm_cnt = int(alarm_cnt.strip())
-        except Exception as e:
-            alarm_cnt = 404
-            print(e)
-        # Clean alarms
-        cmd_list = ['system alarms True']
-        CLIENT.execute(cmd_list)
-        # Evaluation
-        if alarm_cnt > 0:
-            return True, info + f" -1 !!!WARN!!! [{alarm_cnt}] out: {output[1]}"
-    return True, info + f" [{alarm_cnt}] out: {output[1]}"
+    if not output[0]:
+        return False, info + f" error: {output[1]}"
+    try:
+        alarm_data = json.loads(output[1].strip())
+    except Exception as e:
+        return False, info + f" json error: {e} out: {output[1]}"
+    if not isinstance(alarm_data.get('health'), bool):
+        return False, info + f" missing bool health: {alarm_data}"
+    verdict = alarm_data.get('verdict', '')
+    if not isinstance(verdict, str) or not verdict.startswith(('OK alarm:', 'NOK alarm:')):
+        return False, info + f" invalid verdict: {alarm_data}"
+    log_data = {key: value for key, value in alarm_data.items() if key not in ('health', 'verdict')}
+    if any(key in ('log', 'path', 'text') or not isinstance(value, str) for key, value in log_data.items()):
+        return False, info + f" invalid dump: {alarm_data}"
+    # Clean alarms after evaluation.
+    CLIENT.execute(['system alarms clean=True'])
+    if not alarm_data['health']:
+        return True, info + f" !!!WARN!!! {verdict} out: {alarm_data}"
+    return True, info + f" {verdict} out: {alarm_data}"
 
 
 def oled_msg_end_result(result):
@@ -376,7 +401,9 @@ def check_robustness_exception():
     print(info_msg)
     cmd_list = ['robustness raise_error']
     output = CLIENT.execute(cmd_list)
-    if output[0] and "Core error: LM_robustness->raise_error: Test exception" in output[1]:
+    expected_errors = ("Test exception", "Raise test exception")
+    if output[0] and "Core error: LM_robustness->raise_error:" in output[1] \
+            and any(err in output[1] for err in expected_errors):
         return True, f'{info_msg}: Valid error msg: exec_lm_core *->raise_error: *'
     else:
         return False, f'{info_msg}: {output}'

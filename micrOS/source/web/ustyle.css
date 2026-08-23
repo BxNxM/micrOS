@@ -181,6 +181,13 @@ ol.widget {
 
 @media (max-width: 768px) {
 
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    select {
+        font-size: 16px;
+    }
+
     #widgets-section {
         flex-direction: column;
     }

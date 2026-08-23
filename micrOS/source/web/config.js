@@ -1,10 +1,40 @@
-const menuStructure = {
-  'Device': ['devfid', 'boothook', 'appwd', 'dbg', 'aioqueue', 'utc', 'boostmd'],
-  'Network': ['devip', 'staessid', 'stapwd', 'nwmd', 'espnow', 'ha'],
-  'Web': ['webui', 'webui_max_con'],
-  'Scheduler': ['cron', 'crontasks'],
-  'Interrupts': ['timirq', 'timirqcbf', 'timirqseq', 'irq1', 'irq1_cbf', 'irq1_trig', 'irq2', 'irq2_cbf', 'irq2_trig', 'irq3', 'irq3_cbf', 'irq3_trig', 'irq4', 'irq4_cbf', 'irq4_trig', 'irq_prell_ms'],
-  'Pinmap': ['cstmpmap'],
+const configCategories = {
+  'Device': {
+    icon: '📟',
+    keys: ['devfid', 'boothook', 'appwd', 'dbg', 'aioqueue', 'utc', 'boostmd']
+  },
+  'Network': {
+    icon: '📡',
+    keys: ['devip', 'staessid', 'stapwd', 'nwmd', 'espnow', 'ha']
+  },
+  'Web': {
+    icon: '🌐',
+    keys: ['webui', 'webui_max_con']
+  },
+  'Scheduler': {
+    icon: '⏰',
+    keys: ['cron', 'crontasks']
+  },
+  'Interrupts': {
+    icon: '⚡',
+    keys: ['timirq', 'timirqcbf', 'timirqseq', 'irq1', 'irq1_cbf', 'irq1_trig', 'irq2', 'irq2_cbf', 'irq2_trig', 'irq3', 'irq3_cbf', 'irq3_trig', 'irq4', 'irq4_cbf', 'irq4_trig', 'irq_prell_ms']
+  },
+  'Pinmap': {
+    icon: '📍',
+    keys: ['cstmpmap']
+  },
+  'Tasks': {
+    icon: '📋',
+    render: renderTaskSection
+  },
+  'Packages': {
+    icon: '📦',
+    render: renderPackagesSection
+  },
+  'Debug': {
+    icon: '🛠',
+    render: renderDebugSection
+  },
 };
 const configLabelMap = {
   'devfid': 'Device name',
@@ -22,31 +52,26 @@ const configLabelMap = {
   'ha': 'High Availability',
   'cron': 'Enable Scheduler',
   'crontasks': 'Scheduled Tasks',
+  'timirqcbf': 'Callback(s)',
   'webui': 'Enable',
   'webui_max_con': 'Allowed Number of Connections',
-  'irq_prell_ms': 'Interrupt Debounce',
+  'irq_prell_ms': 'Debounce (ms)',
 };
 const configSelectOptions = {
   'nwmd': ['STA', 'AP'],
   'irq_trig': ['up', 'down', 'both'],
 };
-const categoryIconMap = {
-  'Device': '📟',
-  'Network': '📡',
-  'Web': '🌐',
-  'Scheduler': '⏰',
-  'Interrupts': '⚡',
-  'Pinmap': '📍',
-  'Tasks': '📋',
-  'Packages': '📦',
-  'Debug': '🛠',
-};
-
 // Fields with semicolon-separated parameters
 const multiParamFields = new Set(['boothook', 'timirqcbf', 'staessid', 'stapwd']);
 
 // Regex to detect irq callback fields (irq<n>_cbf)
 const irqCallbackRegex = /^irq\d+_cbf$/;
+const irqTriggerRegex = /^irq\d+_trig$/;
+
+function configLabel(key) {
+  if (irqCallbackRegex.test(key)) return 'Callback(s)';
+  return configLabelMap[key] || key;
+}
 
 let configData = {};
 let changedValues = {};
@@ -97,18 +122,24 @@ function makeInput(type, value = '', placeholder = '', dataset = {}, onInput = n
 }
 
 function categoryTitle(category) {
-  return (categoryIconMap[category] ? categoryIconMap[category] + ' ' : '') + category;
+  const icon = configCategories[category] ? configCategories[category].icon : '';
+  return (icon ? icon + ' ' : '') + category;
 }
 
 function categoryKeyFromMenuItem(item) {
-  return item.dataset.category || item.textContent;
+  if (item.dataset.category) return item.dataset.category;
+  const text = item.textContent.trim();
+  return Object.keys(configCategories).find(category => text === category || text === categoryTitle(category)) || text;
 }
 
-function decorateCategoryMenu() {
-  document.querySelectorAll('#configMenu p').forEach(item => {
-    const category = categoryKeyFromMenuItem(item);
+function renderCategoryMenu() {
+  const menu = document.getElementById('configMenu');
+  if (!menu) return;
+  menu.innerHTML = '';
+  Object.keys(configCategories).forEach(category => {
+    const item = textElement('p', categoryTitle(category));
     item.dataset.category = category;
-    item.textContent = categoryTitle(category);
+    menu.appendChild(item);
   });
 }
 
@@ -138,7 +169,7 @@ function createBooleanToggle(key, value, onChange) {
   const toggle = document.createElement('div');
   toggle.className = 'config-toggle';
   toggle.setAttribute('role', 'group');
-  toggle.setAttribute('aria-label', configLabelMap[key] || key);
+  toggle.setAttribute('aria-label', configLabel(key));
 
   const buttons = [];
   const setValue = nextValue => {
@@ -166,6 +197,12 @@ function createBooleanToggle(key, value, onChange) {
 
 function createSelectInput(key, value) {
   const select = document.createElement('select');
+  if (isDefaultTriggerMode(key, value)) {
+    const placeholder = new Option('Default', value === '' ? '' : 'n/a');
+    placeholder.disabled = true;
+    placeholder.hidden = true;
+    select.appendChild(placeholder);
+  }
   getSelectOptions(key).forEach(option => {
     select.appendChild(new Option(option.charAt(0).toUpperCase() + option.slice(1), option));
   });
@@ -174,8 +211,12 @@ function createSelectInput(key, value) {
   return select;
 }
 
+function isDefaultTriggerMode(key, value) {
+  return irqTriggerRegex.test(key) && (value === 'n/a' || value === '');
+}
+
 function getSelectOptions(key) {
-  return configSelectOptions[key] || (key.match(/^irq\d+_trig$/) ? configSelectOptions.irq_trig : null);
+  return configSelectOptions[key] || (irqTriggerRegex.test(key) ? configSelectOptions.irq_trig : null);
 }
 
 function hasUnsavedChanges() {
@@ -190,7 +231,7 @@ function updateSaveButtonState() {
 
 function formatChangedKeys(values) {
   return Object.keys(values)
-    .map(key => '- ' + (configLabelMap[key] || key))
+    .map(key => '- ' + configLabel(key))
     .join('\n');
 }
 
@@ -316,16 +357,9 @@ function addMenuListeners() {
       setSelectedMenuItem(item);
       closeMobileMenu();
       saveSelectedCategory(key);
-      if (key === 'Packages') {
-        renderPackagesSection();
-        return;
-      }
-      if (key === 'Tasks') {
-        renderTaskSection();
-        return;
-      }
-      if (key === 'Debug') {
-        renderDebugSection();
+      const category = configCategories[key] || {};
+      if (typeof category.render === 'function') {
+        category.render();
         return;
       }
       const filteredConfig = filterConfig(key);
@@ -348,10 +382,10 @@ function setSelectedMenuItem(selectedItem) {
 
 function filterConfig(key) {
   if (key === 'Other') {
-    const allUsedKeys = Object.values(menuStructure).flat();
+    const allUsedKeys = Object.values(configCategories).flatMap(category => category.keys || []);
     return Object.fromEntries(Object.entries(configData).filter(([k]) => !allUsedKeys.includes(k)));
   }
-  let configKeys = menuStructure[key] || [];
+  let configKeys = configCategories[key] && configCategories[key].keys || [];
   let filteredConfig = {};
   configKeys.forEach(k => {
     if (configData.hasOwnProperty(k)) {
@@ -362,7 +396,7 @@ function filterConfig(key) {
 }
 
 function isEditableConfigSection(sectionKey) {
-  return sectionKey in menuStructure;
+  return !!(configCategories[sectionKey] && configCategories[sectionKey].keys);
 }
 
 function renderSaveButton(container) {
@@ -421,8 +455,8 @@ function renderTaskSection() {
       const activeTasks = Array.isArray(taskResponse.result.active) ? taskResponse.result.active : [];
       const inactiveTasks = Array.isArray(taskResponse.result.inactive) ? taskResponse.result.inactive : [];
 
-      renderTaskGroup(taskHost, 'Active Tasks', activeTasks, true);
-      renderTaskGroup(taskHost, 'Inactive Tasks', inactiveTasks, false);
+      renderTaskGroup(taskHost, 'Active', activeTasks, true);
+      renderTaskGroup(taskHost, 'Inactive', inactiveTasks, false);
     })
     .catch(error => {
       taskHost.removeChild(taskLoading);
@@ -453,7 +487,7 @@ function renderTaskGroup(container, title, tasks, showActionButtons) {
   } else {
     actions.push({label: 'Del', handler: handleTaskKill, className: 'danger-button'});
   }
-  renderActionList(container, title, tasks, actions);
+  renderActionList(container, title, tasks, actions, {grouped: true});
 }
 
 function renderDebugSection() {
@@ -469,7 +503,7 @@ function renderDebugSection() {
 
   renderActionRow(list, 'System Alarms', [
     {label: 'Details', handler: handleDebugDetails},
-    {label: 'Clean', handler: handleAlarmClean, className: 'danger-button'},
+    {label: 'Clean', handler: handleAlarmClean},
   ]);
   renderActionRow(list, 'System Hosts', [{label: 'Details', handler: handleDebugDetails}]);
 
@@ -543,13 +577,17 @@ function isProtectedTask(tag) {
   return ['server', 'idle'].includes(String(tag).split('.')[0]);
 }
 
-function renderActionList(container, title, items, actions) {
-  const section = document.createElement('section');
-  section.className = 'config-action-section config-section-gap-large';
+function renderActionList(container, title, items, actions, options = {}) {
+  const sectionTitle = title ? `${title} (${items.length})` : '';
+  const section = options.grouped && sectionTitle
+    ? createConfigFieldset(sectionTitle, options.groupClass || 'config-accent-group')
+    : document.createElement('section');
 
-  if (title) {
-    const titleEl = textElement('h3', `${title} (${items.length})`);
-    section.appendChild(titleEl);
+  if (!options.grouped) {
+    section.className = 'config-action-section config-section-gap-large';
+    if (sectionTitle) {
+      section.appendChild(textElement('h3', sectionTitle));
+    }
   }
 
   if (items.length === 0) {
@@ -634,9 +672,12 @@ function setTemporaryInlineDetails(details, text, timeout = 5000, onHide = null)
   }, timeout);
 }
 
-function styleGroupBox(element, padding = '12px') {
-  element.classList.add('config-box');
-  element.style.padding = padding;
+function createConfigFieldset(title, className = '', padding = '12px') {
+  const groupWrapper = document.createElement('fieldset');
+  groupWrapper.className = ['config-fieldset', 'config-box', className].filter(Boolean).join(' ');
+  groupWrapper.style.padding = padding;
+  groupWrapper.appendChild(textElement('legend', title, 'config-legend'));
+  return groupWrapper;
 }
 
 function handleTaskKill(tag, details, button) {
@@ -1179,13 +1220,12 @@ function renderCustomPinMapField(container, value) {
   mapRow.appendChild(mapInput);
   editor.appendChild(mapRow);
 
-  const pairsLabel = textElement('label', 'Pin Overrides:', 'config-label-tight');
-  editor.appendChild(pairsLabel);
+  const overridesGroup = createConfigFieldset('Pin Overrides');
 
   const pairContainer = document.createElement('div');
   pairContainer.className = 'config-stack';
   pairContainer.dataset.pinmapPairs = 'true';
-  editor.appendChild(pairContainer);
+  overridesGroup.appendChild(pairContainer);
 
   const addButton = makeButton('+', () => {
     createPinMapPairRow(pairContainer);
@@ -1195,7 +1235,8 @@ function renderCustomPinMapField(container, value) {
   const pairs = parsed.pairs.length ? parsed.pairs : [['', '']];
   pairs.forEach(pair => createPinMapPairRow(pairContainer, pair[0], pair[1]));
 
-  editor.appendChild(addButton);
+  overridesGroup.appendChild(addButton);
+  editor.appendChild(overridesGroup);
   wrapper.appendChild(editor);
   container.appendChild(wrapper);
   return {mapInput, mapRow};
@@ -1283,6 +1324,10 @@ function renderDefaultFields(data, container, sectionKey = '') {
     if (sectionKey === 'Network' && key === 'stapwd' && data.hasOwnProperty('staessid')) {
       return;
     }
+    if (sectionKey === 'Device' && key === 'boothook') {
+      renderStartupActionsGroup(container, value);
+      return;
+    }
     renderField(container, key, value);
   });
   if (sectionKey === 'Device') {
@@ -1290,12 +1335,14 @@ function renderDefaultFields(data, container, sectionKey = '') {
   }
 }
 
-function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'config-field-group';
+function renderStartupActionsGroup(container, value) {
+  const groupWrapper = createConfigFieldset(configLabel('boothook'));
+  renderMultiParamField(groupWrapper, 'boothook', value, '');
+  container.appendChild(groupWrapper);
+}
 
-  const label = textElement('label', 'WiFi Networks: ', 'config-label-block');
-  wrapper.appendChild(label);
+function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
+  const groupWrapper = createConfigFieldset('WiFi Networks');
 
   const pairContainer = document.createElement('div');
   pairContainer.className = 'config-stack';
@@ -1314,8 +1361,8 @@ function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
   }
 
   updateWifiCredentialAddButton(pairContainer, addButton);
-  wrapper.appendChild(pairContainer);
-  container.appendChild(wrapper);
+  groupWrapper.appendChild(pairContainer);
+  container.appendChild(groupWrapper);
 }
 
 function createWifiCredentialPair(container, ssid, password, addButton, totalCount) {
@@ -1409,7 +1456,7 @@ function renderField(container, key, value) {
   const wrapper = document.createElement('div');
   wrapper.className = 'config-field';
 
-  const label = textElement('label', (configLabelMap[key] || key) + ': ', 'config-label');
+  const label = textElement('label', configLabel(key) + ': ', 'config-label');
 
   let input;
   if (typeof value === 'boolean') {
@@ -1436,12 +1483,14 @@ function renderField(container, key, value) {
   container.appendChild(wrapper);
 }
 
-function renderMultiParamField(container, key, value) {
+function renderMultiParamField(container, key, value, labelText = configLabel(key)) {
   const wrapper = document.createElement('div');
   wrapper.className = 'config-field-group';
 
-  const label = textElement('label', (configLabelMap[key] || key) + ': ', 'config-label-block');
-  wrapper.appendChild(label);
+  if (labelText) {
+    const label = textElement('label', labelText + ': ', 'config-label-block');
+    wrapper.appendChild(label);
+  }
 
   const inputContainer = document.createElement('div');
   inputContainer.className = 'config-stack';
@@ -1535,7 +1584,7 @@ function renderCrontaskField(container, key, value) {
   const wrapper = document.createElement('div');
   wrapper.className = 'config-field-group';
 
-  const label = textElement('label', (configLabelMap[key] || key) + ': ', 'config-label-block');
+  const label = textElement('label', configLabel(key) + ': ', 'config-label-block');
   wrapper.appendChild(label);
 
   const blockContainer = document.createElement('div');
@@ -1565,12 +1614,8 @@ function crontaskRoot(element) {
 }
 
 function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
-  const blockWrapper = document.createElement('fieldset');
-  styleGroupBox(blockWrapper, '20px');
+  const blockWrapper = createConfigFieldset(`Schedule ${blockIdx + 1}`, '', '20px');
   blockWrapper.dataset.blockIndex = blockIdx;
-
-  const legend = textElement('legend', `Schedule ${blockIdx + 1}`, 'config-legend');
-  blockWrapper.appendChild(legend);
 
   const blockHeader = document.createElement('div');
   blockHeader.className = 'config-block-header';
@@ -1834,11 +1879,14 @@ function renderInterruptFields(data, container) {
   const timerKeys = ['timirq', 'timirqcbf', 'timirqseq'];
   const timerData = {};
   const irqData = {};
+  const debounceData = {};
   const otherData = {};
 
   Object.entries(data).forEach(([key, value]) => {
     if (timerKeys.includes(key)) {
       timerData[key] = value;
+    } else if (key === 'irq_prell_ms') {
+      debounceData[key] = value;
     } else if (key.match(/^irq\d+/)) {
       irqData[key] = value;
     } else {
@@ -1864,26 +1912,33 @@ function renderInterruptFields(data, container) {
     }
   });
 
-  // Render each interrupt group
-  Object.keys(irqGroups)
-    .sort((a, b) => parseInt(a) - parseInt(b))
-    .forEach(irqNum => {
-      renderInterruptGroup(container, irqNum, irqGroups[irqNum]);
-    });
+  if (Object.keys(irqGroups).length > 0 || Object.keys(debounceData).length > 0) {
+    renderEventInterruptSection(container, irqGroups, debounceData);
+  }
 
-  // Render other settings (e.g., irq_prell_ms)
+  // Render any future nonstandard interrupt settings.
   Object.entries(otherData).forEach(([key, value]) => {
     renderField(container, key, value);
   });
 }
 
-function renderTimerInterruptGroup(container, groupData) {
-  const groupWrapper = document.createElement('fieldset');
-  groupWrapper.className = 'config-fieldset';
-  styleGroupBox(groupWrapper);
+function renderEventInterruptSection(container, irqGroups, debounceData) {
+  const groupWrapper = createConfigFieldset('Events', 'config-accent-group');
+  Object.keys(irqGroups)
+    .sort((a, b) => parseInt(a) - parseInt(b))
+    .forEach(irqNum => {
+      renderInterruptGroup(groupWrapper, irqNum, irqGroups[irqNum]);
+    });
 
-  const legend = textElement('legend', 'Timer Interrupt', 'config-legend');
-  groupWrapper.appendChild(legend);
+  if ('irq_prell_ms' in debounceData) {
+    renderField(groupWrapper, 'irq_prell_ms', debounceData.irq_prell_ms);
+  }
+
+  container.appendChild(groupWrapper);
+}
+
+function renderTimerInterruptGroup(container, groupData) {
+  const groupWrapper = createConfigFieldset('Timer Interrupt');
 
   // Enable checkbox
   if ('timirq' in groupData) {
@@ -1894,11 +1949,6 @@ function renderTimerInterruptGroup(container, groupData) {
     wrapper.appendChild(label);
     wrapper.appendChild(input);
     groupWrapper.appendChild(wrapper);
-  }
-
-  // Callbacks input
-  if ('timirqcbf' in groupData) {
-    renderMultiParamField(groupWrapper, 'timirqcbf', groupData['timirqcbf']);
   }
 
   // Interval input with ms label
@@ -1920,16 +1970,16 @@ function renderTimerInterruptGroup(container, groupData) {
     groupWrapper.appendChild(wrapper);
   }
 
+  // Callbacks input
+  if ('timirqcbf' in groupData) {
+    renderMultiParamField(groupWrapper, 'timirqcbf', groupData['timirqcbf']);
+  }
+
   container.appendChild(groupWrapper);
 }
 
 function renderInterruptGroup(container, irqNum, groupData) {
-  const groupWrapper = document.createElement('fieldset');
-  groupWrapper.className = 'config-fieldset';
-  styleGroupBox(groupWrapper);
-
-  const legend = textElement('legend', `Interrupt ${irqNum}`, 'config-legend');
-  groupWrapper.appendChild(legend);
+  const groupWrapper = createConfigFieldset(`Interrupt ${irqNum}`);
 
   // Render the three fields for this interrupt
   const enableKey = `irq${irqNum}`;
@@ -1947,11 +1997,6 @@ function renderInterruptGroup(container, irqNum, groupData) {
     groupWrapper.appendChild(wrapper);
   }
 
-  // Callbacks input
-  if (cbfKey in groupData) {
-    renderMultiParamField(groupWrapper, cbfKey, groupData[cbfKey]);
-  }
-
   // Trigger Mode dropdown
   if (trigKey in groupData) {
     const wrapper = document.createElement('div');
@@ -1961,6 +2006,11 @@ function renderInterruptGroup(container, irqNum, groupData) {
     wrapper.appendChild(label);
     wrapper.appendChild(select);
     groupWrapper.appendChild(wrapper);
+  }
+
+  // Callbacks input
+  if (cbfKey in groupData) {
+    renderMultiParamField(groupWrapper, cbfKey, groupData[cbfKey]);
   }
 
   container.appendChild(groupWrapper);
@@ -1992,7 +2042,6 @@ function closeMenuOnOutsideClick(event) {
 }
 
 function initializeConfigUi() {
-  decorateCategoryMenu();
   addMenuListeners();
   const toggle = document.getElementById('menuToggle');
   if (toggle && !toggle.dataset.bound) {
@@ -2012,6 +2061,7 @@ function initializeConfigUi() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  renderCategoryMenu();
   loadConfig().then(ok => {
     if (ok) {
       restInfo(false);

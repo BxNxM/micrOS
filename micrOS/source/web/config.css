@@ -100,7 +100,8 @@
 }
 
 .schedule-add {
-  width: 100%;
+  width: var(--config-input-width);
+  max-width: 100%;
   padding: 8px;
   cursor: pointer;
 }
@@ -157,9 +158,35 @@
 .config-table-title { margin-bottom: 6px; }
 .config-section-gap { margin-bottom: 16px; }
 .config-section-gap-large { margin-bottom: 24px; }
-.config-fieldset { margin-bottom: 20px; }
+.config-fieldset {
+  width: var(--config-input-width);
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+.config-fieldset .config-fieldset,
+.config-fieldset .config-input-row,
+.config-fieldset .param-row,
+.config-fieldset .function-row,
+.config-fieldset .wifi-pair-row,
+.config-fieldset .pinmap-pair-row,
+.config-fieldset .schedule-time-config {
+  width: 100%;
+}
+#configFields .config-fieldset input[type="text"],
+#configFields .config-fieldset input[type="password"],
+#configFields .config-fieldset input[type="number"],
+#configFields .config-fieldset select {
+  width: 100%;
+}
 .config-table { width: 100%; border-collapse: collapse; }
 .config-table td { border: 1px solid #4B376C; padding: 6px 8px; }
+.config-accent-group {
+  border-color: #6F6A7A;
+  background: #2D2340;
+}
+.config-accent-group > .config-legend { color: #D6D2DE; }
 
 .wifi-pair-row {
   display: flex;
@@ -268,9 +295,14 @@ button.config-toggle-option.selected:hover {
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: 8px;
+  }
+
   #configContainer {
     flex-direction: column;
     position: relative;
+    width: 100%;
   }
 
   #menuToggle {

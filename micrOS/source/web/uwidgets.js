@@ -207,6 +207,13 @@ function registerStatusNumber(params, key, handler) {
     });
 }
 
+function dashboardButtonState(label) {
+    const text = String(label || '').trim().toLowerCase();
+    if (text === 'on' || text === 'start') { return 'on'; }
+    if (text === 'off' || text === 'stop') { return 'off'; }
+    return '';
+}
+
 function sliderWidget(container, command, params={}) {
     const statusKey = command.includes('/brightness') ? 'BR' : 'X';
     const { title_len = 1, range = [0, 100, 5] } = params;
@@ -237,9 +244,10 @@ function buttonWidget(container, command, params={}) {
     const paragraph = createElement('p', { textIndent: widget_indent });
     const output = result ? createResultBox() : null;
     const refresh = statusRefresh(params);
+    const stateGroup = options.length > 1;
     const stateButtons = {};
-    const selectState = selected => Object.keys(stateButtons).forEach(label => {
-        stateButtons[label].classList.toggle('is-selected', label === selected);
+    const selectState = selected => Object.keys(stateButtons).forEach(state => {
+        stateButtons[state].classList.toggle('is-selected', state === dashboardButtonState(selected));
     });
 
     if (options.length > 1) {
@@ -252,13 +260,17 @@ function buttonWidget(container, command, params={}) {
         const element = createElement('button', { marginRight: '10px', height: '30px' }, {
             textContent: label
         });
-        if (label === 'ON' || label === 'OFF') {
-            element.classList.add(`dashboard-state-${label.toLowerCase()}`);
-            stateButtons[label] = element;
+        const buttonState = dashboardButtonState(label);
+        const state = stateGroup ? buttonState : '';
+        if (buttonState) {
+            element.classList.add(`dashboard-state-${buttonState}`);
+        }
+        if (state) {
+            stateButtons[state] = element;
         }
         element.addEventListener('click', () => {
             const call_cmd = command.replace(':options:', paramPythonify(opt));
-            if (stateButtons[label]) { selectState(label); }
+            if (state) { selectState(label); }
             console.log(`[API] Button clicked: ${call_cmd}`);
             restAPI(call_cmd).then(resp => {
                 if (output) { output.show(resp.result, true); }
@@ -269,7 +281,7 @@ function buttonWidget(container, command, params={}) {
     });
     registerStatusSync(params, status => {
         const state = statusNumber(status, 'S');
-        if (state !== null) { selectState(state ? 'ON' : 'OFF'); }
+        if (state !== null) { selectState(state ? 'on' : 'off'); }
     });
     appendChildren(container, [paragraph]);
     if (output) { container.appendChild(output.element); }

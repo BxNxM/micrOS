@@ -92,8 +92,6 @@ touch_0 = const(32)     # D32 - builtin touch sensor	TODO
 
 
 # SENSORS
-hcsrtrig = const(25)   # D25 - distance HCSR04 trigger pin
-hcsrecho = const(26)   # D26 - distance HCSR04 echo pin
 dhtpin = const(32)     # D32 - dht_pin 11 and 22
 co2 = const(33)        # D33 - CO2 / BATTERY CONFLICT
 temp6000 = const(32)   # D32  - light sensor TEMP6000

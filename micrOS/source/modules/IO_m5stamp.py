@@ -79,8 +79,6 @@ irq4 = const(12)        # - event irq pin
 touch_0 = const(1)     # - touch sensor TODO
 
 # SENSORS
-hcsrtrig = const(1)   # - distance HCSR04 trigger pin
-hcsrecho = const(3)   # - distance HCSR04 echo pin
 dhtpin = const(43)     # - dht_pin 11 and 22
 ds18 = const(0)       # - DS18B20 - temp. sensor
 mic = const(3)         # - [ADC] microphone

@@ -132,6 +132,8 @@
 .config-action-label { flex: 1; min-width: 160px; }
 .config-button-group { flex-wrap: wrap; justify-content: flex-end; }
 .config-inline-output { display: none; margin-top: 8px; }
+.config-alarm-ok { color: #8ee88e; }
+.config-alarm-nok { color: #ffd166; }
 .config-error, #configFields button.config-remove-button:not(.danger-button) { color: #ff8b8b; }
 #configFields button.config-add-button:not(.danger-button) { color: #8ee88e; }
 #configFields button.config-add-button,

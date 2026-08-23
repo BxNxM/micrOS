@@ -137,7 +137,7 @@
             0
         ],
         "modules/LM_system.py": [
-            8.86,
+            8.93,
             3
         ],
         "modules/LM_robustness.py": [
@@ -303,11 +303,11 @@
             27
         ],
         "load": [
-            7479,
+            7485,
             47
         ],
         "web": [
-            183761,
+            184614,
             18
         ],
         "core_dep": [
@@ -320,6 +320,6 @@
         ],
         "core_score": 9.28,
         "load_score": 8.41,
-        "version": "3.3.2-0"
+        "version": "3.4.0-0"
     }
 }

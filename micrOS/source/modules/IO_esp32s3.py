@@ -103,8 +103,6 @@ js_press = const(20)     # oled_ui center/ok button
 touch_0 = const(0)     # - touch sensor TODO
 
 # SENSORS
-hcsrtrig = const(1)   # - distance HCSR04 trigger pin
-hcsrecho = const(2)   # - distance HCSR04 echo pin
 dhtpin = const(20)     # - dht_pin 11 and 22
 co2 = const(14)        # - [ADC] CO2
 temp6000 = const(13)   # - [ADC] light sensor TEMP6000

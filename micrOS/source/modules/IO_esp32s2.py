@@ -61,8 +61,6 @@ js_press = const(34)     # oled_ui center/ok button
 
 
 # SENSORS
-hcsrtrig = const(34)    # distance HCSR04 trigger pin
-hcsrecho = const(36)    # distance HCSR04 echo pin
 dhtpin = const(17)      # dht_pin 11 and 22
 co2 = const(13)         # [ADC] CO2
 temp6000 = const(10)    # [ADC] light sensor TEMP6000

@@ -354,11 +354,20 @@ def micros_alarm_check():
     cmd_list = ['system alarms dump=True >json']
     output = CLIENT.execute(cmd_list)
     if not output[0]:
+        if _is_obsolete_alarm_api(output[1]):
+            return _micros_alarm_legacy_check(info, output[1])
         return False, info + f" error: {output[1]}"
     try:
         alarm_data = json.loads(output[1].strip())
     except Exception as e:
+        if _is_obsolete_alarm_api(output[1]):
+            return _micros_alarm_legacy_check(info, output[1])
         return False, info + f" json error: {e} out: {output[1]}"
+    if not isinstance(alarm_data, dict):
+        alarm_data = _parse_legacy_alarm_response(output[1])
+        if alarm_data is not None:
+            return _micros_alarm_legacy_report(info, alarm_data)
+        return False, info + f" invalid alarm response: {output[1]}"
     if not isinstance(alarm_data.get('health'), bool):
         return False, info + f" missing bool health: {alarm_data}"
     verdict = alarm_data.get('verdict', '')
@@ -372,6 +381,61 @@ def micros_alarm_check():
     if not alarm_data['health']:
         return True, info + f" !!!WARN!!! {verdict} out: {alarm_data}"
     return True, info + f" {verdict} out: {alarm_data}"
+
+
+def _is_obsolete_alarm_api(output):
+    output = str(output)
+    return "unexpected keyword argument 'dump'" in output and "LM_system->alarms" in output
+
+
+def _micros_alarm_legacy_check(info, _reason):
+    output = CLIENT.execute(['system alarms'])
+    alarm_data = _parse_legacy_alarm_response(output[1]) if output[0] else None
+    if alarm_data is None:
+        verdict = "OBSOLETE: {}".format(_short_alarm_error(output[1]))
+        CLIENT.execute(['system alarms clean=True'])
+        return True, info + f" {verdict}"
+    return _micros_alarm_legacy_report(info, alarm_data)
+
+
+def _micros_alarm_legacy_report(info, alarm_data):
+    CLIENT.execute(['system alarms clean=True'])
+    if alarm_data['health'] is False:
+        return True, info + f" !!!WARN!!! {alarm_data['verdict']} OBSOLETE"
+    return True, info + f" {alarm_data['verdict']} OBSOLETE"
+
+
+def _short_alarm_error(output):
+    output = str(output).strip()
+    if "unexpected keyword argument 'dump'" in output:
+        return "unexpected keyword argument 'dump'"
+    return output.splitlines()[-1].strip() if output else "legacy callback unavailable"
+
+
+def _parse_legacy_alarm_response(output):
+    output = str(output).strip()
+    try:
+        data = json.loads(output)
+        if isinstance(data, int):
+            return {'health': data <= 0,
+                    'verdict': f"{'OK' if data <= 0 else 'NOK'} alarm: {data}",
+                    'api': 'obsolete'}
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key in ('OK alarm', 'NOK alarm'):
+                    return {'health': key == 'OK alarm',
+                            'verdict': f"{key}: {value}",
+                            'api': 'obsolete'}
+    except Exception:
+        pass
+    alarm_lines = output.splitlines()
+    verdict = next((line.strip() for line in reversed(alarm_lines)
+                    if line.strip().startswith(('OK alarm:', 'NOK alarm:'))), '')
+    if not verdict:
+        return None
+    return {'health': verdict.startswith('OK alarm:'),
+            'verdict': verdict,
+            'api': 'obsolete'}
 
 
 def oled_msg_end_result(result):

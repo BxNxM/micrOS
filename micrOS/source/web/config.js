@@ -37,7 +37,7 @@ const categoryIconMap = {
   'Scheduler': '⏰',
   'Interrupts': '⚡',
   'Pinmap': '📍',
-  'Tasks': '✓',
+  'Tasks': '📋',
   'Packages': '📦',
   'Debug': '🛠',
 };
@@ -55,6 +55,7 @@ const restEncodeMap = {
   '"': '%5Cx22', "'": '%27', '#': '%23', '=': '%3D', '>': '%3E', '&': '%26',
   '/': '%2F', '\\': '%5C%5C', ' ': '%20', '?': '%3F', '%': '%25'
 };
+const PACMAN_TIMEOUT_MS = 20000;
 
 function loadSelectedCategory() {
   try {
@@ -501,7 +502,12 @@ function formatAlarmDetails(response) {
 
 function getDebugDetails(label) {
   return {
-    'System Alarms': {command: 'system/alarms/dump=True', timeout: 10000, formatter: formatAlarmDetails},
+    'System Alarms': {
+      command: 'system/alarms/dump=True',
+      timeout: 10000,
+      formatter: formatAlarmDetails,
+      firstLineClass: response => response && response.result && response.result.health ? 'config-alarm-ok' : 'config-alarm-nok',
+    },
     'System Hosts': {command: 'system/hosts', timeout: 5000},
   }[label];
 }
@@ -518,7 +524,8 @@ function handleDebugDetails(label, details, button) {
   restAPI(debug.command, false, debug.timeout)
     .then(response => {
       const result = response && response.hasOwnProperty('result') ? response.result : response;
-      setInlineDetails(details, debug.formatter ? debug.formatter(response) : formatResponseBody(result));
+      const text = debug.formatter ? debug.formatter(response) : formatResponseBody(result);
+      setInlineDetails(details, text, debug.firstLineClass ? debug.firstLineClass(response) : '');
     })
     .catch(error => {
       setInlineDetails(details, 'Details error: ' + error.message);
@@ -598,8 +605,17 @@ function createInlineOutput() {
   return output;
 }
 
-function setInlineDetails(details, text) {
-  details.textContent = text;
+function setInlineDetails(details, text, firstLineClass = '') {
+  details.textContent = '';
+  if (firstLineClass) {
+    const splitAt = text.indexOf('\n');
+    const firstLine = splitAt === -1 ? text : text.slice(0, splitAt);
+    const rest = splitAt === -1 ? '' : text.slice(splitAt);
+    details.appendChild(textElement('span', firstLine, firstLineClass));
+    details.appendChild(document.createTextNode(rest));
+  } else {
+    details.textContent = text;
+  }
   details.style.display = 'block';
 }
 
@@ -874,7 +890,7 @@ function renderPackagesSection() {
     }
     setButtonBusy(installBtn, 'Installing...');
     setInlineDetails(installResult, `Install Package (URL or Package ref): ${url}\n\nInstalling...`);
-    restAPI('pacman/install/' + restQuote(url), false, 10000)
+    restAPI('pacman/install/' + restQuote(url), false, PACMAN_TIMEOUT_MS)
       .then(resp => {
         setInlineDetails(installResult, formatInstallResponse(url, resp));
         refreshPackagesList();
@@ -1021,10 +1037,10 @@ function loadPackageDetails(packageName, details, button) {
     });
 }
 
-function runCommandAction(details, button, actionName, command, doneTitle, onSuccessHide = null) {
+function runCommandAction(details, button, actionName, command, doneTitle, onSuccessHide = null, timeoutMs = 20000) {
   setButtonBusy(button, actionName + '...');
   setInlineDetails(details, actionName + '...');
-  restAPI(command, false, 20000)
+  restAPI(command, false, timeoutMs)
     .then(resp => {
       if (!resp || resp.state !== true) {
         setTemporaryInlineDetails(details, actionName + ' failed: ' + JSON.stringify(resp));
@@ -1046,7 +1062,15 @@ function runCommandAction(details, button, actionName, command, doneTitle, onSuc
 }
 
 function updatePackage(packageName, details, button) {
-  runCommandAction(details, button, 'Update', 'pacman/upgrade/' + restQuote(packageName), 'Update response');
+  runCommandAction(
+    details,
+    button,
+    'Update',
+    'pacman/upgrade/' + restQuote(packageName),
+    'Update response',
+    null,
+    PACMAN_TIMEOUT_MS
+  );
 }
 
 function deletePackage(packageName, details, button) {
@@ -1064,7 +1088,8 @@ function deletePackage(packageName, details, button) {
     'Delete',
     'pacman/uninstall/' + restQuote(packageName) + '/pwd=' + restQuote(appwd),
     'Delete response',
-    refreshPackagesList
+    refreshPackagesList,
+    PACMAN_TIMEOUT_MS
   );
 }
 

@@ -1,4 +1,5 @@
 from threading import Event, Lock, Thread, current_thread
+import random
 import time
 import micropython
 from sim_common import console
@@ -348,8 +349,16 @@ def unique_id():
     return b'08b61f3b6d18'
 
 
-def time_pulse_us():
-    return time.time_ns()*1000
+def time_pulse_us(pin, pulse_level, timeout_us=1000000):
+    pulse_us = 1000
+    jitter_percent = 10
+    jitter_us = pulse_us * jitter_percent / 100
+    if jitter_us:
+        pulse_us = random.uniform(pulse_us - jitter_us, pulse_us + jitter_us)
+    pulse_us = int(pulse_us)
+    console("[time_pulse_us] pin={} level={} timeout_us={} pulse_us={}".format(
+        pin, pulse_level, timeout_us, pulse_us))
+    return pulse_us
 
 
 def SDCard():

@@ -92,8 +92,16 @@ def alarms(clean=False, dump=False):
     from Logger import log_clean, syslog
     if clean:
         log_clean()
-    return {'health': False, 'verdict': 'NOK alarm: syslog unavailable'} \
-        if syslog is None else syslog(dump=dump)
+    if syslog is None:
+        return {'health': False, 'verdict': 'NOK alarm: syslog unavailable'}
+    try:
+        return syslog(dump=dump)
+    except TypeError as e:
+        if "unexpected keyword argument 'dump'" not in str(e):
+            raise
+        # Legacy Logger.syslog has no dump argument; keep mixed core/LM updates working.
+        # Remove this fallback after obsolete cores are no longer supported.
+        return syslog()
 
 
 #############################

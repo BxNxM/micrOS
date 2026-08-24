@@ -165,6 +165,7 @@
   box-sizing: border-box;
   margin-bottom: 20px;
 }
+.config-field-group > .config-fieldset { margin-bottom: 0; }
 .config-fieldset .config-fieldset,
 .config-fieldset .config-input-row,
 .config-fieldset .param-row,
@@ -183,8 +184,8 @@
 .config-table { width: 100%; border-collapse: collapse; }
 .config-table td { border: 1px solid #4B376C; padding: 6px 8px; }
 .config-accent-group {
-  border-color: #6F6A7A;
-  background: #2D2340;
+  border-color: #827B8C;
+  background: #383044;
 }
 .config-accent-group > .config-legend { color: #D6D2DE; }
 

@@ -52,7 +52,7 @@ const configLabelMap = {
   'ha': 'High Availability',
   'cron': 'Enable Scheduler',
   'crontasks': 'Scheduled Tasks',
-  'timirqcbf': 'Callback(s)',
+  'timirqcbf': 'Functions',
   'webui': 'Enable',
   'webui_max_con': 'Allowed Number of Connections',
   'irq_prell_ms': 'Debounce (ms)',
@@ -69,7 +69,7 @@ const irqCallbackRegex = /^irq\d+_cbf$/;
 const irqTriggerRegex = /^irq\d+_trig$/;
 
 function configLabel(key) {
-  if (irqCallbackRegex.test(key)) return 'Callback(s)';
+  if (irqCallbackRegex.test(key)) return 'Functions';
   return configLabelMap[key] || key;
 }
 
@@ -672,11 +672,24 @@ function setTemporaryInlineDetails(details, text, timeout = 5000, onHide = null)
   }, timeout);
 }
 
-function createConfigFieldset(title, className = '', padding = '12px') {
+function createConfigFieldset(title = '', className = '', padding = '12px') {
   const groupWrapper = document.createElement('fieldset');
   groupWrapper.className = ['config-fieldset', 'config-box', className].filter(Boolean).join(' ');
   groupWrapper.style.padding = padding;
-  groupWrapper.appendChild(textElement('legend', title, 'config-legend'));
+  if (title) {
+    groupWrapper.appendChild(textElement('legend', title, 'config-legend'));
+  }
+  return groupWrapper;
+}
+
+function createLabeledTitlelessGroup(container, title) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'config-field-group';
+  wrapper.appendChild(textElement('label', title + ': ', 'config-label-block'));
+  const groupWrapper = createConfigFieldset();
+  groupWrapper.setAttribute('aria-label', title);
+  wrapper.appendChild(groupWrapper);
+  container.appendChild(wrapper);
   return groupWrapper;
 }
 
@@ -1336,13 +1349,12 @@ function renderDefaultFields(data, container, sectionKey = '') {
 }
 
 function renderStartupActionsGroup(container, value) {
-  const groupWrapper = createConfigFieldset(configLabel('boothook'));
+  const groupWrapper = createLabeledTitlelessGroup(container, configLabel('boothook'));
   renderMultiParamField(groupWrapper, 'boothook', value, '');
-  container.appendChild(groupWrapper);
 }
 
 function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
-  const groupWrapper = createConfigFieldset('WiFi Networks');
+  const groupWrapper = createLabeledTitlelessGroup(container, 'WiFi Networks');
 
   const pairContainer = document.createElement('div');
   pairContainer.className = 'config-stack';
@@ -1362,7 +1374,6 @@ function renderWifiCredentialPairs(container, ssidValue, passwordValue) {
 
   updateWifiCredentialAddButton(pairContainer, addButton);
   groupWrapper.appendChild(pairContainer);
-  container.appendChild(groupWrapper);
 }
 
 function createWifiCredentialPair(container, ssid, password, addButton, totalCount) {
@@ -1583,9 +1594,6 @@ function updateMultiParamTrack(container, key) {
 function renderCrontaskField(container, key, value) {
   const wrapper = document.createElement('div');
   wrapper.className = 'config-field-group';
-
-  const label = textElement('label', configLabel(key) + ': ', 'config-label-block');
-  wrapper.appendChild(label);
 
   const blockContainer = document.createElement('div');
   blockContainer.className = 'config-stack config-stack-large';

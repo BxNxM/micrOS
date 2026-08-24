@@ -130,6 +130,6 @@ def help(widgets=False):
         (widgets=False) list of functions implemented by this application
         (widgets=True) list of widget json for UI generation
     """
-    return 'NOTE: This is a test module to validate system robustness', \
+    return '[note] This is a test module to validate system robustness', \
            'raise_error', 'memory_leak cnt=160', 'recursion_limit cnt=14', \
            'create_task', 'mytask', "func_sudo", "func_sudo_opt opt=False"

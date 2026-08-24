@@ -69,4 +69,4 @@ def help(widgets=False):
     """
     return resolve(('hall',
                     'GRAPH temp',
-                    'touch', 'battery', 'NOTE: battery only available on tinypico'), widgets=widgets)
+                    'touch', 'battery', '[info] battery only available on tinypico'), widgets=widgets)

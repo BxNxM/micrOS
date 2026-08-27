@@ -49,9 +49,6 @@ Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), fo
 In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
 
 ![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
-[![SHORTCUTS](./media/micrOS_shortcuts.png)](https://www.icloud.com/shortcuts/898c2a8033d64ff0b7aadc46ee491a35)<br/>
-Example shortcut (usage of the API): [link](https://www.icloud.com/shortcuts/fab936abb34b45b5bda4c9f7abb256e9)<br/>
-Access rest api over browser: `http://<nodename>.local`
 
 ----------------------------------------
 ----------------------------------------
@@ -73,7 +70,7 @@ Access rest api over browser: `http://<nodename>.local`
 🚀🎈Lightweight and high performance core system that leaves you space 😎
 
 ## ◉ Shortcuts:
-1. 📲 micrOS Client Application [link](https://github.com/BxNxM/micrOS/#micros-client-application) - obsolete, use micrOS built-in webui instead.
+1. 📲 micrOS Clients [link](https://github.com/BxNxM/micrOS/#micros-clients)
 2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32-and-more)
 3. ▶️ micrOS Tutorials [link](https://github.com/BxNxM/micrOS/#micros-video-tutorials)
 4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
@@ -92,9 +89,17 @@ Access rest api over browser: `http://<nodename>.local`
 ----------------------------------------
 ----------------------------------------
 
-## micrOS Client Application
+## micrOS Clients
+
+### Applications (obsolete)
 
 [![AppStore](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [![AppStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
+
+### micrOS on-device web UI
+
+![MICROSWEB](./media/lms/web.png?raw=true)
+
+Access it over browser: `http://<nodename>.local`
 
 ----------------------------------------
 ----------------------------------------

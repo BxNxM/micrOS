@@ -54,7 +54,7 @@
         ],
         "Types.py": [
             9.0,
-            24
+            23
         ],
         "Logger.py": [
             8.89,
@@ -86,7 +86,7 @@
         ],
         "microIO.py": [
             9.37,
-            37
+            35
         ],
         "micrOS.py": [
             9.09,
@@ -144,10 +144,6 @@
             8.67,
             0
         ],
-        "modules/LM_qmi8658.py": [
-            9.1,
-            0
-        ],
         "modules/LM_rest.py": [
             8.6,
             0
@@ -187,10 +183,6 @@
         "modules/LM_oled_sh1106.py": [
             9.2,
             1
-        ],
-        "modules/LM_haptic.py": [
-            9.25,
-            0
         ],
         "modules/LM_ld2410.py": [
             9.07,
@@ -303,8 +295,13 @@
             27
         ],
         "load": [
-            7485,
-            47
+            7245,
+            45
+        ],
+        "packages": [
+            12808,
+            81,
+            18
         ],
         "web": [
             187816,
@@ -319,7 +316,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.41,
-        "version": "3.4.0-0"
+        "load_score": 8.37,
+        "version": "3.4.0-1"
     }
 }

@@ -1,5 +1,11 @@
 import subprocess
 import json
+import os
+
+MYPATH = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(MYPATH, "../../.."))
+PACKAGES_REPO_PATH = os.path.join(REPO_ROOT, "micrOS/packages")
+PACKAGES_PREFIX = "micrOS/packages"
 
 OUTPUT_JSON = "analysis_workdir/contributions.json"
 USER_ALIASES = {"Bán Marcell": 'BNM',
@@ -43,7 +49,7 @@ def get_contributions():
 
 
 def get_contributor_areas(contributors:dict):
-    contributor_list = list(contributors.keys())
+    contributor_list = set(contributors.keys())
     contributor_files = {}
     owner_contributions = {"BNM": [], "Bán Marcell": []}
 
@@ -55,7 +61,20 @@ def get_contributor_areas(contributors:dict):
             return True
         return False
 
-    for name in contributor_list:
+    def _is_package_payload():
+        nonlocal modified_file
+        return "/package/" in modified_file and not modified_file.endswith((".mpy", ".pyc"))
+
+    if os.path.isdir(PACKAGES_REPO_PATH):
+        package_contributors = subprocess.check_output(
+            "git shortlog -s -n --all", shell=True, cwd=PACKAGES_REPO_PATH).decode('utf-8').strip().split("\n")
+        for contributor in package_contributors:
+            if not contributor:
+                continue
+            _, name = contributor.strip().split("\t")
+            contributor_list.add(name)
+
+    for name in sorted(contributor_list):
         stats = subprocess.check_output(
             f"git log --author='{name}' --pretty=tformat: --numstat", shell=True).decode('utf-8').strip().split("\n")
         modified_files = set()
@@ -66,10 +85,21 @@ def get_contributor_areas(contributors:dict):
                 if _is_ignored_file():
                     continue
                 modified_files.add(modified_file)
+        if os.path.isdir(PACKAGES_REPO_PATH):
+            stats = subprocess.check_output(
+                f"git log --author='{name}' --pretty=tformat: --numstat", shell=True,
+                cwd=PACKAGES_REPO_PATH).decode('utf-8').strip().split("\n")
+            for line in stats:
+                parts = line.split()
+                if len(parts) == 3:
+                    modified_file = parts[2]
+                    if not _is_package_payload():
+                        continue
+                    modified_files.add(f"{PACKAGES_PREFIX}/{modified_file}")
         if name in owner_contributions.keys():
-            owner_contributions[name] = list(modified_files)
+            owner_contributions[name] = sorted(modified_files)
         else:
-            contributor_files[name] = list(modified_files)
+            contributor_files[name] = sorted(modified_files)
     return contributor_files, owner_contributions
 
 
@@ -104,4 +134,3 @@ if __name__ == "__main__":
     with open(OUTPUT_JSON, 'w') as f:
         json_cont = json.dumps(data_dict, indent=4)
         f.write(json_cont)
-

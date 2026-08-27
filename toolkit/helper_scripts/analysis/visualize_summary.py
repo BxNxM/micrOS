@@ -127,6 +127,15 @@ def load_release_versions(folder_path):
     return release_versions
 
 
+def _summary_value(summary, key, default=0, index=0):
+    value = summary.get(key, default)
+    if isinstance(value, list):
+        return value[index] if len(value) > index else default
+    if index > 0:
+        return default
+    return value
+
+
 #####################################
 #                PAGES              #
 #####################################
@@ -203,6 +212,40 @@ def page_load_modules(pdf, versions, load_files, highlighted_versions, load_line
     ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
 
     plt.title("Load Modules Evolution: File Count & Lines of Code", fontweight="bold", fontsize=TITLE_FONT_SIZE)
+    fig.tight_layout()
+    pdf.savefig(fig)
+    plt.close(fig)
+
+
+def page_packages(pdf, versions, package_counts, highlighted_versions, package_lines):
+    #########################################################
+    # Plot: Packages - Package Count (left) and Lines of Code (right)
+    fig, ax_left = plt.subplots(figsize=_timeline_figsize(len(versions)))
+    ax_left.plot(versions, package_counts, label="Package Count", color="teal", marker="x")
+    ax_left.set_ylabel("Package Count", color="teal")
+    ax_left.tick_params(axis='y', labelcolor="teal")
+    ax_left.set_xlabel("Versions")
+    ax_left.set_xticks(range(len(versions)))
+    ax_left.set_xticklabels(versions, rotation=90, fontsize=8)
+    ax_left.grid(True, linestyle="--", alpha=0.1)
+
+    for idx, version in enumerate(versions):
+        if version in highlighted_versions:
+            ax_left.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
+
+    _annotate_last_point(ax_left, len(versions) - 1, package_counts[-1], f'{package_counts[-1]}', "teal", y_offset=12)
+
+    ax_right = ax_left.twinx()
+    ax_right.plot(versions, package_lines, label="Lines of Code", color="purple", marker="o")
+    ax_right.set_ylabel("Lines of Code", color="purple")
+    ax_right.tick_params(axis='y', labelcolor="purple")
+
+    _annotate_last_point(ax_right, len(versions) - 1, package_lines[-1], f'{package_lines[-1]}', "purple", y_offset=-14)
+
+    ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
+    ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
+
+    plt.title("Packages Evolution: Package Count & Lines of Code", fontweight="bold", fontsize=TITLE_FONT_SIZE)
     fig.tight_layout()
     pdf.savefig(fig)
     plt.close(fig)
@@ -406,35 +449,52 @@ def page_contributors_areas(pdf, contributors_areas):
         pdf: A PdfPages object from matplotlib.backends.backend_pdf used to save the figure.
         contributors_areas: A dict mapping each contributor's username to a list of file paths.
     """
-    # Get a sorted list of contributors to maintain consistent order
-    contributors = list(contributors_areas.keys())
+    contributors = sorted(
+        contributors_areas,
+        key=lambda user: (-len(contributors_areas[user]), user.lower())
+    )
     num_contributors = len(contributors)
     if num_contributors == 0:
         return
 
     cols = min(3, num_contributors)
-    rows = math.ceil(num_contributors / cols)
-    fig, axs = plt.subplots(rows, cols, figsize=(cols * 6.2, max(8, rows * 5.6)))
-    if rows == 1 and cols == 1:
+    max_files_per_block = 58
+    file_line_weight = 1.3
+    block_padding = 5
+    column_blocks = [[] for _ in range(cols)]
+    column_heights = [0] * cols
+
+    for user in contributors:
+        files_sorted = sorted(contributors_areas[user])
+        visible_lines = min(len(files_sorted), max_files_per_block)
+        block_height = visible_lines * file_line_weight + block_padding
+        column_index = min(range(cols), key=lambda i: column_heights[i])
+        column_blocks[column_index].append((user, files_sorted))
+        column_heights[column_index] += block_height
+
+    max_column_height = max(column_heights) if column_heights else 1
+    fig_height = min(max(8, max_column_height * 0.16), 22)
+    fig, axs = plt.subplots(1, cols, figsize=(cols * 6.2, fig_height))
+    if cols == 1:
         axs = [axs]
     else:
         axs = list(getattr(axs, "flat", axs))
 
-    for ax, user in zip(axs, contributors):
-        # Sort the file list alphabetically for the current contributor
-        files_sorted = sorted(contributors_areas[user])
-        max_lines = max(16, int(62 - (rows - 1) * 8))
-        if len(files_sorted) > max_lines:
-            files_sorted = files_sorted[:max_lines - 1] + [f"... (+{len(contributors_areas[user]) - max_lines + 1} more)"]
-        # Display the username in bold at the top
-        ax.text(0.05, 0.95, user, transform=ax.transAxes,
-                va="top", ha="left", fontsize=12, family="monospace", fontweight="bold")
-        # Leave an empty line and list the files below in alphabetical order
-        ax.text(0.05, 0.90, "\n".join(files_sorted), transform=ax.transAxes,
-                va="top", ha="left", fontsize=9, family="monospace", wrap=True)
-        ax.axis("off")  # Hide axis lines and ticks
-
-    for ax in axs[num_contributors:]:
+    for ax, blocks in zip(axs, column_blocks):
+        cursor_y = 0.97
+        line_step = 0.90 / max(1, max_column_height)
+        for user, files_sorted in blocks:
+            total_files = len(files_sorted)
+            visible_files = files_sorted
+            if total_files > max_files_per_block:
+                visible_files = files_sorted[:max_files_per_block - 1] + [
+                    f"... (+{total_files - max_files_per_block + 1} more)"
+                ]
+            ax.text(0.05, cursor_y, f"{user} ({total_files} files)", transform=ax.transAxes,
+                    va="top", ha="left", fontsize=12, family="monospace", fontweight="bold")
+            ax.text(0.05, cursor_y - line_step * 2.2, "\n".join(visible_files), transform=ax.transAxes,
+                    va="top", ha="left", fontsize=8.5, family="monospace", wrap=True)
+            cursor_y -= line_step * (len(visible_files) * file_line_weight + block_padding)
         ax.axis("off")
 
     # Add an overall title for the page
@@ -565,6 +625,8 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
     core_files = [d["core"][1] for d in data]
     load_lines = [d["load"][0] for d in data]
     load_files = [d["load"][1] for d in data]
+    package_lines = [_summary_value(d, "packages", 0, index=0) for d in data]
+    package_counts = [_summary_value(d, "packages", 0, index=2) for d in data]
     core_scores = [d["core_score"] for d in data]
     load_scores = [d["load_score"] for d in data]
     dependency_warnings = [d["load_dep"][1] for d in data]
@@ -590,7 +652,11 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
         page_load_modules(pdf, versions, load_files, highlighted_versions, load_lines)
 
         #########################################################
-        # Plot 3: Core References Evolution per File
+        # Plot 3: Packages - Package Count and Lines of Code
+        page_packages(pdf, versions, package_counts, highlighted_versions, package_lines)
+
+        #########################################################
+        # Plot 4: Core References Evolution per File
         page_core_system_refs(pdf, core_refs_by_file, versions)
 
         #########################################################

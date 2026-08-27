@@ -15,6 +15,7 @@ except Exception as e:
 
 MYPATH = os.path.dirname(__file__)
 MICROS_SOURCE_DIR = os.path.join(MYPATH, '../micrOS/source')
+MICROS_PACKAGES_DIR = os.path.join(MYPATH, '../micrOS/packages')
 RELEASE_INFO_PATH = os.path.join(MYPATH, '../micrOS/release_info/micrOS_ReleaseInfo')
 
 # MICROS LINTER CONFIG
@@ -22,11 +23,11 @@ ALLOWED_LM_DEP_WARNS = 5        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is 
 
 def parse_micros_file_categories(verbose=True):
     """
-    Parse files into categories: core, load_module, pin_maps, web, other
+    Parse files into categories: core, load_module, pin_maps, web, packages, other
     """
     file_ignore_list = ['.DS_Store']
     # micrOS file categories
-    categories = {'core': [], 'load_module': [], 'pin_maps': [], 'web': [], 'other': []}
+    categories = {'core': [], 'load_module': [], 'pin_maps': [], 'web': [], 'packages': [], 'other': []}
     modules_path = os.path.join(MICROS_SOURCE_DIR, "modules")
     web_path = os.path.join(MICROS_SOURCE_DIR, "web")
     check_file = lambda _b, _f: os.path.isfile(os.path.join(_b, _f)) and _f not in file_ignore_list
@@ -45,6 +46,21 @@ def parse_micros_file_categories(verbose=True):
             categories['core'].append(f)
         else:
             categories['other'].append(f)
+
+    if os.path.isdir(MICROS_PACKAGES_DIR):
+        for package in sorted(LocalMachine.FileHandler.list_dir(MICROS_PACKAGES_DIR)):
+            package_path = os.path.join(MICROS_PACKAGES_DIR, package)
+            payload_path = os.path.join(package_path, 'package')
+            if not os.path.isdir(payload_path):
+                continue
+            for root, dirs, files in os.walk(payload_path):
+                dirs[:] = [d for d in dirs if d != '__pycache__']
+                for f in sorted(files):
+                    if f in file_ignore_list or f.endswith('.pyc'):
+                        continue
+                    file_path = os.path.join(root, f)
+                    rel_path = os.path.relpath(file_path, MICROS_PACKAGES_DIR)
+                    categories['packages'].append(rel_path.replace(os.sep, '/'))
     if verbose:
         print("micrOS categorized resources")
         print(json.dumps(categories, sort_keys=True, indent=4))
@@ -148,8 +164,10 @@ def combine_data_structures(core_struct, lm_struct, all_struct, verbose=True):
     pinmap_struct = parse_core_modules(all_struct['pin_maps'], verbose=verbose)
     categories_pinmaps = _update_dep_category(pinmap_struct, core_resource_names, lm_resource_names, master_key='pin_maps')
     categories_web = {'web': all_struct['web']}
+    categories_packages = {'packages': all_struct['packages']}
     categories_other = {'other': all_struct['other']}
-    categories = {**categories_core, **categories_lm, **categories_pinmaps, **categories_web, **categories_other}
+    categories = {**categories_core, **categories_lm, **categories_pinmaps,
+                  **categories_web, **categories_packages, **categories_other}
     if verbose:
         print(f"{'_'*100}\nRUN combine_data_structures")
         print(json.dumps(categories, sort_keys=True, indent=4))
@@ -340,7 +358,7 @@ def add_ref_counter(categories, verbose=True):
 
     for master_key in categories:
         # Skip master keys
-        if master_key in ['pin_maps', 'web', 'other']:
+        if master_key in ['pin_maps', 'web', 'packages', 'other']:
             continue
         for res in categories[master_key]:
             if 'linter' == res:
@@ -415,6 +433,16 @@ def _web_resource_summary(resources):
     return [web_size, len(web_resources)]
 
 
+def _package_resource_summary(resources):
+    packages = set()
+    lines = 0
+    for res in resources:
+        packages.add(res.split('/', 1)[0])
+        with open(os.path.join(MICROS_PACKAGES_DIR, *res.split('/')), 'rb') as file:
+            lines += sum(1 for _ in file)
+    return [lines, len(resources), len(packages)]
+
+
 def _human_size(size):
     sign = '-' if size < 0 else ''
     value = abs(size)
@@ -429,6 +457,7 @@ def _human_size(size):
 
 def create_summary_stat(categories, states, verbose=True):
     summary = {'files': {}, 'summary': {'core': ['<lines>', '<files>'], 'load': ['<lines>', '<files>'],
+                                    'packages': ['<lines>', '<files>', '<packages>'],
                                     'web': ['<bytes>', '<files>'],
                                     'core_dep': [True, '<warning_cnt(s)>'], 'load_dep': [True, '<warning_cnt(s)>'],
                                     'core_score': 0, 'load_score': 0, 'version': 0}}
@@ -441,6 +470,8 @@ def create_summary_stat(categories, states, verbose=True):
     summary['summary']['core'] = [categories['core']['linter']['sum_lines'], len(categories['core'])-1]
     # Get LM code lines (0), and LM code files number
     summary['summary']['load'] = [categories['load_module']['linter']['sum_lines'], len(categories['load_module'])-1]
+    # Get package payload code/resource lines, file count, and package count.
+    summary['summary']['packages'] = _package_resource_summary(categories['packages'])
     # Get WEB resource size (bytes), and WEB resource files number
     summary['summary']['web'] = _web_resource_summary(categories['web'])
 
@@ -495,6 +526,7 @@ def short_report(categories, states, verbose=True):
     # Unpack result of summary stat
     sum_core_lines, core_cnt = summary['summary']['core'][0], summary['summary']['core'][1]
     sum_lm_lines, lm_cnt = summary['summary']['load'][0], summary['summary']['load'][1]
+    sum_package_lines, package_file_cnt, package_cnt = summary['summary']['packages']
     web_size, web_cnt = summary['summary']['web'][0], summary['summary']['web'][1]
     core_dep = summary['summary']['core_dep']
     lm_dep = summary['summary']['load_dep']
@@ -515,6 +547,7 @@ def short_report(categories, states, verbose=True):
         summary_diff, is_better = diff_short_summary(summary, verbose=True)
         core_diff = summary_diff['summary']['core']
         load_diff = summary_diff['summary']['load']
+        package_diff = summary_diff['summary']['packages']
         web_diff = summary_diff['summary']['web']
         core_score_diff = summary_diff['summary']['core_score']
         load_score_diff = summary_diff['summary']['load_score']
@@ -523,7 +556,8 @@ def short_report(categories, states, verbose=True):
     except Exception as e:
         print(f"\n\ndiff_short_summary error: no file: {e}\n\n")
         is_better = True    # enable save
-        core_diff, load_diff, web_diff, core_score_diff, load_score_diff, core_dep_diff, lm_dep_diff = [0, 0], [0, 0], [0, 0], 0, 0, 0, 0
+        core_diff, load_diff, package_diff, web_diff, core_score_diff, load_score_diff, core_dep_diff, lm_dep_diff = \
+            [0, 0], [0, 0], [0, 0, 0], [0, 0], 0, 0, 0, 0
 
     if not verbose:
         print(json.dumps(categories, sort_keys=True, indent=4))
@@ -546,8 +580,9 @@ def short_report(categories, states, verbose=True):
         print(line)
     print("########################        micrOS linter      ###########################")
     print(f"        core system:                {sum_core_lines}{_vis(core_diff[0])} lines / {core_cnt}{_vis(core_diff[1])} files")
-    print(f"       load modules:                {sum_lm_lines}{_vis(load_diff[1])} lines / {lm_cnt}{_vis(load_diff[1])} files")
+    print(f"       load modules:                {sum_lm_lines}{_vis(load_diff[0])} lines / {lm_cnt}{_vis(load_diff[1])} files")
     print(f"      web resources:                {_human_size(web_size)}{_size_vis(web_diff[0])} / {web_cnt}{_vis(web_diff[1])} files")
+    print(f"           packages:                {package_cnt}{_vis(package_diff[2])} packages, {sum_package_lines}{_vis(package_diff[0])} lines / {package_file_cnt}{_vis(package_diff[1])} files")
     print(f"   core_dep_checker:                core dependency check (no LM): {c_OK if core_dep[0]  else c_NOK} {'' if core_dep[1] == 0 else f'{core_dep[1]}{_vis(core_dep_diff)} warning(s)s'}")
     print(f"load_module_checker:                load module dependency check (no core): {c_OK if lm_dep[0] else c_NOK} {'' if lm_dep[1] == 0 else f'{lm_dep[1]}{_vis(lm_dep_diff)} warning(s)'}")
     print(f"  core pylint score:                {core_pylint}{_pyl_vis(core_score_diff)}")
@@ -561,8 +596,19 @@ def short_report(categories, states, verbose=True):
 
 
 def diff_short_summary(summary, verbose=True):
+    def _stored_scalar(data):
+        if isinstance(data, list):
+            return data[0] if data else 0
+        return data
+
+    def _stored_list(data, length):
+        if isinstance(data, list):
+            return data
+        return [data] + [0] * (length - 1)
+
     is_better = False
     diff_summary = {'files': {}, 'summary': {'core': ['<lines>', '<files>'], 'load': ['<lines>', '<files>'],
+                                    'packages': ['<lines>', '<files>', '<packages>'],
                                     'web': ['<bytes>', '<files>'],
                                     'core_dep': [True, '<warning_cnt(s)>'], 'load_dep': [True, '<warning_cnt(s)>'],
                                     'core_score': 0, 'load_score': 0, 'version': 0}}
@@ -578,11 +624,11 @@ def diff_short_summary(summary, verbose=True):
         diff_summary['files'][f_name] = [score - stored_summary['files'][f_name][0], ref - stored_summary['files'][f_name][1]]
     for tag, data in summary['summary'].items():
         if isinstance(data, int) or isinstance(data, float):
-            stored_data = stored_summary['summary'].get(tag, 0)
+            stored_data = _stored_scalar(stored_summary['summary'].get(tag, 0))
             diff_summary['summary'][tag] = data - stored_data
             is_better |= False if diff_summary['summary'][tag] < 0 else True
         if isinstance(data, list):
-            stored_data = stored_summary['summary'].get(tag, [0] * len(data))
+            stored_data = _stored_list(stored_summary['summary'].get(tag, [0] * len(data)), len(data))
             for i, d in enumerate(data):
                 if isinstance(d, int) or isinstance(d, float):
                     diff_summary['summary'][tag][i] = d - stored_data[i]

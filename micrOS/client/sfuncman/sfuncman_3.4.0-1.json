@@ -1,54 +1,4 @@
 {
-    "L298N": {
-        "brake": {
-            "doc": "\n    Brake the motor\n    :param motor: Motor number (1 or 2)\n    :return: Current motor state\n    ",
-            "param(s)": "motor"
-        },
-        "coast": {
-            "doc": "\n    Coast the motor\n    :param motor: Motor number (1 or 2)\n    ",
-            "param(s)": "motor"
-        },
-        "direction": {
-            "doc": "\n    Set the direction of a motor\n    :param motor: Motor number (1 or 2)\n    :param forward: True if motor should move forward, False if backward\n    :return: Current motor state\n    ",
-            "param(s)": "motor forward: bool=True"
-        },
-        "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L298N.png?raw=true",
-        "load": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Load the L298N motor driver module\n    ",
-            "param(s)": "pwm_freq:int=None"
-        },
-        "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l298n_ENA, l298n_INA, l298n_INB, l298n_ENB, l298n_INC, l298n_IND",
-            "param(s)": ""
-        },
-        "speed": {
-            "doc": "\n    Set the speed of a motor\n    :param motor: Motor number (1 or 2)\n    :param speed: Speed value (0-1023)\n    :return: Current motor state\n    ",
-            "param(s)": "motor speed:int=1023"
-        },
-        "state": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Get the current state of a motor or all motors\n    :param motor: Motor number (1 or 2) or None for all motors\n    ",
-            "param(s)": "motor=0"
-        }
-    },
-    "L9110_DCmotor": {
-        "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
-            "param(s)": "widgets=False"
-        },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/L9110_DCmotor.png?raw=true",
-        "motor_control": {
-            "doc": null,
-            "param(s)": "direc=None speed=None"
-        },
-        "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l9110dir_1, l9110dir_2",
-            "param(s)": ""
-        }
-    },
     "OV2640": {
         "capture": {
             "doc": null,
@@ -978,6 +928,56 @@
         },
         "stop": {
             "doc": "\n    Stop sensor measurement loop and publish, delete MHZ19.INSTANCE\n    ",
+            "param(s)": ""
+        }
+    },
+    "motor_l298n": {
+        "brake": {
+            "doc": "\n    Brake the motor\n    :param motor: Motor number (1 or 2)\n    :return: Current motor state\n    ",
+            "param(s)": "motor"
+        },
+        "coast": {
+            "doc": "\n    Coast the motor\n    :param motor: Motor number (1 or 2)\n    ",
+            "param(s)": "motor"
+        },
+        "direction": {
+            "doc": "\n    Set the direction of a motor\n    :param motor: Motor number (1 or 2)\n    :param forward: True if motor should move forward, False if backward\n    :return: Current motor state\n    ",
+            "param(s)": "motor forward: bool=True"
+        },
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/dc_motor/media/motor_l298n.png?raw=true",
+        "load": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Load the L298N motor driver module\n    ",
+            "param(s)": "pwm_freq:int=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l298n_ENA, l298n_INA, l298n_INB, l298n_ENB, l298n_INC, l298n_IND",
+            "param(s)": ""
+        },
+        "speed": {
+            "doc": "\n    Set the speed of a motor\n    :param motor: Motor number (1 or 2)\n    :param speed: Speed value (0-1023)\n    :return: Current motor state\n    ",
+            "param(s)": "motor speed:int=1023"
+        },
+        "state": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Get the current state of a motor or all motors\n    :param motor: Motor number (1 or 2) or None for all motors\n    ",
+            "param(s)": "motor=0"
+        }
+    },
+    "motor_l9110": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/dc_motor/media/motor_l9110.png?raw=true",
+        "motor_control": {
+            "doc": null,
+            "param(s)": "direc=None speed=None"
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: l9110dir_1, l9110dir_2",
             "param(s)": ""
         }
     },

@@ -86,7 +86,7 @@
         ],
         "microIO.py": [
             9.37,
-            34
+            32
         ],
         "micrOS.py": [
             9.09,
@@ -114,10 +114,6 @@
         ],
         "modules/LM_stepper.py": [
             8.9,
-            0
-        ],
-        "modules/LM_L298N.py": [
-            8.25,
             0
         ],
         "modules/LM_pacman.py": [
@@ -195,10 +191,6 @@
         "modules/LM_cct.py": [
             8.98,
             1
-        ],
-        "modules/LM_L9110_DCmotor.py": [
-            7.69,
-            0
         ],
         "modules/LM_neoeffects.py": [
             9.08,
@@ -291,13 +283,13 @@
             27
         ],
         "load": [
-            7015,
-            44
+            6852,
+            42
         ],
         "packages": [
-            13114,
-            84,
-            19
+            13358,
+            89,
+            20
         ],
         "web": [
             187816,
@@ -312,7 +304,7 @@
             5
         ],
         "core_score": 9.28,
-        "load_score": 8.37,
+        "load_score": 8.39,
         "version": "3.4.0-1"
     }
 }

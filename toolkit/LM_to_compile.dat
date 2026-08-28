@@ -30,7 +30,6 @@ LM_i2s_mic.py
 LM_rest.py
 LM_gameOfLife.py
 LM_ld2410.py
-LM_trackball.py
 LM_veml7700.py
 LM_neomatrix.py
 LM_L298N.py

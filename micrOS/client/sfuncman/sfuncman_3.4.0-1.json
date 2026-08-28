@@ -2338,10 +2338,10 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n[i] micrOS Widget Types:\n\tN/A",
+            "doc": "\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": ""
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/trackball.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/trackball/media/trackball.png?raw=true",
         "load": {
             "doc": "\n    Load Pimoroni trackball\n    :param width: canvas pixel width\n    :param height: canvas pixel height\n    :param irq_sampling: trackball irq_sampling in ms\n    :param sensitivity: xy window for irq trigger sampling in pixel\n    :param reload: recreate trackball instance\n    ",
             "param(s)": "width=100 height=100 irq_sampling=50 sensitivity=5 reload=False"

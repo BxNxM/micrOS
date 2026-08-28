@@ -23,11 +23,11 @@ ALLOWED_LM_DEP_WARNS = 5        # ALLOWED NUMBER OF LM CORE DEPENDENCY (less is 
 
 def parse_micros_file_categories(verbose=True):
     """
-    Parse files into categories: core, load_module, pin_maps, web, packages, other
+    Parse files into categories: core, load_module, pin_maps, web, packages, package_code, other
     """
     file_ignore_list = ['.DS_Store']
     # micrOS file categories
-    categories = {'core': [], 'load_module': [], 'pin_maps': [], 'web': [], 'packages': [], 'other': []}
+    categories = {'core': [], 'load_module': [], 'pin_maps': [], 'web': [], 'packages': [], 'package_code': [], 'other': []}
     modules_path = os.path.join(MICROS_SOURCE_DIR, "modules")
     web_path = os.path.join(MICROS_SOURCE_DIR, "web")
     check_file = lambda _b, _f: os.path.isfile(os.path.join(_b, _f)) and _f not in file_ignore_list
@@ -60,17 +60,20 @@ def parse_micros_file_categories(verbose=True):
                         continue
                     file_path = os.path.join(root, f)
                     rel_path = os.path.relpath(file_path, MICROS_PACKAGES_DIR)
-                    categories['packages'].append(rel_path.replace(os.sep, '/'))
+                    rel_path = rel_path.replace(os.sep, '/')
+                    categories['packages'].append(rel_path)
+                    if rel_path.endswith('.py'):
+                        categories['package_code'].append(rel_path)
     if verbose:
         print("micrOS categorized resources")
         print(json.dumps(categories, sort_keys=True, indent=4))
     return categories
 
 
-def _parse_py_file_content(file_name, verbose=True):
+def _parse_py_file_content(file_name, verbose=True, base_dir=None):
     source_line_cnt = 0
     source_dependencies = []
-    file_path = os.path.join(MICROS_SOURCE_DIR, file_name)
+    file_path = os.path.join(base_dir or MICROS_SOURCE_DIR, file_name)
     with open(file_path, 'r') as f:
         file_content = f.read()
     if verbose:
@@ -89,10 +92,10 @@ def _parse_py_file_content(file_name, verbose=True):
     return source_line_cnt, source_dependencies
 
 
-def parse_core_modules(core_resources, verbose=True):
+def parse_core_modules(core_resources, verbose=True, base_dir=None):
     core_resource_struct = {}
     for file_name in core_resources:
-        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose)
+        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose, base_dir=base_dir)
         core_resource_struct[file_name] = {'lines': line_cnt, 'dependencies': dependencies}
     if verbose:
         print(f"{'_'*100}\nRUN parse_core_modules")
@@ -100,10 +103,10 @@ def parse_core_modules(core_resources, verbose=True):
     return core_resource_struct
 
 
-def parse_load_modules(lm_resources, verbose=True):
+def parse_load_modules(lm_resources, verbose=True, base_dir=None):
     lm_resource_struct = {}
     for file_name in lm_resources:
-        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose)
+        line_cnt, dependencies = _parse_py_file_content(file_name, verbose=verbose, base_dir=base_dir)
         lm_resource_struct[file_name] = {'lines': line_cnt, 'dependencies': dependencies}
     if verbose:
         print(f"{'_'*100}\nRUN parse_load_modules")
@@ -163,11 +166,14 @@ def combine_data_structures(core_struct, lm_struct, all_struct, verbose=True):
     categories_lm = _update_dep_category(lm_struct, core_resource_names, lm_resource_names, master_key='load_module')
     pinmap_struct = parse_core_modules(all_struct['pin_maps'], verbose=verbose)
     categories_pinmaps = _update_dep_category(pinmap_struct, core_resource_names, lm_resource_names, master_key='pin_maps')
+    package_code_struct = parse_core_modules(all_struct['package_code'], verbose=verbose, base_dir=MICROS_PACKAGES_DIR)
+    categories_package_code = _update_dep_category(package_code_struct, core_resource_names, lm_resource_names,
+                                                   master_key='package_code')
     categories_web = {'web': all_struct['web']}
     categories_packages = {'packages': all_struct['packages']}
     categories_other = {'other': all_struct['other']}
     categories = {**categories_core, **categories_lm, **categories_pinmaps,
-                  **categories_web, **categories_packages, **categories_other}
+                  **categories_package_code, **categories_web, **categories_packages, **categories_other}
     if verbose:
         print(f"{'_'*100}\nRUN combine_data_structures")
         print(json.dumps(categories, sort_keys=True, indent=4))

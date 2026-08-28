@@ -15,7 +15,6 @@ LM_repair.py
 LM_buzzer.py
 LM_genIO.py
 LM_ds18.py
-LM_roboarm.py
 LM_neoeffects.py
 LM_stepper.py
 LM_cct.py
@@ -25,11 +24,9 @@ LM_oled_sh1106.py
 LM_pacman.py
 LM_aht10.py
 LM_rgbcct.py
-LM_OV2640.py
 LM_i2s_mic.py
 LM_rest.py
 LM_gameOfLife.py
-LM_ld2410.py
 LM_veml7700.py
 LM_neomatrix.py
 LM_cluster.py

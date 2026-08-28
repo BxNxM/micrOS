@@ -9,10 +9,10 @@
             "param(s)": "state=None"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'embed', 'callback': '/cam/stream', 'image': True, 'title': 'camera stream'}\n\t{'type': 'slider', 'callback': 'settings saturation=:range:', 'range': [0, 100, 2]}\n\t{'type': 'slider', 'callback': 'settings brightness=:range:', 'range': [0, 100, 2]}\n\t{'type': 'slider', 'callback': 'settings contrast=:range:', 'range': [0, 100, 2]}\n\t{'type': 'button', 'callback': 'settings effect=:options:', 'result': False, 'options': ['NONE', 'NEG', 'BW', 'RED', 'GREEN', 'BLUE', 'RETRO']}\n\t{'type': 'button', 'callback': 'photo ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'flashlight state=None', 'result': False, 'options': ['None']}",
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'embed', 'callback': '/cam/stream', 'image': True, 'title': 'camera stream'}\n\t{'type': 'slider', 'callback': 'settings saturation=:range:', 'range': [0, 100, 2]}\n\t{'type': 'slider', 'callback': 'settings brightness=:range:', 'range': [0, 100, 2]}\n\t{'type': 'slider', 'callback': 'settings contrast=:range:', 'range': [0, 100, 2]}\n\t{'type': 'button', 'callback': 'settings effect=:options:', 'result': False, 'options': ['NONE', 'NEG', 'BW', 'RED', 'GREEN', 'BLUE', 'RETRO']}\n\t{'type': 'button', 'callback': 'photo ', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'flashlight state=None', 'result': False, 'options': ['None']}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/OV2640.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/camera/media/OV2640.png?raw=true",
         "load": {
             "doc": "\n    Load Camera module OV2640\n    :param quality: high (HD), medium (SVGA), low (240x240)\n    :param freq: default (not set: 10kHz) or high: 20kHz\n    :param effect: NONE (default), OR: NEG, BW, RED, GREEN, BLUE, RETRO\n    ",
             "param(s)": "quality='medium' freq='ault' effect=\"NONE\""
@@ -844,10 +844,10 @@
             "param(s)": ""
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\tN/A",
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\tN/A",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/ld2410.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/presence/media/ld2410.png?raw=true",
         "pinmap": {
             "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: tx, rx",
             "param(s)": ""
@@ -1690,10 +1690,10 @@
             "param(s)": "x y speed_ms=None smooth=True"
         },
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'joystick', 'callback': 'control x=:range: y=:range: speed_ms=5 smooth=True', 'range': [40, 115, 2]}\n\t{'type': 'button', 'callback': 'boot_move speed_ms=10', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'standby y_pos=45', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'jiggle delta=3', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'play deinit=True', 'result': False, 'options': ['None']}\n\t{'type': 'status', 'callback': 'status ', 'wtype': 'auto'}",
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'joystick', 'callback': 'control x=:range: y=:range: speed_ms=5 smooth=True', 'range': [40, 115, 2]}\n\t{'type': 'button', 'callback': 'boot_move speed_ms=10', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'standby y_pos=45', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'jiggle delta=3', 'result': False, 'options': ['None']}\n\t{'type': 'button', 'callback': 'play deinit=True', 'result': False, 'options': ['None']}\n\t{'type': 'status', 'callback': 'status ', 'wtype': 'auto'}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/roboarm.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/roboarm/media/roboarm.png?raw=true",
         "jiggle": {
             "doc": "\n    Joggle roboarm in small range\n    :param delta: jiggle delta from current position (full range: 40-115)\n    ",
             "param(s)": "delta=2"

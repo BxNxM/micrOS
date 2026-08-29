@@ -290,7 +290,7 @@ function joinCrontasks(blocks) {
 }
 
 function loadConfig(report = true) {
-  return fetch('/config', {headers: {Accept: 'application/json'}})
+  return fetch('/config/api', {headers: {Accept: 'application/json'}})
     .then(r => {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
@@ -311,7 +311,7 @@ function handleUpdateConfig() {
     return;
   }
   const savedChanges = {...changedValues};
-  return fetch('/config', {
+  return fetch('/config/api', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(savedChanges)
@@ -505,6 +505,7 @@ function renderDebugSection() {
     {label: 'Details', handler: handleDebugDetails},
     {label: 'Clean', handler: handleAlarmClean},
   ]);
+  renderActionRow(list, 'System Info', [{label: 'Details', handler: handleDebugDetails}]);
   renderActionRow(list, 'System Hosts', [{label: 'Details', handler: handleDebugDetails}]);
 
   section.appendChild(list);
@@ -542,6 +543,7 @@ function getDebugDetails(label) {
       formatter: formatAlarmDetails,
       firstLineClass: response => response && response.result && response.result.health ? 'config-alarm-ok' : 'config-alarm-nok',
     },
+    'System Info': {command: 'system/info', timeout: 5000},
     'System Hosts': {command: 'system/hosts', timeout: 5000},
   }[label];
 }

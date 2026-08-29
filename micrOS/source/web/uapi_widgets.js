@@ -35,7 +35,7 @@ function restWidget(container='restWidget', opts={}) {
     try {history = JSON.parse(sessionStorage.getItem(historyKey) || '[]').filter(x => typeof x === 'string');} catch (_) {}
     let suggestions = ['modules'];
 
-    const label = makeEl('label', {htmlFor: inputId, textContent: opts.label || '⚙️ Enter micrOS command: '});
+    const label = makeEl('label', {htmlFor: inputId, textContent: opts.label || '🚀 Enter micrOS command: '});
     const input = styled(makeEl('input', {type: 'text', id: inputId, value: opts.value || ''}), 'background:transparent;max-width:none;min-width:0;padding-right:34px;position:relative;width:100%;z-index:1;');
     const ghost = styled(makeEl('span'), 'box-sizing:border-box;color:rgba(255,255,255,.35);font:14px/1.4 Verdana,sans-serif;inset:2px;overflow:hidden;padding:6px 34px 6px 12px;pointer-events:none;position:absolute;white-space:pre;');
     const accept = styled(makeEl('button', {type: 'button', textContent: '↦', title: 'Accept suggestion'}), 'bottom:2px;display:none;min-height:0;padding:0 8px;position:absolute;right:2px;top:2px;z-index:3;');
@@ -87,6 +87,7 @@ function restWidget(container='restWidget', opts={}) {
 
     root.textContent = '';
     root.append(makeEl('h3', {}, [label]), form, url, responseBox, time);
+    if (REST_CONSOLE_CACHE) {restConsole(...REST_CONSOLE_CACHE, {url, response: responseBox, time});}
     updateHint();
     restAPICore('modules', opts.modulesTimeout || 3000).then(({response}) => {
         const commands = moduleCommandSuggestions(response);
@@ -97,11 +98,21 @@ function restWidget(container='restWidget', opts={}) {
     return {root, input, form, url, response: responseBox, time};
 }
 
-const endpointIconMap = {
-    'dashboard': '🎮',
-    'fs': '📁',
-    'config/ui': '⚙️'
-};
+function initApiConsole(id='apiConsole', widget='restWidget') {
+    const box = byId(id);
+    if (!box) {return;}
+    apiConsoleStyle();
+    const render = () => {
+        if (box.open && !box.dataset.r) {
+            restWidget(widget);
+            box.dataset.r = 1;
+        }
+    };
+    box.ontoggle = render;
+    render();
+}
+
+const endpointIconMap = {dashboard: '🎮', fs: '📁', config: '⚙️'};
 
 function endpointLabel(label, entry) {
     const icon = endpointIconMap[String(entry).replace(/^\/+|\/+$/g, '')];
@@ -112,28 +123,36 @@ function renderEndpointGroups(endpoints) {
     const container = byId('endpointGroups');
     if (!container) {return;}
     container.textContent = '';
-    const hint = byId('endpointHint');
-    const hasEndpoints = Array.isArray(endpoints) && endpoints.length > 0;
-    if (hint) {hint.hidden = !hasEndpoints;}
-    if (!hasEndpoints) {return;}
+    if (!Array.isArray(endpoints) || !endpoints.length) {
+        const loadApps = makeEl('button', {className: 'endpoint-main', textContent: '🚀 Load Web Apps',
+            onclick: () => {container.textContent = ''; restAPI('web/load', false).finally(() => location.reload());}
+        });
+        container.appendChild(makeEl('div', {className: 'endpoint-group'}, [loadApps]));
+        return;
+    }
 
     const groups = {};
-    const button = (label, entry) => makeEl('button', {textContent: label, onclick: () => window.open(`/${entry}`, '_blank')});
-    const groupBox = children => makeEl('div', {className: 'endpoint-group'}, children);
+    const button = (label, entry, className='') => makeEl('button', {className, textContent: label, onclick: () => window.open(`/${entry}`, '_blank')});
     endpoints.forEach(endpoint => {
-        const entry = endpoint.replace(/^\/+/, '');
-        const group = entry.split('/')[0];
-        if (group) {(groups[group] = groups[group] || []).push(entry);}
+        const target = String(endpoint || '').replace(/^\/+/, '');
+        const [main, ...subParts] = target.replace(/\/+$/, '').split('/');
+        if (!main) {return;}
+        const group = groups[main] || (groups[main] = {root: null, children: []});
+        if (subParts.length) {
+            group.children.push({entry: target, label: subParts.join('/')});
+        } else if (!group.root || target.endsWith('/')) {
+            group.root = target;
+        }
     });
 
-    Object.keys(groups).sort().forEach(group => {
-        const entries = groups[group].sort();
-        if (entries.length === 1 && entries[0] === group) {
-            container.appendChild(groupBox([button(endpointLabel(group, group), group)]));
-            return;
-        }
-        const groupEl = groupBox([makeEl('span', {className: 'endpoint-group-title', textContent: group})]);
-        entries.forEach(entry => groupEl.appendChild(button(endpointLabel(entry === group ? group : entry.replace(`${group}/`, ''), entry), entry)));
-        container.appendChild(groupEl);
+    Object.keys(groups).sort().forEach(main => {
+        const group = groups[main];
+        const mainAction = group.root
+            ? button(endpointLabel(main, group.root), group.root, 'endpoint-main')
+            : makeEl('span', {className: 'endpoint-main endpoint-main-label', textContent: endpointLabel(main, main)});
+        const actions = makeEl('div', {className: 'endpoint-group-actions'});
+        group.children.sort((a, b) => a.entry.localeCompare(b.entry))
+            .forEach(({entry, label}) => actions.appendChild(button(endpointLabel(label, entry), entry)));
+        container.appendChild(makeEl('div', {className: 'endpoint-group'}, group.children.length ? [mainAction, actions] : [mainAction]));
     });
 }

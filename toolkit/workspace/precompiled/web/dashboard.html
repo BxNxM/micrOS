@@ -1,19 +1,13 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="black"><title>microWebDashboard</title><link rel="stylesheet" href="ustyle.css"><link rel="stylesheet" href="ubashboard.css"><script src="uapi.js"></script><script src="uwidgets.js"></script><script src="udashboard.js"></script></head><body><h1> micrOS dashboard </h1><div id="restInfo"><div id="restInfoHeader"></div></div><section id="widgets-section"></section><br><br><br><button id="toggleDebugSection">console</button><div id="debugSection" style="display: none;"><h2>🚀 REST API</h2><p id="restConsoleUrl"></p><pre id="restConsoleResponse"></pre><p id="restConsoleTime"></p></div><script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Init basic info from board after DOM is fully loaded
-            restInfo(showPages=false);
-
-            // INIT DASHBOARD (load active modules -> build page)
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="black"><title>Dashboard</title><link rel="stylesheet" href="ustyle.css"><link rel="stylesheet" href="ubashboard.css"><script src="uapi.js"></script><script src="uwidgets.js"></script><script src="udashboard.js"></script></head><body><h1> micrOS dashboard </h1><div id="restInfo"><div id="restInfoHeader"></div></div><section id="widgets-section"></section><details id="apiConsole" class="api-console"><summary>API Console</summary><div id="restWidget"></div></details><script>
+        function lazyApiConsole() {
+            if (this.dataset.l || !this.open) {return;}
+            this.dataset.l = 1;
+            document.head.appendChild(makeEl('script', {src: 'uapi_widgets.js', onload: () => initApiConsole()}));
+        }
+        document.addEventListener('DOMContentLoaded',()=>{
+            restInfo(false);
             DynamicWidgetLoad();
-
-            // INIT [hidden] debug section
-            document.getElementById('toggleDebugSection').addEventListener('click', function() {
-                var debugSection = document.getElementById('debugSection');
-                if (debugSection.style.display === 'none') {
-                    debugSection.style.display = 'block';
-                } else {
-                    debugSection.style.display = 'none';
-                }
-            });
+            const api = byId('apiConsole');
+            if (api) {apiConsoleStyle(); api.ontoggle = lazyApiConsole;}
         });
     </script></body></html>

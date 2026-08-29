@@ -357,7 +357,7 @@ class DeviceDashboard(Resource):
             1
         )
         html = html.replace(
-            '<title>microWebDashboard</title>',
+            '<title>Dashboard</title>',
             f'<title>micrOS Gateway Dashboard - {safe_device}</title>',
             1
         )

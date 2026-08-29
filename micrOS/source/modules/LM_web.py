@@ -39,11 +39,11 @@ def enable_config():
     """
     Enable web configuration option
     """
-    web_endpoint("config", _cfg_get_clb)
-    web_endpoint("config", _cfg_set_clb, "POST")
-    web_endpoint("config/ui", 'config.html')
+    web_endpoint("config", 'config.html')
+    web_endpoint("config/api", _cfg_get_clb)
+    web_endpoint("config/api", _cfg_set_clb, "POST")
     web_endpoint("config/reboot", _reboot_clb, "POST")
-    return "Config endpoints: config/ui GET, /config GET|POST (protected), /config/reboot POST (protected)"
+    return "Config endpoints: /config GET, /config/api GET|POST (protected), /config/reboot POST (protected)"
 
 
 def _cfg_json(data):

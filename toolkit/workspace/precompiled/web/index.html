@@ -1,54 +1,108 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="black"><title>microWeb</title><link rel="icon" href="favicon.ico" sizes="64x64"><link rel="stylesheet" href="ustyle.css"><style>
-      hr {
-          border: none;
-          height: 2px;
-          background: rgba(255, 255, 255, 0.25);
-          margin: 16px 0;
-      }
+      *{box-sizing:border-box;}
+
       #restInfoHeader {
-          margin-bottom: 12px;
+          margin-bottom:14px;
       }
-      /* Container */
+
+      .endpoint-section-title {
+          margin:4px 0 10px;
+          color:rgba(255,255,255,.82);
+          font-size:14px;
+          font-weight:bold;
+      }
+
+      .endpoint-section-title::after {
+          content:"";
+          display:block;
+          height:1px;
+          margin-top:8px;
+          background:rgba(255,255,255,.24);
+      }
+
       .endpoint-groups {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: stretch;
-          gap: 12px;
-          margin-bottom: 12px;
-          width: 100%;
+          display:flex;
+          flex-wrap:wrap;
+          align-items:flex-start;
+          gap:12px;
+          margin:6px 0 20px;
+          width:100%;
       }
 
-      /* Group cards */
+      /* Dark endpoint group/card */
       .endpoint-group {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          align-content: center;
-          gap: 6px;
-          padding: 8px;
-          border: 1px solid #4B376C;
-          border-radius: 6px;
-          background: #1F1433;
-          box-sizing: border-box;
-          min-height: 70px;
-          max-width: 100%;
+          display:flex;
+          flex:1 1 128px;
+          flex-direction:column;
+          gap:8px;
+          max-width:176px;
+          min-width:0;
+          padding:8px;
+
+          border:1px solid rgba(255,255,255,.16);
+          border-radius:8px;
+
+          background:rgba(0,0,0,.55);
+          box-shadow:0 2px 8px rgba(0,0,0,.20);
       }
 
-      /* Prevent buttons from getting tiny */
+      /* Main endpoint */
+      .endpoint-main {
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          min-height:64px;
+          width:100%;
+          padding:6px 8px;
+
+          border:1px solid rgba(255,255,255,.16);
+          border-radius:6px;
+
+          background:rgba(255,255,255,.08);
+          color:white;
+
+          text-align:center;
+          font-weight:bold;
+      }
+
+      /* Unavailable main endpoint: pale and subdued */
+      .endpoint-main:disabled,
+      .endpoint-main[aria-disabled="true"],
+      .endpoint-main.disabled,
+      .endpoint-main.unavailable {
+          background:rgba(255,255,255,.025);
+          border-color:rgba(255,255,255,.07);
+          color:rgba(255,255,255,.28);
+          opacity:.5;
+      }
+
+      /* Non-clickable main endpoint label */
+      .endpoint-main-label {
+          border:1px solid rgba(255,255,255,.10);
+          background:rgba(255,255,255,.035);
+          color:rgba(255,255,255,.38);
+      }
+
+      .endpoint-group-actions {
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+      }
+
       .endpoint-group button {
-          min-height: 44px;
-          white-space: nowrap;
+          overflow-wrap:anywhere;
       }
 
-      .shortcut-buttons {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
+      .endpoint-group-actions button {
+          min-height:38px;
+          padding:5px 8px;
       }
-    </style><script src="uapi.js" defer></script><script src="uapi_widgets.js" defer></script></head><body><img src="favicon.ico" alt="micrOS Logo" width="60" height="60"><h1> microWeb server </h1><div id="restInfo"><div id="restInfoHeader"></div><div id="endpointHint">🔗 Endpoints:</div><div id="endpointGroups" class="endpoint-groups"></div></div><hr><h2>🚀 REST API</h2><p>Shortcuts:</p><div class="shortcut-buttons"><button onclick="restAPI('system/info')">SysInfo</button><button onclick="restAPI('system/alarms')">Alarms</button><button onclick="restAPI('system/clock')">Clock</button><button onclick="restAPI('task/list')">Tasks</button><button onclick="restAPI('web/load')">WebApps</button></div><div id="restWidget"></div><script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Init basic info from board after DOM is fully loaded
-            restWidget('restWidget');
-            restInfo();     // Update restInfo html tag
-        });
+
+      @media (max-width:360px) {
+          .endpoint-group {
+              flex-basis:126px;
+          }
+      }
+    </style><script src="uapi.js" defer></script><script src="uapi_widgets.js" defer></script></head><body><img src="favicon.ico" alt="micrOS Logo" width="60" height="60"><h1> microWeb server </h1><div id="restInfo"><div id="restInfoHeader"></div><div class="endpoint-section-title">Endpoints</div><div id="endpointGroups" class="endpoint-groups"></div></div><details id="apiConsole" class="api-console"><summary>API Console</summary><div id="restWidget"></div></details><script>
+        document.addEventListener('DOMContentLoaded',()=>{restInfo();initApiConsole();});
     </script></body></html>

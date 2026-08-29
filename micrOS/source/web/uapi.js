@@ -1,6 +1,7 @@
 // CORE MICROS BACKEND INTERFACE
 
 let BASE_URL = '';
+let REST_CONSOLE_CACHE;
 
 function initializeBaseURL() {
     if (!BASE_URL && typeof window !== 'undefined') {
@@ -58,7 +59,21 @@ function makeEl(tag, props={}, children=[]) {
     return el;
 }
 
+function apiConsoleStyle() {
+    if (byId('apiConsoleStyle')) {return;}
+    const c = '.api-console';
+    document.head.appendChild(makeEl('style', {id: 'apiConsoleStyle', textContent:
+        c + ',' + c + ' *{box-sizing:border-box}' +
+        c + '{margin-top:18px;width:100%;overflow:hidden;border:1px solid rgba(255,255,255,.24);border-radius:8px;background:rgba(255,255,255,.14)}' +
+        c + '[open]{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}' +
+        c + ' summary{display:block;min-height:36px;padding:6px 12px;color:white;cursor:pointer}' +
+        c + '[open] summary{background:rgba(255,255,255,.14)}' + c + ' summary:hover{background:rgba(255,255,255,.22)}' +
+        c + '>div{padding:12px 10px 10px}' + c + ' h3{margin:0 0 8px}'
+    }));
+}
+
 function restConsole(apiUrl, data, delta, root=document) {
+    REST_CONSOLE_CACHE = [apiUrl, data, delta];
     const urlEl = root.url || byId('restConsoleUrl', root);
     const responseEl = root.response || byId('restConsoleResponse', root);
     const timeEl = root.time || byId('restConsoleTime', root);

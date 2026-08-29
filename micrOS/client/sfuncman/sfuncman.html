@@ -1353,7 +1353,9 @@ pin&nbsp;map:&nbsp;aqua_pump</td></tr></table></td></tr><tr><th>soil</th><td><ta
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;count:&nbsp;how&nbsp;many&nbsp;times&nbsp;to&nbsp;toggle&nbsp;ON/OFF&nbsp;(default:&nbsp;10)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;delay_ms:&nbsp;delay&nbsp;between&nbsp;toggles&nbsp;in&nbsp;milliseconds&nbsp;(default:&nbsp;200)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;status&nbsp;string&nbsp;when&nbsp;finished</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;status&nbsp;string&nbsp;when&nbsp;finished</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Shows&nbsp;logical&nbsp;pins&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;Module.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;led</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message.<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;widgets:&nbsp;kept&nbsp;for&nbsp;compatibility,&nbsp;not&nbsp;used&nbsp;here<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return:&nbsp;tuple&nbsp;of&nbsp;exported&nbsp;function&nbsp;names<br>
@@ -1372,11 +1374,15 @@ pin&nbsp;map:&nbsp;aqua_pump</td></tr></table></td></tr><tr><th>soil</th><td><ta
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;of&nbsp;the&nbsp;requester&nbsp;(default:&nbsp;'shell')<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>garage_alarm_on</th><td><table class="doc-table"><tr><th>param(s)</th><td>phone='shell'</td></tr><tr><th>doc</th><td>Immediately&nbsp;reactivate&nbsp;the&nbsp;garage&nbsp;alarm&nbsp;for&nbsp;a&nbsp;given&nbsp;phone&nbsp;session.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phone&nbsp;str:&nbsp;phone&nbsp;number&nbsp;of&nbsp;the&nbsp;requester&nbsp;(default:&nbsp;'shell')<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pin_code phonebook='garage_users.json'</td></tr><tr><th>doc</th><td>Initialize&nbsp;garage&nbsp;module:&nbsp;relay,&nbsp;users,&nbsp;SIM800,&nbsp;subscribe&nbsp;to&nbsp;events.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pin_code phonebook='garage_users.json' door_pin=18 alarm_pin=20</td></tr><tr><th>doc</th><td>Initialize&nbsp;garage&nbsp;module:&nbsp;relay,&nbsp;users,&nbsp;SIM800,&nbsp;subscribe&nbsp;to&nbsp;events.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin_code&nbsp;int:&nbsp;SIM&nbsp;card&nbsp;PIN&nbsp;code<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;phonebook&nbsp;str:&nbsp;phonebook&nbsp;JSON&nbsp;filename&nbsp;(default:&nbsp;garage_users.json)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;door_pin&nbsp;int:&nbsp;garage&nbsp;door&nbsp;relay&nbsp;GPIO&nbsp;pin&nbsp;(default:&nbsp;18)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;alarm_pin&nbsp;int:&nbsp;alarm&nbsp;remote&nbsp;relay&nbsp;GPIO&nbsp;pin&nbsp;(default:&nbsp;20)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>unload</th><td><table class="doc-table"><tr><th>doc</th><td>Gracefully&nbsp;stop&nbsp;garage&nbsp;module:&nbsp;unsubscribe&nbsp;events,&nbsp;clear&nbsp;alarm&nbsp;sessions.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Shows&nbsp;logical&nbsp;pins&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;Module.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;relay.door,&nbsp;relay.alarm</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
@@ -1387,8 +1393,9 @@ pin&nbsp;map:&nbsp;aqua_pump</td></tr></table></td></tr><tr><th>soil</th><td><ta
 
 <section class="panel module-card">
 <h2 id="haptic"><a href="#haptic">haptic</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>intensity=None</td></tr><tr><th>doc</th><td>Init&nbsp;haptic&nbsp;engine<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;intensity:&nbsp;low&nbsp;/&nbsp;high&nbsp;/&nbsp;None&nbsp;haptic&nbsp;feedback&nbsp;intensity</td></tr></table></td></tr><tr><th>tap</th><td><table class="doc-table"><tr><th>doc</th><td>Tap&nbsp;-&nbsp;buzz&nbsp;effect</td></tr></table></td></tr><tr><th>gen</th><td><table class="doc-table"><tr><th>param(s)</th><td>intensity=Haptic.LOW wait=200 stop_wait=100 repeat=2</td></tr><tr><th>doc</th><td>Generate&nbsp;effect<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>intensity=None pin=None</td></tr><tr><th>doc</th><td>Init&nbsp;haptic&nbsp;engine<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;intensity:&nbsp;low&nbsp;/&nbsp;high&nbsp;/&nbsp;None&nbsp;haptic&nbsp;feedback&nbsp;intensity<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;pin:&nbsp;optional&nbsp;physical&nbsp;GPIO&nbsp;number</td></tr></table></td></tr><tr><th>tap</th><td><table class="doc-table"><tr><th>doc</th><td>Tap&nbsp;-&nbsp;buzz&nbsp;effect</td></tr></table></td></tr><tr><th>gen</th><td><table class="doc-table"><tr><th>param(s)</th><td>intensity=Haptic.LOW wait=200 stop_wait=100 repeat=2</td></tr><tr><th>doc</th><td>Generate&nbsp;effect<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;intensity:&nbsp;600-1000<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;wait:&nbsp;wait&nbsp;after&nbsp;intensity&nbsp;was&nbsp;set&nbsp;[ms]<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;stop_wait:&nbsp;wait&nbsp;for&nbsp;top&nbsp;the&nbsp;motor&nbsp;[ms]<br>
@@ -1444,7 +1451,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;ds18,&nbsp;neop</td></tr></table>
 
 <section class="panel module-card">
 <h2 id="ld2410"><a href="#ld2410">ld2410</a></h2>
-<table class="doc-table"><tr><th>print_bytes</th><td><table class="doc-table"><tr><th>param(s)</th><td>data</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>bytes_to_str</th><td><table class="doc-table"><tr><th>param(s)</th><td>data</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>send_command</th><td><table class="doc-table"><tr><th>param(s)</th><td>cmd data=NULLDATA response_expected=True</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>enable_config</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>end_config</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>enable_engineering</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>end_engineering</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>read_serial_buffer</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>serial_flush</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>read</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>firmware_version</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>reload=False tx_pin=None rx_pin=None</td></tr><tr><th>doc</th><td>Load&nbsp;the&nbsp;LD2410&nbsp;presence&nbsp;sensor&nbsp;UART.</td></tr></table></td></tr><tr><th>print_bytes</th><td><table class="doc-table"><tr><th>param(s)</th><td>data</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>bytes_to_str</th><td><table class="doc-table"><tr><th>param(s)</th><td>data</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>send_command</th><td><table class="doc-table"><tr><th>param(s)</th><td>cmd data=NULLDATA response_expected=True</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>enable_config</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>end_config</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>enable_engineering</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>end_engineering</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>read_serial_buffer</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>serial_flush</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>read</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>firmware_version</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
@@ -1461,7 +1468,7 @@ pin&nbsp;map:&nbsp;tx,&nbsp;rx</td></tr></table></td></tr><tr><th>help</th><td><
 
 <section class="panel module-card">
 <h2 id="mh_z19c"><a href="#mh_z19c">mh_z19c</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Create&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor&nbsp;(over&nbsp;UART)</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor</td></tr></table></td></tr><tr><th>calibrate</th><td><table class="doc-table"><tr><th>doc</th><td>Calibrate&nbsp;MH-Z19&nbsp;sensor</td></tr></table></td></tr><tr><th>start</th><td><table class="doc-table"><tr><th>param(s)</th><td>interval:int=5000 topic:str="MH_Z19C" channels:list=None</td></tr><tr><th>doc</th><td>Start&nbsp;sensor&nbsp;measurement&nbsp;loop&nbsp;and&nbsp;publish&nbsp;results&nbsp;over&nbsp;micros&nbsp;notify&nbsp;feature<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>tx_pin=16 rx_pin=17 hd_pin=19</td></tr><tr><th>doc</th><td>Create&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor&nbsp;(over&nbsp;UART)</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;MH-Z19&nbsp;CO2&nbsp;sensor</td></tr></table></td></tr><tr><th>calibrate</th><td><table class="doc-table"><tr><th>doc</th><td>Calibrate&nbsp;MH-Z19&nbsp;sensor</td></tr></table></td></tr><tr><th>start</th><td><table class="doc-table"><tr><th>param(s)</th><td>interval:int=5000 topic:str="MH_Z19C" channels:list=None</td></tr><tr><th>doc</th><td>Start&nbsp;sensor&nbsp;measurement&nbsp;loop&nbsp;and&nbsp;publish&nbsp;results&nbsp;over&nbsp;micros&nbsp;notify&nbsp;feature<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;interval:&nbsp;update&nbsp;interval&nbsp;in&nbsp;milliseconds<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;topic:&nbsp;for&nbsp;MQTT&nbsp;channel,&nbsp;default:&nbsp;MH_Z19C<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;channels:&nbsp;selected&nbsp;notification&nbsp;channels,&nbsp;ex.:&nbsp;["MQTT"],&nbsp;default:&nbsp;None&nbsp;(all)</td></tr></table></td></tr><tr><th>stop</th><td><table class="doc-table"><tr><th>doc</th><td>Stop&nbsp;sensor&nbsp;measurement&nbsp;loop&nbsp;and&nbsp;publish,&nbsp;delete&nbsp;MHZ19.INSTANCE</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
@@ -1483,7 +1490,7 @@ pin&nbsp;map:&nbsp;mh_z19c_tx,&nbsp;mh_z19c_rx,&nbsp;mh_z19c_hd</td></tr></table
 
 <section class="panel module-card">
 <h2 id="motor_l298n"><a href="#motor_l298n">motor_l298n</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pwm_freq:int=None</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pwm_freq:int=None ena_pin=10 ina_pin=12 inb_pin=11</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Load&nbsp;the&nbsp;L298N&nbsp;motor&nbsp;driver&nbsp;module</td></tr></table></td></tr><tr><th>state</th><td><table class="doc-table"><tr><th>param(s)</th><td>motor=0</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Get&nbsp;the&nbsp;current&nbsp;state&nbsp;of&nbsp;a&nbsp;motor&nbsp;or&nbsp;all&nbsp;motors<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;motor:&nbsp;Motor&nbsp;number&nbsp;(1&nbsp;or&nbsp;2)&nbsp;or&nbsp;None&nbsp;for&nbsp;all&nbsp;motors</td></tr></table></td></tr><tr><th>speed</th><td><table class="doc-table"><tr><th>param(s)</th><td>motor speed:int=1023</td></tr><tr><th>doc</th><td>Set&nbsp;the&nbsp;speed&nbsp;of&nbsp;a&nbsp;motor<br>
@@ -1512,7 +1519,7 @@ pin&nbsp;map:&nbsp;l298n_ENA,&nbsp;l298n_INA,&nbsp;l298n_INB,&nbsp;l298n_ENB,&nb
 
 <section class="panel module-card">
 <h2 id="motor_l9110"><a href="#motor_l9110">motor_l9110</a></h2>
-<table class="doc-table"><tr><th>motor_control</th><td><table class="doc-table"><tr><th>param(s)</th><td>direc=None speed=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>dir_1_pin=None dir_2_pin=None</td></tr><tr><th>doc</th><td>Load&nbsp;the&nbsp;L9110&nbsp;motor&nbsp;driver&nbsp;module.</td></tr></table></td></tr><tr><th>motor_control</th><td><table class="doc-table"><tr><th>param(s)</th><td>direc=None speed=None</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
@@ -1529,7 +1536,7 @@ pin&nbsp;map:&nbsp;l9110dir_1,&nbsp;l9110dir_2</td></tr></table></td></tr><tr><t
 
 <section class="panel module-card">
 <h2 id="mq135"><a href="#mq135">mq135</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;mq135&nbsp;CO2&nbsp;(ppm)&nbsp;sensor&nbsp;module</td></tr></table></td></tr><tr><th>raw_measure_mq135</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;raw&nbsp;mq135&nbsp;CO2&nbsp;value<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>pin=None</td></tr><tr><th>doc</th><td>Initialize&nbsp;mq135&nbsp;CO2&nbsp;(ppm)&nbsp;sensor&nbsp;module</td></tr></table></td></tr><tr><th>raw_measure_mq135</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;raw&nbsp;mq135&nbsp;CO2&nbsp;value<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;raw&nbsp;value&nbsp;/&nbsp;adc_property</td></tr></table></td></tr><tr><th>measure_mq135</th><td><table class="doc-table"><tr><th>param(s)</th><td>temperature=None humidity=None</td></tr><tr><th>doc</th><td>Estimated&nbsp;CO2-equivalent&nbsp;gas&nbsp;concentration&nbsp;in&nbsp;parts&nbsp;per&nbsp;million&nbsp;(ppm).<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;MQ-135&nbsp;is&nbsp;a&nbsp;broad&nbsp;air-quality&nbsp;sensor,&nbsp;not&nbsp;a&nbsp;selective&nbsp;CO2&nbsp;sensor.&nbsp;Results<br>
@@ -1585,18 +1592,21 @@ pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table cl
 
 <section class="panel module-card">
 <h2 id="neomatrix"><a href="#neomatrix">neomatrix</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>width=8 height=8 neop=14 i2c_sda=11 i2c_scl=12</td></tr><tr><th>doc</th><td>Load&nbsp;NeoPixelMatrix&nbsp;instance.<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>width=8 height=8 neop=14 i2c_sda=11 i2c_scl=12 builtin=1</td></tr><tr><th>doc</th><td>Load&nbsp;NeoPixelMatrix&nbsp;instance.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;width:&nbsp;neopixel&nbsp;matrix&nbsp;width&nbsp;(default:&nbsp;8)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;height:&nbsp;neopixel&nbsp;matrix&nbsp;height&nbsp;(default:&nbsp;8)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;neop:&nbsp;neopixel&nbsp;pin&nbsp;number&nbsp;(default:&nbsp;14)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_sda:&nbsp;i2c&nbsp;bus&nbsp;data&nbsp;pin&nbsp;number&nbsp;(default:&nbsp;11)&nbsp;for&nbsp;QMI8658C&nbsp;GYRO<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_scl:&nbsp;i2c&nbsp;bus&nbsp;clock&nbsp;pin&nbsp;number&nbsp;(default:&nbsp;12)&nbsp;for&nbsp;QMI8658C&nbsp;GYRO<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;neop:&nbsp;neopixel&nbsp;GPIO&nbsp;number&nbsp;(default:&nbsp;14)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_sda:&nbsp;I2C&nbsp;data&nbsp;GPIO&nbsp;number&nbsp;for&nbsp;QMI8658C&nbsp;GYRO&nbsp;(default:&nbsp;11)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_scl:&nbsp;I2C&nbsp;clock&nbsp;GPIO&nbsp;number&nbsp;for&nbsp;QMI8658C&nbsp;GYRO&nbsp;(default:&nbsp;12)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;builtin:&nbsp;built-in/progress&nbsp;LED&nbsp;GPIO&nbsp;number&nbsp;(default:&nbsp;1)<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;ESP32-S3&nbsp;Matrix&nbsp;8x8&nbsp;RGB-LED&nbsp;WiFi&nbsp;Bluetooth&nbsp;With&nbsp;QST&nbsp;Attitude&nbsp;Gyro&nbsp;Sensor&nbsp;QMI8658C<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://spotpear.com/shop/ESP32-S3FH4R2-Matrix-8x8-RGB-LED-WiFi-Bluetooth-QST-Attitude-Gyro-Sensor-QMI8658C-Arduino-Python-ESP-IDF.html</td></tr></table></td></tr><tr><th>pixel</th><td><table class="doc-table"><tr><th>param(s)</th><td>x y color=None show=True</td></tr><tr><th>doc</th><td>Set&nbsp;pixel&nbsp;at&nbsp;(x,y)&nbsp;to&nbsp;RGB&nbsp;color.</td></tr></table></td></tr><tr><th>draw</th><td><table class="doc-table"><tr><th>doc</th><td>Draw&nbsp;the&nbsp;current&nbsp;frame&nbsp;manually&nbsp;on&nbsp;the&nbsp;screen.</td></tr></table></td></tr><tr><th>clear</th><td><table class="doc-table"><tr><th>doc</th><td>Clear&nbsp;the&nbsp;screen.</td></tr></table></td></tr><tr><th>color_fill</th><td><table class="doc-table"><tr><th>param(s)</th><td>r: int g: int b: int</td></tr><tr><th>doc</th><td>Fill&nbsp;the&nbsp;screen&nbsp;with&nbsp;a&nbsp;solid&nbsp;color.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;OR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Change&nbsp;animation&nbsp;color&nbsp;(when&nbsp;possible)</td></tr></table></td></tr><tr><th>brightness</th><td><table class="doc-table"><tr><th>param(s)</th><td>br: int</td></tr><tr><th>doc</th><td>Change&nbsp;the&nbsp;brightness&nbsp;of&nbsp;the&nbsp;display.&nbsp;(0-100)</td></tr></table></td></tr><tr><th>control</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=None bt_draw:bool=None</td></tr><tr><th>doc</th><td>Change&nbsp;the&nbsp;speed&nbsp;of&nbsp;frame&nbsp;generation&nbsp;for&nbsp;animations.</td></tr></table></td></tr><tr><th>stop</th><td><table class="doc-table"><tr><th>doc</th><td>Stop&nbsp;the&nbsp;current&nbsp;animation</td></tr></table></td></tr><tr><th>draw_colormap</th><td><table class="doc-table"><tr><th>param(s)</th><td>bitmap</td></tr><tr><th>doc</th><td>Draw&nbsp;colors&nbsp;as&nbsp;a&nbsp;color&nbsp;map<br>
-&nbsp;&nbsp;&nbsp;&nbsp;[(x,&nbsp;y,&nbsp;(r,&nbsp;g,b)),&nbsp;...]</td></tr></table></td></tr><tr><th>play_file</th><td><table class="doc-table"><tr><th>param(s)</th><td>file speed_ms:int=85</td></tr><tr><th>doc</th><td>Play&nbsp;colormap&nbsp;animation&nbsp;from&nbsp;a&nbsp;JSON-lines&nbsp;file&nbsp;under&nbsp;/data.</td></tr></table></td></tr><tr><th>get_colormap</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>status</th><td><table class="doc-table"><tr><th>doc</th><td>Get&nbsp;the&nbsp;current&nbsp;status&nbsp;of&nbsp;the&nbsp;matrix</td></tr></table></td></tr><tr><th>rainbow</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=0</td></tr><tr><th>doc</th><td>Play&nbsp;rainbow&nbsp;effect</td></tr></table></td></tr><tr><th>snake</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms:int=30 length:int=6</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>spiral</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=40</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>noise</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms:int=85</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[(x,&nbsp;y,&nbsp;(r,&nbsp;g,b)),&nbsp;...]</td></tr></table></td></tr><tr><th>play_file</th><td><table class="doc-table"><tr><th>param(s)</th><td>file speed_ms:int=85</td></tr><tr><th>doc</th><td>Play&nbsp;colormap&nbsp;animation&nbsp;from&nbsp;a&nbsp;JSON-lines&nbsp;file&nbsp;under&nbsp;/data.</td></tr></table></td></tr><tr><th>get_colormap</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>status</th><td><table class="doc-table"><tr><th>doc</th><td>Get&nbsp;the&nbsp;current&nbsp;status&nbsp;of&nbsp;the&nbsp;matrix</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Shows&nbsp;logical&nbsp;pins&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;Module.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;neop,&nbsp;i2c_sda,&nbsp;i2c_scl,&nbsp;builtin</td></tr></table></td></tr><tr><th>rainbow</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=0</td></tr><tr><th>doc</th><td>Play&nbsp;rainbow&nbsp;effect</td></tr></table></td></tr><tr><th>snake</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms:int=30 length:int=6</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>spiral</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms=40</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>noise</th><td><table class="doc-table"><tr><th>param(s)</th><td>speed_ms:int=85</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	{'type':&nbsp;'button',&nbsp;'callback':&nbsp;'clear&nbsp;',&nbsp;'result':&nbsp;False,&nbsp;'options':&nbsp;['None']}<br>
 	{'type':&nbsp;'color',&nbsp;'callback':&nbsp;'color_fill&nbsp;r=:range:&nbsp;g=:range:&nbsp;b=:range:',&nbsp;'range':&nbsp;[0,&nbsp;255,&nbsp;5]}<br>
@@ -1612,13 +1622,18 @@ pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table cl
 
 <section class="panel module-card">
 <h2 id="oledui"><a href="#oledui">oledui</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>width=128 height=64 oled_type="sh1106" control='trackball' poweroff=None haptic=False</td></tr><tr><th>doc</th><td>Create&nbsp;async&nbsp;oled&nbsp;UI<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>width=128 height=64 oled_type="sh1106" control='trackball' poweroff=None</td></tr><tr><th>doc</th><td>Create&nbsp;async&nbsp;oled&nbsp;UI<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;width:&nbsp;screen&nbsp;width&nbsp;in&nbsp;pixels<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;height:&nbsp;screen&nbsp;height&nbsp;in&nbsp;pixels<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;oled_type:&nbsp;sh1106&nbsp;/&nbsp;ssd1306<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;control:&nbsp;trackball&nbsp;/&nbsp;None<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;poweroff:&nbsp;power&nbsp;off&nbsp;after&nbsp;given&nbsp;seconds<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;haptic:&nbsp;enable&nbsp;(True)&nbsp;/&nbsp;disable&nbsp;(False)&nbsp;haptic&nbsp;feedbacks&nbsp;(vibration)</td></tr></table></td></tr><tr><th>control</th><td><table class="doc-table"><tr><th>param(s)</th><td>cmd="next"</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>popup</th><td><table class="doc-table"><tr><th>param(s)</th><td>msg='micrOS msg'</td></tr><tr><th>doc</th><td>POP-UP&nbsp;message&nbsp;function<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;haptic:&nbsp;enable&nbsp;(True)&nbsp;/&nbsp;disable&nbsp;(False)&nbsp;haptic&nbsp;feedbacks&nbsp;(vibration)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Optional<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_sda:&nbsp;optional&nbsp;OLED/trackball&nbsp;I2C&nbsp;data&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_scl:&nbsp;optional&nbsp;OLED/trackball&nbsp;I2C&nbsp;clock&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;trackball_int:&nbsp;optional&nbsp;trackball&nbsp;interrupt&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;haptic_pin:&nbsp;optional&nbsp;haptic&nbsp;motor&nbsp;GPIO&nbsp;number</td></tr></table></td></tr><tr><th>control</th><td><table class="doc-table"><tr><th>param(s)</th><td>cmd="next"</td></tr><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>popup</th><td><table class="doc-table"><tr><th>param(s)</th><td>msg='micrOS msg'</td></tr><tr><th>doc</th><td>POP-UP&nbsp;message&nbsp;function<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;msg:&nbsp;message&nbsp;string</td></tr></table></td></tr><tr><th>cancel_popup</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>cursor</th><td><table class="doc-table"><tr><th>param(s)</th><td>x y</td></tr><tr><th>doc</th><td>Virtual&nbsp;cursor<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;x:&nbsp;x&nbsp;coordinate<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;y:&nbsp;y&nbsp;coordinate</td></tr></table></td></tr><tr><th>genpage</th><td><table class="doc-table"><tr><th>param(s)</th><td>cmd=None run=False</td></tr><tr><th>doc</th><td>Create&nbsp;load&nbsp;module&nbsp;execution&nbsp;pages&nbsp;dynamically&nbsp;:)<br>
@@ -1637,10 +1652,11 @@ pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table cl
 
 <section class="panel module-card">
 <h2 id="OV2640"><a href="#OV2640">OV2640</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>quality='medium' freq='ault' effect="NONE"</td></tr><tr><th>doc</th><td>Load&nbsp;Camera&nbsp;module&nbsp;OV2640<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>quality='medium' freq='ault' effect="NONE" flash_pin=4</td></tr><tr><th>doc</th><td>Load&nbsp;Camera&nbsp;module&nbsp;OV2640<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;quality:&nbsp;high&nbsp;(HD),&nbsp;medium&nbsp;(SVGA),&nbsp;low&nbsp;(240x240)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;freq:&nbsp;default&nbsp;(not&nbsp;set:&nbsp;10kHz)&nbsp;or&nbsp;high:&nbsp;20kHz<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;effect:&nbsp;NONE&nbsp;(default),&nbsp;OR:&nbsp;NEG,&nbsp;BW,&nbsp;RED,&nbsp;GREEN,&nbsp;BLUE,&nbsp;RETRO</td></tr></table></td></tr><tr><th>settings</th><td><table class="doc-table"><tr><th>param(s)</th><td>quality=None flip=None mirror=None effect=None saturation=None brightness=None contrast=None whitebalace=None q=None</td></tr><tr><th>doc</th><td>Camera&nbsp;settings<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;effect:&nbsp;NONE&nbsp;(default),&nbsp;OR:&nbsp;NEG,&nbsp;BW,&nbsp;RED,&nbsp;GREEN,&nbsp;BLUE,&nbsp;RETRO<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;flash_pin:&nbsp;optional&nbsp;flashlight&nbsp;GPIO&nbsp;number&nbsp;(default:&nbsp;4)</td></tr></table></td></tr><tr><th>settings</th><td><table class="doc-table"><tr><th>param(s)</th><td>quality=None flip=None mirror=None effect=None saturation=None brightness=None contrast=None whitebalace=None q=None</td></tr><tr><th>doc</th><td>Camera&nbsp;settings<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;flip:&nbsp;flip&nbsp;image&nbsp;True/False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;mirror:&nbsp;mirror&nbsp;image&nbsp;True/False<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;effect:&nbsp;None&nbsp;(default),&nbsp;OR:&nbsp;NEG,&nbsp;BW,&nbsp;RED,&nbsp;GREEN,&nbsp;BLUE,&nbsp;RETRO<br>
@@ -1650,7 +1666,9 @@ pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table cl
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;whitebalace:&nbsp;NONE&nbsp;(default)&nbsp;SUNNY,&nbsp;CLOUDY,&nbsp;OFFICE,&nbsp;HOME<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;q:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10-63&nbsp;lower&nbsp;number&nbsp;means&nbsp;higher&nbsp;quality</td></tr></table></td></tr><tr><th>capture</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>photo</th><td><table class="doc-table"><tr><th>param(s)</th><td>name='photo.jpeg'</td></tr><tr><th>doc</th><td>Beta&nbsp;feature&nbsp;-&nbsp;with&nbsp;storage&nbsp;limit<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Create&nbsp;photo&nbsp;and&nbsp;save&nbsp;it&nbsp;under&nbsp;/web/<user_data></td></tr></table></td></tr><tr><th>flashlight</th><td><table class="doc-table"><tr><th>param(s)</th><td>state=None</td></tr><tr><th>doc</th><td>Camera&nbsp;flashlight<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state:&nbsp;True/False/None(automatic)</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state:&nbsp;True/False/None(automatic)</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Shows&nbsp;logical&nbsp;pins&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;Module.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;camera_flash</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
@@ -1668,7 +1686,7 @@ pin&nbsp;map:&nbsp;co2</td></tr></table></td></tr><tr><th>help</th><td><table cl
 
 <section class="panel module-card">
 <h2 id="qmi8658"><a href="#qmi8658">qmi8658</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Load&nbsp;the&nbsp;QMI8658&nbsp;sensor&nbsp;instance.<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>i2c_sda=None i2c_scl=None</td></tr><tr><th>doc</th><td>Load&nbsp;the&nbsp;QMI8658&nbsp;sensor&nbsp;instance.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;QMI8658&nbsp;is&nbsp;a&nbsp;motion&nbsp;sensor&nbsp;that&nbsp;measures&nbsp;acceleration,&nbsp;angular&nbsp;velocity&nbsp;(gyroscope),&nbsp;and&nbsp;temperature</td></tr></table></td></tr><tr><th>temperature</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>acceleration</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>gyro</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
@@ -1703,8 +1721,11 @@ pin&nbsp;map:&nbsp;dist_trig,&nbsp;dist_echo</td></tr></table></td></tr><tr><th>
 
 <section class="panel module-card">
 <h2 id="roboarm"><a href="#roboarm">roboarm</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initiate&nbsp;roboarm&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;move&nbsp;servo&nbsp;motors&nbsp;to&nbsp;middle&nbsp;position</td></tr></table></td></tr><tr><th>control</th><td><table class="doc-table"><tr><th>param(s)</th><td>x y speed_ms=None smooth=True</td></tr><tr><th>doc</th><td>Control&nbsp;robot&nbsp;arm&nbsp;function<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>servo_1_pin=None servo_2_pin=None switch_pin=None</td></tr><tr><th>doc</th><td>Initiate&nbsp;roboarm&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;move&nbsp;servo&nbsp;motors&nbsp;to&nbsp;middle&nbsp;position<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;servo_1_pin:&nbsp;optional&nbsp;first&nbsp;servo&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;servo_2_pin:&nbsp;optional&nbsp;second&nbsp;servo&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;switch_pin:&nbsp;optional&nbsp;laser&nbsp;switch&nbsp;GPIO&nbsp;number</td></tr></table></td></tr><tr><th>control</th><td><table class="doc-table"><tr><th>param(s)</th><td>x y speed_ms=None smooth=True</td></tr><tr><th>doc</th><td>Control&nbsp;robot&nbsp;arm&nbsp;function<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;x:&nbsp;new&nbsp;x&nbsp;position&nbsp;(40-115)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;y:&nbsp;new&nbsp;y&nbsp;position&nbsp;(40-115)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;speed_ms:&nbsp;speed&nbsp;-&nbsp;step&nbsp;wait&nbsp;in&nbsp;ms<br>
@@ -1807,6 +1828,8 @@ pin&nbsp;map:&nbsp;sim800_tx,&nbsp;sim800_rx,&nbsp;sim800_ri</td></tr></table></
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;will_topic&nbsp;str:&nbsp;Last&nbsp;Will&nbsp;topic<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;will_msg&nbsp;str:&nbsp;Last&nbsp;Will&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;will_qos&nbsp;int:&nbsp;Last&nbsp;Will&nbsp;QoS&nbsp;(0&nbsp;or&nbsp;1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;tx_pin&nbsp;int:&nbsp;UART&nbsp;TX&nbsp;GPIO&nbsp;pin&nbsp;(default:&nbsp;16)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;rx_pin&nbsp;int:&nbsp;UART&nbsp;RX&nbsp;GPIO&nbsp;pin&nbsp;(default:&nbsp;17)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;status&nbsp;message</td></tr></table></td></tr><tr><th>unload</th><td><table class="doc-table"><tr><th>doc</th><td>Disconnect&nbsp;and&nbsp;clear&nbsp;instance.</td></tr></table></td></tr><tr><th>publish</th><td><table class="doc-table"><tr><th>param(s)</th><td>topic payload qos=0</td></tr><tr><th>doc</th><td>Publish&nbsp;a&nbsp;message.&nbsp;:param&nbsp;qos&nbsp;int:&nbsp;0&nbsp;or&nbsp;1</td></tr></table></td></tr><tr><th>subscribe</th><td><table class="doc-table"><tr><th>param(s)</th><td>topic callback qos=0</td></tr><tr><th>doc</th><td>Subscribe&nbsp;to&nbsp;a&nbsp;topic.</td></tr></table></td></tr><tr><th>unsubscribe</th><td><table class="doc-table"><tr><th>param(s)</th><td>topic</td></tr><tr><th>doc</th><td>Unsubscribe&nbsp;from&nbsp;a&nbsp;topic.</td></tr></table></td></tr><tr><th>is_connected</th><td><table class="doc-table"><tr><th>doc</th><td>Check&nbsp;MQTT&nbsp;connection&nbsp;status.</td></tr></table></td></tr><tr><th>disconnect</th><td><table class="doc-table"><tr><th>doc</th><td>Disconnect&nbsp;from&nbsp;MQTT&nbsp;broker.</td></tr></table></td></tr><tr><th>ping</th><td><table class="doc-table"><tr><th>doc</th><td>Return&nbsp;pong.&nbsp;Call&nbsp;via&nbsp;MQTT:&nbsp;{devfid}/sim800mqtt/ping<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Response&nbsp;arrives&nbsp;on&nbsp;{devfid}/sim800mqtt/ping/response<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;str:&nbsp;pong</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
@@ -1830,7 +1853,10 @@ pin&nbsp;map:&nbsp;sim800_tx,&nbsp;sim800_rx</td></tr></table></td></tr><tr><th>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;max_event_duration_ms:&nbsp;int&nbsp;-&nbsp;maximum&nbsp;duration&nbsp;of&nbsp;an&nbsp;event<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;frame_size_ms:&nbsp;int&nbsp;-&nbsp;duration&nbsp;of&nbsp;the&nbsp;audio&nbsp;frames&nbsp;used&nbsp;for&nbsp;features<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;event_buffer_length:&nbsp;int&nbsp;-&nbsp;number&nbsp;of&nbsp;events&nbsp;to&nbsp;store&nbsp;at&nbsp;once<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sd_storage:&nbsp;bool&nbsp;-&nbsp;use&nbsp;SD&nbsp;card&nbsp;storage&nbsp;for&nbsp;the&nbsp;dataset</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sd_storage:&nbsp;bool&nbsp;-&nbsp;use&nbsp;SD&nbsp;card&nbsp;storage&nbsp;for&nbsp;the&nbsp;dataset<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2s_sck:&nbsp;optional&nbsp;I2S&nbsp;serial&nbsp;clock&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2s_ws:&nbsp;optional&nbsp;I2S&nbsp;word&nbsp;select&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2s_sd:&nbsp;optional&nbsp;I2S&nbsp;serial&nbsp;data&nbsp;GPIO&nbsp;number</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
@@ -1848,7 +1874,11 @@ pin&nbsp;map:&nbsp;i2s_sck,&nbsp;i2s_ws,&nbsp;i2s_sd</td></tr></table></td></tr>
 
 <section class="panel module-card">
 <h2 id="tcs3472"><a href="#tcs3472">tcs3472</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>led_pin=20</td></tr><tr><th>doc</th><td>Load&nbsp;the&nbsp;TCS3472&nbsp;Color&nbsp;sensor&nbsp;instance.</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Show&nbsp;used&nbsp;pin&nbsp;mapping&nbsp;for&nbsp;this&nbsp;module.<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>led_pin=20 i2c_sda=None i2c_scl=None neop=None</td></tr><tr><th>doc</th><td>Load&nbsp;the&nbsp;TCS3472&nbsp;Color&nbsp;sensor&nbsp;instance.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;led_pin:&nbsp;optional,&nbsp;default&nbsp;pin&nbsp;20<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_sda:&nbsp;optional,&nbsp;sensor&nbsp;i2c&nbsp;resolved&nbsp;from&nbsp;IO_&nbsp;by&nbsp;default<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_scl:&nbsp;optional,&nbsp;sensor&nbsp;i2c&nbsp;-||-<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;neop:&nbsp;optional,&nbsp;indicator&nbsp;led,&nbsp;-||-</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Show&nbsp;used&nbsp;pin&nbsp;mapping&nbsp;for&nbsp;this&nbsp;module.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;led</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>MEASURE&nbsp;sensor</td></tr></table></td></tr><tr><th>led</th><td><table class="doc-table"><tr><th>param(s)</th><td>state:bool=None br:int=None</td></tr><tr><th>doc</th><td>SENSOR&nbsp;LED&nbsp;toggle<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;state:&nbsp;None-automatic,&nbsp;True-ON,&nbsp;False-OFF<br>
@@ -1866,12 +1896,15 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;led</td></tr></table></td></tr><t
 
 <section class="panel module-card">
 <h2 id="trackball"><a href="#trackball">trackball</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>width=100 height=100 irq_sampling=50 sensitivity=5 reload=False</td></tr><tr><th>doc</th><td>Load&nbsp;Pimoroni&nbsp;trackball<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>width=100 height=100 irq_sampling=50 sensitivity=5</td></tr><tr><th>doc</th><td>Load&nbsp;Pimoroni&nbsp;trackball<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;width:&nbsp;canvas&nbsp;pixel&nbsp;width<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;height:&nbsp;canvas&nbsp;pixel&nbsp;height<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;irq_sampling:&nbsp;trackball&nbsp;irq_sampling&nbsp;in&nbsp;ms<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sensitivity:&nbsp;xy&nbsp;window&nbsp;for&nbsp;irq&nbsp;trigger&nbsp;sampling&nbsp;in&nbsp;pixel<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;reload:&nbsp;recreate&nbsp;trackball&nbsp;instance</td></tr></table></td></tr><tr><th>ready_color</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>settings</th><td><table class="doc-table"><tr><th>param(s)</th><td>irq_sampling=None sensitivity=None</td></tr><tr><th>doc</th><td>Get&nbsp;simple&nbsp;trackball&nbsp;settings<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;reload:&nbsp;recreate&nbsp;trackball&nbsp;instance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_sda:&nbsp;optional&nbsp;I2C&nbsp;data&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;i2c_scl:&nbsp;optional&nbsp;I2C&nbsp;clock&nbsp;GPIO&nbsp;number<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;trackball_int:&nbsp;optional&nbsp;interrupt&nbsp;GPIO&nbsp;number</td></tr></table></td></tr><tr><th>ready_color</th><td><table class="doc-table"><tr><th>doc</th><td>No doc string available</td></tr></table></td></tr><tr><th>settings</th><td><table class="doc-table"><tr><th>param(s)</th><td>irq_sampling=None sensitivity=None</td></tr><tr><th>doc</th><td>Get&nbsp;simple&nbsp;trackball&nbsp;settings<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;irq_sampling:&nbsp;optional&nbsp;param,&nbsp;change&nbsp;irq_sampling&nbsp;ms</td></tr></table></td></tr><tr><th>read</th><td><table class="doc-table"><tr><th>doc</th><td>Read&nbsp;trackball&nbsp;data&nbsp;over&nbsp;i2c</td></tr></table></td></tr><tr><th>get</th><td><table class="doc-table"><tr><th>doc</th><td>Get&nbsp;up-to-date&nbsp;(by&nbsp;irq)&nbsp;data</td></tr></table></td></tr><tr><th>subscribe_event</th><td><table class="doc-table"><tr><th>param(s)</th><td>func</td></tr><tr><th>doc</th><td>[LM]&nbsp;Add&nbsp;callback&nbsp;function&nbsp;to&nbsp;trackball&nbsp;events</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
@@ -1894,7 +1927,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;trackball_int</td></tr></table></
 
 <section class="panel module-card">
 <h2 id="VL53L0X"><a href="#VL53L0X">VL53L0X</a></h2>
-<table class="doc-table"><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Experimental&nbsp;-&nbsp;Time&nbsp;of&nbsp;Flight&nbsp;Distance&nbsp;Sensor</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>address=57 reset=False i2c_sda=None i2c_scl=None</td></tr><tr><th>doc</th><td>Load&nbsp;the&nbsp;VL53L0X&nbsp;Time&nbsp;of&nbsp;Flight&nbsp;sensor&nbsp;instance.</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Experimental&nbsp;-&nbsp;Time&nbsp;of&nbsp;Flight&nbsp;Distance&nbsp;Sensor</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>

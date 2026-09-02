@@ -102,7 +102,7 @@ function restInfo(showPages=true) {
             const endpoints = result['usr_endpoints'] ? Array.from(result['usr_endpoints']) : [];
             renderEndpointGroups(endpoints);
         }
-        document.getElementById('restInfoHeader').innerHTML = infoHeader;
+        document.getElementById('restInfoHeader').textContent = infoHeader;
     }).catch(error => {
         console.error('Error in restAPI:', error);
     });

@@ -982,7 +982,7 @@ return "multipart/x-mixed-replace" | "multipart/form-data", <data>
 
 * request **method**: GET, POST or DELETE.
 
-* Authentication: protect a callable endpoint callback with `@sudo` from `Auth.py`. Web clients retry protected callbacks with the `x-micros-auth` header after the password is entered. The HTTP auth retry flow applies only to callable registered endpoint callbacks, not `/rest/...` requests or static file responses.
+* Authentication: protect a callable endpoint callback with `@sudo` from `Auth.py`. Web clients retry protected callbacks with the `x-micros-auth` header after the password is entered. The browser helper remembers challenged same-origin paths in memory and sends the credential immediately on later requests to those paths. The HTTP auth retry flow applies only to callable registered endpoint callbacks, not `/rest/...` requests or static file responses.
 
 * If the callback does not use request data, define it with `*_`.
 

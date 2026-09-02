@@ -65,7 +65,7 @@ def _cfg_set_clb(_, body):
     """
     try:
         incoming_data = loads(body.decode('utf-8'))
-        print('Received config update request:', incoming_data)
+        print('Received config update keys:', tuple(incoming_data))
         failed_keys = []
         for k, v in incoming_data.items():
             try:

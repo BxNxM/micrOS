@@ -18,7 +18,7 @@ from io import BytesIO
 from uos import stat
 from Tasks import lm_exec, lm_is_loaded, TaskBase
 from Config import cfgget
-from Files import OSPath, path_join
+from Files import OSPath, path_join, abs_path
 from Buffer import SlidingBuffer, BufferFullError, MemoryPool
 from Debug import console_write, syslog
 from Auth import AuthRequired, PWD_KEY
@@ -36,13 +36,15 @@ def url_path_resolve(path:str) -> tuple[bool, str]:
     Return: isError, absolutePath
     """
     # $Extended mount check: WEB_MOUNTS (/modules and /web)
-    path = path.lstrip("/")
+    # Normalize the untrusted request path before joining it to a web root.
+    # This keeps parent-directory segments from escaping /web or a mount.
+    path = abs_path(path).lstrip("/")
     if path.startswith("$"):
         mount_alias = path.split("/")[0]
         mount_path = WebEngine.WEB_MOUNTS.get(mount_alias, None)
         if mount_path is None:
             return True, f"Invalid mount point: {mount_alias}"
-        mount_path = path.replace(mount_alias, mount_path)
+        mount_path = path.replace(mount_alias, mount_path, 1)
         return False, mount_path
     # Default web path: /web
     return False, path_join(OSPath.WEB, path)

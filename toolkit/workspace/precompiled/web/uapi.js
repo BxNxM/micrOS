@@ -20,4 +20,4 @@ function restConsole(apiUrl,data,delta,root=document){REST_CONSOLE_CACHE=[apiUrl
 urlEl.textContent='';urlEl.append(makeEl('strong',{textContent:'Generated URL:'}),makeEl('br'),makeEl('a',{href:apiUrl,target:'_blank',textContent:apiUrl}));responseEl.textContent=JSON.stringify(data,null,4);timeEl.textContent=`⏱ Response time: ${delta} ms`;}
 function restInfo(showPages=true){restAPICore('').then(({response,delta,query})=>{restConsole(query,response,delta)
 const result=response['result'];const auth=result.auth?"🔑":"";let infoHeader=`micrOS: ${result.micrOS} ❖ node: ${result.node}${auth}`;if(showPages&&typeof renderEndpointGroups==='function'){const endpoints=result['usr_endpoints']?Array.from(result['usr_endpoints']):[];renderEndpointGroups(endpoints);}
-document.getElementById('restInfoHeader').innerHTML=infoHeader;}).catch(error=>{console.error('Error in restAPI:',error);});}
+document.getElementById('restInfoHeader').textContent=infoHeader;}).catch(error=>{console.error('Error in restAPI:',error);});}

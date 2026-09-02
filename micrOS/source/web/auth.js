@@ -1,6 +1,6 @@
 (function () {
   var ID = 'micrOSAuth', rf = window.fetch && window.fetch.bind(window);
-  var user = 'admin', pass = '';
+  var user = 'admin', pass = '', challenged = {};
   try {
     sessionStorage.removeItem(ID);
     sessionStorage.removeItem('micros.config.auth');
@@ -26,6 +26,14 @@
       a.href = u;
       return a.protocol === location.protocol && a.host === location.host;
     } catch (_) { return false; }
+  }
+  function key(i) {
+    try {
+      var a = document.createElement('a'), u = url(i);
+      if (!u || !same(i)) return '';
+      a.href = u;
+      return a.pathname;
+    } catch (_) { return ''; }
   }
   function hdr(d) {
     d = d || load();
@@ -59,9 +67,15 @@
   }
   function gf(u, o) {
     o = o || {};
-    return af(u, o).then(function (r) {
+    var k = key(u), d = load();
+    var proactive = o.micrOSAuth !== false && k && challenged[k] && d.pass;
+    return af(u, o, proactive ? d : null).then(function (r) {
       if (r.status !== 401 || o.micrOSAuth === false || !same(u)) return r;
-      var d = load();
+      challenged[k] = true;
+      if (proactive) {
+        clear();
+        return prompt({target: u, request: o, message: 'Auth required', ok: function (pr) { return pr; }});
+      }
       if (d.pass) {
         return af(u, o, d).then(function (rr) {
           if (rr.status !== 401) return rr;
@@ -102,6 +116,8 @@
             return;
           }
           save(n);
+          var k = key(t);
+          if (k) challenged[k] = true;
           if (o.ok) {
             rm(p);
             resolve(o.ok(r, n));

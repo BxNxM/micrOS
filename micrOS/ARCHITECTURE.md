@@ -122,7 +122,7 @@ operations and adapts the password challenge to HTTP clients.
 | [`Auth.py`](./source/Auth.py) | Provides `@sudo`, validates `pwd=...` against `appwd`, and raises `AuthRequired` when a password is needed |
 | [`Web.py`](./source/Web.py) | Catches `AuthRequired` from callable registered endpoint callbacks, builds the HTTP auth challenge, and retries callbacks with `pwd` |
 | [`auth.js`](./source/web/auth.js) | Standalone browser helper with compact built-in UI and same-origin `fetch()` retry support |
-| [`LM_web.py`](./source/modules/LM_web.py) | Registers `/config`, `/config/ui`, and `/config/reboot`; `/config/ui` is static, while `/config` and `/config/reboot` callbacks use `@sudo` |
+| [`LM_web.py`](./source/modules/LM_web.py) | Registers the static `/config` UI plus protected `/config/api` and `/config/reboot` callbacks |
 
 ### Runtime model
 
@@ -133,8 +133,10 @@ operations and adapts the password challenge to HTTP clients.
   the `micrOSAuth` popup, and retry the protected request with `x-micros-auth`.
 - The username field is accepted by the UI; the stored credential checked by the
   runtime is `appwd`.
-- Password data stays in browser memory and is sent only on same-origin retry
-  after an auth challenge.
+- Password data stays in browser memory and is sent only to the same origin.
+  `auth.js` remembers challenged URL paths in memory, so later requests to a
+  known protected path send the credential immediately. A previously unseen
+  path still uses the `401` challenge-and-retry flow.
 - Non-interactive clients can retry with `x-micros-auth: <appwd>` after a `401`
   response.
 
@@ -161,9 +163,12 @@ The server does not rewrite UI HTML at runtime. Pages that call protected
 callbacks include `/auth.js` directly, keeping static file serving streaming and
 heap usage predictable.
 
-The `/config/ui` page is intentionally served as a normal UI resource. Its GET
-and POST calls to `/config` are protected by `@sudo`, so the popup appears when
-the page first reads or writes protected config data.
+The `/config` page is intentionally served as a normal UI resource. Its GET and
+POST calls to `/config/api` are protected by `@sudo`, so the popup appears when
+the page first reads or writes protected config data. Once that pathname has
+challenged successfully, later requests attach the in-memory credential without
+an avoidable preliminary `401`. Configuration updates log only the submitted
+key names; submitted values are not printed to the device console.
 
 The `usr_endpoints` list returned by `/rest` is dashboard navigation metadata,
 not a full method registry. It includes only registered GET endpoints so the
@@ -191,35 +196,39 @@ sequenceDiagram
     participant Web as WebEngine
     participant Sudo as @sudo callback
 
-    Client->>Web: GET /config
+    Client->>Web: GET /config/api
     Web->>Sudo: callback(headers, body)
     Sudo-->>Web: AuthRequired
     alt Browser accepts HTML
         Web-->>Client: 401 HTML shell loading /auth.js
         Client->>AuthJS: boot prompt
-        AuthJS->>Web: retry /config with x-micros-auth
+        AuthJS->>Web: retry /config/api with x-micros-auth
     else curl/API
         Web-->>Client: 401 JSON
-        Client->>Web: retry /config with x-micros-auth
+        Client->>Web: retry /config/api with x-micros-auth
     end
     Web->>Sudo: callback(headers, body, pwd=appwd)
     Sudo-->>Web: application/json, config
     Web-->>Client: 200 JSON
 
-    UI->>Web: GET /config/ui
+    UI->>Web: GET /config
     Web-->>UI: config.html with /auth.js import
-    UI->>AuthJS: fetch("/config")
-    AuthJS->>Web: GET /config
+    UI->>AuthJS: fetch("/config/api")
+    AuthJS->>Web: GET /config/api
     Web->>Sudo: callback(headers, body)
     Sudo-->>Web: AuthRequired
     Web-->>AuthJS: 401 JSON auth challenge
     AuthJS->>UI: show micrOSAuth popup
     UI->>AuthJS: appwd
-    AuthJS->>Web: retry GET /config with x-micros-auth
+    AuthJS->>Web: retry GET /config/api with x-micros-auth
     Web->>Sudo: callback(headers, body, pwd=appwd)
     Sudo-->>Web: application/json, config
     Web-->>AuthJS: 200 JSON
     AuthJS-->>UI: original fetch resolves
+
+    UI->>AuthJS: later fetch("/config/api")
+    AuthJS->>Web: GET /config/api with x-micros-auth
+    Web-->>AuthJS: 200 JSON
 ```
 
 ## Web UI
@@ -228,12 +237,18 @@ The Web UI is a set of static frontend files under `micrOS/source/web/`.
 Dynamic pages are enabled by load modules through `Common.web_endpoint()` and
 served by `Web.py`.
 
+Static request paths are normalized with `Files.abs_path()` before they are
+joined to `/web` or resolved through a configured web mount. Parent-directory
+segments therefore cannot escape the selected static root. If normalization
+removes a mount alias, resolution falls back to `/web` rather than retaining
+the original mount.
+
 ### Frontend
 
 | App | Route | Frontend files | Backend file |
 | --- | --- | --- | --- |
 | Dashboard | `/dashboard` | `dashboard.html`, `udashboard.js`, `uwidgets.js`, `uapi.js`, `ubashboard.css`, `ustyle.css` | `LM_web.py` |
-| Config | `/config/ui` | `config.html`, `config.js`, `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
+| Config | `/config` | `config.html`, `config.js`, `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
 | Fileserver | `/fs` | `filesui.html`, `filesui.js`, `editor.js`, `ustyle.css` | `LM_fileserver.py` |
 
 ### API
@@ -243,7 +258,8 @@ served by `Web.py`.
 | `/rest` | GET | `Web.py` | Node info plus registered GET endpoint list |
 | `/rest/<module>/<function>/...` | GET | `Web.py`, `Tasks.py` | Execute LM commands through the REST bridge |
 | `/dashboard` | GET | `LM_web.py` | Serve dashboard frontend |
-| `/config` | GET, POST | `LM_web.py` | Protected config read and update |
+| `/config` | GET | `LM_web.py` | Serve the configuration frontend |
+| `/config/api` | GET, POST | `LM_web.py` | Protected config read and update |
 | `/config/reboot` | POST | `LM_web.py` | Protected soft reboot request |
 | `/fs`, `/fs/files`, `/fs/list`, `/fs/dirs`, `/fs/usage` | GET, POST, DELETE | `LM_fileserver.py` | Fileserver UI, browse, upload, delete, and usage APIs |
 
@@ -267,12 +283,12 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A["LM_web.py: enable_config()"] --> B["/config/ui -> config.html"]
-    A --> C["/config GET|POST -> _cfg_* @sudo"]
+    A["LM_web.py: enable_config()"] --> B["/config -> config.html"]
+    A --> C["/config/api GET|POST -> _cfg_* @sudo"]
     A --> D["/config/reboot POST -> _reboot_clb @sudo"]
     E["config.html"] --> F["auth.js"]
     E --> G["config.js"]
-    G --> H["fetch /config GET|POST"]
+    G --> H["fetch /config/api GET|POST"]
     G --> I["restAPI task/list, modules, pacman, system/pinmap"]
     F --> C
 ```

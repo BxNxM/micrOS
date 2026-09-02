@@ -81,6 +81,18 @@ def _install_import_stubs():
         pass
     m.OSPath = OSPathStub
     m.path_join = lambda *_a: os.path.join(*_a)
+    def abs_path(path):
+        stack = []
+        for part in path.split("/"):
+            if not part or part == ".":
+                continue
+            if part == "..":
+                if stack:
+                    stack.pop()
+            else:
+                stack.append(part)
+        return "/" + "/".join(stack)
+    m.abs_path = abs_path
     sys.modules["Files"] = m
 
     m = types.ModuleType("Config")
@@ -425,6 +437,22 @@ class TestWebStateMachine(unittest.TestCase):
         self.assertEqual(self.engine.response_headers[b"content-length"], str(len(body)).encode())
         self.assertNotIn(b'<script src="/auth.js"></script>', response_head)
         self.assertEqual(response_handler.getvalue(), body)
+
+    def test_static_path_traversal_remains_under_web_root(self):
+        error, path = self.web_module.url_path_resolve("../config/node_config.json")
+
+        self.assertFalse(error)
+        self.assertEqual(path, "/web/config/node_config.json")
+
+    def test_mounted_path_traversal_falls_back_under_web_root(self):
+        self.web_module.WebEngine.WEB_MOUNTS["$data"] = "/data"
+        try:
+            error, path = self.web_module.url_path_resolve("$data/../config/node_config.json")
+        finally:
+            self.web_module.WebEngine.WEB_MOUNTS.pop("$data", None)
+
+        self.assertFalse(error)
+        self.assertEqual(path, "/web/config/node_config.json")
 
     def test_mounted_html_streams_without_rewrite(self):
         body = b"<html><head></head><body>User data</body></html>"

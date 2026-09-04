@@ -47,12 +47,6 @@
           max-width:176px;
           min-width:0;
           padding:8px;
-
-          border:1px solid rgba(255,255,255,.16);
-          border-radius:8px;
-
-          background:rgba(0,0,0,.55);
-          box-shadow:0 2px 8px rgba(0,0,0,.20);
       }
 
       /* Main endpoint */
@@ -64,10 +58,10 @@
           width:100%;
           padding:6px 8px;
 
-          border:1px solid rgba(255,255,255,.16);
+          border:4px solid rgb(0, 0, 0);
           border-radius:6px;
 
-          background:rgba(255,255,255,.08);
+          background:rgba(0,0,0,.55);
           color:white;
 
           text-align:center;
@@ -96,6 +90,25 @@
           display:flex;
           flex-wrap:wrap;
           gap:8px;
+          justify-content:space-between;
+      }
+
+      .endpoint-group-actions[hidden] {
+          display:none;
+      }
+
+      .endpoint-children-toggle {
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          min-height:0;
+          height:20px;
+          width:100%;
+          padding:0;
+          border:0;
+          background:transparent;
+          color:rgba(255, 255, 255, 0.55);
+          font-size:20px;
       }
 
       .endpoint-group button {
@@ -103,13 +116,20 @@
       }
 
       .endpoint-group-actions button {
+          min-width:47px;
           min-height:38px;
           padding:5px 8px;
+          background:rgba(0,0,0,.55);
+          border:2px solid rgb(0, 0, 0);
       }
 
-      @media (max-width:360px) {
+      @media (max-width: 768px) {
           .endpoint-group {
               flex-basis:126px;
+          }
+
+          .endpoint-children-toggle {
+              font-size:12px;
           }
       }
     </style>

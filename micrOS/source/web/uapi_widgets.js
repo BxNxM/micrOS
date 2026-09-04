@@ -119,6 +119,27 @@ function endpointLabel(label, entry) {
     return icon ? `${icon} ${label}` : label;
 }
 
+function collapsibleToggle(label, content) {
+    const toggle = makeEl('button', {
+        className: 'endpoint-children-toggle',
+        type: 'button',
+        textContent: '\u25A0',
+        title: `Show ${label} endpoints`,
+        onclick: () => {
+            const expanded = toggle.getAttribute('aria-expanded') === 'true';
+            const action = expanded ? 'Show' : 'Hide';
+            toggle.setAttribute('aria-expanded', String(!expanded));
+            toggle.textContent = expanded ? '\u25A0' : '\u25C6';
+            toggle.title = `${action} ${label} endpoints`;
+            toggle.setAttribute('aria-label', toggle.title);
+            content.hidden = expanded;
+        }
+    });
+    toggle.setAttribute('aria-label', `Show ${label} endpoints`);
+    toggle.setAttribute('aria-expanded', 'false');
+    return toggle;
+}
+
 function renderEndpointGroups(endpoints) {
     const container = byId('endpointGroups');
     if (!container) {return;}
@@ -153,6 +174,11 @@ function renderEndpointGroups(endpoints) {
         const actions = makeEl('div', {className: 'endpoint-group-actions'});
         group.children.sort((a, b) => a.entry.localeCompare(b.entry))
             .forEach(({entry, label}) => actions.appendChild(button(endpointLabel(label, entry), entry)));
-        container.appendChild(makeEl('div', {className: 'endpoint-group'}, group.children.length ? [mainAction, actions] : [mainAction]));
+        const children = [mainAction];
+        if (group.children.length) {
+            actions.hidden = true;
+            children.push(collapsibleToggle(main, actions), actions);
+        }
+        container.appendChild(makeEl('div', {className: 'endpoint-group'}, children));
     });
 }

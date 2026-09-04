@@ -85,7 +85,7 @@ def arg_parse():
     dev_group.add_argument("-lint", "--linter", action="store_true", help="Run micrOS system linter (pylint+)")
     dev_group.add_argument("-webrepl", "--open_webrepl", action="store_true", help="(beta) Open webrepl in default browser, micropython repl + file transfers (built-in)")
     dev_group.add_argument("--light", action="store_true", help="Skip optional dependency deployments (low level param: add this as first argument always)")
-    dev_group.add_argument("-ut", "--unittest", action="store_true", help="Run micrOS unit tests - for development")
+    dev_group.add_argument("-ut", "--unittest", action="store_true", help="Run micrOS and toolkit unit tests - for development")
 
 
     toolkit_group = parser.add_argument_group("Toolkit development")
@@ -233,10 +233,27 @@ def update_pip_package():
 
 
 def run_unit_tests():
-    """Run micrOS Unit tests under micrOS/utests/*"""
+    """Run the micrOS runtime and host-side toolkit unit tests."""
     import unittest
-    suite = unittest.defaultTestLoader.discover("micrOS/utests")
-    unittest.TextTestRunner(verbosity=2).run(suite)
+
+    test_roots = (
+        ("micrOS RUNTIME TESTS", "micrOS/utests"),
+        ("DevToolKit HOST TESTS", "toolkit/tests"),
+    )
+
+    all_successful = True
+    for index, (title, test_dir) in enumerate(test_roots, start=1):
+        print("+--------------------------------------------------+")
+        print("| [{}/{}] {:<42} |".format(index, len(test_roots), title))
+        print("| ROOT: {:<42} |".format(test_dir))
+        print("+--------------------------------------------------+")
+        sys.stdout.flush()
+
+        suite = unittest.defaultTestLoader.discover(os.path.join(MYPATH, test_dir))
+        result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(suite)
+        all_successful = result.wasSuccessful() and all_successful
+
+    return all_successful
 
 
 if __name__ == "__main__":
@@ -334,6 +351,6 @@ if __name__ == "__main__":
             executor.run_micro_script(cmd_args.macro)
 
     if cmd_args.unittest:
-        run_unit_tests()
+        sys.exit(0 if run_unit_tests() else 1)
 
     sys.exit(0)

@@ -5,7 +5,7 @@ let REST_CONSOLE_CACHE;
 
 function initializeBaseURL() {
     if (!BASE_URL && typeof window !== 'undefined') {
-        BASE_URL = `http://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ""}`;
+        BASE_URL = window.location.origin;
     }
 }
 

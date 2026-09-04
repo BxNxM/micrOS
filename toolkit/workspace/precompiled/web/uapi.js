@@ -1,4 +1,4 @@
-let BASE_URL='';let REST_CONSOLE_CACHE;function initializeBaseURL(){if(!BASE_URL&&typeof window!=='undefined'){BASE_URL=`http://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ""}`;}}
+let BASE_URL='';let REST_CONSOLE_CACHE;function initializeBaseURL(){if(!BASE_URL&&typeof window!=='undefined'){BASE_URL=window.location.origin;}}
 function restAPICore(cmd,timeout=5000){initializeBaseURL();console.log('BASE_URL:',BASE_URL);const query=`${BASE_URL}/rest/${cmd.trim().replace(/\s+/g, '/')}`;const controller=new AbortController();const timeoutId=setTimeout(()=>controller.abort(),timeout);const startTime=performance.now();return fetch(query,{signal:controller.signal}).then(response=>{clearTimeout(timeoutId);if(!response.ok){throw new Error(`restAPICore code NOK: ${response.status}`);}
 return response.json().then(data=>({response:data,delta:(performance.now()-startTime).toFixed(0),query}));}).catch(error=>{clearTimeout(timeoutId);console.error('Error in restAPICore:',error);throw error;});}
 function restAPI(cmd='',consoleOut=true,timeout=5000){if(cmd===''){const input=document.getElementById('restCmdInput');cmd=input?input.value:'';}

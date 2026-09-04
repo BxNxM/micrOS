@@ -217,7 +217,10 @@ class micrOSClient:
         # Collect answer data
         if select.select([self.conn], [], [], read_timeout)[0]:
             while True:
-                incoming_data = self.conn.recv(4096).decode('utf-8')
+                incoming_bytes = self.conn.recv(4096)
+                if not incoming_bytes:
+                    raise ConnectionError("Device disconnected before sending the command prompt")
+                incoming_data = incoming_bytes.decode('utf-8')
                 if stream:
                     incoming_data = incoming_data.replace(self.prompt, f"{color.NC}{color.BOLD}{self.prompt}{color.NC}")
                     print(f"\r{color.LIGHT_GRAY}{incoming_data}{color.NC}", end="")
@@ -314,15 +317,19 @@ class micrOSClient:
         for cnt in range(0, retry):
             try:
                 out = self.send_cmd(cmd, timeout, stream=stream)
-                if out is None or isinstance(out, list):
-                    break
+                if out is not None:
+                    return out
             except OSError as e:
-                    self.dbg_print("Host is down, timed out: {} sec e: {}".format(timeout, e))
-                    break
+                self.dbg_print("Host is down, timed out: {} sec e: {}".format(timeout, e))
             except Exception as e:
-                if "Bye!" in str(e):
-                    self.dbg_print("[Count] Send retry: {}/{}".format(cnt+1, retry))
-            time.sleep(0.2)
+                self.dbg_print("Send command failed: {}".format(e))
+
+            # A failed send closes the connection in send_cmd(). Ensure other
+            # failure paths reconnect as well before the next attempt.
+            self.close()
+            if cnt + 1 < retry:
+                self.dbg_print("[Count] Send retry: {}/{}".format(cnt + 1, retry))
+                time.sleep(0.2)
         return out
 
     def telnet(self, timeout=5):

@@ -2033,8 +2033,7 @@ function trackChange(key, value) {
     changedValues[key] = value;
   }
   updateSaveButtonState();
-  console.log('Tracked change:', key, '=', value);
-  console.log('All changes:', changedValues);
+  console.log('Changed config keys:', Object.keys(changedValues));
 }
 
 function toggleMenu() {

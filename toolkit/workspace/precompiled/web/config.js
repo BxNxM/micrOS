@@ -190,7 +190,7 @@ if(trigKey in groupData){const wrapper=document.createElement('div');wrapper.cla
 if(cbfKey in groupData){renderMultiParamField(groupWrapper,cbfKey,groupData[cbfKey]);}
 container.appendChild(groupWrapper);}
 function trackChange(key,value){if(configData[key]===value){delete changedValues[key];}else{changedValues[key]=value;}
-updateSaveButtonState();console.log('Tracked change:',key,'=',value);console.log('All changes:',changedValues);}
+updateSaveButtonState();console.log('Changed config keys:',Object.keys(changedValues));}
 function toggleMenu(){const menu=document.getElementById('configMenu');if(!menu)return;menu.classList.toggle('open');}
 function closeMenuOnOutsideClick(event){const menu=document.getElementById('configMenu');const toggle=document.getElementById('menuToggle');if(!menu||!menu.classList.contains('open')||window.innerWidth>768)return;if(menu.contains(event.target)||(toggle&&toggle.contains(event.target)))return;closeMobileMenu();}
 function initializeConfigUi(){addMenuListeners();const toggle=document.getElementById('menuToggle');if(toggle&&!toggle.dataset.bound){toggle.addEventListener('click',toggleMenu);toggle.dataset.bound='1';}

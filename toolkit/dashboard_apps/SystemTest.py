@@ -19,6 +19,7 @@ import requests
 
 CLIENT = None
 TIMEOUT_SEC = 5
+RESULT_CONTINUATION = " " * 51
 
 # COLLECT AND SAVE SYSTEM TEST METRICS
 ENABLE_DATA_COLLECTION = os.environ.get("ENABLE_DATA_COLLECTION", False)
@@ -369,18 +370,40 @@ def micros_alarm_check():
             return _micros_alarm_legacy_report(info, alarm_data)
         return False, info + f" invalid alarm response: {output[1]}"
     if not isinstance(alarm_data.get('health'), bool):
-        return False, info + f" missing bool health: {alarm_data}"
+        return False, info + " missing bool health:\n" + _format_alarm_dump(alarm_data)
     verdict = alarm_data.get('verdict', '')
     if not isinstance(verdict, str) or not verdict.startswith(('OK alarm:', 'NOK alarm:')):
-        return False, info + f" invalid verdict: {alarm_data}"
+        return False, info + " invalid verdict:\n" + _format_alarm_dump(alarm_data)
     log_data = {key: value for key, value in alarm_data.items() if key not in ('health', 'verdict')}
     if any(key in ('log', 'path', 'text') or not isinstance(value, str) for key, value in log_data.items()):
-        return False, info + f" invalid dump: {alarm_data}"
+        return False, info + " invalid dump:\n" + _format_alarm_dump(alarm_data)
     # Clean alarms after evaluation.
     CLIENT.execute(['system alarms clean=True'])
+    formatted_dump = _format_alarm_dump(alarm_data)
     if not alarm_data['health']:
-        return True, info + f" !!!WARN!!! {verdict} out: {alarm_data}"
-    return True, info + f" {verdict} out: {alarm_data}"
+        return True, info + f" !!!WARN!!! {verdict}\n{formatted_dump}"
+    return True, info + f" {verdict}\n{formatted_dump}"
+
+
+def _format_alarm_dump(alarm_data):
+    """Format alarm metadata and multiline logs for the result console."""
+    lines = [
+        "Alarm dump:",
+        "  health: {}".format(alarm_data.get('health', '<missing>')),
+        "  verdict: {}".format(alarm_data.get('verdict', '<missing>')),
+    ]
+    for path, content in alarm_data.items():
+        if path in ('health', 'verdict'):
+            continue
+        lines.append("  {}:".format(path))
+        if isinstance(content, str):
+            log_lines = content.rstrip('\n').splitlines()
+            lines.extend("    {}".format(line) for line in log_lines)
+            if not log_lines:
+                lines.append("    <empty>")
+        else:
+            lines.append("    {!r}".format(content))
+    return RESULT_CONTINUATION + ("\n" + RESULT_CONTINUATION).join(lines)
 
 
 def _is_obsolete_alarm_api(output):

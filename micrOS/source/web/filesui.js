@@ -23,7 +23,7 @@ function rememberDir(dir) {
 
 // 🔹 Simple root message output
 let _msgTimer, _fadeTimer;
-function popUpMsg(msg) {
+function popUpMsg(msg, type = 'error', timeout = 5000) {
   let el = document.getElementById('root-message');
   if (!el) {
     el = document.createElement('div');
@@ -33,7 +33,6 @@ function popUpMsg(msg) {
       top: '8px',
       left: '50%',
       transform: 'translateX(-50%)',
-      background: 'rgba(220, 60, 60, 0.9)',     // warm UI red
       color: '#fff',
       padding: '6px 12px',
       borderRadius: '4px',
@@ -45,24 +44,26 @@ function popUpMsg(msg) {
     document.body.appendChild(el);
   }
   el.textContent = msg;
+  el.style.background = type === 'error' ? 'rgba(220,60,60,.9)' :
+    type === 'success' ? 'rgba(45,145,75,.95)' : 'rgba(45,105,180,.95)';
   el.style.display = 'block';
   requestAnimationFrame(() => el.style.opacity = '1');
   // Clean timers
   clearTimeout(_msgTimer);
   clearTimeout(_fadeTimer);
   // Start timer
-  _msgTimer = setTimeout(() => {
-    el.style.opacity = '0';
-    _fadeTimer = setTimeout(() => el.style.display = 'none', 400);
-  }, 5000);
+  if (timeout) {
+    _msgTimer = setTimeout(() => {
+      el.style.opacity = '0';
+      _fadeTimer = setTimeout(() => el.style.display = 'none', 400);
+    }, timeout);
+  }
 }
 
 // 🔹 centralized selection clear
 function clearSelection() {
-  document
-    .querySelectorAll('#list .file-item')
-    .forEach(x => x.className = 'file-item');
-
+  if (selectedEl) selectedEl.classList.remove('sel');
+  fileActionBar.remove();
   selected = null;
   selectedEl = null;
 }
@@ -81,11 +82,50 @@ function itemRow(cls, name, meta) {
   return d;
 }
 
+const fileActions = {open: openFile, edit: editor, delete: deleteFile};
+const fileActionBar = document.createElement('span');
+fileActionBar.className = 'file-actions';
+fileActionBar.innerHTML = '<button type="button" data-action="open">📖 Open</button>' +
+  '<button type="button" data-action="edit">📄 Edit</button>' +
+  '<button type="button" class="danger" data-action="delete" title="Delete" aria-label="Delete">♻</button>';
+fileActionBar.onclick = e => {
+  e.stopPropagation();
+  const action = e.target.dataset.action;
+  if (action) fileActions[action]();
+};
+
+function selectFile(e) {
+  const row = e.currentTarget;
+  e.stopPropagation();
+  if (selectedEl === row) return clearSelection();
+  clearSelection();
+  row.classList.add('sel');
+  selected = row.dataset.name;
+  selectedEl = row;
+  row.appendChild(fileActionBar);
+}
+
+function fileRow(name, size) {
+  const d = itemRow('file-item', name, sizeText(size));
+
+  d.dataset.name = name;
+  d.onclick = selectFile;
+  return d;
+}
+
 function sizeText(bytes) {
-  const mb = bytes >> 20;
-  const kb = (bytes >> 10) & 1023;
-  const b = bytes & 1023;
-  return ((mb ? mb + 'Mb ' : '') + (kb ? kb + 'Kb ' : '') + (b ? b + 'B' : '')).trim() || '0B';
+  const units = 'BKMG';
+  let value = Number(bytes) || 0, unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  const digits = unit > 0 && value < 10 && value % 1 ? 1 : 0;
+  return `${value.toFixed(digits)}${units[unit]}`;
+}
+
+function kbText(bytes) {
+  return `${Math.ceil(bytes / 1024)} KB`;
 }
 
 function load() {
@@ -131,22 +171,7 @@ function loadFiles() {
        // 🔹 Files listing
        files.forEach(f => {
          const name = f.path.split('/').pop();
-         const d = itemRow('file-item', name, sizeText(f.size));
-
-         d.onclick = (e) => {
-           e.stopPropagation();
-
-           if (selectedEl === d) {
-             clearSelection();
-             return;
-           }
-
-           clearSelection();
-           d.className = 'file-item sel';
-           selected = name;
-           selectedEl = d;
-         };
-
+         const d = fileRow(name, f.size);
          contentList.appendChild(d);
        });
 
@@ -224,7 +249,6 @@ async function uploadFile(fileToUpload) {
 
   const chunkSize = 1024;
   const totalChunks = Math.max(1, Math.ceil(f.size / chunkSize));
-
   const fd = new FormData();
   const targetPath = f.name.includes('/') || f.name[0] === '$'
     ? f.name.replace(/^\/+/, '')
@@ -233,16 +257,17 @@ async function uploadFile(fileToUpload) {
   for (let i = 0; i < totalChunks; i++) {
     const start = i * chunkSize;
     const end = Math.min(f.size, start + chunkSize);
-    const chunk = f.slice(start, end);
-    fd.append(`chunk_${i + 1}`, chunk, targetPath);
+    fd.append(`chunk_${i + 1}`, f.slice(start, end), targetPath);
   }
   console.info("Uploading (multipart chunked):", targetPath);
   try {
+    popUpMsg(`Uploading ${kbText(f.size)}…`, 'info', 0);
     const r = await fetch('/fs/files', {method: 'POST', body: fd});
     if (!r.ok) {
       const resp = (await r.text()) || r.statusText;
       throw new Error(`${r.status} - ${resp}`);
     }
+    popUpMsg(`Uploaded ${kbText(f.size)}`, 'success', 1500);
     return true;
   } catch (err) {
     console.error("uploadFile error:", err);
@@ -264,20 +289,9 @@ function openFile() {
   window.open(resource);
 }
 
-function download() {
-  if (!selected) return;
-
-  const resource = `/${selectedDir}/${selected}`;
-  console.info('download:', resource);
-
-  const a = document.createElement('a');
-  a.href = resource;
-  a.download = selected;
-  a.click();
-}
-
 function deleteFile() {
   if (!selected) return;
+  if (!window.confirm(`Delete ${selected}?`)) return;
 
   const toDelete = `/${selectedDir}/${selected}`;
   console.info("deleteFile:", toDelete);
@@ -342,6 +356,11 @@ async function editor() {
   });
 
   editorFile = resource; // 🔹 track currently opened file
+}
+
+function newFile() {
+  clearSelection();
+  return editor();
 }
 
 function updateDiskUsage() {

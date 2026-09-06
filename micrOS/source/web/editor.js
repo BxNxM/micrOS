@@ -55,6 +55,18 @@ function injectCSS() {
     color: #d4d4d4;
     font-family: var(--mp-code-font);
 }
+.mp-editor.maximized {
+    display: flex;
+    flex-direction: column;
+    inset: 0;
+    position: fixed;
+    z-index: 10000;
+}
+.mp-editor.maximized .editor {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
 .mp-editor .toolbar {
     align-items: center;
     background: #252526;
@@ -68,6 +80,10 @@ function injectCSS() {
     color: #d4d4d4;
     padding: 4px 6px;
 }
+.mp-editor .filename {
+    flex: 1;
+    min-width: 0;
+}
 .mp-editor button {
     background: #0e639c;
     border: none;
@@ -76,13 +92,15 @@ function injectCSS() {
     padding: 6px 10px;
 }
 .mp-editor button:hover { background: #1177bb; }
+.mp-editor .maximize,
 .mp-editor .close {
     background: transparent;
     color: #ccc;
     font-size: 16px;
-    margin-left: auto;
     padding: 4px 8px;
 }
+.mp-editor .maximize { margin-left: auto; }
+.mp-editor .maximize:hover,
 .mp-editor .close:hover { background: #333; color: #fff; }
 .mp-editor .status { font-size: 13px; }
 .mp-editor .status.ok { color: #6a9955; }
@@ -234,11 +252,12 @@ class EmbeddedEditor {
 <div class="mp-editor">
     <div class="toolbar">
         <input class="filename" value="">
-        <button class="load">Load</button>
-        <button class="save">Save</button>
-        <button class="syntax">Syntax</button>
+        <button type="button" class="load">Load</button>
+        <button type="button" class="save">Save</button>
+        <button type="button" class="syntax">Syntax</button>
         <span class="status info">ready</span>
-        <button class="close" title="Close">&times;</button>
+        <button type="button" class="maximize" title="Maximize" aria-label="Maximize">⛶</button>
+        <button type="button" class="close" title="Close" aria-label="Close">&times;</button>
     </div>
     <div class="editor">
         <div class="lines"></div>
@@ -254,6 +273,7 @@ class EmbeddedEditor {
         this.linesEl = this.container.querySelector(".lines");
         this.statusEl = this.container.querySelector(".status");
         this.syntaxBtn = this.container.querySelector(".syntax");
+        this.maximizeBtn = this.container.querySelector(".maximize");
     }
 
     bindEvents() {
@@ -267,7 +287,16 @@ class EmbeddedEditor {
         this.container.querySelector(".load").addEventListener("click", () => this.loadFile());
         this.container.querySelector(".save").addEventListener("click", () => this.save());
         this.syntaxBtn.addEventListener("click", () => this.syntaxCheck());
+        this.maximizeBtn.addEventListener("click", () => this.toggleMaximized());
         this.container.querySelector(".close").addEventListener("click", () => window.destroyEditor());
+    }
+
+    toggleMaximized() {
+        const maximized = this.container.firstElementChild.classList.toggle("maximized");
+        const action = maximized ? "Minimize" : "Maximize";
+        this.maximizeBtn.textContent = maximized ? "−" : "⛶";
+        this.maximizeBtn.title = action;
+        this.maximizeBtn.setAttribute("aria-label", action);
     }
 
     handleKeydown(e) {

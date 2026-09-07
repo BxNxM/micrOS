@@ -20,10 +20,30 @@ if cfgget("ha"):
     from Network import sta_high_avail
 
 try:
-    from gc import collect as gcollect
+    from gc import collect as gcollect, mem_free
 except ImportError:
     console_write("[SIMULATOR MODE GC IMPORT]")
-    from simgc import collect as gcollect
+    from simgc import collect as gcollect, mem_free
+
+
+def memory(require=None, cap=0.8, cleanup=False):
+    """
+    Return the usable share of free heap and optionally require an amount in bytes.
+
+    :param require: optional required memory in bytes
+    :param cap: share of currently free heap that may be used (0.0 .. 1.0)
+    :param cleanup: trigger gc memory cleanup
+    """
+    if cleanup:
+        gcollect()
+    available = mem_free()
+    usable = int(available * cap)
+    if require is not None and usable < require:
+        raise MemoryError(
+            f"Memory: free={available // 1024}KB "
+            f"usable={usable // 1024}KB required={require // 1024}KB"
+        )
+    return usable
 
 #################################################################
 #                Implement custom task class                    #

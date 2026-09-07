@@ -19,13 +19,9 @@ Designed by Marcell Ban aka BxNxM
 #################################################################
 from Config import cfgget, cfgput
 from Debug import console_write, syslog
-from Tasks import TaskBase, exec_lm_pipe
+from Tasks import TaskBase, exec_lm_pipe, memory
 from Auth import resolve_secret
 from machine import freq
-try:
-    from gc import mem_free
-except ImportError:
-    from simgc import mem_free
 
 #################################################################
 #                          FUNCTIONS                            #
@@ -37,8 +33,8 @@ def bootup():
     Executes when system boots up.
     """
     # Apply resource tuning before running user boot: queue/performance policy
-    boot_cause()            # Load and Save boot cause
-    _tune_queue_size()      # Autotune queue size
+    boot_cause()         # Load and Save boot cause
+    _tune_queue_size()   # Autotune queue size
 
     # Execute LMs from boothook config parameter
     console_write("[BOOT] EXECUTION...")
@@ -56,16 +52,14 @@ def bootup():
 
 def _tune_queue_size():
     """
-    Tune queue size based on available ram
-    between 5-50
+    Basic Task Queue size tuning based on available ram
     """
-    min_queue, max_queue, task_req_kb = 5, 20, 20       # 400kb max for tasks management
-    est_queue = int(mem_free()/1000/task_req_kb)
-    est_queue = max(est_queue, min_queue)
-    est_queue = min(est_queue, max_queue)
+    min_queue, max_queue, task_req_kb = 1, 20, 20       # 1-20 tasks: 20-400kb
+    est_queue = memory() // (1024 * task_req_kb)
+    est_queue = min(max(est_queue, min_queue), max_queue)
     current_queue = cfgget('aioqueue')
     # Preserve user tuning, only clamp down when configured queue is too large for current RAM.
-    tuned_queue = min(current_queue, est_queue)
+    tuned_queue = min(max(current_queue, min_queue), est_queue)
     TaskBase.QUEUE_SIZE = tuned_queue
     if tuned_queue != current_queue:
         cfgput('aioqueue', tuned_queue)

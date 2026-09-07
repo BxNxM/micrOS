@@ -65,6 +65,7 @@ def _install_import_stubs():
     m = types.ModuleType("Tasks")
     m.lm_exec = lambda *_a, **_k: True, ""
     m.lm_is_loaded = lambda *_a, **_k: True
+    m.memory = lambda require=None, **_k: require if require is not None else 1_000_000
     class TaskBaseStub:
         @staticmethod
         async def feed(sleep_ms=1):
@@ -97,6 +98,7 @@ def _install_import_stubs():
 
     m = types.ModuleType("Config")
     m.cfgget = lambda _k: ""
+    m.cfgput = lambda *_a, **_k: None
     sys.modules["Config"] = m
 
     m = types.ModuleType("Auth")
@@ -165,6 +167,151 @@ def fake_stat(size=1024):
         int(time.time()),# st_mtime
         int(time.time()),# st_ctime
     ))
+
+
+class TestBufferPoolDimensioning(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.web_module = _load_web_module()
+
+    def setUp(self):
+        self.web_module.Buffer.RECV_POOL = None
+        self.web_module.Buffer.SEND_POOL = None
+
+    def _init_pools(self, usable, webui_max_con=3, aioqueue=20):
+        config = {"webui_max_con": webui_max_con, "aioqueue": aioqueue}
+        with mock.patch.object(self.web_module, "cfgget", side_effect=config.get), \
+                mock.patch.object(self.web_module, "memory", return_value=usable) as check, \
+                mock.patch.object(self.web_module, "cfgput") as cfgput:
+            self.web_module.Buffer.init_pools()
+        return check, cfgput
+
+    def test_maximum_buffers_when_full_profile_fits(self):
+        buffer = self.web_module.Buffer
+        max_per_conn = (
+            buffer.RECV_BUF_MAX_BYTES + buffer.SEND_BUF_MAX_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        check, cfgput = self._init_pools(max_per_conn * 3)
+
+        check.assert_called_once_with(
+            require=buffer.RECV_BUF_MIN_BYTES + buffer.SEND_BUF_MIN_BYTES + buffer.CONN_OVERHEAD,
+            cap=buffer.MEM_CAP
+        )
+        cfgput.assert_not_called()
+        self.assertEqual(len(buffer.RECV_POOL.free), 3)
+        self.assertEqual(buffer.RECV_POOL.free[0].capacity, buffer.RECV_BUF_MAX_BYTES)
+        self.assertEqual(buffer.SEND_POOL.free[0].capacity, buffer.SEND_BUF_MAX_BYTES)
+
+    def test_minimum_buffers_preserve_requested_connection_count(self):
+        buffer = self.web_module.Buffer
+        min_per_conn = (
+            buffer.RECV_BUF_MIN_BYTES + buffer.SEND_BUF_MIN_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        _, cfgput = self._init_pools(min_per_conn * 2, webui_max_con=2)
+
+        cfgput.assert_not_called()
+        self.assertEqual(len(buffer.RECV_POOL.free), 2)
+        self.assertEqual(buffer.RECV_POOL.free[0].capacity, buffer.RECV_BUF_MIN_BYTES)
+        self.assertEqual(buffer.SEND_POOL.free[0].capacity, buffer.SEND_BUF_MIN_BYTES)
+
+    def test_minimum_buffers_are_used_when_only_some_full_profiles_fit(self):
+        buffer = self.web_module.Buffer
+        max_per_conn = (
+            buffer.RECV_BUF_MAX_BYTES + buffer.SEND_BUF_MAX_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        _, cfgput = self._init_pools(max_per_conn * 2, webui_max_con=3)
+
+        cfgput.assert_not_called()
+        self.assertEqual(len(buffer.RECV_POOL.free), 3)
+        self.assertEqual(buffer.RECV_POOL.free[0].capacity, buffer.RECV_BUF_MIN_BYTES)
+        self.assertEqual(buffer.SEND_POOL.free[0].capacity, buffer.SEND_BUF_MIN_BYTES)
+
+    def test_single_connection_uses_maximum_buffers_when_they_fit(self):
+        buffer = self.web_module.Buffer
+        max_per_conn = (
+            buffer.RECV_BUF_MAX_BYTES + buffer.SEND_BUF_MAX_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        _, cfgput = self._init_pools(max_per_conn, webui_max_con=1)
+
+        cfgput.assert_not_called()
+        self.assertEqual(len(buffer.RECV_POOL.free), 1)
+        self.assertEqual(buffer.RECV_POOL.free[0].capacity, buffer.RECV_BUF_MAX_BYTES)
+        self.assertEqual(buffer.SEND_POOL.free[0].capacity, buffer.SEND_BUF_MAX_BYTES)
+
+    def test_webui_max_con_sets_connection_count(self):
+        buffer = self.web_module.Buffer
+        max_per_conn = (
+            buffer.RECV_BUF_MAX_BYTES + buffer.SEND_BUF_MAX_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        _, cfgput = self._init_pools(max_per_conn * 4, webui_max_con=4)
+
+        cfgput.assert_not_called()
+        self.assertEqual(len(buffer.RECV_POOL.free), 4)
+        self.assertEqual(len(buffer.SEND_POOL.free), 4)
+
+    def test_aioqueue_limits_and_persists_web_connection_count(self):
+        buffer = self.web_module.Buffer
+        max_per_conn = (
+            buffer.RECV_BUF_MAX_BYTES + buffer.SEND_BUF_MAX_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        _, cfgput = self._init_pools(
+            max_per_conn * 10, webui_max_con=10, aioqueue=4
+        )
+
+        cfgput.assert_called_once_with("webui_max_con", 4)
+        self.assertEqual(len(buffer.RECV_POOL.free), 4)
+        self.assertEqual(len(buffer.SEND_POOL.free), 4)
+
+    def test_reduces_and_persists_connection_count_to_available_memory(self):
+        buffer = self.web_module.Buffer
+        min_per_conn = (
+            buffer.RECV_BUF_MIN_BYTES + buffer.SEND_BUF_MIN_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        _, cfgput = self._init_pools(min_per_conn * 2, webui_max_con=3)
+
+        cfgput.assert_called_once_with("webui_max_con", 2)
+        self.assertEqual(len(buffer.RECV_POOL.free), 2)
+        self.assertEqual(len(buffer.SEND_POOL.free), 2)
+
+    def test_zero_connection_config_is_corrected_to_one(self):
+        buffer = self.web_module.Buffer
+        min_per_conn = (
+            buffer.RECV_BUF_MIN_BYTES + buffer.SEND_BUF_MIN_BYTES + buffer.CONN_OVERHEAD
+        )
+
+        _, cfgput = self._init_pools(min_per_conn, webui_max_con=0)
+
+        cfgput.assert_called_once_with("webui_max_con", 1)
+        self.assertEqual(len(buffer.RECV_POOL.free), 1)
+        self.assertEqual(len(buffer.SEND_POOL.free), 1)
+
+    def test_insufficient_memory_for_one_connection_raises(self):
+        buffer = self.web_module.Buffer
+        config = {"webui_max_con": 3, "aioqueue": 20}
+        with mock.patch.object(self.web_module, "cfgget", side_effect=config.get), \
+                mock.patch.object(
+                    self.web_module,
+                    "memory",
+                    side_effect=MemoryError("insufficient")
+                ) as check, mock.patch.object(self.web_module, "cfgput") as cfgput:
+            with self.assertRaises(MemoryError):
+                buffer.init_pools()
+
+        check.assert_called_once_with(
+            require=buffer.RECV_BUF_MIN_BYTES + buffer.SEND_BUF_MIN_BYTES + buffer.CONN_OVERHEAD,
+            cap=buffer.MEM_CAP
+        )
+        cfgput.assert_not_called()
+        self.assertIsNone(buffer.RECV_POOL)
+        self.assertIsNone(buffer.SEND_POOL)
 
 
 class TestWebStateMachine(unittest.TestCase):

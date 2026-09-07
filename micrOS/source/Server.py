@@ -15,7 +15,7 @@ from utime import ticks_ms, ticks_diff
 from Config import cfgget
 from Debug import console_write, syslog
 from Network import ifconfig
-from Tasks import Manager
+from Tasks import Manager, memory
 from Shell import Shell
 
 try:
@@ -24,11 +24,17 @@ except:
     console_write("[SIMULATOR MODE GC IMPORT]")
     from simgc import collect
 
-
 # Module load optimization, needed only for webui
 if cfgget('webui'):
-    from Web import WebEngine
-else:
+    try:
+        # Validate webui overall memory requirement - auto disable if necessary
+        memory(require=81_920, cap=0.8, cleanup=True)   # 80 kb required in this stage
+        from Web import WebEngine
+    except MemoryError as e:
+        from Config import cfgput
+        cfgput("webui", False)
+        syslog(f"[ERR] Webui Disabled: {e}")
+if not cfgget('webui'):
     # Load WebEngine compatibility interface class (dummy)
     class WebEngine:
         __slots__ = ()

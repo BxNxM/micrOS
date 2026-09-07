@@ -16,18 +16,12 @@ from re import compile as recompile
 from json import dumps, loads
 from io import BytesIO
 from uos import stat
-from Tasks import lm_exec, lm_is_loaded, TaskBase
-from Config import cfgget
+from Tasks import lm_exec, lm_is_loaded, TaskBase, memory
+from Config import cfgget, cfgput
 from Files import OSPath, path_join, abs_path
 from Buffer import SlidingBuffer, BufferFullError, MemoryPool
 from Debug import console_write, syslog
 from Auth import AuthRequired, PWD_KEY
-
-try:
-    from gc import mem_free
-except:
-    console_write("[SIMULATOR MODE GC IMPORT]")
-    from simgc import mem_free
 
 
 def url_path_resolve(path:str) -> tuple[bool, str]:
@@ -155,35 +149,36 @@ class Buffer:
     @staticmethod
     def init_pools():
         """
-        Initialize pool of buffers for sending/receiving based on different profiles
+        Initialize buffer pools sized for the configured connection limit.
         """
-        mem_available = mem_free()
-        con_limit = min(max(1, int(cfgget("aioqueue"))),max(1, int(cfgget("webui_max_con"))))
-        usable = int(Buffer.MEM_CAP * mem_available)
-        is_low_memory = (usable / con_limit) < \
-            (Buffer.RECV_BUF_MAX_BYTES + Buffer.SEND_BUF_MAX_BYTES + Buffer.CONN_OVERHEAD)
-        if is_low_memory:
-            syslog((
-                "[INFO] Webcli.init_pools: low-memory mode with reduced buffer size, "
-                "decrease webui_max_con to use larger buffers"
-            ))
-        recv_size = Buffer.RECV_BUF_MIN_BYTES if is_low_memory else Buffer.RECV_BUF_MAX_BYTES
-        send_size = Buffer.SEND_BUF_MIN_BYTES if is_low_memory else Buffer.SEND_BUF_MAX_BYTES
-        per_conn = recv_size + send_size + Buffer.CONN_OVERHEAD
-        if usable < per_conn:
-            raise MemoryError((
-                f"Insufficient memory for webserver: {mem_available // 1024} KB, "
-                f"at least {per_conn // 1024} KB required"
-            ))
-        con_limit = min(
-            usable // per_conn,
-            con_limit
+        min_per_conn = (
+            Buffer.RECV_BUF_MIN_BYTES + Buffer.SEND_BUF_MIN_BYTES + Buffer.CONN_OVERHEAD
         )
-        syslog((
-            f"[INFO] Webcli.init_pools: {con_limit} connection(s) allowed"
-        ))
-        Buffer.RECV_POOL = MemoryPool(recv_size, con_limit, wrapper=SlidingBuffer)
-        Buffer.SEND_POOL = MemoryPool(send_size, con_limit, wrapper=SlidingBuffer)
+        max_per_conn = (
+            Buffer.RECV_BUF_MAX_BYTES + Buffer.SEND_BUF_MAX_BYTES + Buffer.CONN_OVERHEAD
+        )
+        # Configure MIN/MAX connections
+        configured_max_con = int(cfgget("webui_max_con"))
+        queue_limit = max(1, int(cfgget("aioqueue")))
+        max_con = min(max(1, configured_max_con), queue_limit)
+        # Check bare minimum memory requirement - exception if not available!
+        usable = memory(require=min_per_conn, cap=Buffer.MEM_CAP)
+        if max_per_conn * max_con <= usable:
+            # MAX Configuration
+            recv_size = Buffer.RECV_BUF_MAX_BYTES
+            send_size = Buffer.SEND_BUF_MAX_BYTES
+            syslog(f"[BOOT] Webcli.init_pools: normal mode {max_per_conn / 1024} kb x {max_con}")
+        else:
+            # MIN Configuration
+            max_con = min(max_con, usable // min_per_conn)
+            recv_size = Buffer.RECV_BUF_MIN_BYTES
+            send_size = Buffer.SEND_BUF_MIN_BYTES
+            syslog(f"[BOOT] Webcli.init_pools: low-memory mode {min_per_conn / 1024} kb x {max_con}")
+        if configured_max_con != max_con:
+            cfgput("webui_max_con", max_con)
+        # Configure buffers
+        Buffer.RECV_POOL = MemoryPool(recv_size, max_con, wrapper=SlidingBuffer)
+        Buffer.SEND_POOL = MemoryPool(send_size, max_con, wrapper=SlidingBuffer)
 
 
     async def _flush_response(self):

@@ -26,7 +26,7 @@ def memory_leak(cnt=160):
         out.append("[{}] gen: {}".format(k, data))
         dict_test[k] = data
     mem_end = memory_usage()['mem_used']
-    delta = mem_start - mem_end
+    delta = mem_end - mem_start
     out.append('[{}] RAM Alloc.: {} kB {} byte'.format(len(dict_test), int(delta / 1024), int(delta % 1024)))
     return '\n'.join(out)
 

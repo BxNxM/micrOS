@@ -66,7 +66,7 @@ class Config:
         self.espnow = False         # Enable Intercon ESPNow protocol
         self.auth = False           # Enable Shell/Web auth and module autoload protection
         # -- WebServer + RestAPI - MIN SYSTEM RAM requirement <200 kb
-        self.webui = False
+        self.webui = True
         self.webui_max_con = 3
         # [Interrupts]
         # -- Timer 0

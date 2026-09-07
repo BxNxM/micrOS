@@ -1,463 +1,261 @@
-# ![LOGO](./media/logo_mini.png?raw=true) micrOS
+# ![micrOS logo](./media/logo_mini.png?raw=true) micrOS
 
-> **"The mini yet powerful operating system for DIY projects."**
+A local-first automation platform for Wi-Fi-enabled MicroPython boards.
 
-![stable](https://img.shields.io/badge/master-HEAD-success)
-![stable](https://img.shields.io/badge/micropython-OS-gold)
-![async](https://img.shields.io/badge/async-task_manager-olive)
-![config](https://img.shields.io/badge/config-manager-olive)
-![cron](https://img.shields.io/badge/IRQs-Cron-olive)
-![events](https://img.shields.io/badge/IRQs-Events-olive)
-![web](https://img.shields.io/badge/Web-Rest-olive)
-![web](https://img.shields.io/badge/Web-UI-olive)
-![socket](https://img.shields.io/badge/Socket-Shell-olive)
-![GPIO](https://img.shields.io/badge/GPIO-I2C-olive)
-![clock](https://img.shields.io/badge/RTC-NTP-olive)
-![wifi](https://img.shields.io/badge/Wifi-STA_or_AP-blue)
-![OTA](https://img.shields.io/badge/OTA-Update-blue)
-![ic1](https://img.shields.io/badge/InterCon-socket-blue)
-![ic2](https://img.shields.io/badge/InterCon-espnow-blue)
-<br/>
-![tinypico](https://img.shields.io/badge/esp32-tinypico-purple)
-![esp32S3](https://img.shields.io/badge/esp32-S3-purple)
-![esp32S3](https://img.shields.io/badge/esp32-S3_RAM-purple)
-![espCAM-esp-s](https://img.shields.io/badge/esp32-CAM_OV2640-purple)
-![esp32-c6](https://img.shields.io/badge/esp32-C6_RISCV-purple)
-![esp32-c3](https://img.shields.io/badge/esp32-C3_RISCV-purple)
-![esp32S2](https://img.shields.io/badge/esp32-S2-purple)
-![PYQT](https://img.shields.io/badge/esp32-PYQT-purple)
-![raspberry-pico-w](https://img.shields.io/badge/raspberry-pico_W-critical)
-![esp32-etc](https://img.shields.io/badge/esp32-etc.-purple)
-<br/>
+Build a browser-controlled lamp, read a sensor over HTTP, or let one board
+trigger another. micrOS turns a compatible Wi-Fi microcontroller into a
+programmable automation node—without a required cloud service.
 
+Write the hardware behavior in [MicroPython](http://micropython.org); micrOS
+handles networking, configuration, background jobs, scheduling, and updates.
 
-Thanks for ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS), follow us on:
-
-[![Instagram](https://img.shields.io/badge/Instagram-%40micros_framework-%23E4405F?logo=instagram&logoColor=white)](https://www.instagram.com/micros_framework/)
-[![YouTube](https://img.shields.io/badge/YouTube-micrOS_framework-red?logo=youtube&logoColor=white)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
-[![Facebook](https://img.shields.io/badge/Facebook-micrOS_framework-%231877F2?logo=facebook&logoColor=white)](https://www.facebook.com/Micros-Framework-103501302140755)
-[![Thingiverse](https://img.shields.io/badge/Thingiverse-micrOS_3Dprints-%231489FF?logo=thingiverse&logoColor=white)](https://www.thingiverse.com/micros_framework/designs)
-[![DockerHub](https://img.shields.io/badge/DockerHub-micrOS%20Gateway-blue)](https://hub.docker.com/r/bxnxm/micros-gateway)<br/>
-
+_The mini yet powerful operating system for DIY projects._
 
 [![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
+![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS)
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions)
+[![DockerHub](https://img.shields.io/badge/DockerHub-micrOS%20Gateway-blue)](https://hub.docker.com/r/bxnxm/micros-gateway)
 
+### Contents
 
-**micrOS** is a [micropython](http://micropython.org) based mini **application** execution **platform** with ShellCli (socket) and WebCli (http) **servers** and several **other** embedded **features**. 
-> It uses direct wifi connection to access the exposed functionalities.<br/>
+- 🎬 [See it in action](#see-it-in-action)
+- 🚀 [Start using micrOS](#start-using-micros) — installation, Wi-Fi setup, and first commands
+- 📦 [Applications](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html) · [micrOS Packages](https://github.com/BxNxM/micrOSPackages)
+- 🌐 [Network modes](#networking-modes) · [Configuration parameters](#node-configuration-reference)
+- 💬 [Tutorials and community](#tutorials-and-community)
+- ⚙️ [Advanced use](#advanced-use) — automation, hardware, configuration, and developer tools
+- 🧩 [Create a Load Module](./micrOS/MODULE_GUIDE.md) · [Architecture](./micrOS/ARCHITECTURE.md)
+- 📝 [Cheat sheets and maintainer notes](#operations-and-maintainer-notes)
 
-In case of any technical comments or requests, please use [![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-green?logo=github&style=flat)](https://github.com/BxNxM/micrOS/discussions).
+[![micrOS web interface: REST console, configuration, dashboard, and files](./media/lms/web.png?raw=true)](./media/lms/web.png)
 
-![MICROSVISUALIZATION](./media/micrOS_welcome.png?raw=true)
+_The optional on-device web UI: REST console, configuration, application controls,
+and file management._
 
-----------------------------------------
-----------------------------------------
+### Why micrOS?
 
-📲 💻 ShellCli: Generic session-based communication API (OAM Interface) <br/>
-📲 WebCli: mini webserver **REST API** and **HTTP Server** <br/>
-&nbsp;&nbsp; ✉️ Expose upython module functions - telnet **TCP/IP** and **REST API** <br/>
-⚙️ 📝 Device initialization from user config <br/>
-🧩  Codeless end user experience via phone client <br/>
-⚠️  No external server or service required for client-device/device-device communication <br/>
-&nbsp;&nbsp; ⚠️ 🛡 Works on Local Network (WiFi-WLAN) <br/>
-🛠 Easy to create custom application(s) aka create your own Load Modules: <br/>
-🦾 Built-in scheduling (IRQs):<br/>
-&nbsp;&nbsp; - Time stamp based <br/>
-&nbsp;&nbsp; - Geolocation based clock setup + time tags: sunset, sunrise <br/>
-&nbsp;&nbsp; - Simple periodic <br/>
-🔄 Async **task manager** - start (&/&&) / list / kill / show <br/>
+- **One function, several ways to use it.** Public functions in `LM_*.py` Load
+  Modules are callable from the shell, REST API, schedules, interrupts, and
+  background jobs.
+- **Local control.** Clients connect directly to nodes over Wi-Fi. No cloud
+  account or always-on server is required; time and sunrise/sunset lookups use
+  external services.
+- **A runtime you can build on.** STA/AP networking, NTP/RTC, pin mapping, async
+  tasks, OTA updates, and device-to-device commands are included.
+- **Load only what you need.** Modules are imported on demand and stay resident.
+  Available memory determines how many you can combine.
 
-🚀🎈Lightweight and high performance core system that leaves you space 😎
+### Who is it for?
 
-## ◉ Shortcuts:
-1. 📲 micrOS Clients [link](https://github.com/BxNxM/micrOS/#micros-clients)
-2. micrOS Installer [link](https://github.com/BxNxM/micrOS/#installing-micros-with-devtoolkit-esp32-and-more)
-3. ▶️ micrOS Tutorials [link](https://github.com/BxNxM/micrOS/#micros-video-tutorials)
-4. micrOS System and features [link](https://github.com/BxNxM/micrOS/#micros-framework-features)
-5. 🎮 Application Catalog: [link](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
-5. Pin mapping - GPIO [link](https://github.com/BxNxM/micrOS/#device-pinouts-for-wiring)
-6. ⚙️ micrOS Node configuration [link](https://github.com/BxNxM/micrOS/#micros-node-configuration-parameters-with-description)
-7. 🧑‍💻 micrOS create custom Load Modules: [link](./micrOS/MODULE_GUIDE.md)
-8. 📦 micrOS Package Management: [link](https://github.com/BxNxM/micrOSPackages)
-9. micrOS Gateway server with Prometheus&Grafana: [link](https://github.com/BxNxM/micrOS/#micros-gateway-in-docker)
-10. Release notes: [release-note](https://github.com/BxNxM/micrOS/#release-note)
+For MicroPython developers who want reusable device infrastructure, makers
+building local automation, hardware experimenters adding sensors or actuators,
+and developers connecting several nodes over sockets or ESP-NOW.
 
-### AI
+### See it in action
 
-[![DockerHub](https://img.shields.io/badge/DockerHub-micrOS%20MCP-blue)](https://hub.docker.com/r/bxnxm/micros-mcp)
+| Ring Lamp | RoboArm | RGB + CCT lighting |
+| --- | --- | --- |
+| [![NeoPixel Ring Lamp controlled by micrOS](./media/projects/RingLamp.gif?raw=true)](https://youtu.be/BlQzAnFtpLk) | ![micrOS-controlled robot arm](./media/projects/RoboArm.gif?raw=true) | ![micrOS RGB and tunable-white controller](./media/projects/RGB_CCT.gif?raw=true) |
+| Generated controls for a 24-pixel NeoPixel lamp. | A Wi-Fi-controlled servo application and laser cat toy. | Full-color and tunable-white LED control from one node. |
 
-----------------------------------------
-----------------------------------------
+Start with an existing application, then add your own behavior as a Load Module.
 
-## micrOS Clients
+<a id="installing-micros-with-devtoolkit-esp32-and-more"></a>
 
-### Applications (obsolete)
+<a id="quick-start"></a>
 
-[![AppStore](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [![AppStore](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
+## Start using micrOS
 
-### micrOS on-device web UI
+You only need three ideas: a **node** is your board running micrOS;
+**DevToolKit** installs and connects to it from your computer; a **Load Module**
+is a Python application on the board. You don't need to understand the runtime
+internals to use an existing application.
 
-![MICROSWEB](./media/lms/web.png?raw=true)
+Before you begin, have a compatible Wi-Fi MicroPython board, a USB data cable,
+a computer, and your Wi-Fi credentials ready. Check the
+[firmware catalog](./micrOS/micropython/README.md) for your board; see
+[boards and memory](#boards-and-memory) for larger applications.
 
-Access it over browser: `http://<nodename>.local`
+Follow these four steps to get a node online and make your first request.
 
-----------------------------------------
-----------------------------------------
+Use DevToolKit on macOS, Linux, or Windows to deploy your first node. Start with
+the GUI; the CLI supports interactive use and automation.
 
-## Installing micrOS with DevToolKit #ESP32 and more
-**macOS / Windows / Linux to install any esp32 board**
+[![Install micrOS DevToolKit from PyPI](./media/pipy.png)](https://pypi.org/project/micrOSDevToolKit/)
 
-[![pypi](./media/pipy.png)](https://pypi.org/project/micrOSDevToolKit/)
+### 1. Install Python and DevToolKit
 
-End-to-End solution for deployment, update, monitor and develop micrOS boards.
+Install [Python 3.12 or newer](https://www.python.org/downloads/) and add it to
+your system path. The original setup used [Python 3.12.0](https://www.python.org/downloads/release/python-3120/).
 
-I would suggest to use micrOS GUI as a primary interface for micrOS development kit, but you can use cli as well if you prefer.
+On macOS, open Terminal with `Command+Space`, type `terminal`, and press Enter.
+On Windows, press `Windows+R`, type `powershell`, and press Enter.
 
-> USB deployment supports both stock MicroPython development images and
-> prebuilt `micrOS-*` release images. The selected firmware filename determines
-> which resources are copied from `toolkit/workspace/precompiled/`.
-
-<br/>
-
-## 1. Prerequisites
-
-### 1.1 Install python3.12+
-
-Download Python 3.12+ [link](https://www.python.org/downloads/release/python-3120/)
-
-> Note: **Allow extend system path** with that python version (installation parameter) </br>
-> On **Windows**: RUN AS ADMINISTARTOR
-
-Check Python3 version
+On macOS or Linux:
 
 ```bash
-python3 --version
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install micrOSDevToolKit
 ```
 
-----------------------------------------
+Verify the Python installation with `python3 --version`. Update DevToolKit later
+with `python3 -m pip install --upgrade micrOSDevToolKit`.
 
-### 2. Install micrOS devToolKit GUI
+On Windows PowerShell:
 
-#### On macOS/Linux
-
-&nbsp;Open **command line** on mac, press: `commnd+space` + type: `terminal` + press: `enter`
-
-##### Download and install **micrOS devToolKit** python package:
-
-```bash
-pip3 install --upgrade pip; pip3 install micrOSDevToolKit
-```
-
-> Later on you can **update** the package with
-
-```bash
-pip3 install --upgrade micrOSDevToolKit
-```
-
-----------------------------------------
-<br/>
-
-#### On Windows:
-
-##### Download and install **micrOS devToolKit** python package:
-
-Open Windows **PowerShell**, press `windows+R` + type: `powershell` + press `enter`
-
-Copy the following lines to the PowerShell and press enter.
-
-```bash
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install micrOSDevToolKit
 ```
 
-Later on you can **update** the package with
+Activate the environment again when opening a new terminal. If PowerShell
+blocks activation, use Command Prompt with `.venv\Scripts\activate.bat`.
+On Windows, update with `python -m pip install --upgrade micrOSDevToolKit`.
+
+Run package installation as a normal user; approve administrator access only
+for USB-driver installation.
+
+### 2. Deploy micrOS over USB
+
+Start the graphical toolkit:
 
 ```bash
-python -m pip install --upgrade micrOSDevToolKit
+devToolKit.py
 ```
 
-----------------------------------------
-<br/>
+![micrOS DevToolKit deployment interface](./media/micrOSToolkit.png?raw=true)
 
-### 3. Start micrOS devToolKit GUI
+1. Connect your board over USB.
+2. Select the matching board and MicroPython firmware from the available lists.
+3. Select **Deploy (USB)** and confirm the operation.
+4. Wait for deployment to complete and the board to restart.
 
-Copy the following command to the command line and press enter to start.
+On first deployment, DevToolKit may offer to install the Serial USB driver
+required by your platform.
 
-**```devToolKit.py```**
+**Deploy (USB) erases existing firmware and files.** Back up a board you already
+use. The first toolkit launch installs optional GUI, compiler, and media
+dependencies; keep internet access available until it finishes.
 
-It will open a graphical user interface for micrOS device management, like usb deploy, update, OTA operations, test executions, etc...
+### 3. Configure Wi-Fi and open the web UI
 
-----------------------------------------
+On first startup, an unconfigured node creates its own Wi-Fi access point
+when it cannot connect to your network:
 
-![MICROSVISUALIZATION](./media/micrOSToolkit.png?raw=true)
+1. Connect your computer to the `node01` Wi-Fi network using the
+   factory password `ADmin123`.
+2. Start `devToolKit.py -s -c` and select `__device_on_AP__` at `192.168.4.1`.
+3. Enter these commands **one line at a time in the micrOS shell**. Replace the
+   angle-bracket placeholders, including the brackets, with your own values.
+   The device password must be 8–9 characters long and contain uppercase and
+   lowercase letters and a digit. Check that each setting succeeds.
 
-- Example
-
-```
-1. Select BOARD TYPE
-2. Click on [Deploy (USB)] button -> presss YES
-```
-
-It will install your board via USB with default settings. **Continue with micrOS Client app...** or "devToolKit.py -s -c"
-
-> Note: At the first USB deployment, devToolKit will ask to install **SerialUSB driver** and it will open the driver installer as well, please follow the steps and install the necessary driver.
-
-### USB deployment and update modes
-
-The selected firmware name controls the deployment mode:
-
-- A stock MicroPython image keeps the legacy full-file deployment.
-- A `micrOS-*` image already contains the core and copies only the configured
-  web assets and minimum LM/IO modules.
-
-USB deploy and update show the selected mode. USB update always restores
-`node_config.json` for both image types. **Skip MicroPython** keeps the current
-firmware and copies only the required files.
-
-Build all configured `micrOS-*` images with:
-
-```bash
-python3 toolkit/micrOSImageBuilder.py
+```text
+conf
+staessid <your-wifi-name>
+stapwd <your-wifi-password>
+devfid MyNode
+appwd <new-device-password>
+webui True
+noconf
+reboot
 ```
 
-Supported custom targets: `esp32`, `esp32c3`, `esp32c6`, and `esp32s3`.
+`webui True` enables the web interface. No boot-hook configuration is needed.
 
-For the MicroPython binary catalog, custom micrOS image list, and image notes,
-see [micrOS/micropython/README.md](micrOS/micropython/README.md).
+4. Reconnect your computer or phone to the normal local network.
+5. Open `http://MyNode.local` in a browser. If you see **🚀 Load Web Apps**,
+   click it to load the dashboard and configuration apps. The page reloads
+   with links to the available apps.
 
-Image settings and release resources are defined in
-`toolkit/micrOSImageConfig.json`.
-Custom images also add a `[micrOS]` marker to the board shown by `system info`.
-Full OTA reads the `hello` mode and skips frozen core files on `rel` devices.
+If `.local` does not resolve, use the node IP shown by discovery or your router:
+`http://<node-ip>`. The toolkit's default AP address is `192.168.4.1`; another
+MicroPython port may use a different address. Keep your computer connected to
+the board's Wi-Fi even if it reports that the network has no internet access.
 
+If you deploy a previously prepared configuration containing valid Wi-Fi
+credentials, the node can join that network directly and the access-point
+configuration step is unnecessary. Change the factory device password during
+initial setup.
 
-```
-╔╗ ╔╗                  ╔═══╗╔╗ ╔╗╔═╗ ╔╗       ╔═══╗
-║║ ║║                  ║╔══╝║║ ║║║║╚╗║║       ╚╗╔╗║
-║╚═╝║╔══╗ ╔╗╔╗╔══╗     ║╚══╗║║ ║║║╔╗╚╝║    ╔═╗ ║║║║
-║╔═╗║╚ ╗║ ║╚╝║║╔╗║     ║╔══╝║║ ║║║║╚╗║║    ╚═╝ ║║║║
-║║ ║║║╚╝╚╗╚╗╔╝║║═╣    ╔╝╚╗  ║╚═╝║║║ ║║║    ╔═╗╔╝╚╝║
-╚╝ ╚╝╚═══╝ ╚╝ ╚══╝    ╚══╝  ╚═══╝╚╝ ╚═╝    ╚═╝╚═══╝
-```
+### 4. Confirm the installation
 
-----------------------------------------
+![micrOS system intro](./media/micrOS_welcome.png?raw=true)
 
-## micrOS Projects
+Open `http://MyNode.local/rest/system/info` to call the first REST endpoint, or
+connect through DevToolKit and try the shell:
 
-
-[![RingLamp](./media/projects/RingLamp.gif?raw=true)](https://youtu.be/BlQzAnFtpLk)
-
-![RoboArm](./media/projects/RoboArm.gif?raw=true)
-
-![RGB_CCT](./media/projects/RGB_CCT.gif?raw=true)
-
-----------------------------------------
-----------------------------------------
-
-
-## micrOS Video Tutorials
-
-[![YoutubeChannel](./media/YoutubeChannel.png)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
-
-----------------------------------------
-<br/>
-
-## micrOS System, message-function visualization
-
-![MICROSVISUALIZATION](./media/micrOS.gif?raw=true)
-
->Note: micrOS development kit contains command line interface for socket communication. Example: `devToolKit.py --connect`
-
-----------------------------------------
-
-## micrOS Framework Features💡
-
-[![MICROSARCHITECTURE](./media/micrOSArchitecture.png?raw=true)](./micrOS/ARCHITECTURE.md)
-
-**Web UI**
-![MICROSWEB](./media/lms/web.png?raw=true)
-
-### Features:
-
-- 🕯**micrOS loader** - starts micrOS or WEBREPL(update / recovery modes)
-	- **OTA update** - push update over wifi (webrepl automation: monitor update and auto restart node)
-- 📄**Config handling** - user config - **node_config.json**
-    - ⏳**Boot phase** - preload Load Module(s) - based on node_config
-        - Parameter: `boothook` Device initialization (optional), load applications (pinout and last state initialization)
-        	- It runs **as soon as possible** in the boot sequence (before network setup) 
-        - Example values: `rgb load; neopixel load`
-        - Comments `#` can be used: `#rgb load; neopixel load`, excellect for experimentation.
-    - 📡**Network handling** - based on node_config 
-        - Parameter: `nwmd` network modes: `STA` Station OR `AP` AccessPoint
-        - In STA mode: NTP + UTC aka clock setup
-          - API: [ip-api.com](http://ip-api.com/json/?fields=lat,lon,timezone,offset)
-        - Static IP configuration, `devip`
-        - dhcp hostname setup, `devfid`.local
-        - system `uptime` measurement
-    - ⚙️**Scheduling / External events** - Interrupt callback - based on node_config 
-        - Time based
-            - ⌛️simple LM task pool execution on `Timer(0)`
-                - To enable the feature set `timirq` to `True`
-                - Set period in milliseconds with `timirqseq` like: `5000`
-                - Configure callbalcks with `timirqcbf`
-                		- Example: `bme280 measure`, so this will measure with the sensor every 5 seconds.
-                - Comments `#` can be used in `timirqcbf`
-            - 🗓cron [time stump!LM task] pool execution `Timer(1)`
-                - To enable this feature set `cron` to `True`
-                - Configure callbalcks with `crontasks `
-                - timestamp: `WD:H:M:S!LM FUNC`, ranges: `0-6:0-23:0-59:0-59!LM FUNC`
-                    - example: `*:8:0:0!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at 8am every day.
-                    - `WD: 0...6` 0=Monday, 6=Sunday
-                        - optional **range handling**: 0-2 means Monday to Wednesday
-                - tag: `sunset` / `sunrise`
-                    - example: `sunset!rgb rgb r=10 g=60 b=100; etc.`, it will set rgb color on analog rgb periphery at every sunset, every day.
-                    - optional minute offset (+/-): sunrise+30
-                - Comments cannot be used in `crontasks`! No multiple commands in this mode!
-
-                - API: [api.sunrise-sunset.org](https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0)
-        - 💣Event based
-            - Set trigger event `irqX`
-                - Trigger up/down/both `irqX_trig`
-                - With LM callback function `irqX_cbf`
-                - Comments `#` can be used in `irqX_cbf`
-            - `X` can be = 1, 2, 3 or 4
-
-
-- ⚙️**[L]oad [M]odule** aka **application** execution
-	- Lot of built-in functions (table below)
-	- Create your own module with 3 easy steps
-		- Create a python file, naming convention: `LM_<your_app_name>.py`
-			- Replace `<your_app_name>` for anything you prefer!
-		- Write python functions, you can call any function from that module...
-		- Upload modul with "drag&Drop" devToolKit GUI `devToolKit.py`
-
-- 📨**ShellCli** - wireless communication interface with the nodes
-	- **System commands**: `help, version, reboot, modules, webrepl, webrepl --update, etc.`
-		- After `webrepl --update` command the micrOS system reboots and waits for ota update in webrepl mode about 20 seconds.
-	- **Config handling** SET/GET/DUMP - **node_config.json**
-		- enter configuration mode: `conf`
-		- Print out all parameters and values: `dump`
-		- exit configuration mode:`noconf`
-	- **LM** - Load Module function execution (application modules)
-		- Example: `system info`
-		- That points to `/modules/LM_system.py` file `info()` function and calls it.
-- 🖇**microIO** pinout handling - lookuptables for each board
-	- Predefined pinout modules for esp32, tinyPico, etc. (files under: `modules/IO_*.py`)
-	- Create your pinout based on `IO_esp32.py`, naming convencion: `IO_<name>.py`
-	- To activate your custom pinout set `cstmpmap` config parameter to `<name>`
-	- HINT: to get pin number you can get it by pin label, like: `system pinamp`
-	- HINT: with `cstmpmap` you can overwrite pin mapping as well, like: `neop:25` set neop virtual pin to pin 25 real pinout. 
-
-- 🔄 **Task manager** aka **Async LM jobs**
-	- Capable of execute [L]oad [M]odules in the background 
-	- Invoke with single execution `&` or for loop execution `&&`
-	- Example:
-		- In loop: `system heartbeat &&`
-			- Loop frequency conrol: `system heartbeat &&1000`, it will execute every sec 
-		- Single call: `system heartbeat &`
-			- Delayed execution (ms): `system heartbeat &1000`, waits 1 sec before execution.
-	- Stop task: `task kill system.heartbeat`
-	- Show task live ouput: `task show system.heartbeat`
-	- List tasks with `task list`:
-	
-```
-TinyDevBoard $ task list
----- micrOS  top ----
-#queue: 18 #load: 3%
-
-#Active   #taskID
-Yes       server
-Yes       idle
-Yes       telegram.server_bot
-Yes       espnow.server
+```text
+help
+system info
+system heartbeat
 ```
 
+`system info` reports the board, MicroPython version, memory, filesystem, and
+uptime. `help all` lists the installed Load Modules. From there, use the
+[application catalog](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
+or create a [custom Load Module](./micrOS/MODULE_GUIDE.md).
 
-⌘ DevToolKit CLI feature:
+The dashboard displays controls for modules with widget metadata, so a fresh
+node may have few controls until you load an application. Protected
+configuration operations may prompt for your device password.
 
-- Socket client python plugin - interactive - non interactive mode
+### What to try next
 
-```bash
-./devToolKit.py --search --connect
-```
+Choose a module from the [application catalog](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html),
+check its wiring and help, then try its commands. The shell uses
+`module function`; HTTP uses `/rest/module/function`, as in the system-info
+example above. Module and hardware availability depend on your deployment.
 
+You now have the basics. Use the network modes and configuration tables below
+as your everyday reference; continue to Advanced use for custom behavior,
+automation, different firmware, or multi-node tooling.
 
-----------------------
+<a id="micros-video-tutorials"></a>
 
-### Boards and suggestions
+### Tutorials and community
 
-There are multiple types of MCU-s (esp32, esp32s3, etc.) available to order, **BUT** to be able to enable **more features** (more then ~2 Load Modules) and **full capable WebUI** interface you need to have more then **150-200kb** of ram (basic boards)(ℹ️).
+[![YouTube](https://img.shields.io/badge/YouTube-micrOS_framework-red?logo=youtube&logoColor=white)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
+[![Instagram](https://img.shields.io/badge/Instagram-%40micros_framework-%23E4405F?logo=instagram&logoColor=white)](https://www.instagram.com/micros_framework/)
+[![Facebook](https://img.shields.io/badge/Facebook-micrOS_framework-%231877F2?logo=facebook&logoColor=white)](https://www.facebook.com/Micros-Framework-103501302140755)
+[![Thingiverse](https://img.shields.io/badge/Thingiverse-micrOS_3Dprints-%231489FF?logo=thingiverse&logoColor=white)](https://www.thingiverse.com/micros_framework/designs)
 
-There is a solution ✅, additinal psram: **~2-4-8Mb** boards are available. It used to name as **psram** or **spiram**, even there is a type **octo-psram**, so check it before buy!!! Psram needs to be **supported on micropython** side as well !!!
+[![micrOS video tutorials](./media/YoutubeChannel.png)](https://www.youtube.com/channel/UChRlJw7OYAoKroC-Mi75joA)
 
-**Suggestions - 🔮futureproof hardware:**
-
-**`esp32s3`**: Very fast new espressif module that supports psram detection, so you can freely select any module with this MCU with additinal ram, and micros will work with the best performance, typical ram sizes: **2Mb** (more then enough for everage usage), **4-8Mb** (capacble of image and sound processing tasks and load all GPIO-s 🚀)
-
-**`esp32s3-octo`** Same sa normal psram, just uses 8 pins to connect to the MCU, basically faster...
-
-**`tinypico`** excellet hardware, bit pricy, with 4Mb of ram.
-
-**`esp32cam`** it has a custom image and attached 8Mb of ram.
-
-So prefer boards with more psram 2Mb-8Mb, **minumum requirement for the full flatched setup ~250kb** but smallest psram is **2Mb**:
-
-- max measured 4Mb is 5.6% 230kb - oled_ui and lot of things loaded...
-- camera stream can use about 50% of ram, that means about 2Mb of ram usage.
-
-> Note:
-
-**`esp32`** also can be totally fine with ShellCli, and no WebCli ... (WebCli javascript, htmls are quite small but can be few tens of kilobytes, also multiple async tasks in the background can take same, and roughly around 80% of memory usage system can be instable and restarts.) **So if you have a spare one try out micrOS with a range of features :)**
-
-----------------------
-
-## Built in periphery support
-
-`#Sensors / inputes` `#Actuators / outputs`
-
-[![pheriphery-io-preview](./media/pheriphery-io-preview.png)](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
-
-[[CLICK] Show micrOS Load Module functions](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)</br>
-
-----------------------------------------
-
-## Device Pinouts for wiring
-
-### Logical pin association handling
-
-[micrOS/source/microIO.py](./micrOS/source/microIO.py)
-
-LogicalPin lookup tables:
-
-- [tinypico](micrOS/source/modules/IO_tinypico.py)
-- [esp32](micrOS/source/modules/IO_esp32.py)
-- [esp32s2](micrOS/source/modules/IO_esp32s2.py)
-- [esp32s3](micrOS/source/modules/IO_esp32s3.py)
-- [raspberryPicoW](micrOS/source/modules/IO_rp2.py) - reset needed after ota update (webrepl limitation)
-- `IO_*.py` [etc.](./micrOS/source)
-
-> Note: Good idea to use costant variable for pin map declaration, check the files for more info, These files are also precompiled automatically into byte streams -> `.mpy`
-
-![MicrOStinyPicopinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
-
-GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
+Questions, ideas, and technical requests are welcome in
+[GitHub Discussions](https://github.com/BxNxM/micrOS/discussions). If micrOS is
+useful to you, a GitHub star helps other MicroPython and embedded-automation
+developers find it.
 
 
-![MicrOSESP23pinout](./media/NodeMCUPinOutESP32.png?raw=true)
+---
+
+<a id="networking-modes"></a>
+
+<a id="how-it-works"></a>
+
+### Network modes
+
+![micrOS station, access-point, and local-network modes](./media/micrOSNetworking.png?raw=true)
+
+A node normally joins the local Wi-Fi network in station mode. It can fall back
+to its own access point for configuration. Set `nwmd`, `staessid`, `stapwd`,
+and `devip` using the configuration reference below. Clients communicate directly
+with a node; nodes can invoke each other over sockets or ESP-NOW.
 
 
-![MicrOSESP23S2pinout](./media/NodeMCUPinOutESP32S2_mini.png?raw=true)
+<a id="micros-node-configuration-parameters-with-description"></a>
 
+### Node configuration reference
 
-![PYQT_PinOutESP32pinout](./media/PYQT_PinOutESP32.png?raw=true)
+These parameters control micrOS core functionality and allow an entire system
+to be assembled from configuration.
 
-----------------------------------------
-
-## micrOS **node configuration**, parameters with description
-
-These parameters controlls micrOS core functionalities, so you can define an entire system by setting your custom configurations via these values.
-
-### Basic parameters:
+#### Basic parameters:
 
 |      Config keys    |   Default value and type    | Reboot required |              Description                     |
 | :-----------------: | :-------------------------: | :-------------: | ----------------------------------------- |
@@ -467,7 +265,7 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 |   **`appwd`**       |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password + micrOS auth
 | **`boothook`**      |    `n/a` `<str>`            |      Yes        | Add Load Module execution(s) to the boot sequence. Separator `;`. Examples: `rgb load; cct load` but you can call any load module function here if you want to run it at boot time.
 | **`webui`**         |       `False`  `bool`       |      Yes        | Launch http rest server on port 80 (in parallel with micrOS shell on port 9008 aka `socport`). It has 2 endpoints: / aka main page (index.html) and /rest aka rest (json) interface for load module execution. Example: `<devfid>.local` or `<devfid>.local/rest` + optional parameters: `/rgb/toggle`. **Apple shortcuts compatible**
-| **`espnow`**         |     `False`  `bool`       |      Yes        | Enable **ESPNow communication protocol**. It starts `espnow.server` task, that can receive espnow messages and execute Load Module commands. It is an extension for **InterCon** feature example: `system heartbeat >>target.local`. 
+| **`espnow`**         |     `False`  `bool`       |      Yes        | Enable **ESPNow communication protocol**. It starts `espnow.server` task, that can receive espnow messages and execute Load Module commands. It is an extension for **InterCon** feature example: `system heartbeat >>target.local`.
 | | |
 | **`cron`**          |     `False`  `<bool>`       |       Yes       | Enable timestamp based Load Module execution aka Cron scheduler (linux terminology), Timer(1) hardware interrupt enabler.
 | **`crontasks`**     |     `n/a`  `<str>`          |       No       | Cron scheduler input, task format: `WD:H:M:S!module function` e.g.: `1:8:0:0!system heartbeat`, task separator in case of multiple tasks: `;`. [WD:0-6, H:0-23, M:0-59, S:0-59] in case of each use: `*`. Instead `WD:H:M:S` you can use suntime tags: `sunset`, `sunrise`, optional offset: `sunset+-<minutes>`, `sunrise+-<minutes>`, example: `sunset-30!system heartbeat`. Range of days: WD can be conrete day number or range like: 0-2 means Monday to Wednesday.
@@ -488,49 +286,331 @@ These parameters controlls micrOS core functionalities, so you can define an ent
 | | |
 | **`timirq`**        |     `False`  `<bool>`       |       Yes       | Timer(0) interrupt enabler - background "subprocess" like execution, timer based infinite loop for the LoadModule execution.
 | **`timirqcbf`**     |      `n/a`   `<str>`        |      Yes        | if `timirq` enabled, calls the given Load Module(s), e.x.: `module function optional_parameter(s)`, task separator: `;`
-| **`timirqseq`**     |    `1000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `3000` ms (for `timirq` infinite loop timer value)
+| **`timirqseq`**     |    `1000`   `<int>`         |      Yes        | Timer interrupt period in ms, default: `1000` ms (for `timirq` infinite loop timer value)
 
-### Advanced parameter options:
+#### Advanced parameter options:
 
 |       Config keys   |   Default value and type    | Reboot required |               Description                      |
 | :-----------------: | :-------------------------: | :-------------: | ---------------------------------------- |
 | **`utc`**           |     `60`   `<int>`          |       Yes       | NTP-RTC - timezone setup (UTC in minute) - it is automatically calibrated in STA mode based on geolocation.
 | **`ha`**            |   `True`   `<bool>`         |       Yes       | High Availability mode for micrOS network runtime. This is **not Home Assistant** integration. When enabled, micrOS turns on the 30 second watchdog and the idle task checks STA connectivity about every 3 minutes. If the node is configured for `nwmd=STA`, loses Wi-Fi, and a configured SSID is visible again, micrOS reboots to repair the connection. In AP mode this mainly leaves the watchdog behavior active, while STA auto-repair is not used.
 | **`cstmpmap`**      |      `n/a`  `<str>`          |      Yes       | Default (`n/a`), select pinmap automatically based on platform (`IO_<platform>`). Manual control / customization of application pins, syntax: `pin_map_name; pin_name:pin_number; ` etc. [1][optional] `pin_map_name` represented as `IO_<pin_map_name>.py/.mpy` file on device. [2+][optinal] `dht:22` overwrite individual existing load module pin(s). Hint: `<module> pinmap()` to get app pins, example: `neopixel pinmap()`
-| **`boostmd`**       |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 16Mhz-24MHz (depends on the board).
+| **`boostmd`**       |      `True`  `<bool>`       |      Yes        | boost mode - set up cpu frequency low or high 80/160 MHz on ESP32-C3/C6; the current fallback is 160/240 MHz. Other ports require compatible clock settings.
 | **`aioqueue`**      |    `5` `<int>`              |       Yes       | System async queue controller (resource limiter).: `#1` Set asyc task queue limit (for soft tasks: `&`). Furthermore `#2` Socker server-s (webCli, ShellCli) client number limiter. 5 means: 5 cooperative connection (queue) shared by webCli and shellCli. It can be increased based on available resources.
 | **`webui_max_con`** |        `3`  `<int>`       |      Yes        | Maximum number of concurrent HTTP requests processed simultaneously. Each active request consumes heap memory. Lower this value to mitigate memory allocation failures caused by heap fragmentation. The effective concurrency limit is reduced if the memory requirement exceeds 10% of the available heap or if the value of webui_max_con exceeds the value of aioqueue.
 | | |
 | **`devip`**         |      `n/a`  `<str>`         |    Yes(N/A)      | Device IP address, (first stored IP in STA mode will be the device static IP on the network), you can set specific static IP address here.
-| **`nwmd`**          |     `n/a`  `<str>`          |      Yes        | Prefered network mode - `AP` or `STA`, default is `STA`.
+| **`nwmd`**          |     `STA`  `<str>`          |      Yes        | Preferred network mode - `AP` or `STA`, default is `STA`.
 | **`soctout`**       |   `30`      `<int>`         |      Yes        | Socket server connection timeout. If user is passive for `soctout` sec, and new connection incoming, then close passive connection. So it is time limit per connection in the `aioqueue`.
-| **`socport`**       |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed due to client and API inconpatibility).
+| **`socport`**       |    `9008`  `<int>`          |      Yes        | Socket server service port (should not be changed because of client and API incompatibility).
 | **`auth`**          |     `False` `<bool>`        |       Yes       | Enables socket password authentication, password: `appwd`. Passwordless functions: `hello`, `version`, `exit`. Plus access for loaded modules. Auth protects the configuration and new module loads.
 | | |
 | **`dbg`**	         |     `True`    `<bool>`      |       Yes       | Debug mode - enable micrOS system printout, server info, etc. + progress LED.
 | **`hwuid`**         |      `n/a`  `<str>`         |      N/A        | USED BY SYSTEM (state storage) - hardware address - dev uid
-| **`guimeta`**       |      `n/a`  `str`           |      No         | USED BY micrOS Client (state storage) - stores - offloaded parameter type in config. Clinet widget meta data storage.
+| **`guimeta`**       |      `...`  `str`           |      No         | Used by the micrOS client for widget metadata and offloaded parameter-type state.
 
-> Note: Default empty value: `n/a` in case of string parameter.
-> Note: Cron is only available on devices with Timer(**1**): esp32
+Most unset string parameters use `n/a`. Cron requires Timer(1); the original
+implementation targets the ESP32 port.
 
-----------------------------------------
-----------------------------------------
 
-# Networking - automatic network modes
+---
 
-![MICROSNWMODES](./media/micrOSNetworking.png?raw=true)
+## Advanced use
 
-# micrOS Gateway in docker
+Use this section as a reference, not a second setup checklist. It covers
+operating and extending your nodes. Runtime design belongs in
+[ARCHITECTURE.md](./micrOS/ARCHITECTURE.md); application APIs and examples belong
+in [MODULE_GUIDE.md](./micrOS/MODULE_GUIDE.md).
+
+- [Interfaces and applications](#interfaces-and-applications)
+- [Automation commands](#configure-automation)
+- [Boards and memory](#boards-and-memory) · [Peripherals](#built-in-peripheral-support) · [Pinouts](#device-pinouts-for-wiring)
+- [Gateway and monitoring](#gateway-and-monitoring)
+- [Development and customization](#developer-guide) — modules, firmware images, CLI, and examples
+- [Documentation](#documentation-map)
+- [Roadmap](#roadmap) · [Release history](#release-history)
+- [Cheat sheets and maintainer notes](#operations-and-maintainer-notes)
+
+<a id="micros-clients"></a>
+
+### Interfaces and applications
+
+| Interface | Purpose |
+| --- | --- |
+| **On-device web UI** | Configuration, generated dashboards, REST tools, and file management at `http://<nodename>.local`. |
+| **WebCli / REST** | Exposes MicroPython module functions through HTTP endpoints. |
+| **ShellCli** | Provides a generic, session-based TCP/IP operation and management (OAM) interface with a telnet-style shell. |
+| **DevToolKit** | Deploys, updates, discovers, monitors, and simulates nodes. |
+| **InterCon** | Executes commands between nodes over sockets or ESP-NOW. |
+
+Load Modules are micrOS applications. Use the catalog to find one for your
+hardware, or follow the development guide to write your own.
+
+- [Browse the built-in application and peripheral catalog](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
+- [Create a custom Load Module](./micrOS/MODULE_GUIDE.md)
+- [Install shared micrOS packages](https://github.com/BxNxM/micrOSPackages)
+- [Use the micrOS Gateway](./env/docker/README.md)
+- AI integration: [![DockerHub micrOS MCP](https://img.shields.io/badge/DockerHub-micrOS%20MCP-blue)](https://hub.docker.com/r/bxnxm/micros-mcp)
+
+<details>
+<summary><strong>Legacy mobile clients</strong></summary>
+
+The original phone applications are obsolete and have been replaced by the
+on-device web UI.
+
+The store listings below returned 404 when checked on September 7, 2026.
+Their original links and badges are preserved for historical reference, not
+as installation options.
+
+[![Legacy micrOS iOS client](./media/store/AppStoreBadge.svg)](https://apps.apple.com/hu/app/micros-client/id1562342296)
+[![Legacy micrOS Android client](./media/store/GooglePlayBadge.png)](https://play.google.com/store/apps/details?id=com.BMT.micrOSClient)
+
+</details>
+
+
+#### Optional file manager
+
+Enable the file manager for this session with `web load fileserver=True` in
+the shell. Use that command in `boothook` to enable it on subsequent boots,
+preserving any other startup actions. Protected file operations may prompt
+for your device password.
+
+<a id="complete-guide-and-reference"></a>
+<a id="micros-framework-features"></a>
+
+<a id="detailed-runtime-capabilities"></a>
+
+### Configure automation
+
+<a id="boot-configuration-and-networking"></a>
+
+#### Startup and network settings
+
+OTA tooling monitors updates and restarts the node. To configure startup and
+network behavior, edit `node_config.json` through the shell or web UI:
+
+- `boothook` runs initialization before network setup—for example,
+  `rgb load; neopixel load` restores application pins and state. Prefix an
+  action with `#` to disable it while experimenting.
+- `nwmd` selects station (`STA`) or access-point (`AP`) mode. `devip`
+  controls the stored/static IP and `devfid` the hostname (`<devfid>.local`).
+- In STA mode, NTP and UTC handling set the clock, using
+  [ip-api.com](http://ip-api.com/json/?fields=lat,lon,timezone,offset) for
+  location/timezone data. The runtime also tracks uptime.
+
+#### Schedules and external events
+
+| Mechanism | Configuration and example |
+| --- | --- |
+| Periodic timer | Enable `timirq`; set `timirqseq` in milliseconds and `timirqcbf` to a command. With `5000` and `bme280 measure`, Timer(0) measures every five seconds. Callbacks support `#` comments. |
+| Cron | Enable `cron` and set `crontasks`. Timer(1) runs timestamped entries such as `*:8:0:0!rgb rgb r=10 g=60 b=100` (daily at 08:00). |
+| External interrupt | Enable `irqX` (X = 1–4), choose `irqX_trig` (`up`, `down`, or `both`), and set `irqX_cbf` to a Load Module callback. Callbacks support `#` comments. |
+
+Cron timestamps use `WD:H:M:S!module function`, with ranges
+`0–6:0–23:0–59:0–59` and `*` for any value. Monday is 0 and Sunday is 6;
+`0-2` selects Monday through Wednesday. Separate entries with `;`, but use
+only one command per entry; comments are not supported.
+
+Instead of a timestamp, use `sunrise` or `sunset` with an optional minute
+offset: `sunrise+30` or `sunset!rgb rgb r=10 g=60 b=100`. Times come from
+[api.sunrise-sunset.org](https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0).
+Timer support depends on the MicroPython port.
+
+#### Shell and background jobs
+
+ShellCli provides wireless commands such as `help`, `version`, `reboot`,
+`modules`, and `webrepl`. Enter `conf` to read or change configuration,
+use `dump` to show it, and leave with `noconf`.
+`webrepl --update` restarts into WebREPL mode and waits about 20 seconds
+for an OTA update. For normal boot versus WebREPL recovery mode, see the
+[loader and boot-flow reference](./micrOS/ARCHITECTURE.md#boot-flow).
+
+Use `help` for shell commands and active modules, or `help all` to include all
+installed modules. Older output examples below use the former `help lm` syntax.
+
+Run Load Module functions in the background:
+
+| Command | Effect |
+| --- | --- |
+| `system heartbeat &` | Run once in the background. |
+| `system heartbeat &1000` | Wait one second, then run once. |
+| `system heartbeat &&` | Repeat in the background. |
+| `system heartbeat &&1000` | Repeat every second. |
+| `task show system.heartbeat` | Show the task's latest output. |
+| `task kill system.heartbeat` | Stop the task. |
+| `task list` | List active tasks and queue/load information. |
+
+Example task list (the active services depend on configuration):
+
+```text
+TinyDevBoard $ task list
+---- micrOS  top ----
+#queue: 18 #load: 3%
+
+#Active   #taskID
+Yes       server
+Yes       idle
+Yes       telegram.server_bot
+Yes       espnow.server
+```
+
+The host-side socket client supports interactive and non-interactive use.
+To discover nodes and connect:
+
+```bash
+./devToolKit.py --search_devices --connect
+```
+
+### Hardware and peripherals
+
+#### Boards and memory
+
+<details>
+<summary><strong>Capabilities and example boards</strong></summary>
+
+![stable master](https://img.shields.io/badge/master-HEAD-success)
+![MicroPython OS](https://img.shields.io/badge/micropython-OS-gold)
+![async task manager](https://img.shields.io/badge/async-task_manager-olive)
+![configuration manager](https://img.shields.io/badge/config-manager-olive)
+![cron interrupts](https://img.shields.io/badge/IRQs-Cron-olive)
+![event interrupts](https://img.shields.io/badge/IRQs-Events-olive)
+![REST API](https://img.shields.io/badge/Web-Rest-olive)
+![Web UI](https://img.shields.io/badge/Web-UI-olive)
+![socket shell](https://img.shields.io/badge/Socket-Shell-olive)
+![GPIO and I2C](https://img.shields.io/badge/GPIO-I2C-olive)
+![RTC and NTP](https://img.shields.io/badge/RTC-NTP-olive)
+![Wi-Fi STA or AP](https://img.shields.io/badge/Wifi-STA_or_AP-blue)
+![OTA update](https://img.shields.io/badge/OTA-Update-blue)
+![InterCon socket](https://img.shields.io/badge/InterCon-socket-blue)
+![InterCon ESP-NOW](https://img.shields.io/badge/InterCon-espnow-blue)
+
+![TinyPICO](https://img.shields.io/badge/esp32-tinypico-purple)
+![ESP32-S3](https://img.shields.io/badge/esp32-S3-purple)
+![ESP32-S3 with RAM](https://img.shields.io/badge/esp32-S3_RAM-purple)
+![ESP32-CAM OV2640](https://img.shields.io/badge/esp32-CAM_OV2640-purple)
+![ESP32-C6 RISC-V](https://img.shields.io/badge/esp32-C6_RISCV-purple)
+![ESP32-C3 RISC-V](https://img.shields.io/badge/esp32-C3_RISCV-purple)
+![ESP32-S2](https://img.shields.io/badge/esp32-S2-purple)
+![QT Py ESP32](https://img.shields.io/badge/esp32-PYQT-purple)
+![Raspberry Pi Pico W](https://img.shields.io/badge/raspberry-pico_W-critical)
+![other ESP32 boards](https://img.shields.io/badge/esp32-etc.-purple)
+
+Board support depends on the MicroPython port, Wi-Fi, available memory, and pin
+map—not just the chip family or manufacturer. Included mappings cover Espressif
+variants, TinyPICO, M5Stamp, QT Py, and RP2/Pico W. A pin map alone does not
+guarantee compatibility: check the available firmware and your modules'
+requirements.
+
+</details>
+
+micrOS targets compatible MicroPython boards with Wi-Fi, not one chip family or
+manufacturer. Included mappings cover multiple Espressif boards as well as
+RP2/Pico W and provider-specific boards such as TinyPICO, M5Stamp, and QT Py.
+Deployment method and peripheral availability vary by MicroPython port.
+
+Regardless of provider, enabling more than approximately two Load Modules
+together with the full Web UI generally requires more than **150–200 KB** of
+available RAM.
+
+For larger applications, choose a board with **2, 4, or 8 MB of additional
+PSRAM**. It may be described as PSRAM, SPIRAM, or octal PSRAM. Check the board
+specification before buying; the selected MicroPython build must support it.
+
+**Examples of higher-memory hardware:**
+
+**`esp32s3`**: A fast Espressif MCU with PSRAM detection. Typical configurations
+include **2 MB** for general use and **4–8 MB** for image processing, audio, and
+larger combinations of GPIO applications.
+
+**`esp32s3-octo`**: Uses an eight-bit PSRAM interface for higher throughput.
+
+**`tinypico`**: Excellent compact hardware with 4 MB of PSRAM, at a higher price.
+
+**`esp32cam`**: Uses a camera-capable image. The original project notes describe
+an 8 MB configuration; check the actual board, as that is not a guarantee for
+every board sold under this name.
+
+The following figures are historical project measurements and estimates,
+not limits enforced by the runtime. The original guide estimated roughly
+**250 KB** for a fuller setup and recommended **2–8 MB** PSRAM configurations:
+
+- A heavily loaded 4 MB system used approximately 230 KB (5.6%), including `oled_ui` and several other modules.
+- Camera streaming can consume approximately 2 MB, or 50% of a 4 MB configuration.
+
+> Note:
+
+A standard **`esp32`** can work well with ShellCli and without WebCli. Web assets
+and multiple asynchronous tasks each consume additional memory. The original
+guide reported instability near 80% heap use in some setups; allocation sizes
+and fragmentation matter too, so this is not a universal threshold. A spare ESP32 is
+still a good way to explore a smaller set of micrOS features.
+
+---
+
+#### Built-in peripheral support
+
+`#Sensors / inputs` `#Actuators / outputs`
+
+[![pheriphery-io-preview](./media/pheriphery-io-preview.png)](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)
+
+[Browse Load Module functions](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html)</br>
+
+---
+
+#### Device Pinouts for wiring
+
+##### Logical pin association handling
+
+microIO resolves logical pins through `modules/IO_*.py` board maps. Use an
+existing map such as `IO_esp32.py` as a template for `IO_<name>.py`, then set
+`cstmpmap` to `<name>`. You can override individual pins too:
+`neop:25` maps the logical NeoPixel pin to GPIO 25. Inspect mappings with
+`system pinmap`.
+
+[micrOS/source/microIO.py](./micrOS/source/microIO.py)
+
+LogicalPin lookup tables:
+
+- [tinypico](micrOS/source/modules/IO_tinypico.py)
+- [esp32](micrOS/source/modules/IO_esp32.py)
+- [esp32s2](micrOS/source/modules/IO_esp32s2.py)
+- [esp32s3](micrOS/source/modules/IO_esp32s3.py)
+- [M5Stamp](micrOS/source/modules/IO_m5stamp.py)
+- [QT Py](micrOS/source/modules/IO_qtpy.py)
+- [raspberryPicoW](micrOS/source/modules/IO_rp2.py) - reset needed after ota update (webrepl limitation)
+- `IO_*.py` [and other mappings](./micrOS/source/modules)
+
+> Use constant variables for pin-map declarations; see the files for examples.
+> These files are also precompiled automatically into `.mpy` bytecode.
+
+![MicrOStinyPicopinout](./media/NodeMCUPinOutTinyPico.png?raw=true)
+
+GENERAL CONTROLLER CONCEPT: [microPLC](./media/microPLC.png)
+
+
+![MicrOSESP23pinout](./media/NodeMCUPinOutESP32.png?raw=true)
+
+
+![MicrOSESP23S2pinout](./media/NodeMCUPinOutESP32S2_mini.png?raw=true)
+
+
+![PYQT_PinOutESP32pinout](./media/PYQT_PinOutESP32.png?raw=true)
+
+---
+
+<a id="micros-gateway-in-docker"></a>
+
+### Gateway and monitoring
 
 ![MICROSVISUALIZATION](./media/micrOS_gateway.png?raw=true)
 
-With prometheus database.
-Check the micrOS Gateway docker [README](./env/docker/README.md) for details.
+Use the gateway with Prometheus for metrics and Grafana for dashboards. See
+the [Docker setup guide](./env/docker/README.md) for the combined stack and
+dashboard examples.
 
 Resources:
 
-> modify `prometheus.yml` regarding what sensors on which endpoint do you want to scrapre data from.
+> Modify `prometheus.yml` to select the sensor endpoints from which Prometheus should scrape data.
 
 * [docker-compose](./env/docker/docker-compose.yaml)
 * [prometheus config](./env/docker/prometheus.yml)
@@ -540,75 +620,58 @@ cd ./env/docker
 docker-compose -p gateway up -d
 ```
 
-Official [DockerHub](https://hub.docker.com/repository/docker/bxnxm/micros-gateway/general)
+Official [DockerHub image](https://hub.docker.com/r/bxnxm/micros-gateway)
 
-# micrOS Customization
+<a id="developer-guide"></a>
+
+### Development and customization
+
+<a id="customization"></a>
+<a id="load-modules-and-pin-maps"></a>
+
+#### Create a Load Module
+
+To add an application, create `LM_<your_app_name>.py`, write public Python
+functions, and upload it through DevToolKit's drag-and-drop GUI. For example,
+`system info` calls `info()` in `modules/LM_system.py`.
+See the [Load Module guide](./micrOS/MODULE_GUIDE.md) for the API contract.
 
 [![app_templates](./media/app_templates.png?raw=true)](./micrOS/MODULE_GUIDE.md)
 
-----------------------------------------
-----------------------------------------
+#### USB updates and custom images
 
+The selected firmware filename controls which resources are copied from
+`toolkit/workspace/precompiled/`:
 
-## FUTURE MAIN RELEASE PLANS
+- A stock MicroPython image keeps the full development deployment.
+- A prebuilt `micrOS-*` image already contains the core and receives only the
+  configured web assets and minimum LM/IO modules.
 
-Version **3.X.0-0** `micrOS-Waterbear`
+USB deploy and update display the selected mode. USB update restores
+`node_config.json` for both image types. **Skip MicroPython** keeps the current
+firmware and copies only the required files.
 
-```
-    Core:
-    - Low power mode (wake on event, hibernate command)?
-    	- Remote controller / Sensor on battery UseCases
-```
+Build all configured `micrOS-*` images with:
 
-
-Version **3.X+1.0-0** `micrOS-SecurePower`
-
-```
-    Core:
-    - Async socket servers with SSL/TLS integration (with auth.)
-        - ShellCli (with TLS) and InterCon adaptation (default port: 9008, new secure port 9009)
-        - WebCli (https) and webUI adaptation
- 
-    - Intercon-Wire (?)
-    	- Idea of wired message communication protocol same as Intercon-Shell/Intercon-ESPNow
-    	- Possible HW protocols: i2c / onewire / uart BUT it should support bidirectional message transfers
-    	- Goal: CoProcessor easy integration feature - Arduino env support
- 
-    - Application deployment automation: /config/compose.json
-    	- enables application deployment:
-    		- configuration (node_config.json) handling - safe parameter injection (boothook and irqs)
-    		- [done] requirements.txt handling
-    	- Automatic behaviour in core system if file exists in STA mode
+```bash
+python3 toolkit/micrOSImageBuilder.py
 ```
 
-<a id="release-note"></a>
-## Release notes
+Supported custom targets are `esp32`, `esp32c3`, `esp32c6`, and `esp32s3`.
+The [MicroPython image guide](micrOS/micropython/README.md) contains the binary
+catalog, custom image list, and image notes. Image settings and release
+resources are defined in `toolkit/micrOSImageConfig.json`.
 
-[Development Metrics](toolkit/helper_scripts/analysis/timeline_visualization.pdf)
+Custom images append a `[micrOS]` marker to the board description shown by
+`system info`. Full OTA reads the `hello` mode and skips frozen core files on
+`rel` devices.
 
-|  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |  SUPPORTED DEVICE(S) | APP PROFILES | Load Modules  |     NOTE       |
-| :----------: | :----------------: | :------------------------:   |  :-----------------: | :------------: | :------------:| -------------- |
-|  **v0.1.0-0** | [release_Info-0.1.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| **78,4%** 29 776 byte | esp8266 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_0.1.0-0.json)| Stable Core with applications - first release
-|  **v0.4.0-0** | [release_Info-0.4.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp8266.md)| **81,0%** 30768 byte | esp8266 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and so more. OTA update feature.
-|  **v0.4.0-0** | [release_Info-0.4.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| **47,1%** 52 416 byte | esp32 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_0.4.0-0.json)| *micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.*
-|  **v1.0.0-0** | [release_Info-1.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| **47,9%** 53 280 byte | esp32 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc.
-|  **v1.2.2-0** | [release_Info-1.2.2-0](./micrOS/release_info/micrOS_ReleaseInfo/release_1.2.2-0_note_esp32.md)|  **48,6%** 54 032 byte | esp32 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.2.2-0.json)| Public Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA update, thread from socket shell (beta) etc.
-|  **v light-1.3.0-0** | - |  - | **esp8266** | [lightweight branch](https://github.com/BxNxM/micrOS/tree/lightweight)| - |remove esp8266 due to memory limitation - BUT still supported with limited functionalities on **`lightweight`** branch. Hint: Change branch on github and download zip file, then start micrOSDevToolKit dashboard GUI
-|  **v 1.5.0-1** | [release_Info-1.5.0-1](./micrOS/release_info/micrOS_ReleaseInfo/release_1.5.0-1_note_esp32.md) |  **58,2%** 64 704 byte | esp32 (tinyPico) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.5.0-1.json) | Advanced Timer IRQ based scheduling (cron & timirq), Geolocation based timing features, External IRQs with 4 channel (event filtering), finalized light controls, Device-Device comminucation support, etc.
-|  **v 1.21.0-4** | [release_Info-1.21.0-4](./micrOS/release_info/micrOS_ReleaseInfo/release_1.21.0-4_note_esp32.md) |  **57.3%** 63 728 byte | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_1.21.0-4.json) | Full async core system with advanced task management and device to device communication, task scheduling and much more ... with more then 30 application/pheriphery support.
-|  **v 2.0.0-0** | [release_Info-2.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.0.0-0_note_esp32.md) |  **45.4%** 68.7 kb | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.0.0-0.json) | Optimizations, WebCli with web frontends, Camera support. Micropython 1.21 async maxed out :D
-|  **v 2.6.0-0** | [release_Info-2.6.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.6.0-0_note_esp32.md) |  **48.3%** 72.6 kb  | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.6.0-0.json) | WebCli http server enhancements. New webapps: dashboard. Core system official interface finalization towards Load Modules: Common.py, Types.py (frontend generation), microIO.py (pinout handling).
-|  **v 3.0.0-0** | [release_Info-3.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_3.0.0-0_note_esp32.md) |  **66.0%** 95,5 kb  | esp32 (tinyPico, esp32c6, esp32s3+PSRAM, etc.) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_3.0.0-0.json) | **Min. required RAM: 200kb**. Standalone micrOS with multi layer file system (resource separation) and advanced package management, etc. [more details](https://github.com/BxNxM/micrOS/discussions/55)
+#### Development branches and legacy deployments
 
-----------------------------------------
-----------------------------------------
-
-
-## Developer Quick guide
-
-Note:
-
-> Secure Core (OTA static modules) (GUI): `boot.py`, `micrOSloader.mpy`, `Network.mpy`, `ConfigHandler.mpy`, `Debug.mpy`
+Historical GUI terminology: “Secure Core” (OTA static modules) referred to
+`boot.py`, `micrOSloader.mpy`, `Network.mpy`, `ConfigHandler.mpy`, and
+`Debug.mpy`. These are legacy names, not the current release-image resource
+list; see [deployment modes](#usb-updates-and-custom-images).
 
 Alternative branches:
 
@@ -619,23 +682,23 @@ Alternative branches:
 [lightweight-for-esp8266](https://github.com/BxNxM/micrOS/tree/lightweight) - really old legacy v1.3
 
 
-#### Erase device & Deploy micropython & Install micrOS 
+#### Erase, flash MicroPython, and install micrOS
 
-Go to micrOS repo, where the `devToolKit.py` located.
+From the repository directory containing `devToolKit.py`, run:
 
 ```bash
 devToolKit.py --make
 ```
-> Note: Follow the steps :)
+Follow the interactive prompts. This operation erases the board.
 
 
-Search and Connect to the device
+Then discover and connect to the device:
 
 ```
 devToolKit.py -s -c
 ```
 
-----------------------------------------
+---
 
 **User commands**
 
@@ -649,10 +712,10 @@ Base commands:
   -m, --make            Erase & Deploy & Precompile (micrOS) & Install (micrOS)
   -r, --update          Update/redeploy connected (USB) micrOS
   -s, --search_devices  Search devices on connected wifi network.
-  -o, --OTA             OTA (OverTheArir update with webrepl)
-  -c, --connect         Connect via socketclinet
+  -o, --OTA             OTA (over-the-air update with WebREPL)
+  -c, --connect         Connect through the socket client
   -p CONNECT_PARAMETERS, --connect_parameters CONNECT_PARAMETERS
-                        Parameters for connection in non-interactivve mode.
+                        Parameters for connection in non-interactive mode.
   -a APPLICATIONS, --applications APPLICATIONS
                         List/Execute frontend applications. [list]
   -stat, --node_status  Show all available micrOS devices status data.
@@ -684,19 +747,11 @@ devToolKit.py --node_status
 Output:
 
 ```
-       [ UID ]                [ FUID ]		[ IP ]		[ STATUS ]	[ VERSION ]	[COMM SEC]
-__localhost__                 __simulator__     127.0.0.1	OFFLINE		<n/a>		n/a
-micr<ID>OS            TinyDevBoard      10.0.1.72	ONLINE		1.16.2-2		0.072
-micr<ID>OS            LivingKitchen     10.0.1.200	ONLINE		1.16.2-2		0.076
-micr<ID>OS            RoboArm           10.0.1.232	ONLINE		1.15.4-0		0.072
-micr<ID>S            Cabinet           10.0.1.204	ONLINE		1.16.2-2		0.074
-micr<ID>4OS            TestBird          10.0.1.179	ONLINE		1.16.2-1		0.083
-micr<ID>OS            RingLamp          10.0.1.75	ONLINE		1.16.2-2		0.099
-micr<ID>OS            CatFeeder         10.0.1.111	OFFLINE		<n/a>		n/a
-micr<ID>OS            ImpiGamePro       10.0.1.23	OFFLINE		<n/a>		n/a
-micr<ID>S            micrOSPublic02    10.0.1.47	ONLINE		1.16.2-2		0.101
-micr<ID>cOS            micrOSPublic01    10.0.1.197	ONLINE		1.16.2-2		0.099
-micr<ID>cOS            experipurple      10.0.1.94	OFFLINE		<n/a>		n/a
+[ UID ]                 [ FUID ]              [ IP ]          [ STATUS ] [ VERSION ] [ MODE ] [COMM SEC] [WEBUI | ESPNOW | CRON | TIMIRQ] 
+__localhost__           __simulator__         127.0.0.1       OFFLINE    <n/a>       n/a      n/a        n/a      n/a      n/a      n/a   
+micr24587c53b170OS      Entrance              10.0.1.55       ONLINE     3.5.0-0     rel      0.181      ON       OFF      OFF      OFF   
+micr308398c73e88OS      LivingKitchen         10.0.1.200      ONLINE     3.5.0-0     dev      0.685      ON       ON       ON       OFF   
+micr7c9ebd6147c4OS      node01                10.0.1.180      ONLINE     3.3.1-0     rel      0.280      ON       ON       OFF      OFF 
 ```
 
 **Other Developer commands**
@@ -727,11 +782,15 @@ then overwrites the copied `.js`, `.css`, and `.html` files with optimized
 versions for deployment. Source web files stay readable.
 
 Optional optimizer dependencies are installed by the normal toolkit bootstrap
-unless `--light` is used:
+unless `--light` is used.
 
-## Socket terminal example - non interactive
+#### Socket terminal examples
 
-### Identify device
+The following output snapshots are from earlier releases. Device names,
+configuration keys, and output formatting may differ today; use the
+[configuration reference](#node-configuration-reference) for current defaults.
+
+##### Identify device
 
 ```
 devToolKit.py -c -p '--dev slim01 hello'
@@ -743,86 +802,44 @@ Device was found: slim01
 hello:slim01:0x500x20x910x680xc0xf7:dev
 ```
 
-### Get help
+##### Get help
 
 ```bash
-devToolKit.py -c -p '--dev BedLamp help'
-
-[MICROS]   - built-in shell commands
-   hello   - hello msg - for device identification
-   version - returns micrOS version
-   exit    - exit from shell socket prompt
-   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h
-   webrepl - start webrepl, for file transfers use with --update
-[CONF] Configure mode - built-in shell commands
+devToolKit.py -c -p '--dev TinyDevBoard help'
+[MICROS]
+   hello     - device hello msg ID
+   modules   - show active Load Modules
+   version   - show micrOS version
+   exit      - exit shell session
+   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h
+   webrepl   - start webrepl, for file transfers use with --update
+[CONF] Configuration mode
   conf       - Enter conf mode
-    dump       - Dump all data
+    dump       - Dump all data, filter: dump [str]
     key        - Get value
     key value  - Set value
   noconf     - Exit conf mode
-[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]
-  task list         - list tasks with <tag>s
-  task kill <tag>   - stop task
-  task show <tag>   - show task output
-[EXEC] Command mode (LMs):
-   help lm  - list ALL LoadModules
-   cct
-      help
-   co2
-      help
-   dht22
-        help
-   robustness
-             help
-   system
+[TASK] Task operations
+  task list         - list tasks by tags
+  task kill [tag]   - stop task
+  task show [tag]   - show task output
+[EXEC] Command mode, syntax(...): <module> <function> <params> <postfix>
+  Postfix hints:
+    ... &[x]            - start one-shot task
+    ... &&[x]           - start periodic task, where [x]: delay ms [x min: 20ms]
+    ... >json           - request json formatted output
+    ... >>hostname      - remote command execution (intercon)
+help [all/-] [match]  - list Active/ALL modules with optional filtering
+
+  cct
+     help
+  cluster
          help
-```
- 
-### Embedded config handler
- 
-```  
-devToolKit.py -c -p '--dev BedLamp conf <a> dump'
-  
-  staessid  :        <your-wifi-passwd>
-  devip     :        10.0.1.204
-  version   :        1.11.0-1
-  devfid    :        BedLamp
-  cron      :        True
-  cronseq   :        3000
-  soctout   :        10
-  irq2_cbf  :        n/a
-  stapwd    :        <your-wifi-name>
-  dbg       :        False
-  irq2      :        False
-  irq1      :        False
-  irq1_cbf  :        n/a
-  appwd     :        ADmin123
-  irq2_trig :        n/a
-  hwuid     :        micr7c9ebd623ff8OS
-  crontasks :        sunset!cct toggle True;*:0:30:0!cct toggle False;*:5:0:0!cct toggle False
-  timirq    :        True
-  irq3      :        False
-  irq3_cbf  :        n/a
-  irq4      :        False
-  irq4_cbf  :        n/a
-  irq4_trig :        n/a
-  nwmd      :        STA
-  timirqcbf :        system ha_sta
-  irq_prell_ms:      300
-  boothook  :        cct load
-  aioqueue  :        3
-  auth      :        False
-  timirqseq :        60000
-  utc       :        60
-  boostmd   :        True
-  socport   :        9008
-  irq3_trig :        n/a
-  irq1_trig :        n/a
-  guimeta   :        ...
-  cstmpmap  :        n/a
+  fileserver
+            help
 ```
 
-### Load Modules - User defined functions
+##### Load Modules - User defined functions
 
 ```
 devToolKit.py -c -p '--dev BedLamp system info'
@@ -836,9 +853,9 @@ mac: 7c:9e:bd:62:3f:f8
 uptime: 0 1:29:19
 ```
 
-## SocketClient
+##### SocketClient
 
-### Config:
+###### Config:
 
 micrOS/toolkit/user_data/device_conn_cache.json
 
@@ -862,55 +879,34 @@ micrOS/toolkit/user_data/device_conn_cache.json
 }
 ```
 
-#### Interactive mode
+###### Interactive mode
 
 ```
 devToolKit.py -c 
 or
-devToolKit.py -connect
+devToolKit.py --connect
 
 [i]         FUID        IP               UID
 [0] Device: __device_on_AP__ - 192.168.4.1 - __devuid__
 [1] Device: __simulator__ - 127.0.0.1 - __localhost__
 [2] Device: BedLamp - 10.0.1.72 - micr500291863428OS
 
-Choose a device index: 5
-Device was selected: ['10.0.1.204', 9008, 'Cabinet']
+Choose a device index: 2
+Device was selected: ['10.0.1.72', 9008, 'BedLamp']
 BedLamp $ help
-[MICROS]   - built-in shell commands
-   hello   - hello msg - for device identification
-   version - returns micrOS version
-   exit    - exit from shell socket prompt
-   reboot  - system soft reboot (vm), hard reboot (hw): reboot -h
-   webrepl - start webrepl, for file transfers use with --update
-[CONF] Configure mode - built-in shell commands
-  conf       - Enter conf mode
-    dump       - Dump all data
-    key        - Get value
-    key value  - Set value
-  noconf     - Exit conf mode
-[TASK] postfix: &x - one-time,  &&x - periodic, x: wait ms [x min: 20ms]
-  task list         - list tasks with <tag>s
-  task kill <tag>   - stop task
-  task show <tag>   - show task output
-[EXEC] Command mode (LMs):
-   help lm  - list ALL LoadModules
-   cct
-      help
-   co2
-      help
-   dht22
-        help
-   robustness
-             help
-   system
-         help
+<the command list shown in "Get help" above>
 BedLamp $  exit
 Bye!
 
 ```
 
-## Project structure
+#### Project structure
+
+Historical source-tree snapshot; see [the current runtime source](./micrOS/source)
+and [architecture guide](./micrOS/ARCHITECTURE.md) for the maintained layout.
+
+<details>
+<summary><strong>Show historical project structure</strong></summary>
 
 ```
 ./micrOS/source
@@ -942,30 +938,7 @@ Bye!
 │   └── _git.keep
 ├── modules
 │   ├── IO_esp32.py
-│   ├── IO_esp32c3.py
-│   ├── IO_esp32c6.py
-│   ├── IO_esp32s2.py
-│   ├── IO_esp32s3.py
-│   ├── IO_m5stamp.py
-│   ├── IO_qtpy.py
-│   ├── IO_rp2.py
-│   ├── IO_s3matrix.py
-│   ├── IO_tinypico.py
-│   ├── LM_L298N.py
-│   ├── LM_L9110_DCmotor.py
-│   ├── LM_OV2640.py
-│   ├── LM_VL53L0X.py
-│   ├── LM_aht10.py
-│   ├── LM_bme280.py
-│   ├── LM_buzzer.py
-│   ├── LM_cct.py
-│   ├── LM_cluster.py
-│   ├── LM_co2.py
-│   ├── LM_dashboard_be.py
-│   ├── LM_dht11.py
-│   ├── LM_dht22.py
-│   ├── LM_dimmer.py
-│   ├── LM_distance.py
+│   ├── ...
 │   ├── LM_ds18.py
 │   ├── LM_esp32.py
 │   ├── LM_espnow.py
@@ -977,57 +950,109 @@ Bye!
 │   ├── LM_keychain.py
 │   ├── LM_ld2410.py
 │   ├── LM_light_sensor.py
-│   ├── LM_mqtt_client.py
-│   ├── LM_neoeffects.py
-│   ├── LM_neomatrix.py
-│   ├── LM_neopixel.py
-│   ├── LM_oled.py
-│   ├── LM_oled_sh1106.py
-│   ├── LM_oled_ui.py
-│   ├── LM_oledui.py
-│   ├── LM_pacman.py
-│   ├── LM_presence.py
-│   ├── LM_qmi8658.py
-│   ├── LM_rencoder.py
-│   ├── LM_rest.py
-│   ├── LM_rgb.py
-│   ├── LM_rgbcct.py
-│   ├── LM_roboarm.py
-│   ├── LM_robustness.py
-│   ├── LM_rp2w.py
-│   ├── LM_sdcard.py
-│   ├── LM_servo.py
-│   ├── LM_sound_event.py
-│   ├── LM_stepper.py
-│   ├── LM_switch.py
-│   ├── LM_system.py
-│   ├── LM_tcs3472.py
-│   ├── LM_telegram.py
-│   ├── LM_tinyrgb.py
-│   ├── LM_trackball.py
-│   └── LM_veml7700.py
+│   ├── ...
 └── web
     ├── dashboard.html
     ├── index.html
-    ├── matrix_draw.html
-    ├── uapi.js
-    ├── udashboard.js
-    ├── ustyle.css
-    ├── uwidgets.js
-    └── uwidgets_pro.js
+    ├── ...
 
 4 directories, 98 files
 ```
 
+</details>
 
-----------------------------------------
 
-## HINTS
+---
+
+
+### Roadmap
+
+Version **3.X.0-0** `micrOS-Waterbear`
+
+```
+    Core:
+    - Low power mode (wake on event, hibernate command)?
+        - Remote controller / Sensor on battery UseCases
+```
+
+
+Version **3.X+1.0-0** `micrOS-SecurePower`
+
+```
+    Core:
+    - Async socket servers with SSL/TLS integration (with auth.)
+        - ShellCli (with TLS) and InterCon adaptation (default port: 9008, new secure port 9009)
+        - WebCli (https) and webUI adaptation
+
+    - Intercon-Wire (?)
+        - Idea of wired message communication protocol same as Intercon-Shell/Intercon-ESPNow
+        - Possible HW protocols: i2c / onewire / uart BUT it should support bidirectional message transfers
+        - Goal: CoProcessor easy integration feature - Arduino env support
+
+    - Application deployment automation: /config/compose.json
+        - enables application deployment:
+            - configuration (node_config.json) handling - safe parameter injection (boothook and irqs)
+            - [done] requirements.txt handling
+        - Automatic behaviour in core system if file exists in STA mode
+```
+
+<a id="release-note"></a>
+### Release history
+
+[Development Metrics](toolkit/helper_scripts/analysis/timeline_visualization.pdf)
+
+<details>
+<summary><strong>Show release history table</strong></summary>
+
+|  VERSION (TAG) |    RELEASE INFO    |  MICROS CORE MEMORY USAGE  |  SUPPORTED DEVICE(S) | APP PROFILES | Load Modules  |     NOTE       |
+| :----------: | :----------------: | :------------------------:   |  :-----------------: | :------------: | :------------:| -------------- |
+|  **v0.1.0-0** | [release_Info-0.1.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_0.1.0-0_note.md)| **78,4%** 29 776 byte | esp8266 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](https://github.com/BxNxM/micrOS/blob/a4625c7c80906bce2ddb6c47a60c2efd88f6a7e1/micrOS/client/sfuncman/sfuncman_0.1.0-0.json)| Stable Core with applications - first release
+|  **v0.4.0-0** | [release_Info-0.4.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp8266.md)| **81,0%** 30768 byte | esp8266 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](https://github.com/BxNxM/micrOS/blob/a4625c7c80906bce2ddb6c47a60c2efd88f6a7e1/micrOS/client/sfuncman/sfuncman_0.4.0-0.json)| micrOS multi device support with finalized core and so more. OTA update feature.
+|  **v0.4.0-0** | [release_Info-0.4.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_0.4.0-0_note_esp32.md)| **47,1%** 52 416 byte | esp32 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](https://github.com/BxNxM/micrOS/blob/a4625c7c80906bce2ddb6c47a60c2efd88f6a7e1/micrOS/client/sfuncman/sfuncman_0.4.0-0.json)| *micrOS multi device support with finalized core and advanced task scheduler based on time, and and so more. OTA update feature.*
+|  **v1.0.0-0** | [release_Info-1.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_1.0.0-0_note_esp32.md)| **47,9%** 53 280 byte | esp32 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](https://github.com/BxNxM/micrOS/blob/a4625c7c80906bce2ddb6c47a60c2efd88f6a7e1/micrOS/client/sfuncman/sfuncman_1.0.0-0.json)| Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA, etc.
+|  **v1.2.2-0** | [release_Info-1.2.2-0](./micrOS/release_info/micrOS_ReleaseInfo/release_1.2.2-0_note_esp32.md)|  **48,6%** 54 032 byte | esp32 | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](https://github.com/BxNxM/micrOS/blob/a4625c7c80906bce2ddb6c47a60c2efd88f6a7e1/micrOS/client/sfuncman/sfuncman_1.2.2-0.json)| Public Release of v1 micrOS, timer and event based irqs, cron task scheduling, realtime communication, multiple device support. OTA update, thread from socket shell (beta) etc.
+|  **v light-1.3.0-0** | - |  - | **esp8266** | [lightweight branch](https://github.com/BxNxM/micrOS/tree/lightweight)| - |remove esp8266 due to memory limitation - BUT still supported with limited functionalities on **`lightweight`** branch. Hint: Change branch on github and download zip file, then start micrOSDevToolKit dashboard GUI
+|  **v 1.5.0-1** | [release_Info-1.5.0-1](./micrOS/release_info/micrOS_ReleaseInfo/release_1.5.0-1_note_esp32.md) |  **58,2%** 64 704 byte | esp32 (tinyPico) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](https://github.com/BxNxM/micrOS/blob/9d5dc0ffd34f85d05e1cb149cc8abe280fd02bd9/micrOS/client/sfuncman/sfuncman_1.5.0-1.json) | Advanced Timer IRQ based scheduling (cron & timirq), Geolocation based timing features, External IRQs with 4 channel (event filtering), finalized light controls, Device-Device comminucation support, etc.
+|  **v 1.21.0-4** | [release_Info-1.21.0-4](./micrOS/release_info/micrOS_ReleaseInfo/release_1.21.0-4_note_esp32.md) |  **57.3%** 63 728 byte | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](https://github.com/BxNxM/micrOS/blob/c9a69814f32ab32d96c447c3e40e880df32bddd6/micrOS/client/sfuncman/sfuncman_1.21.0-4.json) | Full async core system with advanced task management and device to device communication, task scheduling and much more ... with more then 30 application/pheriphery support.
+|  **v 2.0.0-0** | [release_Info-2.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.0.0-0_note_esp32.md) |  **45.4%** 68.7 kb | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.0.0-0.json) | Optimizations, WebCli with web frontends, Camera support. Micropython 1.21 async maxed out :D
+|  **v 2.6.0-0** | [release_Info-2.6.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_2.6.0-0_note_esp32.md) |  **48.3%** 72.6 kb  | esp32 (tinyPico, esp32s2, esp32s3) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_2.6.0-0.json) | WebCli http server enhancements. New webapps: dashboard. Core system official interface finalization towards Load Modules: Common.py, Types.py (frontend generation), microIO.py (pinout handling).
+|  **v 3.0.0-0** | [release_Info-3.0.0-0](./micrOS/release_info/micrOS_ReleaseInfo/release_3.0.0-0_note_esp32.md) |  **66.0%** 95,5 kb  | esp32 (tinyPico, esp32c6, esp32s3+PSRAM, etc.) | [App Profiles](./micrOS/release_info/node_config_profiles/) | [LM manual](./micrOS/client/sfuncman/sfuncman_3.0.0-0.json) | **Min. required RAM: 200kb**. Standalone micrOS with multi layer file system (resource separation) and advanced package management, etc. [more details](https://github.com/BxNxM/micrOS/discussions/55)
+
+</details>
+
+---
+
+<details>
+<summary><strong>Architecture illustrations and walkthrough</strong></summary>
+
+[![micrOS core and Load Module architecture](./media/micrOSArchitecture.png?raw=true)](./micrOS/ARCHITECTURE.md)
+
+For boot flow, feature activation, web authentication, and memory management,
+read the [architecture guide](./micrOS/ARCHITECTURE.md). The animation below
+illustrates system execution and message flow.
+
+![Animated micrOS system and message-function visualization](./media/micrOS.gif?raw=true)
+
+</details>
+
+### Documentation map
+
+- [Architecture](./micrOS/ARCHITECTURE.md)
+- [Load Module development](./micrOS/MODULE_GUIDE.md)
+- [Contributing](./CONTRIBUTING.md)
+- [MicroPython images](./micrOS/micropython/README.md)
+- [Gateway deployment](./env/docker/README.md)
+- [Advanced use reference](#advanced-use)
+
+
+<a id="hints"></a>
+
+### Operations and maintainer notes
 
 - Save **screen** console buffer (**output**)
 Press `ctrl + A :` and type `hardcopy -h <filename>`
 
-- Create callgraph: [pycallgraph](http://pycallgraph.slowchop.com/en/master/)
+- Create a call graph: [PyCallGraph documentation](https://pycallgraph.readthedocs.io/en/master/) (legacy tool).
 
 - Convert PNG/JPG-s to GIF: `convert -delay 60 ./*.png mygif.gif`
 
@@ -1035,11 +1060,11 @@ Press `ctrl + A :` and type `hardcopy -h <filename>`
 
 ```bash
 devToolKit.py -lint
-OR
+# Or use the long option:
 devToolKit.py --linter
 ```
 
-### micrOS gateway - Linux service template
+#### micrOS gateway - Linux service template
 
 > [BETA] service setup tool: `toolkit/helper_scripts/linux_service/make.bash`
 
@@ -1047,7 +1072,9 @@ devToolKit.py --linter
 
 - Create service: [micrOS gateway service](https://domoticproject.com/creating-raspberry-pi-service/)
 
-- [1] create `micros-gw.service` file:
+- [1] Create `micros-gw.service`. Replace the credentials, working directory,
+  user, and Python executable path for your installation. If you use a shell
+  wrapper instead, set `ExecStart` to `/bin/bash` followed by that script's path.
 
 ```bash
 [Unit]
@@ -1055,13 +1082,13 @@ Description=micrOS gateway REST API service
 After=network-online.target
 
 [Service]
-Environment="API_AUTH=<usr_name>:<password>"  <-- replace
-ExecStart=/usr/bin/python3 -m devToolKit -gw  <-- check (depends on deployment) OR /bin/bash
-WorkingDirectory=/home/gateway                <-- replace
+Environment="API_AUTH=<usr_name>:<password>"
+ExecStart=/usr/bin/python3 -m devToolKit -gw
+WorkingDirectory=/home/gateway
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
-User=<user>                                   <-- replace
+User=<user>
 
 [Install]
 WantedBy=multi-user.target
@@ -1076,7 +1103,9 @@ WantedBy=multi-user.target
 - [5] show service state: `sudo systemctl status micros-gw.service`
 
 
-### GIT
+<a id="git"></a>
+
+#### Git maintenance
 
 - Add git tag: `git tag -a vX.Y.Z-K -m "tag message"`
 
@@ -1103,4 +1132,6 @@ gource \
     | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 output.mp4
 ```
 
+```bash
 git push -u origin master
+```

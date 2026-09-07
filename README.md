@@ -2,14 +2,12 @@
 
 A local-first automation platform for Wi-Fi-enabled MicroPython boards.
 
-Build a browser-controlled lamp, read a sensor over HTTP, or let one board
-trigger another. micrOS turns a compatible Wi-Fi microcontroller into a
-programmable automation node—without a required cloud service.
+Build a network-controlled lamp, read a sensor over Socket/HTTP, or let one board trigger another. micrOS turns a compatible Wi-Fi microcontroller into a programmable automation node—without a required cloud service.
 
 Write the hardware behavior in [MicroPython](http://micropython.org); micrOS
-handles networking, configuration, background jobs, scheduling, and updates.
+handles networking, configuration, background jobs, scheduling, interrupts and updates.
 
-_The mini yet powerful operating system for DIY projects._
+> micrOS is a network-addressable edge application platform for MicroPython MCUs, built around a dynamically loadable plug-in architecture.
 
 [![PyPI Version](https://img.shields.io/pypi/v/micrOSDevToolKit)](https://pypi.org/project/micrOSDevToolKit/)
 ![GitHub stars](https://img.shields.io/github/stars/BxNxM/micrOS)

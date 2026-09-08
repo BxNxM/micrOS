@@ -1,6 +1,17 @@
 # ![LOGO](../media/logo_mini.png?raw=true)
 
-This guide provides a detailed walkthrough for building, testing, and uploading Load Modules for micrOS. It is organized from beginner to advanced with links to examples and utilities
+This guide covers the micrOS development workflow and shell, followed by a
+beginner-to-advanced walkthrough for building, testing, and uploading Load
+Modules.
+
+## Development and shell usage
+
+- [Development and customization](#development-and-customization)
+  - [Create and upload a Load Module](#create-and-upload-a-load-module)
+  - [USB updates and custom images](#usb-updates-and-custom-images)
+  - [DevToolKit command overview](#devtoolkit-command-overview)
+  - [micrOS shell usage](#micros-shell-usage)
+  - [Source layout and development branches](#source-layout-and-development-branches)
 
 ## Beginner level
 - [LM\_basic.py](#lmbasicpy)
@@ -27,6 +38,220 @@ This guide provides a detailed walkthrough for building, testing, and uploading 
   - [AnimationPlayer(animation: callable=None, tag: str=None, batch\_draw: bool=False, batch\_size: int=None)](#animationplayeranimationcallablenone-tagstrnone-batch_drawboolfalse-batch_sizeintnone)
   - [data\_dir(f\_name=None)](#data_dirf_namenone)
   - [web\_dir(f\_name=None)](#web_dirf_namenone)
+
+---
+
+# Development and customization
+
+This section collects the general developer workflow, deployment notes, and
+shell examples. The tutorials below document the Load Module APIs in detail;
+see [ARCHITECTURE.md](./ARCHITECTURE.md) for runtime boot flow and internals.
+
+## Create and upload a Load Module
+
+Create `LM_<your_app_name>.py`, expose application operations as public Python
+functions, and upload the file through DevToolKit's drag-and-drop interface.
+For example, the shell command `system info` calls `info()` from
+`source/modules/LM_system.py`.
+
+Load Modules live in `source/modules/` and form a public API shared by the
+shell, REST endpoints, hooks, interrupts, and background tasks. Preserve
+existing command names and argument patterns when extending a module.
+
+[![Load Module templates](../media/app_templates.png?raw=true)](#create-your-own-application-module)
+
+## USB updates and custom images
+
+The selected firmware filename determines which resources DevToolKit copies
+from `toolkit/workspace/precompiled/`:
+
+- Stock MicroPython images receive the full development deployment.
+- Prebuilt `micrOS-*` images already contain the core and receive only the
+  configured web assets and minimum LM/IO modules.
+
+USB deploy and update show the selected mode. USB update restores
+`node_config.json` for both image types. **Skip MicroPython** retains the
+installed firmware and copies the files required by the selected mode.
+
+Build all configured `micrOS-*` images from the repository root with:
+
+```bash
+python3 toolkit/micrOSImageBuilder.py
+```
+
+Supported custom targets are `esp32`, `esp32c3`, `esp32c6`, and `esp32s3`.
+The [MicroPython image guide](./micropython/README.md) contains the binary
+catalog and image notes. Image settings and release resources are defined in
+[`toolkit/micrOSImageConfig.json`](../toolkit/micrOSImageConfig.json).
+
+Custom images append a `[micrOS]` marker to the board description reported by
+`system info`. Full OTA reads the mode from `hello` and skips frozen core files
+on `rel` devices.
+
+To erase a board, flash the selected MicroPython image, precompile micrOS, and
+install it, run this from the repository root and follow the prompts:
+
+```bash
+devToolKit.py --make
+```
+
+This operation erases the board. To discover and connect afterward, use:
+
+```bash
+devToolKit.py --search_devices --connect
+```
+
+## DevToolKit command overview
+
+Run `devToolKit.py --help` for the authoritative list of options. Common user
+commands include:
+
+| Command | Purpose |
+| --- | --- |
+| `-m`, `--make` | Erase, deploy, precompile, and install micrOS. |
+| `-r`, `--update` | Update a USB-connected micrOS node. |
+| `-s`, `--search_devices` | Discover nodes on the connected Wi-Fi network. |
+| `-o`, `--OTA` | Update through WebREPL. |
+| `-c`, `--connect` | Open the socket client. |
+| `-p`, `--connect_parameters` | Run a non-interactive socket command. |
+| `-a`, `--applications` | List or execute frontend applications. |
+| `-stat`, `--node_status` | Show the status of discovered nodes. |
+| `-cl`, `--clean` | Clear cached device connection data. |
+
+Developer and maintenance options include:
+
+| Command | Purpose |
+| --- | --- |
+| `-f`, `--force_update` | Force USB or OTA update. |
+| `-e`, `--erase` | Erase the connected device. |
+| `-d`, `--deploy` | Flash only the selected MicroPython image. |
+| `-i`, `--install` | Copy the full precompiled micrOS tree. |
+| `-l`, `--list_devs_n_bins` | List connected devices and firmware binaries. |
+| `-ls`, `--node_ls` | List the node filesystem. |
+| `-u`, `--connect_via_usb` | Connect through the serial USB port. |
+| `-b`, `--backup_node_config` | Back up the connected node configuration. |
+| `-sim`, `--simulate` | Start micrOS in the host simulator. |
+| `-cc`, `--cross_compile_micros` | Cross-compile runtime files and optimize deployable web assets. |
+| `-gw`, `--gateway` | Start the micrOS Gateway REST API. |
+| `-v`, `--version` | Show repository and connected-device versions. |
+
+The cross-compile command copies `micrOS/source/web` into the generated
+`toolkit/workspace/precompiled/web` tree and optimizes the copied JavaScript,
+CSS, and HTML assets. Source web files remain readable. Do not edit files under
+`toolkit/workspace/` by hand. The normal toolkit bootstrap installs optional
+optimizer dependencies unless `--light` is used.
+
+## micrOS shell usage
+
+Shell commands use this general form:
+
+```text
+<module> <function> <parameters> <postfix>
+```
+
+Useful built-in commands:
+
+```text
+hello                 # node name, hardware ID, and dev/rel mode
+version               # micrOS version
+modules               # currently loaded modules
+help                  # shell commands and loaded-module APIs
+help all              # include all installed Load Modules
+help all sensor       # filter the help output
+reboot                # soft reboot
+reboot -h             # hardware reset
+webrepl               # start WebREPL mode
+exit                   # close the shell session
+```
+
+`webrepl --update` restarts into WebREPL mode and waits about 20 seconds for an
+OTA update. See the [loader and boot-flow reference](./ARCHITECTURE.md#boot-flow)
+for normal boot and WebREPL recovery behavior.
+
+Enter configuration mode before reading or changing settings, then leave it
+when finished:
+
+```text
+conf
+dump                   # show all configuration
+devfid                 # read one value
+devfid WorkshopNode    # set one value
+noconf
+reboot
+```
+
+Run Load Module functions with the module prefix:
+
+```text
+system info
+system heartbeat
+basic hello name=micrOS
+rgb toggle
+```
+
+Command postfixes control formatting, background execution, and routing:
+
+```text
+system info >json              # request JSON-formatted output
+system heartbeat &             # run once as a background task
+system heartbeat &1000         # wait 1000 ms, then run once
+system heartbeat &&            # repeat with the default interval
+system heartbeat &&5000        # repeat every 5000 ms
+system heartbeat >>node02.local # execute on another node through InterCon
+```
+
+Manage background tasks from the same shell:
+
+```text
+task list
+task show <tag>
+task kill <tag>
+```
+
+For an interactive connection, discover nodes and select one:
+
+```bash
+devToolKit.py --search_devices --connect
+```
+
+For scripts or one-shot calls, select the node with `--dev` inside the
+connection-parameter string:
+
+```bash
+devToolKit.py --connect --connect_parameters '--dev MyNode hello'
+devToolKit.py --connect --connect_parameters "--dev MyNode 'system info'"
+```
+
+The socket client caches discovered addresses in
+`toolkit/user_data/device_conn_cache.json`. Cache contents are generated user
+data and should not be committed as source.
+
+## Source layout and development branches
+
+Use the authoritative source trees when making changes:
+
+```text
+micrOS/source/             embedded runtime source
+micrOS/source/modules/     LM_* applications and IO_* pin maps
+micrOS/source/web/         built-in WebUI source assets
+toolkit/                   host-side DevToolKit source
+toolkit/simulator_lib/     simulator compatibility shims
+toolkit/workspace/         generated simulator and deployment artifacts
+```
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the maintained runtime map.
+Alternative branches retained for specialized or historical use are:
+
+- [micrOS-Core 3.0](https://github.com/BxNxM/micrOS/tree/core), with a minimal
+  set of default Load Modules.
+- [micrOS-develop](https://github.com/BxNxM/micrOS/tree/develop), for
+  experimentation.
+- [lightweight-for-esp8266](https://github.com/BxNxM/micrOS/tree/lightweight),
+  the legacy lightweight branch.
+
+Historical GUI documentation may call `boot.py`, `micrOSloader.mpy`,
+`Network.mpy`, `ConfigHandler.mpy`, and `Debug.mpy` the “Secure Core.” This is
+legacy terminology and not the current release-image resource list.
 
 ---
 

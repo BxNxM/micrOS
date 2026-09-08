@@ -27,8 +27,8 @@ handles networking, configuration, background jobs, scheduling, interrupts and u
 
 [![micrOS web interface: REST console, configuration, dashboard, and files](./media/lms/web.png?raw=true)](./media/lms/web.png)
 
-_The optional on-device web UI: REST console, configuration, application controls,
-and file management._
+_The on-device web UI: REST console, configuration, application controls, and
+file management. It is enabled automatically when the board has enough memory._
 
 ### Why micrOS?
 
@@ -158,12 +158,13 @@ staessid <your-wifi-name>
 stapwd <your-wifi-password>
 devfid MyNode
 appwd <new-device-password>
-webui True
 noconf
 reboot
 ```
 
-`webui True` enables the web interface. No boot-hook configuration is needed.
+The web interface is enabled by default and requires no manual configuration or
+boot hook. At boot, micrOS checks the available heap and disables the WebUI
+automatically if its 80 KiB memory budget cannot be met.
 
 4. Reconnect your computer or phone to the normal local network.
 5. Open `http://MyNode.local` in a browser. If you see **🚀 Load Web Apps**,
@@ -262,7 +263,7 @@ to be assembled from configuration.
 |   **`stapwd`**      | `your_wifi_passwd` `<str>`  |       Yes       | Wifi router password (for STA default connection mode). You can list multiple wifi passwords separated with `;` connected in order to `staessid` wifi names.
 |   **`appwd`**       |   `ADmin123`  `<str>`       |       Yes       | Device system password.: Used in AP password (access point mode) + webrepl password + micrOS auth
 | **`boothook`**      |    `n/a` `<str>`            |      Yes        | Add Load Module execution(s) to the boot sequence. Separator `;`. Examples: `rgb load; cct load` but you can call any load module function here if you want to run it at boot time.
-| **`webui`**         |       `False`  `bool`       |      Yes        | Launch http rest server on port 80 (in parallel with micrOS shell on port 9008 aka `socport`). It has 2 endpoints: / aka main page (index.html) and /rest aka rest (json) interface for load module execution. Example: `<devfid>.local` or `<devfid>.local/rest` + optional parameters: `/rgb/toggle`. **Apple shortcuts compatible**
+| **`webui`**         |       `True`  `<bool>`       |      Yes        | Enables the HTTP server on port 80 alongside the micrOS shell on `socport` (default 9008). The WebUI is enabled automatically by default, but micrOS disables it at boot when the 80 KiB heap budget cannot be met. Use `/` for the main page and `/rest` for Load Module execution, for example `<devfid>.local/rest/rgb/toggle`. **Apple Shortcuts compatible.**
 | **`espnow`**         |     `False`  `bool`       |      Yes        | Enable **ESPNow communication protocol**. It starts `espnow.server` task, that can receive espnow messages and execute Load Module commands. It is an extension for **InterCon** feature example: `system heartbeat >>target.local`.
 | | |
 | **`cron`**          |     `False`  `<bool>`       |       Yes       | Enable timestamp based Load Module execution aka Cron scheduler (linux terminology), Timer(1) hardware interrupt enabler.
@@ -324,7 +325,7 @@ in [MODULE_GUIDE.md](./micrOS/MODULE_GUIDE.md).
 - [Automation commands](#configure-automation)
 - [Boards and memory](#boards-and-memory) · [Peripherals](#built-in-peripheral-support) · [Pinouts](#device-pinouts-for-wiring)
 - [Gateway and monitoring](#gateway-and-monitoring)
-- [Development and customization](#developer-guide) — modules, firmware images, CLI, and examples
+- [Development, customization, and shell usage](./micrOS/MODULE_GUIDE.md#development-and-customization)
 - [Documentation](#documentation-map)
 - [Roadmap](#roadmap) · [Release history](#release-history)
 - [Cheat sheets and maintainer notes](#operations-and-maintainer-notes)
@@ -413,51 +414,6 @@ Instead of a timestamp, use `sunrise` or `sunset` with an optional minute
 offset: `sunrise+30` or `sunset!rgb rgb r=10 g=60 b=100`. Times come from
 [api.sunrise-sunset.org](https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}&date=today&formatted=0).
 Timer support depends on the MicroPython port.
-
-#### Shell and background jobs
-
-ShellCli provides wireless commands such as `help`, `version`, `reboot`,
-`modules`, and `webrepl`. Enter `conf` to read or change configuration,
-use `dump` to show it, and leave with `noconf`.
-`webrepl --update` restarts into WebREPL mode and waits about 20 seconds
-for an OTA update. For normal boot versus WebREPL recovery mode, see the
-[loader and boot-flow reference](./micrOS/ARCHITECTURE.md#boot-flow).
-
-Use `help` for shell commands and active modules, or `help all` to include all
-installed modules. Older output examples below use the former `help lm` syntax.
-
-Run Load Module functions in the background:
-
-| Command | Effect |
-| --- | --- |
-| `system heartbeat &` | Run once in the background. |
-| `system heartbeat &1000` | Wait one second, then run once. |
-| `system heartbeat &&` | Repeat in the background. |
-| `system heartbeat &&1000` | Repeat every second. |
-| `task show system.heartbeat` | Show the task's latest output. |
-| `task kill system.heartbeat` | Stop the task. |
-| `task list` | List active tasks and queue/load information. |
-
-Example task list (the active services depend on configuration):
-
-```text
-TinyDevBoard $ task list
----- micrOS  top ----
-#queue: 18 #load: 3%
-
-#Active   #taskID
-Yes       server
-Yes       idle
-Yes       telegram.server_bot
-Yes       espnow.server
-```
-
-The host-side socket client supports interactive and non-interactive use.
-To discover nodes and connect:
-
-```bash
-./devToolKit.py --search_devices --connect
-```
 
 ### Hardware and peripherals
 
@@ -620,349 +576,6 @@ docker-compose -p gateway up -d
 
 Official [DockerHub image](https://hub.docker.com/r/bxnxm/micros-gateway)
 
-<a id="developer-guide"></a>
-
-### Development and customization
-
-<a id="customization"></a>
-<a id="load-modules-and-pin-maps"></a>
-
-#### Create a Load Module
-
-To add an application, create `LM_<your_app_name>.py`, write public Python
-functions, and upload it through DevToolKit's drag-and-drop GUI. For example,
-`system info` calls `info()` in `modules/LM_system.py`.
-See the [Load Module guide](./micrOS/MODULE_GUIDE.md) for the API contract.
-
-[![app_templates](./media/app_templates.png?raw=true)](./micrOS/MODULE_GUIDE.md)
-
-#### USB updates and custom images
-
-The selected firmware filename controls which resources are copied from
-`toolkit/workspace/precompiled/`:
-
-- A stock MicroPython image keeps the full development deployment.
-- A prebuilt `micrOS-*` image already contains the core and receives only the
-  configured web assets and minimum LM/IO modules.
-
-USB deploy and update display the selected mode. USB update restores
-`node_config.json` for both image types. **Skip MicroPython** keeps the current
-firmware and copies only the required files.
-
-Build all configured `micrOS-*` images with:
-
-```bash
-python3 toolkit/micrOSImageBuilder.py
-```
-
-Supported custom targets are `esp32`, `esp32c3`, `esp32c6`, and `esp32s3`.
-The [MicroPython image guide](micrOS/micropython/README.md) contains the binary
-catalog, custom image list, and image notes. Image settings and release
-resources are defined in `toolkit/micrOSImageConfig.json`.
-
-Custom images append a `[micrOS]` marker to the board description shown by
-`system info`. Full OTA reads the `hello` mode and skips frozen core files on
-`rel` devices.
-
-#### Development branches and legacy deployments
-
-Historical GUI terminology: “Secure Core” (OTA static modules) referred to
-`boot.py`, `micrOSloader.mpy`, `Network.mpy`, `ConfigHandler.mpy`, and
-`Debug.mpy`. These are legacy names, not the current release-image resource
-list; see [deployment modes](#usb-updates-and-custom-images).
-
-Alternative branches:
-
-[micrOS-Core 3.0](https://github.com/BxNxM/micrOS/tree/core) - with minimal set of default Load Modules
-
-[micrOS-develop](https://github.com/BxNxM/micrOS/tree/develop) - for experimentation
-
-[lightweight-for-esp8266](https://github.com/BxNxM/micrOS/tree/lightweight) - really old legacy v1.3
-
-
-#### Erase, flash MicroPython, and install micrOS
-
-From the repository directory containing `devToolKit.py`, run:
-
-```bash
-devToolKit.py --make
-```
-Follow the interactive prompts. This operation erases the board.
-
-
-Then discover and connect to the device:
-
-```
-devToolKit.py -s -c
-```
-
----
-
-**User commands**
-
-```
-devToolKit.py -h
-
-optional arguments:
-  -h, --help            show this help message and exit
-
-Base commands:
-  -m, --make            Erase & Deploy & Precompile (micrOS) & Install (micrOS)
-  -r, --update          Update/redeploy connected (USB) micrOS
-  -s, --search_devices  Search devices on connected wifi network.
-  -o, --OTA             OTA (over-the-air update with WebREPL)
-  -c, --connect         Connect through the socket client
-  -p CONNECT_PARAMETERS, --connect_parameters CONNECT_PARAMETERS
-                        Parameters for connection in non-interactive mode.
-  -a APPLICATIONS, --applications APPLICATIONS
-                        List/Execute frontend applications. [list]
-  -stat, --node_status  Show all available micrOS devices status data.
-  -cl, --clean          Clean user connection data: device_conn_cache.json
-  
-  ...
-```
-
-**Search devices**
-
-```
-devToolKit.py --search_devices
-
-or
-
-devToolKit.py -s
-```
-
-**List discovered devices with status updates**
-
-```
-devToolKit.py -stat
-
-or
-
-devToolKit.py --node_status
-```
-
-Output:
-
-```
-[ UID ]                 [ FUID ]              [ IP ]          [ STATUS ] [ VERSION ] [ MODE ] [COMM SEC] [WEBUI | ESPNOW | CRON | TIMIRQ] 
-__localhost__           __simulator__         127.0.0.1       OFFLINE    <n/a>       n/a      n/a        n/a      n/a      n/a      n/a   
-micr24587c53b170OS      Entrance              10.0.1.55       ONLINE     3.5.0-0     rel      0.181      ON       OFF      OFF      OFF   
-micr308398c73e88OS      LivingKitchen         10.0.1.200      ONLINE     3.5.0-0     dev      0.685      ON       ON       ON       OFF   
-micr7c9ebd6147c4OS      node01                10.0.1.180      ONLINE     3.3.1-0     rel      0.280      ON       ON       OFF      OFF 
-```
-
-**Other Developer commands**
-
-```
-Development & Deployment & Connection:
-  -f, --force_update    Force mode for -r/--update and -o/--OTA
-  -e, --erase           Erase device
-  -d, --deploy          Flash only the selected micropython image
-  -i, --install         Copy the full precompiled micrOS tree
-  -l, --list_devs_n_bins
-                        List connected devices & micropython binaries.
-  -ls, --node_ls        List micrOS node filesystem content.
-  -u, --connect_via_usb
-                        Connect via serial port - usb
-  -b, --backup_node_config
-                        Backup usb connected node config.
-  -sim, --simulate      start micrOS on your computer in simulated mode
-  -cc, --cross_compile_micros
-                        Cross Compile micrOS system [py -> mpy] and optimize
-                        precompiled web resources
-  -gw, --gateway        Start micrOS Gateway rest-api server
-  -v, --version         Get micrOS version - repo + connected device.
-```
-
-`-cc` copies `micrOS/source/web` into `toolkit/workspace/precompiled/web`,
-then overwrites the copied `.js`, `.css`, and `.html` files with optimized
-versions for deployment. Source web files stay readable.
-
-Optional optimizer dependencies are installed by the normal toolkit bootstrap
-unless `--light` is used.
-
-#### Socket terminal examples
-
-The following output snapshots are from earlier releases. Device names,
-configuration keys, and output formatting may differ today; use the
-[configuration reference](#node-configuration-reference) for current defaults.
-
-##### Identify device
-
-```
-devToolKit.py -c -p '--dev slim01 hello'
-Load MicrOS device cache: /Users/bnm/Documents/NodeMcu/MicrOs/tools/device_conn_cache.json
-Activate MicrOS device connection address
-[i]         FUID        IP               UID
-[0] Device: slim01 - 10.0.1.73 - 0x500x20x910x680xc0xf7
-Device was found: slim01
-hello:slim01:0x500x20x910x680xc0xf7:dev
-```
-
-##### Get help
-
-```bash
-devToolKit.py -c -p '--dev TinyDevBoard help'
-[MICROS]
-   hello     - device hello msg ID
-   modules   - show active Load Modules
-   version   - show micrOS version
-   exit      - exit shell session
-   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h
-   webrepl   - start webrepl, for file transfers use with --update
-[CONF] Configuration mode
-  conf       - Enter conf mode
-    dump       - Dump all data, filter: dump [str]
-    key        - Get value
-    key value  - Set value
-  noconf     - Exit conf mode
-[TASK] Task operations
-  task list         - list tasks by tags
-  task kill [tag]   - stop task
-  task show [tag]   - show task output
-[EXEC] Command mode, syntax(...): <module> <function> <params> <postfix>
-  Postfix hints:
-    ... &[x]            - start one-shot task
-    ... &&[x]           - start periodic task, where [x]: delay ms [x min: 20ms]
-    ... >json           - request json formatted output
-    ... >>hostname      - remote command execution (intercon)
-help [all/-] [match]  - list Active/ALL modules with optional filtering
-
-  cct
-     help
-  cluster
-         help
-  fileserver
-            help
-```
-
-##### Load Modules - User defined functions
-
-```
-devToolKit.py -c -p '--dev BedLamp system info'
-
-CPU clock: 24 [MHz]
-Mem usage: 71.0 %
-FS usage: 14.6 %
-upython: v1.19.1 on 2022-06-18
-board: ESP32 module with ESP32
-mac: 7c:9e:bd:62:3f:f8
-uptime: 0 1:29:19
-```
-
-##### SocketClient
-
-###### Config:
-
-micrOS/toolkit/user_data/device_conn_cache.json
-
-```json
-{
-    "__devuid__": [
-        "192.168.4.1",
-        9008,
-        "__device_on_AP__"
-    ],
-    "__localhost__": [
-        "127.0.0.1",
-        9008,
-        "__simulator__"
-    ],
-    "micr500291863428OS": [
-        "10.0.1.72",
-        9008,
-        "BedLamp"
-    ]
-}
-```
-
-###### Interactive mode
-
-```
-devToolKit.py -c 
-or
-devToolKit.py --connect
-
-[i]         FUID        IP               UID
-[0] Device: __device_on_AP__ - 192.168.4.1 - __devuid__
-[1] Device: __simulator__ - 127.0.0.1 - __localhost__
-[2] Device: BedLamp - 10.0.1.72 - micr500291863428OS
-
-Choose a device index: 2
-Device was selected: ['10.0.1.72', 9008, 'BedLamp']
-BedLamp $ help
-<the command list shown in "Get help" above>
-BedLamp $  exit
-Bye!
-
-```
-
-#### Project structure
-
-Historical source-tree snapshot; see [the current runtime source](./micrOS/source)
-and [architecture guide](./micrOS/ARCHITECTURE.md) for the maintained layout.
-
-<details>
-<summary><strong>Show historical project structure</strong></summary>
-
-```
-./micrOS/source
-├── Common.py
-├── Config.py
-├── Debug.py
-├── mespnow.py
-├── Files.py
-├── Hooks.py
-├── InterConnect.py
-├── Interrupts.py
-├── Logger.py
-├── Network.py
-├── Notify.py
-├── Scheduler.py
-├── Server.py
-├── Shell.py
-├── Tasks.py
-├── Time.py
-├── Types.py
-├── Web.py
-├── main.py
-├── micrOS.py
-├── micrOSloader.py
-├── reset.py
-├── urequests.py
-├── microIO.py
-├── config
-│   └── _git.keep
-├── modules
-│   ├── IO_esp32.py
-│   ├── ...
-│   ├── LM_ds18.py
-│   ├── LM_esp32.py
-│   ├── LM_espnow.py
-│   ├── LM_gameOfLife.py
-│   ├── LM_genIO.py
-│   ├── LM_haptic.py
-│   ├── LM_i2c.py
-│   ├── LM_i2s_mic.py
-│   ├── LM_keychain.py
-│   ├── LM_ld2410.py
-│   ├── LM_light_sensor.py
-│   ├── ...
-└── web
-    ├── dashboard.html
-    ├── index.html
-    ├── ...
-
-4 directories, 98 files
-```
-
-</details>
-
-
----
-
-
 ### Roadmap
 
 Version **3.X.0-0** `micrOS-Waterbear`
@@ -1036,7 +649,7 @@ illustrates system execution and message flow.
 ### Documentation map
 
 - [Architecture](./micrOS/ARCHITECTURE.md)
-- [Load Module development](./micrOS/MODULE_GUIDE.md)
+- [Development, shell usage, and Load Modules](./micrOS/MODULE_GUIDE.md)
 - [Contributing](./CONTRIBUTING.md)
 - [MicroPython images](./micrOS/micropython/README.md)
 - [Gateway deployment](./env/docker/README.md)

@@ -29,32 +29,44 @@ micrOS   \____/ \__,_| \__| \___|  \_/\_/   \__,_| \__, |
 
 ## Compose all components
 
-[docker-compose.yaml](https://github.com/BxNxM/micrOS/blob/master/env/docker/docker-compose.yaml)
+[docker-compose.yaml](./docker-compose.yaml)
 
+Before starting the stack, edit `GATEWAYIP` in `docker-compose.yaml` to match
+the router address for the network shared by the host and micrOS nodes. Set
+`API_AUTH` and `GRAFANA_ADMIN_PASSWORD` in the environment rather than relying
+on the development defaults included in the Compose file.
+
+```bash
+cd env/docker
+docker compose -p gateway up -d
 ```
-docker-compose -p gateway up -d
-```
+
+For a legacy standalone Compose installation, replace `docker compose` with
+`docker-compose`.
 
 Prometheus scraper config example:
-[prometheus.yml](https://github.com/BxNxM/micrOS/blob/master/env/docker/prometheus.yml)
+[prometheus.yml](./prometheus.yml)
 
-Grafana dasboard [examples.json](https://github.com/BxNxM/micrOS/blob/master/env/docker/grafana_dashboards) 
+Edit `prometheus.yml` to select the micrOS sensor endpoints Prometheus should
+scrape.
+
+Grafana dashboard [examples](./grafana_dashboards/)
 
 > Change GATEWAYIP=10.0.1.1 to your router IP, where the host machine and micrOS endpoints are connected.
-> Chnage API_AUTH=<usr>:<pwd> for basic auth, or remove param if you don't need basic auth.
+> Change API_AUTH=<usr>:<pwd> for basic auth, or remove the variable if you don't need basic auth.
 
 ## Single Gateway container deployment
 
 Without BasicAuth
 
 ```bash
-docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -d bxnxm/micros-gateway:3.0.3
+docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -d bxnxm/micros-gateway:3.3.5
 ```
 
 With BasicAuth
 
 ```bash
-docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -e API_AUTH=usr:pwd -d bxnxm/micros-gateway:3.0.3
+docker run --name micros-gateway -p 5005:5005 -e GATEWAYIP="10.0.1.1" -e API_AUTH=usr:pwd -d bxnxm/micros-gateway:3.3.5
 ```
 
 

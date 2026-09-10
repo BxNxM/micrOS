@@ -6,6 +6,7 @@ Modules.
 
 ## Development and shell usage
 
+- [Develop from source](#develop-from-source)
 - [Development and customization](#development-and-customization)
   - [Create and upload a Load Module](#create-and-upload-a-load-module)
   - [USB updates and custom images](#usb-updates-and-custom-images)
@@ -14,14 +15,14 @@ Modules.
   - [Source layout and development branches](#source-layout-and-development-branches)
 
 ## Beginner level
-- [LM\_basic.py](#lmbasicpy)
-- [LM\_basic\_led.py](#lmbasic_ledpy)
+- [LM\_basic.py](#lm-basic)
+- [LM\_basic\_led.py](#lm-basic-led)
 - [LM\_template.py](#micros-lm_templatepy)
 - [microIO.py](#microiopy)
 
 ## Intermediate level
-- [micrOS Types.py module](#-micros-typespy-module)
-- [micrOS LM\_types\_demo.py](#micros-lm_types_demopy)
+- [micrOS Types.py module](#types-module)
+- [micrOS LM\_types\_demo.py](#lm-types-demo)
 
 ## Advanced level
 - [micrOS Common.py module](#micros-commonpy-module)
@@ -31,7 +32,7 @@ Modules.
   - [class SmartADC](#class-smartadc)
   - [micro\_task(tag, task=None, \_wrap=False)](#micro_tasktag-tasknone-_wrapfalse)
   - [manage\_task(tag, operation)](#manage_tasktag-operation)
-  - [exec\_cmd(cmd)](#exec_cmdcmd)
+  - [exec\_cmd(cmd, jsonify=None, secure=False)](#exec_cmdcmd-jsonifynone-securefalse)
   - [data\_logger(f\_name, data=None, limit=12)](#data_loggerf_name-datanone-limit12)
   - [notify(text)](#notifytext)
   - [web\_endpoint(endpoint, function, method)](#web_endpointendpoint-function-method)
@@ -46,6 +47,38 @@ Modules.
 This section collects the general developer workflow, deployment notes, and
 shell examples. The tutorials below document the Load Module APIs in detail;
 see [ARCHITECTURE.md](./ARCHITECTURE.md) for runtime boot flow and internals.
+
+## Develop from source
+
+Repository cloning and `magic.bash` are intended for development rather than
+the primary user installation. On macOS or Linux, clone the repository and let
+the project script create and activate its development environment:
+
+```bash
+git clone https://github.com/BxNxM/micrOS.git
+cd micrOS
+source ./magic.bash env
+```
+
+Rerun `source ./magic.bash env` when opening a new terminal. Run
+`source ./magic.bash` without the `env` argument only when you also want to
+launch the DevToolKit GUI immediately.
+
+On Windows PowerShell, prepare the repository environment manually:
+
+```powershell
+git clone https://github.com/BxNxM/micrOS.git
+cd micrOS
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r env\requirements.txt
+python -m pip install -e .
+```
+
+Run `python devToolKit.py` from the repository checkout on Windows. For normal
+end-user installation and deployment, follow the PyPI workflow in the
+[project README](../README.md#start-using-micros).
 
 ## Create and upload a Load Module
 
@@ -290,6 +323,8 @@ legacy terminology and not the current release-image resource list.
 
 # Beginner level
 
+<a id="lm-basic"></a>
+
 ## LM\_basic.py
 
 ```python
@@ -325,6 +360,8 @@ def help(widgets=False):
             "add_two_numbers a b")
 
 ```
+
+<a id="lm-basic-led"></a>
 
 ## LM\_basic\_led.py
 
@@ -593,6 +630,8 @@ def pinmap_search(keys):
 
 # Intermediate level
 
+<a id="types-module"></a>
+
 ## ![dashboard](../media/web_dashboard.png?raw=true) micrOS Types.py module
 
 > Advanced help messages with widget type assignment
@@ -638,6 +677,8 @@ Status return conventions for dashboard widgets:
 | `JOYSTICK` | `X`, `Y` | Original joystick position keys. |
 | `WHITE` | `CW`, `WW`, `BR`, `S` | `BR` is integer brightness percent, `S` is state. |
 
+
+<a id="lm-types-demo"></a>
 
 ## micrOS LM\_types\_demo.py (simple)
 
@@ -863,7 +904,8 @@ def write_and_light(msg="Hello world!"):
                        #     When dbg=True in node_config
 ```
 
-Usage(s): [LM_sound_event](./source/modules/LM_sound_event.py) [LM_demo](./source/LM_demo.py) 
+Usage: call `console()` from a Load Module when diagnostic output should follow
+the runtime's configured console behavior.
 
 ------------------------------------
 
@@ -1009,7 +1051,7 @@ async def mytask(tag, period_ms=30):
 
 > Than you can call `task_example mytask` function.
 
-Usage(s): [LM_presence](./source/modules/LM_presence.py) [LM_buzzer](./source/modules/LM_buzzer.py) [LM_cct](./source/modules/LM_cct.py) [LM_dimmer](./source/modules/LM_dimmer.py) [LM_neopixel](./source/modules/LM_neopixel.py) [LM_neopixel](./source/modules/LM_neopixel.py) [LM_rgb](./source/modules/LM_rgb.py) [LM_roboarm](./source/modules/LM_roboarm.py) [LM_robustness](./source/modules/LM_robustness.py) etc.
+Usage(s): [LM_presence](./source/modules/LM_presence.py) [LM_buzzer](./source/modules/LM_buzzer.py) [LM_cct](./source/modules/LM_cct.py) [LM_dimmer](./source/modules/LM_dimmer.py) [LM_neopixel](./source/modules/LM_neopixel.py) [LM_rgb](./source/modules/LM_rgb.py) [LM_robustness](./source/modules/LM_robustness.py), etc.
 
 ------------------------------------
 
@@ -1035,7 +1077,7 @@ Usage(s): [LM\_oled\_ui](./source/modules/LM_oled_ui.py) [LM\_i2s\_mic](./source
 
 ------------------------------------
 
-### exec\_cmd(cmd:list, jsonify:bool=None, secure=False
+### exec\_cmd(cmd, jsonify=None, secure=False)
 
 Run sync task from LoadModules by string list.
 
@@ -1247,7 +1289,7 @@ def _response_with_params(headers:dict, body:bytes):
 	return 'text/plain', reply
 ```
 
-Usage(s): [LM_OV2640](./source/modules/LM_OV2640.py), [LM_web](./source/modules/LM_web.py)
+Usage: [LM_web](./source/modules/LM_web.py)
 
 --------------------------
 
@@ -1331,7 +1373,7 @@ def generator():
         yield 5, 0, 5
 ```
 
-Usage(s): [LM_neomatrix](./source/modules/LM_neomatrix.py) [LM_neoeffects.](./source/modules/LM_neoeffects.py)
+Usage: [LM_neoeffects](./source/modules/LM_neoeffects.py)
 
 --------------------------
 

@@ -17,10 +17,10 @@ still copied after flashing by the DevToolKit resource copier.
 
 Current custom image targets:
 
-- `micrOS-esp32-1.28.0-3.3.0-0.bin`
-- `micrOS-esp32c3-1.28.0-3.3.0-0.bin`
-- `micrOS-esp32c6-1.28.0-3.3.0-0.bin`
-- `micrOS-esp32s3-1.28.0-3.3.0-0.bin`
+- `micrOS-esp32-1.28.0-3.6.0-0.bin`
+- `micrOS-esp32c3-1.28.0-3.6.0-0.bin`
+- `micrOS-esp32c6-1.28.0-3.6.0-0.bin`
+- `micrOS-esp32s3-1.28.0-3.6.0-0.bin`
 
 Supported builder device IDs:
 

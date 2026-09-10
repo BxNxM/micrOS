@@ -117,8 +117,8 @@ On Windows, update with `python -m pip install --upgrade micrOSDevToolKit`.
 
 Run package installation as a normal user; approve administrator access only
 if your platform genuinely requires a USB-driver installation. Repository
-cloning and `magic.bash` are development workflows documented separately in
-the [Load Module and development guide](./micrOS/MODULE_GUIDE.md#develop-from-source).
+cloning and `magic.bash` are maintainer workflows documented separately in the
+[maintainer appendix](./micrOS/MODULE_GUIDE.md#repository-source-and-maintenance-commands).
 
 ### 2. Deploy micrOS over USB
 

@@ -5,7 +5,7 @@ A local-first automation platform for Wi-Fi-enabled MicroPython boards.
 Build a network-controlled lamp, read a sensor over Socket/HTTP, or let one board trigger another. micrOS turns a compatible Wi-Fi microcontroller into a programmable automation node—without a required cloud service.
 
 Write the hardware behavior in [MicroPython](http://micropython.org); micrOS
-handles networking, configuration, background jobs, scheduling, interrupts and updates.
+handles networking, configuration, background jobs, scheduling, interrupts and updates (USB, OTA).
 
 > micrOS is a network-addressable edge application platform for MicroPython MCUs, built around a dynamically loadable plug-in architecture.
 
@@ -70,9 +70,8 @@ is a Python application on the board. You don't need to understand the runtime
 internals to use an existing application.
 
 Before you begin, have a compatible Wi-Fi MicroPython board, a USB data cable,
-a computer, and your Wi-Fi credentials ready. Check the
-[firmware catalog](./micrOS/micropython/README.md) for your board; see
-[boards and memory](#boards-and-memory) for larger applications.
+a computer, and your Wi-Fi credentials ready. See [boards and memory](#boards-and-memory) for larger applications.
+> Firmware Catalog, details: [firmware catalog](./micrOS/micropython/README.md)
 
 Follow these four steps to get a node online and make your first request.
 
@@ -150,13 +149,12 @@ when it cannot connect to your network:
 
 1. Connect your computer to the `node01` Wi-Fi network using the
    factory password `ADmin123`.
-2. Keep that connection active even if your computer reports that the network
-   has no internet access, then open `http://192.168.4.1` in a browser.
+2. Open `http://192.168.4.1` in a browser. Keep that connection active even if your
+   computer reports that the network has no internet access.
 3. Select **🚀 Load Web Apps**, then open **Configuration**.
 4. In **Device**, set **Device name** to a unique, URL-friendly name such as
-   `MyNode`. Under **Startup Actions**, add `web load`. This reloads the
-   dashboard and configuration applications automatically after every reboot.
-   Preserve any startup actions already present.
+   `MyNode`. Under **Startup Actions**, optionally add `web load`. This makes default
+   web applications loading persistant (not need to run _Load Web Apps_ after every reboot...)
 5. In **Network**, enter the **WiFi SSID** and **WiFi Password** for your local
    network. The default network mode is `STA`.
 6. As a security precaution, replace the factory **Admin Password** in
@@ -166,21 +164,26 @@ when it cannot connect to your network:
 
 The HTTP server is enabled by default. At boot, micrOS checks the available heap
 and disables it automatically if its 80 KiB memory budget cannot be met. The
-`web load` startup action registers the dashboard and configuration applications
-again at each boot.
+`web load` startup action always enables default web applications at
+boot time. 
 
 After the node restarts, reconnect your computer or phone to the normal local
-network and open `http://MyNode.local`. The dashboard and Configuration links
-should now be available without selecting **🚀 Load Web Apps** again.
+network and open `http://MyNode.local`.
 
 If `.local` does not resolve, use the node IP shown by discovery or your router:
 `http://<node-ip>`. The toolkit's default AP address is `192.168.4.1`; another
 MicroPython port may use a different address.
 
-If you deploy a previously prepared configuration containing valid Wi-Fi
-credentials, the node can join that network directly and the access-point
-configuration step is unnecessary. Change the factory device password during
-initial setup.
+> Device discovery
+
+```sh
+devtoolkit.py -s -stat
+
+[ UID ]                 [ FUID ]              [ IP ]          [ STATUS ] [ VERSION ] [ MODE ] [COMM SEC] [WEBUI | ESPNOW | CRON | TIMIRQ] 
+__localhost__           __simulator__         127.0.0.1       OFFLINE    <n/a>       n/a      n/a        n/a      n/a      n/a      n/a   
+micrXXXXXXXXXXXXOS      Entrance              10.0.1.55       ONLINE     3.5.0-0     rel      0.181      ON       OFF      OFF      OFF   
+micrXXXXXXXXXXXXOS      LivingKitchen         10.0.1.200      ONLINE     3.5.0-0     dev      0.667      ON       ON       ON       OFF 
+```
 
 > **Security boundary:** micrOS currently serves HTTP and its socket shell
 > without transport encryption, and shell authentication is disabled by
@@ -190,6 +193,8 @@ initial setup.
 
 <details>
 <summary><strong>Advanced: Configuration with Shell</strong></summary>
+
+> micrOS Shell is the Operation and Maintenance interface (OAM), it is always available.
 
 Use this method when the board cannot host the web UI because of its memory
 limit, or when browser-based configuration is unavailable. Start
@@ -220,7 +225,8 @@ in step 4.
 
 ![micrOS system intro](./media/micrOS_welcome.png?raw=true)
 
-Open `http://MyNode.local/rest/system/info` to call the first REST endpoint, or connect through DevToolKit and try the shell `devToolKit.py -s -c`:
+1. Open `http://MyNode.local/rest/system/info` to call the first REST endpoint,
+2. Connect through DevToolKit and try the shell `devToolKit.py -s -c` (search and connect):
 
 ```text
 help
@@ -283,7 +289,7 @@ and parameter definitions are in the
 
 <a id="micros-node-configuration-parameters-with-description"></a>
 
-## Node configuration reference
+## Node configuration reference (web)
 
 For routine setup, open `http://<nodename>.local/config`. The settings most new
 users need are:

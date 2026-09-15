@@ -61,6 +61,13 @@ const configSelectOptions = {
   'nwmd': ['STA', 'AP'],
   'irq_trig': ['up', 'down', 'both'],
 };
+const scheduleTags = ['sunrise', 'sunset'];
+const scheduleDays = [
+  {id: 0, label: 'Mon'}, {id: 1, label: 'Tue'}, {id: 2, label: 'Wed'},
+  {id: 3, label: 'Thu'}, {id: 4, label: 'Fri'}, {id: 5, label: 'Sat'},
+  {id: 6, label: 'Sun'},
+];
+const scheduleDefaultTime = {hour: 9, minute: 10};
 // Fields with semicolon-separated parameters
 const multiParamFields = new Set(['boothook', 'timirqcbf', 'staessid', 'stapwd']);
 
@@ -677,7 +684,7 @@ function setTemporaryInlineDetails(details, text, timeout = 5000, onHide = null)
 function createConfigFieldset(title = '', className = '', padding = '12px') {
   const groupWrapper = document.createElement('fieldset');
   groupWrapper.className = ['config-fieldset', 'config-box', className].filter(Boolean).join(' ');
-  groupWrapper.style.padding = padding;
+  if (padding !== null) groupWrapper.style.padding = padding;
   if (title) {
     groupWrapper.appendChild(textElement('legend', title, 'config-legend'));
   }
@@ -1624,25 +1631,23 @@ function crontaskRoot(element) {
 }
 
 function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
-  const blockWrapper = createConfigFieldset(`Schedule ${blockIdx + 1}`, '', '20px');
+  const blockWrapper = createConfigFieldset(`Schedule ${blockIdx + 1}`, 'schedule-card', null);
   blockWrapper.dataset.blockIndex = blockIdx;
 
   const blockHeader = document.createElement('div');
-  blockHeader.className = 'config-block-header';
+  blockHeader.className = 'schedule-card-header';
 
-  if (totalBlocks > 1 || totalBlocks === -1) {
-    const delBlockButton = makeButton('Remove', () => {
-      blockWrapper.remove();
-      updateCrontaskTrack(crontaskRoot(container), key);
-    }, 'config-remove-button');
-    blockHeader.appendChild(delBlockButton);
-  }
+  const delBlockButton = makeButton('Remove', () => {
+    blockWrapper.remove();
+    updateCrontaskTrack(crontaskRoot(container), key);
+  }, 'schedule-remove-button config-remove-button');
+  blockHeader.appendChild(delBlockButton);
   blockWrapper.appendChild(blockHeader);
 
   // Timestamp field
   const tsWrapper = document.createElement('div');
   tsWrapper.className = 'config-field-group';
-  const tsLabel = textElement('label', '✨ Timestamp (WD:H:M:S or Tag +/-Offset): ', 'config-label-tight');
+  const tsLabel = textElement('label', 'When', 'schedule-field-label');
   const tsGroup = textElement('div', '', 'schedule-time-config');
 
   const blockParts = block.split('!');
@@ -1657,15 +1662,16 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
 
   // Functions field
   const fnWrapper = document.createElement('div');
-  const fnLabel = textElement('label', 'Functions: ', 'config-label-tight');
+  fnWrapper.className = 'schedule-functions';
+  const fnLabel = textElement('label', 'Functions', 'schedule-functions-title');
   fnWrapper.appendChild(fnLabel);
 
   const fnContainer = document.createElement('div');
   fnContainer.className = 'config-stack';
   fnContainer.dataset.type = 'function-list';
 
-  const addFnButton = makeButton('+', null, 'config-icon-button config-add-button');
-  addFnButton.style.height = '40px';
+  const addFnButton = makeButton('+', null, 'schedule-function-add config-add-button');
+  addFnButton.setAttribute('aria-label', 'Add function');
   addFnButton.onclick = () => {
     if (addFnButton.disabled) return;
     createFunctionRow(fnContainer, key, blockWrapper, '', fnContainer.querySelectorAll('input[data-function-input]').length, -1, addFnButton);
@@ -1695,7 +1701,7 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
 
 function createFunctionRow(container, key, blockWrapper, value, idx, totalCount, addButton) {
   const row = document.createElement('div');
-  row.className = 'function-row';
+  row.className = 'function-row schedule-function-row';
 
   const input = document.createElement('input');
   input.type = 'text';
@@ -1719,7 +1725,8 @@ function createFunctionRow(container, key, blockWrapper, value, idx, totalCount,
       moveFunctionAddButtonToLastRow(container, addButton);
       updateRowAddButtonState(container, addButton, 'input[data-function-input]');
       updateCrontaskTrack(crontaskRoot(blockWrapper), key);
-    }, 'config-icon-button config-remove-button');
+    }, 'schedule-function-remove config-remove-button');
+    delButton.setAttribute('aria-label', 'Remove function');
     row.appendChild(delButton);
   }
 
@@ -1742,51 +1749,85 @@ function moveFunctionAddButtonToLastRow(container, addButton) {
 }
 
 function defaultScheduleTimestamp(value) {
-  return value && value !== 'n/a' && value !== '*:*:*:0' ? value : '*:9:10:0';
+  return value && value !== 'n/a' && value !== '*:*:*:0'
+    ? value
+    : `*:${scheduleDefaultTime.hour}:${scheduleDefaultTime.minute}:0`;
 }
 
 function renderScheduleTimeControls(wrapper, tsInput, blockWrapper, key) {
   const editor = document.createElement('div');
-  editor.className = 'schedule-time-ui';
-  const fixedGroup = textElement('div', '', 'schedule-time-section');
-  editor.appendChild(fixedGroup);
-  fixedGroup.appendChild(tsInput);
+  editor.className = 'schedule-time-ui schedule-editor';
+  editor.appendChild(tsInput);
+  tsInput.classList.add('schedule-raw-timestamp');
+  tsInput.setAttribute('aria-label', 'Raw schedule timestamp');
 
-  const dayRow = textElement('div', '', 'schedule-time-row');
-  ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'].forEach((label, idx) => {
+  const overview = textElement('div', '', 'schedule-overview');
+  const icon = textElement('span', '', 'schedule-icon');
+  const summary = textElement('div', '', 'schedule-summary');
+  overview.appendChild(icon);
+  overview.appendChild(summary);
+  editor.appendChild(overview);
+
+  const modeSelect = document.createElement('select');
+  modeSelect.className = 'schedule-mode-select';
+  modeSelect.dataset.scheduleMode = 'true';
+  [['tag', 'Tag'], ['time', 'Time']].forEach(([value, label]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    modeSelect.appendChild(option);
+  });
+  modeSelect.onchange = () => {
+    editor.dataset.mode = modeSelect.value;
+    writeScheduleTime(editor, tsInput, blockWrapper, key, modeSelect.value === 'tag');
+  };
+  editor.appendChild(modeSelect);
+
+  const tagPanel = textElement('div', '', 'schedule-panel schedule-tag-panel');
+  const tagSelect = document.createElement('select');
+  tagSelect.dataset.sunTag = 'true';
+  scheduleTags.forEach(tag => {
+    const option = document.createElement('option');
+    option.value = tag;
+    option.textContent = tag;
+    tagSelect.appendChild(option);
+  });
+  tagSelect.onchange = () => writeScheduleTime(editor, tsInput, blockWrapper, key, true);
+  const offsetDown = makeButton('−', () => adjustSunOffset(editor, tsInput, blockWrapper, key, -1), 'schedule-step-button');
+  const offset = makeInput('number', '', 'min', {sunOffset: 'true'}, () => writeScheduleTime(editor, tsInput, blockWrapper, key, true));
+  offset.inputMode = 'numeric';
+  offset.min = -1440;
+  offset.max = 1440;
+  offset.classList.add('schedule-offset-input');
+  const offsetUp = makeButton('+', () => adjustSunOffset(editor, tsInput, blockWrapper, key, 1), 'schedule-step-button');
+  tagPanel.append(tagSelect, offsetDown, offset, offsetUp, textElement('span', 'min', 'schedule-unit'));
+  editor.appendChild(tagPanel);
+
+  const timePanel = textElement('div', '', 'schedule-panel schedule-clock-panel');
+  const clockInputs = textElement('div', '', 'schedule-clock-inputs');
+  const hourInput = makeInput('number', '', 'Hour', {timeHour: 'true'}, () => writeScheduleTime(editor, tsInput, blockWrapper, key, false));
+  hourInput.min = 0;
+  hourInput.max = 23;
+  hourInput.step = 1;
+  hourInput.setAttribute('aria-label', 'Hour');
+  const minuteInput = makeInput('number', '', 'Minute', {timeMinute: 'true'}, () => writeScheduleTime(editor, tsInput, blockWrapper, key, false));
+  minuteInput.min = 0;
+  minuteInput.max = 59;
+  minuteInput.step = 1;
+  minuteInput.setAttribute('aria-label', 'Minute');
+  clockInputs.append(hourInput, textElement('span', ':', 'schedule-clock-separator'), minuteInput);
+  timePanel.appendChild(clockInputs);
+  const dayRow = textElement('div', '', 'schedule-time-row schedule-day-row');
+  scheduleDays.forEach(({id, label}) => {
     const button = makeButton(label, () => {
       button.classList.toggle('selected');
       writeScheduleTime(editor, tsInput, blockWrapper, key, false);
     }, 'schedule-day-button');
-    button.dataset.day = idx;
+    button.dataset.day = id;
     dayRow.appendChild(button);
   });
-  fixedGroup.appendChild(dayRow);
-
-  const clockRow = textElement('div', '', 'schedule-time-row schedule-clock-row');
-  ['h', 'm', 's'].forEach((part, idx) => {
-    const input = makeInput('number', '', part.toUpperCase(), {timePart: part}, () => writeScheduleTime(editor, tsInput, blockWrapper, key, false));
-    input.min = 0;
-    input.max = idx === 0 ? 23 : 59;
-    clockRow.appendChild(input);
-  });
-  fixedGroup.appendChild(clockRow);
-
-  const sunRow = textElement('div', '', 'schedule-time-row schedule-sun-row');
-  const sunSection = textElement('div', '', 'schedule-time-section schedule-time-alt');
-  ['sunset', 'sunrise'].forEach(tag => {
-    const button = makeButton(tag, () => {
-      editor.dataset.sun = editor.dataset.sun === tag ? '' : tag;
-      writeScheduleTime(editor, tsInput, blockWrapper, key, true);
-    }, 'schedule-sun-button');
-    button.dataset.sunButton = tag;
-    sunRow.appendChild(button);
-  });
-  const offset = makeInput('text', '', '+/- min', {sunOffset: 'true'}, () => writeScheduleTime(editor, tsInput, blockWrapper, key, true));
-  offset.inputMode = 'numeric';
-  sunRow.appendChild(offset);
-  sunSection.appendChild(sunRow);
-  editor.appendChild(sunSection);
+  timePanel.appendChild(dayRow);
+  editor.appendChild(timePanel);
 
   tsInput.oninput = () => {
     syncScheduleTimeControls(editor, tsInput.value);
@@ -1800,21 +1841,58 @@ function renderScheduleTimeControls(wrapper, tsInput, blockWrapper, key) {
 function syncScheduleTimeControls(editor, value) {
   const sunMatch = String(value || '').trim().match(/^(sunrise|sunset)([+-]\d+)?$/);
   editor.dataset.sun = sunMatch ? sunMatch[1] : '';
-  editor.querySelectorAll('[data-sun-button]').forEach(button => {
-    button.classList.toggle('selected', button.dataset.sunButton === editor.dataset.sun);
-  });
+  editor.dataset.mode = sunMatch ? 'tag' : 'time';
+  const modeSelect = editor.querySelector('[data-schedule-mode]');
+  if (modeSelect) modeSelect.value = editor.dataset.mode;
   const offset = editor.querySelector('[data-sun-offset]');
   if (offset) offset.value = sunMatch && sunMatch[2] ? sunMatch[2].replace(/^\+/, '') : '';
+  const tagSelect = editor.querySelector('[data-sun-tag]');
+  if (tagSelect && sunMatch) tagSelect.value = sunMatch[1];
 
   const parts = sunMatch ? [] : String(value || '').split(':');
   const selected = expandScheduleDays(parts.length === 4 ? parts[0].trim() : '*');
   editor.querySelectorAll('[data-day]').forEach(button => {
     button.classList.toggle('selected', selected.includes(Number(button.dataset.day)));
   });
-  ['h', 'm', 's'].forEach((part, idx) => {
-    const input = editor.querySelector(`[data-time-part="${part}"]`);
-    if (input) input.value = parts.length === 4 ? parts[idx + 1].trim() : '';
-  });
+  const hourInput = editor.querySelector('[data-time-hour]');
+  const minuteInput = editor.querySelector('[data-time-minute]');
+  if (hourInput) hourInput.value = parts.length === 4 ? String(parts[1].trim()).padStart(2, '0') : String(scheduleDefaultTime.hour).padStart(2, '0');
+  if (minuteInput) minuteInput.value = parts.length === 4 ? String(parts[2].trim()).padStart(2, '0') : String(scheduleDefaultTime.minute).padStart(2, '0');
+  const icon = editor.querySelector('.schedule-icon');
+  const summary = editor.querySelector('.schedule-summary');
+  if (icon) icon.innerHTML = sunMatch ? scheduleSunIcon(sunMatch[1]) : scheduleClockIcon();
+  if (summary) {
+    const time = `${hourInput ? hourInput.value : String(scheduleDefaultTime.hour).padStart(2, '0')}:${minuteInput ? minuteInput.value : String(scheduleDefaultTime.minute).padStart(2, '0')}`;
+    summary.innerHTML = sunMatch
+      ? `At <strong>${sunMatch[1]}</strong>${sunMatch[2] ? ` ${sunMatch[2]} min` : ''}`
+      : `At <strong>${time}</strong><br><span class="schedule-summary-days">${scheduleDaysLabel(selected)}</span>`;
+  }
+}
+
+function scheduleDaysLabel(days) {
+  const orderedDays = [...days].sort((a, b) => a - b);
+  const sameDays = (expected) => orderedDays.length === expected.length && expected.every((day, index) => orderedDays[index] === day);
+  if (sameDays([0, 1, 2, 3, 4, 5, 6])) return 'Every day';
+  if (sameDays([0, 1, 2, 3, 4])) return 'Weekdays';
+  if (sameDays([5, 6])) return 'Weekend';
+  return orderedDays.length ? orderedDays.map(day => scheduleDays[day].label).join(', ') : 'No days selected';
+}
+
+function adjustSunOffset(editor, tsInput, blockWrapper, key, direction) {
+  const offset = editor.querySelector('[data-sun-offset]');
+  offset.value = String((Number(offset.value) || 0) + direction);
+  writeScheduleTime(editor, tsInput, blockWrapper, key, true);
+}
+
+function scheduleSunIcon(tag) {
+  if (tag === 'sunrise') {
+    return '<svg class="schedule-sunrise-icon" viewBox="0 0 32 32" aria-label="Sunrise"><line x1="16" y1="3" x2="16" y2="6"/><line x1="6.81" y1="6.81" x2="8.93" y2="8.93"/><line x1="3" y1="16" x2="6" y2="16"/><line x1="29" y1="16" x2="26" y2="16"/><line x1="25.19" y1="6.81" x2="23.07" y2="8.93"/><path class="schedule-sun-disc" d="M22.32,19c0.43-0.91,0.68-1.92,0.68-3c0-3.87-3.13-7-7-7s-7,3.13-7,7c0,1.08,0.25,2.09,0.68,3H22.32z"/><line x1="3" y1="23" x2="29" y2="23"/><line x1="7" y1="27" x2="19" y2="27"/><line x1="25" y1="27" x2="23" y2="27"/></svg>';
+  }
+  return '<svg class="schedule-sunset-icon" viewBox="0 0 32 32" aria-label="Sunset"><line x1="16" y1="3" x2="16" y2="6"/><line x1="6.81" y1="6.81" x2="8.93" y2="8.93"/><line x1="3" y1="16" x2="6" y2="16"/><line x1="29" y1="16" x2="26" y2="16"/><line x1="25.19" y1="6.81" x2="23.07" y2="8.93"/><path class="schedule-sun-disc" d="M22.32,19c0.43-0.91,0.68-1.92,0.68-3c0-3.87-3.13-7-7-7s-7,3.13-7,7c0,1.08,0.25,2.09,0.68,3H22.32z"/><line x1="3" y1="23" x2="29" y2="23"/><line x1="7" y1="27" x2="19" y2="27"/><line x1="25" y1="27" x2="23" y2="27"/></svg>';
+}
+
+function scheduleClockIcon() {
+  return '<svg class="schedule-clock-icon" viewBox="0 0 24 24" aria-label="Time"><path d="M12 7V12H15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"/></svg>';
 }
 
 function expandScheduleDays(wd) {
@@ -1846,20 +1924,23 @@ function compactScheduleDays(days) {
 }
 
 function writeScheduleTime(editor, tsInput, blockWrapper, key, preferSun) {
-  const sun = editor.dataset.sun;
+  const sun = editor.querySelector('[data-sun-tag]').value;
   const offset = (editor.querySelector('[data-sun-offset]').value || '').trim();
-  if (preferSun && sun) {
+  if (preferSun) {
+    editor.dataset.mode = 'tag';
     tsInput.value = sun + (/^[+-]?\d+$/.test(offset) && Number(offset) !== 0 ? (/^[+-]/.test(offset) ? offset : '+' + offset) : '');
     if (!['-', '+'].includes(offset)) syncScheduleTimeControls(editor, tsInput.value);
   } else {
     const days = Array.from(editor.querySelectorAll('[data-day].selected')).map(button => Number(button.dataset.day));
-    const defaults = ['9', '10', '0'];
-    const parts = ['h', 'm', 's'].map((part, idx) => {
-      const input = editor.querySelector(`[data-time-part="${part}"]`);
-      const max = idx === 0 ? 23 : 59;
-      return input.value === '' ? defaults[idx] : String(Math.min(max, Math.max(0, Number(input.value))));
-    });
+    const hourInput = editor.querySelector('[data-time-hour]');
+    const minuteInput = editor.querySelector('[data-time-minute]');
+    const clampTimePart = (value, max, fallback) => {
+      const number = Number(value);
+      return String(Number.isFinite(number) ? Math.min(max, Math.max(0, Math.trunc(number))) : fallback);
+    };
+    const parts = [clampTimePart(hourInput.value, 23, scheduleDefaultTime.hour), clampTimePart(minuteInput.value, 59, scheduleDefaultTime.minute), '0'];
     editor.dataset.sun = '';
+    editor.dataset.mode = 'time';
     tsInput.value = compactScheduleDays(days) + ':' + parts.join(':');
     syncScheduleTimeControls(editor, tsInput.value);
   }

@@ -251,6 +251,13 @@ the original mount.
 | Config | `/config` | `config.html`, `config.js`, `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
 | Fileserver | `/fs` | `filesui.html`, `filesui.js`, `editor.js`, `ustyle.css` | `LM_fileserver.py` |
 
+The config scheduler uses adjacent Time/Tag buttons and retains each mode's
+draft while switching. Time edits preserve seconds and wildcards; the expandable
+Advanced timestamp field exposes the full `WD:H:M:S` or sun-tag syntax. Day
+buttons accept a single day or continuous range (including wraparound); use
+separate schedules for non-consecutive days. Numeric fields commit on change
+so unfinished input is not rewritten on each keystroke.
+
 ### API
 
 | API | Method | Source file | Purpose |

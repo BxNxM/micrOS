@@ -1637,11 +1637,13 @@ function createCrontaskBlock(container, key, block, blockIdx, totalBlocks) {
   const blockHeader = document.createElement('div');
   blockHeader.className = 'schedule-card-header';
 
-  const delBlockButton = makeButton('Remove', () => {
-    blockWrapper.remove();
-    updateCrontaskTrack(crontaskRoot(container), key);
-  }, 'schedule-remove-button config-remove-button');
-  blockHeader.appendChild(delBlockButton);
+  if (totalBlocks > 1 || totalBlocks === -1) {
+    const delBlockButton = makeButton('Remove', () => {
+      blockWrapper.remove();
+      updateCrontaskTrack(crontaskRoot(container), key);
+    }, 'schedule-remove-button config-remove-button');
+    blockHeader.appendChild(delBlockButton);
+  }
   blockWrapper.appendChild(blockHeader);
 
   // Timestamp field
@@ -1885,10 +1887,9 @@ function adjustSunOffset(editor, tsInput, blockWrapper, key, direction) {
 }
 
 function scheduleSunIcon(tag) {
-  if (tag === 'sunrise') {
-    return '<svg class="schedule-sunrise-icon" viewBox="0 0 32 32" aria-label="Sunrise"><line x1="16" y1="3" x2="16" y2="6"/><line x1="6.81" y1="6.81" x2="8.93" y2="8.93"/><line x1="3" y1="16" x2="6" y2="16"/><line x1="29" y1="16" x2="26" y2="16"/><line x1="25.19" y1="6.81" x2="23.07" y2="8.93"/><path class="schedule-sun-disc" d="M22.32,19c0.43-0.91,0.68-1.92,0.68-3c0-3.87-3.13-7-7-7s-7,3.13-7,7c0,1.08,0.25,2.09,0.68,3H22.32z"/><line x1="3" y1="23" x2="29" y2="23"/><line x1="7" y1="27" x2="19" y2="27"/><line x1="25" y1="27" x2="23" y2="27"/></svg>';
-  }
-  return '<svg class="schedule-sunset-icon" viewBox="0 0 32 32" aria-label="Sunset"><line x1="16" y1="3" x2="16" y2="6"/><line x1="6.81" y1="6.81" x2="8.93" y2="8.93"/><line x1="3" y1="16" x2="6" y2="16"/><line x1="29" y1="16" x2="26" y2="16"/><line x1="25.19" y1="6.81" x2="23.07" y2="8.93"/><path class="schedule-sun-disc" d="M22.32,19c0.43-0.91,0.68-1.92,0.68-3c0-3.87-3.13-7-7-7s-7,3.13-7,7c0,1.08,0.25,2.09,0.68,3H22.32z"/><line x1="3" y1="23" x2="29" y2="23"/><line x1="7" y1="27" x2="19" y2="27"/><line x1="25" y1="27" x2="23" y2="27"/></svg>';
+  const iconClass = tag === 'sunrise' ? 'schedule-sunrise-icon' : 'schedule-sunset-icon';
+  const label = tag === 'sunrise' ? 'Sunrise' : 'Sunset';
+  return `<svg class="${iconClass}" viewBox="0 0 32 32" aria-label="${label}"><line x1="16" y1="3" x2="16" y2="6"/><line x1="6.81" y1="6.81" x2="8.93" y2="8.93"/><line x1="3" y1="16" x2="6" y2="16"/><line x1="29" y1="16" x2="26" y2="16"/><line x1="25.19" y1="6.81" x2="23.07" y2="8.93"/><path class="schedule-sun-disc" d="M22.32,19c0.43-0.91,0.68-1.92,0.68-3c0-3.87-3.13-7-7-7s-7,3.13-7,7c0,1.08,0.25,2.09,0.68,3H22.32z"/><line x1="3" y1="23" x2="29" y2="23"/><line x1="7" y1="27" x2="19" y2="27"/><line x1="25" y1="27" x2="23" y2="27"/></svg>`;
 }
 
 function scheduleClockIcon() {

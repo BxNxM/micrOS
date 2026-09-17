@@ -88,8 +88,6 @@ button {
     transition: all 0.2s ease;
 }
 
-button:hover:not(:disabled) { background: rgba(255,255,255,0.22); }
-
 button:disabled {
     background: #777; color: #d8d8d8; cursor: not-allowed; opacity: 0.65;
 }
@@ -100,14 +98,18 @@ button.primary-button:not(:disabled) {
     font-weight: bold;
 }
 
-button.primary-button:hover:not(:disabled) {
-    background: rgba(32,132,58,0.9);
-    box-shadow: 0 0 0 2px rgba(142,232,142,0.28);
-}
-
 button.danger-button { background: #b02a37; color: white; }
 
-button.danger-button:hover:not(:disabled) { background: #8f1f2b; }
+@media (hover: hover) and (pointer: fine) {
+    button:hover:not(:disabled) { background: rgba(255,255,255,0.22); }
+
+    button.primary-button:hover:not(:disabled) {
+        background: rgba(32,132,58,0.9);
+        box-shadow: 0 0 0 2px rgba(142,232,142,0.28);
+    }
+
+    button.danger-button:hover:not(:disabled) { background: #8f1f2b; }
+}
 
 input[type="text"],
 input[type="password"],

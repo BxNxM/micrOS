@@ -2462,6 +2462,29 @@
             "param(s)": "book='ault'"
         }
     },
+    "uwebrepl": {
+        "disable": {
+            "doc": "Stop WebREPL and disconnect its client; requires pwd=<appwd>.",
+            "param(s)": ""
+        },
+        "enable": {
+            "doc": "Enable WebREPL until reboot; requires pwd=<appwd>. Idempotent.",
+            "param(s)": ""
+        },
+        "help": {
+            "doc": "Public shell commands and dashboard status metadata.\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:",
+            "param(s)": "widgets=False"
+        },
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/uwebrepl/media/uwebrepl.png?raw=true",
+        "load": {
+            "doc": "Register /uwebrepl and its API without enabling WebREPL.",
+            "param(s)": ""
+        },
+        "status": {
+            "doc": "Read the real listener, including one started by the micrOS shell.",
+            "param(s)": ""
+        }
+    },
     "veml7700": {
         "help": {
             "doc": "\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'read_lux ', 'refresh': 10000}",

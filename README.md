@@ -18,6 +18,7 @@ handles networking, configuration, background jobs, scheduling, interrupts and u
 
 - 🎬 [See it in action](#see-it-in-action)
 - 🚀 [Start using micrOS](#start-using-micros) — installation, Wi-Fi setup, and first commands
+  - [NEW] Installer: [microsctl](https://github.com/BxNxM/micrOSrelease) 
 - 📦 [Applications](https://htmlpreview.github.io/?https://github.com/BxNxM/micrOS/blob/master/micrOS/client/sfuncman/sfuncman.html) · [micrOS Packages](https://github.com/BxNxM/micrOSPackages)
 - 🌐 [Network modes](#networking-modes) · [Configuration reference](./docs/CONFIGURATION_REFERENCE.md)
 - 💬 [Tutorials and community](#tutorials-and-community)

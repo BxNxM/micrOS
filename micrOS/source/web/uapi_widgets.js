@@ -19,7 +19,7 @@ function moduleCommandSuggestions(response) {
             if (command === 'task') {
                 return ['task list', 'task show <taskID>', 'task kill <taskID>'];
             }
-            return [`${command} help`];
+            return [`${command} help`, `${command} load`, `${command} pinmap`];
         });
 }
 
@@ -89,8 +89,12 @@ function restWidget(container='restWidget', opts={}) {
     root.append(makeEl('h3', {}, [label]), form, url, responseBox, time);
     if (REST_CONSOLE_CACHE) {restConsole(...REST_CONSOLE_CACHE, {url, response: responseBox, time});}
     updateHint();
-    restAPICore('modules', opts.modulesTimeout || 3000).then(({response}) => {
+    restAPICore('modules all', opts.modulesTimeout || 3000).then(({response}) => {
         const commands = moduleCommandSuggestions(response);
+        if (!commands.length) {throw new Error('No module suggestions');}
+        return commands;
+    }).catch(() => restAPICore('modules', opts.modulesTimeout || 3000)
+        .then(({response}) => moduleCommandSuggestions(response))).then(commands => {
         if (!commands.length) {return;}
         suggestions = [...new Set(['modules', ...commands])];
         updateHint();

@@ -486,7 +486,7 @@ class Manager:
 def exec_builtins(func):
     """
     [Decorator] Module execution built-in commands and modifiers
-    - modules         - show active modules list
+    - modules [all]   - show active/all modules list
     - task kill ...   - task termination
            show ...   - task output dump
     -  ... >json      - postfix to jsonify the output
@@ -517,6 +517,10 @@ def exec_builtins(func):
 
             # MODULES
             if arg_list[0] == 'modules':
+                if len(arg_list) > 1 and arg_list[1].lower() == 'all':
+                    from Files import OSPath, ilist_fs
+                    return True, [m.replace('LM_', '').split('.')[0]
+                                  for m in ilist_fs(path=OSPath.MODULES, type_filter='f', select='LM')] + ['task']
                 return True, list((m.strip().replace('LM_', '') for m in modules if m.startswith('LM_'))) + ['task']
 
             # Handle task manipulation commands: list, kill, show - return True -> Command handled

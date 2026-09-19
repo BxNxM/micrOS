@@ -130,6 +130,7 @@ Useful built-in commands:
 hello                 # node name, hardware ID, and dev/rel mode
 version               # micrOS version
 modules               # currently loaded modules
+modules all           # names of all installed Load Modules
 help                  # shell commands and loaded-module APIs
 help all              # include all installed Load Modules
 help all sensor       # filter the help output

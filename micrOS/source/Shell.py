@@ -28,7 +28,7 @@ IMAGE_MODE = 'rel' if 'micrOS' in uname()[-1] else 'dev'
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '3.6.1-0'
+    MICROS_VERSION = '3.6.2-0'
 
     def __init__(self):
         """
@@ -159,32 +159,34 @@ class Shell:
 
         # HELP MSG
         if is_local_cmd and msg_list[0] == "help":
-            await self.a_send("[MICROS]")
-            await self.a_send("   hello     - device hello msg ID")
-            await self.a_send("   modules   - show active Load Modules")
-            await self.a_send("   version   - show micrOS version")
-            await self.a_send("   exit      - exit shell session")
-            await self.a_send("   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h")
-            await self.a_send("   webrepl   - start webrepl, for file transfers use with --update")
-            await self.a_send("[CONF] Configuration mode")
-            await self.a_send("  conf       - Enter conf mode")
-            await self.a_send("    dump       - Dump all data, filter: dump [str]")
-            await self.a_send("    key        - Get value")
-            await self.a_send("    key value  - Set value")
-            await self.a_send("  noconf     - Exit conf mode")
-            await self.a_send("[TASK] Task operations")
-            await self.a_send("  task list         - list tasks by tags")
-            await self.a_send("  task kill [tag]   - stop task")
-            await self.a_send("  task show [tag]   - show task output")
-            await self.a_send("[EXEC] Command mode, syntax(...): <module> <function> <params> <postfix>")
-            await self.a_send("  Postfix hints:")
-            await self.a_send("    ... &[x]            - start one-shot task")
-            await self.a_send("    ... &&[x]           - start periodic task, where [x]: delay ms [x min: 20ms]")
-            await self.a_send("    ... >json           - request json formatted output")
-            await self.a_send("    ... >>hostname      - remote command execution (intercon)")
-            await self.a_send("help [all/-] [match]  - list Active/ALL modules with optional filtering")
+            msg_list_len = len(msg_list)
+            if msg_list_len == 1:
+                await self.a_send("[MICROS]")
+                await self.a_send("   hello     - device hello msg ID")
+                await self.a_send("   modules [all] - show active/all Load Modules")
+                await self.a_send("   version   - show micrOS version")
+                await self.a_send("   exit      - exit shell session")
+                await self.a_send("   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h")
+                await self.a_send("   webrepl   - start webrepl, for file transfers use with --update")
+                await self.a_send("[CONF] Configuration mode")
+                await self.a_send("  conf       - Enter conf mode")
+                await self.a_send("    dump [str] - Dump all / str filtered data")
+                await self.a_send("    key        - Get value")
+                await self.a_send("    key value  - Set value")
+                await self.a_send("  noconf     - Exit conf mode")
+                await self.a_send("[TASK] Task operations")
+                await self.a_send("  task list         - list tasks by tags")
+                await self.a_send("  task kill [tag]   - stop task")
+                await self.a_send("  task show [tag]   - show task output")
+                await self.a_send("[EXEC] Command mode, syntax: <module> <function> <params> <postfix>")
+                await self.a_send("  Postfix hints:")
+                await self.a_send("    ... &[x]            - start one-shot task")
+                await self.a_send("    ... &&[x]           - start periodic task, where [x]: delay ms [x min: 20ms]")
+                await self.a_send("    ... >json           - request json formatted output")
+                await self.a_send("    ... >>hostname      - remote command execution (intercon)")
+                await self.a_send("help [all] [match]  - list active(-) / all modules with optional filtering")
             # Help length: help [all/-] [match]
-            if len(msg_list) >= 2:
+            if msg_list_len >= 2:
                 _loaded = msg_list[1].lower() != "all"
                 _match = msg_list[-1].lower() != "all"
                 if _match:

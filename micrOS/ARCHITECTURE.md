@@ -267,6 +267,7 @@ so unfinished input is not rewritten on each keystroke.
 | `/dashboard` | GET | `LM_web.py` | Serve dashboard frontend |
 | `/config` | GET | `LM_web.py` | Serve the configuration frontend |
 | `/config/api` | GET, POST | `LM_web.py` | Protected config read and update |
+| `/config/packregs` | GET | `LM_web.py` | Public list of package registry JSON URLs |
 | `/config/reboot` | POST | `LM_web.py` | Protected soft reboot request |
 | `/fs`, `/fs/files`, `/fs/list`, `/fs/dirs`, `/fs/usage` | GET, POST, DELETE | `LM_fileserver.py` | Fileserver UI, browse, upload, delete, and usage APIs |
 
@@ -293,12 +294,30 @@ flowchart LR
     A["LM_web.py: enable_config()"] --> B["/config -> config.html"]
     A --> C["/config/api GET|POST -> _cfg_* @sudo"]
     A --> D["/config/reboot POST -> _reboot_clb @sudo"]
+    A --> J["/config/packregs GET -> _cfg_packregs_clb"]
     E["config.html"] --> F["auth.js"]
     E --> G["config.js"]
     G --> H["fetch /config/api GET|POST"]
     G --> I["restAPI task/list, modules, pacman, system/pinmap"]
     F --> C
+    G --> J
 ```
+
+The Config Packages tab reads registry URLs from public
+`GET /config/packregs`, which returns a JSON array of strings. The source list
+is defined directly in `_cfg_packregs_clb()` in `LM_web.py` and defaults to:
+
+```json
+["https://raw.githubusercontent.com/BxNxM/micrOSPackages/main/registry.json"]
+```
+
+The browser fetches each registry directly, so external registry hosts must
+allow browser cross-origin requests. Entries are merged and sorted by package
+name, with duplicate refs removed (the first occurrence wins). A failed registry
+does not prevent loading the others. The dropdown derives
+package names from refs, fills the existing install field, and displays the
+description and a GitHub README link. Installation remains an explicit button
+action; manual refs remain available when the catalog cannot be loaded.
 
 ### Fileserver UML
 

@@ -42,12 +42,18 @@ def enable_config():
     web_endpoint("config", 'config.html')
     web_endpoint("config/api", _cfg_get_clb)
     web_endpoint("config/api", _cfg_set_clb, "POST")
+    web_endpoint("config/packregs", _cfg_packregs_clb)
     web_endpoint("config/reboot", _reboot_clb, "POST")
-    return "Config endpoints: /config GET, /config/api GET|POST (protected), /config/reboot POST (protected)"
+    return "Config endpoints: /config GET, /config/api GET|POST (protected), /config/packregs GET, /config/reboot POST (protected)"
 
 
 def _cfg_json(data):
     return "application/json", dumps(data)
+
+
+def _cfg_packregs_clb(*_):
+    """Get package registry JSON links for the config frontend."""
+    return _cfg_json(["https://raw.githubusercontent.com/BxNxM/micrOSPackages/main/registry.json"])
 
 
 @sudo

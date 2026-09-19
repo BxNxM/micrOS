@@ -924,6 +924,90 @@ function fetchDeviceHealth(settings) {
 }
 
 // Packages UI: install and inspect
+async function loadPackageCatalog() {
+  const response = await fetch('/config/packregs', {headers: {Accept: 'application/json'}});
+  if (!response.ok) throw new Error('Registry list unavailable');
+  const urls = await response.json();
+  if (!Array.isArray(urls)) throw new Error('Invalid registry list');
+  const catalogs = await Promise.all(urls.map(async url => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      if (typeof url !== 'string' || !/^https?:$/.test(new URL(url, location.href).protocol)) {
+        throw new Error('Invalid registry URL');
+      }
+      const result = await fetch(url, {credentials: 'omit', signal: controller.signal});
+      if (!result.ok) throw new Error('Catalog unavailable');
+      const entries = await result.json();
+      if (!Array.isArray(entries)) throw new Error('Invalid catalog');
+      return entries;
+    } catch (_) {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }));
+  if (urls.length && catalogs.every(entries => entries === null)) throw new Error('Catalog unavailable');
+  return catalogs.flatMap(catalog => catalog || []);
+}
+
+function createPackageCatalog(input) {
+  const select = document.createElement('select');
+  select.id = 'packageCatalog';
+  select.setAttribute('aria-label', 'Browse packages');
+  select.disabled = true;
+  const placeholder = textElement('option', 'Loading catalog...');
+  placeholder.value = '';
+  select.appendChild(placeholder);
+  const info = document.createElement('div');
+  info.className = 'config-box config-package-info';
+  info.hidden = true;
+  const description = textElement('p', '');
+  const readme = textElement('a', 'README ↗');
+  readme.target = '_blank';
+  readme.rel = 'noopener noreferrer';
+  info.append(description, readme);
+
+  const packages = new Map();
+  function showSelection() {
+    const pkg = packages.get(input.value.trim());
+    select.value = pkg ? pkg.ref : '';
+    info.hidden = !pkg;
+    if (pkg) {
+      description.textContent = pkg.description || 'No description available.';
+      readme.href = pkg.readme;
+    }
+  }
+  select.onchange = () => {
+    input.value = select.value;
+    showSelection();
+  };
+  input.addEventListener('input', showSelection);
+
+  loadPackageCatalog()
+    .then(entries => {
+      entries.forEach(entry => {
+        const ref = entry && typeof entry.ref === 'string' ? entry.ref : '';
+        const match = /^github:([A-Za-z0-9_-]+)\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_-]+)$/.exec(ref);
+        if (!match || packages.has(ref)) return;
+        packages.set(ref, {ref, name: match[3], description: typeof entry.description === 'string' ? entry.description : '',
+          readme: `https://github.com/${match[1]}/${match[2]}/tree/main/${match[3]}#readme`});
+      });
+      Array.from(packages.values()).sort((a, b) => a.name.localeCompare(b.name)).forEach(pkg => {
+        const option = textElement('option', pkg.name);
+        option.value = pkg.ref;
+        select.appendChild(option);
+      });
+      placeholder.textContent = packages.size ? 'Choose package...' : 'Catalog empty';
+      select.disabled = !packages.size;
+      showSelection();
+    })
+    .catch(() => {
+      placeholder.textContent = 'Catalog unavailable';
+    });
+  return {select, info};
+}
+
 function renderPackagesSection() {
   const container = document.getElementById('configFields');
   container.innerHTML = '';
@@ -934,14 +1018,17 @@ function renderPackagesSection() {
   const installSection = document.createElement('section');
   installSection.className = 'config-section-gap';
   const installLabel = textElement('label', 'Install Package (URL or Package ref):', 'config-label-block');
-  installSection.appendChild(installLabel);
 
   const input = document.createElement('input');
   input.type = 'text';
   input.placeholder = 'e.g. github:BxNxM/micrOSPackages/async_oledui';
   input.id = 'packageUrlInput';
-  input.style.margin = '8px 0';
-  installSection.appendChild(input);
+  installLabel.htmlFor = input.id;
+  const catalog = createPackageCatalog(input);
+  installSection.appendChild(installLabel);
+  const installRow = document.createElement('div');
+  installRow.className = 'config-package-install';
+  installRow.appendChild(input);
 
   const installResult = createInlineOutput();
 
@@ -965,10 +1052,11 @@ function renderPackagesSection() {
         resetButton(installBtn, 'Install');
       });
   });
-  installSection.appendChild(installBtn);
+  installRow.append(installBtn, catalog.select);
+  installSection.appendChild(installRow);
 
   const packageTools = document.createElement('div');
-  packageTools.className = 'config-package-tools';
+  packageTools.className = 'config-package-tools config-section-gap';
 
   const catalogBtn = makeButton('Catalog', () => {
     window.open('https://github.com/BxNxM/micrOSPackages/tree/main', '_blank', 'noopener,noreferrer');
@@ -980,12 +1068,13 @@ function renderPackagesSection() {
   });
   packageTools.appendChild(refreshBtn);
 
-  installSection.appendChild(packageTools);
   installSection.appendChild(installResult);
   container.appendChild(installSection);
 
   // Packages list block
   const pkgSection = document.createElement('section');
+  pkgSection.appendChild(catalog.info);
+  pkgSection.appendChild(packageTools);
   const pkgHeader = document.createElement('div');
   pkgHeader.className = 'config-package-header';
   const title = textElement('h3', 'Packages', 'config-package-title');

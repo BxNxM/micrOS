@@ -160,6 +160,12 @@
 .config-package-tools { flex-direction: row; gap: 6px; margin-top: 8px; }
 .config-package-header { padding: 0 10px; box-sizing: border-box; }
 .config-package-title { flex: 1; margin: 0; }
+.config-package-install { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: var(--config-input-width); max-width: 100%; margin: 8px 0; }
+#configFields .config-package-install input { flex: 1 1 240px; width: auto; }
+#configFields #packageCatalog { width: 180px; }
+.config-package-info { width: var(--config-input-width); max-width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 12px; overflow-wrap: anywhere; }
+.config-package-info p { margin: 0 0 8px; }
+.config-package-info a { color: var(--config-label); }
 .config-pin-info { margin-top: 20px; }
 .config-pin-title { margin-bottom: 8px; }
 .config-table-title { margin-bottom: 6px; }
@@ -376,6 +382,8 @@ button.config-toggle-option.selected:hover {
     padding: 0 4px 16px 4px;
     --config-input-width: 100%;
   }
+
+  #configFields .config-package-install input { flex-basis: 100%; }
 
   .config-input-row,
   .param-row,

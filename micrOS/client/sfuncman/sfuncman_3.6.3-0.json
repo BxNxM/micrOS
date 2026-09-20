@@ -56,7 +56,7 @@
         },
         "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/aht10.png?raw=true",
         "load": {
-            "doc": "\n    Initialize AHT10 module\n    ",
+            "doc": "\n    Initialize temp/hum AHT10 module\n    ",
             "param(s)": ""
         },
         "measure": {
@@ -895,28 +895,28 @@
     },
     "light_sensor": {
         "help": {
-            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'intensity ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'illuminance ', 'refresh': 10000}",
+            "doc": "Show commands or dashboard widgets for the sensor.\n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'intensity ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'illuminance ', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
         "illuminance": {
-            "doc": "\n    Measure light illuminance in flux\n    - result is 20 result average (noise reduction)\n    ",
+            "doc": "Measure light illuminance in lux.",
             "param(s)": ""
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/light_sensors/media/light_sensor.png?raw=true",
         "intensity": {
-            "doc": "\n    Measure light intensity in %\n    - result is 20 result average (noise reduction)\n    ",
+            "doc": "Measure light intensity in percent.",
             "param(s)": ""
         },
         "load": {
-            "doc": "\n    Initialize TEMPT6000 light sensor module\n    ",
+            "doc": "Initialize the TEMPT6000 light sensor.",
             "param(s)": ""
         },
         "pinmap": {
-            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: temp6000",
+            "doc": "Show the logical pin used by the sensor.\npin map: temp6000",
             "param(s)": ""
         },
         "subscribe_intercon": {
-            "doc": "\n    [TASK] ON/OFF command sender over intercon on given threshold\n    :param on: on callback to send: \"host cmd\"\n    :param off: off callback to send: \"host cmd\"\n    :param threshold: percentage value for on(under) /off(above)\n    :param tolerance: off tolerance value -> off event: threshold+tolerance\n    :param sample_sec: light measure task period in sec (also means event frequency)\n    ",
+            "doc": "Send ON/OFF commands when light crosses the configured threshold.",
             "param(s)": "on off threshold=4 tolerance=2 sample_sec=60"
         }
     },
@@ -2337,6 +2337,33 @@
             "param(s)": "text:str"
         }
     },
+    "tempt6000": {
+        "help": {
+            "doc": "\n    [i] micrOS LM naming convention - built-in help message\n    :return tuple:\n        (widgets=False) list of functions implemented by this application\n        (widgets=True) list of widget json for UI generation\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'intensity ', 'refresh': 10000}\n\t{'type': 'textbox', 'callback': 'illuminance ', 'refresh': 10000}",
+            "param(s)": "widgets=False"
+        },
+        "illuminance": {
+            "doc": "\n    Measure light illuminance in flux\n    - result is 20 result average (noise reduction)\n    ",
+            "param(s)": ""
+        },
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/light_sensors/media/tempt6000.png?raw=true",
+        "intensity": {
+            "doc": "\n    Measure light intensity in %\n    - result is 20 result average (noise reduction)\n    ",
+            "param(s)": ""
+        },
+        "load": {
+            "doc": "\n    Initialize TEMPT6000 light sensor module\n    ",
+            "param(s)": ""
+        },
+        "pinmap": {
+            "doc": "\n    [i] micrOS LM naming convention\n    Shows logical pins - pin number(s) used by this Load module\n    - info which pins to use for this application\n    :return dict: pin name (str) - pin value (int) pairs\n    \npin map: temp6000",
+            "param(s)": ""
+        },
+        "subscribe_intercon": {
+            "doc": "\n    [TASK] ON/OFF command sender over intercon on given threshold\n    :param on: on callback to send: \"host cmd\"\n    :param off: off callback to send: \"host cmd\"\n    :param threshold: percentage value for on(under) /off(above)\n    :param tolerance: off tolerance value -> off event: threshold+tolerance\n    :param sample_sec: light measure task period in sec (also means event frequency)\n    ",
+            "param(s)": "on off threshold=4 tolerance=2 sample_sec=60"
+        }
+    },
     "tinyrgb": {
         "getstate": {
             "doc": "\n    Get state of TinyPico built-in LED\n    ",
@@ -2487,10 +2514,10 @@
     },
     "veml7700": {
         "help": {
-            "doc": "\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'read_lux ', 'refresh': 10000}",
+            "doc": "\n    VEML7700 I2C Digital light intensity sensor\n    \n\tEXTERNAL PACKAGE: https://github.com/BxNxM/micrOSPackages\n[i] micrOS Widget Types:\n\t{'type': 'textbox', 'callback': 'read_lux ', 'refresh': 10000}",
             "param(s)": "widgets=False"
         },
-        "img": "https://github.com/BxNxM/micrOS/blob/master/media/lms/veml7700.png?raw=true",
+        "img": "https://github.com/BxNxM/micrOSPackages/blob/main/light_sensors/media/veml7700.png?raw=true",
         "load": {
             "doc": "\n    VEML7700 Digital light intensity sensor\n    ",
             "param(s)": ""

@@ -301,10 +301,10 @@ code {
 </section>
 
 <div class="module-grid">
-<div class="panel module-nav"><h2>Built-in Control Modules</h2><p>Compact module index and generated function reference for the current micrOS repository state.</p><div class="shortcut-list"><a href="#aht10">aht10</a><a href="#bme280">bme280</a><a href="#buzzer">buzzer</a><a href="#cct">cct</a><a href="#cluster">cluster</a><a href="#dht11">dht11</a><a href="#dht22">dht22</a><a href="#dimmer">dimmer</a><a href="#ds18">ds18</a><a href="#esp32">esp32</a><a href="#espnow">espnow</a><a href="#fileserver">fileserver</a><a href="#gameOfLife">gameOfLife</a><a href="#genIO">genIO</a><a href="#i2c">i2c</a><a href="#i2s_mic">i2s_mic</a><a href="#light_sensor">light_sensor</a><a href="#neoeffects">neoeffects</a><a href="#neopixel">neopixel</a><a href="#oled">oled</a><a href="#oled_sh1106">oled_sh1106</a><a href="#oled_ui">oled_ui</a><a href="#pacman">pacman</a><a href="#presence">presence</a><a href="#rencoder">rencoder</a><a href="#rest">rest</a><a href="#rgb">rgb</a><a href="#rgbcct">rgbcct</a><a href="#robustness">robustness</a><a href="#rp2w">rp2w</a><a href="#sdcard">sdcard</a><a href="#servo">servo</a><a href="#stepper">stepper</a><a href="#switch">switch</a><a href="#system">system</a><a href="#task">task</a><a href="#telegram">telegram</a><a href="#tinyrgb">tinyrgb</a><a href="#veml7700">veml7700</a><a href="#web">web</a></div></div><div class="module-sections">
+<div class="panel module-nav"><h2>Built-in Control Modules</h2><p>Compact module index and generated function reference for the current micrOS repository state.</p><div class="shortcut-list"><a href="#aht10">aht10</a><a href="#bme280">bme280</a><a href="#buzzer">buzzer</a><a href="#cct">cct</a><a href="#cluster">cluster</a><a href="#dht11">dht11</a><a href="#dht22">dht22</a><a href="#dimmer">dimmer</a><a href="#ds18">ds18</a><a href="#esp32">esp32</a><a href="#espnow">espnow</a><a href="#fileserver">fileserver</a><a href="#gameOfLife">gameOfLife</a><a href="#genIO">genIO</a><a href="#i2c">i2c</a><a href="#i2s_mic">i2s_mic</a><a href="#neoeffects">neoeffects</a><a href="#neopixel">neopixel</a><a href="#oled">oled</a><a href="#oled_sh1106">oled_sh1106</a><a href="#oled_ui">oled_ui</a><a href="#pacman">pacman</a><a href="#presence">presence</a><a href="#rencoder">rencoder</a><a href="#rest">rest</a><a href="#rgb">rgb</a><a href="#rgbcct">rgbcct</a><a href="#robustness">robustness</a><a href="#rp2w">rp2w</a><a href="#sdcard">sdcard</a><a href="#servo">servo</a><a href="#stepper">stepper</a><a href="#switch">switch</a><a href="#system">system</a><a href="#task">task</a><a href="#telegram">telegram</a><a href="#tinyrgb">tinyrgb</a><a href="#web">web</a></div></div><div class="module-sections">
 <section class="panel module-card">
 <h2 id="aht10"><a href="#aht10">aht10</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;AHT10&nbsp;module</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;aht10<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;temp/hum&nbsp;AHT10&nbsp;module</td></tr></table></td></tr><tr><th>measure</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;with&nbsp;aht10<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;temp,&nbsp;hum</td></tr></table></td></tr><tr><th>reset</th><td><table class="doc-table"><tr><th>doc</th><td>Reset&nbsp;the&nbsp;sensor</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
@@ -670,30 +670,6 @@ pin&nbsp;map:&nbsp;i2s_sck,&nbsp;i2s_ws,&nbsp;i2s_sd</td></tr></table></td></tr>
 &nbsp;&nbsp;&nbsp;&nbsp;<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/i2s_mic.png?raw=true" alt="i2s_mic" height=150></td></tr></table>
-</section>
-
-<section class="panel module-card">
-<h2 id="light_sensor"><a href="#light_sensor">light_sensor</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;TEMPT6000&nbsp;light&nbsp;sensor&nbsp;module</td></tr></table></td></tr><tr><th>intensity</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;intensity&nbsp;in&nbsp;%<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;result&nbsp;is&nbsp;20&nbsp;result&nbsp;average&nbsp;(noise&nbsp;reduction)</td></tr></table></td></tr><tr><th>illuminance</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;illuminance&nbsp;in&nbsp;flux<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;result&nbsp;is&nbsp;20&nbsp;result&nbsp;average&nbsp;(noise&nbsp;reduction)</td></tr></table></td></tr><tr><th>subscribe_intercon</th><td><table class="doc-table"><tr><th>param(s)</th><td>on off threshold=4 tolerance=2 sample_sec=60</td></tr><tr><th>doc</th><td>[TASK]&nbsp;ON/OFF&nbsp;command&nbsp;sender&nbsp;over&nbsp;intercon&nbsp;on&nbsp;given&nbsp;threshold<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;on:&nbsp;on&nbsp;callback&nbsp;to&nbsp;send:&nbsp;"host&nbsp;cmd"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;off:&nbsp;off&nbsp;callback&nbsp;to&nbsp;send:&nbsp;"host&nbsp;cmd"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;threshold:&nbsp;percentage&nbsp;value&nbsp;for&nbsp;on(under)&nbsp;/off(above)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;tolerance:&nbsp;off&nbsp;tolerance&nbsp;value&nbsp;->&nbsp;off&nbsp;event:&nbsp;threshold+tolerance<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sample_sec:&nbsp;light&nbsp;measure&nbsp;task&nbsp;period&nbsp;in&nbsp;sec&nbsp;(also&nbsp;means&nbsp;event&nbsp;frequency)</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-pin&nbsp;map:&nbsp;temp6000</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'intensity&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
-	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'illuminance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/light_sensor.png?raw=true" alt="light_sensor" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1296,17 +1272,6 @@ pin&nbsp;map:&nbsp;map,&nbsp;booked,&nbsp;custom,&nbsp;known_maps</td></tr></tab
 </section>
 
 <section class="panel module-card">
-<h2 id="veml7700"><a href="#veml7700">veml7700</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>VEML7700&nbsp;Digital&nbsp;light&nbsp;intensity&nbsp;sensor</td></tr></table></td></tr><tr><th>read_lux</th><td><table class="doc-table"><tr><th>doc</th><td>Read&nbsp;LUX&nbsp;value</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
-&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<br>
-pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
-	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'read_lux&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/veml7700.png?raw=true" alt="veml7700" height=150></td></tr></table>
-</section>
-
-<section class="panel module-card">
 <h2 id="web"><a href="#web">web</a></h2>
 <table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>dashboard=True fileserver:bool=False fs_explore:bool=False config=True</td></tr><tr><th>doc</th><td>Centralized&nbsp;Web&nbsp;Backend&nbsp;Services&nbsp;Loader<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Dynamic&nbsp;application&nbsp;dashboard<br>
@@ -1323,7 +1288,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOS/blob/master/media/lms/web.png?raw=true" alt="web" height=150></td></tr></table>
 </section>
 </div>
-<div class="panel module-nav" id="external-modules"><h2>External Modules</h2><p>Installable package documentation generated alongside built-in load modules.</p><div class="shortcut-list"><a href="#alarm_system">alarm_system</a><a href="#aqua">aqua</a><a href="#blinky">blinky</a><a href="#garage">garage</a><a href="#haptic">haptic</a><a href="#hcsr04">hcsr04</a><a href="#keychain">keychain</a><a href="#ld2410">ld2410</a><a href="#mh_z19c">mh_z19c</a><a href="#motor_l298n">motor_l298n</a><a href="#motor_l9110">motor_l9110</a><a href="#mq135">mq135</a><a href="#mqtt_client">mqtt_client</a><a href="#neomatrix">neomatrix</a><a href="#oledui">oledui</a><a href="#OV2640">OV2640</a><a href="#qmi8658">qmi8658</a><a href="#rcwl1670">rcwl1670</a><a href="#roboarm">roboarm</a><a href="#sim800">sim800</a><a href="#sim800_http">sim800_http</a><a href="#sim800mqtt">sim800mqtt</a><a href="#sound_event">sound_event</a><a href="#tcs3472">tcs3472</a><a href="#trackball">trackball</a><a href="#users">users</a><a href="#uwebrepl">uwebrepl</a><a href="#VL53L0X">VL53L0X</a></div></div><div class="module-sections">
+<div class="panel module-nav" id="external-modules"><h2>External Modules</h2><p>Installable package documentation generated alongside built-in load modules.</p><div class="shortcut-list"><a href="#alarm_system">alarm_system</a><a href="#aqua">aqua</a><a href="#blinky">blinky</a><a href="#garage">garage</a><a href="#haptic">haptic</a><a href="#hcsr04">hcsr04</a><a href="#keychain">keychain</a><a href="#ld2410">ld2410</a><a href="#light_sensor">light_sensor</a><a href="#mh_z19c">mh_z19c</a><a href="#motor_l298n">motor_l298n</a><a href="#motor_l9110">motor_l9110</a><a href="#mq135">mq135</a><a href="#mqtt_client">mqtt_client</a><a href="#neomatrix">neomatrix</a><a href="#oledui">oledui</a><a href="#OV2640">OV2640</a><a href="#qmi8658">qmi8658</a><a href="#rcwl1670">rcwl1670</a><a href="#roboarm">roboarm</a><a href="#sim800">sim800</a><a href="#sim800_http">sim800_http</a><a href="#sim800mqtt">sim800mqtt</a><a href="#sound_event">sound_event</a><a href="#tcs3472">tcs3472</a><a href="#tempt6000">tempt6000</a><a href="#trackball">trackball</a><a href="#users">users</a><a href="#uwebrepl">uwebrepl</a><a href="#veml7700">veml7700</a><a href="#VL53L0X">VL53L0X</a></div></div><div class="module-sections">
 <section class="panel module-card">
 <h2 id="alarm_system"><a href="#alarm_system">alarm_system</a></h2>
 <table class="doc-table"><tr><th>status</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>config='alarm_config.json'</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>unload</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>arm</th><td><table class="doc-table"><tr><th>param(s)</th><td>mode='full' force=False</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>disarm</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>zone_trigger</th><td><table class="doc-table"><tr><th>param(s)</th><td>name event</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>add_sensor</th><td><table class="doc-table"><tr><th>param(s)</th><td>name pin type='delayed' group='perimeter'</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>remove_sensor</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>add_zone</th><td><table class="doc-table"><tr><th>param(s)</th><td>name type='instant' group='perimeter' cross_pair=None cross_window=30</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>remove_zone</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>list_zones</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>show_config</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>add_watch</th><td><table class="doc-table"><tr><th>param(s)</th><td>topic zone trigger_value reset_value=None trigger_field=None</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>remove_watch</th><td><table class="doc-table"><tr><th>param(s)</th><td>topic</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>list_watches</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>event_log</th><td><table class="doc-table"><tr><th>param(s)</th><td>count=20</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>clear_log</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>alarm_memory</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>chime</th><td><table class="doc-table"><tr><th>param(s)</th><td>state=None</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>auto_arm</th><td><table class="doc-table"><tr><th>param(s)</th><td>delay=None mode='full'</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>bypass</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>unbypass</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>supervise</th><td><table class="doc-table"><tr><th>param(s)</th><td>name timeout=600</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>unsupervise</th><td><table class="doc-table"><tr><th>param(s)</th><td>name</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>No&nbsp;module&nbsp;named&nbsp;'alarm_system.actions'</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOSPackages/blob/main/alarm_system/media/alarm_system.png?raw=true" alt="alarm_system" height=150></td></tr></table>
@@ -1465,6 +1430,16 @@ pin&nbsp;map:&nbsp;tx,&nbsp;rx</td></tr></table></td></tr><tr><th>help</th><td><
 	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
 	N/A</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOSPackages/blob/main/presence/media/ld2410.png?raw=true" alt="ld2410" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
+<h2 id="light_sensor"><a href="#light_sensor">light_sensor</a></h2>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;the&nbsp;TEMPT6000&nbsp;light&nbsp;sensor.</td></tr></table></td></tr><tr><th>intensity</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;intensity&nbsp;in&nbsp;percent.</td></tr></table></td></tr><tr><th>illuminance</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;illuminance&nbsp;in&nbsp;lux.</td></tr></table></td></tr><tr><th>subscribe_intercon</th><td><table class="doc-table"><tr><th>param(s)</th><td>on off threshold=4 tolerance=2 sample_sec=60</td></tr><tr><th>doc</th><td>Send&nbsp;ON/OFF&nbsp;commands&nbsp;when&nbsp;light&nbsp;crosses&nbsp;the&nbsp;configured&nbsp;threshold.</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>Show&nbsp;the&nbsp;logical&nbsp;pin&nbsp;used&nbsp;by&nbsp;the&nbsp;sensor.<br>
+pin&nbsp;map:&nbsp;temp6000</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>Show&nbsp;commands&nbsp;or&nbsp;dashboard&nbsp;widgets&nbsp;for&nbsp;the&nbsp;sensor.<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'intensity&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'illuminance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOSPackages/blob/main/light_sensors/media/light_sensor.png?raw=true" alt="light_sensor" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">
@@ -1896,6 +1871,31 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;led</td></tr></table></td></tr><t
 </section>
 
 <section class="panel module-card">
+<h2 id="tempt6000"><a href="#tempt6000">tempt6000</a></h2>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Initialize&nbsp;TEMPT6000&nbsp;light&nbsp;sensor&nbsp;module</td></tr></table></td></tr><tr><th>intensity</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;intensity&nbsp;in&nbsp;%<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;result&nbsp;is&nbsp;20&nbsp;result&nbsp;average&nbsp;(noise&nbsp;reduction)</td></tr></table></td></tr><tr><th>illuminance</th><td><table class="doc-table"><tr><th>doc</th><td>Measure&nbsp;light&nbsp;illuminance&nbsp;in&nbsp;flux<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;result&nbsp;is&nbsp;20&nbsp;result&nbsp;average&nbsp;(noise&nbsp;reduction)</td></tr></table></td></tr><tr><th>subscribe_intercon</th><td><table class="doc-table"><tr><th>param(s)</th><td>on off threshold=4 tolerance=2 sample_sec=60</td></tr><tr><th>doc</th><td>[TASK]&nbsp;ON/OFF&nbsp;command&nbsp;sender&nbsp;over&nbsp;intercon&nbsp;on&nbsp;given&nbsp;threshold<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;on:&nbsp;on&nbsp;callback&nbsp;to&nbsp;send:&nbsp;"host&nbsp;cmd"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;off:&nbsp;off&nbsp;callback&nbsp;to&nbsp;send:&nbsp;"host&nbsp;cmd"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;threshold:&nbsp;percentage&nbsp;value&nbsp;for&nbsp;on(under)&nbsp;/off(above)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;tolerance:&nbsp;off&nbsp;tolerance&nbsp;value&nbsp;->&nbsp;off&nbsp;event:&nbsp;threshold+tolerance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;sample_sec:&nbsp;light&nbsp;measure&nbsp;task&nbsp;period&nbsp;in&nbsp;sec&nbsp;(also&nbsp;means&nbsp;event&nbsp;frequency)</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;temp6000</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'intensity&nbsp;',&nbsp;'refresh':&nbsp;10000}<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'illuminance&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOSPackages/blob/main/light_sensors/media/tempt6000.png?raw=true" alt="tempt6000" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
 <h2 id="trackball"><a href="#trackball">trackball</a></h2>
 <table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>width=100 height=100 irq_sampling=50 sensitivity=5</td></tr><tr><th>doc</th><td>Load&nbsp;Pimoroni&nbsp;trackball<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;width:&nbsp;canvas&nbsp;pixel&nbsp;width<br>
@@ -1931,6 +1931,20 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda,&nbsp;trackball_int</td></tr></table></
 <table class="doc-table"><tr><th>status</th><td><table class="doc-table"><tr><th>doc</th><td>Read&nbsp;the&nbsp;real&nbsp;listener,&nbsp;including&nbsp;one&nbsp;started&nbsp;by&nbsp;the&nbsp;micrOS&nbsp;shell.</td></tr></table></td></tr><tr><th>enable</th><td><table class="doc-table"><tr><th>doc</th><td>Enable&nbsp;WebREPL&nbsp;until&nbsp;reboot;&nbsp;requires&nbsp;pwd=<appwd>.&nbsp;Idempotent.</td></tr></table></td></tr><tr><th>disable</th><td><table class="doc-table"><tr><th>doc</th><td>Stop&nbsp;WebREPL&nbsp;and&nbsp;disconnect&nbsp;its&nbsp;client;&nbsp;requires&nbsp;pwd=<appwd>.</td></tr></table></td></tr><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>Register&nbsp;/uwebrepl&nbsp;and&nbsp;its&nbsp;API&nbsp;without&nbsp;enabling&nbsp;WebREPL.</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>Public&nbsp;shell&nbsp;commands&nbsp;and&nbsp;dashboard&nbsp;status&nbsp;metadata.<br>
 	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
 [i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOSPackages/blob/main/uwebrepl/media/uwebrepl.png?raw=true" alt="uwebrepl" height=150></td></tr></table>
+</section>
+
+<section class="panel module-card">
+<h2 id="veml7700"><a href="#veml7700">veml7700</a></h2>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>doc</th><td>VEML7700&nbsp;Digital&nbsp;light&nbsp;intensity&nbsp;sensor</td></tr></table></td></tr><tr><th>read_lux</th><td><table class="doc-table"><tr><th>doc</th><td>Read&nbsp;LUX&nbsp;value</td></tr></table></td></tr><tr><th>pinmap</th><td><table class="doc-table"><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Shows&nbsp;logical&nbsp;pins&nbsp;-&nbsp;pin&nbsp;number(s)&nbsp;used&nbsp;by&nbsp;this&nbsp;Load&nbsp;module<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;info&nbsp;which&nbsp;pins&nbsp;to&nbsp;use&nbsp;for&nbsp;this&nbsp;application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;dict:&nbsp;pin&nbsp;name&nbsp;(str)&nbsp;-&nbsp;pin&nbsp;value&nbsp;(int)&nbsp;pairs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>VEML7700&nbsp;I2C&nbsp;Digital&nbsp;light&nbsp;intensity&nbsp;sensor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+	EXTERNAL&nbsp;PACKAGE:&nbsp;https://github.com/BxNxM/micrOSPackages<br>
+[i]&nbsp;micrOS&nbsp;Widget&nbsp;Types:<br>
+	{'type':&nbsp;'textbox',&nbsp;'callback':&nbsp;'read_lux&nbsp;',&nbsp;'refresh':&nbsp;10000}</td></tr></table></td></tr><tr><th>img</th><td><img src="https://github.com/BxNxM/micrOSPackages/blob/main/light_sensors/media/veml7700.png?raw=true" alt="veml7700" height=150></td></tr></table>
 </section>
 
 <section class="panel module-card">

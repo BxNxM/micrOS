@@ -86,7 +86,7 @@ class AHT10:
 
 def load():
     """
-    Initialize AHT10 module
+    Initialize temp/hum AHT10 module
     """
     __init_AHT10()
     return "AHT10 temp/hum sensor - loaded"

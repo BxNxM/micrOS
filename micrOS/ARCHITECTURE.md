@@ -248,7 +248,7 @@ the original mount.
 | App | Route | Frontend files | Backend file |
 | --- | --- | --- | --- |
 | Dashboard | `/dashboard` | `dashboard.html`, `udashboard.js`, `uwidgets.js`, `uapi.js`, `ubashboard.css`, `ustyle.css` | `LM_web.py` |
-| Config | `/config` | `config.html`, `config.js`, `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
+| Config | `/config` | `config.html`, `config.js`, `config_packages.js` (on demand), `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
 | Fileserver | `/fs` | `filesui.html`, `filesui.js`, `editor.js`, `ustyle.css` | `LM_fileserver.py` |
 
 The config scheduler uses adjacent Time/Tag buttons and retains each mode's
@@ -298,11 +298,15 @@ flowchart LR
     E["config.html"] --> F["auth.js"]
     E --> G["config.js"]
     G --> H["fetch /config/api GET|POST"]
-    G --> I["restAPI task/list, modules, pacman, system/pinmap"]
+    G --> I["restAPI task/list, modules, system/pinmap"]
+    G -->|Packages menu opens| K["config_packages.js"]
+    K --> L["restAPI pacman"]
     F --> C
-    G --> J
+    K --> J
 ```
 
+The Config page loads `config_packages.js` once, on demand when the Packages
+menu opens. Shared UI and command helpers remain in `config.js` for other menus.
 The Config Packages tab reads registry URLs from public
 `GET /config/packregs`, which returns a JSON array of strings. The source list
 is defined directly in `_cfg_packregs_clb()` in `LM_web.py` and defaults to:

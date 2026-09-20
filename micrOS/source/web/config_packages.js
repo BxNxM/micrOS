@@ -1,0 +1,319 @@
+// Loaded on demand by config.js when the Packages menu opens.
+let installedPackageNames = new Set();
+const restEncodeMap = {
+  '"': '%5Cx22', "'": '%27', '#': '%23', '=': '%3D', '>': '%3E', '&': '%26',
+  '/': '%2F', '\\': '%5C%5C', ' ': '%20', '?': '%3F', '%': '%25'
+};
+const PACMAN_TIMEOUT_MS = 20000;
+
+// Packages UI: install and inspect
+async function loadPackageCatalog() {
+  const response = await fetch('/config/packregs', {headers: {Accept: 'application/json'}});
+  if (!response.ok) throw new Error('Registry list unavailable');
+  const urls = await response.json();
+  if (!Array.isArray(urls)) throw new Error('Invalid registry list');
+  const catalogs = await Promise.all(urls.map(async url => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      if (typeof url !== 'string' || !/^https?:$/.test(new URL(url, location.href).protocol)) {
+        throw new Error('Invalid registry URL');
+      }
+      const result = await fetch(url, {credentials: 'omit', signal: controller.signal});
+      if (!result.ok) throw new Error('Catalog unavailable');
+      const entries = await result.json();
+      if (!Array.isArray(entries)) throw new Error('Invalid catalog');
+      return entries;
+    } catch (_) {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }));
+  if (urls.length && catalogs.every(entries => entries === null)) throw new Error('Catalog unavailable');
+  return catalogs.flatMap(catalog => catalog || []);
+}
+
+function updatePackageCatalogLabels() {
+  const select = document.getElementById('packageCatalog');
+  if (!select) return;
+  for (const option of select.options) {
+    const name = option.dataset.packageName;
+    if (name) option.textContent = name + (installedPackageNames.has(name) ? ' ✓' : '');
+  }
+}
+
+function createPackageCatalog(input) {
+  const select = document.createElement('select');
+  select.id = 'packageCatalog';
+  select.setAttribute('aria-label', 'Browse packages');
+  select.disabled = true;
+  const placeholder = textElement('option', 'Loading catalog...');
+  placeholder.value = '';
+  select.appendChild(placeholder);
+  const info = document.createElement('div');
+  info.className = 'config-box config-package-info';
+  info.hidden = true;
+  const description = textElement('p', '');
+  const readme = textElement('a', 'README ↗');
+  readme.target = '_blank';
+  readme.rel = 'noopener noreferrer';
+  info.append(description, readme);
+
+  const packages = new Map();
+  function showSelection() {
+    const pkg = packages.get(input.value.trim());
+    select.value = pkg ? pkg.ref : '';
+    info.hidden = !pkg;
+    if (pkg) {
+      description.textContent = pkg.description || 'No description available.';
+      readme.href = pkg.readme;
+    }
+  }
+  select.onchange = () => {
+    input.value = select.value;
+    showSelection();
+  };
+  input.addEventListener('input', showSelection);
+
+  loadPackageCatalog()
+    .then(entries => {
+      entries.forEach(entry => {
+        const ref = entry && typeof entry.ref === 'string' ? entry.ref : '';
+        const match = /^github:([A-Za-z0-9_-]+)\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_-]+)$/.exec(ref);
+        if (!match || packages.has(ref)) return;
+        packages.set(ref, {ref, name: match[3], description: typeof entry.description === 'string' ? entry.description : '',
+          readme: `https://github.com/${match[1]}/${match[2]}/tree/main/${match[3]}#readme`});
+      });
+      Array.from(packages.values()).sort((a, b) => a.name.localeCompare(b.name)).forEach(pkg => {
+        const option = textElement('option', pkg.name);
+        option.value = pkg.ref;
+        option.dataset.packageName = pkg.name;
+        select.appendChild(option);
+      });
+      updatePackageCatalogLabels();
+      placeholder.textContent = packages.size ? 'Choose package...' : 'Catalog empty';
+      select.disabled = !packages.size;
+      showSelection();
+    })
+    .catch(() => {
+      placeholder.textContent = 'Catalog unavailable';
+    });
+  return {select, info};
+}
+
+function renderPackagesSection() {
+  installedPackageNames = new Set();
+  const container = document.getElementById('configFields');
+  container.innerHTML = '';
+  const heading = textElement('h2', categoryTitle('Packages'), 'config-heading-top');
+  container.appendChild(heading);
+
+  // Install block
+  const installSection = document.createElement('section');
+  installSection.className = 'config-section-gap';
+  const installLabel = textElement('label', 'Install Package (URL or Package ref):', 'config-label-block');
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'e.g. github:BxNxM/micrOSPackages/async_oledui';
+  input.id = 'packageUrlInput';
+  installLabel.htmlFor = input.id;
+  const catalog = createPackageCatalog(input);
+  installSection.appendChild(installLabel);
+  const installRow = document.createElement('div');
+  installRow.className = 'config-package-install';
+  installRow.appendChild(input);
+
+  const installResult = createInlineOutput();
+
+  const installBtn = makeButton('Install', () => {
+    const url = input.value.trim();
+    if (!url) {
+      alert('Enter package URL or Package ref');
+      return;
+    }
+    setButtonBusy(installBtn, 'Installing...');
+    setInlineDetails(installResult, `Install Package (URL or Package ref): ${url}\n\nInstalling...`);
+    restAPI('pacman/install/' + restQuote(url), false, PACMAN_TIMEOUT_MS)
+      .then(resp => {
+        setInlineDetails(installResult, formatInstallResponse(url, resp));
+        refreshPackagesList();
+      })
+      .catch(err => {
+        setInlineDetails(installResult, `Install Package (URL or Package ref): ${url}\n\nInstall failed:\n${err.message}`);
+      })
+      .finally(() => {
+        resetButton(installBtn, 'Install');
+      });
+  });
+  installRow.append(installBtn, catalog.select);
+  installSection.appendChild(installRow);
+
+  const packageTools = document.createElement('div');
+  packageTools.className = 'config-package-tools config-section-gap';
+
+  const catalogBtn = makeButton('Catalog', () => {
+    window.open('https://github.com/BxNxM/micrOSPackages/tree/main', '_blank', 'noopener,noreferrer');
+  });
+  packageTools.appendChild(catalogBtn);
+
+  const refreshBtn = makeButton('Refresh', () => {
+    refreshPackagesList();
+  });
+  packageTools.appendChild(refreshBtn);
+
+  installSection.appendChild(installResult);
+  container.appendChild(installSection);
+
+  // Packages list block
+  const pkgSection = document.createElement('section');
+  pkgSection.appendChild(catalog.info);
+  pkgSection.appendChild(packageTools);
+  const pkgHeader = document.createElement('div');
+  pkgHeader.className = 'config-package-header';
+  const title = textElement('h3', 'Packages', 'config-package-title');
+  pkgHeader.appendChild(title);
+  pkgSection.appendChild(pkgHeader);
+
+  const list = document.createElement('div');
+  list.id = 'packagesList';
+  list.style.marginTop = '8px';
+  pkgSection.appendChild(list);
+  container.appendChild(pkgSection);
+
+  refreshPackagesList();
+}
+
+function refreshPackagesList() {
+  const list = document.getElementById('packagesList');
+  if (!list) return;
+  list.textContent = 'Loading...';
+  restAPI('pacman/inspect', false)
+    .then(resp => {
+      if (!list.isConnected) return;
+      list.textContent = '';
+      if (!resp || !resp.hasOwnProperty('result')) {
+        list.textContent = 'No packages';
+        return;
+      }
+      let items = normalizePackageList(resp.result);
+      if (typeof items === 'object' && !Array.isArray(items)) items = Object.keys(items);
+      installedPackageNames = new Set(Array.isArray(items) ? items : []);
+      updatePackageCatalogLabels();
+      if (Array.isArray(items) && items.length === 0) {
+        list.textContent = 'No packages installed.';
+        return;
+      }
+      if (Array.isArray(items)) {
+        renderActionList(list, '', items.map(pkg => typeof pkg === 'string' ? pkg : JSON.stringify(pkg)), getPackageActions());
+        return;
+      }
+      list.textContent = JSON.stringify(items);
+    })
+    .catch(err => {
+      list.textContent = 'Failed to load packages: ' + err.message;
+    });
+}
+
+function normalizePackageList(result) {
+  if (Array.isArray(result)) return result;
+  if (typeof result !== 'string') return result || [];
+  try {
+    const jsonList = JSON.parse(result.replace(/'/g, '"'));
+    if (Array.isArray(jsonList)) return jsonList;
+  } catch (_) {}
+  return result.split('\n').map(item => item.trim()).filter(item => item);
+}
+
+function formatInstallResponse(packageRef, resp) {
+  const header = `Install Package (URL or Package ref): ${packageRef}`;
+  if (!resp || resp.state !== true) {
+    const result = resp && resp.result !== undefined ? resp.result : 'No response';
+    return `${header}\n\nInstall response (NOK):\n${formatResponseBody(result)}`;
+  }
+  const result = resp.result !== undefined ? resp.result : resp;
+  return `${header}\n\nInstall response (OK):\n${formatResponseBody(result)}`;
+}
+
+function getPackageActions() {
+  return [
+    {label: 'Details', handler: loadPackageDetails},
+    {label: 'Update', handler: updatePackage},
+    {label: 'Delete', handler: deletePackage, className: 'danger-button'}
+  ];
+}
+
+function getAdminPassword() {
+  if (changedValues.hasOwnProperty('appwd')) {
+    return changedValues.appwd;
+  }
+  return configData.appwd || '';
+}
+
+/** Encode a value as one quoted REST argument for micrOS execution. */
+function restQuote(value) {
+  return '"' + String(value).replace(/["'#=>&/\\ ?%]/g, char => restEncodeMap[char]) + '"';
+}
+
+function loadPackageDetails(packageName, details, button) {
+  if (details.style.display !== 'none' && details.textContent) {
+    details.style.display = 'none';
+    return;
+  }
+  setButtonBusy(button, 'Loading...');
+  setInlineDetails(details, 'Loading details...');
+  restAPI('pacman/inspect/' + restQuote(packageName), false, 10000)
+    .then(resp => {
+      setInlineDetails(details, formatPackageDetails(resp && resp.result));
+    })
+    .catch(err => {
+      setInlineDetails(details, 'Failed to load details: ' + err.message);
+    })
+    .finally(() => {
+      resetButton(button, 'Details');
+    });
+}
+
+function updatePackage(packageName, details, button) {
+  runCommandAction(
+    details,
+    button,
+    'Update',
+    'pacman/upgrade/' + restQuote(packageName),
+    'Update response',
+    null,
+    PACMAN_TIMEOUT_MS
+  );
+}
+
+function deletePackage(packageName, details, button) {
+  if (!confirm('Delete package "' + packageName + '"?')) {
+    return;
+  }
+  const appwd = getAdminPassword();
+  if (!appwd) {
+    setTemporaryInlineDetails(details, 'Delete failed: missing Admin Password / appwd');
+    return;
+  }
+  runCommandAction(
+    details,
+    button,
+    'Delete',
+    'pacman/uninstall/' + restQuote(packageName) + '/pwd=' + restQuote(appwd),
+    'Delete response',
+    refreshPackagesList,
+    PACMAN_TIMEOUT_MS
+  );
+}
+
+function formatPackageDetails(result) {
+  if (typeof result !== 'string') {
+    return JSON.stringify(result, null, 2);
+  }
+  try {
+    return JSON.stringify(JSON.parse(result), null, 2);
+  } catch (_) {
+    return result;
+  }
+}

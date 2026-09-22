@@ -248,7 +248,7 @@ the original mount.
 | App | Route | Frontend files | Backend file |
 | --- | --- | --- | --- |
 | Dashboard | `/dashboard` | `dashboard.html`, `udashboard.js`, `uwidgets.js`, `uapi.js`, `ubashboard.css`, `ustyle.css` | `LM_web.py` |
-| Config | `/config` | `config.html`, `config.js`, `config_packages.js` (on demand), `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
+| Config | `/config` | `config.html`, `config.js`, `config_packages.js` and `config_schedler.js` (on demand), `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
 | Fileserver | `/fs` | `filesui.html`, `filesui.js`, `editor.js`, `ustyle.css` | `LM_fileserver.py` |
 
 The config scheduler uses adjacent Time/Tag buttons and retains each mode's
@@ -257,6 +257,8 @@ Advanced timestamp field exposes the full `WD:H:M:S` or sun-tag syntax. Day
 buttons accept a single day or continuous range (including wraparound); use
 separate schedules for non-consecutive days. Numeric fields commit on change
 so unfinished input is not rewritten on each keystroke.
+An empty or `n/a` schedule list shows only Add Schedule; no default schedule is
+created. Every schedule can be removed, including the last one.
 
 ### API
 
@@ -300,13 +302,19 @@ flowchart LR
     G --> H["fetch /config/api GET|POST"]
     G --> I["restAPI task/list, modules, system/pinmap"]
     G -->|Packages menu opens| K["config_packages.js"]
+    G -->|Scheduler menu opens| M["config_schedler.js"]
     K --> L["restAPI pacman"]
     F --> C
     K --> J
 ```
 
-The Config page loads `config_packages.js` once, on demand when the Packages
-menu opens. Shared UI and command helpers remain in `config.js` for other menus.
+The Config page loads `config_packages.js` and `config_schedler.js` once, on
+demand when their respective menus open. Both use the shared script loader in
+`config.js`, which supports retry after a failed download and ignores stale
+loads after switching menus. Scheduler parsing, editing, and per-field change
+highlights live in `config_schedler.js`; shared UI and command helpers remain
+in `config.js`. These scripts run in the browser. Loading them on demand reduces
+the initial JavaScript transfer from the device.
 The Config Packages tab reads registry URLs from public
 `GET /config/packregs`, which returns a JSON array of strings. The source list
 is defined directly in `_cfg_packregs_clb()` in `LM_web.py` and defaults to:

@@ -147,6 +147,12 @@ function renderPackagesSection() {
         resetButton(installBtn, 'Install');
       });
   });
+  const updateInstallButton = () => {
+    installBtn.classList.toggle('config-install-ready', input.value.trim().length > 0);
+  };
+  input.addEventListener('input', updateInstallButton);
+  catalog.select.addEventListener('change', updateInstallButton);
+  updateInstallButton();
   installRow.append(installBtn, catalog.select);
   installSection.appendChild(installRow);
 

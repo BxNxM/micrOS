@@ -4,6 +4,7 @@
   --config-label: #d9d2ff;
   --config-success: #8ee88e;
   --config-danger: #ff9fa6;
+  --config-padding: 12px;
 }
 
 #configContainer {
@@ -119,7 +120,7 @@
 #configFields .config-wide-action-button, .config-dialog .config-wide-action-button { width: 100%; display: block; font-weight: bold; }
 .config-wide-action-output { width: 100%; box-sizing: border-box; }
 .config-dialog-backdrop { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.62); }
-.config-dialog { width: min(420px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 16px; border: 1px solid var(--config-border); border-radius: 8px; box-sizing: border-box; background: var(--config-surface); box-shadow: 0 16px 36px rgba(0,0,0,0.42); }
+.config-dialog { width: min(420px, 100%); max-height: calc(100vh - 32px); overflow: auto; border: 1px solid var(--config-border); border-radius: 8px; box-sizing: border-box; background: var(--config-surface); box-shadow: 0 16px 36px rgba(0,0,0,0.42); }
 .config-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .config-dialog-title { margin: 0; }
 .config-dialog-message { margin: 12px 0 8px 0; }
@@ -135,7 +136,7 @@
 .config-action-row, .config-box {
   border: 1px solid var(--config-border); border-radius: 6px; background-color: var(--config-surface);
 }
-.config-action-row { padding: 10px; }
+.config-action-row, .config-box, .config-dialog, .schedule-overview { padding: var(--config-padding); }
 .config-action-header { justify-content: space-between; flex-wrap: wrap; }
 .config-action-label { flex: 1; min-width: 160px; }
 .config-button-group { flex-wrap: wrap; justify-content: flex-end; }
@@ -154,16 +155,15 @@
 .config-label-block { margin-bottom: 8px; }
 .config-label-tight { margin-bottom: 4px; }
 .config-stack { display: flex; flex-direction: column; gap: 8px; }
-.config-stack-large { gap: 16px; }
 .config-remove-button { cursor: pointer; }
 .config-legend { font-size: 1.1rem; }
 .config-package-tools { flex-direction: row; gap: 6px; margin-top: 8px; }
-.config-package-header { padding: 0 10px; box-sizing: border-box; }
+.config-package-header { padding: 0 var(--config-padding); box-sizing: border-box; }
 .config-package-title { flex: 1; margin: 0; }
 .config-package-install { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: var(--config-input-width); max-width: 100%; margin: 8px 0; }
 #configFields .config-package-install input { flex: 1 1 240px; width: auto; }
 #configFields #packageCatalog { width: 180px; }
-.config-package-info { width: var(--config-input-width); max-width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 12px; overflow-wrap: anywhere; }
+.config-package-info { width: var(--config-input-width); max-width: 100%; box-sizing: border-box; margin-bottom: 12px; overflow-wrap: anywhere; }
 .config-package-info p { margin: 0 0 8px; }
 .config-package-info a { color: var(--config-label); }
 .config-pin-info { margin-top: 20px; }
@@ -179,6 +179,7 @@
   margin-bottom: 20px;
 }
 .config-field-group > .config-fieldset { margin-bottom: 0; }
+.config-fieldset > :last-child { margin-bottom: 0; }
 .config-fieldset .config-fieldset,
 .config-fieldset .config-input-row,
 .config-fieldset .param-row,
@@ -240,7 +241,7 @@
 .schedule-card {
   --schedule-control-gap: 12px;
   --schedule-muted: rgba(255,255,255,.7);
-  padding: 12px 20px 20px;
+  margin-bottom: 16px;
 }
 .schedule-card > .config-legend { display: block; padding: 0 6px; color: var(--config-label); }
 .schedule-card-header {
@@ -251,7 +252,7 @@
 .schedule-remove-button { color: var(--config-danger) !important; }
 .schedule-editor { grid-template-columns: minmax(0, .8fr) minmax(0, 1fr); gap: var(--schedule-control-gap) 18px; }
 .config-toggle.schedule-mode-buttons { width: 100%; box-sizing: border-box; }
-.schedule-overview { display: flex; grid-row: span 2; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,.055); }
+.schedule-overview { display: flex; grid-row: span 2; align-items: center; gap: 12px; border-radius: 12px; background: rgba(255,255,255,.055); }
 .schedule-icon { flex: 0 0 48px; color: #ffbd32; }
 .schedule-icon svg { display: block; width: 48px; height: 48px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .schedule-icon .schedule-clock-icon { color: #8fd3ff; }
@@ -328,6 +329,19 @@ button.config-toggle-option.selected:hover {
   align-self: center;
   margin: 0;
   padding: 8px 16px;
+}
+
+/* Match the enabled Save button border, including compound config editors. */
+#configFields button.config-install-ready,
+#configFields button.config-unsaved,
+#configFields input.config-unsaved,
+#configFields select.config-unsaved,
+#configFields .config-unsaved input,
+#configFields .config-unsaved select,
+#configFields .config-unsaved:not([data-config-key="crontasks"]) fieldset,
+#configFields .config-unsaved .config-toggle-option,
+#configFields .config-unsaved:not([data-config-key="crontasks"]) .config-add-button {
+  border-color: rgba(142,232,142,0.58);
 }
 
 #menuToggle {
@@ -410,7 +424,6 @@ button.config-toggle-option.selected:hover {
     flex-basis: 88px;
   }
 
-  .schedule-card { padding: 12px 14px 14px; }
   .schedule-editor { grid-template-columns: 1fr; }
   .schedule-overview { grid-row: auto; }
   .schedule-tag-panel select { min-width: 150px; }

@@ -28,7 +28,7 @@ IMAGE_MODE = 'rel' if 'micrOS' in uname()[-1] else 'dev'
 
 class Shell:
     __slots__ = ['__devfid', '__auth_mode', '__hwuid', '__auth_ok', '__conf_mode']
-    MICROS_VERSION = '3.6.3-1'
+    MICROS_VERSION = '3.6.4-0'
 
     def __init__(self):
         """
@@ -163,28 +163,28 @@ class Shell:
             if msg_list_len == 1:
                 await self.a_send("[MICROS]")
                 await self.a_send("   hello     - device hello msg ID")
-                await self.a_send("   modules [all] - show active/all Load Modules")
+                await self.a_send("   modules [all] - show active / all Load Modules")
                 await self.a_send("   version   - show micrOS version")
                 await self.a_send("   exit      - exit shell session")
                 await self.a_send("   reboot    - system soft reboot (vm), hard reboot (hw): reboot -h")
                 await self.a_send("   webrepl   - start webrepl, for file transfers use with --update")
                 await self.a_send("[CONF] Configuration mode")
                 await self.a_send("  conf       - Enter conf mode")
-                await self.a_send("    dump [str] - Dump all / str filtered data")
+                await self.a_send("    dump <str> - Dump all / str filtered data")
                 await self.a_send("    key        - Get value")
                 await self.a_send("    key value  - Set value")
                 await self.a_send("  noconf     - Exit conf mode")
                 await self.a_send("[TASK] Task operations")
                 await self.a_send("  task list         - list tasks by tags")
-                await self.a_send("  task kill [tag]   - stop task")
-                await self.a_send("  task show [tag]   - show task output")
+                await self.a_send("  task kill <tag>   - stop task")
+                await self.a_send("  task show <tag>   - show task output")
                 await self.a_send("[EXEC] Command mode, syntax: <module> <function> <params> <postfix>")
                 await self.a_send("  Postfix hints:")
-                await self.a_send("    ... &[x]            - start one-shot task")
-                await self.a_send("    ... &&[x]           - start periodic task, where [x]: delay ms [x min: 20ms]")
-                await self.a_send("    ... >json           - request json formatted output")
-                await self.a_send("    ... >>hostname      - remote command execution (intercon)")
-                await self.a_send("help [all] [match]  - list active(-) / all modules with optional filtering")
+                await self.a_send("    ... &<ms>            - start one-shot task, where <ms> is delay (min: 20ms)")
+                await self.a_send("    ... &&<ms>           - start periodic task")
+                await self.a_send("    ... >json            - request json formatted output")
+                await self.a_send("    ... >>hostname       - remote command execution (intercon)")
+                await self.a_send("help [all] <match> - list active modules / all modules / match for modules ")
             # Help length: help [all/-] [match]
             if msg_list_len >= 2:
                 _loaded = msg_list[1].lower() != "all"

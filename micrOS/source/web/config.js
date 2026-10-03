@@ -56,6 +56,10 @@ const configLabelMap = {
   'timirqcbf': 'Functions',
   'webui': 'Enable',
   'webui_max_con': 'Allowed Number of Connections',
+  'web.dashboard': 'Dashboard',
+  'web.fileserver': 'Fileserver',
+  'web.fs_explore': 'Fileserver > Show sys dirs',
+  'web.config': 'Config',
   'irq_prell_ms': 'Debounce (ms)',
 };
 const configSelectOptions = {
@@ -76,6 +80,7 @@ function configLabel(key) {
 
 let configData = {};
 let changedValues = {};
+let configSaving = false;
 const configSectionScripts = {};
 const selectedCategoryKey = 'micros.config.selectedCategory';
 
@@ -224,7 +229,7 @@ function hasUnsavedChanges() {
 
 function updateSaveButtonState() {
   document.querySelectorAll('.config-save-button').forEach(button => {
-    button.disabled = !hasUnsavedChanges();
+    button.disabled = configSaving || !hasUnsavedChanges();
   });
   updateUnsavedFields();
 }
@@ -274,38 +279,63 @@ function loadConfig(report = true) {
     });
 }
 
-function handleUpdateConfig() {
-  if (Object.keys(changedValues).length === 0) {
+function commitConfigChanges(changes) {
+  Object.entries(changes).forEach(([key, value]) => {
+    // Preserve any edits made while the save request was running.
+    const current = changedValues.hasOwnProperty(key) ? changedValues[key] : configData[key];
+    configData[key] = value;
+    if (current === value) delete changedValues[key];
+    else changedValues[key] = current;
+  });
+}
+
+async function handleUpdateConfig() {
+  if (configSaving) return;
+  if (!hasUnsavedChanges()) {
     alert('No changes to save');
     return;
   }
   const savedChanges = {...changedValues};
-  return fetch('/config/api', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(savedChanges)
-  })
-  .then(r => {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  })
-  .then(data => {
-    console.log('Update response:', data);
-    if (!data || data.state !== true) {
-      const detail = data && data.result ? data.result : 'Unknown error';
-      const failed = data && Array.isArray(data.failed) ? ` (${data.failed.join(', ')})` : '';
-      alert('Update failed: ' + detail + failed);
-      return;
+  const nodeChanges = Object.fromEntries(Object.entries(savedChanges).filter(([key]) => !key.startsWith('web.')));
+  const appChanges = Object.fromEntries(Object.entries(savedChanges).filter(([key]) => key.startsWith('web.')));
+  configSaving = true;
+  updateSaveButtonState();
+  try {
+    if (Object.keys(nodeChanges).length) {
+      const response = await fetch('/config/api', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(nodeChanges)
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const data = await response.json();
+      if (!data || data.state !== true) {
+        const detail = data && data.result ? data.result : 'Unknown error';
+        const failed = data && Array.isArray(data.failed) ? ` (${data.failed.join(', ')})` : '';
+        throw new Error(detail + failed);
+      }
+      commitConfigChanges(nodeChanges);
     }
-    configData = {...configData, ...savedChanges};
-    changedValues = {};
-    updateSaveButtonState();
+    if (Object.keys(appChanges).length) {
+      const args = Object.entries(appChanges)
+        .map(([key, value]) => `${encodeURIComponent(key.slice(4))}=${value ? 'True' : 'False'}`);
+      const response = await restAPI('web/load/' + args.join('/'), false);
+      if (!response || response.state !== true) throw new Error('Unable to update web app settings.');
+      const status = await restAPI('web/status', false);
+      if (!status || status.state !== true || !status.result ||
+          !Object.entries(appChanges).every(([key, value]) => status.result[key.slice(4)] === value)) {
+        throw new Error('Unable to confirm saved web app settings.');
+      }
+      commitConfigChanges(appChanges);
+    }
     showConfigSaveSuccess(savedChanges);
-  })
-  .catch(e => {
-    console.error('Update failed:', e);
-    alert('Update failed: ' + e.message);
-  });
+  } catch (error) {
+    console.error('Update failed:', error);
+    alert('Update failed: ' + error.message);
+  } finally {
+    configSaving = false;
+    updateSaveButtonState();
+  }
 }
 
 function closeMobileMenu() {
@@ -372,7 +402,7 @@ function isEditableConfigSection(sectionKey) {
 
 function renderSaveButton(container) {
   const button = makeButton('💾 Save', () => handleUpdateConfig(), 'config-save-button primary-button');
-  button.disabled = !hasUnsavedChanges();
+  button.disabled = configSaving || !hasUnsavedChanges();
   return button;
 }
 
@@ -398,7 +428,55 @@ function renderConfigFields(data, sectionKey = '', renderFields = renderDefaultF
   } else {
     renderFields(data, container, sectionKey);
   }
+  if (sectionKey === 'Web') updateWebAppsVisibility(container);
   updateUnsavedFields();
+}
+
+function updateWebAppsVisibility(container) {
+  const enabled = (changedValues.webui ?? configData.webui) === true;
+  const group = container.querySelector('#configWebApps');
+  if (group) group.hidden = !enabled;
+  else if (enabled) renderWebApps(container);
+}
+
+function renderWebApps(container) {
+  const group = createConfigFieldset('Web apps');
+  group.id = 'configWebApps';
+  const fields = document.createElement('div');
+  const message = textElement('p', 'Loading web apps...');
+  message.setAttribute('role', 'status');
+  group.appendChild(fields);
+  group.appendChild(message);
+  group.appendChild(textElement('p', '[i] Disabling an app requires a reboot.'));
+  container.appendChild(group);
+
+  function render() {
+    fields.innerHTML = '';
+    const current = {...configData, ...changedValues};
+    Object.entries(current)
+      .filter(([key, value]) => key.startsWith('web.') && typeof value === 'boolean')
+      .sort(([a], [b]) => configLabel(a).localeCompare(configLabel(b), 'en'))
+      .forEach(([key, value]) => renderField(fields, key, value));
+    fields.querySelectorAll('[data-config-key="web.config"] button').forEach(button => { button.disabled = true; });
+    message.textContent = '';
+    updateUnsavedFields();
+  }
+
+  if (Object.keys(configData).some(key => key.startsWith('web.'))) {
+    render();
+    return;
+  }
+  restAPI('web/status', false)
+    .then(response => {
+      if (!response || response.state !== true || !response.result || typeof response.result !== 'object' || Array.isArray(response.result)) {
+        throw new Error('Unable to load web app settings.');
+      }
+      Object.entries(response.result).forEach(([key, value]) => {
+        if (typeof value === 'boolean') configData['web.' + key] = value;
+      });
+      render();
+    })
+    .catch(error => { message.textContent = error.message; });
 }
 
 function renderTaskSection() {
@@ -1542,6 +1620,7 @@ function trackChange(key, value) {
   } else {
     changedValues[key] = value;
   }
+  if (key === 'webui') updateWebAppsVisibility(document.getElementById('configFields'));
   updateSaveButtonState();
   console.log('Changed config keys:', Object.keys(changedValues));
 }

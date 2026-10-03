@@ -1273,13 +1273,13 @@ pin&nbsp;map:&nbsp;map,&nbsp;booked,&nbsp;custom,&nbsp;known_maps</td></tr></tab
 
 <section class="panel module-card">
 <h2 id="web"><a href="#web">web</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>dashboard=True fileserver:bool=False fs_explore:bool=False config=True</td></tr><tr><th>doc</th><td>Centralized&nbsp;Web&nbsp;Backend&nbsp;Services&nbsp;Loader<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>dashboard:bool=None fileserver:bool=None fs_explore:bool=None config:bool=None</td></tr><tr><th>doc</th><td>Centralized&nbsp;Web&nbsp;Backend&nbsp;Services&nbsp;Loader<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Dynamic&nbsp;application&nbsp;dashboard<br>
 &nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Fileserver<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;dashboard:&nbsp;&nbsp;bool&nbsp;-&nbsp;enable*/disable&nbsp;application&nbsp;dashboard<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fileserver:&nbsp;bool&nbsp;-&nbsp;enable/disable*&nbsp;fileserver<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;fs_explore:&nbsp;bool&nbsp;-&nbsp;enable/disable*&nbsp;all&nbsp;shared&nbsp;web&nbsp;mounts:&nbsp;modules,&nbsp;data<br>
-&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;config:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;-&nbsp;enable*/disable&nbsp;micrOS&nbsp;web&nbsp;config&nbsp;with&nbsp;auth</td></tr></table></td></tr><tr><th>enable_config</th><td><table class="doc-table"><tr><th>doc</th><td>Enable&nbsp;web&nbsp;configuration&nbsp;option</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;config:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool&nbsp;-&nbsp;enable*/disable&nbsp;micrOS&nbsp;web&nbsp;config&nbsp;with&nbsp;auth</td></tr></table></td></tr><tr><th>status</th><td><table class="doc-table"><tr><th>doc</th><td>Web&nbsp;services&nbsp;status:&nbsp;dashboard,&nbsp;fileserver,&nbsp;fs_explore,&nbsp;config</td></tr></table></td></tr><tr><th>enable_config</th><td><table class="doc-table"><tr><th>doc</th><td>Enable&nbsp;web&nbsp;configuration&nbsp;option</td></tr></table></td></tr><tr><th>help</th><td><table class="doc-table"><tr><th>param(s)</th><td>widgets=False</td></tr><tr><th>doc</th><td>[i]&nbsp;micrOS&nbsp;LM&nbsp;naming&nbsp;convention&nbsp;-&nbsp;built-in&nbsp;help&nbsp;message<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:return&nbsp;tuple:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=False)&nbsp;list&nbsp;of&nbsp;functions&nbsp;implemented&nbsp;by&nbsp;this&nbsp;application<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(widgets=True)&nbsp;list&nbsp;of&nbsp;widget&nbsp;json&nbsp;for&nbsp;UI&nbsp;generation<br>
@@ -1680,7 +1680,7 @@ pin&nbsp;map:&nbsp;i2c_scl,&nbsp;i2c_sda</td></tr></table></td></tr><tr><th>help
 
 <section class="panel module-card">
 <h2 id="rcwl1670"><a href="#rcwl1670">rcwl1670</a></h2>
-<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>trig_pin=32 echo_pin=35 timeout_us=40000 trigger_us=10 reset=False</td></tr><tr><th>doc</th><td>Create&nbsp;and&nbsp;cache&nbsp;the&nbsp;RCWL-1670&nbsp;trigger/echo&nbsp;sensor.<br>
+<table class="doc-table"><tr><th>load</th><td><table class="doc-table"><tr><th>param(s)</th><td>trig_pin=9 echo_pin=10 timeout_us=40000 trigger_us=10 reset=False</td></tr><tr><th>doc</th><td>Create&nbsp;and&nbsp;cache&nbsp;the&nbsp;RCWL-1670&nbsp;trigger/echo&nbsp;sensor.<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;trig_pin&nbsp;int:&nbsp;MCU&nbsp;output&nbsp;connected&nbsp;to&nbsp;RX/TRIG,&nbsp;default:&nbsp;32<br>
 &nbsp;&nbsp;&nbsp;&nbsp;:param&nbsp;echo_pin&nbsp;int:&nbsp;MCU&nbsp;input&nbsp;connected&nbsp;to&nbsp;TX/ECHO,&nbsp;default:&nbsp;35<br>

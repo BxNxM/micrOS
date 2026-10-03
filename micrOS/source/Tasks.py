@@ -576,6 +576,24 @@ def lm_exec(arg_list:list, jsonify:bool=None):
     return state, out
 
 
+def _func_params(cmd_list):
+    """Format command arguments, preserving quotes across split list entries."""
+    parts = []
+    quote = None
+    for position in range(2, len(cmd_list)):
+        for word in cmd_list[position].split(' '):
+            if word or quote:
+                if parts:
+                    parts.append(' ' if quote else ', ')
+                parts.append(word)
+            for char in word:
+                if char == quote:
+                    quote = None
+                elif quote is None and char in ('"', "'"):
+                    quote = char
+    return ''.join(parts)
+
+
 @exec_builtins
 def _exec_lm_core(cmd_list, jsonify):
     """
@@ -588,36 +606,9 @@ def _exec_lm_core(cmd_list, jsonify):
     Return Bool(OK/NOK), Str(Command output)
     """
 
-    def _func_params(param):
-        if not param:
-            return ''
-
-        chunks = []
-        current = ''
-        quote = None
-        for char in param:
-            if char in ('"', "'"):
-                if quote is None:
-                    quote = char
-                elif quote == char:
-                    quote = None
-                current += char
-                continue
-            if char == ' ' and quote is None:
-                if current:
-                    chunks.append(current)
-                    current = ''
-                continue
-            current += char
-
-        if current:
-            chunks.append(current)
-
-        return ', '.join(chunks)
-
     # LoadModule execution
     if len(cmd_list) >= 2:
-        lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], _func_params(' '.join(cmd_list[2:]))
+        lm_mod, lm_func, lm_params = f"LM_{cmd_list[0]}", cmd_list[1], _func_params(cmd_list)
         print(f"[DEBUG] LM exec: {lm_mod}.{lm_func}({lm_params})")
         try:
             # ------------- LM LOAD & EXECUTE ------------- #

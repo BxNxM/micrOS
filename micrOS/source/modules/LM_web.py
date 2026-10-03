@@ -4,13 +4,14 @@ Web backend loader
     - Fileserver
 """
 
-from json import dumps, loads
+from json import dumps, loads, dump as conf_dump, load as conf_load
 
-from Common import web_endpoint, web_mounts
+from Common import web_endpoint, conf_dir, syslog
 from Config import cfgget, cfgput
 from Auth import sudo
 
-def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False, config=True):
+
+def load(dashboard:bool=None, fileserver:bool=None, fs_explore:bool=None, config:bool=None):
     """
     Centralized Web Backend Services Loader
     - Dynamic application dashboard
@@ -20,17 +21,59 @@ def load(dashboard=True, fileserver:bool=False, fs_explore:bool=False, config=Tr
     :param fs_explore: bool - enable/disable* all shared web mounts: modules, data
     :param config:     bool - enable*/disable micrOS web config with auth
     """
-    endpoints = []
+    msg = []
+    wsc = _web_apps("r")
+
+    dashboard = wsc["dashboard"] if dashboard is None else dashboard
     if dashboard:
         web_endpoint('dashboard', 'dashboard.html')
-        endpoints.append("Dashboard initialized, endpoint: /dashboard")
+        msg.append("Dashboard initialized, endpoint: /dashboard")
+    fileserver = wsc["fileserver"] if fileserver is None else fileserver
+    fs_explore = wsc["fs_explore"] if fs_explore is None else fs_explore
     if fileserver:
         import LM_fileserver
-        endpoints.append(LM_fileserver.load())
-        endpoints.append(web_mounts(fs_explore, fs_explore, fs_explore))
+        msg.append(LM_fileserver.load())
+        msg.append(LM_fileserver.extend_mounts(modules=fs_explore, data=fs_explore, logs=fs_explore))
+    config = wsc["config"] if config is None else config
     if config:
-        endpoints.append(enable_config())
-    return endpoints
+        msg.append(enable_config())
+
+    _web_apps('s', {"dashboard": dashboard,
+                                        "fileserver": fileserver, "fs_explore": fs_explore,
+                                        "config": config})
+    return msg
+
+
+def _web_apps(mode, conf=None):
+    """
+    :param mode (str): s - save or r - read
+    """
+    if mode == "s":
+        if conf is None:
+            return False
+        # Save config
+        try:
+            with open(conf_dir("webapps.json"), 'w') as f:
+                conf_dump(conf, f)
+            return True
+        except Exception as e:
+            syslog(f"[WARN] Web app conf save: {e}")
+            return False
+    # Load config (with fallback)
+    cfg = {"dashboard": True, "fileserver": False, "fs_explore": False, "config": True}
+    try:
+        with open(conf_dir("webapps.json"), 'r') as f:
+            cfg.update(conf_load(f))
+    except Exception as e:
+        syslog(f"[WARN] Web app conf load: {e}")
+    return cfg
+
+
+def status():
+    """
+    Web services status: dashboard, fileserver, fs_explore, config
+    """
+    return _web_apps('r')
 
 ######################## System Config ######################
 _CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "auth", "soctout")
@@ -124,4 +167,5 @@ def help(widgets=False):
     """
     return ('load dashboard=True fileserver=False fs_explore=False config=True',
             'enable_config',
+            'status',
             'help')

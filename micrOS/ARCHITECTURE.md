@@ -251,6 +251,13 @@ the original mount.
 | Config | `/config` | `config.html`, `config.js`, `config_packages.js` and `config_schedler.js` (on demand), `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
 | Fileserver | `/fs` | `filesui.html`, `filesui.js`, `editor.js`, `ustyle.css` | `LM_fileserver.py` |
 
+The config Web menu loads and shows the Web apps group only while the current
+`webui` toggle is enabled, including unsaved edits. It shows saved `web status`
+settings. Toggle edits are cached with other config changes and retained when
+switching menus. The main Save button applies them through `web load` and
+checks the saved status; disabling an app requires a reboot. Config is displayed
+read-only.
+
 The config scheduler uses adjacent Time/Tag buttons and retains each mode's
 draft while switching. Time edits preserve seconds and wildcards; the expandable
 Advanced timestamp field exposes the full `WD:H:M:S` or sun-tag syntax. Day

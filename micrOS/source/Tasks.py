@@ -605,6 +605,7 @@ def _exec_lm_core(cmd_list, jsonify):
     :param jsonify: request json output
     Return Bool(OK/NOK), Str(Command output)
     """
+    hint = "Shell: for hints type help.\nShell: for LM exec: [1](LM)module [2]function [3...]optional params"
 
     # LoadModule execution
     if len(cmd_list) >= 2:
@@ -615,18 +616,19 @@ def _exec_lm_core(cmd_list, jsonify):
             # [1] LOAD MODULE - OPTIMIZED by sys.modules
             if lm_mod not in modules:
                 exec(f"import {lm_mod}")
-            try:
-                # [2] EXECUTE FUNCTION FROM MODULE
-                lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
-            except Exception as e:
-                # Handle not proper module load (simulator), note: module in sys.modules BUT not available
-                if lm_mod in str(e):
-                    # [2.1] LOAD MODULE - FORCED
-                    exec(f"import {lm_mod}")
-                    # [2.2] EXECUTE FUNCTION FROM MODULE
-                    lm_output = eval(f"{lm_mod}.{lm_func}({lm_params})")
-                else:
-                    raise e
+            # [2] IMPORT GUARD: Allow local functions and explicitly advertised commands.
+            module = modules[lm_mod]
+            func = getattr(module, lm_func)
+            if not callable(func):
+                return False, hint
+            if getattr(func, '__globals__', {}).get('__name__') != lm_mod:
+                help_func = getattr(module, 'help', None)
+                if help_func is None or not any(entry.split(' ', 1)[0] == lm_func
+                                                for entry in help_func()):
+                    return False, hint
+            # [3] Execute the checked callable, keeping its decorator active.
+            # Explicit locals also work in MicroPython and the CPython simulator.
+            lm_output = eval(f"_func({lm_params})", globals(), {'_func': func, lm_mod: module})
             # ------------ LM output format: dict(jsonify) / str(raw) ------------- #
             # Handle LM output data
             if isinstance(lm_output, dict):
@@ -635,7 +637,7 @@ def _exec_lm_core(cmd_list, jsonify):
                     [f" {key}: {value}" for key, value in lm_output.items()])
             if lm_func == 'help':
                 # Special case:
-                #   jsonify (True) json output, (False) default, "human readable" formatted output)
+                #   jsonify (True) json output, (False) default, "human-readable" formatted output
                 lm_output = dumps(lm_output) if jsonify else '\n'.join([f" {out}," for out in lm_output])
             # Return LM exec result
             return True, str(lm_output)
@@ -648,7 +650,7 @@ def _exec_lm_core(cmd_list, jsonify):
                 gcollect()
             # LM EXECUTION ERROR
             return False, f"Core error: {lm_mod}->{lm_func}: {e}"
-    return False, "Shell: for hints type help.\nShell: for LM exec: [1](LM)module [2]function [3...]optional params"
+    return False, hint
 
 
 def lm_is_loaded(lm_name):

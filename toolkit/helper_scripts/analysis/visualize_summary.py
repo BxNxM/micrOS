@@ -1,61 +1,375 @@
+"""Build a consistently sized, automatically paginated analysis report.
+
+Run from any directory; inputs and the PDF live beside this script.
+Long content continues onto another page instead of shrinking the typography.
+"""
 import os
 import json
 import re
 import math
+from pathlib import Path
 from packaging.version import Version
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from textwrap import wrap
+from matplotlib.font_manager import FontProperties
+from matplotlib.patches import FancyBboxPatch, Rectangle
+from matplotlib.ticker import MaxNLocator, StrMethodFormatter
 
-TITLE_FONT_SIZE = 18
-DARK_YELLOW = "#B8860B"
+PAGE_SIZE = (14, 8.5)
+PAGE_WIDTH, PAGE_HEIGHT = (value * 72 for value in PAGE_SIZE)
 MAX_COMMIT_HISTORY = 60
-
-#####################################
-#           HELPER FUNCTIONS        #
-#####################################
-def _timeline_figsize(num_points, base_width=15, width_per_point=0.24, min_width=15, max_width=42, height=8):
-    width = min(max(base_width, min_width + max(0, num_points - 12) * width_per_point), max_width)
-    return width, height
-
-
-def _table_figsize(num_rows, base_width=15, width=17, min_height=8, max_height=24, row_height=0.34):
-    height = min(max(min_height, num_rows * row_height), max_height)
-    return width, height
-
-
-def _bar_figsize(num_bars, base_width=15, width_per_bar=0.6, min_width=15, max_width=42, height=8):
-    width = min(max(min_width, base_width + max(0, num_bars - 10) * width_per_bar), max_width)
-    return width, height
-
-
-def _annotate_last_point(ax, x, y, text, color, y_offset=0):
-    ax.annotate(
-        text,
-        xy=(x, y),
-        xytext=(12, y_offset),
-        textcoords='offset points',
-        color=color,
-        fontsize=9,
-        arrowprops=dict(arrowstyle="->", color=color),
-    )
+INK = "#E6EDF7"
+MUTED = "#A5B4C9"
+PAPER = "#0E1624"
+SURFACE = "#162234"
+SURFACE_ALT = "#1C2B40"
+TABLE_HEADER = "#2A3C55"
+BORDER = "#304158"
+TEAL = "#58D5C9"
+BLUE = "#91A7FF"
+AMBER = "#F2BD65"
+COLORS = [TEAL, BLUE, "#C4A0ED", "#F29D7D", "#A9CD85", "#E69BBB"]
+STYLE = {
+    "font.family": "DejaVu Sans", "font.size": 10,
+    "text.color": INK, "axes.labelcolor": MUTED,
+    "axes.edgecolor": BORDER, "axes.facecolor": SURFACE,
+    "xtick.color": MUTED, "ytick.color": MUTED,
+    "xtick.labelsize": 8, "ytick.labelsize": 9,
+    "axes.spines.top": False, "axes.spines.right": False,
+    "axes.spines.left": False, "axes.spines.bottom": False,
+    "axes.axisbelow": True, "grid.color": BORDER,
+    "grid.linewidth": 0.6, "lines.linewidth": 1.8,
+    "legend.frameon": False, "pdf.fonttype": 42,
+    "text.usetex": False, "text.parse_math": False,
+    "savefig.bbox": None,
+}
 
 
-def truncate_message(message, wrap_width, max_lines):
-    """
-    Wrap the message text to a given width and limit it to max_lines.
-    If the message is longer than allowed, the last line is truncated with an ellipsis.
-    """
-    lines = wrap(message, wrap_width)
-    if len(lines) > max_lines:
-        # Take the first max_lines-1 full lines and then truncate the last line
-        truncated_last_line = lines[max_lines - 1]
-        if len(truncated_last_line) > wrap_width - 3:
-            truncated_last_line = truncated_last_line[:wrap_width - 3] + '...'
-        return "\n".join(lines[:max_lines - 1] + [truncated_last_line])
-    else:
-        return "\n".join(lines)
+def _page(title, subtitle, section):
+    fig = plt.figure(figsize=PAGE_SIZE, facecolor=PAPER)
+    fig.text(0.045, 0.946, "micrOS  /  ENGINEERING REPORT", fontsize=9,
+             weight="bold", color=TEAL)
+    fig.text(0.955, 0.946, section.upper(), fontsize=9, color=MUTED, ha="right")
+    fig.text(0.045, 0.883, title, fontsize=24, weight="bold")
+    fig.text(0.045, 0.844, subtitle, fontsize=10, color=MUTED)
+    fig.add_artist(plt.Line2D([0.045, 0.955], [0.075, 0.075],
+                             transform=fig.transFigure, color=BORDER, lw=0.8))
+    return fig
+
+
+def _save(pdf, fig, note="micrOS / DevToolKit"):
+    fig.text(0.045, 0.041, note, fontsize=8, color=MUTED)
+    fig.text(0.955, 0.041, f"{pdf.get_pagecount() + 1:02d}",
+             fontsize=9, color=MUTED, ha="right")
+    pdf.savefig(fig, facecolor=PAPER)
+    plt.close(fig)
+
+
+def _card(fig, bounds):
+    fig.add_artist(FancyBboxPatch(
+        bounds[:2], bounds[2], bounds[3], transform=fig.transFigure,
+        boxstyle="round,pad=0,rounding_size=0.012", facecolor=SURFACE,
+        edgecolor=BORDER, linewidth=0.6, zorder=-1))
+
+
+def _timeline_axis(ax, versions, highlighted_versions=(), max_labels=14):
+    # Thin labels only: every recorded value remains in the plotted series.
+    step = max(1, math.ceil((len(versions) - 1) / (max_labels - 1)))
+    ticks = list(range(0, len(versions), step))
+    if len(versions) > 1 and ticks[-1] != len(versions) - 1:
+        if len(versions) - 1 - ticks[-1] < step * 0.65:
+            ticks.pop()
+        ticks.append(len(versions) - 1)
+    ax.set_xticks(ticks, [versions[i] for i in ticks], rotation=35, ha="right")
+    ax.set_xlim(-0.5, max(0.5, len(versions) - 0.5))
+    ax.grid(axis="y")
+    ax.tick_params(axis="both", length=0, pad=7)
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=4, integer=True))
+    ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
+    ax.margins(y=0.18)
+    for index, version in enumerate(versions):
+        if version in highlighted_versions:
+            ax.axvline(index, color=AMBER, alpha=0.25, lw=0.9, linestyle="--")
+
+
+def _series(ax, values, color):
+    ax.plot(range(len(values)), values, color=color, marker="o", markersize=3,
+            markeredgecolor=SURFACE, markeredgewidth=0.35)
+    ax.scatter([len(values) - 1], [values[-1]], s=28, color=color, zorder=4)
+
+
+def _evolution(pdf, versions, first, second, releases, title, first_label):
+    fig = _page(title, f"{versions[0]} to {versions[-1]}  /  {len(versions)} recorded versions", "Evolution")
+    for top, values, label, color in [(0.78, first, first_label, TEAL),
+                                       (0.44, second, "Lines of code", BLUE)]:
+        _card(fig, (0.045, top - 0.31, 0.91, 0.31))
+        fig.text(0.065, top - 0.038, label, fontsize=11, weight="bold")
+        fig.text(0.935, top - 0.04, f"{values[-1]:,} latest", fontsize=14,
+                 weight="bold", color=color, ha="right")
+        ax = fig.add_axes([0.10, top - 0.225, 0.82, 0.16])
+        _series(ax, values, color)
+        _timeline_axis(ax, versions, releases)
+    _save(pdf, fig, "All recorded values shown. Version labels spaced for readability. Dashed amber lines: official releases.")
+
+
+def page_core_system(pdf, versions, core_files, highlighted_versions, core_lines):
+    _evolution(pdf, versions, core_files, core_lines, highlighted_versions,
+               "Core system evolution", "Core files")
+
+
+def page_load_modules(pdf, versions, load_files, highlighted_versions, load_lines):
+    _evolution(pdf, versions, load_files, load_lines, highlighted_versions,
+               "Load module evolution", "Load modules")
+
+
+def page_packages(pdf, versions, package_counts, highlighted_versions, package_lines):
+    _evolution(pdf, versions, package_counts, package_lines, highlighted_versions,
+               "Package evolution", "Packages")
+
+
+def _wrap_text(fig, text, width_points, size=10, family="DejaVu Sans"):
+    """Wrap against actual font widths, including unbroken hashes and paths."""
+    renderer = fig.canvas.get_renderer()
+    font = FontProperties(family=family, size=size)
+    width_pixels = width_points * fig.dpi / 72
+    lines = []
+    for paragraph in str(text).split("\n"):
+        line = ""
+        # Wrapping words first keeps prose readable; a long token can still split.
+        for word in paragraph.split():
+            candidate = f"{line} {word}" if line else word
+            if renderer.get_text_width_height_descent(candidate, font, False)[0] <= width_pixels:
+                line = candidate
+                continue
+            if line:
+                lines.append(line)
+                line = ""
+            for char in word:
+                if line and renderer.get_text_width_height_descent(line + char, font, False)[0] > width_pixels:
+                    lines.append(line)
+                    line = ""
+                line += char
+        lines.append(line)
+    return lines
+
+
+def _table_pages(pdf, title, subtitle, headers, rows, widths, section):
+    """Paginate by measured wrapped line height, never by shrinking the font."""
+    if not rows:
+        return
+    fig = None
+    cursor = 0
+    left, table_width = 0.045 * PAGE_WIDTH, 0.91 * PAGE_WIDTH
+    line_height, padding = 13, 6
+    bottom = 0.105 * PAGE_HEIGHT
+    for row_index, row in enumerate(rows):
+        if fig is None:
+            fig = _page(title, subtitle, section)
+        cells = [_wrap_text(fig, value, table_width * width - 2 * padding)
+                 for value, width in zip(row, widths)]
+        while any(cells):
+            if cursor == 0:
+                cursor = 0.79 * PAGE_HEIGHT
+                x = left
+                for label, width in zip(headers, widths):
+                    fig.add_artist(Rectangle((x / PAGE_WIDTH, (cursor - 27) / PAGE_HEIGHT),
+                                             table_width * width / PAGE_WIDTH, 27 / PAGE_HEIGHT,
+                                             transform=fig.transFigure, facecolor=TABLE_HEADER, edgecolor="none"))
+                    fig.text((x + padding) / PAGE_WIDTH, (cursor - 8) / PAGE_HEIGHT,
+                             label, color=INK, fontsize=9, weight="bold", va="top")
+                    x += table_width * width
+                cursor -= 27
+            available_lines = int((cursor - bottom - 2 * padding) / line_height)
+            needed_lines = max(map(len, cells))
+            # Keep a row together if it will fit on a fresh page.
+            fresh_capacity = int((0.79 * PAGE_HEIGHT - 27 - bottom - 2 * padding) / line_height)
+            if available_lines < 1 or (needed_lines > available_lines and needed_lines <= fresh_capacity):
+                _save(pdf, fig)
+                fig = _page(title, subtitle + "  /  continued", section)
+                cursor = 0
+                continue
+            take = min(needed_lines, available_lines)
+            height = take * line_height + 2 * padding
+            x = left
+            for i, width in enumerate(widths):
+                fig.add_artist(Rectangle((x / PAGE_WIDTH, (cursor - height) / PAGE_HEIGHT),
+                                         table_width * width / PAGE_WIDTH, height / PAGE_HEIGHT,
+                                         transform=fig.transFigure,
+                                         facecolor=SURFACE if row_index % 2 == 0 else SURFACE_ALT, edgecolor="none"))
+                fig.text((x + padding) / PAGE_WIDTH, (cursor - padding) / PAGE_HEIGHT,
+                         "\n".join(cells[i][:take]), fontsize=10, va="top", linespacing=1.3)
+                cells[i] = cells[i][take:]
+                x += table_width * width
+            cursor -= height
+    if fig is not None:
+        _save(pdf, fig)
+
+
+def page_core_system_refs(pdf, core_refs_by_file, versions):
+    included = [(name, values) for name, values in core_refs_by_file.items() if values[-1] > 3]
+    excluded = [(name, values[-1]) for name, values in core_refs_by_file.items() if values[-1] <= 3]
+    for start in range(0, len(included), 4):
+        fig = _page("Core references", "Per-file histories / latest reference count above 3", "Dependencies")
+        for i, (name, values) in enumerate(included[start:start + 4]):
+            x, y = 0.045 + (i % 2) * 0.465, 0.465 - (i // 2) * 0.34
+            _card(fig, (x, y, 0.445, 0.315))
+            fig.text(x + 0.018, y + 0.275, name, fontsize=11, weight="bold")
+            fig.text(x + 0.425, y + 0.275, str(values[-1]), fontsize=13,
+                     color=TEAL, weight="bold", ha="right")
+            ax = fig.add_axes([x + 0.047, y + 0.095, 0.378, 0.15])
+            _series(ax, values, TEAL)
+            _timeline_axis(ax, versions, max_labels=6)
+        _save(pdf, fig, "All recorded values shown. Each file uses its own vertical scale.")
+    _table_pages(pdf, "Lower-reference core files", "Latest count of 3 or fewer / excluded from the trend charts",
+                 ["File", "Latest references"], excluded, [0.78, 0.22], "Dependencies")
+
+
+def page_pylint_scores(pdf, versions, core_scores, load_scores, highlighted_versions):
+    fig = _page("Code quality", "Pylint scores across every recorded version", "Quality")
+    _card(fig, (0.045, 0.13, 0.91, 0.65))
+    ax = fig.add_axes([0.10, 0.245, 0.82, 0.415])
+    for values, label, color in [(core_scores, "Core", TEAL), (load_scores, "Load modules", BLUE)]:
+        _series(ax, values, color)
+        ax.lines[-1].set_label(f"{label} / latest {values[-1]:.2f}")
+    _timeline_axis(ax, versions, highlighted_versions)
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=4))
+    ax.yaxis.set_major_formatter(StrMethodFormatter("{x:.2f}"))
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.08), ncol=2, borderaxespad=0)
+    _save(pdf, fig, "All recorded values shown. Dashed amber lines: official releases.")
+
+
+def page_dep_warnings(pdf, versions, dependency_warnings):
+    fig = _page("Dependency warnings", "Load module dependency checks across every recorded version", "Quality")
+    _card(fig, (0.045, 0.13, 0.91, 0.65))
+    fig.text(0.07, 0.717, f"{dependency_warnings[-1]:,} latest warnings", fontsize=15, color=AMBER, weight="bold")
+    ax = fig.add_axes([0.10, 0.245, 0.82, 0.415])
+    _series(ax, dependency_warnings, AMBER)
+    _timeline_axis(ax, versions)
+    ax.set_ylim(bottom=0, top=max(1, max(dependency_warnings) * 1.15))
+    ax.fill_between(range(len(versions)), dependency_warnings, color=AMBER, alpha=0.08)
+    _save(pdf, fig, "All recorded values shown. Version labels spaced for readability.")
+
+
+def page_commit_log(pdf, meta_data):
+    recent = meta_data[:MAX_COMMIT_HISTORY]
+    _table_pages(pdf, "Version commit history", f"Latest {len(recent)} entries / newest first / full commit messages",
+                 ["Version", "Commit ID", "Message"],
+                 [[item["version"], item["commit_id"], item["message"]] for item in recent],
+                 [0.12, 0.29, 0.59], "History")
+
+
+def page_contributors(pdf, user_data):
+    if not user_data:
+        return
+    ordered = sorted(user_data.items(), key=lambda item: item[1], reverse=True)
+    leads = [(user, score) for user, score in ordered if score > 30]
+    others = [(user, score) for user, score in ordered if score <= 30]
+    for page_index in range(max(1, math.ceil(len(leads) / 3), math.ceil(len(others) / 10))):
+        fig = _page("Project contributors", "Share of project contributions / lead contributors shown above", "People")
+        for i, (user, score) in enumerate(leads[page_index * 3:page_index * 3 + 3]):
+            x = 0.045 + i * 0.31
+            _card(fig, (x, 0.62, 0.29, 0.16))
+            fig.text(x + 0.02, 0.738, user, fontsize=11, weight="bold")
+            fig.text(x + 0.02, 0.663, f"{score:.2f}%", fontsize=25, color=TEAL, weight="bold")
+        chunk = others[page_index * 10:page_index * 10 + 10]
+        if chunk:
+            _card(fig, (0.045, 0.13, 0.91, 0.45))
+            ax = fig.add_axes([0.22, 0.21, 0.65, 0.32])
+            values = [value for _, value in chunk]
+            ax.barh(range(len(chunk)), values, color=TEAL, height=0.48)
+            ax.set_yticks(range(len(chunk)), [user for user, _ in chunk], fontsize=11)
+            ax.set_ylim(len(chunk) - 0.4, -0.6)
+            ax.set_xlim(0, max(values) * 1.2 if max(values) else 1)
+            ax.xaxis.set_major_formatter(StrMethodFormatter("{x:g}%"))
+            ax.grid(axis="x")
+            ax.tick_params(length=0, pad=8)
+            for i, value in enumerate(values):
+                ax.annotate(f"{value:.2f}%", (value, i), xytext=(7, 0), textcoords="offset points",
+                            va="center", fontsize=10, weight="bold", color=TEAL)
+        _save(pdf, fig, "The bar chart shows contributors with a share of 30% or less.")
+
+
+def _text_cards(pdf, title, subtitle, entries, section):
+    """Flow complete lists into two columns, with continuation headings."""
+    fig = None
+    slot = 0
+    for heading, items in entries:
+        if fig is None:
+            fig = _page(title, subtitle, section)
+        lines = []
+        for item in items:
+            lines.extend(_wrap_text(fig, item, 0.415 * PAGE_WIDTH, size=9))
+        lines = lines or ["No entries recorded."]
+        for start in range(0, len(lines), 27):
+            if fig is None:
+                fig = _page(title, subtitle, section)
+            x = 0.045 + slot * 0.465
+            _card(fig, (x, 0.115, 0.445, 0.675))
+            heading_lines = _wrap_text(fig, heading + (" / continued" if start else ""),
+                                       0.405 * PAGE_WIDTH, size=11)
+            fig.text(x + 0.02, 0.757, "\n".join(heading_lines), fontsize=11, weight="bold", va="top")
+            fig.text(x + 0.02, 0.694, "\n".join(lines[start:start + 27]), fontsize=9,
+                     color=MUTED, va="top", linespacing=1.4)
+            slot += 1
+            if slot == 2:
+                _save(pdf, fig)
+                fig, slot = None, 0
+    if fig is not None:
+        _save(pdf, fig)
+
+
+def page_contributors_areas(pdf, contributors_areas):
+    entries = [(f"{user} / {len(files)} file entries", sorted(files))
+               for user, files in sorted(contributors_areas.items(), key=lambda item: (-len(item[1]), item[0].lower()))]
+    _text_cards(pdf, "Contributors' file changes", "Complete recorded file lists / long paths wrap and continue onto the next card",
+                entries, "People")
+
+
+def visualize_device_metrics(pdf, data):
+    records = [(device_type, device, version, metrics)
+               for version, devices in data.items()
+               for device_type, device_list in devices.items()
+               for device, metrics in device_list.items()]
+    records.sort(key=lambda item: (item[0].lower(), item[1].lower(), Version(item[2])))
+    if not records:
+        return
+    time_metrics = sorted({key for *_, metrics in records for key in metrics if key.endswith("_ms")})
+    device_types = sorted({record[0] for record in records})
+    colors = {kind: COLORS[i % len(COLORS)] for i, kind in enumerate(device_types)}
+    metrics_to_plot = [(key, "ms") for key in time_metrics] + [("mem_percent", "%"), ("fs_percent", "%")]
+    titles = {"mem_percent": "Memory utilization", "fs_percent": "Filesystem utilization"}
+    for metric, unit in metrics_to_plot:
+        maximum = max((record[3].get(metric) or 0 for record in records), default=0)
+        for start in range(0, len(records), 20):
+            chunk = records[start:start + 20]
+            title = titles.get(metric, metric.removesuffix("_ms").replace("_", " ").capitalize())
+            fig = _page(title, f"Device benchmarks / records {start + 1}-{start + len(chunk)} of {len(records)}", "Devices")
+            _card(fig, (0.045, 0.12, 0.91, 0.68))
+            ax = fig.add_axes([0.36, 0.19, 0.49, 0.565])
+            ax.set_yticks(range(len(chunk)), [f"{device} / {version} / {kind}" for kind, device, version, _ in chunk], fontsize=9)
+            ax.set_ylim(len(chunk) - 0.4, -0.6)
+            ax.set_xlim(0, max(1, maximum) * 1.3)
+            ax.grid(axis="x")
+            ax.tick_params(length=0, pad=7)
+            ax.set_xlabel("Time (ms)" if unit == "ms" else "Usage (%)", fontsize=9)
+            for i, (kind, _, _, values) in enumerate(chunk):
+                value = values.get(metric)
+                if value is None:
+                    text, value = "Not recorded", 0
+                else:
+                    text = f"{value:g} {unit}"
+                    byte_key = {"mem_percent": "mem_used_byte", "fs_percent": "fs_used_byte"}.get(metric)
+                    if byte_key and byte_key in values:
+                        text += f" / {values[byte_key] / 1024:.1f} KiB"
+                ax.barh(i, value, color=colors[kind], height=0.5)
+                ax.annotate(text, (value, i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=9)
+            _save(pdf, fig, "Device type is included in each label. Missing measurements are marked explicitly.")
+    _table_pages(pdf, "Device module inventory", "Complete loaded-module lists for each benchmark record",
+                 ["Device / version", "Device type", "Loaded modules"],
+                 [[f"{device} / {version}", kind, ", ".join(metrics.get("modules", [])) or "None recorded"]
+                  for kind, device, version, metrics in records], [0.25, 0.18, 0.57], "Devices")
+
 
 def _is_version_jsonn(filename):
     version_pattern = r'^\d+\.\d+\.\d+(?:-\d+)?\.json$'
@@ -136,488 +450,10 @@ def _summary_value(summary, key, default=0, index=0):
     return value
 
 
-#####################################
-#                PAGES              #
-#####################################
-def page_core_system(pdf, versions, core_files, highlighted_versions, core_lines):
-    #########################################################
-    # Plot 1: Core System – File Count (left) and Lines of Code (right)
-    fig, ax_left = plt.subplots(figsize=_timeline_figsize(len(versions)))
-    # Left y-axis: File Count (teal)
-    ax_left.plot(versions, core_files, label="File Count", color="teal", marker="x")
-    ax_left.set_ylabel("File Count", color="teal")
-    ax_left.tick_params(axis='y', labelcolor="teal")
-    ax_left.set_xlabel("Versions")
-    ax_left.set_xticks(range(len(versions)))
-    ax_left.set_xticklabels(versions, rotation=90, fontsize=8)
-    ax_left.grid(True, linestyle="--", alpha=0.1)
-
-    # Highlight specific versions
-    for idx, version in enumerate(versions):
-        if version in highlighted_versions:
-            ax_left.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
-
-    # Annotate the last file count data point with fixed offset (10 pts to the right)
-    _annotate_last_point(ax_left, len(versions) - 1, core_files[-1], f'{core_files[-1]}', "teal", y_offset=8)
-
-    # Right y-axis: Lines of Code (purple)
-    ax_right = ax_left.twinx()
-    ax_right.plot(versions, core_lines, label="Lines of Code", color="purple", marker="o")
-    ax_right.set_ylabel("Lines of Code", color="purple")
-    ax_right.tick_params(axis='y', labelcolor="purple")
-
-    # Annotate the last line count data point with fixed offset (10 pts to the right)
-    _annotate_last_point(ax_right, len(versions) - 1, core_lines[-1], f'{core_lines[-1]}', "purple", y_offset=-12)
-
-    ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
-    ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
-
-    plt.title("Core System Evolution: File Count & Lines of Code", fontweight="bold", fontsize=TITLE_FONT_SIZE)
-    fig.tight_layout()
-    pdf.savefig(fig)
-    plt.close(fig)
-
-
-def page_load_modules(pdf, versions, load_files, highlighted_versions, load_lines):
-    #########################################################
-    # Plot 2: Load Modules – File Count (left) and Lines of Code (right)
-    fig, ax_left = plt.subplots(figsize=_timeline_figsize(len(versions)))
-    # Left y-axis: File Count (teal)
-    ax_left.plot(versions, load_files, label="File Count", color="teal", marker="x")
-    ax_left.set_ylabel("File Count", color="teal")
-    ax_left.tick_params(axis='y', labelcolor="teal")
-    ax_left.set_xlabel("Versions")
-    ax_left.set_xticks(range(len(versions)))
-    ax_left.set_xticklabels(versions, rotation=90, fontsize=8)
-    ax_left.grid(True, linestyle="--", alpha=0.1)
-
-    # Highlight specific versions
-    for idx, version in enumerate(versions):
-        if version in highlighted_versions:
-            ax_left.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
-
-    # Adjust annotation offsets so labels don't overlap:
-    # For the file count (left axis), move upward; for lines (right axis), move downward.
-    _annotate_last_point(ax_left, len(versions) - 1, load_files[-1], f'{load_files[-1]}', "teal", y_offset=12)
-
-    # Right y-axis: Lines of Code (purple)
-    ax_right = ax_left.twinx()
-    ax_right.plot(versions, load_lines, label="Lines of Code", color="purple", marker="o")
-    ax_right.set_ylabel("Lines of Code", color="purple")
-    ax_right.tick_params(axis='y', labelcolor="purple")
-
-    _annotate_last_point(ax_right, len(versions) - 1, load_lines[-1], f'{load_lines[-1]}', "purple", y_offset=-14)
-
-    ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
-    ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
-
-    plt.title("Load Modules Evolution: File Count & Lines of Code", fontweight="bold", fontsize=TITLE_FONT_SIZE)
-    fig.tight_layout()
-    pdf.savefig(fig)
-    plt.close(fig)
-
-
-def page_packages(pdf, versions, package_counts, highlighted_versions, package_lines):
-    #########################################################
-    # Plot: Packages - Package Count (left) and Lines of Code (right)
-    fig, ax_left = plt.subplots(figsize=_timeline_figsize(len(versions)))
-    ax_left.plot(versions, package_counts, label="Package Count", color="teal", marker="x")
-    ax_left.set_ylabel("Package Count", color="teal")
-    ax_left.tick_params(axis='y', labelcolor="teal")
-    ax_left.set_xlabel("Versions")
-    ax_left.set_xticks(range(len(versions)))
-    ax_left.set_xticklabels(versions, rotation=90, fontsize=8)
-    ax_left.grid(True, linestyle="--", alpha=0.1)
-
-    for idx, version in enumerate(versions):
-        if version in highlighted_versions:
-            ax_left.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
-
-    _annotate_last_point(ax_left, len(versions) - 1, package_counts[-1], f'{package_counts[-1]}', "teal", y_offset=12)
-
-    ax_right = ax_left.twinx()
-    ax_right.plot(versions, package_lines, label="Lines of Code", color="purple", marker="o")
-    ax_right.set_ylabel("Lines of Code", color="purple")
-    ax_right.tick_params(axis='y', labelcolor="purple")
-
-    _annotate_last_point(ax_right, len(versions) - 1, package_lines[-1], f'{package_lines[-1]}', "purple", y_offset=-14)
-
-    ax_left.legend(loc="upper left", fontsize=10, bbox_to_anchor=(0, 1.12))
-    ax_right.legend(loc="upper right", fontsize=10, bbox_to_anchor=(1, 1.12))
-
-    plt.title("Packages Evolution: Package Count & Lines of Code", fontweight="bold", fontsize=TITLE_FONT_SIZE)
-    fig.tight_layout()
-    pdf.savefig(fig)
-    plt.close(fig)
-
-
-def page_core_system_refs(pdf, core_refs_by_file, versions):
-    #########################################################
-    # Plot 3: Core References Evolution per File
-
-    skip_if_ref_under = 3
-    excluded_files = []
-    included_files = [file for file, refs in core_refs_by_file.items() if refs[-1] > skip_if_ref_under]
-    fig, ax = plt.subplots(
-        figsize=(
-            min(max(16, 12 + max(0, len(versions) - 10) * 0.22), 42),
-            min(max(8, 7 + len(included_files) * 0.18), 18),
-        )
-    )
-    for file, refs in core_refs_by_file.items():
-        if refs[-1] <= skip_if_ref_under:
-            excluded_files.append(f"{file} ({refs[-1]})")
-            continue
-        ax.plot(versions, refs, marker="o", label=file)
-    ax.set_ylabel("Core References Count")
-    ax.set_xlabel("Versions")
-    ax.set_xticks(range(len(versions)))
-    ax.set_xticklabels(versions, rotation=90, fontsize=8)
-    ax.grid(True, linestyle="--", alpha=0.1)
-    annotation_margin = max(3, min(12, math.ceil(len(included_files) / 4) + 2))
-    excluded_margin = max(4, min(10, math.ceil(len(excluded_files) / 4) + 3)) if excluded_files else 0
-    right_margin = annotation_margin + excluded_margin
-    ax.set_xlim([-0.5, len(versions) - 0.5 + right_margin])
-    # Annotate the last data point of each file with its filename and value
-    visible_index = 0
-    for file, refs in core_refs_by_file.items():
-        last_index = len(versions) - 1
-        last_value = refs[-1]
-        if last_value <= skip_if_ref_under:
-            continue
-        y_offset = ((visible_index % 6) - 2.5) * 7
-        ax.annotate(f"{file} ({last_value})",
-                    xy=(last_index, last_value),
-                    xytext=(12, y_offset), textcoords='offset points',
-                    fontsize=8, color='white',
-                    verticalalignment='center', horizontalalignment='left')
-        visible_index += 1
-    # Display excluded files list
-    if excluded_files:
-        excluded_text = "\n".join(excluded_files)
-        ax.text(len(versions) - 0.5 + annotation_margin + excluded_margin * 0.25,
-                max(max(core_refs_by_file.values(), key=max)) / 4,
-                f"Excluded Files:\n{excluded_text}", fontsize=8, color='white',
-                verticalalignment='center', horizontalalignment='left')
-    plt.title("Core References Evolution Per File", fontweight="bold", fontsize=TITLE_FONT_SIZE)
-    fig.tight_layout()
-    pdf.savefig(fig)
-    plt.close(fig)
-
-def page_pylint_scores(pdf, versions, core_scores, load_scores, highlighted_versions):
-    #########################################################
-    # Plot 4: Core and Load Scores
-    fig, ax = plt.subplots(figsize=_timeline_figsize(len(versions)))
-    ax.plot(versions, core_scores, label="Core Score", color="brown", marker="o")
-    ax.plot(versions, load_scores, label="Load Score", color="grey", marker="x")
-    ax.set_ylabel("Scores")
-    ax.set_xlabel("Versions")
-    ax.set_xticks(range(len(versions)))
-    ax.set_xticklabels(versions, rotation=90, fontsize=8)
-    ax.grid(True, linestyle="--", alpha=0.1)
-    ax.legend(loc="upper center", fontsize=10, bbox_to_anchor=(0.5, 1.12), ncol=2)
-
-    for idx, version in enumerate(versions):
-        if version in highlighted_versions:
-            ax.axvline(x=idx, color=DARK_YELLOW, linestyle="--", alpha=0.7)
-
-    plt.title("Pylint Scores Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
-    fig.tight_layout()
-    pdf.savefig(fig)
-    plt.close(fig)
-
-def page_dep_warnings(pdf, versions, dependency_warnings):
-    #########################################################
-    # Plot 5: Dependency Warnings
-    fig, ax = plt.subplots(figsize=_timeline_figsize(len(versions)))
-    ax.plot(versions, dependency_warnings, label="Dependency Warnings", color="brown", marker="o")
-    ax.set_ylabel("Warnings")
-    ax.set_xlabel("Versions")
-    ax.set_xticks(range(len(versions)))
-    ax.set_xticklabels(versions, rotation=90, fontsize=8)
-    ax.grid(True, linestyle="--", alpha=0.1)
-    ax.legend(loc="upper center", fontsize=10, bbox_to_anchor=(0.5, 1.12), ncol=2)
-
-    plt.title("Load Dependency Warnings Evolution", fontweight="bold", fontsize=TITLE_FONT_SIZE)
-    fig.tight_layout()
-    pdf.savefig(fig)
-    plt.close(fig)
-
-def page_commit_log(pdf, meta_data):
-    #########################################################
-    # Plot 6: Commit Log (Table fitted to page height with text truncation)
-    meta_data = meta_data[:MAX_COMMIT_HISTORY]
-    wrap_width = 120 if len(meta_data) < 20 else 96
-    max_lines = 1 if len(meta_data) > 28 else 2
-    table_data = [["Version", "Commit ID", "Message"]]
-    for entry in meta_data:
-        truncated_message = truncate_message(entry["message"], wrap_width, max_lines)
-        table_data.append([entry["version"], entry["commit_id"], truncated_message])
-
-    num_rows = len(table_data)
-
-    fig, ax = plt.subplots(figsize=_table_figsize(num_rows, width=18, row_height=0.36 if max_lines == 1 else 0.5))
-    ax.axis('off')  # Hide axes for a clean table look
-
-    # Create the table; using loc='center' so we can later force cell heights
-    table = ax.table(cellText=table_data,
-                     loc='center',
-                     cellLoc='left',
-                     colWidths=[0.08, 0.20, 0.72])
-
-    # Force a fixed font size for clarity
-    font_size = 12 if len(meta_data) < 10 else 10 if len(meta_data) < 30 else 8
-    table.auto_set_font_size(False)
-    table.set_fontsize(font_size)
-
-    # Adjust each cell’s height so that the table fits the full page height.
-    # We leave a small vertical margin (here 0.90 of the figure height is used for the table).
-    cell_height = min(0.09, 0.92 / max(1, num_rows))
-    for key, cell in table.get_celld().items():
-        cell.set_height(cell_height)
-        cell.set_edgecolor("gray")
-        cell.get_text().set_color("white")
-        cell.get_text().set_wrap(True)
-        # Header formatting
-        if key[0] == 0:
-            cell.set_facecolor("#404040")
-            cell.set_text_props(weight="bold")
-        else:
-            cell.set_facecolor("#202020")
-
-    # Adjust margins so that the table fills the entire figure height.
-    plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
-    newest_version = meta_data[0]["version"] if meta_data else "n/a"
-    oldest_version = meta_data[-1]["version"] if meta_data else "n/a"
-    plt.title(f"Version Commit History (newest first: {newest_version} -> {oldest_version})", fontweight="bold", fontsize=16)
-    pdf.savefig(fig)
-    plt.close(fig)
-
-
-def page_contributors(pdf, user_data):
-    #########################################################
-    # Plot: Contributors' Contributions
-    #########################################################
-    master_contributors = {u: s for u, s in user_data.items() if s > 30}
-    minor_contributors = {u: s for u, s in user_data.items() if s <= 30}
-
-    # Bar chart for minor contributors
-    if minor_contributors:
-        users, contributions = zip(*sorted(minor_contributors.items(), key=lambda x: x[1], reverse=True))
-        fig, ax = plt.subplots(figsize=_bar_figsize(len(users), base_width=14, width_per_bar=0.7))
-        bars = ax.bar(users, contributions, color="steelblue")
-
-        # Highlight the owner distinctly and separate major vs minor contributors
-        owner_threshold = max(contributions) * 0.7  # Define a threshold for major contributors
-        for bar, (user, contribution) in zip(bars, minor_contributors.items()):
-            if contribution == max(contributions):
-                bar.set_color("darkred")  # Highlight the owner
-            elif contribution >= owner_threshold:
-                bar.set_color("darkorange")  # Highlight major contributors
-            else:
-                bar.set_alpha(0.5)  # Fade minor contributors
-            # Annotate each bar with the score value
-            ax.annotate(f"{contribution:.2f}%", xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                        ha='center', va='top', fontsize=10, fontweight='bold', color='black', xytext=(0, -5),
-                        textcoords='offset points')
-
-        ax.set_ylabel("Contribution (%)")
-        ax.set_xlabel("Contributors")
-        ax.set_xticks(range(len(users)))
-        ax.set_xticklabels(users, rotation=45, ha="right", fontsize=9 if len(users) > 12 else 10)
-        ax.grid(axis="y", linestyle="--", alpha=0.3)
-
-        plt.title("Project Contributors", fontweight="bold", fontsize=14)
-
-        # Annotate master contributors at the top of the chart
-        master_text = "\n".join([f"{user}: {score:.2f}%" for user, score in master_contributors.items()])
-        ax.text(0.5, 1.15, master_text, ha='center', va='top', fontsize=12, fontweight='bold', transform=ax.transAxes,
-                bbox=dict(facecolor='white', alpha=0.6))
-
-        fig.tight_layout()
-        pdf.savefig(fig)
-        plt.close(fig)
-
-
-def page_contributors_areas(pdf, contributors_areas):
-    """
-    Create a PDF page that lists each contributor's modified files in separate columns.
-    Each column displays the contributor's name in bold at the top and, after an empty line,
-    an alphabetical list of the files they modified.
-
-    Parameters:
-        pdf: A PdfPages object from matplotlib.backends.backend_pdf used to save the figure.
-        contributors_areas: A dict mapping each contributor's username to a list of file paths.
-    """
-    contributors = sorted(
-        contributors_areas,
-        key=lambda user: (-len(contributors_areas[user]), user.lower())
-    )
-    num_contributors = len(contributors)
-    if num_contributors == 0:
-        return
-
-    cols = min(3, num_contributors)
-    max_files_per_block = 58
-    file_line_weight = 1.3
-    block_padding = 5
-    column_blocks = [[] for _ in range(cols)]
-    column_heights = [0] * cols
-
-    for user in contributors:
-        files_sorted = sorted(contributors_areas[user])
-        visible_lines = min(len(files_sorted), max_files_per_block)
-        block_height = visible_lines * file_line_weight + block_padding
-        column_index = min(range(cols), key=lambda i: column_heights[i])
-        column_blocks[column_index].append((user, files_sorted))
-        column_heights[column_index] += block_height
-
-    max_column_height = max(column_heights) if column_heights else 1
-    fig_height = min(max(8, max_column_height * 0.16), 22)
-    fig, axs = plt.subplots(1, cols, figsize=(cols * 6.2, fig_height))
-    if cols == 1:
-        axs = [axs]
-    else:
-        axs = list(getattr(axs, "flat", axs))
-
-    for ax, blocks in zip(axs, column_blocks):
-        cursor_y = 0.97
-        line_step = 0.90 / max(1, max_column_height)
-        for user, files_sorted in blocks:
-            total_files = len(files_sorted)
-            visible_files = files_sorted
-            if total_files > max_files_per_block:
-                visible_files = files_sorted[:max_files_per_block - 1] + [
-                    f"... (+{total_files - max_files_per_block + 1} more)"
-                ]
-            ax.text(0.05, cursor_y, f"{user} ({total_files} files)", transform=ax.transAxes,
-                    va="top", ha="left", fontsize=12, family="monospace", fontweight="bold")
-            ax.text(0.05, cursor_y - line_step * 2.2, "\n".join(visible_files), transform=ax.transAxes,
-                    va="top", ha="left", fontsize=8.5, family="monospace", wrap=True)
-            cursor_y -= line_step * (len(visible_files) * file_line_weight + block_padding)
-        ax.axis("off")
-
-    # Add an overall title for the page
-    fig.suptitle("Contributors' File Changes", fontsize=16, fontweight="bold")
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
-
-    # Save the page to the PDF and close the figure
-    pdf.savefig(fig)
-    plt.close(fig)
-
-
-def visualize_device_metrics(pdf, data):
-
-    # Collect all relevant metrics dynamically
-    time_metrics = set()
-    for devices in data.values():
-        for device_list in devices.values():
-            for metrics in device_list.values():
-                for key in metrics.keys():
-                    if key.endswith('_ms'):
-                        time_metrics.add(key)
-
-    num_plots = len(time_metrics) + 2  # +2 for memory and filesystem plots
-
-    # Ensure the number of subplots matches the number of metrics
-    max_devices = 0
-    for devices in data.values():
-        for device_list in devices.values():
-            max_devices = max(max_devices, len(device_list))
-    fig_width = min(max(15, 11 + max_devices * 1.4), 42)
-    fig, axes = plt.subplots(num_plots, 1, figsize=(fig_width, 6 * num_plots))
-    if num_plots == 1:
-        axes = [axes]  # Ensure iterable for a single metric case
-
-    # Prepare data structures
-    device_types = {}
-    for version, devices in data.items():
-        for device_type, device_list in devices.items():
-            if device_type not in device_types:
-                device_types[device_type] = []
-            for device, metrics in device_list.items():
-                device_types[device_type].append((f"{device}:{version}", metrics))
-
-    for device_type, devices in device_types.items():
-        device_types[device_type] = sorted(devices, key=lambda item: item[0].lower())
-
-    # Plot all _ms metrics dynamically
-    for i, metric in enumerate(sorted(time_metrics)):  # Sort for consistency
-        ax = axes[i]
-        ax.set_title(f"{metric.replace('_', ' ').title()} by Device Type")
-        for device_type, devices in device_types.items():
-            values = [d[1].get(metric, 0) for d in devices]
-            labels = [d[0] for d in devices]
-            bars = ax.bar(labels, values, label=device_type)
-            # Annotate each bar with the exact value
-            for bar, value in zip(bars, values):
-                ax.annotate(f"{value} ms",
-                            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                            ha='center', va='bottom', fontsize=8, fontweight='bold', rotation=0)
-        ax.set_ylabel("Time (ms)")
-        ax.legend()
-        ax.tick_params(axis='x', rotation=45)
-
-    # Memory Utilization Plot with modules list annotation
-    ax = axes[len(time_metrics)]
-    ax.set_title("Memory Utilization by Device Type")
-    for device_type, devices in device_types.items():
-        mem_usage = [d[1].get("mem_percent", 0) for d in devices]
-        mem_used = [d[1].get("mem_used_byte", 0) / 1024 for d in devices]  # Convert bytes to KB
-        labels = [d[0] for d in devices]
-        bars = ax.bar(labels, mem_usage, label=device_type)
-        for i, bar in enumerate(bars):
-            kb_value = mem_used[i]
-            modules = devices[i][1].get("modules", [])
-            modules_preview = modules[:6]
-            modules_str = ",\n".join(modules_preview)
-            if len(modules) > len(modules_preview):
-                modules_str += f"\n... (+{len(modules) - len(modules_preview)} more)"
-            annotation_text = f"{kb_value:.1f} KB\nModules({len(modules)}):\n{modules_str}"
-            ax.annotate(annotation_text,
-                        xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                        ha='center', va='bottom',
-                        fontsize=8, fontweight='bold')
-    ax.set_ylabel("Memory Usage (%)")
-    ax.set_ylim(0, 110)
-    ax.legend()
-    ax.tick_params(axis='x', rotation=45)
-
-    # Filesystem Utilization Plot
-    ax = axes[len(time_metrics) + 1]
-    ax.set_title("Filesystem Utilization by Device Type")
-    for device_type, devices in device_types.items():
-        fs_usage = [d[1].get("fs_percent", 0) for d in devices]
-        fs_used = [d[1].get("fs_used_byte", 0) / 1024 for d in devices]  # Convert bytes to KB
-        labels = [d[0] for d in devices]
-        bars = ax.bar(labels, fs_usage, label=device_type)
-        # Annotate each bar with KB usage
-        for bar, value in zip(bars, fs_used):
-            ax.annotate(f"{value:.1f} KB\n55+ Modules",
-                        xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
-                        ha='center', va='bottom', fontsize=8, fontweight='bold')
-    ax.set_ylabel("Filesystem Usage (%)")
-    ax.set_ylim(0, 80)
-    ax.legend()
-    ax.tick_params(axis='x', rotation=45)
-
-    for ay in axes:
-        ay.yaxis.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
-        ay.tick_params(axis='x', labelsize=8)
-        plt.setp(ay.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
-
-    # Save the figure
-    fig.tight_layout()
-    pdf.savefig(fig)
-    plt.close(fig)
-
-
-#####################################
-#            MAIN PDF WRITER        #
-#####################################
-
 def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_pdf):
     """Generate timeline visualizations for all metrics and save to a PDF."""
+    if not data:
+        raise ValueError("No version summaries found; collect analysis_workdir inputs first.")
     versions = [d["version"] for d in data]
 
     # Extract data for each timeline
@@ -630,64 +466,46 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
     core_scores = [d["core_score"] for d in data]
     load_scores = [d["load_score"] for d in data]
     dependency_warnings = [d["load_dep"][1] for d in data]
-    contributors = extradata.get("contributors")
-    contributors_scores = contributors.get("scores")
-    contributors_areas = contributors.get("areas")
+    contributors = extradata.get("contributors") or {}
+    contributors_scores = contributors.get("scores") or {}
+    contributors_areas = contributors.get("areas") or {}
     system_metrics = extradata.get("system_metrics")
 
     # Extract core_refs data per file
     all_files = sorted(set(f for d in data for f in d["core_refs"].keys()))
     core_refs_by_file = {f: [d["core_refs"].get(f, 0) for d in data] for f in all_files}
 
-    with PdfPages(output_pdf) as pdf:
-        # Use dark background style
-        plt.style.use('dark_background')
+    with plt.rc_context(STYLE), PdfPages(output_pdf) as pdf:
+        pdf.infodict().update(Title="micrOS engineering report",
+                              Author="micrOS / DevToolKit",
+                              Subject="Version evolution, contributors and device benchmarks")
 
-        #########################################################
-        # Plot 1: Core System – File Count (left) and Lines of Code (right)
         page_core_system(pdf, versions, core_files, highlighted_versions, core_lines)
 
-        #########################################################
-        # Plot 2: Load Modules – File Count (left) and Lines of Code (right)
         page_load_modules(pdf, versions, load_files, highlighted_versions, load_lines)
 
-        #########################################################
-        # Plot 3: Packages - Package Count and Lines of Code
         page_packages(pdf, versions, package_counts, highlighted_versions, package_lines)
 
-        #########################################################
-        # Plot 4: Core References Evolution per File
         page_core_system_refs(pdf, core_refs_by_file, versions)
 
-        #########################################################
         # Show developer contributions
         page_contributors(pdf, contributors_scores)
         page_contributors_areas(pdf, contributors_areas)
 
-        #########################################################
-        # Plot 4: Core and Load Scores
         page_pylint_scores(pdf, versions, core_scores, load_scores, highlighted_versions)
 
-        #########################################################
-        # Plot 5: Dependency Warnings
         page_dep_warnings(pdf, versions, dependency_warnings)
 
-        #########################################################
-        # Plot 6: Commit Log (Table fitted to page height with text truncation)
         page_commit_log(pdf, meta_data)
 
-        sys_metrics_data = system_metrics
-        sys_metrics_ok = isinstance(system_metrics, dict)
-        if sys_metrics_ok:
-            try:
-                visualize_device_metrics(pdf, sys_metrics_data)
-            except Exception as e:
-                print(f"(beta) Cannot render system test metrics: {e}")
+        if isinstance(system_metrics, dict):
+            visualize_device_metrics(pdf, system_metrics)
 
 
 def main():
-    input_folder = "./analysis_workdir"  # Change to your folder path
-    output_pdf = "timeline_visualization.pdf"
+    script_dir = Path(__file__).resolve().parent
+    input_folder = script_dir / "analysis_workdir"
+    output_pdf = script_dir / "timeline_visualization.pdf"
 
     # Load data
     data, extradata = load_json_files(input_folder)

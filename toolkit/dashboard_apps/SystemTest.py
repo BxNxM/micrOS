@@ -496,6 +496,26 @@ def check_robustness_exception():
         return False, f'{info_msg}: {output}'
 
 
+def check_lm_import_guard():
+    info_msg = '[ST] Check LM import guard [robustness memory_usage]'
+    print(info_msg)
+
+    output = CLIENT.execute(['system memory_usage >json'])
+    try:
+        memory = json.loads(output[1]) if output[0] else None
+    except (ValueError, TypeError):
+        memory = None
+    if not isinstance(memory, dict) or not {'percent', 'mem_used'}.issubset(memory):
+        return False, f'{info_msg}: system memory_usage failed: {output}'
+
+    output = CLIENT.execute(['robustness memory_usage'])
+    blocked = ('Shell: for hints type help.\n'
+                'Shell: for LM exec: [1](LM)module [2]function [3...]optional params')
+    if output[0] and output[1].strip() == blocked:
+        return True, f'{info_msg}: module internal imports blocked'
+    return False, f'{info_msg}: module internal imports NOT blocked! ({output})'
+
+
 def check_robustness_memory():
     info_msg = '[ST] Check robustness - memory_leak [robustness memory_leak 12]'
     print(info_msg)
@@ -774,6 +794,7 @@ def app(devfid=None, pwd=None):
                'negative_api': negative_interface_check(),
                'dhcp_hostname': check_device_by_hostname(CLIENT.get_device()),
                'lm_exception': check_robustness_exception(),
+               'import_guard': check_lm_import_guard(),
                'mem_usage': memory_usage(),
                'disk_usage': disk_usage(),
                'webui_conn': webcli_test(),

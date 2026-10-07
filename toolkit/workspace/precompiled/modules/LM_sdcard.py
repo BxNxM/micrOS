@@ -1,6 +1,6 @@
 from machine import SDCard
 from uos import mount, umount
-from Files import is_dir, path_join, list_fs, OSPath
+from Files import is_dir, path_join, list_fs, OSPath, abs_path
 
 STORAGE_PATH = path_join(OSPath.DATA, "storage")
 
@@ -41,7 +41,7 @@ def write_file(name, content):
     :param name: file name with type
     :param content: file text content
     """
-    target = path_join(STORAGE_PATH, name)
+    target = path_join(STORAGE_PATH, abs_path(name))
     try:
         with open(target, 'w') as f:
             f.write(content)
@@ -55,7 +55,7 @@ def read_file(name):
     Read a file
     :param name: file name with type
     """
-    target = path_join(STORAGE_PATH, name)
+    target = path_join(STORAGE_PATH, abs_path(name))
     try:
         with open(target, 'r') as f:
             return f.read()

@@ -1,7 +1,7 @@
-"""Build a consistently sized, automatically paginated analysis report.
+"""Build a consistently sized, automatically sized analysis report.
 
 Run from any directory; inputs and the PDF live beside this script.
-Long content continues onto another page instead of shrinking the typography.
+Tables continue onto another page; device charts grow taller to fit every record.
 """
 import os
 import json
@@ -71,6 +71,32 @@ def _card(fig, bounds):
         bounds[:2], bounds[2], bounds[3], transform=fig.transFigure,
         boxstyle="round,pad=0,rounding_size=0.012", facecolor=SURFACE,
         edgecolor=BORDER, linewidth=0.6, zorder=-1))
+
+
+def page_report_intro(pdf, versions, has_device_metrics):
+    fig = _page("micrOS platform analytics", "A guide to platform evolution, dependencies and engineering health", "Overview")
+    fig.text(0.045, 0.785,
+             f"{versions[0]} to {versions[-1]}  /  {len(versions)} recorded versions",
+             fontsize=12, weight="bold", color=TEAL)
+    fig.text(0.045, 0.745,
+             "Explore how the runtime grows, which files it depends on, and how the project performs.",
+             fontsize=11, color=MUTED)
+    categories = [
+        ("Evolution", "Core, load module and package growth across versions.\nCompare file counts and source lines over time."),
+        ("Dependencies", "Core reference histories, ranked by latest count.\nLower-reference files are listed separately."),
+        ("People", "Contribution shares and contributor areas.\nSee who contributes and which files they work on."),
+        ("Quality", "Pylint scores and load module dependency warnings.\nTrack code quality and dependency checks over time."),
+    ]
+    if has_device_metrics:
+        categories.append(("Devices", "Recorded device benchmarks and module inventories.\nCompare measured performance and loaded modules."))
+    categories.append(("History", "Recent version commits, with newest entries first.\nRead the full commit messages at the end of the report."))
+    for i, (title, description) in enumerate(categories):
+        x, y = 0.045 + (i % 2) * 0.465, 0.535 - (i // 2) * 0.205
+        _card(fig, (x, y, 0.445, 0.18))
+        fig.text(x + 0.018, y + 0.132, title, fontsize=14, weight="bold", color=TEAL)
+        fig.text(x + 0.018, y + 0.085, description, fontsize=10, color=MUTED,
+                 va="top", linespacing=1.6)
+    _save(pdf, fig, "Reading order: left to right, top to bottom. Sections continue across pages as needed.")
 
 
 def _timeline_axis(ax, versions, highlighted_versions=(), max_labels=14):
@@ -207,8 +233,9 @@ def _table_pages(pdf, title, subtitle, headers, rows, widths, section):
 
 
 def page_core_system_refs(pdf, core_refs_by_file, versions):
-    included = [(name, values) for name, values in core_refs_by_file.items() if values[-1] > 3]
-    excluded = [(name, values[-1]) for name, values in core_refs_by_file.items() if values[-1] <= 3]
+    ordered = sorted(core_refs_by_file.items(), key=lambda item: (-item[1][-1], item[0]))
+    included = [(name, values) for name, values in ordered if values[-1] > 3]
+    excluded = [(name, values[-1]) for name, values in ordered if values[-1] <= 3]
     for start in range(0, len(included), 4):
         fig = _page("Core references", "Per-file histories / latest reference count above 3", "Dependencies")
         for i, (name, values) in enumerate(included[start:start + 4]):
@@ -331,7 +358,10 @@ def visualize_device_metrics(pdf, data):
                for version, devices in data.items()
                for device_type, device_list in devices.items()
                for device, metrics in device_list.items()]
-    records.sort(key=lambda item: (item[0].lower(), item[1].lower(), Version(item[2])))
+    # Stable sorts keep device types grouped, newest versions first, then device names.
+    records.sort(key=lambda item: item[1].lower())
+    records.sort(key=lambda item: Version(item[2]), reverse=True)
+    records.sort(key=lambda item: item[0].lower())
     if not records:
         return
     time_metrics = sorted({key for *_, metrics in records for key in metrics if key.endswith("_ms")})
@@ -341,30 +371,30 @@ def visualize_device_metrics(pdf, data):
     titles = {"mem_percent": "Memory utilization", "fs_percent": "Filesystem utilization"}
     for metric, unit in metrics_to_plot:
         maximum = max((record[3].get(metric) or 0 for record in records), default=0)
-        for start in range(0, len(records), 20):
-            chunk = records[start:start + 20]
-            title = titles.get(metric, metric.removesuffix("_ms").replace("_", " ").capitalize())
-            fig = _page(title, f"Device benchmarks / records {start + 1}-{start + len(chunk)} of {len(records)}", "Devices")
-            _card(fig, (0.045, 0.12, 0.91, 0.68))
-            ax = fig.add_axes([0.36, 0.19, 0.49, 0.565])
-            ax.set_yticks(range(len(chunk)), [f"{device} / {version} / {kind}" for kind, device, version, _ in chunk], fontsize=9)
-            ax.set_ylim(len(chunk) - 0.4, -0.6)
-            ax.set_xlim(0, max(1, maximum) * 1.3)
-            ax.grid(axis="x")
-            ax.tick_params(length=0, pad=7)
-            ax.set_xlabel("Time (ms)" if unit == "ms" else "Usage (%)", fontsize=9)
-            for i, (kind, _, _, values) in enumerate(chunk):
-                value = values.get(metric)
-                if value is None:
-                    text, value = "Not recorded", 0
-                else:
-                    text = f"{value:g} {unit}"
-                    byte_key = {"mem_percent": "mem_used_byte", "fs_percent": "fs_used_byte"}.get(metric)
-                    if byte_key and byte_key in values:
-                        text += f" / {values[byte_key] / 1024:.1f} KiB"
-                ax.barh(i, value, color=colors[kind], height=0.5)
-                ax.annotate(text, (value, i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=9)
-            _save(pdf, fig, "Device type is included in each label. Missing measurements are marked explicitly.")
+        title = titles.get(metric, metric.removesuffix("_ms").replace("_", " ").capitalize())
+        fig = _page(title, f"Device benchmarks / {len(records)} records / newest versions first within each device type", "Devices")
+        # Preserve the usual row spacing as the number of records grows.
+        fig.set_size_inches(PAGE_SIZE[0], PAGE_SIZE[1] * max(1, len(records) / 20))
+        _card(fig, (0.045, 0.12, 0.91, 0.68))
+        ax = fig.add_axes([0.36, 0.19, 0.49, 0.565])
+        ax.set_yticks(range(len(records)), [f"{device} / {version} / {kind}" for kind, device, version, _ in records], fontsize=9)
+        ax.set_ylim(len(records) - 0.4, -0.6)
+        ax.set_xlim(0, max(1, maximum) * 1.3)
+        ax.grid(axis="x")
+        ax.tick_params(length=0, pad=7)
+        ax.set_xlabel("Time (ms)" if unit == "ms" else "Usage (%)", fontsize=9)
+        for i, (kind, _, _, values) in enumerate(records):
+            value = values.get(metric)
+            if value is None:
+                text, value = "Not recorded", 0
+            else:
+                text = f"{value:g} {unit}"
+                byte_key = {"mem_percent": "mem_used_byte", "fs_percent": "fs_used_byte"}.get(metric)
+                if byte_key and byte_key in values:
+                    text += f" / {values[byte_key] / 1024:.1f} KiB"
+            ax.barh(i, value, color=colors[kind], height=0.5)
+            ax.annotate(text, (value, i), xytext=(6, 0), textcoords="offset points", va="center", fontsize=9)
+        _save(pdf, fig, "Device type is included in each label. Missing measurements are marked explicitly.")
     _table_pages(pdf, "Device module inventory", "Complete loaded-module lists for each benchmark record",
                  ["Device / version", "Device type", "Loaded modules"],
                  [[f"{device} / {version}", kind, ", ".join(metrics.get("modules", [])) or "None recorded"]
@@ -480,6 +510,8 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
                               Author="micrOS / DevToolKit",
                               Subject="Version evolution, contributors and device benchmarks")
 
+        page_report_intro(pdf, versions, isinstance(system_metrics, dict))
+
         page_core_system(pdf, versions, core_files, highlighted_versions, core_lines)
 
         page_load_modules(pdf, versions, load_files, highlighted_versions, load_lines)
@@ -496,10 +528,10 @@ def visualize_timeline(data, extradata, meta_data, highlighted_versions, output_
 
         page_dep_warnings(pdf, versions, dependency_warnings)
 
-        page_commit_log(pdf, meta_data)
-
         if isinstance(system_metrics, dict):
             visualize_device_metrics(pdf, system_metrics)
+
+        page_commit_log(pdf, meta_data)
 
 
 def main():

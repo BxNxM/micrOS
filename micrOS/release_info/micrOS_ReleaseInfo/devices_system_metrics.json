@@ -438,5 +438,81 @@
                 "shell_multi_session_dt_ms": 58
             }
         }
+    },
+    "3.7.0-0": {
+        "ESP32-PICO-D4": {
+            "TinyDevBoard": {
+                "micropython_version": "v1.27.0 on 2025-12-09",
+                "modules": [
+                    "system",
+                    "web",
+                    "rgb",
+                    "fileserver",
+                    "cct",
+                    "cluster",
+                    "telegram",
+                    "dimmer",
+                    "oled",
+                    "oled_ui",
+                    "gameOfLife",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 41,
+                "mem_percent": 6.8,
+                "mem_used_byte": 279728,
+                "fs_percent": 55.5,
+                "fs_used_byte": 1163264,
+                "web_rest_response_ms": 410,
+                "web_landingpage_response_ms": 370,
+                "shell_single_session_dt_ms": 25,
+                "shell_multi_session_dt_ms": 182
+            }
+        },
+        "ESP32S3": {
+            "Matrix": {
+                "micropython_version": "v1.24.1 on 2024-11-29",
+                "modules": [
+                    "esp32",
+                    "web",
+                    "system",
+                    "cluster",
+                    "neomatrix",
+                    "fileserver",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 39,
+                "mem_percent": 11.6,
+                "mem_used_byte": 237792,
+                "fs_percent": 53.1,
+                "fs_used_byte": 1114112,
+                "web_rest_response_ms": 150,
+                "web_landingpage_response_ms": 340,
+                "shell_single_session_dt_ms": 27,
+                "shell_multi_session_dt_ms": 91
+            }
+        }
+    },
+    "3.6.0-0": {
+        "ESP32": {
+            "Cabinet": {
+                "micropython_version": "v1.28.0 on 2026-09-08",
+                "modules": [
+                    "web",
+                    "cct",
+                    "system",
+                    "dht22",
+                    "task"
+                ],
+                "shell_heartbeatX10_response_ms": 40,
+                "mem_percent": 41.3,
+                "mem_used_byte": 56048,
+                "fs_percent": 26.6,
+                "fs_used_byte": 557056,
+                "web_rest_response_ms": 130,
+                "web_landingpage_response_ms": 270,
+                "shell_single_session_dt_ms": 27,
+                "shell_multi_session_dt_ms": 81
+            }
+        }
     }
 }

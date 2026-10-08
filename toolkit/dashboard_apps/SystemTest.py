@@ -761,6 +761,9 @@ def get_dev_board_type():
     state, output = out[0], out[1]
     output = ast.literal_eval(output)
     board = output.get("board")
+    # Remove micrOS flag from board (release tag for micrOS custom upy binary)
+    if board.strip().endswith("[micrOS]"):
+        board = board.replace("[micrOS]", "")
     upython = output.get("upython")
     _add_metrics("board_type", board)
     _add_metrics("micropython_version", str(upython))

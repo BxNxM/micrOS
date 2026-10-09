@@ -44,12 +44,16 @@ function renderWebAppsSection() {
 }
 
 function storeWebAppsStatus(status) {
-  Object.keys(configData).filter(key => key.startsWith('web.fs_write_access.'))
-    .forEach(key => { delete configData[key]; });
   Object.entries(status).forEach(([key, value]) => {
     if (typeof value === 'boolean') configData['web.' + key] = value;
   });
-  Object.entries(status.fs_write_access || {}).forEach(([mount, value]) => {
+  storeMountWriteAccess(status.fs_write_access || {});
+}
+
+function storeMountWriteAccess(status) {
+  Object.keys(configData).filter(key => key.startsWith('web.fs_write_access.'))
+    .forEach(key => { delete configData[key]; });
+  Object.entries(status).forEach(([mount, value]) => {
     const name = mount.replace(/^\$/, '');
     if (['modules', 'data', 'logs'].includes(name) && typeof value === 'boolean') {
       configData['web.fs_write_access.' + name] = value;
@@ -81,21 +85,32 @@ async function updateWebApp(key, value) {
   };
   if (originalGroup) originalGroup.setWebAppsPending();
   let errorMessage = '';
+  const mountPrefix = 'web.fs_write_access.';
+  const isMount = key.startsWith(mountPrefix);
   try {
-    const mountPrefix = 'web.fs_write_access.';
-    const isMount = key.startsWith(mountPrefix);
     const argument = key.slice(isMount ? mountPrefix.length : 4);
     const route = isMount ? 'web/mounts_w_access/' : 'web/load/';
     const auth = isMount ? '/pwd=' + restQuote(configData.appwd || '') : '';
     const response = await restAPI(route + argument + '=' + (value ? 'True' : 'False') + auth, false);
     if (!response || response.state !== true) throw new Error('Unable to update web app settings.');
-    const status = await getWebAppsStatus();
-    storeWebAppsStatus(status);
+    if (isMount) {
+      if (!response.result || typeof response.result !== 'object' || Array.isArray(response.result)) {
+        throw new Error('Unable to confirm mount write access.');
+      }
+      storeMountWriteAccess(response.result);
+    } else {
+      configData[key] = value;
+      if (value && ['web.fileserver', 'web.fs_explore'].includes(key) &&
+          configData['web.fileserver'] && configData['web.fs_explore'] &&
+          !['modules', 'data', 'logs'].every(mount =>
+            typeof configData['web.fs_write_access.' + mount] === 'boolean')) {
+        const status = await getWebAppsStatus();
+        storeMountWriteAccess(status.fs_write_access || {});
+      }
+    }
     if (configData[key] !== value) throw new Error('Unable to confirm web app settings.');
   } catch (error) {
     errorMessage = error.message;
-    // Reconcile with the device if the write succeeded but confirmation failed.
-    try { storeWebAppsStatus(await getWebAppsStatus()); } catch (_) {}
   } finally {
     webAppUpdating = false;
     const group = document.getElementById('configWebApps');
@@ -184,7 +199,7 @@ function renderWebApps(container) {
                 const args = ['modules', 'data', 'logs']
                   .filter(mount => typeof values['web.fs_write_access.' + mount] === 'boolean')
                   .map(mount => `${mount}=${values['web.fs_write_access.' + mount] ? 'True' : 'False'}`);
-                command.textContent = 'web mounts_w_access ' + args.join(' ') + ' pwd="<password>"';
+                command.textContent = 'web mounts_w_access ' + args.join(' ') + ' pwd=$pwd';
               };
               updateCommand();
               options.appendChild(command);
@@ -205,7 +220,7 @@ function renderWebApps(container) {
     group.setAttribute('aria-busy', 'true');
   };
 
-  // An in-flight update will confirm status and render the current group.
+  // An in-flight update will apply its result and render the current group.
   if (webAppUpdating) {
     group.setWebAppsPending();
     return;

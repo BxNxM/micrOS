@@ -248,15 +248,22 @@ the original mount.
 | App | Route | Frontend files | Backend file |
 | --- | --- | --- | --- |
 | Dashboard | `/dashboard` | `dashboard.html`, `udashboard.js`, `uwidgets.js`, `uapi.js`, `ubashboard.css`, `ustyle.css` | `LM_web.py` |
-| Config | `/config` | `config.html`, `config.js`, `config_packages.js` and `config_schedler.js` (on demand), `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
+| Config | `/config` | `config.html`, `config.js`, `config_packages.js`, `config_webapps.js` and `config_schedler.js` (on demand), `config.css`, `auth.js`, `uapi.js`, `ustyle.css` | `LM_web.py` |
 | Fileserver | `/fs` | `filesui.html`, `filesui.js`, `editor.js`, `ustyle.css` | `LM_fileserver.py` |
 
 The config Web menu loads and shows the Web apps group only while the current
 `webui` toggle is enabled, including unsaved edits. It shows saved `web status`
-settings. Toggle edits are cached with other config changes and retained when
-switching menus. The main Save button applies them through `web load` and
-checks the saved status; disabling an app requires a reboot. Config is displayed
-read-only.
+settings, refreshed on each menu entry. Web app toggles apply immediately through `web load` and check the
+resulting status independently of the main Save button, which saves node
+configuration only. Controls are disabled while a REST update is running and
+keyboard focus is restored after updates and errors appear within the Web apps group; disabling an app requires a reboot. Config is displayed
+read-only. When fileserver and system directory exploration are active,
+`web status pwd=<password>` reports FSI mount write access. The Web menu shows
+available Modules, Data and Logs write-access toggles and applies them immediately through
+`web mounts_w_access modules=True data=False logs=False pwd=<password>`.
+These permissions take effect immediately and reset to read-only after reboot;
+they are not persisted in `webapps.json`. Status queries never change permissions
+or import the fileserver; FSI is bound only by fileserver activation in `web load`.
 
 The config scheduler uses adjacent Time/Tag buttons and retains each mode's
 draft while switching. Time edits preserve seconds and wildcards; the expandable

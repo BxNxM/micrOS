@@ -9,12 +9,15 @@ const configCategories = {
   },
   'Web': {
     icon: '🌐',
-    keys: ['webui', 'webui_max_con']
+    keys: ['webui', 'webui_max_con'],
+    script: '/config_webapps.js',
+    render: 'renderWebAppsSection'
   },
   'Scheduler': {
     icon: '⏰',
     keys: ['cron', 'crontasks'],
-    render: loadSchedulerSection
+    script: '/config_schedler.js',
+    render: 'renderSchedulerSection'
   },
   'Interrupts': {
     icon: '⚡',
@@ -30,7 +33,8 @@ const configCategories = {
   },
   'Packages': {
     icon: '📦',
-    render: loadPackagesSection
+    script: '/config_packages.js',
+    render: 'renderPackagesSection'
   },
   'Debug': {
     icon: '🛠',
@@ -56,10 +60,6 @@ const configLabelMap = {
   'timirqcbf': 'Functions',
   'webui': 'Enable',
   'webui_max_con': 'Allowed Number of Connections',
-  'web.dashboard': 'Dashboard',
-  'web.fileserver': 'Fileserver',
-  'web.fs_explore': 'Fileserver > Show sys dirs',
-  'web.config': 'Config',
   'irq_prell_ms': 'Debounce (ms)',
 };
 const configSelectOptions = {
@@ -81,6 +81,23 @@ function configLabel(key) {
 let configData = {};
 let changedValues = {};
 let configSaving = false;
+const restEncodeMap = {
+  '"': '%5Cx22', "'": '%27', '#': '%23', '=': '%3D', '>': '%3E', '&': '%26',
+  '/': '%2F', '\\': '%5C%5C', ' ': '%20', '?': '%3F', '%': '%25'
+};
+
+function getAdminPassword() {
+  if (changedValues.hasOwnProperty('appwd')) {
+    return changedValues.appwd;
+  }
+  return configData.appwd || '';
+}
+
+/** Encode a value as one quoted REST argument for micrOS execution. */
+function restQuote(value) {
+  return '"' + String(value).replace(/["'#=>&/\\ ?%]/g, char => restEncodeMap[char]) + '"';
+}
+
 const configSectionScripts = {};
 const selectedCategoryKey = 'micros.config.selectedCategory';
 
@@ -296,8 +313,7 @@ async function handleUpdateConfig() {
     return;
   }
   const savedChanges = {...changedValues};
-  const nodeChanges = Object.fromEntries(Object.entries(savedChanges).filter(([key]) => !key.startsWith('web.')));
-  const appChanges = Object.fromEntries(Object.entries(savedChanges).filter(([key]) => key.startsWith('web.')));
+  const nodeChanges = savedChanges;
   configSaving = true;
   updateSaveButtonState();
   try {
@@ -315,18 +331,6 @@ async function handleUpdateConfig() {
         throw new Error(detail + failed);
       }
       commitConfigChanges(nodeChanges);
-    }
-    if (Object.keys(appChanges).length) {
-      const args = Object.entries(appChanges)
-        .map(([key, value]) => `${encodeURIComponent(key.slice(4))}=${value ? 'True' : 'False'}`);
-      const response = await restAPI('web/load/' + args.join('/'), false);
-      if (!response || response.state !== true) throw new Error('Unable to update web app settings.');
-      const status = await restAPI('web/status', false);
-      if (!status || status.state !== true || !status.result ||
-          !Object.entries(appChanges).every(([key, value]) => status.result[key.slice(4)] === value)) {
-        throw new Error('Unable to confirm saved web app settings.');
-      }
-      commitConfigChanges(appChanges);
     }
     showConfigSaveSuccess(savedChanges);
   } catch (error) {
@@ -357,6 +361,10 @@ function addMenuListeners() {
       closeMobileMenu();
       saveSelectedCategory(key);
       const category = configCategories[key] || {};
+      if (category.script) {
+        loadConfigSection(key);
+        return;
+      }
       if (typeof category.render === 'function') {
         category.render();
         return;
@@ -428,55 +436,7 @@ function renderConfigFields(data, sectionKey = '', renderFields = renderDefaultF
   } else {
     renderFields(data, container, sectionKey);
   }
-  if (sectionKey === 'Web') updateWebAppsVisibility(container);
   updateUnsavedFields();
-}
-
-function updateWebAppsVisibility(container) {
-  const enabled = (changedValues.webui ?? configData.webui) === true;
-  const group = container.querySelector('#configWebApps');
-  if (group) group.hidden = !enabled;
-  else if (enabled) renderWebApps(container);
-}
-
-function renderWebApps(container) {
-  const group = createConfigFieldset('Web apps');
-  group.id = 'configWebApps';
-  const fields = document.createElement('div');
-  const message = textElement('p', 'Loading web apps...');
-  message.setAttribute('role', 'status');
-  group.appendChild(fields);
-  group.appendChild(message);
-  group.appendChild(textElement('p', '[i] Disabling an app requires a reboot.'));
-  container.appendChild(group);
-
-  function render() {
-    fields.innerHTML = '';
-    const current = {...configData, ...changedValues};
-    Object.entries(current)
-      .filter(([key, value]) => key.startsWith('web.') && typeof value === 'boolean')
-      .sort(([a], [b]) => configLabel(a).localeCompare(configLabel(b), 'en'))
-      .forEach(([key, value]) => renderField(fields, key, value));
-    fields.querySelectorAll('[data-config-key="web.config"] button').forEach(button => { button.disabled = true; });
-    message.textContent = '';
-    updateUnsavedFields();
-  }
-
-  if (Object.keys(configData).some(key => key.startsWith('web.'))) {
-    render();
-    return;
-  }
-  restAPI('web/status', false)
-    .then(response => {
-      if (!response || response.state !== true || !response.result || typeof response.result !== 'object' || Array.isArray(response.result)) {
-        throw new Error('Unable to load web app settings.');
-      }
-      Object.entries(response.result).forEach(([key, value]) => {
-        if (typeof value === 'boolean') configData['web.' + key] = value;
-      });
-      render();
-    })
-    .catch(error => { message.textContent = error.message; });
 }
 
 function renderTaskSection() {
@@ -965,19 +925,17 @@ function fetchDeviceHealth(settings) {
     });
 }
 
-// Fetch optional config sections once, when first opened.
-function loadSchedulerSection() {
-  return loadConfigSection('scheduler', '/config_schedler.js', () => renderSchedulerSection());
-}
-
-function loadPackagesSection() {
-  return loadConfigSection('packages', '/config_packages.js', () => renderPackagesSection());
-}
-
-function loadConfigSection(name, src, render) {
+// Optional sections declare their script and renderer in configCategories.
+function loadConfigSection(category) {
+  const {script: src, render: renderer} = configCategories[category];
   const container = document.getElementById('configFields');
-  container.innerHTML = '';
-  const loading = textElement('p', `Loading ${name}...`);
+  // Base settings stay usable even when optional enhancements are unavailable.
+  renderConfigFields(filterConfig(category), category);
+  if (!isEditableConfigSection(category)) {
+    container.appendChild(textElement('h2', categoryTitle(category), 'config-heading-top'));
+  }
+  const loading = textElement('p', `Loading ${category.toLowerCase()} features...`);
+  loading.setAttribute('role', 'status');
   container.appendChild(loading);
   if (!configSectionScripts[src]) {
     configSectionScripts[src] = new Promise((resolve, reject) => {
@@ -987,7 +945,7 @@ function loadConfigSection(name, src, render) {
       script.onerror = () => {
         script.remove();
         delete configSectionScripts[src];
-        reject(new Error(`Failed to load ${name}.`));
+        reject(new Error(`Optional ${category.toLowerCase()} features are unavailable.`));
       };
       document.head.appendChild(script);
     });
@@ -995,12 +953,15 @@ function loadConfigSection(name, src, render) {
   return configSectionScripts[src]
     .then(() => {
       // Do not replace a different menu or a newer view while loading.
-      if (loading.isConnected) render();
+      if (!loading.isConnected) return;
+      const render = typeof renderer === 'function' ? renderer : window[renderer];
+      if (typeof render !== 'function') throw new Error(`Optional ${category.toLowerCase()} features are unavailable.`);
+      render();
     })
     .catch(err => {
       if (!loading.isConnected) return;
       loading.textContent = err.message;
-      container.appendChild(makeButton('Retry', () => loadConfigSection(name, src, render)));
+      container.appendChild(makeButton('Retry', () => loadConfigSection(category)));
     });
 }
 
@@ -1620,7 +1581,7 @@ function trackChange(key, value) {
   } else {
     changedValues[key] = value;
   }
-  if (key === 'webui') updateWebAppsVisibility(document.getElementById('configFields'));
+  if (key === 'webui' && typeof updateWebAppsVisibility === 'function') updateWebAppsVisibility(document.getElementById('configFields'));
   updateSaveButtonState();
   console.log('Changed config keys:', Object.keys(changedValues));
 }

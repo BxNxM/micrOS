@@ -1,9 +1,5 @@
 // Loaded on demand by config.js when the Packages menu opens.
 let installedPackageNames = new Set();
-const restEncodeMap = {
-  '"': '%5Cx22', "'": '%27', '#': '%23', '=': '%3D', '>': '%3E', '&': '%26',
-  '/': '%2F', '\\': '%5C%5C', ' ': '%20', '?': '%3F', '%': '%25'
-};
 const PACMAN_TIMEOUT_MS = 20000;
 
 // Packages UI: install and inspect
@@ -248,18 +244,6 @@ function getPackageActions() {
     {label: 'Update', handler: updatePackage},
     {label: 'Delete', handler: deletePackage, className: 'danger-button'}
   ];
-}
-
-function getAdminPassword() {
-  if (changedValues.hasOwnProperty('appwd')) {
-    return changedValues.appwd;
-  }
-  return configData.appwd || '';
-}
-
-/** Encode a value as one quoted REST argument for micrOS execution. */
-function restQuote(value) {
-  return '"' + String(value).replace(/["'#=>&/\\ ?%]/g, char => restEncodeMap[char]) + '"';
 }
 
 function loadPackageDetails(packageName, details, button) {

@@ -10,6 +10,8 @@ from Common import web_endpoint, conf_dir, syslog
 from Config import cfgget, cfgput
 from Auth import sudo
 
+__MOUNTS_WA = None
+
 
 def load(dashboard:bool=None, fileserver:bool=None, fs_explore:bool=None, config:bool=None):
     """
@@ -31,22 +33,26 @@ def load(dashboard:bool=None, fileserver:bool=None, fs_explore:bool=None, config
     fileserver = wsc["fileserver"] if fileserver is None else fileserver
     fs_explore = wsc["fs_explore"] if fs_explore is None else fs_explore
     if fileserver:
+        global __MOUNTS_WA
         import LM_fileserver
         msg.append(LM_fileserver.load())
         msg.append(LM_fileserver.extend_mounts(modules=fs_explore, data=fs_explore, logs=fs_explore))
+        __MOUNTS_WA = LM_fileserver.mounts_write_access
     config = wsc["config"] if config is None else config
     if config:
         msg.append(enable_config())
 
     _web_apps('s', {"dashboard": dashboard,
-                                        "fileserver": fileserver, "fs_explore": fs_explore,
-                                        "config": config})
+                               "fileserver": fileserver, "fs_explore": fs_explore,
+                               "config": config})
     return msg
 
 
 def _web_apps(mode, conf=None):
     """
+    Stateful web application loading
     :param mode (str): s - save or r - read
+    :param conf (dict): dict to save at save mode
     """
     if mode == "s":
         if conf is None:
@@ -59,8 +65,10 @@ def _web_apps(mode, conf=None):
         except Exception as e:
             syslog(f"[WARN] Web app conf save: {e}")
             return False
-    # Load config (with fallback)
-    cfg = {"dashboard": True, "fileserver": False, "fs_explore": False, "config": True}
+    # Load config (with fallback) - default config
+    cfg = {"dashboard": True,
+           "fileserver": False, "fs_explore": False,
+           "config": True, "fs_write_access": {}}
     try:
         with open(conf_dir("webapps.json"), 'r') as f:
             cfg.update(conf_load(f))
@@ -69,11 +77,30 @@ def _web_apps(mode, conf=None):
     return cfg
 
 
-def status():
+def status(pwd=None) -> dict:
     """
-    Web services status: dashboard, fileserver, fs_explore, config
+    Web services status: dashboard, fileserver, fs_explore + write access [FSI], config
     """
-    return _web_apps('r')
+    apps_status = _web_apps('r')
+    if (callable(__MOUNTS_WA) and apps_status.get("fileserver", False)
+            and apps_status.get("fs_explore", False)):
+        # requires password !
+        mounts_write_access = __MOUNTS_WA(pwd=pwd)
+        apps_status["fs_write_access"] = mounts_write_access
+    return apps_status
+
+
+def mounts_w_access(*args, **kwargs) -> dict:
+    """
+    [FSI] Fileserver write access control interface
+    input: modules:bool data:bool logs:bool pwd="<password>"
+    """
+    apps_status = _web_apps('r')
+    if (callable(__MOUNTS_WA) and apps_status.get("fileserver", False)
+            and apps_status.get("fs_explore", False)):
+        # requires password !
+        return __MOUNTS_WA(*args, **kwargs)
+    return {}
 
 ######################## System Config ######################
 _CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "auth", "soctout")
@@ -167,5 +194,6 @@ def help(widgets=False):
     """
     return ('load dashboard=True fileserver=False fs_explore=False config=True',
             'enable_config',
+            'mounts_w_access modules:bool=None data:bool=None logs:bool=None pwd=<password>',
             'status',
             'help')

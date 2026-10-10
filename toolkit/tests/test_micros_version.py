@@ -4,6 +4,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 from toolkit.DevEnvCompile import Compile
+from toolkit import DevEnvOTA
 from toolkit.dashboard_apps import SystemTest
 
 
@@ -59,6 +60,19 @@ class MicrOSVersionTests(unittest.TestCase):
                 with patch.object(SystemTest, 'CLIENT', client), \
                         patch.object(SystemTest, '_add_metrics'):
                     self.assertTrue(SystemTest.shell_cmds_check()[0])
+
+    def test_ota_version_check_authenticates_with_supplied_password(self):
+        ota = DevEnvOTA.OTA.__new__(DevEnvOTA.OTA)
+        ota.dry_run = False
+
+        def authenticated_version(args):
+            if args == ['--dev', 'test-node', '--pwd', 'custom-password', 'version']:
+                return True, '3.7.2\n'
+            return True, 'AuthFailed\nBye!'
+
+        with patch.object(DevEnvOTA.socketClient, 'run', side_effect=authenticated_version):
+            self.assertEqual(('3.7.2', '3.7.2', False), ota._version_compare(
+                '3.7.2', 'test-node', ota_password='custom-password'))
 
 
 if __name__ == '__main__':

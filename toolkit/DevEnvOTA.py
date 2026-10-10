@@ -147,20 +147,21 @@ class OTA(Compile):
                 return False
         return True
 
-    def _version_compare(self, repo_version, fuid):
+    def _version_compare(self, repo_version, fuid, ota_password='ADmin123'):
         """
         Version format: major.minor.patch, with optional legacy -revision suffix.
         Compatibility grouping uses the first two components (major.minor).
             In case of [major] change force full update (micrOS safe core: micrOSloadoer, etc.)
             In case of [minor + patch] change install main micrOS resources + LMs
         :param fuid: friendly unique id / unique id
+        :param ota_password: shell authentication password supplied for the OTA update
         :return: repo_version, device_version, force
         """
         # Get device version via socket
         if self.dry_run:
             status, answer_msg = True, '0.0.0-0'
         else:
-            status, answer_msg = socketClient.run(['--dev', fuid, 'version'])
+            status, answer_msg = socketClient.run(['--dev', fuid, '--pwd', ota_password, 'version'])
         device_version = answer_msg.strip() if status else None
         # Parse versions
         repo_major_version = repo_version.split('.')[0:2]
@@ -278,7 +279,8 @@ class OTA(Compile):
             return False
 
         # Get versions: micrOS repo + live device, compare versions
-        repo_version, device_version, auto_force = self._version_compare(self.get_micros_version_from_repo(), fuid)
+        repo_version, device_version, auto_force = self._version_compare(
+            self.get_micros_version_from_repo(), fuid, ota_password=ota_password)
 
         # Show connection and version data
         self.console("  Device: {} ({})".format(fuid, device_ip), state='OK')

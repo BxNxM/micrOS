@@ -122,6 +122,7 @@ function renderPackagesSection() {
   installRow.appendChild(input);
 
   const installResult = createInlineOutput();
+  installResult.classList.add('config-package-install-output');
 
   const installBtn = makeButton('Install', () => {
     const url = input.value.trim();

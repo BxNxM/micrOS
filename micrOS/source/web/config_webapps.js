@@ -192,7 +192,7 @@ function renderWebApps(container) {
             if (Object.keys(current).some(key => key.startsWith('web.fs_write_access.'))) {
               options.appendChild(textElement('h4', 'Write access', 'config-table-title config-heading-top'));
               options.appendChild(accessRow);
-              options.appendChild(textElement('small', 'Hint: Mount write access resets to read-only after reboot.', 'config-hint'));
+              options.appendChild(textElement('small', 'Hint: Mount write access resets after reboot. Use command below to persist current settings.', 'config-hint'));
               const command = textElement('code', '', 'config-hint');
               const updateCommand = () => {
                 const values = configData;

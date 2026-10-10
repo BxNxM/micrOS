@@ -244,7 +244,7 @@ class ConnectionData:
             return "n/a"
 
         def _bool_text(value):
-            if value == "n/a":
+            if str(value).strip() not in ("True", "False"):
                 return "n/a", ""
             return ("ON", Colors.OKGREEN + Colors.BOLD) if str(value).strip() == "True" else ("OFF", Colors.BOLD)
 
@@ -271,9 +271,17 @@ class ConnectionData:
                         # Get version, runtime image mode and elapsed time data
                         start_comm = time.time()
                         image_mode = _parse_hello_mode(connection.non_interactive(['hello']))
-                        version_data = connection.non_interactive(['version'])
+                        auth_required = '[password]' in connection.client.preprompt
+                        if auth_required:
+                            version_data = 'AUTH'
+                        else:
+                            version_data = connection.non_interactive(['version'])
+                            # Older shells may not expose the password prompt in hello.
+                            auth_required = 'AuthFailed' in version_data or 'Bye!' in version_data
+                            if auth_required:
+                                version_data = 'AUTH'
                         elapsed_time = "{:.3f}".format(time.time() - start_comm)
-                        if feature_stat:
+                        if feature_stat and not auth_required:
                             # Get active features info
                             webui_state = connection.non_interactive(['conf', 'webui'])
                             espnow_state = connection.non_interactive(['conf', 'espnow'])
@@ -286,6 +294,7 @@ class ConnectionData:
                 espnow_text, espnow_color = _bool_text(espnow_state)
                 cron_text, cron_color = _bool_text(cron_state)
                 timirq_text, timirq_color = _bool_text(timirq_state)
+                auth_color = '\033[38;5;208m' + Colors.BOLD if version_data == 'AUTH' and Colors.is_active else ''
                 row_values = {
                     "uid": uid,
                     "fuid": fuid,
@@ -294,6 +303,7 @@ class ConnectionData:
                     "status": status_text,
                     "status_color": status_color,
                     "version": version_data,
+                    "version_color": auth_color,
                     "mode": image_mode,
                     "mode_color": Colors.HEADER if image_mode == "dev" else "",
                     "comm_sec": elapsed_time,

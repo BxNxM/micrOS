@@ -7,6 +7,12 @@
   --config-padding: 12px;
 }
 
+.config-auth-hint {
+  color: #aaa;
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
 #configContainer {
   display: flex;
   flex-direction: row;
@@ -16,15 +22,17 @@
 }
 
 #configMenu {
+  flex-shrink: 0;
   max-width: 30vw;
   min-width: 12vw;
   border-radius: 8px;
   box-sizing: border-box;
-  padding: 8px 0;
+  padding: 8px 12px 8px 0;
   background: transparent;
 }
 
 #configMenu p {
+  white-space: nowrap;
   cursor: pointer;
   padding: 0.2rem 0rem 0.2rem 1rem;
   border-radius: 3px;
@@ -164,6 +172,7 @@
 #configFields .config-package-install input { flex: 1 1 240px; width: auto; }
 #configFields #packageCatalog { width: 180px; }
 .config-package-info { width: var(--config-input-width); max-width: 100%; box-sizing: border-box; margin-bottom: 12px; overflow-wrap: anywhere; }
+.config-package-install-output { width: var(--config-input-width); max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
 .config-package-info p { margin: 0 0 8px; }
 .config-package-info a { color: var(--config-label); }
 .config-pin-info { margin-top: 20px; }

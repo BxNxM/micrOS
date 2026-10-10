@@ -89,7 +89,10 @@ function restWidget(container='restWidget', opts={}) {
     root.append(makeEl('h3', {}, [label]), form, url, responseBox, time);
     if (REST_CONSOLE_CACHE) {restConsole(...REST_CONSOLE_CACHE, {url, response: responseBox, time});}
     updateHint();
-    restAPICore('modules all', opts.modulesTimeout || 3000).then(({response}) => {
+    restAPICore('', opts.modulesTimeout || 3000).then(({response}) => {
+        const authDisabled = response && response.result && response.result.auth === false;
+        return restAPICore(authDisabled ? 'modules all' : 'modules', opts.modulesTimeout || 3000);
+    }).then(({response}) => {
         const commands = moduleCommandSuggestions(response);
         if (!commands.length) {throw new Error('No module suggestions');}
         return commands;

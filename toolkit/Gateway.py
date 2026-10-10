@@ -265,21 +265,18 @@ class DeviceDashboardGroup(Resource):
             css_classes = ['device-tab']
             if fuid == selected_device:
                 css_classes.append('active')
+            current = ' aria-current="true"' if fuid == selected_device else ''
             title = escape(f"{fuid} ({uid})")
             links.append(
                 f'<a class="{" ".join(css_classes)}" href="{href}" target="deviceFrame" '
-                f'data-device="{escape(fuid)}" title="{title}">{escape(fuid)}</a>'
+                f'data-device="{escape(fuid)}" title="{title}"{current}>{escape(fuid)}</a>'
             )
         return f'<nav class="device-tabs" aria-label="{label}">' + ''.join(links) + '</nav>'
 
     def get(self):
         groups = self._device_groups()
-        requested_device = request.args.get('device', '').strip()
-        known_devices = {
-            str(data[2]) for data in groups['online'].values()
-        }
-        first_online = next(iter(groups['online'].values()), None)
-        first_device = requested_device if requested_device in known_devices else str(first_online[2]) if first_online else ''
+        first_online = next(iter(sorted(groups['online'].values(), key=lambda data: str(data[2]).lower())), None)
+        first_device = str(first_online[2]) if first_online else ''
         initial_src = f"/dashboard/{quote(first_device, safe='')}" if first_device else ''
         online_tabs = self._device_tabs('online devices', groups['online'], first_device)
         iframe = (
@@ -297,16 +294,21 @@ class DeviceDashboardGroup(Resource):
     <title>micrOS Gateway Dashboards</title>
     <link rel="stylesheet" href="/gateway.css">
     <style>
-        .dashboard-shell {{ min-height: 100vh; display: grid; grid-template-rows: auto 1fr; gap: 8px; padding: 10px; }}
+        body.page-gateway {{ padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }}
+        .dashboard-shell {{ width: 100%; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; gap: 8px; padding: 10px 0; }}
         .dashboard-top {{ overflow: hidden; }}
-        .device-tabs {{ display: flex; gap: 6px; overflow-x: auto; padding: 4px; }}
-        .device-tab {{ display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 5px 10px; border-radius: 8px; background: var(--surface-strong); color: var(--text); text-decoration: none; font-weight: 700; font-size: 12px; white-space: nowrap; box-shadow: inset 0 0 0 1px var(--line); }}
+        .device-tabs {{ display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding: 4px 4px 16px; }}
+        .device-tab {{ display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 10px 16px; border-radius: 8px; background: var(--surface-strong); color: var(--text); text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.3; text-align: center; white-space: nowrap; touch-action: manipulation; box-shadow: inset 0 0 0 1px var(--line); }}
+        .device-tab:focus-visible {{ outline: 2px solid var(--accent); outline-offset: 2px; }}
+        @media (hover: hover) {{
+            .device-tab:hover {{ box-shadow: inset 0 0 0 2px var(--accent); }}
+        }}
         .device-tab.active {{ background: var(--accent); color: #101418; box-shadow: none; }}
         .dashboard-frame {{ min-height: calc(100vh - 56px); }}
-        #deviceFrame {{ width: 100%; min-height: calc(100vh - 56px); border: 1px solid var(--line); border-radius: 8px; background: #000; }}
+        #deviceFrame {{ display: block; width: 100%; min-height: calc(100vh - 56px); border: 1px solid var(--line); border-radius: 8px; background: #000; }}
         .empty-row, .empty-panel {{ color: var(--muted); padding: 12px; border: 1px solid var(--line); border-radius: 8px; }}
         @media (max-width: 820px) {{
-            .dashboard-shell {{ padding: 6px; }}
+            .dashboard-shell {{ padding: 6px 0; }}
             #deviceFrame {{ min-height: calc(100vh - 48px); }}
         }}
     </style>
@@ -321,12 +323,90 @@ class DeviceDashboardGroup(Resource):
         </section>
     </main>
     <script>
-        document.querySelectorAll('.device-tab').forEach(link => {{
-            link.addEventListener('click', () => {{
-                document.querySelectorAll('.device-tab').forEach(item => item.classList.remove('active'));
-                link.classList.add('active');
+        const frame = document.getElementById('deviceFrame');
+        let frameObserver;
+        let resizeRequest;
+        function fitDashboard() {{
+            cancelAnimationFrame(resizeRequest);
+            resizeRequest = requestAnimationFrame(() => {{
+                const doc = frame.contentDocument;
+                if (!doc || !doc.body) return;
+                const style = frame.contentWindow.getComputedStyle(doc.body);
+                const height = Math.ceil(doc.body.getBoundingClientRect().height
+                    + (parseFloat(style.marginTop) || 0)
+                    + (parseFloat(style.marginBottom) || 0));
+                // Include the frame border when sizing its border box.
+                frame.style.height = `${{height + 2}}px`;
+            }});
+        }}
+        if (frame) {{
+            frame.addEventListener('load', () => {{
+                if (frameObserver) frameObserver.disconnect();
+                const doc = frame.contentDocument;
+                if (!doc || !doc.body) return;
+                // Remove viewport height floors only inside the embedded page.
+                const style = doc.createElement('style');
+                style.textContent = 'html, body {{ min-height: 0; }} html {{ overflow-y: hidden; }}';
+                doc.head.appendChild(style);
+                frameObserver = new ResizeObserver(fitDashboard);
+                frameObserver.observe(doc.body);
+                fitDashboard();
+            }});
+            window.addEventListener('resize', fitDashboard);
+        }}
+        const deviceTabs = Array.from(document.querySelectorAll('.device-tab'));
+        const selectionKey = 'micros.gateway.dashboard.device';
+        function centerDevice(link) {{
+            const toolbar = link.parentElement;
+            toolbar.scrollLeft = link.offsetLeft - toolbar.offsetLeft
+                - (toolbar.clientWidth - link.offsetWidth) / 2;
+        }}
+        function selectDevice(link, save = true) {{
+            deviceTabs.forEach(item => {{
+                item.classList.remove('active');
+                item.removeAttribute('aria-current');
+            }});
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'true');
+            if (save) {{
+                try {{ localStorage.setItem(selectionKey, link.dataset.device); }} catch (error) {{}}
+            }}
+            requestAnimationFrame(() => centerDevice(link));
+        }}
+        deviceTabs.forEach(link => {{
+            link.addEventListener('click', event => {{
+                if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+                selectDevice(link);
             }});
         }});
+        let savedDevice;
+        try {{ savedDevice = localStorage.getItem(selectionKey); }} catch (error) {{}}
+        const dashboardUrl = new URL(window.location.href);
+        const requestedDevice = dashboardUrl.searchParams.get('device');
+        const requestedTab = deviceTabs.find(link => link.dataset.device === requestedDevice);
+        const initialTab = requestedTab
+            || deviceTabs.find(link => link.dataset.device === savedDevice)
+            || deviceTabs[0];
+        if (initialTab && frame) {{
+            if (frame.getAttribute('src') !== initialTab.getAttribute('href')) {{
+                frame.src = initialTab.getAttribute('href');
+            }}
+            selectDevice(initialTab, Boolean(requestedTab));
+            if (dashboardUrl.searchParams.has('device')) {{
+                dashboardUrl.searchParams.delete('device');
+                window.history.replaceState(window.history.state, '', dashboardUrl.href);
+            }}
+            if (document.fonts) {{
+                document.fonts.ready.then(() => {{
+                    const active = deviceTabs.find(link => link.classList.contains('active'));
+                    if (active) centerDevice(active);
+                }});
+            }}
+            window.addEventListener('resize', () => {{
+                const active = deviceTabs.find(link => link.classList.contains('active'));
+                if (active) centerDevice(active);
+            }});
+        }}
     </script>
 </body>
 </html>"""
@@ -365,11 +445,6 @@ class DeviceDashboard(Resource):
             '<script src="uapi.js" ></script>',
             '<script src="uapi.js" ></script>\n'
             f'    <script>BASE_URL = {json.dumps(rest_base)};</script>',
-            1
-        )
-        html = html.replace(
-            '<h1> micrOS dashboard </h1>',
-            f'<h1> micrOS dashboard - {safe_device}</h1>',
             1
         )
         return make_response(html)

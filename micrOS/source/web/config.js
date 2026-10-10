@@ -1,7 +1,7 @@
 const configCategories = {
   'Device': {
     icon: '📟',
-    keys: ['devfid', 'boothook', 'appwd', 'dbg', 'aioqueue', 'utc', 'boostmd']
+    keys: ['devfid', 'boothook', 'auth', 'appwd', 'dbg', 'aioqueue', 'utc', 'boostmd']
   },
   'Network': {
     icon: '📡',
@@ -44,6 +44,7 @@ const configCategories = {
 const configLabelMap = {
   'devfid': 'Device name',
   'boothook': 'Startup Actions',
+  'auth': 'Authentication',
   'appwd': 'Admin Password',
   'dbg': 'Debug Mode',
   'aioqueue': 'Allowed Number of Tasks',
@@ -930,7 +931,10 @@ function loadConfigSection(category) {
   const {script: src, render: renderer} = configCategories[category];
   const container = document.getElementById('configFields');
   // Base settings stay usable even when optional enhancements are unavailable.
-  renderConfigFields(filterConfig(category), category);
+  const baseConfig = filterConfig(category);
+  // The raw task input is a fallback, not a placeholder for the scheduler UI.
+  if (category === 'Scheduler') delete baseConfig.crontasks;
+  renderConfigFields(baseConfig, category);
   if (!isEditableConfigSection(category)) {
     container.appendChild(textElement('h2', categoryTitle(category), 'config-heading-top'));
   }
@@ -960,6 +964,10 @@ function loadConfigSection(category) {
     })
     .catch(err => {
       if (!loading.isConnected) return;
+      if (category === 'Scheduler') {
+        renderConfigFields(filterConfig(category), category);
+        container.appendChild(loading);
+      }
       loading.textContent = err.message;
       container.appendChild(makeButton('Retry', () => loadConfigSection(category)));
     });
@@ -1308,9 +1316,17 @@ function renderField(container, key, value) {
 
   const label = textElement('label', configLabel(key) + ': ', 'config-label');
 
+  const authHint = key === 'auth' && typeof value === 'boolean'
+    ? textElement('p', 'On-demand module loading is disabled for the REST API.', 'config-auth-hint')
+    : null;
+  if (authHint) authHint.hidden = !value;
+
   let input;
   if (typeof value === 'boolean') {
-    input = createBooleanToggle(key, value, nextValue => trackChange(key, nextValue));
+    input = createBooleanToggle(key, value, nextValue => {
+      trackChange(key, nextValue);
+      if (authHint) authHint.hidden = !nextValue;
+    });
   } else if (typeof value === 'number') {
     input = document.createElement('input');
     input.type = 'number';
@@ -1331,6 +1347,7 @@ function renderField(container, key, value) {
   input.dataset.configKey = key;
   wrapper.appendChild(label);
   appendInputWithPasswordToggle(wrapper, input, key);
+  if (authHint) wrapper.appendChild(authHint);
   container.appendChild(wrapper);
 }
 

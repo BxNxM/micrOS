@@ -103,7 +103,7 @@ def mounts_w_access(*args, **kwargs) -> dict:
     return {}
 
 ######################## System Config ######################
-_CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "auth", "soctout")
+_CFG_HIDE = ("hwuid", "guimeta", "socport", "version", "soctout")
 
 def enable_config():
     """

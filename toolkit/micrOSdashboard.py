@@ -568,7 +568,7 @@ class HeaderInfo:
     def version_label(self):
         width = 115
         repo_version, _ = self.devtool_obj.get_micrOS_version()
-        label = QLabel("Version: {}".format(repo_version), self.parent_obj)
+        label = QLabel("  Version: {}".format(repo_version), self.parent_obj)
         label.setGeometry(self.parent_obj.width - width - 20, 10, width, 40)
         label.setStyleSheet("background-color : gray; color: {}; border: 1px solid black;".format(micrOSGUI.TEXTCOLOR))
 

@@ -138,6 +138,11 @@ devToolKit.py
 3. Select **Deploy (USB)** and confirm the operation.
 4. Wait for deployment to complete and the board to restart.
 
+Current micrOS versions use `major.minor.patch` (for example, `3.7.2`).
+DevToolKit also accepts the optional numeric `-revision` suffix used by legacy
+boards and records (for example, `3.7.2-0`). Update checks compare the complete
+version strings, so these two identifiers are treated as different versions.
+
 On first deployment, DevToolKit may offer to install the Serial USB driver
 required by your platform. The first toolkit launch installs optional GUI,
 compiler, and media dependencies; keep internet access available until it

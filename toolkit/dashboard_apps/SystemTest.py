@@ -5,6 +5,7 @@ import sys
 import time
 import socket
 import ast
+import re
 from pprint import pprint
 try:
     from ._app_base import AppBase
@@ -96,7 +97,7 @@ def shell_cmds_check():
     cmd_list = ['version']
     output = CLIENT.execute(cmd_list)
     if output[0]:
-        if not ('.' in output[1] and '-' in output[1]):
+        if not re.fullmatch(r'\d+\.\d+\.\d+(?:-\d+)?', output[1].strip()):
             return False, f"{info}version: {output[1]}"
     cmd_list = ['help']
     output = CLIENT.execute(cmd_list)
@@ -273,7 +274,7 @@ def micrOS_get_version():
     cmd_list = ['version']
     output = CLIENT.execute(cmd_list)
     if output[0]:
-        if '.' in output[1].strip() and '-' in output[1].strip():
+        if re.fullmatch(r'\d+\.\d+\.\d+(?:-\d+)?', output[1].strip()):
             return True, f"{info} v:{output[1].strip()}"
     _add_metrics('version', output[1])
     return False, f"{info} out: {output[1]}"

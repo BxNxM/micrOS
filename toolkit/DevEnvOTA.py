@@ -149,7 +149,8 @@ class OTA(Compile):
 
     def _version_compare(self, repo_version, fuid):
         """
-        version SemVer: 1.2.3-4 - major[1.2]minor[.3]patch[-4]
+        Version format: major.minor.patch, with optional legacy -revision suffix.
+        Compatibility grouping uses the first two components (major.minor).
             In case of [major] change force full update (micrOS safe core: micrOSloadoer, etc.)
             In case of [minor + patch] change install main micrOS resources + LMs
         :param fuid: friendly unique id / unique id

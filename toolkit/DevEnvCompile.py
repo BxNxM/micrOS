@@ -160,7 +160,7 @@ class Compile:
         # Get repo version
         with open(os.path.join(self.micrOS_dir_path, 'Shell.py'), 'r') as f:
             code_lines_string = f.read()
-        regex = r"\d+.\d+.\d+-\d+"
+        regex = r"^\s*MICROS_VERSION\s*=\s*['\"](\d+\.\d+\.\d+(?:-\d+)?)['\"]"
         repo_version = re.findall(regex, code_lines_string, re.MULTILINE)[0]
         return repo_version
 
@@ -343,7 +343,7 @@ class Compile:
         # Get node version
         if not self.dry_run and config_string is not None:
             try:
-                regex = r"\d+.\d+.\d+-\d+"
+                regex = r"['\"]version['\"]\s*:\s*['\"](\d+\.\d+\.\d+(?:-\d+)?)['\"]"
                 version_on_node = re.findall(regex, config_string, re.MULTILINE)[0]
             except Exception as e:
                 self.console("Obsolete node version - node version was not defined: {}".format(e), state='warn')

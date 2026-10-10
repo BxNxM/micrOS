@@ -82,11 +82,12 @@ function itemRow(cls, name, meta) {
   return d;
 }
 
-const fileActions = {open: openFile, edit: editor, delete: deleteFile};
+const fileActions = {open: openFile, edit: editor, download: downloadFile, delete: deleteFile};
 const fileActionBar = document.createElement('span');
 fileActionBar.className = 'file-actions';
 fileActionBar.innerHTML = '<button type="button" data-action="open">📖 Open</button>' +
   '<button type="button" data-action="edit">📄 Edit</button>' +
+  '<button type="button" data-action="download" title="Download" aria-label="Download">⬇</button>' +
   '<button type="button" class="danger" data-action="delete" title="Delete" aria-label="Delete">♻</button>';
 fileActionBar.onclick = e => {
   e.stopPropagation();
@@ -287,6 +288,16 @@ function openFile() {
   const resource = `/${selectedDir}/${selected}`;
   console.info('openFile:', resource);
   window.open(resource);
+}
+
+function downloadFile() {
+  if (!selected) return;
+  const link = document.createElement('a');
+  link.href = `/${selectedDir}/${selected}`.split('/').map(encodeURIComponent).join('/');
+  link.download = selected;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
 
 function deleteFile() {
